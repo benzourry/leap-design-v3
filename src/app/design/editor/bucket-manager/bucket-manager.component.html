@@ -1,0 +1,756 @@
+<style>
+  input[type=search].start {
+  /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+background-size: 20px 16px;
+border: none;
+padding: 6px 10px 6px 32px;
+vertical-align: middle;
+border-radius: 10em;
+color: black;
+max-width: 100%;
+}
+input[type=search].start:focus {
+border-color: #0078d7;
+outline: none;
+-webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+-moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+}
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+      <h5 class="mb-3">Bucket Manager</h5>
+      <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadBucketList(1)"
+        autocapitalize="none"
+        [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!itemLoading) {
+        <div class="mb-3">
+          @for (a of bucketList | filter:searchText; track a.id) {
+            <a class="pointer element" (click)="loadBucket(a?.id)" [routerLink]="['/design',appId,'bucket']"
+              [queryParams]="{id:a?.id}" [class.active]="a.id==bucketId" routerLinkActive="active"
+              >
+              <div class="list-group-item-heading">
+                {{a.name}} <sup>{{a?.id}}</sup>
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editBucket(editBucketTpl,{}, true)" [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Bucket
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (bucketTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="bucketTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadBucketList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (bucket) {
+          <div>
+            <div>
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{bucket.name}}</h5>
+                @if (bucket.description) {
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{bucket.description}}</div>
+                }
+              </div>
+              <div class="text-muted mb-2">
+                <small>bucket-{{bucket.id}}</small>
+              </div>
+              @if (bucket) {
+                <div class="d-flex flex-row">
+                  <div style="flex-grow: 1;">
+                    <input type="search" class="form-control form-control-sm border border-2"
+                      autocapitalize="none"
+                      placeholder="Filter list" (keyup.enter)="getFileList(1,params)"
+                      [(ngModel)]="searchTextFile">
+                  </div>
+                  <div style="flex-shrink: 0;">
+                    <button type="button" title="Edit bucket"
+                      class="btn border border-2 btn-outline-secondary btn-sm ms-1"
+                      (click)="editBucket(editBucketTpl,bucket,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <label class="form-label m-0">
+                      <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
+                      @if (!importLoading) {
+                        <div class="btn border border-2 btn-outline-primary btn-sm ms-1">
+                          <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Upload File
+                        </div>
+                      }
+                      @if (importLoading) {
+                        <button type="button" class="btn border border-2 btn-outline-primary btn-sm ms-1" disabled>
+                          <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Uploading...
+                        </button>
+                      }
+                    </label>
+                    <div ngbDropdown class="d-inline-block">
+                      <button type="button" class="btn border border-2 btn-sm ms-1"
+                        title="More bucket actions" id="dropdownBucketEditor" ngbDropdownToggle>
+                        <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor">
+                        <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
+                          (click)="initZip(initBucketZipTpl, bucket.id)">
+                          <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
+                          Initialize Zip
+                        </button>
+                        <button type="button" title="Bucket Stat" ngbDropdownItem (click)="bucketStat(bucketStatTpl)"
+                          [class.disabled]="offline">
+                          <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
+                          Bucket Statistics
+                        </button>
+                        <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline"
+                          (click)="reorganize(bucket.id)">
+                          <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reorganize
+                          Bucket files
+                        </button>
+                        <button type="button" title="View anti-virus scanning logs" ngbDropdownItem
+                          [disabled]="!serverInfo.avEnabled"
+                          (click)="openAvLogs(avLogListTpl, bucket.id)">
+                          <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                          Anti-virus Scan
+                        </button>
+
+                        <div class="dropdown-divider"></div>
+                        <div class="px-2">
+                          <label class="form-label small">Bucket Endpoint</label>
+                          <input name="bucketUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control"
+                            value="{{baseApi}}/bucket/{{bucket.id}}/files" readonly>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" title="Remove bucket" ngbDropdownItem class="text-danger"
+                          (click)="removeBucket(removeBucketTpl,bucket)" [class.disabled]="offline">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove
+                          Bucket
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }@else {
+              <div class="mt-1">
+                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}"
+                  (click)="bySStatus(undefined)">
+                  All
+                </button>
+                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='OK'}"
+                  (click)="bySStatus('OK')">
+                  Safe file
+                </button>
+                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='FOUND'}"
+                  (click)="bySStatus('FOUND')">
+                  Threat Found
+                </button>
+                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='VAULT'}"
+                  (click)="bySStatus('VAULT')">
+                  Quarantined
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                @if (bucketFileList?.length) {
+                  <table class="table table-bordered w-100">
+                    <thead>
+                      <tr>
+                        <th>Preview</th>
+                        <th>File Info</th>
+                        <th>&nbsp;</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (bucketFile of bucketFileList; track bucketFile.id) {
+                        <tr [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
+                          <td style="width:100px">
+                            @if (bucketFile.fileType.indexOf('image')>-1) {
+                              <img
+                                loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}"
+                                width="86" onerror="this.src='assets/img/placeholder-128.png'">
+                            } @else {
+                              <span class="text-muted text-center">No Preview
+                              Available</span>
+                            }
+                          </td>
+                          <td>
+                            <div class="text-truncate">
+                              <div>{{bucketFile.fileName}}</div>
+                              <div class="small text-truncate" >
+                                <div>
+                                  @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
+                                  <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}"
+                                    target="_blank">{{bucketFile.fileUrl}}</a>
+                                  }@else {
+                                    {{bucketFile.fileUrl}} 
+                                  }
+                                </div>
+                                <div>Uploaded on: {{bucketFile.timestamp|date:'medium'}}</div>
+                                <div>Uploaded by: {{bucketFile.email}}</div>
+                                <div>File size: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
+                                <div>File type: {{bucketFile.fileType}}</div>
+                                @if (bucketFile.itemLabel) {
+                                  <div>From input: {{bucketFile.itemLabel}}</div>
+                                }
+                                @if (bucketFile.entryId) {
+                                  <div>For entry #{{bucketFile.entryId}}</div>
+                                }
+                                @if(['FOUND'].includes(bucketFile.sstatus)){
+                                  <div class="fw-bold mt-2 text-truncate w-100">
+                                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                                    {{bucketFile.smessage}}
+                                    @if (bucketFile.sstatus=='FOUND'){
+                                      <div class="mt-2">
+                                        <button class="btn btn-light btn-sm" (click)="quarantine(bucketFile.id)">Quarantine</button>
+                                      </div>
+                                    }
+                                    <div></div>
+                                  </div>
+                                }@else {
+                                  {{bucketFile.smessage}}
+                                }
+                              </div>
+                            </div>
+                          </td>
+                          <td class="text-nowrap sticky-end" style="position:sticky; right:0">
+                            <div>
+                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                [class.disabled]="offline"
+                                (click)="removeBucketFile(removeBucketFileTpl,bucketFile)">
+                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            }
+            @if ((bucketFileList?.length) > 0) {
+              <div class="text-center d-flex justify-content-center pagination-rounded">
+                @if (bucketFileTotal>pageSize) {
+                  <ngb-pagination [collectionSize]="bucketFileTotal"
+                    [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
+                    (pageChange)="getFileList(pageNumber,params)" boundaryLinks="false" directionLinks="false">
+                    <ng-template ngbPaginationFirst>
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                    </ng-template>
+                    <ng-template ngbPaginationPrevious>
+                      <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationNext>
+                      <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationLast>              
+                      <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                    </ng-template>
+                  </ngb-pagination>
+                }
+              </div>
+            }
+            @if (bucketFileList == 0 && !loading) {
+              <div class="details">
+                <h3>No data</h3>
+                <p> There is no file uploaded to this bucket.
+                  <br /> You can upload new file by clicking on the Upload button.
+                </p>
+              </div>
+            }
+          </div>
+        }
+        @if (!bucket) {
+          <div style="color:#aaa;">
+            <h3>Please select Bucket from the list on the left to view it's data.</h3>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #removeBucketTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Bucket</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Bucket Name</label>
+          <p class="form-control-static">{{removeBucketData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeBucketData)">
+        <i class="icon-minus-sign-alt"></i> Remove Bucket
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editBucketTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Bucket</h4>
+  </div>
+  <div class="modal-body fix-gutter" #bucketEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Bucket Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editBucketData.name" #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Bucket Description</label>
+      <input type="text" class="form-control" [(ngModel)]="editBucketData.description" 
+        #desc="ngModel" name="desc">
+    </div>
+    @if (!serverInfo.avEnabled){
+      <p class="text-danger">Anti-virus not enabled</p>
+    }
+    <div [class.disabled]="!serverInfo.avEnabled">
+      <img class="float-end" src="https://www.clamav.net/assets/clamav-trademark.png" width="70">
+      <div class="form-check form-switch mt-1">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="editBucketData.x.scanUpload"
+          name="scanUpload" id="scanUpload">
+        <label class="form-check-label" for="scanUpload">Anti-virus scan on upload</label>
+      </div>
+      <div class="form-check form-switch mt-1">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="editBucketData.scheduled"
+          name="scanSched" id="scanSched">
+        <label class="form-check-label" for="scanSched">Schedule anti-virus scanning</label>
+      </div>
+      @if (editBucketData.scheduled) {
+        <div class="form-group mb-3 mt-2">
+          <label class="form-label">Scanning Frequency *</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqDaily" [(ngModel)]="editBucketData.freq"
+                name="freqDaily" value="daily" class="form-check-input">
+              <label class="form-check-label" for="freqDaily">Daily</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqWeekly" [(ngModel)]="editBucketData.freq"
+                name="freqWeekly" value="weekly" class="form-check-input">
+              <label class="form-check-label" for="freqWeekly">Weekly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqMonthly" [(ngModel)]="editBucketData.freq"
+                name="freqMonthly" value="monthly" class="form-check-input">
+              <label class="form-check-label" for="freqMonthly">Monthly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqYearly" [(ngModel)]="editBucketData.req"
+                name="freqYearly" value="yearly" class="form-check-input">
+              <label class="form-check-label" for="freqYearly">Yearly</label>
+            </div>
+            <input type="hidden" [(ngModel)]="editBucketData.freq" name="freqHdn" required>
+            </div>
+          </div>
+          <div class="row">
+            @if (editBucketData.freq=='weekly') {
+              <div class="col-sm-6">
+                <div class="form-group mb-3">
+                  <label class="form-label">Day of week *</label>
+                  <select class="form-select" name="dayOfWeak"
+                    [(ngModel)]="editBucketData.dayOfWeek" #dayOfWeek="ngModel" required>
+                  <!-- <option value="" disabled>Select day...</option> -->
+                  @for (item of dayOfWeekList; track $index) {
+                    <option [value]="item.value">{{item.name}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfWeek?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (dayOfWeek?.errors?.required) {
+                      <span class="help-block">Day of week is required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (['monthly','yearly'].indexOf(editBucketData.freq)>-1) {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Day of month *</label>
+                <select class="form-select" name="dayOfMonth"
+                  [(ngModel)]="editBucketData.dayOfMonth" #dayOfMonth="ngModel" required>
+                  @for (item of dayOfMonthList; track $index) {
+                    <option [value]="item">{{item}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfMonth?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (dayOfMonth?.errors?.required) {
+                      <span class="help-block">Day of month is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (editBucketData.freq=='yearly') {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Month of year *</label>
+                <select class="form-select" name="monthOfYear"
+                  [(ngModel)]="editBucketData.monthOfYear" #monthOfYear="ngModel" required>
+                <!-- <option value="" disabled>Select date...</option> -->
+                @for (item of monthOfYearList; track $index) {
+                  <option [value]="item.value">{{item.name}}
+                  </option>
+                }
+              </select>
+              @if (monthOfYear?.invalid) {
+                <small class="form-text has-warning">
+                  @if (monthOfYear?.errors?.required) {
+                    <span class="help-block">Month of year is
+                    required</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        }
+        <div class="col-sm-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Hour in day (minute set to 00)*</label>
+            <input type="text" class="form-control" [(ngModel)]="editBucketData.clock"
+              #clock="ngModel" placeholder="ie: 1400" maxlength="4" name="clock"
+              (keyup)="keepMinute00(editBucketData)"
+              required>
+              @if (clock?.invalid) {
+                <small class="form-text has-warning">
+                  @if (clock?.errors?.required) {
+                    <span class="help-block">Clock is required in HHmm (ie: 0800
+                    or 1400)</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="bucketEditForm.invalid"
+      (click)="c(editBucketData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Bucket
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeBucketFileTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove File</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Name</label>
+          <p class="form-control-static">{{removeBucketFileData.fileName}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Path</label>
+          <p class="form-control-static">{{removeBucketFileData.fileUrl}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Uploaded on</label>
+          <p class="form-control-static">{{removeBucketFileData.timestamp|date:'medium'}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Uploaded by</label>
+          <p class="form-control-static">{{removeBucketFileData.email}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeBucketFileData)">
+        <i class="icon-minus-sign-alt"></i> Remove File
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #avLogListTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Anti-virus Scan</h4>
+    </div>
+    <div class="modal-body">
+      <div>
+        <!-- Loading:{{scanLoading[bucket.id]}} -->
+        <button class="btn btn-primary" [disabled]="scanLoading[bucket.id]" (click)="startScan(bucket)">
+          @if(!scanLoading[bucket.id]){
+            Start Scan 
+          }@else {
+            Scanning <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          }
+        </button>
+
+        @if (scanProgress[bucket.id]) {
+          <div style="position: relative;" class="mx-n3 mt-3 ">
+            <div class="px-2 py-1 bg-white limit-height code-container">
+              <div>
+                <pre class="my-0">{{scanProgress[bucket.id].print}}</pre>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      @if (avLogList.length>0){
+        <ul class="list-group mt-3">
+          @for(log of avLogList; track $index){
+            <li class="list-group-item"><a href="{{baseApi}}/public/bucket/{{bucket.id}}/av-logs/{{log.fileName}}">{{log.fileName}}</a></li>
+          }
+        </ul>
+      }@else{
+        <h4 class="text-muted mt-3">No log available</h4>
+      }
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #initBucketZipTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Bucket Zip</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">File Name</label>
+          <p class="form-control-static">{{initZipData.fileName}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Path</label>
+          <p class="form-control-static"><a href="{{initZipData.fileUrl}}">{{initZipData.fileUrl}}</a></p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Start archiving</label>
+          <p class="form-control-static">{{initZipData.timestamp|date:'medium'}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Total</label>
+          <p class="form-control-static">{{initZipData.total}}</p>
+        </div>
+        <button type="button" class="btn btn-primary" (click)="downloadZip(initZipData.fileName)">
+          <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon> Download Zip
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <!-- <button type="button" class="btn btn-round btn-primary" (click)="c(removeBucketFileData)">
+      <i class="icon-minus-sign-alt"></i> Remove File
+    </button> -->
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #bucketStatTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">In this bucket</h4>
+    </div>
+    <div class="modal-body">
+      <div class="">
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group mb-3">
+              <label class="form-label">Total File</label>
+              <p class="form-control-static">{{bucketStatData.totalCount}}</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group mb-3">
+              <label class="form-label">Total Size</label>
+              <p class="form-control-static">{{bucketStatData.totalSize/(1024*1024)|number}}<sup>MiB</sup></p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Count by Type</label>
+          <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+            @for (i of bucketStatData.typeCount; track $index; let index = $index) {
+              <div
+                [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/bucketStatData.totalCount)*100+'%'}"
+                style="height:8px; display:inline-flex;">
+              </div>
+            }
+          </div>
+          <div class="list-group small">
+            @for (i of bucketStatData.typeCount; track $index; let index = $index) {
+              <div class="list-group-item">
+                <div class="row">
+                  <div class="col-8 text-truncate">
+                    <div [ngStyle]="{'background-color':selectColor(index)}"
+                    style="height:8px; width:8px; display: inline-block"></div>
+                    {{i.name}}
+                  </div>
+                  <div class="col-4" style="text-align:right">{{i.value}}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Size by Type</label>
+          <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+            @for (i of bucketStatData.typeSize; track $index; let index = $index) {
+              <div
+                [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/bucketStatData.totalSize)*100+'%'}"
+                style="height:8px; display:inline-flex;">
+              </div>
+            }
+          </div>
+          <div class="list-group small">
+            @for (i of bucketStatData.typeSize; track $index; let index = $index) {
+              <div class="list-group-item">
+                <div class="row">
+                  <div class="col-8 text-truncate">
+                    <div [ngStyle]="{'background-color':selectColor(index)}"
+                    style="height:8px; width:8px; display: inline-block"></div>
+                    {{i.name}}
+                  </div>
+                  <div class="col-4" style="text-align:right">{{i.value/(1024*1024)|number}}<sup>MiB</sup>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Count by Form Field</label>
+          <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+            @for (i of bucketStatData.labelCount; track $index; let index = $index) {
+              <div
+                [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/bucketStatData.totalCount)*100+'%'}"
+                style="height:8px; display:inline-flex;">
+              </div>
+            }
+          </div>
+          <div class="list-group small">
+            @for (i of bucketStatData.labelCount; track $index; let index = $index) {
+              <div class="list-group-item">
+                <div class="row">
+                  <div class="col-8">
+                    <div [ngStyle]="{'background-color':selectColor(index)}"
+                    style="height:8px; width:8px; display: inline-block"></div>
+                    {{i.name||'n/a'}}
+                  </div>
+                  <div class="col-4" style="text-align:right">{{i.value}}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Size by Form Field</label>
+          <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+            @for (i of bucketStatData.labelSize; track $index; let index = $index) {
+              <div
+                [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/bucketStatData.totalSize)*100+'%'}"
+                style="height:8px; display:inline-flex;">
+              </div>
+            }
+          </div>
+          <div class="list-group small">
+            @for (i of bucketStatData.labelSize; track $index; let index = $index) {
+              <div class="list-group-item">
+                <div class="row">
+                  <div class="col-8">
+                    <div [ngStyle]="{'background-color':selectColor(index)}"
+                    style="height:8px; width:8px; display: inline-block"></div>
+                    {{i.name||'n/a'}}
+                  </div>
+                  <div class="col-4" style="text-align:right">{{i.value/(1024*1024)|number}}<sup>MiB</sup>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    </div>
+  </div>
+</ng-template>

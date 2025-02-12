@@ -1,0 +1,175 @@
+.active-outline {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .7);
+}
+
+.column-list {
+  // width: 1000px;
+  // max-width: 100%;
+  border: solid 2px #ccc;
+  min-height: 60px;
+  display: flex;
+  flex-direction: row;
+  background: white;
+  border-radius: 5px;
+  width: fit-content;
+  overflow-y: hidden;
+  // overflow: hidden;
+}
+
+.column-box {
+  // padding: 10px;
+  border-right: solid 2px #ccc;
+  color: rgba(0, 0, 0, 0.87);
+  flex-direction: row;
+  font-size: 14px;
+  flex-grow: 1;
+  flex-basis: 0;
+  min-height: 100px;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 5px;
+  border:none;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.column-box:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.column-box:last-child {
+  border-radius: 0 3px 3px 0;
+  border: none;
+}
+
+.column-list.cdk-drop-list-dragging .column-box:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.f-subs-item{
+  border-right:solid 2px #ccc;
+  overflow: hidden;
+}
+.f-subs-item:last-child{
+  border-right:none;
+}
+
+.scroll--h {
+  --background-color: rgba(255, 255, 255, 1);
+  --transparent: rgba(255, 255, 255, 0);
+  /* We can't use "transparent" directly, because Safari would interpret the color as "transparent black" (see https://css-tricks.com/thing-know-gradients-transparent-black/). Using this workaround, it works fine. */
+  --shadow-color: rgba(80, 205, 255, .5);
+  --shadow-size: 1.5em;
+
+  background:
+    linear-gradient(to right, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
+    radial-gradient(farthest-side at 0 50%, var(--shadow-color), var(--transparent)),
+    linear-gradient(to left, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
+    radial-gradient(farthest-side at 100% 50%, var(--shadow-color), var(--transparent)) 100%;
+  background-color: var(--background-color);
+  background-repeat: no-repeat;
+  background-attachment: local, scroll, local, scroll;
+  background-size: 100% 100%, var(--shadow-size) 100%, 100% 100%, var(--shadow-size) 100%;
+  // height: 100%;
+  // animation: blinker 1s linear infinite;
+  // animation: animatedBackground 10s linear infinite alternate;
+}
+
+// .custom-control {
+//   z-index: unset;
+// }
+
+// .flytag{
+//   position:absolute;top:6px;left:-25px; font-size:.6em; width:37px;text-align:right
+// }
+.active-outline {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .7) !important;
+}
+
+.color-item {
+  width: 38px;
+}
+
+.tree-cont {
+  position: relative;
+}
+
+.tree-cont::before {
+  /* content: '';
+position: absolute;
+background: gray;
+left: 0px;
+height: calc(100% - 22px);
+width: 2px;
+top: 11px; */
+}
+
+.cond-badge {
+  padding: 0px 8px;
+  width: 60px;
+  position: relative;
+  font-size: 11px;
+}
+
+.cond-badge::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  top: 12px;
+  left: 0px;
+  height: 2px;
+  background: #ccc;
+}
+
+.param-badge {
+  padding-left: 5px;
+  position: relative;
+}
+
+.param-badge::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  top: 12px;
+  left: 0px;
+  height: 2px;
+  background: #ccc;
+}
+
+.tree-wrapper {
+  position: relative;
+}
+
+.tree-wrapper::before,
+.param-badge::before {
+  content: '';
+  position: absolute;
+  left: 0px;
+  height: 100%;
+  width: 2px;
+  top: 0;
+  background: #ccc;
+}
+
+.tree-wrapper:first-child::before,
+.param-badge:first-child::before {
+  height: calc(100% - 12px);
+  top: 12px;
+}
+
+.tree-wrapper:last-child::before,
+.param-badge:last-child::before {
+  top: 0px;
+  height: 12px;
+}

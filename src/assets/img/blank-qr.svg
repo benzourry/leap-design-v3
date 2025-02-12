@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #aaa;
+      }
+
+      .cls-2 {
+        font-size: 41.667px;
+        fill: #fff;
+        font-family: "Century Gothic";
+      }
+
+      .cls-3 {
+        font-size: 58.333px;
+        font-family: Onyx;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="0" y="0" width="200" height="200"/>
+  <text id="QR" class="cls-2" x="69" y="114">QR</text>
+</svg>

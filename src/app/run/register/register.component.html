@@ -1,0 +1,39 @@
+<div class="d-flex flex-column wrapper-in">
+  <fa-icon [icon]="['fas','users-cog']" size="5x" style="opacity:.5" class="text-primary mb-3" [fixedWidth]="true">
+  </fa-icon>
+  <div class="my-3">
+    Hi <strong>{{user().name}}</strong>,
+    {{app().x?.lang=='ms'?'sila pilih peranan anda untuk ':'please choose your role for '}}
+    <strong>{{app().title}}</strong>
+    @if (app().email.indexOf(user().email)>-1) {
+      <div style="font-size:.8em" class="my-3">
+        {{app()?.x.lang=='ms'?'Emel anda tersenarai sebagai pembangun App. Kelulusan automatik akan diberi.':
+        'Your email is listed as the App creator. The system will auto-approve your role request.'}}
+      </div>
+    }
+  </div>
+  <div class="form-group mb-4">
+    @for (group of groupList; track group.id) {
+      <div class="form-check form-switch mt-1 mb-2">
+        <input type="checkbox" class="form-check-input" name="role-{{group.id}}" [checked]="checkValue(group.id)"
+          (change)="toggleValue(group.id, app().x?.regType);" id="role-{{group.id}}">
+        <label class="form-check-label" for="role-{{group.id}}"><strong>{{group.name}}</strong></label>
+        @if (group.description) {
+          <div style="font-style:italic">{{group.description}}</div>
+        }
+        @if (group.needApproval) {
+          <small class="d-block">* {{app().x?.lang=='ms'?'Memerlukan kelulusan':'Require approval'}}</small>
+        }
+      </div>
+    }
+  </div>
+</div>
+@if (once) {
+  <p class="text-center py-2 my-1">{{app().x?.lang=='ms'?'Sila baca':'Please read the following'}}</p>
+  <div class="d-flex flex-column wrapper-in mb-3"></div>
+}
+<button type="button" class="btn btn-outline-secondary btn-round px-3 float-start"
+  (click)="logout({})">{{app().x?.lang=='ms'?'Batal':'Cancel'}}</button>
+<button type="button" class="btn btn-primary btn-round px-3 float-end"
+  [disabled]="selectedRoles.length==0 && app().email.indexOf(user().email)==-1"
+  (click)="save(selectedRoles)">{{app().x?.lang=='ms'?'Ok, seterusnya':'Ok, done'}}</button>

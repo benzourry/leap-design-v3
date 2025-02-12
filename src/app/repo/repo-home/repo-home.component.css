@@ -1,0 +1,17 @@
+.price-tag{
+    color: white; 
+    opacity:.6; 
+    padding: 5px 10px; 
+    display: inline;
+    border-radius:3em;
+    position: relative;
+    bottom: 2em; left:.3em
+}
+.repo-title{
+    padding: 5px 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+.repo-item{
+    margin-top: 15px;
+}

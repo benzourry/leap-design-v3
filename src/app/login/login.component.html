@@ -1,0 +1,138 @@
+<div class="d-flex justify-content-center align-items-center flex-column wrapper m-a p-3">
+  <img loading="lazy" class="mb-2" src="assets/icons/logo.svg" alt="logo" width="150" />
+  <div class="d-flex flex-column wrapper-in">
+    @if (error) {
+      <div class="text-danger text-center my-3">
+        {{error.error}} {{error.message}}
+        @if (useEmail) {
+          <div>Forgot password? <button type="button" class="p-0 px-1 btn-outline-secondary btn btn-sm"
+          (click)="reset(cred.email)">Reset Password</button></div>
+        }
+      </div>
+    }
+    @if (message) {
+      <div class="text-success text-center my-3">
+        {{message}}
+      </div>
+    }
+    @if (checkLogin('sarawakid')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('sarawakid')">
+        <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true"></fa-icon>
+        Login with SarawakID
+      </button>
+    }
+    @if (checkLogin('unimasid')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('unimasid')">
+        <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
+        Login with UNIMAS ID
+      </button>
+    }
+    @if (checkLogin('unimas')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('unimas')">
+        <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
+        Login with UNIMAS ID<sup> v1</sup>
+      </button>
+    }
+    @if (checkLogin('icatsid')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('icatsid')">
+        <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
+        Login with i-CATS Identity
+      </button>
+    }
+    @if (checkLogin('ssone')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('ssone')">
+        <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
+        Login with ssOne
+      </button>
+    }
+    @if (checkLogin('google')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        (click)="login('google')">
+        <fa-icon [icon]="['fab','google']" [fixedWidth]="true"></fa-icon>
+        Login with Google
+      </button>
+    }
+    @if (checkLogin('azuread')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        title="Login with Microsoft" (click)="login('azuread')">
+        <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true"></fa-icon>
+        Login with Microsoft
+      </button>
+    }
+    @if (checkLogin('facebook')) {
+      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+        title="Login with Facebook" (click)="login('facebook')">
+        <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true"></fa-icon>
+        Login with Facebook
+      </button>
+    }
+    <div class="text-center d-flex justify-content-between">
+      @if (checkLogin('github')) {
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+          title="Login with GitHub" (click)="login('github')">
+          <fa-icon [icon]="['fab','github']" [fixedWidth]="true"></fa-icon>
+        </button>
+      }
+      @if (checkLogin('linkedin')) {
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+          title="Login with LinkedIn" (click)="login('linkedin')">
+          <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true"></fa-icon>
+        </button>
+      }
+      @if (checkLogin('twitter')) {
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+          title="Login with Twitter" (click)="login('twitter')">
+          <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true"></fa-icon>
+        </button>
+      }
+      @if (checkLogin('local')) {
+        <button type="button" class="btn text-start rounded-pill m-1 px-2 align-items-center text-center flex-column" style="flex:1"
+          [ngClass]="useEmail?'btn-secondary':'btn-outline-secondary'"
+          title="Login/Signup with email" (click)="useEmail = !useEmail">
+          <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+        </button>
+      }
+    </div>
+  </div>
+  @if (useEmail) {
+    <p class="text-center py-2 my-1">or sign in using email</p>
+    <div class="d-flex flex-column wrapper-in">
+      <form #loginForm="ngForm">
+        <div class="mx-1">
+          @if (register) {
+            <input class="form-control rounded-50 my-1 w-unset" type="text" name="name"
+              [(ngModel)]="cred.name" placeholder="Name" required>
+          }
+          <input class="form-control rounded-50 my-1 w-unset" type="text" name="email"
+            [(ngModel)]="cred.email" placeholder="Email" required>
+          <input class="form-control rounded-50 my-1 w-unset" type="password" name="password"
+            [(ngModel)]="cred.password" placeholder="Password" required>
+        </div>
+        @if (!register) {
+          <div class="text-center d-flex justify-content-between">
+            <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-3" [disabled]="loginForm.invalid"
+              (click)="signin(cred)">
+            Log In</button>
+            <button type="button" class="btn text-start rounded-pill btn-outline-secondary m-1 px-3" (click)="register=true">
+            Sign Up</button>
+          </div>
+        }@else{
+          <div class="text-center d-flex justify-content-between">
+            <button type="button" class="btn text-start rounded-pill btn-outline-secondary m-1 px-3" (click)="register=false">
+            Cancel</button>
+            <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-3" [disabled]="loginForm.invalid"
+              (click)="signup(cred)">
+            Sign Up</button>
+          </div>
+        }
+      </form>
+    </div>
+  }
+  <div class="small m-2 text-center">By signing in, you agree to <br /> our <a rel="noreferrer" [href]="privacyPolicy"
+    target="_blank">Privacy Policy</a></div>
+</div>

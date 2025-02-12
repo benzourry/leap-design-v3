@@ -1,0 +1,911 @@
+<form #entryForm="ngForm">
+  <div id="form-{{form?.id}}" class="viewport ">
+    @if (!hideTitle()){
+      <page-title [asComp]="asComp()" (closed)="closed.emit(true)">
+        @if (form?.x?.showEntryId){
+          <div class="id-label">{{entry?.id}}</div>
+        }
+        <h4 class="m-0" [innerHtml]="form?.title">{{form?.title}}</h4>
+        @if (form?.description) {
+          <div class="mt-1" [innerHtml]="form?.description">{{form?.description}}</div>
+        }
+      </page-title>
+    }
+    <!-- {{preItem|json}} -->
+    @if (loading) {
+      <div class="p-4 text-muted text-center">
+        <div class="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    }@else {
+      <!-- @if (form && (!formInactive && !userUnauthorized && !invalidFacet)) { -->
+      @if (form && (!formInactive && isAuthorized && !invalidFacet && !editWithoutId)) {
+        @if (!form?.hideStatus) {
+          @if (entry && entry.id && form) {
+            <div class="limit-width centered">
+              <step-wizard [user]="user" [tiers]="form?.tiers" [approval]="entry?.approval"
+                [entry]="entry">
+              </step-wizard>
+            </div>
+          }
+        }
+        <div class="form-wrapper" [class.prev-row]="form?.x?.prevRow">
+          @if (form.prev && prevEntry && !form?.x?.hidePrev) {
+            @if (!prevLoading){
+              <div class="form-previous">
+                <form-view [form]="form.prev" [data]="prevEntry?.data" [entry]="prevEntry"
+                [action]="_action"
+                [user]="user" [$this$]="$this$" [$param$]="_param" [$baseUrl$]="baseUrl" [$token$]="accessToken"></form-view>
+              </div>
+            }@else{
+              <div class="p-4 text-muted text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+          }
+          <div class="form-current">
+            @if (form.nav=='accordions' && form.tabs?.length>0) {
+              @if (sectionMap[-1]?.length>0){
+                @let tabPre = {id:-1,sortOrder:-1,title:"(head)"};
+                <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre, isPrePost: true}"></ng-container>
+              }
+              <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
+                @for (t of filteredTabs; track t.id) {
+                  <div class="acc-card" [hidden]="(t.x?.facet?.[_action]=='hidden')" [ngbAccordionItem]="_action+$index" [collapsed]="$index != tab"
+                    [disabled]="!disabledTabs[t.id]" #accitem="ngbAccordionItem">
+                    <div ngbAccordionHeader>
+                      <div class="acc-btn-wrap centered" [class.limit-width]="!form?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
+                        <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
+                          @if (form.showIndex) {
+                            <div style="float:left;height:25px; width:25px;background:#666; color:white;
+                              padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
+                            border-radius:20px;">{{$index+1}}</div>
+                          }
+                          @if (tab.x?.icon){
+                            <fa-icon [icon]="getIcon(t.x?.icon)" [fixedWidth]="true"></fa-icon>
+                          }
+                          <h5 class="m-0">
+                            {{t.title}}
+                          </h5>
+                        </button>
+                      </div>
+                    </div>
+                    <div ngbAccordionCollapse>
+                      <div ngbAccordionBody>
+                        <ng-template>
+                          <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:t, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+              @if (sectionMap[-999]?.length>0){
+                @let tabPost = {id:-999,sortOrder:999,title:"(bottom)"};
+                <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPost, isPrePost: true}"></ng-container>
+              }
+            }@else if (['tabs','pills'].indexOf(form.nav)>-1  && form.tabs?.length>0) {
+            
+              @if (sectionMap[-1]?.length>0){
+                @let tabPre = {id:-1,sortOrder:-1,title:"(head)"};
+                <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre, isPrePost: true}"></ng-container>
+              }
+
+              <div class="tab-simple">
+                <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + tab"
+                  [class.limit-width]="!form?.x?.wide"
+                  class="nav-{{form.nav}} justify-content-center centered" [class.pe-none]="form.x?.noPageSkip">
+                  @for (tab of filteredTabs; track tab.id) {
+                    <li [ngbNavItem]="_action + $index" [hidden]="(tab.x?.facet?.[_action]=='hidden')" [disabled]="!disabledTabs[tab.id]">
+                      <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" queryParamsHandling="preserve">
+                        @if (form.showIndex) {
+                          <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
+                            padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
+                          border-radius:20px;">{{$index+1}}</div>
+                        }
+                        @if (tab.x?.icon){
+                          <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
+                        }
+                        {{tab.title}}
+                      </a>
+                      <ng-template ngbNavContent>
+                        <ng-container
+                        *ngTemplateOutlet="sectionGroup;context:{tab:tab, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
+                      </ng-template>
+                      <!-- TEMPLATE MUST BE IN FORM IF WANT TO VALIDATE -->
+                    </li>
+                  }
+                </ul>
+                <div [ngbNavOutlet]="nav"></div>
+              </div>
+
+              @if (sectionMap[-999]?.length>0){
+                @let tabPost = {id:-999,sortOrder:999,title:"(bottom)"};
+                <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPost, isPrePost: true}"></ng-container>
+              }
+
+            }@else{
+              <div>
+                <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:{}}"></ng-container>
+              </div>
+            }
+            @if (!(form.nav != 'simple' && form.x?.progression)) {
+              <div class="single-pane pt-0">
+                <div class="centered d-flex" [class.limit-width]="!form?.x?.wide">
+                  @if (form && form.canSave) {
+                    <button type="button" class="btn btn-round btn-primary" (click)="save()"
+                      [disabled]="saving || (form.validateSave && entryForm.invalid)">
+                      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                      {{form?.x?.saveLbl??(app?.x?.lang=='ms'?'Simpan':'Save')}}
+                      @if (saving) {
+                        <div class="spinner-border spinner-border-sm" role="status">
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      }
+                    </button>
+                  }
+                  <button type="button" class="btn btn-round btn-success ms-auto" [disabled]="entryForm.invalid || saving"
+                    [hidden]="!(form.tiers?.length>0 && entry?.currentStatus=='drafted') || !form.canSubmit"
+                    (click)="submit(false)">
+                    {{app?.x?.lang=='ms'?'Hantar':'Submit'}}
+                    <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                    {{form.tiers[0]?.name}}
+                    @if (saving||submitting) {
+                      <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                    }
+                  </button>
+                  @if (form.tiers?.length>0 && entry.currentEdit) {
+                    <button type="button" class="btn btn-round btn-success ms-auto" [disabled]="entryForm.invalid || saving"
+                      (click)="submit(true)" [hidden]="!form.canSubmit">
+                      {{app?.x?.lang=='ms'?'Hantar Semula':'Re-submit'}}
+                      <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                      {{form.tiers[entry.currentTier].name}}
+                      @if (saving||submitting) {
+                        <div class="spinner-border spinner-border-sm" role="status">
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <!-- REFERRED TO BY ABOVE -->
+        <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
+          <div class=" single-pane pb-0"  #tForm="ngModelGroup" [ngModelGroup]="'tab'+tab.id">
+            <div class="centered fix-gutter" [class.limit-width]="!form?.x?.wide">
+              <div class="row" [ngStyle]="{'justify-content':form.align}">
+                @for (e of sectionMap[tab?.id]; track e.id) {
+                  @if (preSection[e.id] && !(e.x?.facet?.[_action]=='none')) {
+                    @if (e.type=='section') {
+                      <div [ngClass]="e.size||'col-sm-12'"
+                        [class.disabled]="e.enabledFor&&e.enabledFor.indexOf(user.email)==-1"
+                        [hidden]="e.hidden || (e.x?.facet?.[_action]=='hidden')">
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="classSection[e.id]"
+                          #sForm="ngModelGroup" [ngModelGroup]="'section'+e.id">
+                          @if (!e.hideHeader) {
+                            <div class="card-header p-3" [class.px-0]="e.x?.blankStyle">
+                              <h6 class="card-title m-0">
+                                @if (e.icon) {
+                                  <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                                }
+                                {{e.title}}
+                                @if (sForm.invalid) {
+                                  <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
+                                  title="Section contains fields with invalid input"></fa-icon>
+                                }
+                              </h6>
+                              @if (e.description) {
+                                <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
+                              }
+                            </div>
+                          }
+                          <div class="card-body p-3 pb-4">
+                            <div class="row g-4" [ngStyle]="{'justify-content':e.align}">
+                              @for (f of e.items; track f.id) {
+                                @if (!form.items[f.code]) {
+                                  <div class="p-2 border rounded mb-3">Source Item Not
+                                    Available
+                                  </div>
+                                }
+                                <!-- @if (form.items[f.code] && preCheckStr(form.items[f.code].pre) && !((form.items[f.code]?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) { -->
+                                @if (form.items[f.code] && preItem[f.code] && !((form.items[f.code]?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) {
+                                  @if (!['dataset','screen'].includes(form.items[f.code].type)) {
+                                    <ng-container *ngTemplateOutlet="fieldRender;context:{data:entry.data, f:f, field:form.items[f.code], section:e, forceView: false, index: $index}"></ng-container>
+                                    <!-- REFERRED TO BY ABOVE -->
+                                    <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
+                                      let-field="field" let-forceView="forceView" let-index="index">
+                                      @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+                                        <div [ngClass]="field?.size||'col-sm-12'"
+                                          [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
+                                          @if (field.type!='static') {
+                                            <div class="form-group mb-3">
+                                              @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                <label class="label-span form-label">{{field?.label}}</label>
+                                              }
+                                              <p class="form-control-static">
+                                                <field-view [field]="field" [value]="data[field.code]">
+                                                </field-view>
+                                              </p>
+                                            </div>
+                                          } @else {
+                                            <field-view [field]="field" [value]="data[field.code]"
+                                            [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                                          }
+                                        </div>
+                                      } @else {
+                                        <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
+                                          [fileProgress]="uploadProgress[f.code+(index??'')]"
+                                          [extractLoading]="extractLoading[f.code]"
+                                          [class.mt-0]="field.subType=='clearfix'"
+                                          [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+                                          [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field"
+                                          [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
+                                          [selectGroupBy]="field?.x?.groupBy"
+                                          [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+                                          (valueChange)="debFieldChange($event,data,field,section)"                                          
+                                          (valueBlur)="onBlur($event,data,field,section)"
+                                          (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+                                          (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+                                          (fileValueChange)="onUpload($event,data,field,section,index)"
+                                          (fileValueClear)="onFileClear($event,data,field,section,index)"
+                                          [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
+                                          (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                                          [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+                                          [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default">
+                                        </field-edit>
+                                      }
+                                    </ng-template>
+                                  } @else {
+                                    <div [hidden]="form.items[f.code].hidden"
+                                      [ngClass]="form.items[f.code]?.size||'col-sm-12'">
+                                      <div class="form-group" [ngClass]="form.items[f.code].altClass">
+                                        @if (!form.items[f.code]?.hideLabel) {
+                                          <label class="label-span form-label">{{form.items[f.code]?.label}}</label>
+                                        }
+                                        @if (form.items[f.code].type=='dataset') {
+                                          @defer(prefetch on idle){
+                                            <!-- {{preCompFilter[f.code]|json}} -->
+                                            <app-list [asComp]="true"
+                                              (changed)="dsChanged($event,f.code)" [datasetId]="form.items[f.code].dataSource"
+                                              [filters]="preCompFilter[f.code]"
+                                              [$param$]="preCompFilter[f.code]"></app-list>
+                                          }@loading {
+                                            <div class="text-center m-5">
+                                              <div class="spinner-grow text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                              </div>
+                                            </div>
+                                          }
+                                        } @else {
+                                          @defer(prefetch on idle){
+                                            <!-- {{preCompFilter[f.code]|json}} -->
+                                            <app-screen [asComp]="true" [screenId]="form.items[f.code].dataSource"
+                                              [filters]="preCompFilter[f.code]"
+                                              [param]="preCompFilter[f.code]"></app-screen>
+                                          }@loading {
+                                            <div class="text-center m-5">
+                                              <div class="spinner-grow text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                              </div>
+                                            </div>
+                                          }
+                                        }
+                                      </div>
+                                    </div>
+                                  }
+                                }
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }@else if (e.type=='list') {
+                      <div [ngClass]="e.size||'col-sm-12'"
+                        [class.disabled]="e.enabledFor&&e.enabledFor.indexOf(user.email)==-1"
+                        [hidden]="e.hidden||(e.x?.facet?.[_action]=='hidden')">
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="classSection[e.id]">
+                          @if (!e.hideHeader) {
+                            <div class="card-header p-3 bordered">
+                              <h6 class="card-title m-0">
+                                <div class="float-end d-flex">
+                                  @if(e.x?.sortable){
+                                    <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort">
+                                      <div type="button" class="p-0 me-3 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}"
+                                        ngbDropdownToggle>
+                                        <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> {{sectionSort[e.code]?.label}} ({{sectionSort[e.code]?.dir??'asc'}})
+                                      </div>
+                                      <div ngbDropdownMenu class="mt-2" style="max-width:260px;" aria-labelledby="dropdownSort-{{e.id}}">
+                                        @for (f of e.items; track $index) {
+                                          @let field = form.items[f.code];
+                                          @if(field){
+                                            @if (['static','file','imagePreview','btn','dataset','screen','map'].indexOf(field.type)==-1){
+                                              <div class="d-flex" [class.def-sort-field]="sectionSort[e.code]?.field==f.code" title="{{field.label}}" ngbDropdownItem >
+                                                <div class="me-3 text-truncate">{{field.label}} </div>
+                                                <div class="btn-group btn-group-xs ms-auto">
+                                                  <button class="btn btn-xs" [class.def-sort-dir]="sectionSort[e.code]?.dir=='asc'" (click)="sortChild(e.code, f.code,field.label, 'asc')">ASC</button>
+                                                  <button class="btn btn-xs" [class.def-sort-dir]="sectionSort[e.code]?.dir=='desc'" (click)="sortChild(e.code, f.code,field.label, 'desc')">DESC</button>
+                                                </div>
+                                              </div>
+                                            }
+                                          }
+                                        }
+                                      </div>
+                                    </div>
+                                  }
+                                  <span class="badge badge-pill bg-dark">{{entry.data[e.code]?.length}}</span>    
+                                </div>      
+
+                                @if (e.icon) {
+                                  <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                                }
+                                {{e.title}}
+                              </h6>
+                              @if (e.description) {
+                                <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
+                              }
+                            </div>
+                          }
+
+                          @if (entry.data[e.code]?.length>0) {
+                            @if (e.x?.tableStyle){
+                              <div class="table-responsive mx-3">
+                                <table class="table table-print mb-0 bg-white">
+                                  <thead>
+                                    <tr>
+                                      @for (f of e.x?.tableFields; track $index) {
+                                        @if (form.items[f] && form.items[f].subType!='clearfix'){
+                                          <th>{{form.items[f].label}}</th>
+                                        }
+                                      }
+                                      @if ((e.x?.facet?.[_action])!='view') {
+                                        <th class="print-hide text-end" style="width: 5%">Action</th>
+                                      }
+                                  </tr>
+                                  </thead>
+
+                                  <!-- @for(listKv of entry.data[e.code]|groupBy:getPathForGrouping(e.x?.defGroupField); track $index){ -->
+                                  @for(listKv of groupedChildList[e.code]; track $index){
+                                    <tbody>
+                                      @if (e.x?.defGroupField){
+                                        <tr class="ds-group-header">
+                                          <td [attr.colspan]="e.x?.tableFields?.length+1" style="padding:0">
+                                            <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold" (click)="hideGroup[e.code+listKv?.key]=!hideGroup[e.code+listKv?.key]">
+                                            <!-- <div class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold"> -->
+                                              @if(!hideGroup[e.code+listKv?.key]){
+                                                <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
+                                              }@else {
+                                                <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                                              }  
+                                              <div class="ms-2">
+                                                @if (listKv?.key=='undefined'){
+                                                  <span class="text-muted fst-italic"> Data not available</span>
+                                                }@else {
+                                                  {{listKv?.key}}
+                                                }
+                                              </div>
+                                              <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
+                                            <!-- </div> -->
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      }
+                                      @if(!hideGroup[e.code+listKv?.key]){
+                                        @for (child of listKv.value; track $index; let $index_c = $index) {
+                                          @let $index_child = $index_g +'-'+ $index_c;
+                                          <tr>
+                                            @for (f of e.x?.tableFields; track $index; let $index_f = $index) {
+                                              @let field = form.items[f];
+                                              @if (field && field.subType!='clearfix'){
+                                                <td>
+                                                  @if (field.type!='static') {
+                                                    <field-view [field]="field" [value]="child[f]"></field-view>
+                                                  } @else {
+                                                    <field-view [field]="field" [value]="child[f]"
+                                                      [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:child,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                                                  }
+                                                </td>
+                                              }
+                                            }
+                                            @if ((e.x?.facet?.[_action])!='view') {
+                                              <td class="p-1 print-hide text-end">
+                                                <div class="d-flex">
+                                                  @if (e.orderable) {
+                                                    @if (!$first) {
+                                                      <button type="button" class="btn btn-light btn-round btn-sm ms-1"
+                                                        (click)="reorder(entry.data[e.code],$index, -1)">
+                                                        <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                                                        </fa-icon>
+                                                      </button>
+                                                    }
+                                                    @if (!$last) {
+                                                      <button type="button" class="btn btn-light btn-round btn-sm ms-1"
+                                                        (click)="reorder(entry.data[e.code],$index, 1)">
+                                                        <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                                                        </fa-icon>
+                                                      </button>
+                                                    }
+                                                  }
+                                                  @if (!e.inline) {
+                                                    <button type="button" class="btn btn-info btn-round btn-sm ms-1"
+                                                      (click)="editChild(editChildTpl,e,child, false)">
+                                                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                                    </button>
+                                                  }
+                                                  @if (!e.x?.sticky) {
+                                                    <button type="button" class="btn btn-info btn-round btn-sm ms-1"
+                                                      (click)="removeChild(e,$index)">
+                                                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                                    </button>
+                                                  }
+                                                </div>
+                                              </td>
+                                            }
+                                          </tr>
+                                        }
+                                      }
+                                    </tbody>
+                                  }
+                                </table>
+                              </div>
+                            }@else{
+                              <!-- @for(listKv of entry.data[e.code]|groupBy:getPathForGrouping(e.x?.defGroupField); track $index; let $index_g = $index){ -->
+                              @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index){
+                                @if (e.x?.defGroupField){
+                                  <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key]=!hideGroup[e.code+listKv?.key]">
+                                    @if(!hideGroup[e.code+listKv?.key]){
+                                      <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
+                                    }@else {
+                                      <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                                    }  
+                                  <!-- <div class="position-relative p-3 bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key]=!hideGroup[e.code+listKv?.key]"> -->
+                                    <div class="ms-2">
+                                      @if (listKv?.key=='undefined'){
+                                        <span class="text-muted fst-italic"> Data not available</span>
+                                      }@else {
+                                        {{listKv?.key}}
+                                      }
+                                    </div>
+                                  <!-- </div> -->
+                                  <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
+                                  </button>
+                                }
+                                @if(!hideGroup[e.code+listKv?.key]){
+                                  <div class="list-group list-group-flush list-child position-relative px-3 py-1">
+                                    @for (child of listKv.value; track $index; let $index_c = $index) {
+                                      @let $index_child = $index_g +'-'+ $index_c;
+                                      <div class="list-group-item px-0 py-3 form-horizontal fix-gutter"
+                                        [class.element]="!e.inline" [ngClass]="child.altClass">
+                                        <div class="row g-4">
+                                          @for (f of e.items; track f.id; let $index_f = $index) {
+                                            @let field = form?.items[f.code];
+                                            <!-- @if (form?.items[f.code] && preCheckStr(form?.items[f.code].pre,child)  && !((form.items[f.code]?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) { -->
+                                            @if (field && preItem[e.code]?.[$index_child]?.[f.code]  && !((field?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) {
+                                              <ng-container *ngTemplateOutlet="fieldRender;context:{data:child, f:f, field:field, section:e, forceView: !e.inline, index: $index, $index_child: $index_child}"></ng-container>
+                                              <!-- REFERRED TO BY ABOVE -->
+                                              <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
+                                                let-field="field" let-forceView="forceView" let-index="index">
+                                                @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+                                                  <div [ngClass]="field?.size||'col-sm-12'"
+                                                    [class.mt-0]="field?.subType=='clearfix'"
+                                                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
+                                                    @if (field.type!='static') {
+                                                      <div class="form-group">
+                                                        @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                          <label class="label-span form-label">{{field?.label}}</label>
+                                                        }
+                                                        <p class="form-control-static mb-0">                                                        
+                                                          <field-view [field]="field" [value]="data[field.code]">
+                                                          </field-view>
+                                                        </p>
+                                                      </div>
+                                                    } @else {
+                                                      <field-view [field]="field" [value]="data[field.code]"
+                                                        [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                                                    }
+                                                  </div>
+                                                } @else {
+                                                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{$index_child}}"
+                                                    [fileProgress]="uploadProgress[f.code+(index??'')]"
+                                                    [extractLoading]="extractLoading[f.code]"
+                                                    [class.mt-0]="field.subType=='clearfix'"
+                                                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+                                                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{$index_child}}" [field]="field"
+                                                    [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
+                                                    [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+                                                    (valueChange)="debFieldChange($event,data,field,section)"                                                
+                                                    (valueBlur)="onBlur($event,data,field,section)"
+                                                    (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+                                                    (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+                                                    (fileValueChange)="onUpload($event,data,field,section,index)"
+                                                    (fileValueClear)="onFileClear($event,data,field,section,index)"
+                                                    [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
+                                                    (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                                                    [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+                                                    [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+                                                    [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][$index_child][f.code]:field.x?.default"></field-edit>
+                                                }
+                                              </ng-template>
+                                            }
+                                          }
+                                        </div>
+                                        @if ((e.x?.facet?.[_action])!='view') {
+                                          <div class="element-edit" style="position:absolute;top:5px;right:-10px;">
+                                            @if (e.orderable) {
+                                              @if (!$first) {
+                                                <button type="button" class="btn btn-light btn-round btn-sm ms-1"
+                                                  (click)="reorder(entry.data[e.code],$index, -1)">
+                                                  <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                              @if (!$last) {
+                                                <button type="button" class="btn btn-light btn-round btn-sm ms-1"
+                                                  (click)="reorder(entry.data[e.code],$index, 1)">
+                                                  <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                            }
+                                            @if (!e.inline) {
+                                              <button type="button" class="btn btn-info btn-round btn-sm ms-1"
+                                                (click)="editChild(editChildTpl,e,child, false)">
+                                                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                              </button>
+                                            }
+                                            @if (!e.x?.sticky) {
+                                              <button type="button" class="btn btn-info btn-round btn-sm ms-1"
+                                                (click)="removeChild(e,$index)">
+                                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                              </button>
+                                            }
+                                          </div>
+                                        }
+                                        <!-- <div class="clearfix"></div> -->
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              }
+                            }
+
+                          } @else {
+                            <div class="card-body p-3">
+                              <p class="my-2">
+                                @if (app?.x?.lang=='ms') {
+                                  <span>Tiada data tersedia. Untuk menambah
+                                  {{e.title}}, klik butang <i>{{e.addLabel||'Add'}}</i> di bawah</span>
+                                } @else {
+                                  No data available.
+                                  @if (!e.maxChild || entry.data[e.code]?.length<e.maxChild) {
+                                    <span>
+                                      To add new {{e.title}}, click
+                                      <i>{{e.addLabel||'Add'}}</i> button below
+                                    </span>
+                                  }
+                                }
+                              </p>
+                            </div>
+                          } 
+                          <!-- Problem no add button if section facet == view. section view should just affect field state, not ability to add -->
+                          @if (!e.maxChild || entry.data[e.code]?.length < e.maxChild) {
+                            <div class="card-body p-3">
+                              <button type="button" class="btn btn-round btn-light pe-3" (click)="editChild(editChildTpl,e,{},true)">
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                                {{e.addLabel||'Add'}}
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+                }
+              </div>
+            </div>
+          </div>
+          @if (form.nav!='simple' && form.x?.progression && !isPrePost) {
+            <div class="single-pane pt-1">
+              <div class="centered d-flex" [class.limit-width]="!form?.x?.wide">
+                @if (!tabfirst) {
+                  <button type="button" class="btn btn-round bg-white" (click)="progBack(tabidx)">
+                    <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
+                    {{app?.x?.lang=='ms'?'Kembali':'Back'}}
+                    @if (saving) {
+                      <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                    }
+                  </button>
+                }
+                @if (!tablast) {
+                  <button type="button" class="btn btn-round btn-primary ms-auto" title="Save and proceed"
+                    [disabled]="form.x?.validateProgress && tForm?.invalid || saving || !disabledTabs[filteredTabs[tabidx+1]?.id]" (click)="progNext(tabidx)">
+                    <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                    @if (saving) {
+                      <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                    }
+                    {{filteredTabs[tabidx+1]?.title}} 
+                    <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                }@else {
+                  <div class="ms-auto">
+                    @if (form.canSave) {
+                      <button type="button" class="btn btn-round btn-primary ms-1" (click)="save()"
+                        [disabled]="saving || (form.validateSave && entryForm.invalid)">
+                        <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                        {{form?.x?.saveLbl??(app?.x?.lang=='ms'?'Simpan':'Save')}}
+                        @if (saving) {
+                          <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="sr-only">Loading...</span>
+                          </div>
+                        }
+                      </button>
+                    }
+  
+                    <button type="button" class="btn btn-round btn-success ms-1"
+                      [disabled]="saving || entryForm.invalid"
+                      [hidden]="!(form.tiers?.length>0 && entry?.currentStatus=='drafted') || !form.canSubmit"
+                      (click)="submit(false)">
+                      {{app?.x?.lang=='ms'?'Hantar':'Submit'}}
+                      <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                      {{form.tiers[0]?.name}}
+                      @if (saving||submitting) {
+                        <div class="spinner-border spinner-border-sm" role="status">
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      }
+                    </button>
+                    @if (form.tiers?.length>0 && entry.currentEdit) {
+                      <button type="button" class="btn btn-round btn-success ms-1" 
+                        [disabled]="entryForm.invalid || saving"
+                        (click)="submit(true)"
+                        [hidden]="!form.canSubmit">
+                        {{app?.x?.lang=='ms'?'Hantar Semula':'Re-submit'}}
+                        <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                        {{form.tiers[entry.currentTier].name}}
+                        @if (saving||submitting) {
+                          <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="sr-only">Loading...</span>
+                          </div>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+                <!-- @if (tablast && form && form.canSave && form.tiers?.length==0) {
+                  <button type="button" class="btn btn-round btn-primary ms-auto" (click)="save()"
+                    [disabled]="saving || (form.validateSave && entryForm.invalid)">
+                    <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                    {{form?.x?.saveLbl??(app?.x?.lang=='ms'?'Simpan':'Save')}}
+                    @if (saving) {
+                      <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                    }
+                  </button>
+                } -->
+                <!-- @if (tablast) {
+                  <button type="button" class="btn btn-round btn-success ms-auto"
+                    [disabled]="saving || entryForm.invalid"
+                    [hidden]="!(form.tiers?.length>0 && entry?.currentStatus=='drafted') || !form.canSubmit"
+                    (click)="submit(false)">
+                    {{app?.x?.lang=='ms'?'Hantar':'Submit'}}
+                    <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                    {{form.tiers[0]?.name}}
+                    @if (saving||submitting) {
+                      <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                    }
+                  </button>
+                  @if (form.tiers?.length>0 && entry.currentEdit) {
+                    <button type="button" class="btn btn-round btn-success ms-auto" 
+                      [disabled]="entryForm.invalid || saving"
+                      (click)="submit(true)"
+                      [hidden]="!form.canSubmit">
+                      {{app?.x?.lang=='ms'?'Hantar Semula':'Re-submit'}}
+                      <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+                      {{form.tiers[entry.currentTier].name}}
+                      @if (saving||submitting) {
+                        <div class="spinner-border spinner-border-sm" role="status">
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      }
+                    </button>
+                  }
+                } -->
+              </div>
+            </div>
+          }
+        </ng-template>
+      } @else {
+        @if (formInactive) {
+          <div class="detail text-muted">
+            <h3>{{app?.x?.lang=='ms'?'Borang tidak aktif':'Form inactive'}}</h3>
+            <p>{{app?.x?.lang=='ms'?'Borang cuma boleh diakses':'Form can only be accessed'}}
+              @if (form?.startDate) {
+                <span>
+                  {{app?.x?.lang=='ms'?'dari':'from'}} <strong>{{form?.startDate|date:'medium'}}</strong>
+                </span>
+              }
+              @if (form?.endDate) {
+                <span>
+                  {{app?.x?.lang=='ms'?'sehingga':'until'}} <strong>{{form?.endDate|date:'medium'}}</strong>
+                </span>
+              }
+            </p>
+          </div>
+        }
+        <!-- @if (userUnauthorized) { -->
+        @if (!isAuthorized) {
+          <div class="detail text-muted">
+            <h3>{{unAuthorizedMsg}}</h3>
+          </div>
+        }
+        @if (invalidFacet) {
+          <div class="detail text-muted">
+            <h3>{{app?.x?.lang=='ms'?'Facet borang tidak sah: '+invalidFacetKey:
+            'Invalid form facet: '+invalidFacetKey}}</h3>
+          </div>
+        }
+        @if (editWithoutId) {
+          <div class="detail text-muted">
+            <h3>{{app?.x?.lang=='ms'?'Id atau parameter entry tidak disertakan':
+            'Entry id or parameter is not provided'}}</h3>
+          </div>
+        }
+      }
+    }
+  </div>
+
+  <ng-template #editChildTpl let-c="close" let-d="dismiss">
+    <div #editChildForm="ngForm" ngForm>
+      <div class="modal-header">
+        <h4 class="modal-title">Edit {{editChildItems.section.title}}</h4>
+      </div>
+      <div class="modal-body fix-gutter">
+        <div class="row display-flex g-4">
+          @for (f of editChildItems.section.items; track f.id) {
+            @let field = form?.items[f.code];
+            <!-- form?.items[f.code] && preCheck(form?.items[f.code],editChildData)  && !((form.items[f.code]?.x?.facet?.[action]||editChildItems.section.x?.facet?.[action])=='none') -->
+            <!-- @if (form.items[f.code] && preCheckStr(form.items[f.code].pre,editChildData) && !((form.items[f.code]?.x?.facet?.[_action]||editChildItems.section?.x?.facet?.[_action])=='none')) { -->
+            @if (field && preChildItem[f.code] && !((field?.x?.facet?.[_action]||editChildItems.section?.x?.facet?.[_action])=='none')) {
+              @if (!field) {
+                <div class="p-2 border rounded mb-3">Source Item Not Available</div>
+              }
+              <ng-container
+              *ngTemplateOutlet="fieldRender;context:{data:editChildData, f:f, field:field, section:editChildItems.section, forceView: false, index:$index}"></ng-container>
+              
+              <ng-template #fieldRender let-data="data" let-section="section" let-f="f" let-field="field"
+                let-forceView="forceView" let-index="$index">
+                @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+                  <div [ngClass]="field?.size||'col-sm-12'"
+                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
+                    @if (field.type!='static') {
+                      <div class="form-group mb-3">
+                        @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                          <label class="label-span form-label">{{field?.label}}</label>
+                        }
+                        <p class="form-control-static">
+                          <field-view [field]="field" [value]="data[field.code]">
+                          </field-view>
+                        </p>
+                      </div>
+                    } @else {
+                      <field-view [field]="field" [value]="data[field.code]"
+                      [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                    }
+                  </div>
+                } @else {
+                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
+                    [fileProgress]="uploadProgress[f.code+(index??'')]"
+                    [extractLoading]="extractLoading[f.code]"
+                    [class.mt-0]="field.subType=='clearfix'"
+                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field"
+                    [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
+                    [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+                    (valueChange)="debFieldChange($event,data,field,section)"
+                    (valueBlur)="onBlur($event,data,field,section)"
+                    (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+                    (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+                    (fileValueChange)="onUpload($event,data, field,section,index)"
+                    (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+                    [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                    [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+                    [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+                    [defaultValue]="field.x?.use_dyn_default?childDynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+                }
+              </ng-template>
+            }
+          }
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+        <button type="button" class="btn btn-round btn-primary" [disabled]="editChildForm.invalid"
+          (click)="c(editChildData)">
+          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+          @if(editChildItems.section.x?.saveLabel){
+            <span [innerHTML]="editChildItems.section.x?.saveLabel"></span>
+          }@else {
+            Save {{editChildItems.section.title}}
+          }          
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #fieldRender let-data="data" let-section="section" let-f="f" let-field="field" let-forceView="forceView" let-form
+    let-index="index">
+    @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+      <div [ngClass]="field?.size||'col-sm-12'"
+        [hidden]="field.hidden || (field?.x?.facet?.[action]||section.x?.facet?.[action])=='hidden'">
+        @if (field.type!='static') {
+          <div class="form-group mb-3">
+            @if (field?.subType!='clearfix' && !field?.hideLabel) {
+              <label class="label-span form-label">{{field?.label}}</label>
+            }
+            <p class="form-control-static">
+              <field-view [field]="field" [value]="data[field.code]">
+              </field-view>
+            </p>
+          </div>
+        } @else {
+          <field-view [field]="field" [value]="data[field.code]"
+          [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+        }
+      </div>
+    } @else {
+      <!-- index should only refer to child index, not field index -->
+      <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
+        [fileProgress]="uploadProgress[f.code+(index??'')]"
+        [extractLoading]="extractLoading[f.code]"
+        [class.mt-0]="field.subType=='clearfix'"
+        [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+        [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field" [lookupList]="lookup[f.code]"
+        [(ngModel)]="data[field.code]"
+        [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+        (valueChange)="debFieldChange($event,data,field,section)"        
+        (valueBlur)="onBlur($event,data,field,section)"
+        (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+        (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+        (fileValueChange)="onUpload($event,data, field,section,index)"
+        (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+        [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+        [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+        [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+        [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+    }
+  </ng-template>
+
+  
+  <ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">
+    @defer(prefetch on idle){
+      <app-edit-lookup-entry [lookup]="editLookupItem" [lookupEntry]="editLookupEntryData" [dismiss]="d" [close]="c"></app-edit-lookup-entry>
+    }@loading {
+      <div class="text-center m-5">
+        <div class="spinner-grow text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    }
+  </ng-template>
+</form>

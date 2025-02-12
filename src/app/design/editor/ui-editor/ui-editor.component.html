@@ -1,0 +1,447 @@
+<div class="wrapper" split-pane>
+    <div class="sidebar bg-white" sidebar #sidebar>
+        <!-- <div class="sidebar bg-white" #sidebarMenu> -->
+        <div class="p-3 pb-2">
+            <h5 class="m-0 text-truncate">UI Editor</h5>
+            <!-- <p>{{formList|json}}</p> -->
+        </div>
+        <div class="group-list pb-3 editor-nav touch-overflow">
+            <!-- {{currentPath}} -->
+            <!-- activeIds="ui-{{currentPath}}" -->
+            <!-- <p>{{formList|json}}</p> -->
+            <div ngbAccordion class="ui-sidemenu" [closeOthers]="true">
+                <div ngbAccordionItem class="ui-sidemenu" id="ui-form" [collapsed]="currentPath!='form'">
+                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;"
+                        routerLinkActive="active">
+                        Forms
+                        <div class="badgeUi ms-auto">{{counts.form}}</div>
+                    </button>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody 
+                        cdkDropList cdkDropListOrientation="vertical"
+                        (cdkDropListDropped)="reorderForm($event, formList)">
+                            @for (i of (formList|filter:searchText); track i.id) {
+                              @if (i?.id){
+                                <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                                    routerLinkActive="active" [routerLink]="['/design',app?.id,'ui','form']"
+                                    [queryParams]="{id:i?.id}" draggable="false"
+                                    cdkDrag>
+                                    @if(counts.form>1){
+                                      <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
+                                        cdkDragHandle>
+                                        <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
+                                        </fa-icon>
+                                      </div>
+                                    }
+
+                                    @if (i?.title?.trim()) {
+                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    }@else{                                    
+                                      <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    }
+                                </a>
+                              }
+                            }
+                            <a class="element pointer text-truncate" (click)="editForm(editFormTpl, newForm)">
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Form
+                            </a>
+                            <a class="element pointer text-truncate" (click)="cloneForm(cloneFormTpl)">
+                                <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Form
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div ngbAccordionItem class="ui-sidemenu" id="ui-dataset" [collapsed]="currentPath!='dataset'">
+                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                        Datasets <div class="badgeUi ms-auto">{{counts.dataset}}</div>
+                    </button>
+                    <div ngbAccordionCollapse>
+                      @if (counts.dataset>1){
+                        <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
+                          <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
+                          <div class="ms-auto btn-group-xs small group-by-toggle">
+                            <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
+                              name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
+                            <label for="dsgb-ungroup" class="btn px-1">None</label>
+                            <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
+                              name="dsgb-form" [(ngModel)]="datasetGroupBy">
+                            <label for="dsgb-form" class="btn px-1">Form</label>
+                            <input class="btn-check" type="radio" value="type" id="dsgb-type"
+                              name="dsgb-type" [(ngModel)]="datasetGroupBy">
+                            <label for="dsgb-type" class="btn px-1">Type</label>
+                          </div>
+                        </div>
+                      }
+                    <div ngbAccordionBody 
+                      cdkDropList cdkDropListOrientation="vertical"
+                      (cdkDropListDropped)="reorderDataset($event, datasetList)">
+                      
+                      @for (dsKv of datasetList|filter:searchText|groupBy:datasetGroupBy; track $index) {
+                        @if (datasetGroupBy){
+                          <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
+                        }
+                        @for (i of dsKv?.value; track i.id) {
+                          @if (i?.id){
+                            <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                                routerLinkActive="active" [routerLink]="['/design',app.id,'ui','dataset']"
+                                draggable="false"
+                                [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts.dataset==1">
+                                @if(!datasetGroupBy && counts.dataset>1){
+                                  <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
+                                    cdkDragHandle>
+                                    <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
+                                    </fa-icon>
+                                  </div>
+                                }
+                                @if (i?.title?.trim()) {
+                                  {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                }@else{
+                                  <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                }
+                            </a>
+                          }
+                        }
+                      }
+                      <a class="element pointer text-truncate" (click)="editDataset(editDatasetTpl, newDataset)">
+                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dataset
+                      </a>
+                      <a class="element pointer text-truncate" (click)="cloneDataset(cloneDatasetTpl)">
+                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dataset
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div ngbAccordionItem class="ui-sidemenu" id="ui-dashboard" [collapsed]="currentPath!='dashboard'">
+                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                        Dashboard
+                        <div class="badgeUi ms-auto">{{counts.dashboard}}</div>
+                    </button>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody
+                        cdkDropList cdkDropListOrientation="vertical"
+                        (cdkDropListDropped)="reorderDashboard($event, dashboardList)">
+                            @for (i of dashboardList|filter:searchText; track i.id) {
+                              @if (i?.id){
+                                <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active"
+                                    draggable="false"
+                                    [routerLink]="['/design',app.id,'ui','dashboard']" [queryParams]="{id:i?.id}" cdkDrag>
+                                    @if(counts.dashboard>1){
+                                      <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
+                                        cdkDragHandle>
+                                        <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
+                                        </fa-icon>
+                                      </div>
+                                    }
+                                    @if (i?.title?.trim()) {
+                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    }@else{
+                                      <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    }
+                                </a>
+                              }
+                            }
+                            <a class="element pointer text-truncate" (click)="editDashboard(editDashboardTpl)">
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div ngbAccordionItem class="ui-sidemenu" id="ui-screen" [collapsed]="currentPath!='screen'">
+                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                        Custom Screen
+                        <div class="badgeUi ms-auto">{{counts.screen}}</div>
+                    </button>
+                    <div ngbAccordionCollapse>
+                      @if (counts.screen>1){
+                        <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
+                          <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
+                          <div class="ms-auto btn-group-xs small group-by-toggle">
+                            <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
+                              name="scgb-ungroup" [(ngModel)]="screenGroupBy">
+                            <label for="scgb-ungroup" class="btn px-1">None</label>
+                            <!-- <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
+                              name="dsgb-form" [(ngModel)]="screenGroupBy">
+                            <label for="dsgb-form" class="btn btn-light">Form</label> -->
+                            <input class="btn-check" type="radio" value="type" id="scgb-type"
+                              name="scgb-type" [(ngModel)]="screenGroupBy">
+                            <label for="scgb-type" class="btn px-1">Type</label>
+                          </div>
+                        </div>
+                      }
+                        <div ngbAccordionBody 
+                          cdkDropList cdkDropListOrientation="vertical"
+                          (cdkDropListDropped)="reorderScreen($event, screenList)">
+                          
+                            @for (scKv of screenList|filter:searchText|groupBy:screenGroupBy; track $index) {
+                              @if (screenGroupBy){
+                                <div class="element fw-bold text-muted text-capitalize">{{scKv?.key}}</div>
+                              }
+                              @for (i of scKv?.value; track i.id) {
+                                @if (i?.id){
+                                  <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active"
+                                    draggable="false"
+                                    [routerLink]="['/design',app.id,'ui','screen']" [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts.screen==1">
+                                    @if(!screenGroupBy && counts.screen>1){
+                                      <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
+                                        cdkDragHandle>
+                                        <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
+                                        </fa-icon>
+                                      </div>
+                                    }
+                                    @if (i?.title?.trim()) {
+                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    }@else{
+                                      <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    }
+                                  </a>
+                                }
+                              }
+                            }
+
+
+
+                            <a class="element pointer text-truncate" (click)="editScreen(editScreenTpl, newScreen)">
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Screen
+                            </a>
+                            <a class="element pointer text-truncate" (click)="cloneScreen(cloneScreenTpl)">
+                              <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Screen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a class="pointer element text-truncate" [routerLink]="['navi']" routerLinkActive="active">
+                Structure
+                @if (!counts.navi) {
+                <fa-icon style="opacity:.3" class="float-end me-1" [icon]="['fas','exclamation-triangle']"
+                    [fixedWidth]="true"></fa-icon>
+                }
+            </a>
+            <a class="pointer text-truncate" (click)="importExcel(importExcelTpl)">
+                <fa-icon class="float-start" [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
+                <div class="list-group-item-heading ms-4">
+                    Import from Excel
+                </div>
+            </a>
+            <!-- <a class="pointer text-truncate" (click)="viewCopyRequest(crListTpl)">
+          <fa-icon class="float-start" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+          <div class="list-group-item-heading ms-4">
+            Copy Request
+          </div>
+        </a> -->
+            <a class="pointer text-truncate" [routerLink]="['restore']" routerLinkActive="active">
+                <fa-icon class="float-start" [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                <div class="list-group-item-heading ms-4">
+                    Restore Points
+                </div>
+            </a>
+            <a class="pointer text-truncate" [routerLink]="['key']" routerLinkActive="active">
+                <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                <div class="list-group-item-heading ms-4">
+                    Manage API Key
+                </div>
+            </a>
+        </div>
+    </div>
+    <!-- <div class="resize-handle  d-none d-sm-block" cdkDrag cdkDragLockAxis="x" [cdkDragFreeDragPosition]="dragPosition"
+  (cdkDragMoved)="sidebarResize($event, sidebarMenu)"></div> -->
+    <div class="content" content>
+        <router-outlet></router-outlet>
+    </div>
+</div>
+
+<ng-template #importExcelTpl let-c="close" let-d="dismiss">
+    <div #importExcelForm="ngForm" ngForm>
+        <div class="modal-header">
+            <h4 class="modal-title">Create App and Import Data</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form">
+                <p>You can automatically create form, dataset, dashboard and import entry data from Excel file.</p>
+                <ul class="small">
+                    <li>The Excel file should contained a normalized tabular dataset</li>
+                    <li>Multiple worksheet will be imported as different group</li>
+                    <li>The first row should be the header. For title, REKA will use worksheet name.</li>
+                    <li>For simple option field, you can append <code>:simpleOption</code> in the field code</li>
+                    <li>For lookup field, you can append <code>:code</code>, <code>:name</code> in the field code</li>
+                    <li>For model field, you can append <code>:<i>[model field code]</i></code> in the field code</li>
+                    <li>To store as json object, you can append <code>:<i>json</i></code> in the field code</li>
+                    <li>Use <code>_:email</code> for entry email, <code>_:current_status</code> for entry status</li>
+                    <li>Email will be defaulted to uploaders email if not specified in excel</li>
+                </ul>
+                <div class="form-group mt-2">
+                    <label>Options</label>
+                    <div class="form-check form-switch disabled">
+                        <input type="checkbox" class="form-check-input" id="createField" checked name="createField">
+                        <label class="form-check-label" for="createField">Create form</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="createDataset" [(ngModel)]="createDataset"
+                            name="createDataset">
+                        <label class="form-check-label" for="createDataset">Create dataset automatically</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="createDashboard"
+                            [(ngModel)]="createDashboard" name="createDashboard">
+                        <label class="form-check-label" for="createDashboard">Create dashboard automatically</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="importToLive" [(ngModel)]="importToLive"
+                            name="importToLive">
+                        <label class="form-check-label" for="importToLive">Import to Live data</label>
+                    </div>
+                </div>
+                <div class="form-group mb-3 mt-3">
+                    @if (!importExcelData) {
+                    <label class="form-label">
+                        <input type="file" [hidden]="true"
+                            (change)="uploadExcel($event, createDataset, createDashboard, importToLive)" name="file"
+                            required accept=".xlsx" />
+                        @if (!importLoading) {
+                        <div class="form-control" style="background: white">
+                            <fa-icon [icon]="['fas','upload']"></fa-icon>
+                            Browse and Import
+                        </div>
+                        }
+                        @if (importLoading) {
+                        <div class="form-control" style="background: white">
+                            Importing...
+                        </div>
+                        }
+                    </label>
+                    }
+                    @if (importExcelData) {
+                    <div class="mx-n3">
+                        @if (importExcelData.logs && importExcelData.logs.length>0) {
+                        <table class="table table-bordered table-sm table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Message</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (l of importExcelData.logs; track $index) {
+                                <tr class="text-white bg-{{l[1]}}">
+                                    <td>{{l[0]}}</td>
+                                    <td>{{l[2]}}</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        }
+                    </div>
+                    @if (importExcelData.success) {
+                    <div class="alert alert-success">
+                        <h5>Data successfully imported</h5>
+                    </div>
+                    }
+                    @if (!importExcelData.success) {
+                    <div class="alert alert-success">
+                        <h5>Data import failed</h5>
+                        Message: {{importExcelData.message}}
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            @if (importExcelData?.success) {
+            <button type="button" class="btn btn-round btn-success" (click)="c()">
+                <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                Done
+            </button>
+            }
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #editFormTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-edit-form [dismiss]="d" [close]="c" [app]="app" [user]="user" [form]="editFormData"
+      [formList]="formList"
+      [accessList]="accessList"></app-edit-form>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #cloneFormTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-clone-form [dismiss]="d" [close]="c" [appId]="app.id"  [appList]="otherAppList" [data]="{appId:app.id}">
+    </app-clone-form>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #cloneDatasetTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-clone-dataset [dismiss]="d" [close]="c" [appId]="app.id" [appList]="otherAppList"
+        [data]="{appId:app.id}">
+    </app-clone-dataset>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #cloneScreenTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-clone-screen [dismiss]="d" [close]="c" [appId]="app.id" [appList]="otherAppList"
+        [data]="{appId:app.id}">
+    </app-clone-screen>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editDatasetTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-edit-dataset [dismiss]="d" [close]="c" [dataset]="editDatasetData" [appList]="otherAppList"
+        [app]="app" [user]="user" [accessList]="accessList"></app-edit-dataset>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editDashboardTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-edit-dashboard [dismiss]="d" [close]="c" [dashboard]="newDashboard" [form]="{}" [app]="app"
+        [accessList]="accessList"></app-edit-dashboard>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editScreenTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-edit-screen [dismiss]="d" [close]="c" [screen]="editScreenData" [app]="app" [formList]="formList"
+        [datasetList]="datasetList" [cognaList]="cognaList" [bucketList]="bucketList" [accessList]="accessList"></app-edit-screen>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

@@ -1,0 +1,233 @@
+<div class="bg-reka" [ngClass]="bgClassName" >
+  <div style="max-width:710px" class="limit-width centered d-flex justify-content-between">
+    <div class="home-top-l p-2">
+      <img src="assets/icons/logo-w.svg" width="38">
+      </div>
+      <div class="home-top-r pe-2">
+        <div class="d-flex">
+          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+          <!-- <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon> -->
+          <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="wrapperzzz">
+  <div class="limit-width repo centered">
+    <div class="repo-tool text-center mt-3">
+      <div class="tool-container" style="max-width:480px;margin:auto">
+        <input type="search" autocapitalize="none" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
+          (keyup.enter)="getItemList(1)">
+          <!-- <button type="button" class="btn btn-round btn-secondary ms-1" name="btnActivateSpeechSearchMovie"
+          id="btnActivateSpeechSearchMovie" (click)="activateSpeechSearchMovie()" [disabled]="!showSearchButton">
+          <fa-icon [icon]="['fas','microphone']" [fixedWidth]="true"></fa-icon>
+        </button> -->
+      </div>
+    </div>
+    <div class="repo-item">
+      <div class="repo-title">
+        <fa-icon [icon]="['far','thumbs-up']" [fixedWidth]="true"></fa-icon> Top Pick
+      </div>
+      @if (itemLoading) {
+        <div class="p-4 text-muted text-center">
+          <div class="lds-ellipsis">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!topLoading && topTotal==0) {
+        <div class="p-4 text-muted text-center">
+          <h1>:(</h1>
+          <h4>No application available</h4>
+        </div>
+      }
+      @if (!topLoading && topTotal>0) {
+        <div class="tile-wrap tile-center">
+          @for (item of topList | filter:searchText; track item.id) {
+            <div class="tile" style="text-overflow: ellipsis">
+              <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
+              <div class="tile-image"
+              [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
+              <div class="tile-mid">
+                <div class="tile-content">
+                  <h6 class="list-group-item-heading">{{item?.title}}
+                  </h6>
+                  <p style="font-size:13px; color:#666; font-style:italic;overflow: hidden;
+                  text-overflow: ellipsis;">{{item?.email}}</p>
+                  <p class="desc">{{item?.description}}</p>
+                </div>
+                <div class="tile-action p-2">
+                  <div>
+                    <a class="btn btn-round btn-success mb-2 stack" routerLink="/run/{{item?.id}}">
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                      Run App
+                    </a>
+                    @if (!item.secret) {
+                      <button type="button" class="btn btn-light btn-round mb-2 stack"
+                        (click)="cloneItem(appEditTpl, item, true)">
+                        <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                        <!-- <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon> -->
+                        Copy App
+                      </button>
+                    }
+                    @if (item.secret) {
+                      <button type="button" class="btn btn-danger btn-round mb-2 stack"
+                        (click)="buyItem(buyItemTpl,item)">
+                        <fa-icon [icon]="['fas','shopping-bag']" [fixedWidth]="true"></fa-icon>
+                        Protected
+                      </button>
+                    }
+                    <p class="text-white mt-2"><strong>{{item.clone?item.clone:0}}</strong> copy</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="repo-item">
+      <div class="repo-title">
+        <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Published App
+      </div>
+      @if (itemLoading) {
+        <div class="p-4 text-muted text-center">
+          <div class="lds-ellipsis">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!itemLoading && itemTotal==0) {
+        <div class="p-4 text-muted text-center">
+          <h1>:(</h1>
+          <h4>No application available</h4>
+        </div>
+      }
+      @if (!itemLoading && itemTotal>0) {
+        <div class="tile-wrap tile-center">
+          @for (item of itemList | filter:searchText; track item.id) {
+            <div class="tile" style="text-overflow: ellipsis">
+              <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
+              <div class="tile-image"
+              [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
+              <div class="tile-mid">
+                <div class="tile-content">
+                  <h6 class="list-group-item-heading">{{item?.title}}
+                  </h6>
+                  <p style="font-size:13px; color:#666; font-style:italic;overflow: hidden;
+                  text-overflow: ellipsis;">{{item?.email}}</p>
+                  <p class="desc">{{item?.description}}</p>
+                </div>
+                <div class="tile-action p-2">
+                  <div>
+                    <a class="btn btn-round btn-success mb-2 stack" routerLink="/run/{{item?.id}}">
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                      Run App
+                    </a>
+                    @if (!item.secret) {
+                      <button type="button" class="btn btn-light btn-round mb-2 stack"
+                        (click)="cloneItem(appEditTpl, item, true)">
+                        <fa-icon class="float-start" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                        Copy App
+                      </button>
+                    }
+                    @if (item.secret) {
+                      <button type="button" class="btn btn-danger btn-round mb-2 stack"
+                        (click)="buyItem(buyItemTpl,item)">
+                        <fa-icon [icon]="['fas','shopping-bag']" [fixedWidth]="true"></fa-icon>
+                        Protected
+                      </button>
+                    }
+                    <p class="text-white mt-2"><strong>{{item.clone?item.clone:0}}</strong> copy</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @if (itemTotal>pageSize) {
+        <div class="d-flex justify-content-center p-3 pagination-rounded">
+          <ngb-pagination [collectionSize]="itemTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="4"
+            [rotate]="true" (pageChange)="getItemList(pageNumber)" [boundaryLinks]="true" [directionLinks]="false">
+            <ng-template ngbPaginationFirst>
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+            </ng-template>
+            <ng-template ngbPaginationPrevious>
+              <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationNext>
+              <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationLast>              
+              <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+            </ng-template>
+          </ngb-pagination>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<ng-template #buyItemTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header border-0">
+      <h5 class="modal-title">App require activation</h5>
+    </div>
+    <div class="modal-body">
+      <div class="m-a" style="max-width:10em;">
+        <div class="img-thumbnail mb-2">
+          @if (!buyItemData.logo) {
+            <img style="background: #aaa" src="assets/img/blank_product.png" width="100%">
+          }
+          @if (buyItemData.logo) {
+            <img src="{{baseApi}}/app/logo/{{buyItemData.logo}}" alt="Image preview..."
+              onError="this.src='assets/img/blank_product.png'" style="max-width:100%">
+          }
+        </div>
+      </div>
+      <h4>{{buyItemData.title}}</h4>
+      <p>{{buyItemData.description}}</p>
+      <p>This application is protected. Please contact <strong>{{buyItemData.email}}</strong> for more details</p>
+      <!-- Already REQUEST COPY -->
+      @if (activationStatus[buyItemData.id]) {
+      Your copy request status is <strong>{{activationStatus[buyItemData.id]}}</strong>
+      }
+    </div>
+    <div class="modal-footer border-0 justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      @if (!activationStatus[buyItemData.id]) {
+        <button type="button" class="btn btn-round btn-primary" (click)="requestCopy()">
+          Request Copy
+        </button>
+      }
+      @if (activationStatus[buyItemData.id] && activationStatus[buyItemData.id]=='activated') {
+        <button type="button" class="btn btn-round btn-success" (click)="cloneItem(appEditTpl, buyItemData, true)">
+          Copy App
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #appEditTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-app-edit [(data)]="editItemData" [offline]="offline" [user]="user"
+    [dismiss]="d" [close]="c"></app-app-edit>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

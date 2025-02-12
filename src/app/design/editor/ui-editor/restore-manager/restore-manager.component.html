@@ -1,0 +1,151 @@
+<div class="p-3 pb-0 limit-width">
+  <div class="text-center">
+    <h4>Restore Points</h4>
+  </div>
+</div>
+<div class="limit-width fix-gutter">
+  <div class="single-pane pt-0">
+    @for (rp of restorePointList; track rp.id) {
+      <div class="p-3 bg-white mb-3">
+        <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeRestorePoint(removeRestorePointTpl,rp)"><fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon></button>
+        <button type="button" class="btn btn-round btn-sm btn-light float-end me-2" (click)="goRestorePoint(goRestorePointTpl,rp)">Restore</button>
+        {{rp.name}}
+        <div class="small">Backup from {{rp.timestamp|date:'medium'}} by {{rp.email}} </div>
+        <div class="small">Backup includes 
+          @if (rp.includeApp) {
+            <span>App </span>
+            } @if (rp.includeUsers) {
+            <span>Users </span>
+            } @if (rp.includeEntry) {
+            <span>Entry </span>
+          } 
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    }
+    @if (restorePointList?.length==0) {
+      <div class="detail">
+        <p>No Restore Point is currently available. To create a new Restore Point, please click button below.</p>
+      </div>
+    }
+    <div class="text-center">
+      <button type="button" class="btn btn-round btn-primary mt-1" (click)="editRestorePoint(editRestorePointTpl)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Create New Restore Point</button>
+    </div>
+  </div>
+</div>
+
+<ng-template #editRestorePointTpl let-c="close" let-d="dismiss">
+  <div #editRestorePointForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Create Restore Point</h4>
+    </div>
+    <div class="single-pane">
+      <div class="form-group mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" [(ngModel)]="editRestorePointData.name"
+          placeholder="ie: Restore Point before Production" name="name" required>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="includeApp" disabled
+          [ngModel]="editRestorePointData && editRestorePointData.includeApp" (ngModelChange)="editRestorePointData && (editRestorePointData.includeApp = $event)" name="includeApp">
+        <label class="form-check-label" for="includeApp">Backup App</label>
+      </div>
+      <!-- <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="includeUsers"
+          [ngModel]="editRestorePointData && editRestorePointData.includeUsers" (ngModelChange)="editRestorePointData && (editRestorePointData.includeUsers = $event)" name="includeUsers">
+        <label class="form-check-label" for="includeUsers">Backup Users</label>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="includeEntry"
+          [ngModel]="editRestorePointData && editRestorePointData.includeEntry" (ngModelChange)="editRestorePointData && (editRestorePointData.includeEntry = $event)" name="includeEntry">
+        <label class="form-check-label" for="includeEntry">Backup Entry</label>
+      </div> -->
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editRestorePointForm.invalid || loading"
+        (click)="c(editRestorePointData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Create Restore Point
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #goRestorePointTpl let-c="close" let-d="dismiss">
+  <div #goRestorePointForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Restore to the following point</h4>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to restore to this point?
+      </p>
+      <div class="form">
+        <div class="form-group mb-3">
+          <label class="form-label">Restore Point Name</label>
+          <p class="form-control-static">{{goRestorePointData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Timestamp</label>
+          <p class="form-control-static">{{goRestorePointData.timestamp|date:'medium'}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Created By</label>
+          <p class="form-control-static">{{goRestorePointData.email}}</p>
+        </div>
+        <div class="form-check mb-2">
+          <input type="checkbox" class="form-check-input" id="clear"
+            [ngModel]="goRestorePointData && goRestorePointData.clear" (ngModelChange)="goRestorePointData && (goRestorePointData.clear = $event)" name="clear">
+          <label class="form-check-label" for="clear">Clear current data before restore (fresh restoration)</label>
+        </div>
+      </div>
+      <p>Please note that this action is <strong>IRREVERSIBLE</strong>. Please create a restore point for the current data if you wish to revert to this current data later.</p>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-danger" [disabled]="goRestorePointForm.invalid"
+        (click)="c(goRestorePointData)">
+        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+        Confirm Restore
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #removeRestorePointTpl let-c="close" let-d="dismiss">
+  <div #removeRestorePointForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete the following point</h4>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete this restore point?
+      </p>
+      <div class="form">
+        <div class="form-group mb-3">
+          <label class="form-label">Restore Point Name</label>
+          <p class="form-control-static">{{removeRestorePointData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Timestamp</label>
+          <p class="form-control-static">{{removeRestorePointData.timestamp|date:'medium'}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Created By</label>
+          <p class="form-control-static">{{removeRestorePointData.email}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-danger" [disabled]="removeRestorePointForm.invalid"
+        (click)="c(removeRestorePointData)">
+        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+        Confirm Remove
+      </button>
+    </div>
+  </div>
+</ng-template>

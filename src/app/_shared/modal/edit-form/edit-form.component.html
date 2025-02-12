@@ -1,0 +1,505 @@
+<div #editFormForm="ngForm" ngForm>
+  <div class="modal-header">
+    <h4 class="modal-title">Edit Form</h4>
+  </div>
+  <div class="tab-simple" justify="center">
+    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">
+      <li ngbNavItem>
+        <a ngbNavLink>Overview</a>
+        <ng-template ngbNavContent>
+          <div class="single-pane">
+            <div class="form-group mb-3">
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="editFormData().title"
+                placeholder="ie: Registration Form" name="title" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" [(ngModel)]="editFormData().description"
+              placeholder="ie: Online registration form for the app" name="description"></textarea>
+            </div>
+            <!-- <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label class="form-label">Access available for</label>
+                  <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
+                    placeholder="Anyone" [(ngModel)]="editFormData().accessList"
+                    name="accessList">
+                  </ng-select>
+                </div>
+              </div>
+              <div class="col-md-6"> -->
+                <div class="form-group mb-3">
+                  <label class="form-label">Admin</label>
+                  <select class="form-select" name="admin" [compareWith]="compareByIdFn" [(ngModel)]="editFormData().admin">
+                    <option [ngValue]="null"> * No Admin </option>
+                    @for (access of accessList(); track access.id) {
+                    <option [ngValue]="access">{{access.name}}
+                    </option>
+                    }
+                  </select>
+                </div>
+              <!-- </div>
+            </div> -->
+            <!-- NEW EASY ACCESS CONTROL -->
+            <div class="form-group">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.restrictAccess"
+                  name="restrictAccess" id="restrictAccess">
+                <label class="form-check-label" for="restrictAccess">Access restriction</label>
+              </div>
+            </div>
+            @if (editFormData().x?.restrictAccess){
+              <div class="ms-4">
+                <!-- <div>Access Control</div> -->
+                <div class="form-group mb-1">
+                  <label class="form-label">Allow form access by group</label>
+                  <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
+                    placeholder="Anyone" [(ngModel)]="editFormData().accessList"
+                    name="accessList">
+                  </ng-select>
+                </div>
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.accessByUser"
+                      name="accessUserOnly" id="accessUserOnly">
+                    <label class="form-check-label" for="accessUserOnly">Allow entry owner/user access</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.accessByApprover"
+                      name="accessByApprover" id="accessByApprover">
+                    <label class="form-check-label" for="accessByApprover">Allow entry approver access</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-check-label" for="accessByCond">Allow entry access by condition</label>
+                    <app-cm name="accessByCond" lang="javascript" [(ngModel)]="editFormData().x.accessByCond"
+                      [extraAutoComplete]="extraAutoCompleteJs()" placeholder="$user$.attributes.staff" subType="active" [linenumber]="true">
+                    </app-cm>
+                </div>
+              </div>
+            }
+            <!-- END NEW EASY ACCESS CONTROL -->
+          </div>
+        </ng-template>
+      </li>
+      <li ngbNavItem>
+        <a ngbNavLink>Options</a>
+        <ng-template ngbNavContent>
+          <div class="single-pane fix-gutter">
+            <div class="row">
+              <div class="col-sm-7">
+                <div class="form-group mb-3">
+                  <label class="form-label">Nav Type *</label>
+                  <div>
+                    <div class="">
+                      <input class="btn-check" type="radio" value="simple" id="nav-simple"
+                        name="nav-simple" [(ngModel)]="editFormData().nav"
+                        required>
+                      <label for="nav-simple" class="btn btn-outline-secondary me-1 mb-1">
+                      Simple</label>
+                      <input class="btn-check" type="radio" value="tabs" id="nav-tabs"
+                        name="nav-tabs" [(ngModel)]="editFormData().nav" required>
+                      <label for="nav-tabs" class="btn btn-outline-secondary me-1 mb-1">
+                      Tabbed</label>
+                      <input class="btn-check" type="radio" value="pills" id="nav-pills"
+                        name="nav-pills" [(ngModel)]="editFormData().nav"
+                        required>
+                      <label for="nav-pills" class="btn btn-outline-secondary me-1 mb-1">
+                      Pills</label>
+                      <input class="btn-check" type="radio" value="accordions" id="nav-acc"
+                        name="nav-acc" [(ngModel)]="editFormData().nav" required>
+                      <label for="nav-acc" class="btn btn-outline-secondary me-1 mb-1">
+                      Accordion</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-5">
+                <div class="form-group mb-3">
+                  <label class="form-label">Align</label>
+                  <div>
+                    <div class="">
+                      <input type="radio" class="btn-check" value="flex-start"
+                        id="align-flex-start" name="align-flex-start"
+                        [(ngModel)]="editFormData().align" >
+                      <label for="align-flex-start" class="btn btn-outline-secondary me-1 mb-1">
+                        <fa-icon [icon]="['fas','align-left']" [fixedWidth]="true">
+                        </fa-icon>
+                      </label>
+                      <input type="radio" class="btn-check" value="center" id="align-center"
+                        name="align-center" [(ngModel)]="editFormData().align" >
+                      <label for="align-center" class="btn btn-outline-secondary me-1 mb-1">
+                        <fa-icon [icon]="['fas','align-center']" [fixedWidth]="true">
+                        </fa-icon>
+                      </label>
+                      <input type="radio" class="btn-check" value="flex-end" id="align-flex-end"
+                        name="align-flex-end" [(ngModel)]="editFormData().align" >
+                      <label for="align-flex-end" class="btn btn-outline-secondary me-1 mb-1">
+                        <fa-icon [icon]="['fas','align-right']" [fixedWidth]="true">
+                        </fa-icon>
+                      </label>
+                      <input type="radio" class="btn-check" value="space-between" id="align-space-between"
+                        name="align-space-between" [(ngModel)]="editFormData().align" >
+                      <label for="align-space-between" class="btn btn-outline-secondary me-1 mb-1">
+                        <fa-icon [icon]="['fas','align-justify']" [fixedWidth]="true">
+                        </fa-icon>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().single"
+                  name="single" id="single">
+                <label class="form-check-label" for="single">Single data</label>
+                @if (editFormData().single) {
+                  <div class="input-group input-group-sm mb-2">
+                    <label class="input-group-text" for="exportPdfLayout">Qualifier *</label>
+                    <input class="form-control" name="singleQ" type="text"
+                      placeholder="ie: {'$_.email':$user$.email}" [(ngModel)]="editFormData().singleQ"
+                      required>
+                  </div>
+                }
+              </div>
+              @if (['tabs','pills','accordions'].includes(editFormData().nav)) {
+                <div class="form-check form-switch mt-1">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.progression"
+                    name="progression" id="progression">
+                  <label class="form-check-label" for="progression">Progressive/Muti-step form</label>
+                </div>
+              }
+              @if (['tabs','pills','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
+                <div class="form-check mt-1 ms-4">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.validateProgress"
+                    name="validateProgress" id="validateProgress">
+                  <label class="form-check-label" for="validateProgress">Validate page before progress next</label>
+                </div>
+              }
+              @if (['tabs','pills','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
+                <div class="form-check mt-1 ms-4">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.noPageSkip"
+                    name="noPageSkip" id="noPageSkip">
+                  <label class="form-check-label" for="noPageSkip">Prevent page jumping/skipping</label>
+                </div>
+              }
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().validateSave"
+                  name="validateSave" id="validateSave">
+                <label class="form-check-label" for="validateSave">Validate Save</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().canSave"
+                  name="canSave" id="canSave">
+                <label class="form-check-label" for="canSave">Can Save</label>
+              </div>
+              @if (editFormData().canSave) {
+                <div class="ms-4">
+                  <div class="form-check mt-1">
+                    <input type="checkbox" class="form-check-input"
+                      [(ngModel)]="editFormData().x.saveAndStay" name="saveAndStay"
+                      id="saveAndStay">
+                    <label class="form-check-label" for="saveAndStay">Don't navigate to view after
+                    save</label>
+                  </div>
+                  <div class="input-group input-group-sm mb-2">
+                    <label class="input-group-text" for="saveLbl">Custom save button label</label>
+                    <input class="form-control" name="saveLbl" type="text"
+                      placeholder="ie: Check-in" [(ngModel)]="editFormData().x.saveLbl">
+                  </div>
+              </div>
+              }
+              @if (editFormData().tiers && editFormData().tiers.length>0) {
+                <div class="form-check form-switch mt-1">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().canSubmit"
+                    name="canSubmit" id="canSubmit">
+                  <label class="form-check-label" for="canSubmit">Show Submit button</label>
+                </div>
+                @if (editFormData().canSubmit) {
+                  <div class="form-check mt-1 ms-4">
+                    <input type="checkbox" class="form-check-input"
+                      [(ngModel)]="editFormData().x.submitAndStay" name="submitAndStay"
+                      id="submitAndStay">
+                    <label class="form-check-label" for="submitAndStay">Don't navigate to view after
+                    submit</label>
+                  </div>
+                }
+              }
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().canRetract"
+                  name="canRetract" id="canRetract">
+                <label class="form-check-label" for="canRetract">Can Retract</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().canEdit"
+                  name="canEdit" id="canEdit">
+                <label class="form-check-label" for="canEdit">Can Edit</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input class="form-check-input" type="checkbox" id="autoSync"
+                [(ngModel)]="editFormData().x.autoSync" name="autoSync">
+                <label class="form-check-label" for="autoSync">Auto-sync embedded data (Model Picker) on update entry</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().hideStatus"
+                  name="hideStatus" id="hideStatus">
+                <label class="form-check-label" for="hideStatus">Hide Approval Status in Form &amp;
+                View</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.showEntryId"
+                  name="showEntryId" id="showEntryId">
+                <label class="form-check-label" for="showEntryId">Show Entry ID in Form &amp;
+                View (top-right corner)</label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input"
+                  [(ngModel)]="editFormData().x.hideTrail" name="hideTrail"
+                  id="hideTrail">
+                <label class="form-check-label" for="hideTrail">Hide Audit Trail ('View Trail'
+                button) in View</label>
+              </div>
+              <!-- <div class="form-group mb-3 ms-3">
+                <label class="form-label">Audit Trail Pre-requisite</label>
+                <div class="mx-n2">
+                  <app-cm name="auditTrailPre" lang="javascript" [(ngModel)]="editFormData().x.auditTrailPre"
+                    [extraAutoComplete]="extraAutoCompleteJs()" subType="active" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div> -->
+              @if (['tabs','pills','accordions'].indexOf(editFormData().nav)>-1) {
+                <div class="form-check form-switch mt-1"
+                  >
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().showIndex"
+                    name="showIndex" id="showIndex">
+                  <label class="form-check-label" for="showIndex">Show Index (in Tab or
+                  Accordion)</label>
+                </div>
+              }
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().publicEp"
+                  name="publicEp" id="publicEp">
+                <label class="form-check-label" for="publicEp">
+                  Public access to entry data via Id or Params
+                </label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.askNavigate" 
+                  name="askNavigate" id="askNavigate">
+                <label class="form-check-label" for="askNavigate">
+                  Ask before navigate if there are unsaved data
+                </label>
+              </div>
+              <div class="form-check form-switch mt-1">
+                <input class="form-check-input" type="checkbox" id="wide"
+                  [(ngModel)]="editFormData().x.wide" name="wide">
+                <label class="form-check-label" for="wide">Full width form</label>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Previous Form</label>
+              <select class="form-select" name="prev" [compareWith]="compareByIdFn"
+                [(ngModel)]="editFormData().prev" >
+                <option [ngValue]="null" style="color:gray">No Previous Form</option>
+                @for (item of exceptCurForm(editFormData()); track item.id) {
+                  <option [ngValue]="item">
+                  {{item.title}}</option>
+                }
+              </select>
+              @if (editFormData().prev) {
+                <div class="form-check mt-2">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editFormData().x.hidePrev" name="hidePrev"
+                    id="hidePrev">
+                  <label class="form-check-label" for="hidePrev">Hide Previous form</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editFormData().x.prevRow" name="prevRow"
+                    id="prevRow">
+                  <label class="form-check-label" for="prevRow">Display Previous form side-by-side</label>
+                </div>
+              }
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Entry user specified as (must return email to be specified as
+              user)</label>
+              <input type="text" class="form-control"
+                [(ngModel)]="editFormData().x.userKey"
+                placeholder="default: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}" name="userKey">
+            </div>
+            <div class="row">
+              <div class="col-sm-6 row">
+                <div class="col">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Start Date</label>
+                    <button type="button" class="float-end btn btn-xs btn-secondary"
+                    (click)="editFormData().startDate = undefined">Clear</button>
+                    <input class="form-control" type="text" name="startDate"
+                      [(ngModel)]="editFormData().startDate" placeholder="Choose start date"
+                      (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker">
+                  </div>
+                </div>
+                <div class="col-auto pt-4">
+                  <ngb-timepicker name="startDate-time" [(ngModel)]="editFormData().startDate">
+                  </ngb-timepicker>
+                </div>
+              </div>
+              <div class="col-sm-6 row">
+                <div class="col">
+                  <div class="form-group mb-3">
+                    <label class="form-label">End Date </label>
+                    <button type="button" class="float-end btn btn-xs btn-secondary"
+                    (click)="editFormData().endDate = undefined">Clear</button>
+                    <input class="form-control" type="text" name="endDate"
+                      [(ngModel)]="editFormData().endDate" placeholder="Choose end date"
+                      (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker">
+                  </div>
+                </div>
+                <div class="col-auto pt-4">
+                  <ngb-timepicker name="endDate-time" [(ngModel)]="editFormData().endDate">
+                  </ngb-timepicker>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group mb-3">
+                  <label class="form-label">Code Formatter</label>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="editFormData().codeFormat" name="codeFormat"
+                    placeholder="ie: %06d ">
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group mb-3">
+                  <label class="form-label">Counter</label>
+                  <input type="number" class="form-control"
+                    [(ngModel)]="editFormData().counter" name="counter"
+                    placeholder="ie: 1">
+                </div>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="addMailer">New Entry Mailer</label>
+              <div class="d-flex">
+                <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                  placeholder="No mailer" [(ngModel)]="editFormData().addMailer" 
+                  name="addMailer">
+                </ng-select>
+                <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editFormData(),'addMailer')">New&nbsp;Mailer</button>
+              </div>  
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="updateMailer">Entry Update Mailer</label>
+              <div class="d-flex">
+                <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                  placeholder="No mailer" [(ngModel)]="editFormData().updateMailer"
+                  name="updateMailer">
+                </ng-select>
+                <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editFormData(),'updateMailer')">New&nbsp;Mailer</button>
+              </div>            
+
+            </div>
+            @if (editFormData().canRetract) {
+              <div class="form-group mb-3">
+                <label class="form-label" for="retractMailer">Retract Mailer</label>
+                <div class="d-flex">
+                  <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                    placeholder="No mailer" [(ngModel)]="editFormData().retractMailer"
+                    name="retractMailer">
+                  </ng-select>
+                  <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editFormData(),'retractMailer')">New&nbsp;Mailer</button>
+                </div>            
+              </div>
+            }
+            <div class="form-group mb-3">
+              <label class="form-label">List of facets (separated by comma)</label>
+              <input type="text" class="form-control" [(ngModel)]="editFormData().x.facet"
+                name="facet" placeholder="ie: edit,view,admin-edit">
+            </div>
+          </div>
+        </ng-template>
+      </li>
+      <li ngbNavItem>
+        <a ngbNavLink>Lifecycle</a>
+        <ng-template ngbNavContent>
+          <div class="single-pane fix-gutter">
+            <div class="form-group mb-3">
+              <label class="form-label">Init Function</label>
+              <div class="mx-n2">
+                <app-cm name="f" lang="javascript" [(ngModel)]="editFormData().f"
+                  [extraAutoComplete]="extraAutoCompleteJs()" subType="active" [linenumber]="true">
+                </app-cm>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">On Save</label>
+              <div class="mx-n2">
+                <app-cm name="onSave" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()"
+                  subType="active" [(ngModel)]="editFormData().onSave"
+                  [linenumber]="true">
+                </app-cm>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">On Submit</label>
+              <div class="mx-n2">
+                <app-cm name="onSubmit" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()"
+                  subType="active" [(ngModel)]="editFormData().onSubmit"
+                  [linenumber]="true">
+                </app-cm>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">On View</label>
+              <div class="mx-n2">
+                <app-cm name="onView" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()"
+                  subType="active" [(ngModel)]="editFormData().onView" 
+                  [linenumber]="true">
+                </app-cm>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+    <div [ngbNavOutlet]="nav"></div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="editFormForm.invalid"
+      (click)="close()(editFormData())">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Form
+    </button>
+  </div>
+</div>
+
+<ng-template #editMailerTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-mailer [editMailerData]="editMailerData" [selectedForm]="editFormData()" [formList]="formList()" [dismiss]="d" [close]="c"></app-edit-mailer>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<!-- <ng-template #editGroupTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-role [editGroupData]="editGroupData" [lookupList]="lookupList" [dismiss]="d" [close]="c"></app-edit-role>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template> -->

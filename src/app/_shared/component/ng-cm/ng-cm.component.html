@@ -1,0 +1,16 @@
+<div>
+  @if (!hideControl()) {
+    <div>
+      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="formatCode()"
+      [disabled]="readOnly()">Format</button>
+      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="foldAll()">Fold All</button>
+      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="unfoldAll()">Unfold All</button>
+      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="openSearch()">Search</button>
+      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="undo()">Undo</button>
+    </div>
+  }
+  <div #codemirrorhost class="codemirrorhost"></div>
+  @if (!skipCheck() && codeStatus) {
+    <div class="text-white small p-1 bg-danger">{{codeStatus}}</div>
+  }
+</div>

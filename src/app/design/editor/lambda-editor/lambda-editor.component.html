@@ -1,0 +1,608 @@
+<style>
+  input[type=search].start {
+    /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: none;
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: black;
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+      <h5 class="mb-3">Lambda Manager</h5>
+      <input type="search" class="start" placeholder="Filter list"  autocapitalize="none" (keyup.enter)="loadLambdaList(1)"
+        [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      } @else {
+        <div class="mb-3">
+          @for (a of lambdaList | filter:searchText; track a.id) {
+            <a class="pointer element" [routerLink]="['/design',appId,'lambda']" [queryParams]="{id:a?.id}"
+              [class.active]="a.id==lambdaId"
+              routerLinkActive="active">
+              <div class="list-group-item-heading">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editLambda(editLambdaTpl,{data:{}}, true)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Lambda
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (lambdaTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="lambdaTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadLambdaList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="p-2">
+      @if (lambda) {
+        <div>
+          <div class="limit-width">
+            <div class="me-auto d-flex flex-row w-100 py-2">
+              <h5 class="m-0 text-truncate">{{lambda.name}}</h5>
+              @if (lambda.description) {
+                <div class="ms-2 text-truncate align-bottom text-muted">
+                {{lambda.description}}</div>
+              }
+            </div>
+            @if (lambda && (lambda.app?.id == appId)) {
+              <div class="d-flex flex-row mt-2">
+                @if (lambda.email.indexOf(user.email)>-1) {
+                  <div ngbDropdown>
+                    <button type="button" class="btn btn-sm border border-2" id="lambdaEditor" ngbDropdownToggle>
+                      <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="lambdaEditor" style="min-width:340px">
+                      <div class="px-2" [class.text-danger]="!lambda.publicAccess">
+                        @if (lambda.publicAccess) {
+                          <fa-icon [icon]="['fas','globe']"
+                            [fixedWidth]="true">
+                          </fa-icon>
+                        }
+                        @if (!lambda.publicAccess) {
+                          <fa-icon [icon]="['fas','lock']"
+                            [fixedWidth]="true">
+                          </fa-icon>
+                        }
+                        {{lambda.publicAccess?'Public Lambda': 'Private Lambda'}}
+                      </div>
+                      <div class="dropdown-divider"></div>
+                      <div class="px-2">
+                        <label class="small">Lambda Endpoint</label>
+                        <input name="endpointUrl"
+                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                          type="text" class="form-control border-0 bg-light small"
+                          value="{{lambda.code? base+'/~/'+lambda.code+'/out':baseApi+'/lambda/'+lambda.id+'/out'}}"
+                          readonly>
+                      </div>
+                      <div class="dropdown-divider"></div>
+                      <div class="px-2">
+                        <label class="small">Lambda Print Output</label>
+                        <input name="printUrl"
+                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                          type="text" class="form-control border-0 bg-light small"
+                          value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}"
+                          readonly>
+                      </div>
+                      <div class="px-2">
+                        <label class="small">Lambda Print Output (PDF)</label>
+                        <input name="printUrl"
+                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                          type="text" class="form-control border-0 bg-light small"
+                          value="{{lambda.code? base+'/~/'+lambda.code+'/pdf':baseApi+'/lambda/'+lambda.id+'/pdf'}}"
+                          readonly>
+                      </div>
+                      <div class="dropdown-divider"></div>
+                      <div class="px-2">
+                        <label class="small">Lambda Stream Output</label>
+                        <input name="printUrl"
+                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                          type="text" class="form-control border-0 bg-light small"
+                          value="{{lambda.code? base+'/~/'+lambda.code+'/stream':baseApi+'/lambda/'+lambda.id+'/stream'}}"
+                          readonly>
+                      </div>
+                      <div class="dropdown-divider"></div>
+                      @if (lambda.code) {
+                        <div class="px-2">
+                          <label class="small">UI viewer</label>
+                          <input name="printUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control border-0 bg-light small"
+                            [value]="'https://' +(this.app?.appPath ? this.app?.appPath+'.'+domainBase+'/#/web/'+lambda.code : domainBase+'/#/run/'+appId+'/web/'+lambda.code)"
+                            readonly>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                      }
+                      <div class="px-2">
+                        <small>Append <code>/cache</code> at the end of URL to use cached version for faster loading</small>
+                        <div>
+                          <button type="button" class="btn btn-danger btn-sm mt-2" (click)="evictCache()">Evict
+                          Cache</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
+                    (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
+                    (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                    [disabled]="contentForm.pristine" (click)="saveLambda(lambda)">
+                    <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <div ngbDropdown>
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-success ms-1" ngbDropdownToggle>
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="lambdaRun" style="min-width:340px">
+                      <button type="button" title="Run lambda normally" ngbDropdownItem (click)="runLambda(lambda)">
+                        Normal Run
+                        <div class="small text-muted fst-italic">Run lambda normally.<br />Result will
+                        be displayed once finish.</div>
+                      </button>
+                      <div class="dropdown-divider"></div>
+                      <button type="button" title="Run lambda with trailing output" ngbDropdownItem
+                        (click)="streamLambda(lambda)">
+                        Run with trailing output stream
+                        <div class="small text-muted fst-italic">Display output stream in real-time.
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="bg-warning p-1 small">
+                    Interactive access and modification only available for <i>{{lambda.email}}</i>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          @if (loading) {
+            <div class="p-4 text-center">
+              <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          }
+          <div class="row width-auto align-items-center g-1 mt-1 gx-0">
+            <div class=" col-auto small">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"
+                  style="text-transform: uppercase;"><strong>{{lambda.lang}}</strong></span>
+              </div>
+            </div>
+            @for (b of lambda.binds; track $index) {
+              <div class=" col-auto">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">{{b.name}}</span>
+                  <span class="input-group-text"
+                    [ngClass]="['_mail','_entry','_endpoint','_mapper','_user','_token','_io','_sql','_http','_util'].indexOf(b.type)>-1?'bg-secondary text-white':'bg-white'">
+                    {{b.type}}{{b.srcId?'_'+b.srcId:''}}
+                  </span>
+                </div>
+              </div>
+            }
+            <div class=" col-auto">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">Request</span>
+                <span class="input-group-text bg-secondary text-white">_request</span>
+              </div>
+            </div>
+            <div class=" col-auto">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">Response</span>
+                <span class="input-group-text bg-secondary text-white">_response</span>
+              </div>
+            </div>
+            <div class=" col-auto">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">Output</span>
+                <span class="input-group-text bg-secondary text-white">_out</span>
+              </div>
+            </div>
+          </div>
+          <form name="contentForm" #contentForm="ngForm" ngForm>
+            <div class="mt-2">
+              <app-cm name="init" #codeeditorinit lang="lambda" lambda="true"
+                [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
+                [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
+                [readOnly]="lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
+              </app-cm>
+            </div>
+          </form>
+          
+          @if (runRes[lambda.id]) {
+            <div [class.opacity-50]="resultLoading[lambda.id]" class="border border-light">
+              @if (runRes[lambda.id]?.print) {
+                <div class="bg-secondary text-white px-2 py-1 small d-flex"
+                  [class.bg-danger]="runRes[lambda.id]?.print.indexOf('!err')>-1">
+                  Console
+                  <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
+                    <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText"
+                      [(ngModel)]="consoleType" value="text">
+                    <label class="btn btn-light" for="consoleTypeText"> Plain Text </label>
+                    <input type="radio" class="btn-check" name="consoleTypeHtml" id="consoleTypeHtml"
+                      [(ngModel)]="consoleType" value="html">
+                    <label class="btn btn-light" for="consoleTypeHtml"> HTML (rendered) </label>
+                    <input type="radio" class="btn-check" name="consoleTypePdf" id="consoleTypePdf"
+                      [(ngModel)]="consoleType" value="pdf">
+                    <label class="btn btn-light" for="consoleTypePdf"> PDF </label>
+                  </div>
+                </div>
+                @if (runRes[lambda.id]) {
+                  <div style="position: relative;">
+                    @if (consoleType=='text') {
+                      <div class="px-2 py-1 bg-white limit-height code-container">
+                        <div>
+                          <pre class="my-0">{{runRes[lambda.id].print}}</pre>
+                        </div>
+                      </div>
+                    }
+                    @if (consoleType=='html') {
+                      <div class="px-2 py-1" [innerHtml]="runRes[lambda.id].print">
+                      </div>
+                    }
+                    @if (consoleType=='pdf') {
+                      <div>
+                        <iframe style="height: 450px;width:100%" [src]="getPdfUrl()|safe:'resourceUrl'"></iframe>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+              @if (runRes[lambda.id] && !isEmptyObject(runRes[lambda.id].out)) {
+                <div class="px-2 py-1 bg-success text-white small">
+                  <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                  This function returns output: <span>{{'{ '}}{{keyList(runRes[lambda.id]?.out)}}{{' }'}}</span>
+                </div>
+                <div class="px-2 py-1 bg-white small limit-height">
+                  <pre><code class="language-js">{{runRes[lambda.id].out | json}}</code></pre>
+                </div>
+              }
+              @if (runRes[lambda.id] && !runRes[lambda.id]?.success) {
+                <div class="px-2 py-1 bg-danger text-white">
+                  <div>{{runRes[lambda.id]?.message}}</div>
+                  @if (runRes[lambda.id]?.line||runRes[lambda.id]?.col) {
+                    <div>Line: {{runRes[lambda.id]?.line}}, Col: {{runRes[lambda.id]?.col}}</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }@else {
+        <div style="color:#aaa;">
+          <h3>Please select Lambda from the list on the left to view it's data.</h3>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+<ng-template #removeLambdaTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Lambda</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Lambda Name</label>
+          <p class="form-control-static">{{removeLambdaData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeLambdaData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeLambdaData)">
+        <i class="icon-minus-sign-alt"></i> Remove Lambda
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editLambdaTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Lambda</h4>
+  </div>
+  <div class="modal-body fix-gutter" #lambdaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Lambda Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editLambdaData.name" #name="ngModel"
+        (ngModelChange)="editLambdaData.id||editLambdaData.code=toHyphen(editLambdaData.name)" name="name"
+        required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [ngModel]="editLambdaData && editLambdaData.description" (ngModelChange)="editLambdaData && (editLambdaData.description = $event)"
+        name="description"></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Language</label>
+        <div>
+          <div name="lang" class="text-dark">
+            <input type="radio" class="btn-check" id="langPy" name="langPy" value="python" #lang="ngModel"
+              [ngModel]="editLambdaData && editLambdaData.lang" (ngModelChange)="editLambdaData && (editLambdaData.lang = $event)" [required]="true">
+            <label for="langPy" class="btn btn-outline-secondary border-2 me-1 mb-1 disabled" disabled>
+              Python
+              <div><small>Up to v2.7</small></div>
+            </label>
+            <input type="radio" class="btn-check" id="langJs" name="langJs" value="js" #lang="ngModel"
+              [ngModel]="editLambdaData && editLambdaData.lang" (ngModelChange)="editLambdaData && (editLambdaData.lang = $event)" [required]="true">
+            <label for="langJs" class="btn btn-outline-secondary border-2 me-1 mb-1">
+              Javascript
+              <div><small>Up to ES2020</small></div>
+            </label>
+            <input type="radio" class="btn-check" id="langGroovy" name="langGroovy" value="groovy"
+              #lang="ngModel" [ngModel]="editLambdaData && editLambdaData.lang" (ngModelChange)="editLambdaData && (editLambdaData.lang = $event)" [required]="true">
+            <label for="langGroovy" class="btn btn-outline-secondary border-2 me-1 mb-1 disabled"
+              [class.btn-outline-primary]="editLambdaData.lang=='groovy'" disabled>
+              Groovy
+              <div><small>Up to v3.0.9</small></div>
+            </label>
+          </div>
+        </div>
+        @if (lang?.invalid) {
+          <small class="form-text has-warning">
+            @if (lang?.errors?.required) {
+              <span class="help-block">Language is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="binds">Bindings</label>
+        <ng-select [items]="bindingSrcs" bindLabel="name" [multiple]="true" placeholder="No bindings"
+          [ngModel]="editLambdaData && editLambdaData.binds" (ngModelChange)="editLambdaData && (editLambdaData.binds = $event)" name="binds">
+        </ng-select>
+      </div>
+    <!-- <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon> -->
+      <div class="form-group mb-3">
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="publicAccess"
+            [ngModel]="editLambdaData && editLambdaData.publicAccess" (ngModelChange)="editLambdaData && (editLambdaData.publicAccess = $event)" name="publicAccess">
+          <label class="form-check-label" for="publicAccess">Public Lambda (require no authentication)</label>
+        </div>
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="scheduled"
+            [ngModel]="editLambdaData && editLambdaData.scheduled" (ngModelChange)="editLambdaData && (editLambdaData.scheduled = $event)" name="scheduled">
+          <label class="form-check-label" for="scheduled">Scheduled Run</label>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Lambda Path</label>
+        <div class="input-group">
+          <!-- <div class="input-group-prepend"> -->
+          <span class="input-group-text">{{base}}/~/</span>
+        <!-- </div> -->
+        <input type="text" class="form-control" [ngModel]="editLambdaData && editLambdaData.code" (ngModelChange)="editLambdaData && (editLambdaData.code = $event)"
+          [ngModelOptions]="{updateOn: 'blur'}" #code="ngModel" name="code" [uniqueAppPath]="initialCode"
+          [uniqueAppPathFn]="isCodeTaken">
+        </div>
+        @if (code.pending) {
+          <small>Checking availability...</small>
+        }
+        @if (code.invalid) {
+          <small class="text-danger">
+            @if (code.errors?.uniqueAppPath) {
+              <span>
+                Lambda path <strong>{{editLambdaData.code}}</strong> is already taken.
+              </span>
+            }
+          </small>
+        }
+        @if (code.valid && editLambdaData.code && initialCode!=editLambdaData.code) {
+          <small class="text-success">
+            Lambda path <strong>{{editLambdaData.code}}</strong> is available.
+          </small>
+        }
+      </div>
+      @if (editLambdaData.scheduled) {
+        <div class="form-group mb-3">
+          <label class="form-label">Frequency *</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqDaily" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)"
+                name="freqDaily" value="daily" class="form-check-input">
+              <label class="form-check-label" for="freqDaily">Daily</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqWeekly" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)"
+                name="freqWeekly" value="weekly" class="form-check-input">
+              <label class="form-check-label" for="freqWeekly">Weekly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqMonthly" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)"
+                name="freqMonthly" value="monthly" class="form-check-input">
+              <label class="form-check-label" for="freqMonthly">Monthly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqYearly" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)"
+                name="freqYearly" value="yearly" class="form-check-input">
+              <label class="form-check-label" for="freqYearly">Yearly</label>
+            </div>
+            <input type="hidden" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)" name="freqHdn" required>
+              <!-- <div class="btn-group btn-group-toggle" ngbRadioGroup name="freq"
+              [(ngModel)]="editLambdaData && editLambdaData.freq" required>
+              <label ngbButtonLabel class="btn btn-outline-secondary">
+                <input ngbButton type="radio" value="daily"> Daily</label>
+                <label ngbButtonLabel class="btn btn-outline-secondary">
+                  <input ngbButton type="radio" value="weekly"> Weekly</label>
+                  <label ngbButtonLabel class="btn btn-outline-secondary">
+                    <input ngbButton type="radio" value="monthly"> Monthly</label>
+                    <label ngbButtonLabel class="btn btn-outline-secondary">
+                      <input ngbButton type="radio" value="yearly"> Yearly</label>
+                    </div> -->
+          </div>
+        </div>
+        <div class="row">
+          @if (editLambdaData?.freq=='weekly') {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Day of week *</label>
+                <select class="form-select" name="dayOfWeak"
+                  [ngModel]="editLambdaData && editLambdaData.dayOfWeek" (ngModelChange)="editLambdaData && (editLambdaData.dayOfWeek = $event)" #dayOfWeek="ngModel" required>
+                <!-- <option value="" disabled>Select day...</option> -->
+                  @for (item of dayOfWeekList; track $index) {
+                    <option [value]="item.value">{{item.name}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfWeek?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (dayOfWeek?.errors?.required) {
+                      <span class="help-block">Day of week is required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (['monthly','yearly'].indexOf(editLambdaData?.freq)>-1) {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Day of month *</label>
+                <select class="form-select" name="dayOfMonth"
+                  [ngModel]="editLambdaData && editLambdaData.dayOfMonth" (ngModelChange)="editLambdaData && (editLambdaData.dayOfMonth = $event)" #dayOfMonth="ngModel" required>
+                <!-- <option value="" disabled>Select date...</option> -->
+                  @for (item of dayOfMonthList; track $index) {
+                    <option [value]="item">{{item}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfMonth?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (dayOfMonth?.errors?.required) {
+                      <span class="help-block">Day of month is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (editLambdaData?.freq=='yearly') {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Month of year *</label>
+                <select class="form-select" name="monthOfYear"
+                  [ngModel]="editLambdaData && editLambdaData.monthOfYear" (ngModelChange)="editLambdaData && (editLambdaData.monthOfYear = $event)" #monthOfYear="ngModel" required>
+                <!-- <option value="" disabled>Select date...</option> -->
+                  @for (item of monthOfYearList; track $index) {
+                    <option [value]="item.value">{{item.name}}
+                    </option>
+                  }
+                </select>
+                @if (monthOfYear?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (monthOfYear?.errors?.required) {
+                      <span class="help-block">Month of year is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          <div class="col-sm-6">
+            <div class="form-group mb-3">
+              <label class="form-label">Hour in day (minute set to 00)*</label>
+              <input type="text" class="form-control" [ngModel]="editLambdaData && editLambdaData.clock" (ngModelChange)="editLambdaData && (editLambdaData.clock = $event)"
+                #clock="ngModel" placeholder="ie: 1400" maxlength="4" name="clock"
+                (keyup)="keepMinute00(editLambdaData)" required>
+              @if (clock?.invalid) {
+                <small class="form-text has-warning">
+                  @if (clock?.errors?.required) {
+                    <span class="help-block">Clock is required in HHmm (ie: 0800
+                    or 1400)</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      <div class="form-group mb-3">
+        <label class="form-label">Creator (email, comma separated)</label>
+        <input type="text" class="form-control" [ngModel]="editLambdaData && editLambdaData.email" (ngModelChange)="editLambdaData && (editLambdaData.email = $event)" name="email"
+          #email="ngModel" required>
+        @if (email?.invalid) {
+          <small class="form-text has-warning">
+            @if (email?.errors?.required) {
+              <span class="help-block">Creator email is required</span>
+            }
+          </small>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="lambdaEditForm.invalid"
+        (click)="c(editLambdaData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Lambda
+    </button>
+  </div>
+</ng-template>

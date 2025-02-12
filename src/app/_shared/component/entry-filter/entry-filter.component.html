@@ -1,0 +1,216 @@
+<input type="text" class="w-100 form-control my-2" [(ngModel)]="filterField" name="filterField"
+  placeholder="Type to filter fields">
+@for (fm of ['data','prev']; track fm) {
+  <!-- {{formHolder()|json}} -->
+  @if (formHolder()[fm]) {
+    <div class="form-group mb-3">
+      <label class="form-label">Included Filters ({{formHolder()[fm].title}})</label>
+      @for (sec of sectionItems()[fm]; track $index) {
+        @for (f of sec.items|filter:filterField; track $index) {
+          @let field = formHolder()[fm].items[f.code];
+          @let prefixedField = getPrefix(fm,sec.section)+'.'+f.code;
+          @if (field && ['static','file','imagePreview','btn','dataset','screen','map'].indexOf(field.type)==-1) {
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="filter{{f.code}}{{fm}}" value="{{f.code}}"
+                (click)="toggleItem(field,fm,formHolder()[fm].id,sec.section.type,getPrefix(fm,sec.section))"
+                [checked]="checkItem(field,fm)"
+                [disabled]="field.type=='static'">
+              <label class="form-check-label" for="filter{{f.code}}{{fm}}" [class.fst-italic]="sec.section.id==-1"><span
+                  class="text-muted">{{sec.section.title}} -
+                </span>{{field.label}}
+              </label>
+              <!-- Utk keluarkan checkbox Dynamic -->>
+              @if (['text','textarea','eval','qr'].indexOf(field.type)==-1) {
+                <div class="float-end">
+                  <input type="checkbox" class="form-check-input" id="filter{{f.code}}{{fm}}-dyn"
+                    [(ngModel)]="presetFilters()['dynamic.'+f.code+'.code']" 
+                    name="dynamic-{{f.code}}">
+                    <label class="form-check-label" for="filter{{f.code}}{{fm}}-dyn">Dynamic</label>
+                </div>
+              }
+              <div class="input-group input-group-sm mb-2">
+                <label class="input-group-text" for="{{prefixedField}}">Preset</label>
+                @if (['text','textarea','eval','qr'].indexOf(field.type)>-1) {
+                  <input class="form-control" type="text" name="{{prefixedField}}"
+                    [(ngModel)]="presetFilters()[prefixedField]" />
+                }
+                @if (['simpleOption'].indexOf(field.type)>-1) {
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <select class="form-select" name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField]" >
+                      <option value="" disabled></option>
+                      @for (item of getAsList(field.options); track $index) {
+                        <option [value]="item">{{item}}</option>
+                      }
+                    </select>
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField]" 
+                      placeholder="ie: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}">
+                  }
+                }
+                @if (['select', 'radio'].indexOf(field.type)>-1) {
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <select class="form-select" #optionInput name="{{prefixedField}}"
+                      (focus)="hasFocus[f.code]=true"
+                      [(ngModel)]="presetFilters()[prefixedField+(field.subType=='multiple'?'*':'')+'.code']" >
+                      <option value="" disabled>{{optionInput.value}}</option>
+                      @if (hasFocus[f.code]||!!optionInput.value) {
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [value]="item.code">{{item.name}}</option>
+                        }
+                      }
+                    </select>
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField+(field.subType=='multiple'?'*':'')+'.code']" 
+                      placeholder="ie: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}">
+                  }
+                }
+                @if (['checkboxOption'].indexOf(field.type)>-1) {
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <select class="form-select" #optionInput name="{{prefixedField}}"
+                      (focus)="hasFocus[f.code]=true"
+                      [(ngModel)]="presetFilters()[prefixedField+'*.code']" >
+                      <option value="" disabled></option>
+                      @if (hasFocus[f.code]||!!optionInput.value) {
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [value]="item.code">{{item.name}}</option>
+                        }
+                      }
+                    </select>
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField+'*.code']" 
+                      placeholder="ie: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}">
+                  }
+                }
+                @if (['modelPicker'].indexOf(field.type)>-1) {
+                  <!-- Need to keep dynamic flag inside presetFilters so it is shown on next edit -->
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <select class="form-select" #optionInput name="{{prefixedField}}"
+                      (focus)="hasFocus[f.code]=true"
+                      [(ngModel)]="presetFilters()[prefixedField+(field.subType=='multiple'?'*':'')+'.'+field.bindLabel]" >
+                      <option value="" disabled></option>
+                      @if (hasFocus[f.code]||!!optionInput?.value) {
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option
+                            [ngValue]="item[field.bindLabel]">
+                            {{item[field.bindLabel]}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField+(field.subType=='multiple'?'*':'')+'.'+field.bindLabel]" 
+                      placeholder="ie: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}">
+                  }
+                }
+                @if (['checkbox'].indexOf(field.type)>-1) {
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <select class="form-select" name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField]" >
+                      <option value="" disabled></option>
+                      <option [value]="true">Yes</option>
+                      <option [value]="false">No</option>
+                    </select>
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}"
+                      [(ngModel)]="presetFilters()[prefixedField]" 
+                      placeholder="ie: {{'{'}}{{'{'}}$user$.email{{'}'}}{{'}'}}">
+                  }
+                }
+                @if (['date'].indexOf(field.type)>-1) {
+                  @if (!presetFilters()['dynamic.'+f.code+'.code']) {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}~from"
+                      [(ngModel)]="presetFilters()[prefixedField+'~from']" 
+                      placeholder="From" (click)="dfrom.toggle()" ngbDatepicker #dfrom="ngbDatepicker" />
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}~to"
+                      [(ngModel)]="presetFilters()[prefixedField+'~to']" 
+                      placeholder="To" (click)="dto.toggle()" ngbDatepicker #dto="ngbDatepicker" />
+                  } @else {
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}~from"
+                      [(ngModel)]="presetFilters()[prefixedField+'~from']" 
+                      placeholder="ie: {{'{'}}{{'{'}}todayStart{{'}'}}{{'}'}}" />
+                    <input class="form-control" type="text"
+                      name="{{prefixedField}}~to"
+                      [(ngModel)]="presetFilters()[prefixedField+'~to']" 
+                      placeholder="ie: {{'{'}}{{'{'}}todayEnd{{'}'}}{{'}'}}" />
+                  }
+                }
+                @if (['scaleTo5', 'scaleTo10','scale','number'].indexOf(field.type)>-1) {
+                  <input class="form-control" type="number"
+                    name="{{prefixedField}}~from"
+                    [(ngModel)]="presetFilters()[prefixedField+'~from']" 
+                    placeholder="From" />
+                  <input class="form-control" type="number"
+                    name="{{prefixedField}}~to"
+                    [(ngModel)]="presetFilters()[prefixedField+'~to']"
+                    placeholder="To" />
+                }    
+                <!-- Utk show clear preset button -->            
+                @if (['scaleTo5', 'scaleTo10','scale','number','date'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset([prefixedField+'~from',prefixedField+'~to'])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+                @if (['modelPicker'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset(['$.'+f.code+(field.subType=='multiple'?'*':'')+'.'+field.bindLabel])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+                @if (['text','textarea','eval','qr','simpleOption'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset([prefixedField])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+                @if (['checkbox'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset([prefixedField])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+                @if (['checkboxOption'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset([prefixedField+'*.code'])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+                @if (['select', 'radio'].indexOf(field.type)>-1) {
+                  <button type="button"
+                    class="btn btn-secondary"
+                    (click)="clearPreset([prefixedField+(field.subType=='multiple'?'*':'')+'.code'])">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+}

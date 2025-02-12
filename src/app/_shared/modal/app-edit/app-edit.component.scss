@@ -1,0 +1,11 @@
+.active-outline{
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.7);
+}
+.color-item{
+    width: 38px;
+}
+
+.layout .selected {
+    filter: sepia(90%) hue-rotate(180deg) saturate(900%);
+  }

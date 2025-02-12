@@ -1,0 +1,649 @@
+<div class="viewport ">
+  @if (!hideTitle()) {
+    <page-title>
+      <h4>User List @if (group) {
+        <span>: {{group.name}}</span>
+      }</h4>
+    </page-title>
+  }
+<div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
+  <div class="single-pane">
+    <div>
+      @if (!hasGroupId) {
+        <div class="text-center mb-1">
+          <div>
+            <button type="button" class="btn btn-sm btn-round btn-outline-warning ms-1 mb-1" [class.active]="cs==-1"
+              (click)="getPendingList()">
+              Pending
+            </button>
+            @for (g of groupList; track g.id) {
+              <button type="button" class="btn btn-sm btn-round btn-outline-info ms-1 mb-1" [class.active]="cs==g.id"
+                (click)="getGroupList(g)">
+                {{g.name}}
+              </button>
+            }
+            <button type="button" class="btn btn-sm btn-round btn-outline-secondary ms-1 mb-1" [class.active]="cs==null"
+                (click)="getGroupList(null)">
+              <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
+              All Users
+            </button>
+          </div>
+        </div>
+        }
+        <!-- {{group|json}}
+        {{groupId()}},{{group?.appId}},{{app.id}} -->
+        @if (!(group?.appId==app.id || groupId()==-1 || groupId()==null)){
+        <!-- @if (group?.appId!=app.id && groupId()!=-1 && groupId()!=null){ -->
+          <div class="text-danger text-center">
+            User group is in the other app
+          </div>
+        }                
+        @if (loading) {
+          <div class="p-4 text-center">
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        }@else{
+          @if (!userUnauthorized) {
+            <div class="d-flex flex-row">
+              <div style="flex-grow:1">
+                <input type="search"  autocapitalize="none" class="form-control form-control-sm border border-2"
+                  placeholder="Filter list"  (keyup.enter)="getAppUserList(pageNumber,params)"
+                  [(ngModel)]="searchText">
+              </div>
+              @if (group?.appId==app.id){
+                <div style="flex-shrink: 0;">
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                    [class.disabled]="offline"
+                    (click)="editAppUser(editAppUserTpl,{},true)">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                      Add User
+                    </button>
+                </div>
+              }
+            </div>
+      
+      
+
+            @if (appUserList?.length) {
+              <div class="px-2 py-2">
+                <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+                  <div class="row">
+                    <div class="col d-flex align-items-center">
+                      <strong>Summary</strong>
+                    </div>
+                    <div class="col">Total:
+                      <div class="d-sm-inline">{{appUserTotal}}</div>
+                    </div>
+                    <div class="col">Shown:
+                      <div class="d-sm-inline">{{numberOfElements}}</div>
+                    </div>
+                    <div class="col">Pages:
+                      <div class="d-sm-inline">{{entryPages}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+            <div class="table-responsive">
+              @if (appUserList?.length) {
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th class="tblcol-check" style="width: 1%">
+                        <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
+                          (click)="checkAllUsers(checkAll.checked)">
+                      <th style="width: 5%">PHOTO</th>
+                      <th class="w-10">USER</th>
+                      <th style="width: 5%">STATUS</th>
+                      <!-- <th class="w-10">GROUP</th> -->
+                      <th style="width: 5%">&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (appUser of appUserList; track $index) {
+                      <tr [class.table-info]="appUser.status=='pending'"
+                        [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" [ngClass]="appUser.altClass">
+                        <td class="p-1"><input type="checkbox" class="form-check-input"
+                          (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"></td>
+                        <td class="p-1"><img src="{{appUser.user.imageUrl}}" width="58"
+                          onerror="this.src='assets/img/avatar-big.png'"></td>
+                        <td>
+                          <div>{{appUser.user.name}}</div>
+                          <div class="small">
+                            <div>{{appUser.user.email}}</div>
+                            <div>First login: {{appUser.user.firstLogin|date:'medium'}}
+                              @if (!appUser.user.firstLogin) {
+                                <span class="text-muted">No login
+                                yet</span>
+                              }
+                            </div>
+                            <div>Account type: <fa-icon [icon]="provider[appUser.user.provider]"
+                            [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}</div>
+                          </div>
+                          <div class="mt-1">
+                            @for (tag of appUser.tags; track $index) {
+                              <div style="font-size:0.9em"
+                              class="d-inline-block me-1 border bg-light rounded px-1">{{tag}}</div>
+                            }
+                          </div>
+                        </td>
+                        <td>{{appUser.status}}</td>
+                        <td class="text-nowrap">
+                          @if (group?.appId==app.id || groupId()==-1 || groupId()==null){
+                            <div>
+                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                [class.disabled]="offline"
+                                (click)="removeAppUser(removeAppUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                              <!-- Xpat pake edit sebab appUser pecah2, bukan merge cgek user w/ multiple groups -->
+                              <button type="button" class="btn btn-secondary btn-sm me-1 btn-round" [class.disabled]="offline"
+                                (click)="approveAppUser(approveAppUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                [class.disabled]="offline"
+                                (click)="editUser(editUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                              @if (cs!=-1) {
+                                <div class="mt-1">
+                                  @if (!$first) {
+                                    <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
+                                      (click)="reorderItem($index, -1)">
+                                      <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                  }
+                                  @if (!$last) {
+                                    <button type="button" class="btn btn-secondary btn-round btn-sm"
+                                      (click)="reorderItem($index, 1)">
+                                      <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }@else {
+                            <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+            @if (selectedUsers?.size>0) {
+              <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
+                &#8627; With Selected
+                <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
+                  (click)="blastEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
+                [fixedWidth]="true"></fa-icon> Send Email</button>
+                <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
+                  (click)="bulkRemoveUser()">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                Remove User</button>
+                <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
+                  (click)="changeProvider(changeProviderTpl)">
+                Change Provider</button>
+              </div>
+            }
+            @if ((appUserList?.length) > 0) {
+              <div class="text-center d-flex justify-content-center pagination-rounded">
+                @if (appUserTotal>pageSize) {
+                  <ngb-pagination [collectionSize]="appUserTotal" [pageSize]="pageSize"
+                    [(page)]="pageNumber" [maxSize]="10" (pageChange)="getAppUserList(pageNumber,params)"
+                    [boundaryLinks]="false" [directionLinks]="false">
+                    <ng-template ngbPaginationFirst>
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                    </ng-template>
+                    <ng-template ngbPaginationPrevious>
+                      <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationNext>
+                      <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationLast>              
+                      <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                    </ng-template>
+                  </ngb-pagination>
+                }
+              </div>
+            }
+            @if (appUserList == 0 && !loading) {
+              <div class="details my-5">
+                <h3>No user</h3>
+                @if (groupId) {
+                  <p> There is no user assigned to this group.
+                    <br /> You can assign a new user by clicking on the Add button.
+                  </p>
+                } @else {
+                  <p> There is no pending user.</p>
+                }
+              </div>
+            }
+          }@else {
+            <div class="detail text-muted">
+              <h3>{{app?.x?.lang=='ms'?'Anda tidak mempunyai akses kepada kumpulan pengguna ini':
+              'You are not authorized to access this user group'}}</h3>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #editAppUserTpl let-c="close" let-d="dismiss">
+  <div #editAppUserForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Add User Access</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        <div class="form-group mb-3">
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" name="bulk-reg"
+              [(ngModel)]="editAppUserData.bulkReg" id="bulk-reg">
+            <label class="form-check-label" for="bulk-reg">Register many users at once</label>
+          </div>
+        </div>
+        @if (!editAppUserData.bulkReg) {
+          <div class="form-group mb-3">
+            <label class="form-label">Email *</label>
+            <input type="text" class="form-control" name="email" #email="ngModel"
+              [(ngModel)]="editAppUserData.email" required />
+            @if (email?.invalid) {
+              <small class="form-text has-warning">
+                @if (email.errors?.required) {
+                  <span class="help-block">Email is required</span>
+                }
+              </small>
+            }
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Name *</label>
+            <input type="text" class="form-control" name="name" #name="ngModel"
+              [(ngModel)]="editAppUserData.name" required />
+            @if (name?.invalid) {
+              <small class="form-text has-warning">
+                @if (name.errors?.required) {
+                  <span class="help-block">Name is required</span>
+                }
+              </small>
+            }
+          </div>
+        } @else {
+          <div class="form-group mb-3">
+            <label class="form-label">Email list (comma separated) *</label>
+            <textarea class="form-control" name="email" #email="ngModel" rows="8"
+            [(ngModel)]="editAppUserData.email" required></textarea>
+            @if (email?.invalid) {
+              <small class="form-text has-warning">
+                @if (email.errors?.required) {
+                  <span class="help-block">Email is required</span>
+                }
+              </small>
+            }
+          </div>
+        }
+        @if (!hasGroupId) {
+          <div class="form-group mb-3">
+            <label class="form-label">Requested User Groups *</label>
+            @for (group of groupList; track group.id) {
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" name="role-{{group.id}}"
+                  [checked]="checkValue(group.id,editAppUserData)"
+                  (change)="toggleValue(group.id,editAppUserData);" id="role-{{group.id}}">
+                <label class="form-check-label" for="role-{{group.id}}">{{group.name}}</label>
+                @if (group.description) {
+                  <p style="font-style:italic">{{group.description}}</p>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (hasGroupId) {
+          <div class="form-group mb-3">
+            <label class="form-label">Requested User Groups</label>
+            <p class="form-static"><strong>{{group.name}}</strong></p>
+          </div>
+        }
+        @if (editAppUserData.id) {
+          <div class="form-group mb-3">
+            <label class="form-label">Status *</label>
+            <div>
+              <div class="btn-group btn-group-toggle">
+                <input type="radio" class="btn-check" [value]="'pending'" [required]="true"
+                  id="status-pending" name="status-pending" #status="ngModel"
+                  [(ngModel)]="editAppUserData.status">
+                <label for="status-pending" class="btn btn-sm btn-primary">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='pending'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon>
+                  Pending
+                </label>
+                <input type="radio" class="btn-check" [value]="'approved'"
+                  [required]="!editAppUserData?.status" id="status-approved" name="status-approved"
+                  #status="ngModel" [(ngModel)]="editAppUserData.status">
+                <label for="status-approved" class="btn btn-sm btn-success">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='approved'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon>
+                  Approved
+                </label>
+                <input type="radio" class="btn-check" [value]="'rejected'"
+                  [required]="!editAppUserData?.status" id="status-rejected" name="status-rejected"
+                  #status="ngModel" [(ngModel)]="editAppUserData.status">
+                <label for="status-rejected" class="btn btn-sm btn-danger">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='rejected'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon>
+                  Rejected
+                </label>
+              </div>
+              @if (status?.invalid) {
+                <small class="form-text has-warning">
+                  @if (status.errors?.required) {
+                    <span class="help-block">Status is required</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        }
+        @if (group?.tagEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Tags</label>
+            <ng-select [items]="lookupEntryList" bindLabel="name" [multiple]="true" bindValue="name"
+              placeholder="No tag" [(ngModel)]="editAppUserData.tags" id="tags"
+              name="tags">
+            </ng-select>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editAppUserForm.invalid"
+        (click)="c(editAppUserData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save User Access
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #approveAppUserTpl let-c="close" let-d="dismiss">
+  <div #approveAppUserForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Group Request Approval</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">{{approveAppUserData.id}}bb
+        <div class="form-group mb-3">
+          <label class="form-label">Email *</label>
+          <p class="form-control-static">{{approveAppUserData.user.email}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Name *</label>
+          <p class="form-control-static">{{approveAppUserData.user.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Group *</label>
+          <p class="form-control-static">
+            @if (approveAppUserData.group){
+            {{approveAppUserData.group?.name}}
+            }@else {
+              <span class="text-muted fst-italic">Not assigned to any group</span>
+            }
+          </p>
+        </div>
+        <!-- <div class="form-group mb-3">
+        <label class="form-label">User Groups</label>
+        <div class="form-check form-switch mt-1" *ngFor="let group of groupList">
+          <input type="checkbox" class="form-check-input" name="role-{{group.id}}"
+            [checked]="checkValue(group,approveAppUserData)" (change)="toggleValue(group,approveAppUserData);"
+            id="role-{{group.id}}">
+            <label class="form-check-label" for="role-{{group.id}}">{{group.name}}</label>
+            <p style="font-style:italic" *ngIf="group.description">{{group.description}}</p>
+          </div>
+        </div> -->
+        <div class="form-group mb-3">
+          <label class="form-label">Status *</label>
+          <div>
+            <div class="btn-group btn-group-toggle">
+              <input type="radio" class="btn-check" [value]="'pending'" [required]="true"
+                id="status-pending" name="status-pending" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status">
+              <label for="status-pending" class="btn btn-sm btn-primary">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='pending'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon>
+                Pending
+              </label>
+              <input type="radio" class="btn-check" [value]="'approved'" [required]="true"
+                id="status-approved" name="status-approved" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status">
+              <label for="status-approved" class="btn btn-sm btn-success">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='approved'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon>
+                Approved
+              </label>
+              <input type="radio" class="btn-check" [value]="'rejected'" [required]="true"
+                id="status-rejected" name="status-rejected" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status">
+              <label for="status-rejected" class="btn btn-sm btn-danger">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='rejected'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon>
+                Rejected
+              </label>
+            </div>
+              <!-- <small class="form-text has-warning" *ngIf="status?.invalid">
+              <span class="help-block" *ngIf="status.errors?.required">Status is required</span>
+            </small> -->
+          </div>
+        </div>
+        @if (approveAppUserData.group?.tagEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Tags</label>
+            <ng-select [items]="lookupEntryList" bindLabel="name" [multiple]="true" bindValue="name"
+              placeholder="No tag" [(ngModel)]="approveAppUserData.tags" id="tags"
+              name="tags">
+            </ng-select>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(approveAppUserData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #removeAppUserTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove User Access</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label col-md-3">Name</label>
+          <div class="col-md-6">
+            <p class="form-control-static">{{removeAppUserData.user?.name}}</p>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label col-md-3">Email</label>
+          <div class="col-md-6">
+            <p class="form-control-static">{{removeAppUserData.user?.email}}</p>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label col-md-3">Group</label>
+          <div class="col-md-6">
+            <p class="form-control-static">
+              @if (!removeAppUserData.group){
+                <span class="text-muted">Not assigned to any group</span>
+              }
+              {{removeAppUserData.group?.name}}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeAppUserData)">
+        <i class="icon-minus-sign-alt"></i> Remove User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editUserTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Update User Info</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">User System ID</label>
+          <p class="form-control-static">{{editUserData.id}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-control"
+            [(ngModel)]="editUserData.name" name="name" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Email *</label>
+          <input type="text" class="form-control"
+            [(ngModel)]="editUserData.email" name="email" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Provider *</label>
+          <select class="form-control custom-select" id="provider" name="provider"
+            [(ngModel)]="editUserData.provider" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of providerList; track $index) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(editUserData)">
+        Save User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #changeProviderTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Change Provider</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Change provider for the following users</label>
+          <div class="list-group">
+            @for (u of selectedUsersArray; track $index) {
+              <div class="list-group-item">
+                {{u.user.name}}
+                <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
+                [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Change to Provider</label>
+          <select class="form-control custom-select" id="provider" name="provider"
+            [(ngModel)]="changeProviderData.provider" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of providerList; track $index) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(changeProviderData)">
+        Change Provider
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #blastTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Blast Email</h4>
+  </div>
+  <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Email will be sent to</label>
+      <div class="list-group">
+        @for (u of selectedUsersArray; track $index) {
+          <div class="list-group-item">
+            {{u.user.name}}
+            <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
+            [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+          </div>
+        }
+      </div>
+    </div>
+    @if (mailerList.length>0) {
+      <div class="form-group mb-3">
+        <label class="form-label">Select From Template</label>
+        <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData.template)"
+          [(ngModel)]="blastData.template">
+          <option value="" disabled>Select mailer...</option>
+          @for (mailer of mailerList; track mailer.id) {
+            <option [ngValue]="mailer">{{mailer.name}}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="form-group mb-3">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-control" [(ngModel)]="blastData.subject" #subject="ngModel"
+        name="subject" required>
+      @if (subject?.invalid) {
+        <small class="form-text has-warning">
+          @if (subject?.errors?.required) {
+            <span class="help-block">Subject is required</span>
+          }
+        </small>
+      }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Content (support HTML)</label>
+      <div class="mx-n2">
+        <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content"
+          #formField="ngModel" [(ngModel)]="blastData.content">
+        </angular-editor>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="mailerEditForm.invalid"
+      (click)="c(blastData)">
+      <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
+      Blast Email
+    </button>
+  </div>
+</ng-template>

@@ -1,0 +1,5 @@
+// @import "leaflet/dist/leaflet.css";
+
+::ng-deep .leaflet-control-attribution.leaflet-control{
+    display: none;
+}

@@ -1,0 +1,47 @@
+
+.element {
+    position: relative;
+}
+.element .element-edit {
+    /* opacity: 0; */
+    display:none;
+    z-index: 4;
+}
+
+.element .element-edit .btn {
+    margin: 0 2px;
+}
+
+.element:hover .element-edit {
+    /* opacity: 1; */
+    display:block;
+}
+
+.element.no-pointer:hover::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, .1);
+    border-radius: 3px 0px 0px 3px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.element .element-item {
+    pointer-events: none !important;
+}
+
+.element:hover .element-item {
+    filter: blur(1px);
+}
+
+.leafup{
+    position:absolute;top:calc(100% + 1px);left:-1px;border:solid 1px #ccc;padding:4px; 
+    border-radius:4px;
+    /* border-radius:0 24px 24px 24px;  */
+    background: white;
+    z-index:6 !important;
+}
+
+.nowrap{white-space: nowrap;}

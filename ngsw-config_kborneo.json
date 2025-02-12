@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/icons/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js",
+          "/fontawesome-webfont*"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "kborneo-design-api-ui",
+      "urls": [
+        "https://io.kborneo.my/api/app/**",
+        "https://io.kborneo.my/api/form/**",
+        "https://io.kborneo.my/api/dataset/**",
+        "https://io.kborneo.my/api/screen/**",
+        "https://io.kborneo.my/api/dashboard/**",
+        "https://io.kborneo.my/api/group/**",
+        "https://io.kborneo.my/api/mailer/**",
+        "https://io.kborneo.my/user/me"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "10s",
+        "maxSize": 100,
+        "maxAge": "7d"
+      }
+    }
+  ]
+}

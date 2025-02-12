@@ -1,0 +1,291 @@
+<div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
+  <div style="max-width:710px" class="limit-width centered d-flex justify-content-between">
+    <div class="home-top-l p-2">
+      <img src="assets/icons/logo-w.svg" width="38">
+    </div>
+    <div class="home-top-r pe-2">
+      <div class="d-flex">
+        <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+        <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+        <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+          <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="limit-width repo centered">
+    <!-- <div class="repo-title text-center p-3 pt-0">
+    <h4>App Designer</h4>
+  </div> -->
+    <div class="repo-tool text-center mt-3">
+      <div class="tool-container" style="max-width:480px;margin:auto">
+        <input type="search" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
+          (keyup.enter)="getItemList(1)" autocapitalize="none">
+      </div>
+    </div>
+    <div class="repo-item">
+      <div class="repo-title">
+        <fa-icon [icon]="['fas','plus-square']" [fixedWidth]="true"></fa-icon> Create New App
+      </div>
+      <div class="tile-wrap tile-center touch-overfow">
+        <div class="tile border-2 shadow-none border border-primary text-primary" style="text-overflow: ellipsis; height:100px;"
+          [class.disabled]="offline" onclick="">
+          <div class="tile-mid" style="padding:10px;padding-left:30px;">
+            <div class="tile-content">
+              <h6 class="list-group-item-heading">Blank</h6>
+              <p class="desc">Create from scratch</p>
+            </div>
+            <div class="tile-action">
+              <div class="p-2">
+                <button type="button" class="btn btn-primary btn-round stack" onclick="" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
+                  <fa-icon class="mb-3" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                  Create
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (!tplLoading){
+          @if (tplTotal==0){
+            <div class="p-2 text-muted text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
+              No other template available
+            </div>
+
+          }@else {
+            @for (item of tplList | filter:searchText; track item.id) {
+              <div class="tile"
+                style="text-overflow: ellipsis; height:100px" [class.disabled]="offline"
+                onclick="">
+                <div class="notch"
+                  style="width:20px; color:white; text-align: center; border-radius:0;top:0; bottom:0; height:unset; background-color: darkgray">
+                  <fa-icon [icon]="['fas','plus']"></fa-icon>
+                  <div class="vertical-text" style="font-weight:bold;font-size:12px;position:absolute; bottom:-10px;">
+                  TEMPLATE</div>
+                </div>
+                <div class="tile-image"
+                [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
+                <div class="tile-mid" style="padding:10px;padding-left:30px;">
+                  <div class="tile-content">
+                    <h6 class="list-group-item-heading">{{item.title}}
+                    </h6>
+                    <p class="desc">{{item.description}}</p>
+                  </div>
+                  <div class="tile-action">
+                    <div class="p-1">
+                      <button type="button" class="btn btn-primary btn-round mb-2 stack" (click)="cloneItem(appEditTpl, item, true)">
+                        <fa-icon class="icon" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Create
+                      </button>
+                      @if (item.email.indexOf(user.email)>-1) {
+                        <div class="d-flex justify-content-between">
+                          <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline"
+                            title="Edit Template"
+                            routerLink="/design/{{item.id}}">
+                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                          <button type="button" class="btn btn-light btn-round me-1"
+                            title="Edit Properties"
+                            (click)="editItem(appEditTpl,item, false)">
+                            <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                          <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline"
+                            title="Remove Template"
+                            (click)="removeItem(removeItemTpl,item)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        }@else {
+          <div class="text-muted text-center d-flex" style="width: 160px;margin: 8px;">
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        }
+      </div>
+      @if (tplTotal>pageSizeTpl) {
+        <div class="d-flex justify-content-center p-3 pagination-rounded">
+          <ngb-pagination [collectionSize]="tplTotal" [pageSize]="pageSizeTpl" [(page)]="pageNumberTpl" [maxSize]="4"
+            [rotate]="true" (pageChange)="getTplList(pageNumberTpl)" [boundaryLinks]="true" [directionLinks]="false">
+            <ng-template ngbPaginationFirst>
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+            </ng-template>
+            <ng-template ngbPaginationPrevious>
+              <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationNext>
+              <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationLast>              
+              <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+            </ng-template>
+          </ngb-pagination>
+        </div>
+      }
+    </div>
+    <div class="repo-item">
+      <div class="repo-title d-flex flex-row">
+        <div>
+          <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> My App Collection
+        </div>
+
+        <div class="ms-auto btn-group-xs small group-by-toggle">
+          <input class="btn-check" type="radio" value="all" id="dsgb-ungroup"
+            name="dsgb-ungroup" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+          <label for="dsgb-ungroup" class="btn ms-2">All</label>
+          <input class="btn-check" type="radio" value="true" id="dsgb-form"
+            name="dsgb-form" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+          <label for="dsgb-form" class="btn">Live</label>
+          <input class="btn-check" type="radio" value="false" id="dsgb-type"
+            name="dsgb-type" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+          <label for="dsgb-type" class="btn">Dev</label>
+        </div>
+      </div>
+      @if (!itemLoading){
+        @if(itemTotal==0){
+          <div class="p-4 text-muted text-center">
+            <h1>:(</h1>
+            <h4>No application available</h4>
+          </div>  
+        }@else {
+          <div class="tile-wrap tile-center">
+            @for (item of itemList | filter:searchText; track $index) {
+              <!-- @for (item of kv?.value; track $index){ -->
+                <div class="tile"
+                  style="text-overflow: ellipsis" onclick="">
+                  <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
+                  <div class="tile-image"
+                    [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}">
+                  </div>
+                  <div class="tile-mid">
+                    <div class="tile-content">
+                      <h6 class="list-group-item-heading">{{item.title}}</h6>
+                      <p class="desc">{{item.description}}</p>
+                    </div>
+                    <div class="tile-action">
+                      <div class="p-1">
+                        <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline"
+                          routerLink="/design/{{item.id}}">
+                          <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
+                        </button>
+                        <div class="d-flex justify-content-between">
+                          <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline"
+                            title="Copy App"
+                            (click)="cloneItem(appEditTpl,item, true)">
+                            <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                          <button type="button" class="btn btn-light btn-round me-1"
+                            title="Edit Properties"
+                            (click)="editItem(appEditTpl,item, false)">
+                            <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                          <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline"
+                            title="Remove App"
+                            (click)="removeItem(removeItemTpl,item)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  @if (item.live) {
+                    <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+                  }
+                </div>
+              <!-- } -->
+            }  
+          </div>
+        }
+      }@else {
+        <div class="p-4 text-muted text-center">
+          <div class="lds-ellipsis">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+
+      @if (itemTotal>pageSize) {
+        <div class="d-flex justify-content-center p-3 pagination-rounded">
+          <ngb-pagination [collectionSize]="itemTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="4"
+            [rotate]="true" (pageChange)="getItemList(pageNumber)" [boundaryLinks]="true" [directionLinks]="false">
+            <ng-template ngbPaginationFirst>
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+            </ng-template>
+            <ng-template ngbPaginationPrevious>
+              <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationNext>
+              <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationLast>              
+              <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+            </ng-template>
+          </ngb-pagination>
+        </div>
+      }
+    </div>   
+  </div>
+</div>
+
+<ng-template #removeItemTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header border-0">
+      <h5 class="modal-title">Remove App</h5>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to remove this app?
+      </p>
+      <div class="form">
+        <div class="form-group row">
+          <label class="col-form-label col-md-3">App Title</label>
+          <div class="col-md-6">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.title}}">
+            <!-- <p class="form-control-static">{{removeItemData.title}}</p> -->
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-form-label col-md-3">Description</label>
+          <div class="col-md-6">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.description}}">
+            <!-- <p class="form-control-static">{{removeItemData.description}}</p> -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer border-0 justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeItemData)">
+        <i class="icon-minus-sign-alt"></i> Remove App
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #appEditTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-app-edit [(data)]="editItemData" [offline]="offline" [user]="user"
+    [dismiss]="d" [close]="c"></app-app-edit>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

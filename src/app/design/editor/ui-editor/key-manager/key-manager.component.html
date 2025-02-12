@@ -1,0 +1,66 @@
+<div class="p-3 pb-0 limit-width">
+  <div class="text-center">
+    <h4>Manage API Keys</h4>
+  </div>
+</div>
+<div class="limit-width fix-gutter">
+  <div class="single-pane pt-0">
+    <p class="text-center">API/App Key can be used to access the app as anonymous user without individual/personal credential</p>
+    @for (rp of apiKeyList; track rp.id) {
+      <div class="p-3 bg-white mb-1">
+        <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeApiKey(removeApiKeyTpl,rp)"><fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon></button>
+        <button type="button" class="btn btn-round btn-sm btn-secondary float-end me-2" (click)="rp.visible=!rp.visible">
+          <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>
+        </button>
+         @if (rp.visible){
+          {{rp.apiKey}} 
+         }@else{
+          ***************
+         }
+         <div class="small text-muted">Created on {{rp.timestamp|date:'medium'}}</div>
+       
+      </div>
+    }
+    @if (apiKeyList?.length==0) {
+      <div class="detail">
+        <p>No API Key is currently available. To create a new API Key, please click button below.</p>
+      </div>
+    }
+    <div class="text-center">
+      <button type="button" class="btn btn-round btn-primary mt-1" (click)="generateApiKey()">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Create New API Key</button>
+    </div>
+  </div>
+</div>
+
+<ng-template #removeApiKeyTpl let-c="close" let-d="dismiss">
+  <div #removeApiKeyForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete the following key</h4>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete this API key?
+      </p>
+      <div class="form">
+        <div class="form-group mb-3">
+          <label class="form-label">API Key</label>
+          <p class="form-control-static">{{removeApiKeyData.apiKey}}</p>
+        </div>
+        <!-- <div class="form-group mb-3">
+          <label class="form-label">Timestamp</label>
+          <p class="form-control-static">{{removeApiKeyData.timestamp|date:'medium'}}</p>
+        </div> -->
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-danger" [disabled]="removeApiKeyForm.invalid"
+        (click)="c(removeApiKeyData)">
+        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+        Confirm Remove
+      </button>
+    </div>
+  </div>
+</ng-template>

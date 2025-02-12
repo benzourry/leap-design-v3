@@ -1,0 +1,299 @@
+    <div class="fix-gutter" [class.limit-width]="!screen().wide">
+      <div class="single-pane">
+        @if (bucket) {
+          <div>
+            <div>
+              @if (bucket) {
+                <div class="d-flex flex-row">
+                  <div style="flex-grow: 1;">
+                    <input type="search" class="form-control form-control-sm border border-2"
+                      autocapitalize="none"
+                      placeholder="Filter list" (keyup.enter)="getFileList(1,params)"
+                      [(ngModel)]="searchTextFile">
+                    </div>
+                    <div style="flex-shrink: 0;">
+                      @if (screen.data?.enableUpload){
+                        <label class="form-label m-0">
+                            <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
+                            @if (!importLoading) {
+                            <div class="btn border border-2 btn-outline-primary btn-sm ms-1"
+                                >
+                                <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Upload File
+                            </div>
+                            }
+                            @if (importLoading) {
+                            <button type="button" class="btn border border-2 btn-outline-primary btn-sm ms-1" disabled
+                                >
+                                <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Uploading...
+                            </button>
+                            }
+                        </label>
+                      }
+                      <div ngbDropdown class="d-inline-block">
+                        <button type="button" class="btn border border-2 btn-sm ms-1"
+                          title="More bucket actions" id="dropdownBucketEditor" ngbDropdownToggle>
+                          <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                        <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor">
+                          <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
+                            (click)="initZip(initBucketZipTpl, bucket.id)">
+                            <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
+                            Initialize Zip
+                          </button>
+                          <button type="button" title="Bucket Stat" ngbDropdownItem (click)="bucketStat(bucketStatTpl)"
+                            [class.disabled]="offline">
+                            <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
+                            Bucket Statistics
+                          </button>
+                          <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline"
+                            (click)="reorganize(bucket.id)">
+                            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reorganize
+                            Bucket files
+                          </button>
+                          <button type="button" title="View anti-virus scanning logs" ngbDropdownItem
+                              [disabled]="!serverInfo.avEnabled"
+                              (click)="openAvLogs(avLogListTpl, bucket.id)">
+                              <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                              Anti-virus Scan
+                            </button>
+                          <!-- <div class="dropdown-divider"></div>
+                          <div class="px-2">
+                            <label class="form-label small">Bucket Endpoint</label>
+                            <input name="bucketUrl"
+                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                              type="text" class="form-control"
+                              value="{{baseApi}}/bucket/{{bucket.id}}/files" readonly>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" title="Remove bucket" ngbDropdownItem class="text-danger"
+                              (click)="removeBucket(removeBucketTpl,bucket)" [class.disabled]="offline">
+                              <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove
+                              Bucket
+                            </button> -->
+                          </div>
+                        </div>
+                      </div>
+                      <!-- <button type="button" class="btn btn-round btn-secondary me-1" title="Initialize bucket zipping process"
+                      (click)="initZip(initBucketZipTpl, bucket.id)">
+                      <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon> Zip
+                    </button>
+                    <button type="button" class="btn btn-round btn-secondary me-1" title="Edit bucket"
+                      (click)="editBucket(editBucketTpl,bucket,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-round btn-secondary me-1" title="Remove bucket"
+                      (click)="removeBucket(removeBucketTpl,bucket)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-round btn-secondary me-1" title="Bucket Stat"
+                      (click)="bucketStat(bucketStatTpl)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-round btn-secondary me-1" title="Reorganize bucket"
+                      [class.disabled]="offline" (click)="reorganize(bucket.id)">
+                      <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                    </button> -->
+                  </div>
+                }
+              </div>
+              @if (loading) {
+                <div class="p-4 text-center">
+                  <div class="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                </div>
+              }@else{
+                <div class="mt-1">
+                  <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                  [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}"
+                    (click)="bySStatus(undefined)">
+                    All
+                  </button>
+                  <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                  [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='OK'}"
+                    (click)="bySStatus('OK')">
+                    Safe file
+                  </button>
+                  <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                  [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='FOUND'}"
+                    (click)="bySStatus('FOUND')">
+                    Threat Found
+                  </button>
+                  <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                  [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='VAULT'}"
+                    (click)="bySStatus('VAULT')">
+                    Quarantined
+                  </button>
+                </div>
+                <div class="table-responsive">
+                  @if (bucketFileList?.length) {
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th style="width: 10%">Preview</th>
+                          <th class="w-10">File Name</th>
+                          <th style="width: 5%">Uploader</th>
+                        <!-- <th class="w-10">GROUP</th> -->
+                        @if (screen.data?.enableDelete){
+                            <th style="width: 5%">&nbsp;</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (bucketFile of bucketFileList; track bucketFile.id) {
+                        <tr [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
+                          <td>
+                            @if (bucketFile.fileType.indexOf('image')>-1) {
+                              <img
+                                loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}"
+                                width="58" onerror="this.src='assets/img/placeholder-128.png'">
+                              } @else {
+                                <span class="text-muted text-center">No Preview
+                                Available</span>
+                              }
+                            </td>
+                            <td>
+                              <div>{{bucketFile.fileName}}</div>
+                              <div class="small">
+                                <div>
+                                  @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
+                                    <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}"
+                                      target="_blank">{{bucketFile.fileUrl}}</a>
+                                    }@else {
+                                      {{bucketFile.fileUrl}} 
+                                    }
+                                </div>
+                                <div>Uploaded on: {{bucketFile.timestamp|date:'medium'}}</div>
+                                <div>File size: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
+                                <div>File type: {{bucketFile.fileType}}</div>
+                                @if (bucketFile.itemLabel) {
+                                  <div>From input: {{bucketFile.itemLabel}}</div>
+                                }
+                                @if (bucketFile.entryId) {
+                                  <div>For entry #{{bucketFile.entryId}}</div>
+                                }
+                                @if(['FOUND'].includes(bucketFile.sstatus)){
+                                  <div class="fw-bold mt-2">
+                                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                                    {{bucketFile.smessage}}
+                                    @if (bucketFile.sstatus=='FOUND'){
+                                      <div class="mt-2">
+                                        <button class="btn btn-light btn-sm" (click)="quarantine(bucketFile.id)">Quarantine</button>
+                                      </div>
+                                    }
+                                    <div></div>
+                                  </div>
+                                }@else {
+                                  {{bucketFile.smessage}}
+                                }
+                                <!-- <div>Account type: <fa-icon [icon]="provider[bucketFile.user.provider]"
+                              [fixedWidth]="true"></fa-icon> {{bucketFile.user.provider}}</div> -->
+                            </div>
+                          </td>
+                          <td>{{bucketFile.email}}</td>
+                          <!-- <td>
+                          {{bucketFile.bucket.name}}
+                        </td> -->
+                        @if (screen.data?.enableDelete){
+                            <td class="text-nowrap">
+                            <div>
+                                <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                [class.disabled]="offline"
+                                (click)="removeBucketFile(removeBucketFileTpl,bucketFile)">
+                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                            </div>
+                            </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          }
+          @if ((bucketFileList?.length) > 0) {
+            <div class="text-center d-flex justify-content-center pagination-rounded"
+              >
+              @if (bucketFileTotal>pageSize) {
+                <ngb-pagination [collectionSize]="bucketFileTotal"
+                  [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
+                  (pageChange)="getFileList(pageNumber,params)" boundaryLinks="false" directionLinks="false">
+                  <ng-template ngbPaginationFirst>
+                    <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                  </ng-template>
+                  <ng-template ngbPaginationPrevious>
+                    <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                  </ng-template>
+                  <ng-template ngbPaginationNext>
+                    <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                  </ng-template>
+                  <ng-template ngbPaginationLast>              
+                    <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                  </ng-template>
+                </ngb-pagination>
+              }
+            </div>
+          }
+          @if (bucketFileList == 0 && !loading) {
+            <div class="details">
+              <h3>No data</h3>
+              <p> There is no file uploaded to this bucket.
+                <br /> You can upload new file by clicking on the Upload button.
+              </p>
+            </div>
+          }
+        </div>
+      }@else{
+        <div style="color:#aaa;">
+          <h3>Please select Bucket from the list on the left to view it's data.</h3>
+        </div>
+      }
+    </div>
+  </div>
+
+  
+  <ng-template #avLogListTpl let-c="close" let-d="dismiss">
+    <div>
+      <div class="modal-header">
+        <h4 class="modal-title">Anti-virus Scan</h4>
+      </div>
+      <div class="modal-body">
+        <div>
+          <!-- Loading:{{scanLoading[bucket.id]}} -->
+          <button class="btn btn-primary" [disabled]="scanLoading[bucket.id]" (click)="startScan(bucket)">
+            @if(!scanLoading[bucket.id]){
+              Start Scan 
+            }@else {
+              Scanning <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            }
+          </button>
+  
+          @if (scanProgress[bucket.id]) {
+            <div style="position: relative;" class="mx-n3 mt-3 ">
+              <div class="px-2 py-1 bg-white limit-height code-container">
+                <div>
+                  <pre class="my-0">{{scanProgress[bucket.id].print}}</pre>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        @if (avLogList.length>0){
+          <ul class="list-group mt-3">
+            @for(log of avLogList; track $index){
+              <li class="list-group-item"><a href="{{baseApi}}/public/bucket/{{bucket.id}}/av-logs/{{log.fileName}}">{{log.fileName}}</a></li>
+            }
+          </ul>
+        }@else{
+          <h4 class="text-muted mt-3">No log available</h4>
+        }
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      </div>
+    </div>
+  </ng-template>

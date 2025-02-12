@@ -1,0 +1,40 @@
+.label-span{
+    font-size: 12px;
+    opacity:.7;
+    z-index:3;
+    line-height:1;
+    font-weight: 600;
+}
+
+.maillist{
+    transition: all 250ms ease-in-out;
+}
+
+.mailbox-main{
+    display:flex;
+}
+.mailbox-list-wrapper,.mailbox-content-wrapper{
+    flex:1;
+    flex-shrink: 1;
+    overflow: hidden;
+    padding:0.25rem;
+}
+.notif-shown .mailbox-list-wrapper{
+    max-width:300px;
+}
+@media screen and (max-width: 576px) {
+    .mailbox-list-wrapper{
+        display:block;
+    }
+    .mailbox-content-wrapper{
+        display:none;
+    }
+    .notif-shown{
+        .mailbox-list-wrapper{
+            display:none;
+        }
+        .mailbox-content-wrapper{
+            display:block;
+        }
+    }
+}

@@ -1,0 +1,144 @@
+@if (screen()?.data?.nav=='accordions') {
+    <!-- <div class="pb-3"> -->
+      <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
+        @for (tab of screen()?.data?.comps; track $index) {
+            <div class="acc-card" [ngbAccordionItem]="$index"
+              #accitem="ngbAccordionItem">
+              <div ngbAccordionHeader>
+                <div class="acc-btn-wrap centered" [class.limit-width]="!screen().wide" [class.border-bottom]="accitem.collapsed">
+                  <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
+                    @if (screen()?.data?.showIndex) {
+                      <div style="float:left;height:25px; width:25px;background:#666; color:white;
+                        padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
+                      border-radius:20px;">{{$index+1}}</div>
+                    }
+                    @if (tab.icon){
+                      <fa-icon [icon]="getIcon(tab.icon)" [fixedWidth]="true"></fa-icon>
+                    }
+                    <h5 class="m-0">
+                      {{tab.title}}
+                    </h5>
+                  </button>
+                </div>
+              </div>
+              <div ngbAccordionCollapse>
+                <div ngbAccordionBody>
+                    <ng-template>
+                        <ng-container *ngTemplateOutlet="compRender;context:{tab:tab, sId: tab.screenId, compType: tab.type,tabidx:$index, tabids:$index, tabfirst:$first, tablast:$last}"></ng-container>
+                    </ng-template>
+                </div>
+              </div>
+            </div>
+        }
+      </div>
+  }
+  @if (['tabs','pills'].indexOf(screen()?.data?.nav)>-1) {
+    <div class="tab-simple">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false"
+        class="nav-{{screen()?.data?.nav}} justify-content-center" [class.limit-width]="!screen().wide">
+        @for (tab of screen()?.data?.comps; track $index) {
+            <li [ngbNavItem]="$index">
+              <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" queryParamsHandling="preserve">
+                @if (screen()?.data?.showIndex) {
+                  <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
+                    padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
+                  border-radius:20px;">{{$index+1}}</div>
+                }
+                @if (tab.icon){
+                  <fa-icon [icon]="getIcon(tab.icon)" [fixedWidth]="true"></fa-icon>
+                }
+                {{tab.title}}
+              </a>
+              <ng-template ngbNavContent>
+                 <ng-container *ngTemplateOutlet="compRender;context:{tab:tab,sId:tab.screenId, compType: tab.type, tabidx:$index, tabids:$index, tabfirst:$first, tablast:$last}"></ng-container>
+              </ng-template>
+            </li>
+        }
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+  }
+
+  <ng-template #compRender let-compType="compType" let-sId="sId">
+    <div class="mt-2">
+
+    @if (['add','edit-single'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-form  [formId]="sId"
+            [action]="compType" [asComp]="true"  [hideTitle]="true" ></app-form>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        } 
+      }@else if (['view-single'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-view 
+            [formId]="sId" [action]="compType"
+            [hideTitle]="true" ></app-view>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }@else if (['screen'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-screen [screenId]="sId" [hideTitle]="true"></app-screen>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }@else if (['dataset'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-list [hideTitle]="true" [datasetId]="sId">
+          </app-list>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }@else if (['dashboard'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-dashboard [hideTitle]="true" [dashboardId]="sId">
+          </app-dashboard>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }@else if (['lookup'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-lookup [hideTitle]="true" [lookupId]="sId">
+          </app-lookup>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }@else if (['user'].indexOf(compType)>-1) {
+        @defer(prefetch on idle){
+          <app-user [screen]="screen()" [hideTitle]="true" [groupId]="sId">
+          </app-user>
+        }@loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </ng-template>

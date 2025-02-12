@@ -1,0 +1,532 @@
+<style>
+  input[type=search].start {
+      /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: none;
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: black;
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+      <h5 class="mb-3">Lookup Manager</h5>
+      <input type="search"  autocapitalize="none" class="start" placeholder="Filter list" (keyup.enter)="loadLookupList(1)"
+        [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!itemLoading) {
+        <div class="mb-3">
+          @for (a of lookupList | filter:searchText; track a.id) {
+            <a class="pointer element" [routerLink]="['/design',appId,'lookup']" [queryParams]="{id:a?.id}"
+              routerLinkActive="active" [class.active]="a.id==lookupId"
+              >
+              <div class="list-group-item-heading">
+                {{a.name}} <sup>{{a.id}}</sup>
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editLookup(editLookupTpl,{}, true)" [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Lookup
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (lookupTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="lookupTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadLookupList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter"  [class.limit-width]="!lookup?.x?.wide">
+      <div class="p-2">
+        @if (lookup) {
+          <div>
+            <div>
+              <div class="pe-0 pe-md-3 me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{lookup.name}}</h5>
+                <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{lookup.description}}
+                </div>
+              </div>
+              @if (lookup.sourceType=='rest') {
+                <div class="text-muted mb-3">
+                  <small>{{lookup.responseType}} from {{lookup.endpoint}}</small>
+                </div>
+              }
+              @if (lookup.sourceType=='proxy') {
+                <div class="text-muted mb-3">
+                  <small>proxy for <strong>{{lookup.proxyId}}</strong>(lookup ID)</small>
+                </div>
+              }
+              <div class="text-muted mb-2">
+                <small>Lookup ID : {{lookup.id}}</small>
+              </div>
+              @if (lookup) {
+                <div class="d-flex flex-row">
+                  <div style="flex-grow:1">
+                    <input type="search"  autocapitalize="none" class="form-control form-control-sm border border-2"
+                      placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber)"
+                      [(ngModel)]="searchTextEntry">
+                  </div>
+                  <div style="flex-shrink: 0;">
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
+                      (click)="editLookup(editLookupTpl,lookup,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    @if (lookup.sourceType=='db') {
+                      <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                        [class.disabled]="offline"
+                        (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Data
+                      </button>
+                    }
+                    <div ngbDropdown class="d-inline-block">
+                      <button type="button" class="btn btn-sm border border-2 ms-1"
+                        id="dropdownLookupEditor" ngbDropdownToggle>
+                        <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor">
+                        @if (lookup.sourceType=='db') {
+                          <button type="button" ngbDropdownItem title="Import from Excel"
+                            [class.disabled]="offline"
+                            (click)="importExcel(importExcelTpl)">
+                            <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import
+                            from Excel
+                          </button>
+                        }
+                        <a ngbDropdownItem title="Export to Excel" target="blank"
+                          href="{{base}}/report/export-lookup/{{lookup?.id}}/xlsx">
+                          <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> Export
+                          to Excel
+                        </a>
+                        <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline"
+                          (click)="resyncLookup(syncLookupTpl,lookup?.id)">
+                          <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync
+                          Lookup
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <div class="px-2">
+                          <label class="form-label small">Lookup Endpoint</label>
+                          <input name="endpointUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control"
+                            value="{{baseApi}}/public/lookup/{{lookup.id}}/entry" readonly>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" ngbDropdownItem class="text-danger" [class.disabled]="offline || lookupEntryTotal==0"
+                          (click)="clearEntries()">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Lookup Entries
+                        </button>
+                        <button type="button" ngbDropdownItem class="text-danger" [class.disabled]="offline"
+                          (click)="removeLookup(removeLookupTpl,lookup)">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove
+                          Lookup
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+            @if (!loading && hasLoadList) {
+              @if (lookupEntryList?.length) {
+                <div class="px-2 py-2">
+                  <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+                    <div class="row">
+                      <div class="col d-flex align-items-center">
+                        <strong>Summary</strong>
+                      </div>
+                      <div class="col">Total:
+                        <div class="d-sm-inline">{{lookupEntryTotal}}</div>
+                      </div>
+                      <div class="col">Shown:
+                        <div class="d-sm-inline">{{lookupEntryElements}}</div>
+                      </div>
+                      <div class="col">Pages:
+                        <div class="d-sm-inline">{{lookupEntryPages}}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-bordered bg-white table-striped">
+                    <thead>
+                      <tr>
+                        @if (!lookup.x?.codeHidden){
+                          <th class="w-10">CODE</th>
+                        }
+                        <th class="w-90">NAME</th>
+                        @if(!lookup?.x?.extraDisabled){
+                          <th class="w-10">EXTRA</th>
+                        }
+                        @if (lookup.dataEnabled) {
+                          <th class="w-10">DATA</th>
+                        }
+                        <th style="width: 5%">&nbsp;</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (entry of lookupEntryList; track $index) {
+                        <tr
+                          [class.lookup-disabled]="lookup.sourceType=='db' && !entry.enabled"
+                          [ngClass]="entry.altClass">
+                          @if (!lookup.x?.codeHidden){
+                            <td>{{entry.code}}</td>
+                          }
+                          <td>{{entry.name}}</td>
+                          @if(!lookup?.x?.extraDisabled){
+                            <td>{{entry.extra}}</td>
+                          }
+                          @if (lookup.dataEnabled) {
+                            <td class="p-0">
+                              @if (entry.data) {
+                                <table width="100%" class="table extra-data-tbl m-0">
+                                  <tbody>
+                                    @for (o of entry.data|keyvalue; track $index) {
+                                      <tr>
+                                        <td class="col-1" style="font-weight:500">{{o.key}}</td>
+                                        <td>
+                                          @if (['longtext','text','options'].indexOf(mapDataFields[o.key])>-1) {
+                                            <span [innerHtml]="o.value"></span>
+                                          }
+                                          @if (mapDataFields[o.key]=='number') {
+                                            <span>{{o.value}}</span>
+                                          }
+                                          @if (mapDataFields[o.key]=='date') {
+                                            <span>{{o.value|date:'medium'}}</span>
+                                          }
+                                          @if (mapDataFields[o.key]=='file') {
+                                            <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
+                                          }
+                                        </td>
+                                      </tr>
+                                    }
+                                  </tbody>
+                                </table>
+                              }
+                            </td>
+                          }
+                          <td class="text-nowrap">
+                            @if (lookup.sourceType=='db') {
+                              <div>
+                                <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                  [class.disabled]="offline"
+                                  (click)="removeLookupEntry(removeLookupEntryTpl,entry)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm btn-round"
+                                  [class.disabled]="offline"
+                                  (click)="editLookupEntry(editLookupEntryTpl,entry, false)">
+                                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                                <div class="mt-1">
+                                  @if (!$first) {
+                                    <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
+                                      (click)="reorderItem($index, -1)">
+                                      <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                  }
+                                  @if (!$last) {
+                                    <button type="button" class="btn btn-secondary btn-round btn-sm"
+                                      (click)="reorderItem($index, 1)">
+                                      <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                  }
+                                </div>
+                              </div>
+                            }
+                            @if (['rest','proxy'].indexOf(lookup.sourceType)>-1) {
+                              <fa-icon [icon]="['fas','lock']"
+                                [fixedWidth]="true">
+                              </fa-icon>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            }
+            @if (lookupEntryTotal > 0  && hasLoadList) {
+              <div class="text-center d-flex justify-content-center  pagination-rounded"
+                >
+                @if (lookupEntryTotal>pageSize) {
+                  <ngb-pagination [collectionSize]="lookupEntryTotal"
+                    [pageSize]="pageSize" [(page)]="entryPageNumber" [maxSize]="10"
+                    (pageChange)="getLookupEntryList(entryPageNumber)" boundaryLinks="false"
+                    directionLinks="false">
+                    <ng-template ngbPaginationFirst>
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                    </ng-template>
+                    <ng-template ngbPaginationPrevious>
+                      <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationNext>
+                      <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationLast>              
+                      <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                    </ng-template>
+                  </ngb-pagination>
+                }
+              </div>
+            }
+            @if (!loading && !hasLoadList) {
+              <div class="details my-5">
+                <h3>Data is not loaded</h3>
+                <p>Click the following button to load lookup data</p>
+                @if (!hasLoadList) {
+                  <button type="button" class="btn btn-primary rounded-pill" (click)="getLookupEntryList(1)"
+                  >Load Data</button>
+                }
+              </div>
+            }
+            @if (lookupEntryList == 0 && !loading && hasLoadList) {
+              <div class="details">
+                <h3>No data for {{lookup.name}}</h3>
+                <p> There is no data assigned to this lookup table.
+                  <br /> You can assign a new data by clicking on the Add button.
+                </p>
+              </div>
+            }
+          </div>
+        }
+        @if (!lookup) {
+          <div style="color:#aaa;">
+            <h3>Please select Lookup Table from the list on the left to view it's data.</h3>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #removeLookupEntryTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Lookup Entry</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="col-form-label col-md-3">Code</label>
+          <div class="col-md-6">
+            <p class="form-control-static">{{removeLookupEntryData.code}}</p>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="col-form-label col-md-3">Name</label>
+          <div class="col-md-6">
+            <p class="form-control-static">{{removeLookupEntryData.name}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeLookupEntryData)">
+        <i class="icon-minus-sign-alt"></i> Remove Lookup
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #removeLookupTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Lookup</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Lookup Name</label>
+          <p class="form-control-static">{{removeLookupData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Name</label>
+          <p class="form-control-static">{{removeLookupData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeLookupData)">
+        <i class="icon-minus-sign-alt"></i> Remove Lookup
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editLookupTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-lookup [lookup]="editLookupData" [accessList]="accessList" [dismiss]="d" [close]="c"></app-edit-lookup>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-lookup-entry [lookup]="lookup" [lookupEntry]="editLookupEntryData" [dismiss]="d" [close]="c"></app-edit-lookup-entry>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #importExcelTpl let-c="close" let-d="dismiss">
+  <div #importExcelForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Import lookup from Excel</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        You can import lookup data from Excel file.
+        <ul>
+          <li>Excel file should have header labelled with <code>code</code>, <code>name</code>,
+            <code>enabled</code> (optionally, <code>extra</code>)
+          </li>
+          <li><code>enabled</code> field should only contains 1 (true) or 0 (false)</li>
+          <li>Other fields will be stored as JSON in <code>data</code> column</li>
+        </ul>
+        <div class="form-group mb-3">
+          @if (!importExcelData) {
+            <label class="form-label">
+              <input type="file" [hidden]="true" (change)="uploadExcel($event)" name="file" required
+                accept=".xlsx" />
+              @if (!importLoading) {
+                <div class="form-control" style="background: white">
+                  <fa-icon [icon]="['fas','upload']"></fa-icon>
+                  Browse
+                </div>
+              }
+              @if (importLoading) {
+                <div class="form-control" style="background: white">
+                  Importing...
+                </div>
+              }
+            </label>
+          }
+          @if (importExcelData) {
+            @if (importExcelData.success) {
+              <div class="alert alert-success">
+                <h5>Data successfully imported</h5>
+              </div>
+            }
+            @if (!importExcelData.success) {
+              <div class="alert alert-success">
+                <h5>Data import failed</h5>
+                Message: {{importExcelData.message}}
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      @if (importExcelData?.success) {
+        <button type="button" class="btn btn-round btn-success" (click)="c()">
+          <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+          Done
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+<ng-template #syncLookupTpl let-c="close" let-d="dismiss">
+  <div #syncLookupForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Re-sync lookup</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        <p>
+          Resync older data that uses this lookup with the new updated value.
+        </p>
+        <div class="form-group mb-3">
+          <label class="form-label">Select reference column</label>
+          <select class="form-select" name="refCol" [(ngModel)]="syncLookupData.refCol">
+            @if (lookup.sourceType=='db'){
+              <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
+            }
+            <option value="code">Code</option>
+            <option value="name">Name</option>
+            <option value="extra">Extra</option>
+          </select>
+          <div class="mt-2"><small>Reference column is a common identifier for target data & replacement data.
+            To
+            synchronize, both target and replacement should have the same value for reference
+          column.</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-success" (click)="c()">
+        <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+        Resync Lookup
+      </button>
+    </div>
+  </div>
+</ng-template>

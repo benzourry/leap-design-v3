@@ -1,0 +1,60 @@
+.s-icon-wrap{
+    margin-top:15px;
+    display: flex;
+    justify-content: center;
+    flex-wrap:wrap;
+}
+.s-icon-blank{
+    padding: 20px;
+    text-align: center;
+    color: rgba(0,0,0,.5);
+}
+.s-icon{
+    position:relative;
+    /* height: 160px; */
+    width: 120px;
+    border: solid 2px transparent;
+    font-size: 14px;
+    padding: 10px 0px 5px 0px;
+    margin:10px;
+    overflow: hidden;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    border-radius:4px;
+}
+.s-icon .title{
+    margin-top:5px;
+}
+.s-icon:hover{
+    /* box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22); */
+    overflow: hidden;
+    background: white;
+    text-decoration: none;
+    color:inherit;
+    /* color:#0078d7; */
+    transform: scale(1.2);
+    z-index:3;
+}
+.s-icon-heading{
+    padding-top: 20px;
+    font-size:18px;
+    color: #333;
+    text-align: center;
+}
+.s-icon .fa{
+    display: block;
+    margin-bottom: 5px;
+}
+.s-icon .sub{
+    font-size: .8em;
+    /* color: #333; */
+}
+.s-icon .badge{
+    position: absolute;
+    top:5px;
+    right:25px;
+    background: red;
+    font-size: 13px;
+}

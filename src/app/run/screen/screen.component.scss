@@ -1,0 +1,52 @@
+.no-break{
+    position: relative;
+    page-break-inside: avoid !important;
+}
+
+.blue{color:blue}
+
+@media print {
+    page-title{display: none;}
+    .single-pane {
+        padding: 0;
+    }
+}
+
+::ng-deep .modal-no-footer .modal-content {
+    padding-bottom: 0px !important;
+}
+@media (min-width: 576px) {
+    ::ng-deep .modal-no-footer .modal-content {
+        width: unset;
+        margin:auto;
+    } 
+}
+
+.map-fullscreen{
+    app-ng-leaflet{
+        position:absolute;
+        width:100%;
+        height:100vh;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+    .toolbar,.list-summary{
+        position:relative;
+        z-index:2;
+    }
+    .toolbar{
+        z-index:4;
+    }
+    ::ng-deep .leaflet-bottom {
+        bottom: 60px;
+    }
+    ::ng-deep .map-target-div{
+        height:100% !important;
+    }
+    ngb-pagination{
+        z-index:2;
+        position:fixed;
+        bottom:0px;
+    }
+}

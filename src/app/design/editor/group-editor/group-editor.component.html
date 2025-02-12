@@ -1,0 +1,867 @@
+<style>
+  input[type=search].start {
+    /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: none;
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: black;
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+      <h5 class="mb-3">Role Manager</h5>
+      <input type="search" class="start" autocapitalize="none" placeholder="Filter list"
+        (keyup.enter)="loadGroupList(1)" [(ngModel)]="searchText">
+      </div>
+      @if (app?.x?.userFromApp) {
+        <div class="p-2 bg-danger text-white small">
+          This app is using user database from other app. To change, go to Edit App > Overview > Use user from other
+          app
+        </div>
+      }
+      <div class="group-list">
+        @if (itemLoading) {
+          <div class="p-3 text-center">
+            <div class="lds-ellipsis white">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        }
+        @if (!itemLoading) {
+          <div class="mb-3">
+            @for (a of groupList | filter:searchText; track a.id) {
+              <a class="pointer element" [routerLink]="['/design',appId,'user']" [queryParams]="{id:a?.id}"
+                [class.active]="a.id==groupId" routerLinkActive="active">
+                <div class="list-group-item-heading">
+                  @if (a.appId!=appId){
+                    <fa-icon [icon]="['fas','diagram-project']" [fixedWidth]="true"></fa-icon>
+                  }
+                  {{a.name}} <sup>{{a.id}}</sup>
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" [routerLink]="['/design',appId,'user']" [queryParams]="{id:'all'}"
+            [class.active]="groupId=='all'">
+            <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
+            All Users
+          </a>
+          <a class="pointer element" (click)="editGroup(editGroupTpl,{}, true)" [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Group
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (groupTotal>pageSize) {
+              <ngb-pagination [collectionSize]="groupTotal" [pageSize]="pageSize"
+                [(page)]="pageNumber" [maxSize]="5" (pageChange)="loadGroupList(pageNumber)"
+                [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (group || groupId=='all') {
+          <div>
+            <div>
+              @if (group) {
+                <div class="me-auto d-flex flex-row w-100 py-2">
+                  <h5 class="m-0 text-truncate">{{group.name}}</h5>
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                    {{group.description}}
+                  </div>
+                </div>
+                <div class="text-muted mb-1">
+                  <small>Group ID : {{group.id}}</small>
+                </div>
+              } @else {
+                <h5>All Users</h5>
+              }
+              @if (group && group?.appId!=appId){
+                <p>
+                  <span class="text-danger">User group is in the other app
+                    <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                                [routerLink]="['../../'+app.x?.userFromApp+'/user']" [queryParams]="{id:group?.appId}">Manage</a>
+                  </span>
+                </p>
+              }                
+            </div>
+            <div class="d-flex flex-row">
+              <div style="flex-grow: 1;">
+                <input type="search" class="form-control form-control-sm border border-2"
+                  autocapitalize="none" style="outline:initial" placeholder="Filter list"
+                  (keyup.enter)="getAppUserList(appUserPageNumber,params)" [(ngModel)]="searchTextUsr">
+                </div>
+                <div style="flex-shrink: 0;">
+                  @if (group && group.appId==appId) {
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-primary ms-1"
+                      [class.disabled]="offline" (click)="editAppUser(editAppUserTpl,{},true)">
+                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add User
+                    </button>
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-secondary ms-1"
+                      (click)="editGroup(editGroupTpl,group,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-danger ms-1"
+                      (click)="removeGroup(removeGroupTpl,group)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (loading) {
+                <div class="p-4 text-center">
+                  <div class="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                </div>
+              }
+              @if (!loading) {
+                <div class="table-responsive mt-2">
+                  @if (appUserList?.length) {
+                    <div class="px-2 pb-2">
+                      <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+                        <div class="row">
+                          <div class="col d-flex align-items-center">
+                            <strong>Summary</strong>
+                          </div>
+                          <div class="col">Total:
+                            <div class="d-sm-inline">{{appUserTotal}}</div>
+                          </div>
+                          <div class="col">Shown:
+                            <div class="d-sm-inline">{{numberOfElements}}</div>
+                          </div>
+                          <div class="col">Pages:
+                            <div class="d-sm-inline">{{entryPages}}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          @if (group && group.appId==appId) {
+                            <th class="tblcol-check" style="width: 1%">
+                              <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
+                                (click)="checkAllUsers(checkAll.checked)">
+                            </th>
+                          }
+                          <th style="width: 5%">PHOTO</th>
+                          <th class="w-10">USER</th>
+                          <th style="width: 5%">STATUS</th>
+                          @if (groupId=='all') {
+                            <th class="w-10">GROUP</th>
+                          }
+                          <th style="width: 5%">&nbsp;</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (appUser of appUserList; track $index) {
+                          <tr
+                            [class.table-info]="appUser.status=='pending' || appUser.user?.status=='pending'"
+                            [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" 
+                            [ngClass]="appUser.altClass">
+                            @if (group && group.appId==appId) {
+                              <td class="p-1"><input type="checkbox" class="form-check-input"
+                              (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"></td>
+                            }
+                            <td class="p-1"><img src="{{appUser.user.imageUrl}}" width="58"
+                              onerror="this.src='assets/img/avatar-big.png'"></td>
+                            <td>
+                              <div>{{appUser.user.name}} <sup>{{appUser.user.id}}</sup></div>
+                              <div class="small">
+                                <div>{{appUser.user.email}}</div>
+                                <div>First login: {{appUser.user.firstLogin|date:'medium'}}
+                                  @if (!appUser.user.firstLogin) {
+                                    <span class="text-muted">No login
+                                    yet</span>
+                                  }
+                                </div>
+                                <div>Account type: <fa-icon [icon]="provider[appUser.user.provider]"
+                                  [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}</div>
+                              </div>
+                              <div class="mt-1">
+                                @for (tag of appUser.tags; track $index) {
+                                  <div style="font-size:0.9em"
+                                    class="d-inline-block me-1 border bg-light rounded px-1">{{tag}}
+                                  </div>
+                                }
+                              </div>
+                              @if (appUser.user.attributes) {
+                                <button type="button" class="btn btn-xs mt-2 btn-light"
+                                  (click)="ei[appUser.user.id]=!ei[appUser.user.id]">
+                                  <small>{{ei[appUser.user.id]?'Hide Extra Attributes':'Show Extra Attributes'}}</small>
+                                </button>
+                                @if (ei[appUser.user.id]) {
+                                  <div>
+                                    <table width="100%" class="table small m-0 mt-1">
+                                      <tbody>
+                                        @for (o of appUser.user.attributes|keyvalue; track $index) {
+                                          @if (isValue(o.value)) {
+                                            <tr>
+                                              <td style="font-size:0.9em">{{o.key}}</td>
+                                              <td style="font-size:0.9em">{{o.value}}</td>
+                                            </tr>
+                                          }@else{
+                                            <tr>
+                                              <td style="font-size:0.9em">{{o.key}}</td>
+                                              <td style="font-size:0.9em">{{o.value|json}}</td>
+                                            </tr>
+                                          }
+                                        }
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                }
+                              }
+                            </td>
+                            <td>{{appUser.status}}</td>
+                            @if (groupId=='all') {
+                              <td>
+                                {{appUser.group?.name}}
+                                @if (!appUser.group) {
+                                  <span class="text-muted">Not assigned to any group</span>
+                                }
+                              </td>
+                            }
+
+                            <td class="text-nowrap">
+                              @if (group?.appId==appId || groupId=='all') {
+                                <div>
+                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                    [class.disabled]="offline"
+                                    (click)="removeAppUser(removeAppUserTpl,appUser)">
+                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                  <!-- Xpat pake edit sebab appUser pecah2, bukan merge cgek user w/ multiple groups -->
+                                  <!-- <button type="button" class="btn btn-secondary me-1 btn-sm btn-round" [class.disabled]="offline"
+                                    (click)="editAppUser(editAppUserTpl,{appUser}, false)">
+                                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                  </button> -->
+                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                    [class.disabled]="offline"
+                                    (click)="approveAppUser(approveAppUserTpl,appUser)">
+                                    <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                                    [class.disabled]="offline"
+                                    (click)="editUser(editUserTpl,appUser)">
+                                    <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                  @if (groupId!='all') {
+                                    <div class="mt-1">
+                                      @if (!$first) {
+                                        <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
+                                          (click)="reorderItem($index, -1)">
+                                          <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
+                                      @if (!$last) {
+                                        <button type="button" class="btn btn-secondary btn-round btn-sm"
+                                          (click)="reorderItem($index, 1)">
+                                          <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              }@else {
+                                <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                </div>
+              }
+              @if (selectedUsers?.size>0) {
+                <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc"
+                  >
+                  &#8627; With Selected
+                  <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
+                    (click)="blastEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
+                  [fixedWidth]="true"></fa-icon> Send Email</button>
+                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
+                    (click)="bulkRemoveUser()">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  Remove User</button>
+                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
+                    (click)="changeProvider(changeProviderTpl)">
+                  Change Provider</button>
+                </div>
+              }
+              @if ((appUserList?.length) > 0) {
+                <div class="text-center d-flex justify-content-center rounded">
+                  @if (appUserTotal>pageSize) {
+                    <ngb-pagination [collectionSize]="appUserTotal"
+                      [pageSize]="appUserPageSize" [(page)]="appUserPageNumber" [maxSize]="10"
+                      (pageChange)="getAppUserList(appUserPageNumber,params)" boundaryLinks="false"
+                      directionLinks="false">
+                      <ng-template ngbPaginationFirst>
+                        <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                      </ng-template>
+                      <ng-template ngbPaginationPrevious>
+                        <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                      </ng-template>
+                      <ng-template ngbPaginationNext>
+                        <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                      </ng-template>
+                      <ng-template ngbPaginationLast>              
+                        <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                      </ng-template>
+                    </ngb-pagination>
+                  }
+                </div>
+              }
+              @if (appUserList == 0 && !loading) {
+                <div class="details">
+                  <h3>No data</h3>
+                  <p> There is no user assigned to this group.
+                    <br /> You can add new user by clicking on the Add button.
+                  </p>
+                </div>
+              }
+          </div>
+        }
+        @if (!(group || groupId=='all')) {
+          <div style="color:#aaa;">
+            <h3>Please select Group from the list on the left to view it's data.</h3>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #removeGroupTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Group</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label col-md-3">Group Name</label>
+          <div class="col-md-6">
+            <p class="form-control-static">{{removeGroupData.name}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeGroupData)">
+        <i class="icon-minus-sign-alt"></i> Remove Group
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editGroupTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-role [editGroupData]="editGroupData" [accessList]="groupList" [lookupList]="lookupList" [dismiss]="d" [close]="c"></app-edit-role>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #editAppUserTpl let-c="close" let-d="dismiss">
+  <div #editAppUserForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Add User Access</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        <div class="form-group mb-3">
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" name="bulk-reg"
+              [(ngModel)]="editAppUserData.bulkReg" id="bulk-reg">
+            <label class="form-check-label" for="bulk-reg">Register many users at once</label>
+          </div>
+        </div>
+        @if (!editAppUserData.bulkReg) {
+          <div class="form-group mb-3">
+            <label class="form-label">Email *</label>
+            <input type="text" class="form-control" name="email" #email="ngModel"
+              [(ngModel)]="editAppUserData.email" required />
+            @if (email?.invalid) {
+              <small class="form-text has-warning">
+                @if (email.errors?.required) {
+                  <span class="help-block">Email is required</span>
+                }
+              </small>
+            }
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Name *</label>
+            <input type="text" class="form-control" name="name" #name="ngModel"
+              [(ngModel)]="editAppUserData.name" required />
+            @if (name?.invalid) {
+              <small class="form-text has-warning">
+                @if (name.errors?.required) {
+                  <span class="help-block">Name is required</span>
+                }
+              </small>
+            }
+          </div>
+        } @else {
+          <div class="form-group mb-3">
+            <label class="form-label">Email list (comma separated)</label>
+            <textarea class="form-control" name="email" #email="ngModel" rows="8"
+            [(ngModel)]="editAppUserData.email" required></textarea>
+            @if (email?.invalid) {
+              <small class="form-text has-warning">
+                @if (email.errors?.required) {
+                  <span class="help-block">Email is required</span>
+                }
+              </small>
+            }
+          </div>
+        }
+        <div class="form-group mb-3">
+          <label class="form-label">Requested User Groups *</label>
+          @for (group of groupList; track group.id) {
+            @if (group.appId == appId){
+              <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" name="role-{{group.id}}"
+                  [checked]="checkValue(group.id,editAppUserData)"
+                  (change)="toggleValue(group.id,editAppUserData);" id="role-{{group.id}}">
+                <label class="form-check-label" for="role-{{group.id}}">{{group.name}}</label>
+                @if (group.description) {
+                  <p style="font-style:italic">{{group.description}}</p>
+                }
+              </div>
+            }
+          }
+        </div>
+        @if (editAppUserData.id) {
+          <div class="form-group mb-3">
+            <label class="form-label">Status *</label>
+            <div>
+              <div class="btn-group btn-group-toggle" role="group">
+                <input type="radio" name="status" #status="ngModel"
+                  [(ngModel)]="editAppUserData.status" [required]="true"
+                  value="pending" class="btn-check" id="statusPending">
+                <label class="btn btn-outline-secondary" for="statusPending">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='pending'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon> Pending
+                </label>
+                <input type="radio" name="status" #status="ngModel"
+                  [(ngModel)]="editAppUserData.status" [required]="true"
+                  value="approved" class="btn-check" id="statusApproved">
+                <label class="btn btn-outline-secondary" for="statusApproved">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='approved'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon> Approved
+                </label>
+                <input type="radio" name="status" #status="ngModel"
+                  [(ngModel)]="editAppUserData.status" [required]="true"
+                  value="rejected" class="btn-check" id="statusRejected">
+                <label class="btn btn-outline-secondary" for="statusRejected">
+                  <fa-icon [icon]="['far',editAppUserData?.status=='rejected'?'check-square':'square']"
+                  [fixedWidth]="true"></fa-icon> Rejected
+                </label>
+              </div>
+              @if (status?.invalid) {
+                <small class="form-text has-warning">
+                  @if (status.errors?.required) {
+                    <span class="help-block">Status is required</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        }
+        @if (group.dataEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Data (Additional attributes)</label>
+            <table width="100%">
+              @for (e of editAppUserDataFields; track $index) {
+                <tr>
+                  <td>
+                    {{e.key}}
+                  </td>
+                  <td>
+                    @if (e.type=='string') {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="value_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]">
+                    }
+                    @if (e.type=='number') {
+                      <input class="form-control form-control-sm" style="width:100%" type="number"
+                        name="value_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]">
+                    }
+                    @if (e.type=='date') {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="value_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]" (click)="d2.toggle()" ngbDatepicker
+                        #d2="ngbDatepicker">
+                    }
+                    @if (e.type=='options') {
+                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]">
+                        @for (a of e.opts; track $index) {
+                          <option [ngValue]="a">{{a}}</option>
+                        }
+                      </select>
+                    }
+                  </td>
+                  <td style="width:30px">
+                    <button type="button" class="btn btn-sm btn-light"
+                      (click)="deleteDataRow(editAppUserData.data, e.key)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @for (e of editAppUserDataFieldsOrphan|keyvalue; track $index) {
+                <tr>
+                  <td>
+                    {{e.key}} (orphan)
+                  </td>
+                  <td>
+                    @if (!isNumber(editAppUserData.data[e.key])) {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="valueorph_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]">
+                    }
+                    @if (isNumber(editAppUserData.data[e.key])) {
+                      <input class="form-control form-control-sm" style="width:100%" type="number"
+                        name="valueorph_{{$index}}"
+                        [(ngModel)]="editAppUserData.data[e.key]">
+                    }
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-light"
+                      (click)="deleteDataRow(editAppUserData.data, e.key)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </table>
+          </div>
+        }
+        @if (group.tagEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Tags</label>
+            <ng-select [items]="lookupEntryList" bindLabel="name" [multiple]="true" bindValue="name"
+              placeholder="No tag" [(ngModel)]="editAppUserData.tags" id="tags"
+              name="tags">
+            </ng-select>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary"
+        [disabled]="editAppUserForm.invalid || !(editAppUserData.group?.length>0)" (click)="c(editAppUserData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save User Access
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #approveAppUserTpl let-c="close" let-d="dismiss">
+  <div #approveAppUserForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Group Request Approval</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        <div class="form-group mb-3">
+          <label class="form-label">Email *</label>
+          <p class="form-control-static">{{approveAppUserData.user.email}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Name *</label>
+          <p class="form-control-static">{{approveAppUserData.user.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Group *</label>
+          <p class="form-control-static">            
+            @if (approveAppUserData.group){
+              {{approveAppUserData.group?.name}}
+            }@else {
+              <span class="text-muted fst-italic">Not assigned to any group</span>
+            }
+          </p>
+        </div>
+        <!-- <div class="form-group mb-3">
+        <label class="form-label">User Groups</label>
+        <div class="form-check form-switch mt-1" *ngFor="let group of groupList">
+          <input type="checkbox" class="form-check-input" name="role-{{group.id}}"
+            [checked]="checkValue(group,approveAppUserData)" (change)="toggleValue(group,approveAppUserData);"
+            id="role-{{group.id}}">
+            <label class="form-check-label" for="role-{{group.id}}">{{group.name}}</label>
+            <p style="font-style:italic" *ngIf="group.description">{{group.description}}</p>
+          </div>
+        </div> -->
+        <div class="form-group mb-3">
+          <label class="form-label">Status *</label>
+          <div>
+            <div class="btn-group btn-group-toggle" role="group">
+              <input type="radio" name="status" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status" [required]="true"
+                value="pending" class="btn-check" id="statusPending">
+              <label class="btn btn-outline-secondary" for="statusPending">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='pending'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon> Pending
+              </label>
+              <input type="radio" name="status" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status" [required]="true"
+                value="approved" class="btn-check" id="statusApproved">
+              <label class="btn btn-outline-secondary" for="statusApproved">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='approved'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon> Approved
+              </label>
+              <input type="radio" name="status" #status="ngModel"
+                [(ngModel)]="approveAppUserData.status" [required]="true"
+                value="rejected" class="btn-check" id="statusRejected">
+              <label class="btn btn-outline-secondary" for="statusRejected">
+                <fa-icon [icon]="['far',approveAppUserData?.status=='rejected'?'check-square':'square']"
+                [fixedWidth]="true"></fa-icon> Rejected
+              </label>
+            </div>
+          </div>
+        </div>
+        @if (approveAppUserData.group?.tagEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Tags</label>
+            <ng-select [items]="lookupEntryList" bindLabel="name" [multiple]="true" bindValue="name"
+              placeholder="No tag" [(ngModel)]="approveAppUserData.tags" id="tags"
+              name="tags">
+            </ng-select>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(approveAppUserData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #removeAppUserTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove User Access</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Name</label>
+          <p class="form-control-static">{{removeAppUserData.user?.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Email</label>
+          <p class="form-control-static">{{removeAppUserData.user?.email}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Group</label>
+          <p class="form-control-static">
+            @if (!removeAppUserData.group){
+              <span class="text-muted">Not assigned to any group</span>
+            }
+            {{removeAppUserData.group?.name}}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeAppUserData)">
+        <i class="icon-minus-sign-alt"></i> Remove User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editUserTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Update User Info</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">User System ID</label>
+          <p class="form-control-static">{{editUserData.id}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-control"
+            [(ngModel)]="editUserData.name" name="name" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Email *</label>
+          <input type="text" class="form-control"
+            [(ngModel)]="editUserData.email" name="email" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Provider *</label>
+          <select class="form-control custom-select" id="provider" name="provider"
+            [(ngModel)]="editUserData.provider" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of providerList; track $index) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(editUserData)">
+        Save User
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #changeProviderTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Change Provider</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Change provider for the following users</label>
+          <div class="list-group">
+            @for (u of selectedUsersArray; track $index) {
+              <div class="list-group-item">
+                {{u.user.name}}
+                <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
+                [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Change to Provider</label>
+          <select class="form-control custom-select" id="provider" name="provider"
+            [(ngModel)]="changeProviderData.provider" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of providerList; track item.id) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(changeProviderData)">
+        Change Provider
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #blastTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Blast Email</h4>
+  </div>
+  <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Email will be sent to</label>
+      <div class="list-group">
+        @for (u of selectedUsersArray; track $index) {
+          <div class="list-group-item">
+            {{u.user.name}}
+            <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
+            [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+          </div>
+        }
+      </div>
+    </div>
+    @if (mailerList.length>0) {
+      <div class="form-group mb-3">
+        <label class="form-label">Select From Template</label>
+        <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData.template)"
+          [(ngModel)]="blastData.template">
+          <option value="" disabled>Select mailer...</option>
+          @for (mailer of mailerList; track mailer.id) {
+            <option [ngValue]="mailer">{{mailer.name}}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="form-group mb-3">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-control" [(ngModel)]="blastData.subject" #subject="ngModel"
+        name="subject" required>
+      @if (subject?.invalid) {
+        <small class="form-text has-warning">
+          @if (subject?.errors?.required) {
+            <span class="help-block">Subject is required</span>
+          }
+        </small>
+      }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Content (support HTML)</label>
+      <div class="mx-n2">
+        <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content"
+          #formField="ngModel" [(ngModel)]="blastData.content">
+        </angular-editor>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="mailerEditForm.invalid"
+      (click)="c(blastData)">
+      <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
+      Blast Email
+    </button>
+  </div>
+</ng-template>

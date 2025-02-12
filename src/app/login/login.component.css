@@ -1,0 +1,28 @@
+:host{
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.wrapper{
+    /* height: 100%; */
+    /* margin:auto; */
+    /* padding:10px; */
+}
+.wrapper-in{
+    max-width:270px;
+    width:250px;
+}
+.btn i{
+    font-size: 1.2em;
+    line-height: 1.2em;
+}
+
+.rounded-50{
+    border-radius: 2rem;
+}
+
+.w-unset{
+    /* width: unset; */
+    box-sizing: border-box;
+}

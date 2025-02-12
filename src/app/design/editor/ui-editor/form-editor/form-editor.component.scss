@@ -1,0 +1,141 @@
+// .scroll {
+//     display: flex; /* [1] */
+//     flex-wrap: nowrap; /* [1] */
+//     overflow-x: auto; /* [2] */
+//     -webkit-overflow-scrolling: touch; /* [3] */
+//     -ms-overflow-style: -ms-autohiding-scrollbar; /* [4] */ 
+// }
+  
+//   /* [6] */
+// .scroll::-webkit-scrollbar {
+//     display: none; 
+// }
+
+// .item {
+//     flex: 0 0 auto; 
+// }
+
+// .tl{
+//     width:150px;
+//     height:150px;
+//     display: inline-block;
+// }
+.btn-tier-action{
+  border: solid 2px #aaa;
+  background-color: whitesmoke;
+  color:darkslategray;
+}
+
+.line-tier{
+  position:absolute;left:0px;
+  border:solid 2px #ccc; border-left:none; border-radius:0px 4px 4px 0px
+}
+.selected-line{
+  // border-width: 4px !important;
+  border-color: rgba(0,123,255);
+  opacity:1 !important;
+  z-index:2;
+}
+.selected-line-tier{
+  background-color: rgba(0,123,255);
+}
+.selected-tier{
+  outline: solid 2px rgba(0,123,255);
+}
+.line-tier.is-nexttier.is-last{
+  display:none;
+}
+
+#t_999_line,#t_-1_line{
+  position:absolute;
+  left:115px;
+  right:0;
+  top:20px;
+  border-top:solid 2px #ccc;
+  display: block;
+  opacity: .5;
+}
+
+
+.flytag{
+  position:absolute;top:10px;left:-25px; font-size:.6em; width:37px;text-align:right
+}
+
+
+  .cdk-drag-preview {
+      opacity:.5;
+  }
+  
+  .cdk-drag-placeholder {
+    //   background: gray;
+    opacity: 0;
+  }
+  
+  .cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  
+//   .example-box:last-child {
+//     border: none;
+//   }
+  
+//   .example-list.cdk-drop-list-dragging .example-box:not(.cdk-drag-placeholder) {
+//     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+//   }
+
+.editor ::ng-deep .clfx{
+  background: #eee; height: 2em;
+}
+  
+.half{
+  opacity:.5;
+}
+
+.edit-label{
+  position: absolute;
+  top:0;right:0;
+}
+// .color-item.active{
+//   outline: 0;
+//   box-shadow: 0 0 0 0.2rem rgba(0,123,255,.7);
+// }
+.active-outline{
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.7) !important;
+}
+.color-item{
+  width: 38px;
+}
+.static-html{
+  outline: dashed 2px gray;
+  min-height:3em;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.form-control.ng-select {
+  border: none;
+  padding: 0;
+}
+
+.limit-height{
+  max-height: 400px;overflow: auto;
+}
+
+.code-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.shadow-clean{
+  box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.16), 0px 1.6px 3.6px rgba(0, 0, 0, 0.20);
+}
+
+.card-blank-style{
+  border: dashed 3px #ddd;
+}
+.card-blank-style .card-body{
+  padding:0 !important;
+}

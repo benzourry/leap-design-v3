@@ -1,0 +1,433 @@
+@if (screen) {
+  <div id="screen-{{screen?.id}}" #screenviewport class="viewport position-relative" [class.map-fullscreen]="screen?.data?.fullscreen" [class.full-viewport-page]="['chatbot'].indexOf(screen.type)>-1">
+    @if (!asComp() && !screen.data?.hideTitle && !hideTitle()) {
+      <page-title [asComp]="asComp()" (closed)="closed.emit(true)">
+        @if (form?.data?.x?.showEntryId){
+          <div class="id-label">{{entry?.id}}</div>
+        }
+        <!-- <h4 [innerHtml]="screen.title">{{screen.title}}</h4> -->
+        <h4 [innerHtml]="compileTpl(screen.title, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.title}}</h4>
+        @if (screen.description) {
+          <!-- <div [innerHtml]="screen.description">{{screen.description}}</div> -->
+          <div [innerHtml]="compileTpl(screen.description, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.description}}</div>
+        }
+      </page-title>
+    }
+    @if (isAuthorized) {
+      @if ((screen.showAction||screen.canPrint||screen.data?.showSummary)) {
+        <div [class.px-2]="!asComp()" [class.pt-2]="asComp()" class="print-hide">
+          <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
+          [class.input-group-sm]="asComp()" [class.justify-content-center]="!screen.showAction" [class.limit-width]="!screen?.wide">
+            @if (screen.showAction && ['list','map','calendar'].includes(screen.type)){
+
+              @if (dataset?.x?.canAdd && preCheck({}, dataset?.x?.addPre, false)) {
+                @if (!(form?.data?.prev && !prevId)) {
+                  @if (dataset?.x?.inpopAdd) {
+                    <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
+                      (click)="inPop(inPopTpl,prevId,{next:form?.data?.id},'form',form.data.prev?'prev':'add', false)">
+                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                      {{dataset?.x?.addLabel}}
+                    </button>
+                  } @else {
+                    <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0"
+                      ngbTooltip="New Entry"
+                      routerLink="{{preurl}}/form/{{form['data']?.id}}/{{form.data.prev?'prev':'add'}}"
+                      [queryParams]="{entryId:prevId}">
+                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                      {{dataset?.x?.addLabel}}
+                    </button>
+                  }
+                }
+              }
+              @if (!dataset?.x?.hideSearch) {
+                <input type="search" autocapitalize="none"
+                  class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
+                  placeholder="{{app.x?.lang=='ms'?'Tapis senarai':'Filter list'}}" [(ngModel)]="searchText"
+                  (keyup.enter)="loadDatasetEntry(dataset, 1)">
+              }
+              <!-- checkfilter:{{checkFilter()}}, filter:{{filters()|json}} -->
+
+              @if (dataset?.filters && dataset?.filters.length>0) {
+                <button type="button" class="btn border border-2 bg-light"
+                  [class.blue]="!checkFilter()" (click)="editFilter(editFilterTpl,filtersData,true)">
+                  <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
+                </button>
+              }
+              @if (dataset?.exportXls||dataset?.exportCsv||dataset?.exportPdf) {
+                <div ngbDropdown class="d-inline-block">
+                  <button type="button" class="btn border border-2 bg-light" title="Export dataset" id="dropdownExport"
+                    ngbDropdownToggle>
+                    <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <div ngbDropdownMenu aria-labelledby="dropdownExport">
+                    @if (dataset?.exportXls) {
+                      <a title="Export to Excel" ngbDropdownItem target="blank"
+                        href="{{base}}/report/export/{{dataset?.id}}/xlsx?email={{user.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
+                        <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
+                        Export to Excel
+                      </a>
+                    }
+                    @if (dataset?.exportCsv) {
+                      <a title="Export to CSV" ngbDropdownItem target="blank"
+                        href="{{base}}/report/export/{{dataset?.id}}/csv?email={{user.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
+                        <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
+                        Export to CSV
+                      </a>
+                    }
+                    @if (dataset?.exportPdf) {
+                      <a title="Export to PDF" ngbDropdownItem target="blank"
+                        href="{{base}}/report/export/{{dataset?.id}}/pdf?email={{user.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
+                        <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
+                        Export to PDF
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
+              @if (entryTotal>25 && screen.data?.paginate) {
+                <div ngbDropdown class="d-inline-block">
+                  <button type="button" class="btn border border-2 bg-light" title="Pagination size" id="dropdownPage"
+                    ngbDropdownToggle>
+                    <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize}}
+                  </button>
+                  <div ngbDropdownMenu aria-labelledby="dropdownPage">
+                    <button type="button" title="25 items per page" (click)="pageSize=25;loadDatasetEntry(dataset, 1)" ngbDropdownItem>
+                      25
+                    </button>
+                    <button type="button" title="50 items per page" (click)="pageSize=50;loadDatasetEntry(dataset, 1)" ngbDropdownItem>
+                      50
+                    </button>
+                    <button type="button" title="100 items per page" (click)="pageSize=100;loadDatasetEntry(dataset, 1)" ngbDropdownItem>
+                      100
+                    </button>
+                  </div>
+                </div>
+              }
+              <div ngbDropdown class="d-inline-block ms-auto">
+                <button type="button" class="btn border border-2 bg-light" title="Sort by" id="dropdownSort"
+                  ngbDropdownToggle>
+                  <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
+                  <strong>{{sortFieldName}}</strong>
+                </button>
+                <div ngbDropdownMenu aria-labelledby="dropdownSort">
+                  @for (item of dataset?.items; track item.id) {
+                    <button type="button" class="pointer" [class.text-primary]="sortField==item.id"
+                      ngbDropdownItem
+                      (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                      {{item.label}}&nbsp;
+                      @if (sortField==item.id && sortDir[item.id]!=null) {
+                        <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (screen.canPrint && ['qr','chatbot'].indexOf(screen.type)==-1) {
+              <button type="button" class="btn border border-2 bg-light"
+                (click)="printReport()">
+                <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
+                </fa-icon>
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (screen.data?.showSummary) {
+          <div class="px-2 pb-2 list-summary print-hide">
+            <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+              <div class="row">
+                <div class="col d-flex align-items-center">
+                  <strong>Summary</strong>
+                </div>
+                <div class="col">Total:
+                  <div class="d-sm-inline">{{entryTotal}}</div>
+                </div>
+                <div class="col">Shown:
+                  <div class="d-sm-inline">{{numberOfElements}}</div>
+                </div>
+                <div class="col">Pages:
+                  <div class="d-sm-inline">{{entryPages}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      }
+      
+      <div class="section-to-print loadable" [class.disabled]="loading">
+        <div class="centered" [class.limit-width]="!screen?.wide">
+          @if (screen?.data?.pretext) {
+            <!-- Boleh guna goObj, popObj since nya x perlu cater for each entryId -->
+            <div id="screen-{{screen.id}}-pre"
+              [innerHtml]="compileTpl(screen?.data?.pretext, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">
+            </div>
+          }
+          @if (screen.type=='static') {
+            <!-- {{$now$}} -->
+            <!-- Boleh guna goObj, popObj since nya x perlu cater for each entryId -->
+            <div id="screen-{{screen.id}}-content" [ngClass]="screen?.data?.parentclass"
+              [innerHtml]="compileTpl(screen?.data?.content, {$_:entry,$:entry.data,$prev$:entry.prev,$$_:entry.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">
+            </div>
+          }@else if (screen.type=='mailbox') {
+            @defer(prefetch on idle){
+              <app-mailbox [email]="user.email" [appId]="app.id"></app-mailbox>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (screen.type=='combine') {
+            @defer(prefetch on idle){
+              <app-combined [screen]="screen" [email]="user.email" [appId]="app.id"></app-combined>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (screen.type=='qr') {
+            @defer(prefetch on idle){
+              <app-scan (valueChange)="qrValueChange($event, screen)" #scanner></app-scan>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (screen.type=='chatbot') {
+            @defer(prefetch on idle){
+              <app-chatbot [screen]="screen" [app]="app" [user]="user" [compileTplData]="{ $user$: user, $base$: base, $baseUrl$: baseUrl, $baseApi$: baseApi, $this$: $this$, $param$: $param$}"></app-chatbot>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (screen.type=='bucket') {
+            @defer(prefetch on idle){
+              <app-bucket [screen]="screen" [app]="app" [user]="user" [compileTplData]="{ $user$: user, $base$: base, $baseUrl$: baseUrl, $baseApi$: baseApi, $this$: $this$, $param$: $param$}"></app-bucket>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (screen.type=='map') {
+            @defer(prefetch on idle){
+              <!-- {{mapList|json}} -->
+              <app-ng-leaflet [screen]="screen" [baseMapServerUri]="screen?.data?.customMapServer" [icon]="screen?.data?.icon" [dropPinOn]="screen?.data?.dropPinOn"
+                [readOnly]="screen?.data?.readOnly" [timestamp]="timestamp" [value]="mapList"></app-ng-leaflet>
+            }@loading {
+              <div class="text-center m-5">
+                <div class="spinner-grow text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            }
+          }@else if (['list','calendar','map'].indexOf(screen.type)>-1) {
+            @if (screen.type=='list') {
+              @if (!loading){
+                <div class="p-relative rows-print-as-pages" [ngClass]="screen?.data?.parentclass">
+                  @for (e of entryList; track e.id) {
+                    <div
+                      [outerHTML]="compileTpl(screen?.data?.content, {$:e.data,$prev$:e.prev,$_:e,$$_:e.approval,$go:buildGo(e.id),$popup:buildPop(e.id),$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">
+                    </div>
+                  }
+                </div>
+              }@else {
+                <div class="text-center m-5">
+                  <div class="spinner-grow text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              }
+            }
+            @if (screen?.data?.paginate && entryTotal>pageSize) {
+              <div class="print-hide">
+                <div style="clear:both"
+                  class="text-center d-flex justify-content-center pagination-rounded p-1">
+                  <ngb-pagination [collectionSize]="entryTotal" [pageSize]="pageSize" [(page)]="pageNumber"
+                    [maxSize]="10" [rotate]="true"
+                    (pageChange)="loadDatasetEntry(screen.dataset,pageNumber)" boundaryLinks="true"
+                    directionLinks="true">
+                    <ng-template ngbPaginationFirst>
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                    </ng-template>
+                    <ng-template ngbPaginationPrevious>
+                      <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationNext>
+                      <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                    </ng-template>
+                    <ng-template ngbPaginationLast>              
+                      <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                    </ng-template>
+                  </ngb-pagination>
+                </div>
+              </div>
+            }
+            @if (screen.type=='calendar' && calOptions) { 
+              <div [class.p-2]="!asComp()" style="position: relative;">
+                <!-- {{calOptions|json}} -->
+                @defer(prefetch on idle){
+                  <full-calendar [options]="calOptions" deepChangeDetection="true" #fullCalendar>
+                    <ng-template #eventContent let-arg>
+                      <div class="px-1" [innerHtml]="arg.event.title"></div>
+                    </ng-template>
+                  </full-calendar>
+                }@loading {
+                  <div class="text-center m-5">
+                    <div class="spinner-grow text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }@else if (screen.type=='page') {
+            @if (!_entryId) {
+              <div class="bg-white mb-2">
+                <div class="input-group">
+                  <span class="input-group-text">Entry ID</span>
+                  <input type="text" class="form-control" (keyup.enter)="runEntry(testId.value)"
+                  autocapitalize="none"
+                    name="test-id" #testId>
+                  <button type="button" class="btn btn-secondary" (click)="runEntry(testId.value)">Load
+                  Data</button>
+                </div>
+              </div>
+            }@else{
+              <!-- Boleh guna goObj, popObj since nya x perlu cater for each entryId -->
+              <div [ngClass]="screen?.data?.parentclass"
+                [innerHtml]="compileTpl(screen?.data?.content, {$_:entry,$:entry.data,$prev$:entry.prev,$$_:entry?.approval,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">
+              </div>
+            }
+          }
+          @if (screen?.data?.posttext) {
+            <!-- Boleh guna goObj, popObj since nya x perlu cater for each entryId -->
+            <div id="screen-{{screen.id}}-post"
+              [innerHtml]="compileTpl(screen?.data?.posttext, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      @if (!loading) {
+        @if (!isAuthorized) {
+          <div class="detail text-muted">
+            <h3>{{unAuthorizedMsg}}</h3>
+          </div>
+        }
+      }
+    }
+  </div>
+}
+<ng-template #showOptTpl let-c="close" let-d="dismiss">
+  <div class="modal-body d-flex">
+    <div class="d-flex justify-content-center flex-column align-items-center m-a">
+      <div class="d-flex flex-column">
+        <div class="py-3 text-center text-muted" style="font-weight: 1.2em;">{{app.x?.lang=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
+        @for (action of actionLinks; track $index) {
+          <a [routerLink]="action.url" [queryParams]="action.param"
+          class="btn btn-secondary m-1 rounded-pill border-2" (click)="d(action.url)">{{action.label}}</a>
+        }
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editFilterTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Filter {{dataset?.title}}</h4>
+  </div>
+  <div class="modal-body">
+    @defer(prefetch on idle){
+      <app-user-entry-filter [formHolder]="form" [presetFilters]="dataset.presetFilters"
+        [filtersConfig]="dataset?.filters" [filtersData]="filtersData" [lookup]="lookup"></app-user-entry-filter>
+    }@loading {
+      <div class="text-center m-5">
+        <div class="spinner-grow text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    }
+    <div class="form-group mb-3">
+      <label class="form-label">Condition type</label>
+      <div>
+        <div class="btn-group">
+          <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all"
+            [(ngModel)]="filtersCond" required>
+          <label for="match-all" class="btn btn-outline-secondary">Match All</label>
+          <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any"
+            [(ngModel)]="filtersCond" required>
+          <label for="match-any" class="btn btn-outline-secondary">Match Any</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <div>
+      <button type="button" class="btn btn-round btn-secondary me-1" (click)="c({})">
+        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+        Reset
+      </button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData)">
+        <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+        Filter
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #inPopTpl let-c="close" let-d="dismiss">
+  <div style="margin-bottom:-68px; background: whitesmoke;">
+    @if (['form'].indexOf(inPopType)>-1) {
+      @defer(prefetch on idle){
+        <app-form (saved)="onSavedInit();d()" (submitted)="onSavedInit();d()"
+          [$param$]="inPopParams"
+          (closed)="d()" [formId]="inPopFormId" [entryId]="inPopEntryId"
+          [asComp]="true" [action]="inPopFacet" ></app-form>
+      }@loading {
+        <div class="text-center m-5">
+          <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      } 
+    }
+    @if (['view','approve'].indexOf(inPopType)>-1) {
+      @defer(prefetch on idle){
+        <app-view (approved)="loadDatasetEntry(dataset, pageNumber,sort);d()" (closed)="d()"
+          [formId]="inPopFormId" [entryId]="inPopEntryId"
+        asComp="true" [action]="inPopType" [facet]="inPopFacet"></app-view>
+      }@loading {
+        <div class="text-center m-5">
+          <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+    }
+    @if (['screen'].indexOf(inPopType)>-1) {
+      @defer(prefetch on idle){
+        <app-screen (closed)="d()" [screenId]="inPopFormId" [param]="inPopParams"
+        [entryId]="inPopEntryId" asComp="true" [action]="inPopType"></app-screen>
+      }@loading {
+        <div class="text-center m-5">
+          <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</ng-template>

@@ -1,0 +1,17 @@
+<input class="form-control mb-3" placeholder="Type to search..." type="search" [(ngModel)]="searchText">
+<div class="btn-group-toggle d-flex flex-wrap justify-content-center">
+  @if (showNone()) {
+    <button type="button" class="btn p-2 m-1" (click)="change(undefined)" [class.btn-primary]="model()==null">
+      <div style="min-width: 1.25em;padding:0.3em 0.5em;font-weight: bold;color:#aaa">NO
+      </div>
+    </button>
+  }
+  @for (c of iconList|filter:searchText; track $index) {
+    <button type="button" class="btn p-2 m-1" (click)="change(c.key)" 
+      [title]="c.value[1]"
+      [class.btn-primary]="model()==c.key">
+      <fa-icon [icon]="c.value" size="2x" [fixedWidth]="true">
+      </fa-icon>
+    </button>
+  }
+</div>

@@ -1,0 +1,11 @@
+.extracting .form-control {
+    border-color: #007eff;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.5);
+    // outline: solid 1.5px white;
+    animation: lineblink 1s linear infinite;
+}
+@keyframes lineblink {
+    50% {
+        box-shadow: 0 0 0 0.25rem rgba(104, 114, 129, 0.5);
+    }
+  }

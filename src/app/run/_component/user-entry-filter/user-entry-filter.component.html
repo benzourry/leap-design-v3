@@ -1,0 +1,119 @@
+@for (fil of filtersConfig(); track $index) {
+  @let field = formHolder()[fil.root]?.items[fil.code];
+  @if (field && ['static','file','imagePreview','btn','dataset','screen','map'].indexOf(field.type)==-1) {
+    <div class="form-group mb-3">
+      <label class="form-label">{{fil.label}} 
+        @if (['eval','qr'].indexOf(field.type)>-1) {
+          <span class="small">(Use '%' as wildcard)</span>
+        }
+      </label>
+      @if (['text','textarea','eval','qr'].indexOf(field.type)>-1) {
+        <input class="form-control" type="text"
+          [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code]"
+          [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code]"
+          />
+      }
+      @if (['checkbox'].indexOf(field.type)>-1) {
+        <div [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code]">
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" [value]="true" id="f-{{fil.code}}-true"
+              [checked]="filtersData()[fil.prefix+'.'+fil.code] === true" name="f-{{fil.code}}"
+              (change)=" filtersData()[fil.prefix+'.'+fil.code] = true;" />
+            <label class="form-check-label" for="f-{{fil.code}}-true">Yes</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" [value]="false" id="f-{{fil.code}}-false"
+              [checked]="filtersData()[fil.prefix+'.'+fil.code] === false" name="f-{{fil.code}}"
+              (change)=" filtersData()[fil.prefix+'.'+fil.code] = false;" />
+            <label class="form-check-label" for="f-{{fil.code}}-false">No</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input type="radio" class="form-check-input" [value]="undefined" id="f-{{fil.code}}-undefined"
+              [checked]="filtersData()[fil.prefix+'.'+fil.code] === undefined" name="f-{{fil.code}}"
+              (change)=" filtersData()[fil.prefix+'.'+fil.code] = undefined;" />
+            <label class="form-check-label" for="f-{{fil.code}}-undefined">Any</label>
+          </div>
+        </div>
+      }
+      @if (['date'].indexOf(field.type)>-1) {
+        <div class="input-group flex-nowrap">
+          <input class="form-control" type="text"
+            [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'~from']"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~from']" placeholder="From"
+            (click)="dfrom.toggle()" ngbDatepicker #dfrom="ngbDatepicker">
+          <div class="col-auto">
+            <ngb-timepicker name="f-{{fil.code}}-timef"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~from']"></ngb-timepicker>
+          </div>
+          <input class="form-control" type="text"
+            [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'~to']"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~to']" placeholder="To"
+            (click)="dto.toggle()" ngbDatepicker #dto="ngbDatepicker">
+          <div class="col-auto">
+            <ngb-timepicker name="f-{{fil.code}}-timet"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~to']"></ngb-timepicker>
+          </div>
+        </div>
+      }
+      @if (['scaleTo5', 'scaleTo10', 'scale','number'].indexOf(field.type)>-1) {
+        <div class="input-group flex-nowrap">
+          <input class="form-control" type="number"
+            [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'~from']"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~from']" placeholder="From">
+          <input class="form-control" type="number"
+            [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'~to']"
+            [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'~to']" placeholder="To">
+        </div>
+      }
+      @if (['select', 'radio'].indexOf(field.type)>-1) {
+        <ng-select [items]="lookup()[fil.code]" bindLabel="name" bindValue="code"
+          [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+(field.subType=='multiple'?'*':'')+'.code']"
+          [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+(field.subType=='multiple'?'*':'')+'.code']"
+          [searchFn]="lookupSearchFn">
+          @if (field?.placeholder) {
+            <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
+              <div [innerHtml]="compileTpl(field.placeholder,{'$':item})|safe:'html'">
+              </div>
+            </ng-template>
+          }
+        </ng-select>
+      }
+      @if (['checkboxOption'].indexOf(field.type)>-1) {
+        <ng-select [items]="lookup()[fil.code]" bindLabel="name" bindValue="code"
+          [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'.code']"
+          [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'*.code']"
+          >
+        </ng-select>
+      }
+      @if (['modelPicker'].indexOf(field.type)>-1) {
+        <ng-select [items]="lookup()[fil.code]" [bindLabel]="field.bindLabel"
+          [bindValue]="field.bindLabel"
+          [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code+'.'+field.bindLabel]"
+          [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code+'.'+field.bindLabel]"
+          >
+          <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
+            @if (field.placeholder) {
+              <div
+                [innerHtml]="compileTpl(field.placeholder,{'$':item})|safe:'html'">
+              </div>
+            } @else {
+              {{item[field.bindLabel]}}
+            }
+          </ng-template>
+        </ng-select>
+      }
+      @if (['simpleOption'].indexOf(field.type)>-1) {
+        <select class="form-control custom-select" name="$.{{fil.code}}"
+          [class.disabled]="presetFilters()[fil.prefix+'.'+fil.code]"
+          [(ngModel)]="filtersData()[fil.prefix+'.'+fil.code]"
+          >
+          <option [ngValue]="undefined" class="text-muted">Unset</option>
+          @for (item of getAsList(field.options); track $index) {
+            <option [value]="item">
+            {{item}}</option>
+          }
+        </select>
+      }
+    </div>
+  }
+}

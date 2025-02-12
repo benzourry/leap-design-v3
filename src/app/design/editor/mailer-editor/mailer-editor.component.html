@@ -1,0 +1,527 @@
+<style>
+  input[type=search].start {
+    /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: none;
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: black;
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+      <h5 class="mb-3">Mailer Manager</h5>
+      <input type="search"  autocapitalize="none" class="start" placeholder="Filter list" (keyup.enter)="loadMailerList(1)"
+        [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!itemLoading) {
+        <div class="mb-3">
+          @for (a of mailerList | filter:searchText; track a.id) {
+            <a class="pointer element" [routerLink]="['/design',appId,'mailer']" [queryParams]="{id:a?.id}"
+              [class.active]="a.id==mailerId">
+              <div class="list-group-item-heading" [class.strike]="a.enabled==0">
+                {{a.name}} <sup>{{a?.id}}</sup>
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editMailer(editMailerTpl,{enabled:1}, true)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Mailer
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (mailerTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="mailerTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadMailerList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+      @if (!schedLoading) {
+        <div class="mb-3">
+          <small class="ms-3">Scheduled Mailer</small>
+          @for (a of schedList | filter:searchText; track a.id) {
+            <div class="pointer element link-item">
+              <div class="list-group-item-heading"  [class.strike]="a.enabled==0">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+              <div class="element-edit" style="position:absolute;top:10px;right:5px;">
+                <button type="button" class="btn btn-secondary btn-round btn-sm"
+                  (click)="editSched(editSchedTpl, a, false)">
+                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-secondary btn-round btn-sm" (click)="removeSched(removeSchedTpl,a)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+              </div>
+            </div>
+          }
+          <a class="pointer element" (click)="editSched(editSchedTpl,{}, true)" [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Schedule
+          </a>
+        </div>
+        <div class="mb-3">
+          <small class="ms-3">Mailer History</small>
+          <a class="pointer element link-item" (click)="openHistory(notiListTpl, null)">
+            View Mail History
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (mailer) {
+          <div>
+            <div class="">
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{mailer.name}}</h5>
+                @if (mailer.description) {
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{mailer.description}}</div>
+                }
+              </div>
+              <div class="text-muted mb-2">
+                <small>Mailer ID : {{mailer.id}}</small>
+              </div>
+              <div class="d-flex flex-row">
+                <div class="flex-grow-1 pt-2">
+                  @if (mailer.shared) {
+                    <span>
+                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
+                      Public Mailer
+                    </span>
+                  }
+                  @if (!mailer.shared) {
+                    <span class="text-danger">
+                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                      Private Mailer
+                    </span>
+                  }
+                </div>
+                @if (mailer) {
+                  <div class="d-flex flex-row">
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-secondary"
+                      (click)="openHistory(notiListTpl, mailer.id)">
+                      <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-secondary ms-1"
+                      (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-sm btn-outline-danger ms-1"
+                      (click)="removeMailer(removeMailerTpl,mailer)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+            @if (!loading) {
+              <div class="card mt-2">
+                <div class="card-header">
+                  <span [ngClass]="mailer.enabled==0?'text-danger':'text-success'">
+                    <fa-icon [icon]="['fas','circle']" [fixedWidth]="true"></fa-icon>
+                  </span>
+                  {{mailer.subject}}
+                </div>
+                <div class="card-body pb-0">
+                  <div class="form-group mb-3">
+                    <label>Recipient</label>
+                    <div>
+                      <div style="float:left;width:40px;">To:</div>
+                      <div style="margin-left:40px">
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.toUser?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          User
+                        </div>
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.toApprover?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Approver
+                        </div>
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.toAdmin?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Admin
+                        </div>
+                      </div>
+                      <div style="margin-left:40px;">Extra To: {{mailer.toExtra}}@if (!mailer.toExtra) {
+                        <span
+                        class="text-muted">Not specified</span>
+                      }</div>
+                    </div>
+                    <div>
+                      <div style="float:left;width:40px;">CC:</div>
+                      <div style="margin-left:40px">
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.ccUser?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          User
+                        </div>
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.ccApprover?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Approver
+                        </div>
+                        <div class="d-inline-block me-2">
+                          <fa-icon [icon]="['far',mailer.ccAdmin?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Admin
+                        </div>
+                      </div>
+                      <div style="margin-left:40px;">Extra CC: {{mailer.ccExtra}}@if (!mailer.ccExtra) {
+                        <span
+                        class="text-muted">Not specified</span>
+                      }</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body" [innerHtml]="nl2br(mailer.content)">
+                </div>
+              </div>
+            }
+          </div>
+        }
+        @if (!mailer) {
+          <div style="color:#aaa;">
+            <h3>Please select Mailer from the list on the left to view it's data.</h3>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #removeMailerTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Mailer</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Mailer Name</label>
+          <p class="form-control-static">{{removeMailerData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeMailerData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeMailerData)">
+        <i class="icon-minus-sign-alt"></i> Remove Mailer
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #removeSchedTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Schedule</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Schedule Name</label>
+          <p class="form-control-static">{{removeSchedData.name}}</p>
+        </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeSchedData)">
+      <i class="icon-minus-sign-alt"></i> Remove Schedule
+    </button>
+  </div>
+</div>
+</ng-template>
+<ng-template #editMailerTpl let-c="close" let-d="dismiss">
+    @defer(prefetch on idle){
+      <app-edit-mailer [editMailerData]="editMailerData" [formList]="formList" [dismiss]="d" [close]="c"></app-edit-mailer>
+    }@loading {
+      <div class="text-center m-5">
+        <div class="spinner-grow text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    }
+</ng-template>
+<ng-template #editSchedTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Scheduler</h4>
+  </div>
+  <div class="modal-body fix-gutter" #schedEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Schedule Name *</label>
+      <input type="text" class="form-control" [ngModel]="editSchedData && editSchedData.name" (ngModelChange)="editSchedData && (editSchedData.name = $event)" #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Frequency *</label>
+      <div>
+        <div class="">
+          <input type="radio" class="btn-check" value="daily" id="freqDaily" name="freqDaily"
+            [ngModel]="editSchedData && editSchedData.freq" (ngModelChange)="editSchedData && (editSchedData.freq = $event)" required>
+          <label for="freqDaily" class="btn btn-outline-secondary me-1 mb-1"> Daily</label>
+          <input type="radio" class="btn-check" value="weekly" id="freqWeekly" name="freqWeekly"
+            [ngModel]="editSchedData && editSchedData.freq" (ngModelChange)="editSchedData && (editSchedData.freq = $event)" required>
+          <label for="freqWeekly" class="btn btn-outline-secondary me-1 mb-1"> Weekly</label>
+          <input type="radio" class="btn-check" value="monthly" id="freqMonthly" name="freqMonthly"
+            [ngModel]="editSchedData && editSchedData.freq" (ngModelChange)="editSchedData && (editSchedData.freq = $event)" required>
+          <label for="freqMonthly" class="btn btn-outline-secondary me-1 mb-1"> Monthly</label>
+          <input type="radio" class="btn-check" value="yearly" id="freqYearly" name="freqYearly"
+            [ngModel]="editSchedData && editSchedData.freq" (ngModelChange)="editSchedData && (editSchedData.freq = $event)" required>
+          <label for="freqYearly" class="btn btn-outline-secondary me-1 mb-1"> Yearly</label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      @if (editSchedData?.freq=='weekly') {
+        <div class="col-sm-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Day of week *</label>
+            <select class="form-select" name="dayOfWeak" [ngModel]="editSchedData && editSchedData.dayOfWeek" (ngModelChange)="editSchedData && (editSchedData.dayOfWeek = $event)"
+              #dayOfWeek="ngModel" required>
+              @for (item of dayOfWeekList; track $index) {
+                <option [value]="item.value">{{item.name}}
+                </option>
+              }
+            </select>
+            @if (dayOfWeek?.invalid) {
+              <small class="form-text has-warning">
+                @if (dayOfWeek?.errors?.required) {
+                  <span class="help-block">Day of week is required</span>
+                }
+              </small>
+            }
+          </div>
+        </div>
+      }
+      @if (['monthly','yearly'].indexOf(editSchedData?.freq)>-1) {
+        <div class="col-sm-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Day of month *</label>
+            <select class="form-select" name="dayOfMonth"
+              [ngModel]="editSchedData && editSchedData.dayOfMonth" (ngModelChange)="editSchedData && (editSchedData.dayOfMonth = $event)" #dayOfMonth="ngModel" required>
+              <!-- <option value="" disabled>Select date...</option> -->
+              @for (item of dayOfMonthList; track $index) {
+                <option [value]="item">{{item}}
+                </option>
+              }
+            </select>
+            @if (dayOfMonth?.invalid) {
+              <small class="form-text has-warning">
+                @if (dayOfMonth?.errors?.required) {
+                  <span class="help-block">Day of month is required</span>
+                }
+              </small>
+            }
+          </div>
+        </div>
+      }
+      @if (editSchedData?.freq=='yearly') {
+        <div class="col-sm-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Month of year *</label>
+            <select class="form-select" name="monthOfYear"
+              [ngModel]="editSchedData && editSchedData.monthOfYear" (ngModelChange)="editSchedData && (editSchedData.monthOfYear = $event)" #monthOfYear="ngModel" required>
+              <!-- <option value="" disabled>Select date...</option> -->
+              @for (item of monthOfYearList; track $index) {
+                <option [value]="item.value">{{item.name}}
+                </option>
+              }
+            </select>
+            @if (monthOfYear?.invalid) {
+              <small class="form-text has-warning">
+                @if (monthOfYear?.errors?.required) {
+                  <span class="help-block">Month of year is required</span>
+                }
+              </small>
+            }
+          </div>
+        </div>
+      }
+      <div class="col-sm-6">
+        <div class="form-group mb-3">
+          <label class="form-label">Hour in day *</label>
+          <input type="text" class="form-control" [ngModel]="editSchedData && editSchedData.clock" (ngModelChange)="editSchedData && (editSchedData.clock = $event)"
+            #clock="ngModel" placeholder="ie: 1410" name="clock" (keyup)="keepMinute00(editSchedData)"
+            required>
+          @if (clock?.invalid) {
+            <small class="form-text has-warning">
+              @if (clock?.errors?.required) {
+                <span class="help-block">Clock is required in HHmm (ie: 0800 or
+                1410)</span>
+              }
+            </small>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Select Dataset *</label>
+      <div class="input-group">
+        <select class="form-select" name="datasetId" [ngModel]="editSchedData && editSchedData.datasetId" (ngModelChange)="editSchedData && (editSchedData.datasetId = $event)"
+          required>
+          @for (dataset of datasetList; track dataset.id) {
+            <option [ngValue]="dataset.id">{{dataset.title}}</option>
+          }
+        </select> 
+        @if(editSchedData.datasetId){       
+          <button type="button" class="btn btn-secondary btn-sm"
+            (click)="editDataset(editDatasetTpl,editSchedData.datasetId)">
+            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+            </fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Select Mailer *</label>
+      <div class="input-group">
+        <select class="form-select" name="mailerId" [ngModel]="editSchedData && editSchedData.mailerId" (ngModelChange)="editSchedData && (editSchedData.mailerId = $event)" required>
+          @for (mailer of allMailerList; track mailer.id) {
+            <option [ngValue]="mailer.id">{{mailer.name}}</option>
+          }
+        </select>
+        @if(editSchedData.mailerId){   
+          <button type="button" class="btn btn-secondary btn-sm"
+            (click)="editMailerById(editMailerTpl,editSchedData.mailerId)">
+            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+            </fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Status *</label>
+      <div>
+        <div class="btn-group btn-group-toggle">
+          <input type="radio" class="btn-check" [value]="1" id="enabledsched1" name="enabledsched1" #enabledsched="ngModel"
+            [ngModel]="editSchedData && editSchedData.enabled" (ngModelChange)="editSchedData && (editSchedData.enabled = $event)" [required]="true">
+          <label for="enabledsched1" class="btn btn-sm btn-success">
+            <fa-icon [icon]="['far',editSchedData?.enabled==1?'check-square':'square']" [fixedWidth]="true">
+            </fa-icon>
+            Enabled
+          </label>
+          <input type="radio" class="btn-check" [value]="0" id="enabledsched0" name="enabledsched0" #enabledsched="ngModel"
+            [ngModel]="editSchedData && editSchedData.enabled" (ngModelChange)="editSchedData && (editSchedData.enabled = $event)" [required]="true">
+          <label for="enabledsched0" class="btn btn-sm btn-danger">
+            <fa-icon [icon]="['far',editSchedData?.enabled==1?'square':'check-square']" [fixedWidth]="true">
+            </fa-icon>
+            Disabled
+          </label>
+        </div>
+        @if (enabledsched?.invalid) {
+          <div class="form-text has-warning small">
+            @if (enabledsched.errors?.required) {
+              <span class="help-block">Status is required</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="schedEditForm.invalid"
+      (click)="c(editSchedData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Schedule
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #notiListTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-noti-list [appId]="appId" [tplId]="tplId"></app-noti-list>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #editDatasetTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-dataset [dismiss]="d" [close]="c" [user]="user" [dataset]="editDatasetData" [appList]="otherAppList"
+    [app]="app" [accessList]="accessList"></app-edit-dataset>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

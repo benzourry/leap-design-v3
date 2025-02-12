@@ -1,0 +1,48 @@
+.form-inline.width-auto .input-group-sm{
+    width: auto;
+}
+
+.dropdown-toggle::after {
+    display: none;
+  }
+
+.limit-height{
+    max-height: 400px;overflow: auto;
+}
+
+.code-container {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+.cogna-resp{
+
+}
+.cogna-resp.prompt{
+  background: #d2f4ea;
+}
+.cogna-resp.response{
+  background: white;
+}
+
+// .ingest-success{
+//   outline: solid 2px rgba(25,135,84,0.3) !important;
+// }
+
+// .ingest-danger{
+//   outline: solid 2px rgba(220,53,69,0.3) !important;
+// }
+
+fieldset legend.model-section{
+  background: gray;
+  color:white;
+  font-size:1em;
+  padding:1em;
+  margin-left:-1em;
+}
+
+.accordion-index{
+  float:left;height:25px; width:25px;background:#666; color:white;
+              padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
+            border-radius:20px;
+}

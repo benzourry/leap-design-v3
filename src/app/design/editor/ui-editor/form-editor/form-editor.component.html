@@ -1,0 +1,3574 @@
+<div class="fix-gutter d-flex flex-row h-100" cdkDropListGroup>
+  <div style="flex:auto; overflow: auto;" (window:resize)="drawTierLines()">
+    <div class="limit-width">
+      @if (!curForm && !formError) {
+        <div class="m-a col-sm-12" style="color:#aaa;">
+          <div class="p-4 text-muted text-center">
+            <h4>Please select form to edit from the list or</h4>
+            <div class="d-flex flex-row justify-content-center mt-3">
+              <button type="button"
+                class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
+                (click)="editForm(editFormTpl,newForm, true)" style="height:70px;width:140px"
+                [class.disabled]="offline">
+                <fa-icon style="font-size:1.2em" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                <div>New Form</div>
+              </button>
+              <button type="button"
+                class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
+                (click)="cloneForm(cloneFormTpl)" style="height:70px;width:140px"
+                [class.disabled]="offline">
+                <fa-icon style="font-size:1.2em" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                <div>Clone Form</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+      @if (formError) {
+        <div class="m-3 p-3 bg-danger text-white">
+          <h5>Failed to load form with id <strong>{{curFormId}}</strong></h5>
+          <p>Message: {{formError.message}}</p>
+          <p class="small fst-italic">Note: This error might be caused by cyclic reference, where this form might linked to the other form that has this form as it's previous form. You can try to unlink it first.</p>
+          <button type="button" class="btn btn-outline-light btn-round me-1"
+            (click)="unlinkPrevForm(curFormId)">Unlink Prev Form
+          </button>
+          <button type="button" class="btn btn-outline-light btn-round"
+            (click)="removeForm(removeFormTpl,{id:curFormId, title:'n/a', description:'n/a'})">Remove
+          Form</button>
+        </div>
+      }
+      @if (curForm && !formError) {
+        <div>
+          <div class="repo-title pt-3 px-2">
+            <div class="d-flex flex-row flex-wrap flex-md-nowrap">
+              <div class="pe-0 pe-md-3 me-auto d-flex flex-row w-100">
+                <h5 class="m-0 text-truncate">{{cleanText(curForm.title)}} <sup>{{curForm.id}}</sup></h5>
+                <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curForm.description)}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-simple">
+            <ul ngbNav #nav="ngbNav" class="nav-tabs flex-wrap-reverse">
+              <li ngbNavItem class="ms-2 mt-3">
+                <a ngbNavLink>Forms</a>
+                <ng-template ngbNavContent>
+                  <div class="p-2">
+                    <div class="row g-2">
+                      <div class="col">
+                        <input type="text" class="form-control bg-light" [(ngModel)]="filterField"
+                          name="filterField" placeholder="Type to filter fields">
+                      </div>
+                      @if (facetList) {
+                        <div class="col" style="max-width:200px">
+                          <select class="form-select bg-light" name="previewfacet"
+                            [(ngModel)]="previewFacet">
+                            <option class="text-muted" [ngValue]="undefined">Select view mode
+                            </option>
+                            @for (g of facetList; track $index) {
+                              <option [value]="g">{{g}}</option>
+                            }
+                          </select>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="p-2">
+                    @if (curForm.prev) {
+                      <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+                        <div class="flex-grow-1 p-2 text-truncate">
+                          Previous Form: <strong>{{curForm.prev.title}}</strong>
+                          @if (curForm.prev.description) {
+                            <div class="text-truncate">
+                            {{curForm.prev.description}}</div>
+                          }
+                          @if (curForm.x?.hidePrev) {
+                            <div class="small">
+                            Previous data is hidden in this form</div>
+                          }
+                        </div>
+                        <div class="p-2">
+                          <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                            [routerLink]="[]" [queryParams]="{id:curForm.prev.id}">View Form</a>
+                        </div>
+                      </div>
+                    }
+                    @if (curForm.nav!='simple') {
+                      <div style="text-align:center">
+                        <div class="flex-wrap text-center">
+                          @for (tab of curForm.tabs; track tab.id) {
+                            <button type="button" class="btn position-relative btn-outline-secondary btn-sm btn-round element mt-1 me-1"
+                              [ngClass]="tab.altClass">
+                              <span class="element-item">
+                                @if (tab.x?.icon){
+                                  <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
+                                }
+                                {{tab.title}}
+                                @if (tab.pre) {
+                                  <sup class="text-danger" [title]="tab.pre">pre&nbsp;</sup>
+                                }
+                                @if (tab.x?.enableCond) {
+                                  <sup class="text-danger" [title]="tab.x?.enableCond">enb&nbsp;</sup>
+                                }
+                                @if (notEmptyObject(tab?.x?.facet)) {
+                                  <span style="line-height:1em;font-size:12px;">&#9713;</span>
+                                }
+                              </span>
+                              <div class="element-edit shadow-sm leafup nowrap">
+                                <button type="button" class="btn btn-round btn-sm btn-info"
+                                  (click)="editTab(editTabTpl,tab)">
+                                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                                  </fa-icon>
+                                </button>
+                                <button type="button" class="btn btn-round btn-sm btn-info"
+                                  (click)="removeTab(removeTabTpl,tab)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                                @if (!$first) {
+                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                    (click)="reorderTab($index, -1)">
+                                    <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true">
+                                    </fa-icon>
+                                  </button>
+                                }
+                                @if (!$last) {
+                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                    (click)="reorderTab($index, 1)">
+                                    <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true">
+                                    </fa-icon>
+                                  </button>
+                                }
+                              </div>
+                            </button>
+                          }
+                          <button type="button" class="btn btn-outline-secondary btn-sm btn-round mt-1"
+                            (click)="editTab(editTabTpl,{sortOrder:curForm.tabs.length})">
+                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    @for (t of curForm.sections|groupBy:'parent':(curForm.nav!='simple'):'parentObj.sortOrder'; track $index) {
+                      <!-- {{curForm.sections|json}} -->
+                      <div>
+                        @if (curForm.nav!='simple') {
+                          @let tab = getTab(t.key);
+                          <div class="p-3 text-center mt-2 mx-n2" style="background:whitesmoke;position:sticky;top: 0;z-index:5">
+                            @if (tab) {
+                              <h5 class="m-0" [class.text-primary]="t.key=='-1'||t.key=='-999'">{{tab.title}}</h5>
+                            }
+                            @if (!tab) {
+                              <h5 class="text-muted">(unspecified)</h5>
+                            }
+                          </div>
+                        }
+                        <div class="row g-3 grid-animate editor mb-3"
+                          [ngStyle]="{'justify-content':curForm?.align}">
+                          @for (e of t.value; track e.id; let $s_first = $first; let $s_last = $last; let $s_index = $index) {
+                            <div [ngClass]="e?.size||'col-sm-12'">
+                              @if (filterField.length==0 || (e?.items|filter:filterField).length>0) {
+                                <div class="position-relative d-flex flex-column" [ngClass]="e.style" [class.card-blank-style]="e.x?.blankStyle"
+                                  [ngClass]="{'card card-clean':!e.x?.blankStyle}"
+                                  [class.half]="e.hidden">
+                                  @if (notEmptyObject(e.x?.facet)) {
+                                    <div style="position:absolute;right:9px;height:5px; width:5px;font-size:12px;">&#9713;</div>
+                                  }
+                                  <div class="card-header p-3 bordered element"
+                                    [ngClass]="[e.altClass||'']">
+                                    <div class="text-white small opacity-50 flytag">
+                                      @if (e.pre) {
+                                        <div [title]="e.pre"
+                                          class="border-info pointer border rounded d-inline-block bg-info px-1 py-0 mb-1">
+                                        pre</div>
+                                      }
+                                    </div>
+                                    <div class="element-item"
+                                      [style.opacity.%]="e.hideHeader?'30':'100'">
+                                      <h6 class="m-0">
+                                        @if (e.icon) {
+                                          <fa-icon [icon]="getIcon(e.icon)"
+                                          [fixedWidth]="true"></fa-icon>
+                                        }
+                                        {{e.title}}
+                                        <span class="float-end">
+                                          @if (e.type=='list') {
+                                            <fa-icon [icon]="['fas','sitemap']"
+                                              [fixedWidth]="true">
+                                            </fa-icon>
+                                          }@else if (e.type=='approval') {
+                                            <fa-icon [icon]="['fas','window-restore']"
+                                              [fixedWidth]="true">
+                                            </fa-icon>
+                                          }@else if (e.type=='dataset') {
+                                            <fa-icon [icon]="['fas','th']"
+                                              [fixedWidth]="true">
+                                            </fa-icon>
+                                          }
+                                        </span>
+                                      </h6>
+                                      @if (e.description) {
+                                        <div class="card-text"
+                                          [innerHtml]="e.description">
+                                        </div>
+                                      }
+                                    </div>
+                                    <div class="element-edit mt-1"
+                                      style="position:absolute;top:5px;right:10px;">
+                                      <button type="button" class="btn btn-info btn-round btn-sm"
+                                        (click)="editSection(editSectionTpl,e)">
+                                        <fa-icon [icon]="['fas','pencil-alt']"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      </button>
+                                      <button type="button" class="btn btn-info btn-round btn-sm"
+                                        (click)="removeSection(removeSectionTpl,e)">
+                                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                                        </fa-icon>
+                                      </button>
+                                      @if (!$s_first) {
+                                        <button type="button" class="btn btn-info btn-round btn-sm"
+                                          (click)="reorderSection(t.value,$s_index, -1)">
+                                          <fa-icon [icon]="['fas','arrow-left']"
+                                            [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
+                                      @if (!$s_last) {
+                                        <button type="button" class="btn btn-info btn-round btn-sm"
+                                          (click)="reorderSection(t.value,$s_index, 1)">
+                                          <fa-icon [icon]="['fas','arrow-right']"
+                                            [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
+                                    </div>
+                                  </div>
+                                  @if (['section','list','approval','approval-list'].indexOf(e.type)>-1) {
+                                    <div class="card-body p-3">
+                                      <div class="row g-4" [ngStyle]="{'justify-content':e.align}"
+                                        cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="dropItem($event, e)"
+                                        [cdkDropListData]="e?.items">
+                                        @if (e?.items.length==0) {
+                                          <div class="col-md-12">
+                                            <div class="text-muted text-center">
+                                              <h1>:(</h1>
+                                              <h4>No form item specified</h4>
+                                            </div>
+                                          </div>
+                                        }
+                                        @for (f of e?.items|filter:filterField; track $index; let $f_index = $index; let $f_first = $first; let $f_last = $last) {
+                                          @let field = curForm?.items[f.code];
+                                          <div class="element"
+                                            cdkDrag
+                                            [class.half]="field?.hidden || (field?.x?.facet?.[previewFacet]||e?.x?.facet?.[previewFacet])=='hidden'"
+                                            [class.static-html]="field?.subType=='html'"
+                                            [ngClass]="[f.altClass||'',field?.size||'col-sm-12']">
+                                            @if (notEmptyObject(field?.x?.facet)) {
+                                              <div style="position:absolute;right:15px;height:5px; width:5px;font-size:12px;">&#9713;</div>
+                                            }
+                                            @if (!field) {
+                                              <div class="p-2 border rounded mb-3"
+                                                >Source
+                                              Item Not Available</div>
+                                            }
+                                            @if (field) {
+                                              @if (!['dataset','screen'].includes(field.type)) {
+                                                @if ((field?.x?.facet?.[previewFacet]||e?.x?.facet?.[previewFacet])=='view') {
+                                                  @if (field.type!='static') {
+                                                    <div class="form-group"
+                                                      [ngClass]="field?.altClass"
+                                                      >
+                                                      @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                        <label class="label-span form-label">{{field?.label}}</label>
+                                                      }
+                                                      <p class="form-control-static">
+                                                        <field-view
+                                                          [field]="field"
+                                                          [value]="{}[f.code]">
+                                                        </field-view>
+                                                      </p>
+                                                    </div>
+                                                  } @else {
+                                                    @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                      <label class="label-span form-label">{{field?.label}}</label>
+                                                    }
+                                                    <field-view
+                                                      [field]="field"
+                                                      [value]="{}[f.code]"
+                                                      [data]="{$user$:user,$:{},$_:{},$prev$:{},$baseUrl$:'',$this$:{},$param$:{}}">
+                                                    </field-view>
+                                                  }
+                                                } @else {
+                                                  @if (field) {
+                                                    <field-edit class="element-item"
+                                                      name="fn-{{f.id}}"
+                                                      [field]="field"
+                                                      [lookupList]="lookup[f.code]"
+                                                      [(ngModel)]="mod[f.code]"
+                                                      [always]="true"
+                                                      [hideAddAction]="true"
+                                                      [class.disabled]="(field?.x?.facet?.[previewFacet]||e.x?.facet?.[previewFacet])=='disabled'"
+                                                      [required]="field?.v?.required"
+                                                      [maxlength]="field?.v?.maxlength"
+                                                      [minlength]="field?.v?.minlength"
+                                                      [pattern]="field?.v?.pattern">
+                                                    </field-edit>
+                                                    @if (['select','radio','radioBtn','checkboxOption'].indexOf(field.type)>-1 && field.dataSource) {
+                                                        <button type="button" class="btn btn-xs btn-light" (click)="editLookupEntry(editLookupEntryTpl,field,field.dataSource,{enabled:1})">
+                                                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
+                                                        </button>
+                                                    }
+                                                    
+                                                  }
+                                                }
+                                              } @else {
+                                                <div [class.half]="field.hidden"
+                                                  [ngClass]="field?.size||'col-sm-12'">
+                                                  <div class="form-group"
+                                                    [ngClass]="field.altClass">
+                                                    @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                      <label class="label-span form-label">{{field?.label}}</label>
+                                                    }
+                                                    <div
+                                                      class="card-body bg-light text-muted text-center">
+                                                      <h1>
+                                                        <fa-icon
+                                                          [icon]="['fas','table']"
+                                                          [fixedWidth]="true">
+                                                        </fa-icon>
+                                                      </h1>
+                                                      <h4>
+                                                        @if (field.type=='dataset') {
+                                                          <span
+                                                          >Dataset</span>
+                                                        }
+                                                        @if (field.type=='screen') {
+                                                          <span
+                                                          >Screen</span>
+                                                        }
+                                                        #{{field.dataSource}}
+                                                      </h4>
+                                                      @if (field.type=='dataset') {
+                                                        <button
+                                                          class="btn btn-sm btn-round border border-2 ms-1"
+                                                          (click)="editDataset(editDatasetTpl,field.dataSource)">
+                                                          <fa-icon
+                                                            [icon]="['fas','pencil-alt']"
+                                                          [fixedWidth]="true"></fa-icon>
+                                                          Edit Dataset
+                                                        </button>
+                                                      }
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              }
+                                            }
+                                            <div class="text-white small opacity-50 flytag">
+                                              @if (field?.pre) {
+                                                <div
+                                                  [title]="field?.pre"
+                                                  class="border-info pointer border rounded d-inline-block bg-info px-1 py-0 mb-1">
+                                                pre</div>
+                                              }
+                                              @if (field?.post) {
+                                                <div
+                                                  [title]="field?.post"
+                                                  class="border-info pointer border rounded d-inline-block bg-info px-1 py-0">
+                                                post</div>
+                                              }
+                                            </div>
+                                            <div class="element-edit mt-1 cursor-move bg-white text-info"
+                                              style="position:absolute;top:3px;left:10px;"
+                                              cdkDragHandle>
+                                              <fa-icon [icon]="['fas','grip-vertical']"
+                                                size="2x" [fixedWidth]="true">
+                                              </fa-icon>
+                                            </div>
+                                            <div class="element-edit mt-1"
+                                              style="position:absolute;top:3px;right:10px;">
+                                              <button type="button" class="btn btn-info btn-round btn-sm"
+                                                (click)="editItem(editItemTpl,e,field,f.sortOrder)">
+                                                <fa-icon [icon]="['fas','pencil-alt']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                              <button type="button" class="btn btn-info btn-round btn-sm"
+                                                (click)="removeItem(removeItemTpl,f)">
+                                                <fa-icon [icon]="['fas','trash']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                              @if (!$f_first) {
+                                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                                  (click)="reorderItem(e,$f_index, -1)">
+                                                  <fa-icon [icon]="['fas','arrow-left']"
+                                                    [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                              @if (!$f_last) {
+                                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                                  (click)="reorderItem(e,$f_index, 1)">
+                                                  <fa-icon [icon]="['fas','arrow-right']"
+                                                    [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                            </div>
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                    <div
+                                      style="border-top:dashed 3px #ddd; top:22px;position:relative">
+                                    </div>
+                                    <a class="btn btn-round mb-3 btn-light shadow-clean position-relative align-self-center pointer"
+                                      (click)="editItem(editItemTpl,e,{size:'col-sm-12', hideLabel:false, x:{facet:{add:'edit',view:'view',edit:'edit'}}},e.items.length)">
+                                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                                      Add Form Item
+                                    </a>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                    @if (curForm.sections?.length==0) {
+                      <div class="row grid-animate">
+                        <div class="m-a col-sm-12">
+                          <div class="p-4 text-muted text-center">
+                            <h1>:(</h1>
+                            <h4>No section specified</h4>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    <!-- <div class="row"> -->
+                      <div class="text-center p-3">
+                        <a class="d-block p-2 pointer"
+                          (click)="editSection(editSectionTpl,{sortOrder:curForm.sections?.length, size:'col-sm-12',type:'section'})">
+                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                          Add Section
+                        </a>
+                      </div>
+                    <!-- </div> -->
+                  </div>
+                </ng-template>
+              </li>
+              <li ngbNavItem class="mt-3">
+                <a ngbNavLink>Process</a>
+                <ng-template ngbNavContent>
+                  <div class="single-pane position-relative">
+                    @if (curForm.tiers.length>0) {
+                      <div class="form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="simplifiedProcessView"
+                          [(ngModel)]="simplifiedProcessView" name="simplifiedProcessView">
+                        <label class="form-check-label ms-2" for="simplifiedProcessView"> View
+                          Simplified Tiers
+                        </label>
+                      </div>
+                    }
+                    @if (curForm.tiers.length>0) {
+                      <div [style.margin-right.px]="maxValue(lines?.length*3,15)">
+                        <div class="ballx position-relative" style="min-height:55px; min-width:320px;">
+                          <button type="button" [style.background-color]="selectedLine==-1?selectedColor:'#ccc'"
+                            [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
+                            (click)="highlightSubmit()"
+                            style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                            Submission
+                          </button>
+                          <div id="t_-1_line" [class.selected-line]="selectedLine==-1"
+                            [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
+                            style="left:130px; min-width:190px"></div>
+                          <!-- First line dari Submission kepada 1st Tier -->
+                          <div id="line_-1" [class.selected-line]="selectedLine==-1"
+                            [style.border-color]="selectedLine==-1?selectedColor:'#ccc'" style="border: 2px solid rgb(204, 204, 204);
+                            border-left: none rgb(204, 204, 204);
+                            border-radius: 0px 4px 4px 0px; right: -10px;
+                            position: absolute; top: 20px; width: 10px;
+                            height: 59px; opacity: 0.5;">
+                          </div>
+                        </div>
+                        @for (tier of  curForm.tiers; track tier.id) {
+                          <div class="ballx"
+                            [ngClass]="tier.altClass">
+                            <div style="margin-left: 0px; min-height:55px;  min-width:320px;">
+                              <div class="card card-clean mb-3"
+                                [class.selected-tier]="selectedTier==tier.id"
+                                [ngStyle]="{'outline-color':selectedColor}">
+                                <div class="card-header element ps-3 overflow-hidden" style="font-size:18px;">
+                                  <div class="element-edit" style="position:absolute;top:6px;right:12px;">
+                                    @if (!$first) {
+                                      <button type="button" class="btn btn-round btn-info btn-sm"
+                                        (click)="reorderTier($index, -1)">
+                                        <fa-icon [icon]="['fas','arrow-up']"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      </button>
+                                    }
+                                    @if (!$last) {
+                                      <button type="button" class="btn btn-round btn-info btn-sm"
+                                        (click)="reorderTier($index, 1)">
+                                        <fa-icon [icon]="['fas','arrow-down']"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      </button>
+                                    }
+                                    <button type="button" class="btn btn-round btn-info btn-sm"
+                                      (click)="editTier(editTierTpl,tier)">
+                                      <fa-icon [icon]="['fas','pencil-alt']"
+                                        [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                    <button type="button" class="btn btn-round btn-info btn-sm"
+                                      (click)="removeTier(removeTierTpl,tier)">
+                                      <fa-icon [icon]="['fas','trash']"
+                                      [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                  </div>
+                                  <!-- [ngClass]="{'border-primary text-primary':selectedLineTier==tier.id}" -->
+                                  <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
+                                    [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
+                                    style="width:30px;right:14px;font-weight: bold;position:absolute;background: white; height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
+                                    {{$index+1}}
+                                  </div>
+                                  <div class="element-item">
+                                    {{tier.name}}<sup class="ms-2">{{tier.id}}</sup>
+                                  </div>
+                                  <!-- Sebagai hujung arrow pointing to tier -->
+                                  <div id="t_{{tier.id}}"
+                                    [class.selected-line-tier]="selectedLineTier==tier.id"
+                                    [style.background-color]="selectedLineTier==tier.id?selectedColor:'#ddd'"
+                                    style="position:absolute; top:18px; right:-5px;width:10px;height:10px;background:#ddd;
+                                    transform: rotate(-45deg);">
+                                  </div>
+                                </div>
+                                <div class="card-body pt-1">
+                                  @if (!simplifiedProcessView) {
+                                    @if (tier.type=='ALL') {
+                                      <div class="small mb-2">
+                                        Any user with access may approve
+                                      </div>
+                                    }
+                                    @if (tier.type=='ASSIGN') {
+                                      <div class="small mb-2">
+                                        <span class="me-1 mb-2">Approver will be assigned
+                                        by</span>
+                                        @if (!curForm.admin) {
+                                          <span class="text-danger">
+                                            Please set admin
+                                            group
+                                          in form setting!</span>
+                                        }
+                                        @if (curForm.admin) {
+                                          <span>{{curForm.admin.name}}
+                                          </span>
+                                        }
+                                      </div>
+                                    }
+                                    @if (tier.type=='DYNAMIC') {
+                                      <div class="small mb-2">
+                                        Dynamic approver from
+                                        <code>{{tier.orgMapPointer}}</code>
+                                          in <code>{{tier.orgMap}}</code>
+                                      </div>
+                                    }
+                                    @if (tier.type=='FIXED') {
+                                      <div class="small mb-2">
+                                        <span class="me-1 mb-2">Fixed approver to </span>
+                                        @for (i of getAsList(tier.approver); track $index) {
+                                          <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">
+                                            {{i}}
+                                          </div>
+                                        }
+                                      </div>
+                                    }
+                                    @if (tier.type=='GROUP') {
+                                      <div class="small mb-2">
+                                        <span class="me-1 mb-2">Approver group :
+                                        {{accessMap[tier.approverGroup]?.name}}</span>
+                                      </div>
+                                    }
+                                    <div class="mb-2 d-flex align-items-center text-muted">
+                                      @if (tier.canRemark) {
+                                        <fa-icon class="me-2" [icon]="['far','comment-dots']"
+                                          title="Remark field is enabled"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      }
+                                      @if (tier.submitMailer?.length>0) {
+                                        <fa-icon class="me-2" [icon]="['far','envelope']"
+                                          title="Has submission mailer"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      }
+                                      @if (tier.alwaysApprove) {
+                                        <fa-icon class="me-2" [icon]="['fas','circle-notch']"
+                                          title="Decision always approve mode"
+                                          [fixedWidth]="true">
+                                        </fa-icon>
+                                      }
+                                      @if (tier.section) {
+                                        <div class="me-2 d-flex align-items-center text-truncate"
+                                          title="Custom approval form">
+                                          <fa-icon [icon]="['fab','wpforms']"
+                                            [fixedWidth]="true">
+                                          </fa-icon>
+                                          <span class="small">{{tier.section.title}}</span>
+                                        </div>
+                                      }
+                                      @if (tier.pre) {
+                                        <div class="me-2"
+                                          class="d-inline-block me-2 border border-1 border-secondary rounded px-1 small"
+                                          style="font-weight: bold;font-size:0.6em"
+                                        [title]="tier.pre">PRE</div>
+                                      }
+                                      @if (tier.post) {
+                                        <div class="me-2"
+                                          class="d-inline-block me-2 border border-1 border-secondary rounded px-1 small"
+                                          style="font-weight: bold;font-size:0.6em"
+                                        [title]="tier.post">POST</div>
+                                      }
+                                    </div>
+                                  }
+                                  <div>
+                                    <!-- <span class="disabled-region"> -->
+                                    <!-- [ngClass]="{'border border-2 border-primary':selectedLine==o.value.id}" -->
+                                    <!-- [style.border-color]="selectedLine==o.value.id?selectedColor:'rgb(108,
+                                    117, 125)'"
+                                    [style.color]="selectedLine==o.value.id?selectedColor:'rgb(108,
+                                    117, 125)'" -->
+                                    <!-- class="btn btn-outline-secondary btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative" -->
+                                    <!-- [style.border-width]="selectedLine==o.value.id?'2px':'2px'" -->
+                                    @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                      <button type="button" (click)="highlightLine(tier,o.value)"
+                                        [title]="o.value.label"
+                                        [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
+                                        [style.color]="selectedLine==o.value.id?selectedColor:''"
+                                        class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
+                                        >
+                                        @if (!simplifiedProcessView) {
+                                          {{o.value.label}}
+                                        } @else {
+                                          <fa-icon [fixedWidth]="true"
+                                            [icon]="['fas',o.value.icon]">
+                                          </fa-icon>
+                                        }
+                                        @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
+                                          <fa-icon
+                                            class="text-danger blink_me"
+                                            style="position:absolute; right:-5px;top:-10px"
+                                            title="Action [Go to tier] leads to nonexistent tier"
+                                            [icon]="['fas','exclamation-triangle']"
+                                            [fixedWidth]="true" size="xs">
+                                          </fa-icon>
+                                        }
+                                        @if (o.value.mailer?.length>0) {
+                                          <fa-icon
+                                            [icon]="['far','envelope']" [fixedWidth]="true">
+                                          </fa-icon>
+                                        }
+                                        <div class="element-edit shadow-sm leafup nowrap">
+                                          <button type="button" class="btn btn-round btn-sm btn-info"
+                                            (click)="editTierAction(editTierActionTpl,tier,o.value)">
+                                            <fa-icon [icon]="['fas','pencil-alt']"
+                                              [fixedWidth]="true">
+                                            </fa-icon>
+                                          </button>
+                                          <button type="button" class="btn btn-round btn-sm btn-info"
+                                            (click)="removeTierAction(o.value)">
+                                            <fa-icon [icon]="['fas','trash']"
+                                              [fixedWidth]="true">
+                                            </fa-icon>
+                                          </button>
+                                          @if (!$a_first) {
+                                            <button type="button" class="btn btn-info btn-round btn-sm"
+                                              (click)="reorderTierAction($index,$a_index, -1)">
+                                              <fa-icon [icon]="['fas','arrow-left']"
+                                                [fixedWidth]="true">
+                                              </fa-icon>
+                                            </button>
+                                          }
+                                          @if (!$a_last) {
+                                            <button type="button" class="btn btn-info btn-round btn-sm"
+                                              (click)="reorderTierAction($index,$a_index, 1)">
+                                              <fa-icon [icon]="['fas','arrow-right']"
+                                                [fixedWidth]="true">
+                                              </fa-icon>
+                                            </button>
+                                          }
+                                        </div>
+                                      </button>
+                                    }
+                                    <button
+                                      class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
+                                      (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
+                                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
+                                      </fa-icon>
+                                    </button>
+                                  </div>
+                                  <div style="position:absolute;right:0px; top:0px; width:0px; height:100%">
+                                    @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                      <div id="ta_{{o.value.id}}"
+                                        style="position:absolute;left:0px;height:4px;width:0px;"
+                                        [style.top.px]="50+($a_index*10)">
+                                      </div>
+                                      @if (['goTier','nextTier','prevTier'].includes(o.value.action)) {
+                                        <div id="line_{{o.value.id}}"
+                                          class="line-tier"
+                                          [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                          [class.is-nexttier]="o.value.action=='nextTier'"
+                                          [class.selected-line]="selectedLine==o.value.id"
+                                          [style.top.px]="50+($a_index*10)"
+                                          [style.width.px]="10+$a_index*10">
+                                        </div>
+                                      }
+                                      @if (['curTier'].includes(o.value.action)) {
+                                        @if (o.value.userEdit) {
+                                          <div id="line_{{o.value.id}}"
+                                            class="line-tier"
+                                            [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                            [style.display]="selectedLine==o.value.id?'block':'none'"
+                                            [class.selected-line]="selectedLine==o.value.id"
+                                            [style.top.px]="50+($a_index*10)"
+                                            style="width:15px;">
+                                            <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                              style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                              @if (o.value.action=='curTier') {
+                                                <fa-icon
+                                                  size="xs" [icon]="['fas',o.value.icon]">
+                                                </fa-icon>
+                                              }
+                                            </div>
+                                          </div>
+                                        }
+                                        @if (!o.value.userEdit) {
+                                          <div id="term_{{o.value.id}}"
+                                            [style.display]="selectedLine==o.value.id?'block':'none'"
+                                            [style.top.px]="50+($a_index*10)"
+                                            style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
+                                            <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                              [style.color]="selectedLine==o.value.id?selectedColor:'black'"
+                                              style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                              @if (o.value.action=='curTier') {
+                                                <fa-icon
+                                                  size="xs" [icon]="['fas',o.value.icon]">
+                                                </fa-icon>
+                                              }
+                                            </div>
+                                          </div>
+                                        }
+                                      }
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                        <div class="ballx" style="min-height:55px;">
+                          <button type="button" class="btn btn-sm btn-primary btn-round"
+                            (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
+                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
+                            Tier
+                          </button>
+                        </div>
+                        <div class="ballx position-relative" style="min-height:55px;">
+                          <div id="t_999"
+                            [style.background-color]="selectedLineTier==999?selectedColor:'#ccc'"
+                            [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'"
+                            style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                            Complete
+                          </div>
+                          @if (hasLineToComplete) {
+                            <div id="t_999_line" [class.selected-line]="selectedLineTier==999"
+                              style="min-width:205px;"
+                              [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'">
+                            </div>
+                          }
+                        </div>
+                        <div>
+                          <button type="button" class="btn btn-secondary btn-round btn-sm mb-3"
+                            (click)="reconApprover()" [disabled]="efLoading['all']">
+                            @if (efLoading['all']) {
+                              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                              Processing...
+                            } @else {
+                              <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                              Update
+                              approver for all tiers
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    @if (curForm.tiers.length==0) {
+                      <div>
+                        <div class="p-4 text-muted text-center">
+                          <h1>:(</h1>
+                          <h4>No tier specified</h4>
+                          <button type="button" class="btn btn-primary btn-round mt-3"
+                            (click)="editTier(editTierTpl,{sortOrder:curForm.tiers.length, canRemark:true, actions: actionPreset})">
+                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
+                            Tier
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    @if (curForm.admin) {
+                      <div class="card mb-2">
+                        <div class="card-body p-3 bordered">
+                          Admin Group : {{curForm.admin.name}}
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </ng-template>
+              </li>
+              <li class="nav-item me-1 mt-3 ms-auto">
+                <div>
+                  <div ngbDropdown class="d-inline-block">
+                    <button type="button" class="btn btn-sm border border-2" id="dropdownFormEditor"
+                      title="More actions" ngbDropdownToggle>
+                      <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownFormEditor">
+                      <button type="button" (click)="viewItems(viewItemsTpl)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon> Form
+                        Items List
+                      </button>
+                      <button type="button" (click)="viewEntryTrails(viewFormEntryTrailTpl)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon> Form's
+                        Entry trails
+                      </button>
+                      <button type="button" title="Import from Excel" [class.disabled]="offline"
+                        (click)="importExcel(importExcelTpl)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import
+                        Excel data
+                      </button>
+                      
+                      <button type="button" title="Get data JSON Schema" [class.disabled]="offline"
+                        (click)="viewJsonSchema(viewJsonSchemaTpl)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                        Form's JSON Schema
+                      </button>
+                      <!-- <a title="Get data JSON Schema" [class.disabled]="offline"
+                        (click)="genView(curForm.id)" href="{{baseApi}}/cogna/get-formatter/{{formId}}" target="_blank" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon> 
+                        Get data JSON Schema
+                      </a> -->
+                      <button type="button" title="Prepare RDB view" [class.disabled]="offline"
+                        (click)="genView(curForm.id)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Prepare
+                        RDB view
+                        <div class="small text-muted text-end">app_{{app?.id}}_form_{{curForm.id}}
+                        </div>
+                      </button>
+                      <div class="dropdown-divider"></div>
+                      <button type="button" class="text-danger" (click)="removeForm(removeFormTpl,curForm)"
+                        ngbDropdownItem>
+                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove Form
+                      </button>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm border border-2 ms-1"
+                    (click)="editForm(editFormTpl,curForm,false)">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <a class="btn btn-sm border border-2 border-success btn-outline-success ms-1"
+                    routerLink="/run/{{app?.id}}/form/{{curForm.id}}/add">
+                    <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                  </a>
+                </div>
+              </li>
+            </ul>
+            <div [ngbNavOutlet]="nav"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  @if (!showPalette) {
+    <button type="button" class="position-relative border-0 rounded end-0 d-none d-sm-flex flex-column py-2 px-1"
+      (click)="showPalette=true">
+      <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+      </fa-icon>
+      <div style="width:20px; margin-top:2.5em;font-weight: bold;">
+        <div class="small" style="transform: rotate(270deg)">Palette</div>
+      </div>
+    </button>
+  }@else{
+    <div class="bg-white d-none d-sm-block"
+      style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+      <!-- cdkDrag> -->
+      <button type="button" class="p-2 small border-0 w-100" (click)="showPalette=false">
+        <strong>Palette</strong>
+        <div class="float-end pointer" style="width:20px;">
+          <!-- @if (showPalette) { -->
+            <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
+            </fa-icon>
+          <!-- } -->
+          <!-- @if (!showPalette) {
+            <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+            </fa-icon>
+          } -->
+        </div>
+      </button>
+      <!-- @if (showPalette) { -->
+        <div id="palette-pane" class="p-1" cdkDropListSortingDisabled cdkDropList
+          [cdkDropListData]="palettes" style="overflow-x: hidden;">
+          @for (p of palettes; track $index) {
+            <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
+              cdkDrag>
+              {{p.label}}
+              <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
+            </button>
+          }
+        </div>
+      <!-- } -->
+    </div>
+  }
+</div>
+
+<ng-template #editFormTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <!-- [editMailer]="editMailer" -->
+    <app-edit-form [form]="editFormData" [app]="app" [user]="user"
+     [formList]="formList" [accessList]="accessList"
+     [extraAutoCompleteJs]="extraAutoCompleteJs" [close]="c" [dismiss]="d"></app-edit-form>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #editSectionTpl let-c="close" let-d="dismiss">
+  <div #editSectionForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Section</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Overview</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Section Name *</label>
+                <input type="text" class="form-control"
+                  [(ngModel)]="editSectionData.title" name="title"
+                  (ngModelChange)="editSectionData.id||editSectionData.code=toSnakeCase(editSectionData.title)"
+                  required>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="hideHeader"
+                    [(ngModel)]="editSectionData.hideHeader" name="hideHeader">
+                  <label class="form-check-label" for="hideHeader"> Hide Header </label>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control"
+                  [(ngModel)]="editSectionData.description"
+                name="description"></textarea>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Type *</label>
+                <div>
+                  <div name="lang" class="text-dark">
+                    <input type="radio" class="btn-check" id="type-section" name="type-section" value="section" #type="ngModel"
+                      [(ngModel)]="editSectionData.type" [required]="true">
+                    <label for="type-section" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      Section
+                      <div><small>Normal section</small></div>
+                    </label>
+                    <input type="radio" class="btn-check" id="type-list" name="type-list" value="list" #type="ngModel"
+                      [(ngModel)]="editSectionData.type" [required]="true">
+                    <label for="type-list" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      Child
+                      <div><small>Child section</small></div>
+                    </label>
+                    <input type="radio" class="btn-check" id="type-approval" name="type-section" value="approval" #type="ngModel" 
+                      [(ngModel)]="editSectionData.type" [required]="true">
+                    <label for="type-approval" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      Approval
+                      <div><small>Used for approval</small></div>
+                    </label>
+                    <!-- <label ngbButtonLabel class="btn btn-outline-secondary">
+                    <input ngbButton type="radio" class="btn-check" value="approval-list">
+                    Approval (List)</label> -->
+                    <!-- <label ngbButtonLabel class="btn btn-outline-secondary">
+                    <input ngbButton type="radio" class="btn-check" value="dataset">
+                    Dataset</label> -->
+                  </div>
+                </div>
+
+
+
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Align</label>
+                    <div>
+                      <div class="">
+                        <input type="radio" class="btn-check" value="flex-start"
+                          id="align-flex-start" name="align-flex-start"
+                          [(ngModel)]="editSectionData.align">
+                        <label for="align-flex-start" class="btn btn-outline-secondary me-1 mb-1">
+                          <fa-icon [icon]="['fas','align-left']" [fixedWidth]="true">
+                          </fa-icon>
+                        </label>
+                        <input type="radio" class="btn-check" value="center" id="align-center"
+                          name="align-center"
+                          [(ngModel)]="editSectionData.align">
+                        <label for="align-center" class="btn btn-outline-secondary me-1 mb-1">
+                          <fa-icon [icon]="['fas','align-center']" [fixedWidth]="true">
+                          </fa-icon>
+                        </label>
+                        <input type="radio" class="btn-check" value="flex-end"
+                          id="align-flex-end" name="align-flex-end"
+                          [(ngModel)]="editSectionData.align">
+                        <label for="align-flex-end" class="btn btn-outline-secondary me-1 mb-1">
+                          <fa-icon [icon]="['fas','align-right']" [fixedWidth]="true">
+                          </fa-icon>
+                        </label>                       
+                        <input type="radio" class="btn-check" value="space-between"
+                          id="align-space-between" name="align-space-between"
+                          [(ngModel)]="editSectionData.align">
+                        <label for="align-space-between" class="btn btn-outline-secondary me-1 mb-1">
+                          <fa-icon [icon]="['fas','align-justify']" [fixedWidth]="true">
+                          </fa-icon>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Panel Width</label>
+                    <select class="form-select" name="size"
+                      [(ngModel)]="editSectionData.size">
+                      <option value="" disabled>Select width...</option>
+                      @for (item of sizeList; track item.value) {
+                        <option [value]="item.value">{{item.name}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              </div>
+              @if (editSectionData.type=='list') {
+                <div class="form-check form-switch form-group mb-3">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.inline" (ngModelChange)="ensureTableStyleCleared()" name="inline" id="inline">
+                  <label class="form-check-label" for="inline">Child section with inline edit
+                  (default: dialog)</label>
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Maximum number of child</label>
+                      <input type="text" class="form-control"
+                        [(ngModel)]="editSectionData.maxChild" name="maxChild">
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Add Button Text</label>
+                      <input type="text" class="form-control"
+                        [(ngModel)]="editSectionData.addLabel" name="addLabel"
+                        placeholder="ie: Add Item">
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Save Button Text</label>
+                      <input type="text" class="form-control"
+                        [(ngModel)]="editSectionData.x.saveLabel" name="saveLabel"
+                        placeholder="ie: Save Item">
+                    </div>
+                  </div>
+
+                  <!-- @if (['approval-list','list'].indexOf(editSectionData?.type)>-1) { -->
+                    <div class="col-sm-6">
+                      <div class="form-group mb-3" [class.element]="!editSectionCode">
+                        <label class="form-label">Section Key *</label>
+                        <input type="text" class="form-control element-item"
+                          [ngModel]="editSectionData.code" name="code"                          
+                          (ngModelChange)="editSectionData.code=toSnakeCase($event)"
+                          placeholder="ie: personal_info" [readonly]="!editSectionCode" required>
+                        @if (!editSectionCode) {
+                          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                            style="position:absolute;top:10px;right:10px;"
+                            (click)="editSectionCode=true">
+                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        }@else {
+                          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                            style="position:absolute;top:10px;right:10px;"
+                            (click)="editSectionCode=false">
+                            <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        }
+                        @if (itemExist(editSectionData)) {
+                          <small class="text-danger blink_me">Code already used by <strong>{{codeList[editSectionData.code]?.text}}</strong>! Please edit</small>
+                        }
+                      </div>
+                    </div>
+                  <!-- } -->
+
+                </div>
+              <!-- }
+              @if (editSectionData.type=='list') { -->
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.orderable" name="orderable"
+                    id="orderable">
+                  <label class="form-check-label" for="orderable">Allow child data reordering</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.confirmable" name="confirmable"
+                    id="confirmable">
+                  <label class="form-check-label" for="confirmable">Prompt confirmation when remove child
+                  data</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.x.sticky" name="sticky"
+                    id="sticky">
+                  <label class="form-check-label" for="sticky">Prevent removal of child data</label>
+                </div>
+                <div class="form-check form-switch" [class.disabled]="editSectionData.inline">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.x.tableStyle" name="tableStyle"
+                    id="tableStyle">
+                  <label class="form-check-label" for="tableStyle">Use table style</label>
+                </div>
+                @if(editSectionData.x.tableStyle){                  
+                  <div class="ms-4 mb-3" [class.disabled]="editSectionData.inline">
+                    <div class="btn-group float-end">
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllSectionFields()">All</button>
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAllSectionFields()">None</button>
+                    </div>        
+                    <label class="text-muted">Displayed column *
+                    </label>
+                    @for (f of editSectionData?.items; track $index) {
+                      <div class="form-check mt-1" >
+                        <input type="checkbox" class="form-check-input" [value]="f.code" id="displayedcol-{{$index}}"
+                          [checked]="checkSectionField(f.code)" name="f-displayedcol-{{$index}}" (change)="toggleSectionField(f.code)" />
+                        <label class="form-check-label" for="displayedcol-{{$index}}">
+                          {{curForm.items[f.code].label}}</label>
+                      </div>
+                    }
+                  </div>
+                  <!-- <input type="hidden" name="tableFieldChecker" [ngModel]="editSectionData.x?.tableStyle" [required]="editSectionData.x?.tableStyle?.length==0"> -->
+                }
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.x.defGroup" name="defGroup"
+                    id="defGroup">
+                  <label class="form-check-label" for="defGroup">Data Grouping</label>
+                </div>
+                @if(editSectionData.x.defGroup){  
+
+                  <!-- {{editSectionData|json}} -->
+                  
+                  <div class="form-group mt-3 mb-3">
+                    <label class="form-label">Default data grouping field</label>
+                    <select class="form-select" name="defGroupField"
+                      [(ngModel)]="editSectionData.x.defGroupField">
+                      <option [ngValue]="null">Ungroup</option>
+                      <!-- <option value="currentStatus">Status</option> -->
+                      @for (f of editSectionData?.items; track $index) {
+                        <option [ngValue]="f.code">
+                          {{curForm?.items?.[f.code].label}} ({{f.code}})
+                        </option>
+                      }
+                      <!-- @for(gf of groupableFields|groupBy:'formTitle'; track $index; let $gindex=$index){
+                        <optgroup [label]="gf?.key">
+                          @for(f of gf?.value; track $index){
+                            <option
+                              [ngValue]="f.fieldPath">
+                              {{f.sectionTitle}} -
+                              {{f.itemLabel}}
+                            </option>
+                          }
+                        </optgroup>
+                      } -->
+                    </select>
+                  </div>
+
+
+                  <!-- <div class="ms-4 mb-3" [class.disabled]="editSectionData.inline">
+                    <div class="btn-group float-end">
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllSectionFields()">All</button>
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAllSectionFields()">None</button>
+                    </div>        
+                    <label class="text-muted">Displayed column *
+                    </label>
+                    @for (f of editSectionData?.items; track $index) {
+                      <div class="form-check mt-1" >
+                        <input type="checkbox" class="form-check-input" [value]="f.code" id="displayedcol-{{$index}}"
+                          [checked]="checkSectionField(f.code)" name="f-displayedcol-{{$index}}" (change)="toggleSectionField(f.code)" />
+                        <label class="form-check-label" for="displayedcol-{{$index}}">
+                          {{curForm.items[f.code].label}}</label>
+                      </div>
+                    }
+                  </div> -->
+                  <!-- <input type="hidden" name="tableFieldChecker" [ngModel]="editSectionData.x?.tableStyle" [required]="editSectionData.x?.tableStyle?.length==0"> -->
+                }
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.x.sortable" name="sortable" (ngModelChange)="clearSortable()"
+                    id="sortable">
+                  <label class="form-check-label" for="sortable">Enable sorting by field</label>
+                </div>                
+                @if (editSectionData.x.sortable){
+                  <div class="ms-4">
+                    <div class="input-group input-group-sm mt-2">
+                      <span class="input-group-text">Default Sort</span>
+                      <select class="form-select flex-grow-1" name="defSort"
+                        [(ngModel)]="editSectionData.x.defSort">
+                        <option [ngValue]="null" style="color:gray">(unspecified)</option>
+                        @for (f of editSectionData?.items; track $index) {
+                          <option [value]="f.code">{{curForm.items[f.code].label}}</option>
+                        }
+                      </select>
+                      <!-- <div class="btn-group"> -->
+                        <input type="radio" class="btn-check" id="def-sort-asc" name="def-sort-asc" value="asc" #defSortAsc="ngModel"
+                          [(ngModel)]="editSectionData.x.defSortDir" [required]="editSectionData.x.defSort">
+                        <label for="def-sort-asc" class="btn btn-outline-secondary">
+                          ASC
+                        </label>
+                        <input type="radio" class="btn-check" id="def-sort-desc" name="def-sort-desc" value="desc" #defSortDesc="ngModel"
+                          [(ngModel)]="editSectionData.x.defSortDir" [required]="editSectionData.x.defSort">
+                        <label for="def-sort-desc" class="btn btn-outline-secondary">
+                          DESC
+                        </label>
+                      <!-- </div> -->
+                      <!-- <select class="form-select col-1" name="defSortDir"
+                        [(ngModel)]="editSectionData.x.defSortDir">
+                        <option value="asc">ASC</option>
+                        <option value="desc">DESC</option>
+                      </select> -->
+                    </div>
+                    <div class="form-check mb-3 mt-2">
+                      <input type="checkbox" class="form-check-input"
+                        [(ngModel)]="editSectionData.x.userSort" name="userSort"
+                        id="userSort">
+                      <label class="form-check-label" for="userSort">Allow user to change sorting field</label>
+                    </div>
+                  </div>
+                }
+              }
+              @if (['tabs','accordions','pills'].indexOf(curForm.nav)>-1) {
+                <div class="form-group mt-3 mb-3">
+                  <label class="form-label">Parent (Tab/Accordion)</label>
+                  <select class="form-select" name="parent"
+                    [(ngModel)]="editSectionData.parent">
+                    <option [ngValue]="null" style="color:gray">(unspecified)</option>
+                    <option value="-1" style="color:blue">(head)</option>
+                    @for (p of curForm.tabs; track p.id) {
+                      <option value="{{p.id}}">{{p.title}}</option>
+                    }
+                    <option value="-999" style="color:blue">(bottom)</option>
+                  </select>
+                </div>
+              }
+                                        <!-- *ngIf="editSectionData?.type!='approval'" -->
+              <div class="form-group mt-3 mb-3">
+                <label class="form-label">Panel Style Class</label>
+                <input type="text" class="form-control"
+                  [(ngModel)]="editSectionData.style" name="style"
+                  placeholder="ie: bg-primary text-white">
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="blankStyle"
+                  [(ngModel)]="editSectionData.x.blankStyle" name="blankStyle">
+                <label class="form-check-label" for="blankStyle">Blank style</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="hidden"
+                  [(ngModel)]="editSectionData.hidden" name="hidden">
+                <label class="form-check-label" for="hidden">Hide section?</label>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Visibility</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite (hide field if condition not
+                satisfied)</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                    subType="passive" [(ngModel)]="editSectionData.pre"
+                    placeholder="Expression (ie: $.age > 18)" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Editable only for (comma-separated)</label>
+                <input type="text" class="form-control"
+                  [(ngModel)]="editSectionData.enabledFor" name="enabledFor"
+                  placeholder="ie: admin@email.com">
+              </div>
+              @if (curForm.x?.facet) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Facet Mode</label>
+                  @for (f of facetList; track f) {
+                    <div class="input-group mb-3 input-group-sm">
+                      <span class="input-group-text">
+                        {{f}}
+                      </span>
+                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                        [(ngModel)]="editSectionData.x.facet[f]">
+                        <option class="text-muted" [ngValue]="undefined">Select view mode</option>
+                        @for (g of facetMode; track $index) {
+                          <option [value]="g">{{g}}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Icon 
+            @if (editSectionData.icon) {
+              <fa-icon [icon]="getIcon(editSectionData.icon)"
+                [fixedWidth]="true">
+              </fa-icon>
+            }
+          </a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <app-icon-picker [(model)]="editSectionData.icon"
+              [showNone]="true"></app-icon-picker>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary"
+        [disabled]="editSectionForm.invalid || (itemExist(editSectionData) && editSectionData.type=='list')"
+        (click)="c(editSectionData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Section
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editTabTpl let-c="close" let-d="dismiss">
+  <div #editTabForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tab</h4>
+    </div>
+    <div class="tab-simple">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Overview</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Tab Name *</label>
+                <input type="text" class="form-control" [(ngModel)]="editTabData.title" name="title"
+                  (ngModelChange)="editTabData.code=toSnakeCase(editTabData.title)" required>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" [(ngModel)]="editTabData.pre"
+                    [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+              <!-- <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite</label>
+                <input type="text" class="form-control" [(ngModel)]="editTabData && editTabData.pre" name="pre"
+                  placeholder="Expression (ie: $.age > 18)">
+              </div> -->
+              <div class="form-group mb-3">
+                <label class="form-label">Enable condition</label>
+                <div class="mx-n2">
+                  <app-cm name="enableCond" lang="javascript" [(ngModel)]="editTabData.x.enableCond"
+                    [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+        
+              @if (curForm.x?.facet) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Facet Mode</label>
+                  @for (f of facetList; track $index) {
+                    <div class="input-group mb-3 input-group-sm">
+                      <span class="input-group-text">
+                        {{f}}
+                      </span>
+                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                        [(ngModel)]="editTabData.x.facet[f]">
+                        <option class="text-muted" [ngValue]="undefined">Select view mode</option>
+                        @for (g of facetTabMode; track $index) {
+                          <option [value]="g">{{g}}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Icons</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <app-icon-picker [(model)]="editTabData.x.icon" [showNone]="true"></app-icon-picker>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editTabForm.invalid"
+        (click)="c(editTabData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Tab
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editTierActionTpl let-c="close" let-d="dismiss">
+  <div #editTierActionForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tier Action</h4>
+    </div>
+    <div class="bg-primary text-white p-3">
+      <label class="form-label small">
+        <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true">
+        </fa-icon>
+        Feeling lost? Relax. You can click the button below to preset the value.
+      </label>
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-light"
+        (click)="editTierActionData=actionPreset['approved']">Approve</button>
+        <button type="button" class="btn btn-outline-light"
+        (click)="editTierActionData=actionPreset['rejected']">Reject</button>
+        <button type="button" class="btn btn-outline-light"
+        (click)="editTierActionData=actionPreset['returned']">Return</button>
+      </div>
+    </div>
+    <div class="modal-body fix-gutter">
+      <div class="form-group mb-3">
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Label *</label>
+            <input type="text" class="form-control"
+              [(ngModel)]="editTierActionData.label" name="label"
+              (ngModelChange)="editTierActionData.id||editTierActionData.code=toSnakeCase(editTierActionData.label)"
+              required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Code *</label>
+            <input type="text" class="form-control"
+              [(ngModel)]="editTierActionData.code" name="code" required>
+          </div>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Action *</label>
+        <div class="row">
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-nextTier" name="action"
+                [(ngModel)]="editTierActionData.action" value="nextTier" required>
+              <label for="type-nextTier" class="form-check-label">Next Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-prevTier" name="action"
+                [(ngModel)]="editTierActionData.action" value="prevTier" required>
+              <label for="type-prevTier" class="form-check-label">Previous Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-curTier" name="action"
+                [(ngModel)]="editTierActionData.action" value="curTier" required>
+              <label for="type-curTier" class="form-check-label">Current Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-goTier" name="action"
+                [(ngModel)]="editTierActionData.action" value="goTier" required>
+              <label for="type-goTier" class="form-check-label">Go to Tier</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Select Mailer</label>
+            <div class="d-flex">
+              <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                placeholder="No mailer" [(ngModel)]="editTierActionData.mailer"
+                id="mailer" name="mailer">
+              </ng-select>
+              <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierActionData,'mailer')">New&nbsp;Mailer</button>
+            </div>            
+          </div>
+        </div>
+        @if (editTierActionData.action=='goTier') {
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label class="form-label">Select Tier</label>
+              <select class="form-control custom-select" id="tierId" name="tierId"
+                [(ngModel)]="editTierActionData.nextTier" required>
+                <option [ngValue]="undefined" style="color:gray">No Tier</option>
+                @for (item of curForm.tiers; track item.id) {
+                  <option [value]="item.id">{{item.name}} [{{item.id}}]
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="form-check form-group">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="editTierActionData.userEdit"
+          name="userEdit" id="userEdit">
+        <label for="userEdit" class="form-check-label">Allow user to edit and resubmit</label>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Icon *</label>
+            <div class="btn-group-toggle">
+              @for (c of actionIcons; track c) {
+                <input type="radio" class="btn-check" [value]="c" id="icon-{{c}}" name="icon-{{c}}"
+                  [(ngModel)]="editTierActionData.icon" required>
+                <label for="icon-{{c}}" class="btn btn-round color-item me-1 mb-1 bg-light"
+                  [class.active-outline]="editTierActionData.icon==c">
+                  <fa-icon [icon]="['fas',c]" [fixedWidth]="true">
+                  </fa-icon>
+                </label>
+              }
+            </div>
+            <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.icon"
+            name="icon">         -->
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Color *</label>
+            <div class="btn-group-toggle">
+              @for (c of actionColors; track c) {
+                <input type="radio" class="btn-check" [value]="c" id="color-{{c}}" name="color-{{c}}"
+                  [(ngModel)]="editTierActionData.color" required>
+                <label for="color-{{c}}" class="btn btn-round text-white color-item me-1 mb-1"
+                  [class.active-outline]="editTierActionData.color==c"
+                  [ngStyle]="{'background-color':c}">
+                  {{$index+1}}
+                </label>
+              }
+            </div>
+            <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.color"
+            name="color">         -->
+          </div>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Pre-requisite (tier action will be hidden if false)</label>
+        <!-- <app-codejar name="pre" lang="js" [(ngModel)]="editTierActionData && editTierActionData.pre"
+        [linenumber]="true" [options]="{lineNumbers: true,mode: 'javascript'}">
+      </app-codejar> -->
+        <div class="mx-n2">
+          <app-cm name="pre" lang="javascript" [(ngModel)]="editTierActionData.pre"
+            [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
+            placeholder="Expression (ie: $$_.status == 'approved')" [linenumber]="true">
+          </app-cm>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editTierActionForm.invalid"
+        (click)="c(editTierActionData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Tier Action
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editTierTpl let-c="close" let-d="dismiss">
+  <form #editTierForm="ngForm">
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tier</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Tier Info</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane fix-gutter">
+              <div class="form-group mb-3">
+                <label class="form-label">Tier Name *</label>
+                <input class="form-control" type="text" [(ngModel)]="editTierData.name" name="name"
+                  placeholder="Tier name (ie: PTJ Approval)" required>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label" for="submitMailer">Submission Mailer</label>
+                <div class="d-flex">
+                  <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                    placeholder="No mailer" [(ngModel)]="editTierData.submitMailer"
+                    id="submitMailer" name="submitMailer">
+                  </ng-select>
+                  <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierData,'submitMailer')">New&nbsp;Mailer</button>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label" for="resubmitMailer">Resubmission Mailer</label>
+                <div class="d-flex">
+                  <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                    placeholder="No mailer" [(ngModel)]="editTierData.resubmitMailer"
+                    id="resubmitMailer" name="resubmitMailer">
+                  </ng-select>
+                  <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierData,'resubmitMailer')">New&nbsp;Mailer</button>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Approval Type *</label>
+                <div>
+                  <div class="">
+                    <input type="radio" class="btn-check" value="ALL" id="type-ALL" name="type-ALL"
+                      [(ngModel)]="editTierData.type" required>
+                    <label for="type-ALL" class="btn btn-outline-secondary me-1"> All</label>
+                    <input type="radio" class="btn-check" value="DYNAMIC" id="type-DYNAMIC"
+                      name="type-DYNAMIC" [(ngModel)]="editTierData.type" required>
+                    <label for="type-DYNAMIC" class="btn btn-outline-secondary me-1">
+                    Dynamic</label>
+                    <input type="radio" class="btn-check" value="FIXED" id="type-FIXED"
+                      name="type-FIXED" [(ngModel)]="editTierData.type" required>
+                    <label for="type-FIXED" class="btn btn-outline-secondary me-1"> Fixed</label>
+                    <input type="radio" class="btn-check" value="GROUP" id="type-GROUP"
+                      name="type-GROUP" [(ngModel)]="editTierData.type" required>
+                    <label for="type-GROUP" class="btn btn-outline-secondary me-1"> Group</label>
+                    <input type="radio" class="btn-check" value="ASSIGN" id="type-ASSIGN"
+                      name="type-ASSIGN" [(ngModel)]="editTierData.type" required>
+                    <label [class.disabled]="!curForm.admin" for="type-ASSIGN"
+                    class="btn btn-outline-secondary me-1">Assign</label>
+                  </div>
+                </div>
+              </div>
+              @if (editTierData.type=='DYNAMIC') {
+                <div>
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">OrgMap Endpoint *</label>
+                        <input type="text" class="form-control" name="orgMap"
+                          [(ngModel)]="editTierData.orgMap" required>
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Pointer to email *</label>
+                        <input type="text" class="form-control" name="orgMapPointer"
+                          [(ngModel)]="editTierData.orgMapPointer" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (editTierData.type=='DYNAMIC') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Parameter</label>
+                  <div class="mx-n2">
+                    <app-cm name="orgMapParam" lang="javascript"
+                      [(ngModel)]="editTierData.orgMapParamStr" [skipCheck]="true" subType="passive"
+                      placeholder="ie: { extra: '$.$id'}" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+              }
+              @if (editTierData.type=='FIXED') {
+                <div>
+                  <div class="form-group mb-3">
+                    <label class="form-label">Approver email (comma separated) *</label>
+                    <input type="text" class="form-control" name="tierPerson"
+                      [(ngModel)]="editTierData.approver" required />
+                  </div>
+                </div>
+              }
+              @if (editTierData.type=='GROUP') {
+                <div>
+                  <div class="form-group mb-3">
+                    <label class="form-label">Approver group *</label>
+                    <div class="input-group">
+                      <select class="form-select" name="access"
+                        [(ngModel)]="editTierData.approverGroup" required>
+                        @for (access of accessList; track access.id) {
+                          <option [ngValue]="access.id">{{access.name}}
+                          </option>
+                        }
+                      </select>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="editGroup(editGroupTpl,{x:{}},editTierData,'approverGroup',false)">New Group</button>
+                    </div>  
+                  </div>
+                </div>
+              }
+              @if (editTierData.type=='ASSIGN') {
+                <div class="form-group mb-3">
+                  <label class="form-label" for="assignMailer">Assign Mailer</label>
+                  <div class="d-flex">
+                    <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+                      placeholder="No mailer" [(ngModel)]="editTierData.assignMailer"
+                      id="assignMailer" name="assignMailer">
+                    </ng-select>
+                    <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierData,'assignMailer')">New&nbsp;Mailer</button>
+                  </div>
+                </div>
+              }
+              <div class="form-check form-switch form-group">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.showApprover"
+                  name="showApprover" id="showApprover">
+                <label class="form-check-label" for="showApprover">Show approver email in approval
+                  form
+                panel</label>
+              </div>
+              <div class="form-check form-switch form-group">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.alwaysApprove"
+                  name="alwaysApprove" id="alwaysApprove">
+                <label class="form-check-label" for="alwaysApprove">Always approve decision -
+                  decision
+                  option will
+                be hidden, move to the next tier</label>
+              </div>
+              <div [class.disabled-region]="editTierData.alwaysApprove">
+                <label class="form-label">Allowed Tier Action</label>
+                <div class="form-check form-group">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.canRemark"
+                    name="canRemark" id="canRemark">
+                  <label for="canRemark" class="form-check-label">Enable Remark - Allow approver
+                    to
+                    add
+                    decision
+                  remark</label>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Custom Approval Form</label>
+                <ng-select [items]="curForm.sections" bindLabel="title"
+                  [(ngModel)]="editTierData.section" name="customForm">
+                </ng-select>
+                @if (editTierData.alwaysApprove && !editTierData.section) {
+                  <small class="has-error">
+                    <input type="hidden" name="hiddenCustomForm" [(ngModel)]="editTierData.section"
+                      required>
+                      <span class="form-text">Custom form is required
+                      for Always Approved Option!</span>
+                  </small>
+                }
+              </div>
+              @if (editTierData.id) {
+                <div class="bg-danger mx-n2 text-white">
+                  <div class="p-3">
+                    Update approver for prior entry
+                    <div class="form-group small">
+                      <div class="form-check">
+                        <input type="checkbox" class="form-check-input"
+                          id="forceApf_{{editTierData.id}}"
+                          [(ngModel)]="forceApf[editTierData.id]"
+                          name="forceApf_{{editTierData.id}}">
+                        <label class="form-check-label" for="forceApf_{{editTierData.id}}">Include
+                          approved entry
+                        (force update ALL)</label>
+                      </div>
+                    </div>
+                    <button type="button" [disabled]="apfLoading[editTierData.id]"
+                      class="btn btn-sm btn-danger text-start border-white" style="border-width:2px;"
+                      (click)="backendApf(editTierData, forceApf[editTierData.id])">
+                      @if (apfLoading[editTierData.id]) {
+                        <span>Executing update...please wait</span>
+                      }
+                      @if (!apfLoading[editTierData.id]) {
+                        <span>Update
+                          <strong>{{forceApf[editTierData.id]?'all':'pending'}}</strong> approver in
+                        this tier</span>
+                      }
+                      <div class="small">Update tier prior of approver changes (if any)</div>
+                    </button>
+                    @if (apfResult[editTierData.id]) {
+                      <div class="text-white mt-2">
+                        <table width="100%">
+                          <tr>
+                            <td>Success</td>
+                            <td>: {{apfResult[editTierData.id].successCount}}</td>
+                          </tr>
+                          <tr>
+                            <td>Failed</td>
+                            <td>: {{apfResult[editTierData.id].errorCount}}</td>
+                          </tr>
+                          <tr>
+                            <td>Not empty (unchanged)</td>
+                            <td>: {{apfResult[editTierData.id].notEmptyCount}}</td>
+                          </tr>
+                        </table>
+                        @if (apfResult[editTierData.id].errorCount) {
+                          <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input"
+                              id="showlogApf_{{editTierData.id}}"
+                              [(ngModel)]="showlogApf[editTierData.id]"
+                              name="showlogApf_{{editTierData.id}}">
+                            <label class="form-check-label" for="showlogApf_{{editTierData.id}}">Show
+                              error
+                            logs</label>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                  @if (showlogApf[editTierData.id]) {
+                    <div class="p-3"
+                      style="max-height:200px; overflow:auto">
+                      @for (l of apfResult[editTierData.id].errorLog; track $index) {
+                        <div>{{l}}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Callback</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane fix-gutter">
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite (tier will be hidden if false)</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" [(ngModel)]="editTierData.pre"
+                    [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
+                    placeholder="ie: $user$.groups['213']" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Post-action</label>
+                <div class="mx-n2">
+                  <app-cm name="post" lang="javascript"
+                    [(ngModel)]="editTierData.post"
+                    [extraAutoComplete]="extraAutoCompleteTier" subType="active"
+                    placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
+                    [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editTierForm.invalid"
+        (click)="c(editTierData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Tier
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #editItemTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    @if (!editItemFromPalette) {
+      <h4 class="modal-title">Form Item</h4>
+    }
+    @if (editItemFromPalette) {
+      <h4 class="modal-title">Add new <span class="italic">{{editItemData.type}}
+      {{editItemData.subType}}</span></h4>
+    }
+  </div>
+  <div #editItemForm="ngForm" ngForm>
+    <div class="tab-simple fix-gutter" justify="center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Field Setting</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" name="bulk-add"
+                    [(ngModel)]="editItemData.bulkAdd" id="bulk-add">
+                  <label class="form-check-label" for="bulk-add">Register many field at once</label>
+                </div>
+              </div>
+              @if (!editItemData.bulkAdd) {
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Label *</label>
+                      <input type="text" class="form-control" [(ngModel)]="editItemData.label"
+                        name="label"
+                        (ngModelChange)="editItemData.id||editItemData.code=toSnakeCase(editItemData.label)"
+                        placeholder="ie: First name" required>
+                      <div class="form-check mt-1">
+                        <input type="checkbox" class="form-check-input" id="sup_label"
+                          [(ngModel)]="editItemData.hideLabel" name="hideLabel">
+                        <label for="sup_label" class="form-check-label">Hide Label</label>
+                      </div>
+                      <div class="form-check mt-1">
+                        <input type="checkbox" class="form-check-input" id="readOnly"
+                          [(ngModel)]="editItemData.readOnly" name="readOnly">
+                        <label for="readOnly" class="form-check-label">Read Only</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3 position-relative" [class.element]="!editCode">
+                      <label class="form-label">Code *</label>
+                      <input type="text" class="form-control element-item"
+                       (ngModelChange)="editItemData.code=toSnakeCase($event)"
+                        [ngModel]="editItemData.code" name="code" placeholder="ie: firstName"
+                        [readonly]="!editCode" required>
+                      @if(!editCode) {
+                        <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                          style="position:absolute;top:10px;right:10px;"
+                          (click)="editCode=true">
+                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }@else {
+                        <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                          style="position:absolute;top:10px;right:10px;"
+                          (click)="editCode=false">
+                          <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }
+                      @if (itemExist(editItemData)) {
+                        <small class="text-danger blink_me">Code already used by <strong>{{codeList[editItemData.code]?.text}}</strong>! Please edit</small>
+                      }
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <div class="form-group mb-3">
+                  <label class="form-label">Field label list (comma separated)</label>
+                  <textarea class="form-control" name="label" #label="ngModel" rows="8"
+                  [(ngModel)]="editItemData.label" required></textarea>
+                  @if (label?.invalid) {
+                    <small class="form-text has-warning">
+                      @if (label.errors?.required) {
+                        <span class="help-block">Label is required</span>
+                      }
+                    </small>
+                  }
+                </div>
+              }
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Type *</label>
+                    <select class="form-select" name="type"
+                      [(ngModel)]="editItemData.type"
+                      (ngModelChange)="editItemData.subType=null" required>
+                      <option value="" disabled>Select type...</option>
+                      @for (item of typeList; track $index) {
+                        <option [value]="item.value">{{item.name}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Element Width</label>
+                    <select class="form-select" name="size"
+                      [(ngModel)]="editItemData.size">
+                      <option value="" disabled>Select type...</option>
+                      <optgroup label="Responsive Size">
+                        @for (item of sizeList; track item) {
+                          <option [value]="item.value">{{item.name}}
+                          </option>
+                        }
+                      </optgroup>
+                      <optgroup label="Fixed Size">
+                        @for (item of sizeFixList; track item) {
+                          <option [value]="item.value">
+                            {{item.name}}
+                          </option>
+                        }
+                      </optgroup>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              @if (['select','radio','radioBtn','checkboxOption','modelPicker','text','dataset'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select App</label>
+                  <select class="form-select" name="appId"
+                    (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
+                    [(ngModel)]="editItemData.appId">
+                    @for (app of otherAppList; track app.id) {
+                      <option [ngValue]="app.id">{{app.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['select','radio','radioBtn','checkboxOption','text'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">List Source 
+                    @if (editItemData?.type=='text') {
+                    <span>(Optional. Used for text auto-complete)</span>
+                    }
+                  </label>
+                  <!-- {{lookupMap|json}} -->
+                  <div class="input-group">
+                    <select class="form-select" name="dataSource"
+                      [(ngModel)]="editItemData.dataSource">
+                      <option [ngValue]="null" style="color:gray">No lookup specified</option>
+                      @for (item of lookupList; track item.id) {
+                        <option [value]="item.id">{{item.name}}</option>
+                      }
+                    </select>
+                    <button type="button" class="btn btn-outline-secondary" type="button" [disabled]="!(editItemData.dataSource && lookupMap[editItemData.dataSource])"
+                     (click)="editLookup(editLookupTpl,lookupMap[editItemData.dataSource])"><fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon></button>
+                    <button type="button" class="btn btn-secondary" type="button"
+                     (click)="editLookup(editLookupTpl,{})"><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Lookup</button>
+                  </div>
+                </div>
+                @if (lookupMap[editItemData.dataSource]?.sourceType=='db') {
+                  <div class="form-group form-check mb-3">
+                    <input class="form-check-input" type="checkbox" [(ngModel)]="editItemData.x.addEntryEnabled"
+                      id="addEntryEnabled" name="addEntryEnabled">
+                    <label class="form-check-label" for="addEntryEnabled">Enable 'Add Option' button, allow user to add new option</label>
+                  </div>
+                }
+              }
+              @if (['modelPicker','dataset'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3"
+                  >
+                  <label class="form-label">List Source</label>
+                  <select class="form-select" name="dataSource" (change)="loadDataset(mPicker.value)"
+                    [(ngModel)]="editItemData.dataSource" #mPicker>
+                    <option [ngValue]="null" style="color:gray">No dataset specified</option>
+                    @for (item of datasetList; track item.id) {
+                      <option [value]="item.id">{{item.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['screen'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select screen</label>
+                  <select class="form-select" name="dataSource"
+                    [(ngModel)]="editItemData.dataSource" #mPicker>
+                    <option [ngValue]="null" style="color:gray">No screen specified</option>
+                    @for (item of screenList; track item.id) {
+                      <option [value]="item.id">{{item.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['select','radio','radioBtn','checkboxOption','modelPicker','text','dataset','screen'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Source Initial Parameter</label>
+                  <div class="mx-n2">
+                    <app-cm name="dataSourceInit" lang="javascript"
+                      [(ngModel)]="editItemData.dataSourceInit"
+                      [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
+                      placeholder="ie: {extra:'base'}" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                  @if (editItemData.type=='dataset') {
+                    <div class="text-muted small my-1">
+                      <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
+                      Will use <code>{{'{'}}'$prev$.$id':$.$id{{'}'}}</code> if not specified
+                    </div>
+                  }
+                </div>
+              }
+              @if (subType[editItemData.type]) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Sub Type *</label>
+                  <div>
+                    <div class="">
+                      @for (st of subType[editItemData.type]; track $index) {
+                        <input class="btn-check" type="radio" [value]="st.code"
+                          id="subType-{{st.code}}" name="subType-{{st.code}}"
+                          [(ngModel)]="editItemData.subType" [required]="true">
+                        <label for="subType-{{st.code}}"
+                        class="btn btn-outline-secondary btn-sm me-1 mb-1">{{st.name}}</label>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (['datetime','datetime-inline','time'].indexOf(editItemData?.subType)>-1){
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="meridian"
+                    [(ngModel)]="editItemData.x.meridian" name="meridian">
+                  <label class="form-check-label" for="meridian">Use 12-hour format (show AM/PM selection)</label>
+                </div>  
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="seconds"
+                    [(ngModel)]="editItemData.x.seconds" name="seconds">
+                  <label class="form-check-label" for="seconds">Enable seconds picker</label>
+                </div>  
+              }
+              <!-- @if (['date'].indexOf(editItemData?.type)>-1){
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="use_now"
+                    [(ngModel)]="editItemData.x.use_now" name="use_now">
+                  <label class="form-check-label" for="use_now">Default with current time if no value</label>
+                </div>  
+              } -->
+              <!-- @if (['date'].indexOf(editItemData?.type)>-1){
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="use_now"
+                    [(ngModel)]="editItemData.x.use_now" name="use_now">
+                  <label class="form-check-label" for="use_now">Default with current time if no value</label>
+                </div>  
+              } -->
+              
+              @if (['simpleOption'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Options (separated by comma)</label>
+                  <textarea class="form-control" [(ngModel)]="editItemData.options" name="options"
+                  placeholder="ie: Yes,No"></textarea>
+                </div>
+              }
+              @if (['modelPicker'].indexOf(editItemData.type)>-1 && dataset?.id) {
+                <div class="form-group mb-3"
+                  >
+                  <label class="form-label">Field to show (on input)</label>
+                  <select class="form-select" name="bindLabel"
+                    [(ngModel)]="editItemData.bindLabel" #mPicker>
+                    <option value="" disabled>Select field...</option>
+                    @for (item of dataset.items; track item.id) {
+                      <option [value]="item.code">{{item.label}}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='eval') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Expression *</label>
+                  <div class="mx-n2">
+                    <app-cm name="f" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                      subType="passive" [(ngModel)]="editItemData.f" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                  @if (editItemData.id) {
+                    <div>
+                      @if (editItemData.f) {
+                        <button type="button" class="btn btn-xs btn-info mx-n2"
+                          (click)="showFunc[editItemData.id]=!showFunc[editItemData.id]">
+                          <fa-icon [icon]="['fas','terminal']" [fixedWidth]="true"></fa-icon> Execute Backend EF
+                        </button>
+                      }
+                      @if (showFunc[editItemData.id]) {
+                        <div class="mt-1 small">
+                          <div class="bg-danger mx-n2 text-white">
+                            <div class="p-3">
+                              <div class="form-group mb-3">
+                                <div class="form-check">
+                                  <input type="checkbox" class="form-check-input"
+                                    id="force_{{editItemData.code}}"
+                                    [(ngModel)]="force[editItemData.code]"
+                                    name="force_{{editItemData.code}}">
+                                  <label class="form-check-label"
+                                    for="force_{{editItemData.code}}">Include non-empty
+                                  (force update ALL)</label>
+                                </div>
+                              </div>
+                              @if (editItemData.f) {
+                                <button type="button" [disabled]="efLoading[editItemData.code]"
+                                  class="btn btn-sm btn-danger text-start border-white"
+                                  style="border-width:2px;"
+                                  (click)="backendEfSave(editItemData, force[editItemData.code])">
+                                  @if (efLoading[editItemData.code]) {
+                                    <span>Executing update...please
+                                    wait</span>
+                                  }
+                                  @if (!efLoading[editItemData.code]) {
+                                    <span>Save and update
+                                      <strong>{{force[editItemData.code]?'all':'empty'}}</strong>
+                                    data</span>
+                                  }
+                                  <div class="small">Update previous record prior to the addition of
+                                  this EF</div>
+                                </button>
+                              }
+                              @if (efResult[editItemData.code]) {
+                                <div class="text-white mt-2">
+                                  <table width="100%">
+                                    <tr>
+                                      <td>Success</td>
+                                      <td>: {{efResult[editItemData.code].successCount}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td>Failed</td>
+                                      <td>: {{efResult[editItemData.code].errorCount}}</td>
+                                    </tr>
+                                    <tr>
+                                      <td>Not empty (unchanged)</td>
+                                      <td>: {{efResult[editItemData.code].notEmptyCount}}</td>
+                                    </tr>
+                                  </table>
+                                  @if (efResult[editItemData.code].errorCount) {
+                                    <div class="form-check mt-2"
+                                      >
+                                      <input type="checkbox" class="form-check-input"
+                                        id="showlog_{{editItemData.code}}"
+                                        [(ngModel)]="showlog[editItemData.code]"
+                                        name="showlog_{{editItemData.code}}">
+                                      <label class="form-check-label"
+                                        for="showlog_{{editItemData.code}}">Show error
+                                      logs</label>
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </div>
+                            @if (showlog[editItemData.code]) {
+                              <div class="p-3"
+                                style="max-height:200px; overflow:auto">
+                                @for (l of efResult[editItemData.code].errorLog; track l) {
+                                  <div>{{l}}</div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  @if (editItemData.type=='eval') {
+                    <small class="help-block">
+                      <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
+                      You can use the following expresion:
+                      <ul>
+                        <li>Date : any Date function (ie: Date.now())</li>
+                        <li>*/+- : basic arithmetic operator (ie: $.total - $.used)</li>
+                        <li>$.field : for field value (ie: $.first_name)</li>
+                        <li>$user$.email : for user value</li>
+                        <li>Math : any Math function (ie: Math.round($.total))</li>
+                        <li>Any string function (ie: $.first_name.replace('will','tony'))</li>
+                      </ul>
+                    </small>
+                  }
+                </div>
+              }
+              @if (['qr','clearfix'].indexOf(editItemData.subType)==-1
+                && ['imagePreview','scaleTo5','scaleTo10','simpleOption'].indexOf(editItemData.type)==-1) {
+                <div class="form-group mb-3">
+                  @if (['static','modelPicker','select','btn','checkboxOption','radio'].indexOf(editItemData.type)==-1) {
+                    <label class="form-label">Placeholder</label>
+                  }
+                  @if (['static','modelPicker','select','checkboxOption','radio'].indexOf(editItemData.type)>-1) {
+                    <label class="form-label">Template
+                    (support HTML)</label>
+                  }
+                  @if (['btn'].indexOf(editItemData.type)>-1) {
+                    <label class="form-label">
+                    Button styles (css properties)</label>
+                  }
+                  @if (['static','modelPicker','select','btn','checkboxOption','radio'].indexOf(editItemData.type)==-1) {
+                    <textarea class="form-control"
+                      [(ngModel)]="editItemData.placeholder" name="placeholder"
+                    placeholder="Input placeholder"></textarea>
+                  }
+                  <div class="mx-n2">
+                    @if (['btn'].indexOf(editItemData.type)>-1) {
+                      <app-cm name="placeholder" lang="html"
+                        [(ngModel)]="editItemData.placeholder" [linenumber]="true"
+                        placeholder="Button style">
+                      </app-cm>
+                    }
+                  </div>
+                  @if (['static','modelPicker','select','checkboxOption','radio'].indexOf(editItemData.type)>-1 ) {
+                    <div class="mb-1">
+                      @for (k of dataset?.items; track k.id) {
+                        <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
+                        (click)="insertTextAtCursor('$.'+k.code, codeeditor)">{{k.label}}</button>
+                      }
+                      @if (dataset?.items) {
+                        @for (k of builtInVar; track $index) {
+                          <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
+                          (click)="insertTextAtCursor(k.var, codeeditor)">{{k.label}}</button>
+                        }
+                      }
+                    </div>
+                    <div class="mx-n2">
+                      <app-cm name="placeholder" lang="html" #codeeditor
+                        [extraAutoComplete]="extraAutoCompleteHtml"
+                        [(ngModel)]="editItemData.placeholder" [linenumber]="true"
+                        placeholder="HTML supported">
+                      </app-cm>
+                    </div>
+                    @if (editItemData.placeholder) {
+                      <div class="mt-2">
+                        <label class="form-label">Preview</label>
+                        <div class="bg-white p-2 border border-light"
+                        [innerHtml]="editItemData.placeholder|safe:'html'"></div>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="hidden"
+                  [(ngModel)]="editItemData.hidden" name="hidden">
+                <label class="form-check-label" for="hidden">Hide field?</label>
+              </div>
+            </div>
+            @if (editItemData.type=='file' && !editItemData.x?.bucket) {
+              <div class="bg-danger text-white p-2">
+                To easily manage your file upload, please set the bucket at <br /> Options &rarr; File
+                Bucket
+              </div>
+            }
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Validation</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="field-required"
+                    [(ngModel)]="editItemData.v.required" name="required">
+                  <label class="form-check-label" for="field-required"> Required?</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  @if (['text','textarea'].indexOf(editItemData.type)>-1) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Minlength</label>
+                      <input type="number" class="form-control"
+                        [(ngModel)]="editItemData.v.minlength" name="minlength">
+                    </div>
+                  }
+                </div>
+                <div class="col-sm-6">
+                  @if (['text','textarea'].indexOf(editItemData.type)>-1) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Maxlength</label>
+                      <input type="number" class="form-control"
+                        [(ngModel)]="editItemData.v.maxlength" name="maxlength">
+                    </div>
+                  }
+                </div>
+                <div class="col-sm-6">
+                  @if (['textarea','richtext'].indexOf(editItemData.subType)>-1) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Number of row</label>
+                      <input type="number" class="form-control"
+                        [(ngModel)]="editItemData.v.rows" name="rows">
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  @if (['date'].indexOf(editItemData.type)>-1) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Min Date</label>
+                      <button type="button" class="float-end btn btn-xs btn-secondary"
+                        (click)="editItemData.v &&  editItemData.v.minDate = undefined">Clear</button>
+                      <input class="form-control" type="text" name="minDate"
+                        [(ngModel)]="editItemData.v.minDate"
+                        placeholder="Choose min date" (click)="dmin.toggle()" ngbDatepicker
+                        #dmin="ngbDatepicker">
+                    </div>
+                  }
+                </div>
+                <div class="col-sm-6">
+                  @if (['date'].indexOf(editItemData.type)>-1) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Max Date</label>
+                      <button type="button" class="float-end btn btn-xs btn-secondary"
+                      (click)="editItemData.v &&  editItemData.v.maxDate = undefined">Clear</button>
+                      <input class="form-control" type="text" name="maxDate"
+                        [(ngModel)]="editItemData.v.maxDate"
+                        placeholder="Choose max date" (click)="dmax.toggle()" ngbDatepicker
+                        #dmax="ngbDatepicker">
+                    </div>
+                  }
+                </div>
+              </div>
+              @if (['text','textarea'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Pattern</label>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="editItemData.v.pattern" name="pattern">
+                </div>
+              }
+              @if (['text','textarea'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Mask</label>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="editItemData.v.mask" name="mask">
+                  <small>
+                    Format can be constructed as:
+                    <ul>
+                      <li>'0': /[0-9]/</li>
+                      <li>'a': /[a-z]/</li>
+                      <li>'A': /[A-Z]/</li>
+                      <li>'B': /[a-zA-Z]/</li>
+                    </ul>
+                  </small>
+                </div>
+              }
+              @if (['scale','number','file'].indexOf(editItemData.type)>-1) {
+                <div class="row">
+                  <div class="col-sm-12">
+                    @if (editItemData.type=='number') {
+                      <span>Number range</span>
+                    }
+                    @if (editItemData.type=='file') {
+                      <span>
+                        @if (['other','othermulti'].includes(editItemData.subType)) {
+                          <span>File size (MiB)</span>
+                        }
+                        @if (['image','imagemulti'].includes(editItemData.subType)) {
+                          <span>Image size
+                          </span>
+                        }
+                      </span>
+                    }
+                  </div>
+                  @if (['scale','number'].indexOf(editItemData.type)>-1) {
+                    <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Min
+                          @if (editItemData.type=='scale') {
+                            <span>*</span>
+                          }
+                        </label>
+                        <input type="number" class="form-control"
+                          [(ngModel)]="editItemData.v.min" name="min"
+                          [required]="editItemData.type=='scale'">
+                      </div>
+                    </div>
+                  }
+                   
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Max
+                        @if (editItemData.type=='scale') {
+                          <span>*</span>
+                        }
+                      </label>
+                      <input type="number" class="form-control"
+                        [(ngModel)]="editItemData.v.max" name="max"
+                        [required]="editItemData.type=='scale'">
+                    </div>
+                  </div>
+                  @if (['image','imagemulti'].indexOf(editItemData.subType)>-1) {
+                    <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Image Quality</label>
+                        <input type="number" class="form-control" min="0" max="1" step="0.01"
+                          [(ngModel)]="editItemData.v.q" name="q">
+                      </div>
+                    </div>
+                  }
+                  @if (['image','imagemulti'].indexOf(editItemData.subType)>-1) {
+                    <small class="text-danger"
+                      >Maximum of the
+                      longest
+                      side in 'px'.
+                      Compressed image might lose orientation info.
+                      Image will be converted to JPEG.
+                    </small>
+                  }
+                </div>
+              }
+              @if (['other','othermulti'].indexOf(editItemData.subType)>-1) {
+                <div>
+                  <div class="form-group mb-3">
+                    <label class="form-label">Accepted Mime-Type (comma separated)</label>
+                    <input type="text" class="form-control"
+                      [(ngModel)]="editItemData.v.accept" list="mimeTypes"
+                      name="accept" multiple>
+                    <datalist id="mimeTypes">
+                      <option value="">All Files</option>
+                      <option value="application/pdf">PDF (.pdf)</option>
+                      <option value="application/msword">MS Word Document (.doc)</option>
+                      <option
+                        value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                      MS Word Document (.docx)</option>
+                      <option value="application/vnd.ms-excel">MS Excel Spreadsheet (.xls)</option>
+                      <option
+                        value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">MS
+                      Excel Spreadsheet (.xlsx)</option>
+                      <option value="application/vnd.ms-powerpoint">MS Powerpoint (.ppt)</option>
+                      <option
+                        value="application/application/vnd.openxmlformats-officedocument.presentationml.presentation">
+                      MS Powerpoint (.pptx)</option>
+                      <option value="application/vnd.rar">RAR Archive (.rar)</option>
+                      <option value="application/zip">ZIP Archive (.zip)</option>
+                    </datalist>
+                    <a href="https://www.iana.org/assignments/media-types/media-types.xhtml"
+                    target="_blank">List of all the official MIME types &nearr;</a>
+                  </div>
+                </div>
+              }                      
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Options</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Hint</label>
+                <textarea class="form-control" [(ngModel)]="editItemData.hint" name="hint"
+                placeholder="Hint for input"></textarea>
+              </div>
+              @if (['date'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Format</label>
+                  <input type="text" class="form-control" [(ngModel)]="editItemData.format" name="format"
+                    placeholder="ie: dd/MM/yyyy">
+                </div>
+              }
+              @if (['modelPicker','select'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Group by</label>
+                  <div class="mx-n2">
+                    <app-cm name="groupBy" lang="javascript" [(ngModel)]="editItemData.x.groupBy"
+                      [extraAutoComplete]="extraAutoCompleteHtml" subType="passive" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+              }
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
+                    [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Post-action</label>
+                <div class="mx-n2">
+                  <app-cm name="post" lang="javascript"
+                    [(ngModel)]="editItemData.post" [linenumber]="true"
+                    subType="active" [extraAutoComplete]="extraAutoCompleteJs">
+                  </app-cm>
+                </div>
+                <small class="help-block">
+                  <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
+                  You can use the following statement:
+                  <ul>
+                    <li>Value reassignment: $.field = 'newValue'</li>
+                    <li>Added undeclared value: $.aux_field = $.field</li>
+                    <li>Lookup refresh: $lookup$(field_code,parameters)</li>
+                    <li>Http request: $http$(url,callback) ie:
+                    $http$('http://api.com/quote',callbackFn)</li>
+                  </ul>
+                </small>
+              </div>
+              @if (['file'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">File Bucket</label>
+                  <select class="form-select" name="bucket"
+                    [(ngModel)]="editItemData.x.bucket">
+                    <option [ngValue]="undefined" style="color:gray">No bucket</option>
+                    @for (b of bucketList; track b.id) {
+                      <option [ngValue]="b.id">{{b.name}}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['text'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Smart Form (text classifier)</label>
+                  <select class="form-select" name="txtcls"
+                    [(ngModel)]="editItemData.x.txtcls">
+                    <option [ngValue]="undefined" style="color:gray">No AI classifier</option>
+                    @for (b of cognaList; track b.id) {
+                      {{b.type}}
+                      @if(b.type=='txtcls'){
+                        <option [ngValue]="b.id">{{b.name}}
+                        </option>
+                      }
+                    }
+                  </select>
+                </div>
+                @if (editItemData.x.txtcls){
+                  <div class="input-group input-group-sm mt-1 mb-2">
+                    <label class="input-group-text">Classifier field target *</label>
+                    <select class="form-select" name="txtclsTarget"
+                      [(ngModel)]="editItemData.x.txtclsTarget" required>
+                      <option [ngValue]="undefined" style="color:gray">No target field</option>
+                      @for (f of curForm.items|keyvalue; track $index) {
+                          <option [ngValue]="f.value.code">{{f.value.label}}</option>
+                      }
+                    </select>
+                    <!-- <input type="text" class="form-control" [(ngModel)]="editItemData.x" name="txtclsTarget"
+                    placeholder="ie: sentiment_type" required>  -->
+                  </div>
+                }
+              }
+              @if (['file','speech'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Smart Form (extractor)</label>
+                  <select class="form-select" name="extractor"
+                    [(ngModel)]="editItemData.x.extractor">
+                    <option [ngValue]="undefined" style="color:gray">No AI extractor</option>
+                    @for (b of cognaList; track b.id) {
+                      {{b.type}}
+                      @if(b.type=='txtext'){
+                        <option [ngValue]="b.id">{{b.name}}
+                        </option>
+                      }
+                    }
+                  </select>
+                </div>
+              }
+              @if (['file'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Smart Form (image classifier)</label>
+                  <select class="form-select" name="imgcls"
+                    [(ngModel)]="editItemData.x.imgcls">
+                    <option [ngValue]="undefined" style="color:gray">No classifier</option>
+                    @for (b of cognaList; track b.id) {
+                      {{b.type}}
+                      @if(b.type=='imgcls'){
+                        <option [ngValue]="b.id">{{b.name}}
+                        </option>
+                      }
+                    }
+                  </select>
+                </div>
+                @if (editItemData.x.imgcls){
+                  <div class="input-group input-group-sm mt-1 mb-2">
+                    <label class="input-group-text">Classifier field target *</label>
+                    <select class="form-select" name="imgclsTarget"
+                      [(ngModel)]="editItemData.x.imgclsTarget" required>
+                      <option [ngValue]="undefined" style="color:gray">No target field</option>
+                      @for (f of curForm.items|keyvalue; track $index) {
+                          <option [ngValue]="f.value.code">{{f.value.label}}</option>
+                      }
+                    </select>
+                    <!-- <input type="text" class="form-control" [(ngModel)]="editItemData.x" name="txtclsTarget"
+                    placeholder="ie: sentiment_type" required>  -->
+                  </div>
+                }
+              }
+              @if (['speech'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Speech stop word</label>
+                  <input class="form-control" name="stopWord" placeholder="Word to stop listening"
+                    [(ngModel)]="editItemData.x.stopWord">
+                </div>
+              }
+              @if (['file'].indexOf(editItemData.type)>-1 && ['other','othermulti'].indexOf(editItemData.subType)>-1) {
+                <div class="form-group mb-3">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="field-zip"
+                      [(ngModel)]="editItemData.x.zip" name="zip">
+                    <label class="form-check-label" for="field-zip"> Zip (compress) uploaded file
+                      <div class="small">File will be downloaded as .zip format</div>
+                    </label>
+                  </div>
+                </div>
+              }
+              @if (['file'].indexOf(editItemData.type)>-1 && editItemData.x?.bucket) {
+                @let placeholder = "ie: Report-by-{{$user$.email}}-{{$file$.name}}";
+                <div class="form-group mb-3">
+                  <label class="form-label">Rename file on upload</label>
+                  <input class="form-control" name="editItemData.x.filenameTpl" [placeholder]="placeholder"
+                    [(ngModel)]="editItemData.x.filenameTpl">
+                    <div class="small">
+                      <ul>
+                        <li>$user$ : user info</li>
+                        <li>$unique$ : unique id</li>
+                        <li>$file$ : file info (ie: $file$.name)</li>
+                      </ul>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="field-secure"
+                      [(ngModel)]="editItemData.x.secure" name="field-secure">
+                    <label class="form-check-label" for="field-secure"> Secured file (not publicly
+                      available through URL)
+                    </label>
+                  </div>
+                </div>
+              }
+
+              @if (['richtext'].indexOf(editItemData.subType)>-1) {
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="field-inlineimg"
+                      [(ngModel)]="editItemData.x.inlineImg" name="field-inlineimg">
+                    <label class="form-check-label" for="field-inlineimg"> Allow inline image as content
+                    </label>
+                  </div>
+                </div>
+              }
+
+              @if (['radio'].indexOf(editItemData.type)>-1 || 
+                  ['checkboxOption'].indexOf(editItemData.type)>-1 || 
+                  ['simpleOption'].indexOf(editItemData.type)>-1) {
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="field-inline"
+                      [(ngModel)]="editItemData.x.inline" name="field-inline">
+                    <label class="form-check-label" for="field-inline"> Use inline style
+                    </label>
+                  </div>
+                </div>
+              }
+
+              @if ('speech'==editItemData?.type){
+                <div class="form-group mb-3">
+                  <label class="form-label">Default Speech Synthesis Language</label>
+                  <div class="btn-group1">
+                    @for (i of ['en-US','ms-MY','zh-CN']; track i) {
+                      <input class="btn-check" type="radio" [value]="i" id="ideflang-{{i}}"
+                        name="ideflang-{{i}}" [(ngModel)]="editItemData.x.defLang">
+                      <label for="ideflang-{{i}}" class="btn btn-outline-secondary me-2 btn-sm">{{i}}</label>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (['map','text','simpleOption','select','modelPicker','radio','number',
+              'scaleTo5','scaleTo10','scale','date','checkboxOption','checkbox'].indexOf(editItemData?.type)>-1){
+                <div class="d-flex">
+                  <div class="flex-grow-1">
+                    <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" id="use_default"
+                        [(ngModel)]="editItemData.x.use_default" name="use_default">
+                      <label class="form-check-label" for="use_default">Use the following default if no value</label>
+                    </div> 
+                  </div>
+                  @if (editItemData.x?.use_default){
+                    <div class="flex-grow-0">
+                      <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="use_dyn_default"
+                          [(ngModel)]="editItemData.x.use_dyn_default" name="use_dyn_default">
+                        <label class="form-check-label" for="use_dyn_default">Dynamic</label>
+                      </div>
+                    </div>
+                  }
+                </div>
+                 
+                @if(editItemData.x?.use_default){
+                  @if (!editItemData.x?.use_dyn_default){
+                    <div class="input-group mb-3">
+                      <label class="input-group-text">Default</label>
+
+                      @if(['text'].indexOf(editItemData?.type)>-1){
+                        <input type="text" class="form-control" [(ngModel)]="editItemData.x.default"
+                          name="defaultText"
+                          placeholder="ie: Default" required>
+                      }@else if(['number','scaleTo5','scaleTo10','scale'].indexOf(editItemData?.type)>-1){
+                        <input type="number" class="form-control" [(ngModel)]="editItemData.x.default"
+                        name="defaultNumber"
+                        placeholder="ie: 10" required>
+                      }@else if(['date'].indexOf(editItemData?.type)>-1){
+                        <input class="form-control" type="text" name="defaultDate"
+                          [(ngModel)]="editItemData.x.default"
+                          placeholder="Choose default date" (click)="defDt.toggle()" ngbDatepicker
+                          #defDt="ngbDatepicker">
+                        <!-- * Leave blank to use current time -->
+                      }@else if(['simpleOption'].indexOf(editItemData?.type)>-1){
+                        <select class="form-select" name="defaultSimpleOption"
+                          [(ngModel)]="editItemData.x.default" >
+                          <option value="" disabled></option>
+                          @for (item of getAsList(editItemData.options); track $index) {
+                            <option [value]="item">{{item}}</option>
+                          }
+                        </select>
+                      }@else if(['select','radio','checkboxOption'].indexOf(editItemData?.type)>-1){
+                        <ng-select  class="form-control" [items]="lookup[editItemData?.code]" bindLabel="name"
+                          [multiple]="editItemData?.type=='checkboxOption' || editItemData?.subType=='multiple'" 
+                          [compareWith]="compareByCodeFn"
+                          placeholder="Select default value" [(ngModel)]="editItemData.x.default"
+                          id="defaultLookup" name="defaultLookup">
+                        </ng-select>
+                      }@else if(['modelPicker'].indexOf(editItemData?.type)>-1){
+                        <ng-select  class="form-control" [items]="lookup[editItemData?.code]" [bindLabel]="editItemData.bindLabel"
+                          [multiple]="editItemData?.subType=='multiple'" 
+                          placeholder="Select default value" [(ngModel)]="editItemData.x.default"
+                          id="defaultModel" name="defaultModel">
+                        </ng-select>
+                      } @else if(['checkbox'].indexOf(editItemData?.type)>-1){
+                        <select class="form-select" #optionInput name="defaultCheckboxOption"
+                          [(ngModel)]="editItemData.x.default" >
+                          <option value="" disabled></option>
+                          <option [value]="true">Yes</option>
+                          <option [value]="false">No</option>
+                        </select>
+                      }@else if(['map'].indexOf(editItemData?.type)>-1){
+                        <div class="input-group-text">
+                          <fa-icon [icon]="['fas','location-dot']" [fixedWidth]="true"></fa-icon>
+                          <input class="form-check-input" type="checkbox" id="current_loc" title="Use device current location"
+                            [(ngModel)]="editItemData.x.useCurrent" (ngModelChange)="prepareMapCoordinate()" name="current_loc"> 
+                        </div>
+                        @if (!editItemData.x?.useCurrent){
+                          <input type="number" class="form-control" [(ngModel)]="defaultMapLat.latitude"
+                          (change)="prepareMapCoordinate()"
+                          name="latitude"
+                          placeholder="Latitude *" required>
+                          <input type="number" class="form-control" [(ngModel)]="defaultMapLat.longitude"
+                          (change)="prepareMapCoordinate()"
+                          name="longitude"
+                          placeholder="Longitude *" required>
+                        }@else{
+                          <label class="input-group-text flex-grow-1"  for="current_loc">Use device current location</label>
+                        }
+                      }        
+                    </div> 
+
+                    
+                  }@else{
+                    <div class="mb-3">
+                      <label class="form-label">Dynamic Default Value *</label>
+
+                      <div class="mx-n2">
+                        <app-cm name="dyn_default" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                          subType="passive" [(ngModel)]="editItemData.x.dyn_default"
+                          placeholder="Expression (ie: $.age>18?'Yes':'No')" [linenumber]="true">
+                        </app-cm>
+                      </div>           
+                    </div>  
+                  }
+                }
+                @if(editItemData.type=='map'){
+                  <div class="form-group mb-2">
+                    <label class="form-label">Custom Map Server</label>
+                    <input type="text" class="form-control" [(ngModel)]="editItemData.x.customMapServer"
+                      placeholder="Leave blank to use default (OpenStreetMap)"
+                      name="customMapServer">
+                  </div>
+
+                  <div class="form-group mb-2" [class.disabled]="editItemData.readOnly">
+                    <label class="form-label">Drop pin on (event)</label>
+                    <select class="form-select" name="dropPinOn"
+                      [(ngModel)]="editItemData.x.dropPinOn">
+                      <option [ngValue]="undefined">Use default (dblclick)</option>
+                      @for (b of ['contextmenu','click','dblclick','mousedown','mouseup']; track $index) {
+                          <option [ngValue]="b">{{b}}
+                          </option>
+                      }
+                    </select>
+                  </div>
+                }
+              }
+
+              @if (curForm.x?.facet) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Facet Mode</label>
+                  @for (f of facetList; track f) {
+                    <div class="input-group mb-3 input-group-sm">
+                      <span class="input-group-text">
+                        {{f}}
+                      </span>
+                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                        [(ngModel)]="editItemData.x.facet[f]">
+                        <option class="text-muted" [ngValue]="undefined">Select view mode</option>
+                        @for (g of facetMode; track g) {
+                          <option [value]="g">{{g}}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary"
+      [disabled]="editItemForm.invalid || itemExist(editItemData)" (click)="c(editItemData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Item
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeItemTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Form Item</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this item?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Item Label</label>
+        <p class="form-control-static">
+          {{curForm.items[removeItemData.code]?curForm.items[removeItemData.code].label:removeItemData.code}}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeItemData)">
+      Remove Item
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeSectionTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Section</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this section?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Section Title</label>
+        <p class="form-control-static">{{removeSectionData.title}}</p>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <p class="form-control-static">{{removeSectionData.description}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeSectionData)">
+      Remove Section
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeTabTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Tab</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this tab?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Tab Title</label>
+        <p class="form-control-static">{{removeTabData.title}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeTabData)">
+      Remove Tab
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #cloneFormTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-clone-form [dismiss]="d" [close]="c" [appId]="app.id" [appList]="otherAppList" [data]="{appId:app.id}">
+    </app-clone-form>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #removeFormTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Form</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this form?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Form Title</label>
+        <p class="form-control-static">{{removeFormData.title}}</p>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Form Description</label>
+        <p class="form-control-static">{{removeFormData.description}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeFormData)">
+      Remove Form
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeTierTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Approval Tier</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this approval tier?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Tier Name</label>
+        <p class="form-control-static">{{removeTierData.name}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeTierData)">
+      Remove Tier
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #viewItemsTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Manage Form Item Source</h4>
+  </div>
+  <div class="list-group list-group-flush">
+    @if (curForm) {
+      <a class="list-group-item list-group-item-secondary py-2" (click)="showCurFormItem=!showCurFormItem">
+        <h5 class="mb-0">{{curForm.title}}
+          <fa-icon class="ms-1 float-end" [icon]="['fas',showCurFormItem?'angle-up':'angle-down']"
+          [fixedWidth]="true"></fa-icon>
+        </h5>
+      </a>
+      @if (showCurFormItem) {
+        <div class="bg-light p-2 text-center">
+          <input type="text" class="p-2" style="width:100%;" placeholder="Start typing to search..."
+            [(ngModel)]="itemSearch">
+        </div>
+        @for (f of curForm.items|keyvalue|filter:itemSearch; track $index) {
+          <div class="list-group-item element py-2">
+            {{f.value.label}} - <code>$.{{f.value.code}}</code>
+            <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
+              @if (f.value.f) {
+                <button type="button" class="btn btn-round btn-sm btn-info"
+                  (click)="showFunc[f.value.id]=!showFunc[f.value.id]">
+                  <fa-icon [icon]="['fas','terminal']" [fixedWidth]="true"></fa-icon>
+                </button>
+              }
+              <button type="button" class="btn btn-round btn-sm btn-info" (click)="removeItemSource(curForm.id,f.value.id)">
+                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+              </button>
+            </div>
+            @if (showFunc[f.value.id]) {
+              <div class="mt-1 small">
+                <pre style="white-space: pre-wrap;">{{f.value.f}}</pre>
+                <div class="bg-danger mx-n2 text-white">
+                  <div class="p-3">
+                    <div class="form-group mb-3">
+                      <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="force_{{f.key}}"
+                          [(ngModel)]="force[f.key]" name="force_{{f.key}}">
+                        <label class="form-check-label" for="force_{{f.key}}">Include non-empty
+                        (force update ALL)</label>
+                      </div>
+                    </div>
+                    @if (f.value.f) {
+                      <button type="button" [disabled]="efLoading[f.key]"
+                        class="btn btn-sm btn-danger text-start border-white" style="border-width:2px;"
+                        (click)="backendEf(f.value, force[f.key])">
+                        @if (efLoading[f.key]) {
+                          <span>Executing update...please wait</span>
+                        }
+                        @if (!efLoading[f.key]) {
+                          <span>Update <strong>{{force[f.key]?'all':'empty'}}</strong> data</span>
+                        }
+                        <div class="small">Update previous record prior to the addition of this EF</div>
+                      </button>
+                    }
+                    @if (efResult[f.key]) {
+                      <div class="text-white mt-2">
+                        <table width="100%">
+                          <tr>
+                            <td>Success</td>
+                            <td>: {{efResult[f.key].successCount}}</td>
+                          </tr>
+                          <tr>
+                            <td>Failed</td>
+                            <td>: {{efResult[f.key].errorCount}}</td>
+                          </tr>
+                          <tr>
+                            <td>Not empty (unchanged)</td>
+                            <td>: {{efResult[f.key].notEmptyCount}}</td>
+                          </tr>
+                        </table>
+                        @if (efResult[f.key].errorCount) {
+                          <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="showlog_{{f.key}}"
+                              [(ngModel)]="showlog[f.key]" name="showlog_{{f.key}}">
+                            <label class="form-check-label" for="showlog_{{f.key}}">Show error
+                            logs</label>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                  @if (showlog[f.key]) {
+                    <div class="p-3" style="max-height:200px; overflow:auto">
+                      @for (l of efResult[f.key].errorLog; track l) {
+                        <div>{{l}}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+    @if (curForm.prev) {
+      <a class="list-group-item list-group-item-secondary py-2" (click)="showPrevFormItem=!showPrevFormItem">
+        <h5 class="mb-0">{{curForm.prev.title}}
+          <fa-icon class="ms-1 float-end" [icon]="['fas',showPrevFormItem?'angle-up':'angle-down']"
+          [fixedWidth]="true"></fa-icon>
+        </h5>
+      </a>
+      @if (showPrevFormItem) {
+        @for (f of curForm.prev.items|keyvalue; track $index) {
+          <div class="list-group-item element py-2">
+            {{f.value.label}} - <code>$prev$.{{f.value.code}}</code>
+            <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
+              <button type="button" class="btn btn-round btn-sm btn-info"
+                (click)="removeItemSource(curForm.prev.id,f.value.id)">
+                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    }
+    @if (!curForm.items) {
+      <h5 class="text-muted p-3">Source Item Not Available</h5>
+    }
+    <div class="list-group-item element py-2">
+      <div class="small">Endpoint View by ID</div>
+      <input type="text" class="form-control form-control-sm mt-1" 
+        value="{{baseApi}}/entry/[entryId]?formId={{curForm.id}}" 
+        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+      <!-- {{baseApi}}/entry/[entryId]?formId={{curForm.id}} -->
+    </div>
+    <div class="list-group-item element py-2">
+      <div class="small">Endpoint View by params (first result only)</div>
+      <input type="text" class="form-control form-control-sm mt-1" 
+        value="{{baseApi}}/entry/by-params?formId={{curForm.id}}&[params]" 
+        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+      
+    </div>
+    @if (curForm.publicEp) {
+      <div class="list-group-item element py-2">
+        <div class="small">Public Endpoint View by ID</div>
+        <input type="text" class="form-control form-control-sm mt-1" 
+        value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
+        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+      </div>
+    }
+    @if (curForm.publicEp) {
+      <div class="list-group-item element py-2">
+        <div class="small">Public Endpoint View by params (first result only)</div>
+        <input type="text" class="form-control form-control-sm mt-1" 
+        value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
+        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+        <!-- {{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params] -->
+      </div>
+    }
+    @if (!curForm.publicEp) {
+      <div class="bg-danger text-white p-3">
+        Access to Public Endpoint View by ID &amp; Endpoint View by params is disabled.
+        <div class="small">To enable, please toggle <b>Public endpoint access to entry data via Id or Params</b> in
+          Form Setting &rsaquo; Options</div>
+      </div>
+    }
+    <div class="bg-danger text-white p-3">
+      Clear entries for the form
+      <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all entry</button>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #importExcelTpl let-c="close" let-d="dismiss">
+  <div #importExcelForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Import data from Excel</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        <p>You can import entry data from Excel file and automatically create fields</p>
+        <ul class="small">
+          <li>The Excel file should contained a normalized tabular dataset</li>
+          <li>Only the first worksheet will be imported</li>
+          <li>The first row should be the header</li>
+          <li>For simple option field, you can append <code>:simpleOption</code> in the field code</li>
+          <li>For lookup field, you can append <code>:code</code>, <code>:name</code> in the field code</li>
+          <li>For model field, you can append <code>:<i>[model field code]</i></code> in the field code</li>
+          <li>To store as json object, you can append <code>:<i>json</i></code> in the field code</li>
+          <li>Use <code>_:email</code> for entry email, <code>_:current_status</code> for entry status</li>
+          <li>Email will be defaulted to uploaders email if not specified in excel</li>
+        </ul>
+        <div class="form-group mb-3">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="createField" [(ngModel)]="createField"
+              name="createField">
+            <label class="form-check-label" for="createField">Create field if not exist</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="createDataset" [(ngModel)]="createDataset"
+              name="createDataset">
+            <label class="form-check-label" for="createDataset">Create dataset automatically</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="createDashboard"
+              [(ngModel)]="createDashboard" name="createDashboard">
+            <label class="form-check-label" for="createDashboard">Create dashboard automatically</label>
+          </div>
+          <div class="form-check form-switch mt-1">
+            <input type="checkbox" class="form-check-input" id="importToLive" [(ngModel)]="importToLive"
+              name="importToLive">
+            <label class="form-check-label" for="importToLive">Import to Live data</label>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          @if (!importExcelData) {
+            <label class="form-label">
+              <input type="file" [hidden]="true"
+                (change)="uploadExcel($event, createField, createDataset, createDashboard)" name="file"
+                required accept=".xlsx" />
+              @if (!importLoading) {
+                <div class="form-control" style="background: white">
+                  <fa-icon [icon]="['fas','upload']"></fa-icon>
+                  Browse and Import
+                </div>
+              }
+              @if (importLoading) {
+                <div class="form-control" style="background: white">
+                  Importing...
+                </div>
+              }
+            </label>
+          }
+          @if (importExcelData) {
+            <div class="mx-n3">
+              @if (importExcelData.logs && importExcelData.logs.length>0) {
+                <table class="table table-bordered table-sm table-borderless"
+                  >
+                  <thead>
+                    <tr>
+                      <th>Message</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of importExcelData.logs; track $index) {
+                      <tr class="text-white bg-{{l[1]}}">
+                        <td>{{l[0]}}</td>
+                        <td>{{l[2]}}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+            @if (importExcelData.success) {
+              <div class="alert alert-success">
+                <h5>Data successfully imported</h5>
+              </div>
+            }
+            @if (!importExcelData.success) {
+              <div class="alert alert-success">
+                <h5>Data import failed</h5>
+                Message: {{importExcelData.message}}
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      @if (importExcelData?.success) {
+        <button type="button" class="btn btn-round btn-success" (click)="c()">
+          <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+          Done
+        </button>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #viewFormEntryTrailTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Form's Entry Trails</h4>
+  </div>
+  <div class="bg-light p-2">
+    <div class="input-group" ngbDropdown>
+      <input type="search" autocapitalize="none" class="form-control" placeholder="Start typing to search..."
+        [(ngModel)]="trailsSearchText" (keyup.enter)="loadTrails(curForm.id,trailsPageNumber)">
+      <button type="button" class="btn btn-outline-secondary" id="dropdownFormTrail" title="Select Status"
+        ngbDropdownToggle>
+        <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
+      </button>
+      <div ngbDropdownMenu aria-labelledby="dropdownFormTrail">
+        <div class="p-2">
+          @for (status of trailStatusList; track $index) {
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [ngValue]="status"
+                [checked]="checkTrailFilter(status)" id="status{{status}}"
+                (change)="toggleTrailFilter(status);">
+              <label class="form-check-label" for="status{{status}}">
+                {{trailStatusMap[status]}}
+              </label>
+            </div>
+          }
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="px-2">
+          <label class="small">Trails date range</label>
+          <div class="input-group">
+            <input class="form-control" type="text" name="trailFrom" [(ngModel)]="trailFrom"
+              placeholder="From" (ngModelChange)="loadTrails(curForm.id,trailsPageNumber)"
+              (click)="dtrailfrom.toggle()" ngbDatepicker #dtrailfrom="ngbDatepicker">
+            <input class="form-control" type="text" name="trailTo" [(ngModel)]="trailTo" placeholder="To"
+              (ngModelChange)="loadTrails(curForm.id,trailsPageNumber)" (click)="dtrailto.toggle()"
+              ngbDatepicker #dtrailto="ngbDatepicker">
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="px-2">
+          <label class="small">Page Size</label>
+          <div class="btn-group float-end">
+            @for (i of [15,25,50,100]; track i) {
+              <input class="btn-check" type="radio" [value]="i" id="tpagesize-{{i}}"
+                name="tpagesize-{{i}}" (click)="loadTrails(curForm.id,1, i)"
+                [(ngModel)]="trailsPageSize">
+              <label for="tpagesize-{{i}}" class="btn btn-outline-secondary btn-sm">{{i}}</label>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-check mt-2">
+      <input class="form-check-input" type="checkbox" id="showtrailaction" [(ngModel)]="showPossibleTrailAction">
+      <label class="form-check-label" for="showtrailaction">
+        Show possible action
+      </label>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      @if(trailsTotal>0){
+        <table class="table table-striped table-sm table-flush" id="form_trail_{{curForm.id}}">
+          <thead>
+            <tr>
+              <th class="col-1">Timestamp</th>
+              <th class="col-1">Entry</th>
+              <th>Status</th>
+              <th>Remarks</th>
+              @if (showPossibleTrailAction) {
+                <th class="col-1">ACTION</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (trail of trails; track trail.id) {
+              <tr>
+                <td>{{trail.timestamp|date:'yy-MM-d HH:mm:ss'}}</td>
+                <td><a href="#/run/{{app?.id}}/form/{{curForm.id}}/view?entryId={{trail.entryId}}"
+                target="_blank">{{trail.entryId}}</a></td>
+                <td>
+                  {{trailStatusMap[trail.action]}}
+                </td>
+                <td>
+                  {{trail.remark}}
+                  <hr class="my-1">
+                    <strong>BY:</strong> {{trail.email}}
+                  </td>
+                  @if (showPossibleTrailAction) {
+                    <td>
+                      @if (['removed','updated','saved'].indexOf(trail.action)>-1 && showPossibleTrailAction) {
+                        <div
+                          >
+                          @if (trail.action=='removed') {
+                            <button type="button" class="btn btn-sm btn-secondary"
+                              (click)="undelete(trail.entryId, trail.id)">Restore <fa-icon
+                            [icon]="['fas','history']"></fa-icon></button>
+                          }
+                          @if (['updated','saved'].indexOf(trail.action)>-1) {
+                            <button type="button" class="btn btn-sm btn-secondary"
+                              (click)="undo(trail.entryId, trail.id)">
+                            Revert <fa-icon [icon]="['fas','history']"></fa-icon>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }@else {
+        <div class="details">
+          <!-- <h3>No trails available</h3> -->
+          <p class="text-center"> No trails data available.</p>
+        </div>        
+      }
+    </div>
+    @if (trailsTotal>trailsPageSize) {
+      <div
+        class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
+        <ngb-pagination [collectionSize]="trailsTotal" [pageSize]="trailsPageSize" [(page)]="trailsPageNumber"
+          [maxSize]="10" [rotate]="true" (pageChange)="loadTrails(curForm.id, trailsPageNumber)"
+          boundaryLinks="true" directionLinks="true">
+          <ng-template ngbPaginationFirst>
+            <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+          </ng-template>
+          <ng-template ngbPaginationPrevious>
+            <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationNext>
+            <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationLast>              
+            <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+          </ng-template>
+        </ngb-pagination>
+      </div>
+    }
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="exportTrailToExcel()">Download Excel</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #editDatasetTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-dataset [dismiss]="d" [close]="c" [user]="user" [dataset]="editDatasetData" [appList]="otherAppList"
+    [app]="app" [accessList]="accessList"></app-edit-dataset>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editLookupTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-lookup [lookup]="editLookupData" [accessList]="accessList" [dismiss]="d" [close]="c"></app-edit-lookup>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-lookup-entry [lookup]="editLookupItem" [lookupEntry]="editLookupEntryData" [dismiss]="d" [close]="c"></app-edit-lookup-entry>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editGroupTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-role [editGroupData]="editGroupData" [accessList]="accessList" [lookupList]="lookupList" [dismiss]="d" [close]="c"></app-edit-role>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #editMailerTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-mailer [editMailerData]="editMailerData" [selectedForm]="curForm" [formList]="formList" [dismiss]="d" [close]="c"></app-edit-mailer>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+<ng-template #viewJsonSchemaTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Form Data JSON Schema</h4>
+  </div>
+  <!-- <div class="modal-body"> -->
+    <div class="px-2 py-1 bg-white limit-height code-container">
+      <div>
+        <pre class="my-0">{{formJsonSchema|json}}</pre>
+      </div>
+    </div>
+  <!-- </div> -->
+  <div class="modal-footer justify-content-between">
+    <!-- <button type="button" class="btn btn-round btn-secondary" (click)="c()">Download Excel</button> -->
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>

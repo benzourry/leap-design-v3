@@ -1,0 +1,193 @@
+<div class="bg-reka" [ngClass]="bgClassName">
+  <div style="max-width:710px" class="limit-width centered d-flex justify-content-between">
+    <div class="home-top-l p-2">
+      <img src="assets/icons/logo-w.svg" width="38">
+      </div>
+      <div class="home-top-r pe-2">
+        <div class="d-flex">
+          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+            <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <page-title>
+    <h4>Creator Profile</h4>
+  </page-title>
+  <div class="limit-width m-a pb-3 ps-2 pe-2" style="max-width:710px">
+    <div class="text-center">
+      <img src="{{user?.imageUrl}}" class="rounded mb-2" onError="this.src='assets/img/avatar-big.png'"
+        style="max-width:100px;">
+      </div>
+      <div class="card">
+        <div class="list-group list-group-flush">
+          <div class="list-group-item">
+          <!-- <div class="label-span">Name</div> -->
+          <div>{{user.name}}</div>
+        </div>
+        <div class="list-group-item">
+        <!-- <span class="label-span">Email</span> -->
+        <div class="row">
+          <div class="col text-overflow">{{user.email}}</div>
+          <div class="col text-end"><fa-icon [icon]="provider[user.provider]" [fixedWidth]="true"> </fa-icon> {{user.provider}}</div>
+        </div>
+        <div></div>
+      </div>
+      <!-- <div class="list-group-item" *ngIf="hasProp(user.groups)">
+      <span *ngFor="let g of user.groups|keyvalue; let last=last">{{g.value.name}}{{last?'':', '}}</span>
+    </div> -->
+    <!-- <div class="list-group-item">
+    <div>
+    </div>
+  </div> -->
+  <div class="list-group-item">
+    <a class="pointer text-primary" style="text-decoration: none;" (click)="removeAcc()">
+      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove My Account
+      <div><small>Once removed, you will not be able to use this app and will be logged out immediately</small></div>
+    </a>
+  </div>
+  @if (user.once!==null && appId) {
+    <div class="list-group-item">
+      <a class="pointer text-primary" style="text-decoration: none;" (click)="revokeTerm()">
+        <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon> Term(s) accepted (click to revoke)
+        <div><small>Once revoked, you will not be able to use this app and will be logged out immediately</small></div>
+      </a>
+    </div>
+  }
+  @if (user.provider == 'local') {
+    <div class="list-group-item">
+      <a class="pointer text-primary" (click)="changePwd(changePwdTpl)">
+        <fa-icon [icon]="['fas','edit']" [fixedWidth]="true"></fa-icon> Change password
+      </a>
+    </div>
+  }
+  <!-- <div class="list-group-item bg-danger text-white"> -->
+  <a class="list-group-item bg-danger text-white" role="button" (click)="logout()">
+    <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> Logout
+  </a>
+<!-- </div> -->
+</div>
+</div>
+@if (appId) {
+  <div class="repo-title mt-3 text-center text-muted">
+    Notifications
+  </div>
+  @if (notifList.length==0) {
+    <h4 class="p-4 text-muted text-center">No notification at the moment</h4>
+  }
+  @if (notifList.length>0) {
+    <div class="card mt-2">
+      <div class="list-group list-group-flush">
+        @for (n of notifList; track n.id) {
+          <div class="list-group-item nobreak" [class.list-group-item-info]="n.status=='new'"
+            [class.text-muted]="n.status=='read'" (click)="openNotif(notifTpl,n)">
+            <span class="">{{cleanText(n.content)}}</span>
+            <div class="small">{{n.timestamp|date}}</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}
+@if (pushSubs.length>0) {
+  <div class="repo-title mt-3 text-center text-muted">
+    Push Notification Subscription
+    <div class="small">Click to unsubscribe</div>
+  </div>
+  <!-- <a class="list-group-item" role="button" *ngFor="let sub of pushSubs" (click)="unsubscribeToNotifications(sub.endpoint)">
+  <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> Unsubscribe from Push Notification
+  <div><small>{{sub.userAgent}}</small></div>
+</a> -->
+<!-- <h4 class="p-4 text-muted text-center" *ngIf="notifList.length==0">No notification at the moment</h4> -->
+<div class="card mt-2">
+  <div class="list-group list-group-flush">
+    @for (sub of pushSubs; track $index) {
+      <div class="list-group-item nobreak" [class.list-group-item-primary]="sub.endpoint == actualSub?.endpoint" role="button"
+        (click)="unsubscribeToNotifications(sub.endpoint)">
+        <span>{{sub.client.userAgent.family}} on {{sub.client.os.family}} {{sub.client.os.major}} (Device: {{sub.client.device.family}})</span>
+        <div class="small"><i>since {{sub.timestamp|date}}</i></div>
+      </div>
+    }
+  </div>
+</div>
+}
+<!-- <app-restore-point></app-restore-point> -->
+</div>
+<ng-template #notifTpl let-c="close" let-d="dismiss">
+  <!-- <div class="modal-header">
+  <h4 class="modal-title">Notification</h4>
+</div> -->
+<div class="list-group list-group-flush">
+  <div class="list-group-item">
+    <div class="label-span">From</div>
+    <div>{{notif.sender}}</div>
+  </div>
+  <div class="list-group-item">
+    <div class="label-span">Timestamp</div>
+    <div>{{notif.timestamp|date:'medium'}}</div>
+  </div>
+  <div class="list-group-item">
+    <span [innerHtml]="notif.content"></span>
+  </div>
+</div>
+<div class="modal-footer justify-content-between">
+  <button type="button" class="btn btn-round btn-primary" (click)="c(notif)">
+  <!-- <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> -->
+  Close
+</button>
+</div>
+</ng-template>
+<ng-template #changePwdTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Change Password</h4>
+  </div>
+  <div class="modal-body fix-gutter" #changePwdForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label>Old Password</label>
+      <input type="password" class="form-control" [ngModel]="changePwdData && changePwdData.password" (ngModelChange)="changePwdData && (changePwdData.password = $event)"
+        #password="ngModel" name="password" required>
+        @if (password?.invalid) {
+          <small class="form-text has-warning">
+            @if (password?.errors?.required) {
+              <span class="help-block">Password is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label>New Password</label>
+        <input type="password" class="form-control" [ngModel]="changePwdData && changePwdData.passwordNew1" (ngModelChange)="changePwdData && (changePwdData.passwordNew1 = $event)"
+          #passwordNew1="ngModel" name="passwordNew1" required>
+          @if (passwordNew1?.invalid) {
+            <small class="form-text has-warning">
+              @if (passwordNew1?.errors?.required) {
+                <span class="help-block">New Password is required</span>
+              }
+            </small>
+          }
+        </div>
+        <div class="form-group mb-3">
+          <label>New Password (confirm)</label>
+          <input type="password" class="form-control" [ngModel]="changePwdData && changePwdData.passwordNew2" (ngModelChange)="changePwdData && (changePwdData.passwordNew2 = $event)"
+            #passwordNew2="ngModel" name="passwordNew2" required>
+            @if (passwordNew2?.invalid) {
+              <small class="form-text has-warning">
+                @if (passwordNew2?.errors?.required) {
+                  <span class="help-block">New Password is required</span>
+                }
+              </small>
+            }
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+          <button type="button" class="btn btn-round btn-primary" [disabled]="changePwdForm.invalid"
+            (click)="c(changePwdData)">
+          <!-- <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> -->
+          Change Password
+        </button>
+      </div>
+    </ng-template>

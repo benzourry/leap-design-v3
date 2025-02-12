@@ -1,0 +1,118 @@
+
+// .mbn {
+//     margin-bottom: -2em
+// }
+
+.chatbot-greeting-text{
+  color: rgba(12,97,223);
+}
+
+#chat-prompt-text:focus-visible {
+    outline: none;
+}
+
+#chat-prompt-text-outer:focus-within {
+    box-shadow: var(--bs-box-shadow) !important;
+    transition: all 0.5s ease-in-out;
+}
+
+#chat-prompt-sticky{
+    z-index:995;
+}
+
+.chatviewport-msg {
+    min-height: calc(100vh - 186px);
+    min-height: calc(100dvh - 186px);
+}
+
+// .chat-prompt-notice{
+// 	font-size:0.8em;
+// 	color: gray;
+// 	text-align: center;
+// 	padding:1em;
+// }
+
+.chatviewport-msg{
+    font-size:0.95em;
+  }
+  .chatbot-bubble{
+    border-radius: 0.8em;
+    overflow: hidden;
+    box-shadow:0 1px 3px #0000001f, 0 1px 2px #0000003d;
+  }
+  .chatbot-bubble-greeting{
+    margin-right: 30px;
+    background: rgb(255,255,255);
+    background: linear-gradient(320deg, rgba(248,248,248,1) 0%, rgba(255,255,255,1) 100%);
+    box-shadow: 0 1px 3px rgb(13 110 253 / 50%), 0 1px 2px rgb(13 110 253 / 25%);
+  }
+  .chatbot-bubble-prompt{
+    margin-left: auto;
+    max-width: 80%;
+    background: #4c0bce;
+    background: linear-gradient(274deg, rgba(76,11,206,1) 0%, rgba(114,11,206,1) 100%);
+    background: var(--appbg);
+      color:white;
+    border-radius: 0.8em 0 0.8em 0.8em;
+  }
+  .chatbot-bubble-prompt-files{
+    margin-left: auto;
+    max-width: 80%;
+    // background: #4c0bce;
+    // background: linear-gradient(274deg, rgba(76,11,206,1) 0%, rgba(114,11,206,1) 100%);
+    // background: var(--appbg);
+      // color:white;
+    border-radius: 0.8em 0 0.8em 0.8em;
+  }
+  .chatbot-suggestion{
+    background-color: #f8f9fa;
+    border-top:solid 1px #ddd;
+    .chatbot-suggestion-text{
+      color: rgba(33, 37, 41, 0.75);
+    }
+  }
+
+  .chatbot-bubble-system{
+    background: rgba(0,0,0,.1);
+      color:black;
+      font-size: 11px;
+      text-align: center;
+      box-shadow: none;
+  }
+  .chatbot-bubble-meta{
+    border-top:solid 1px #ddd;
+  }
+  .chatbot-bubble-response{
+    margin-right: 30px;
+    background: rgb(255,255,255);
+    background: linear-gradient(320deg, rgba(248,248,248,1) 0%, rgba(255,255,255,1) 100%);
+    /* border:solid 1px #ddd; */
+  }
+
+.full-viewport-page {
+    height: 100%;
+    // overflow: auto;
+}
+
+#clear-chat-btn {
+    text-align: center;
+    width: 2.2em;
+    transition: all 300ms ease-in-out;
+    text-wrap: nowrap;
+}
+
+#clear-chat-btn .text {
+    display: none;
+}
+
+#clear-chat-btn:hover {
+    width: 8em;
+}
+
+#clear-chat-btn:hover .text {
+    display: inline;
+}
+
+.disabled{
+  opacity: 40%;
+}

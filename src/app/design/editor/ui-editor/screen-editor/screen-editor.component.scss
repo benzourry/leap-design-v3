@@ -1,0 +1,20 @@
+::ng-deep .angular-editor-textarea{
+    border:none !important;
+    background-color: whitesmoke !important;
+    margin: 5px;
+}
+::ng-deep .ae-limit-width .angular-editor-textarea{
+    max-width: 780px;
+    // margin:auto;    
+}
+::ng-deep .angular-editor-toolbar{
+    border: none !important;
+}
+// ::ng-deep angular-editor#ae-content .angular-editor-button{
+//     border:none !important;
+// }
+
+.var-ph-picker{
+    max-height:145px;
+    overflow-y: auto;
+}

@@ -1,0 +1,682 @@
+<div class="d-flex flex-row h-100" cdkDropListGroup>
+  <div style="flex:auto; overflow: auto;">
+    <div class="p-2 pb-0 limit-width">
+      <div class="d-flex flex-row">
+        <div class="text-md-right pe-0 pe-md-3 mb-1">
+          <h5 class="my-2">Navigation</h5>
+        </div>
+        <div class="text-start ps-3 d-flex align-items-center ms-auto">
+          <button type="button" class="btn btn-sm border border-2" (click)="editNaviSetting(editNaviTpl,app)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="limit-width fix-gutter">
+      <div class="p-2 pt-3">
+        <div class="row">
+          <div class="col-md-4">
+            @for (group of navis; track $index; let $idx_group = $index; let $grp_first = $first; let $grp_last = $last) {
+              <div class=" card card-default group mb-2 border-3"
+                [ngClass]="group.altClass">
+                <div class="card-header group-header element">
+                  {{group.title}}
+                  <div class="element-edit nowrap"
+                    style="position:absolute;top:3px;right:3px; padding:3px">
+                    <button type="button" class="btn btn-round btn-sm btn-info"
+                      (click)="editGroup(editGroupTpl, group, false)">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                      </fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-round btn-sm btn-info"
+                      (click)="removeGroup(removeGroupTpl,group,$idx_group)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    @if (!$grp_first) {
+                      <button type="button" class="btn btn-info btn-round btn-sm"
+                        (click)="swapGroup(navis, $idx_group-1, $idx_group)">
+                        <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                        </fa-icon>
+                      </button>
+                    }
+                    @if (!$grp_last) {
+                      <button type="button" class="btn btn-info btn-round btn-sm"
+                        (click)="swapGroup(navis, $idx_group, $idx_group+1)">
+                        <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                        </fa-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div class="list-group list-group-flush child" cdkDropList [cdkDropListData]="group.items"
+                  (cdkDropListDropped)="dropItem($event, group)">
+                  @if (group.items && group.items.length==0) {
+                    <div class="list-group-item p-3 bg-light">
+                      <h5 class="text-muted text-center font-italic">Empty Group</h5>
+                    </div>
+                  }
+                  @for (item of group.items; track $index; let $idx_item = $index; let $idx_first = $first; let $idx_last = $last) {
+                    <div class="list-group-item icon element p-2 ps-3" cdkDrag
+                      [ngClass]="item.altClass">
+                      <span class="element-item"
+                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','user','start'].indexOf(item.type)==-1">
+                        <fa-icon class="float-start" size="1x" [icon]="getIcon(item.icon)"
+                          [fixedWidth]="true">
+                        </fa-icon>
+                        <div style="margin-left:2rem">
+                          <div>{{item.title}}</div>
+                          @if (item.type=='form') {
+                            <small>/form/{{item.screenId}}/add</small>
+                          }@else if (item.type=='form-single') {
+                            <small>/form/{{item.screenId}}/edit-single</small>
+                          }@else if (item.type=='view-single') {
+                            <small>/form/{{item.screenId}}/view</small>
+                          }@else if (item.type=='dataset') {
+                            <small>/dataset/{{item.screenId}}</small>
+                          }@else if (item.type=='dashboard') {
+                            <small>/dashboard/{{item.screenId}}</small>
+                          }@else if (item.type=='lookup') {
+                            <small>/lookup/{{item.screenId}}</small>
+                          }@else if (item.type=='screen') {
+                            <small>/screen/{{item.screenId}}</small>
+                          }@else if (item.type=='user') {
+                            <small>/user/{{item.screenId}}</small>
+                          }@else if (item.type=='start') {
+                            <small>/start</small>
+                          }@else if (item.type=='external'||item.type=='internal') {
+                            <small
+                            >{{item.url}}</small>
+                          }
+                        </div>
+                      </span>
+                      <div class="element-edit mt-1 cursor-move bg-white text-info"
+                        style="position:absolute;top:3px;left:3px;" cdkDragHandle>
+                        <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
+                        </fa-icon>
+                      </div>
+                      <div class="element-edit nowrap"
+                        style="position:absolute;top:3px;right:3px; padding:3px">
+                        <button type="button" class="btn btn-round btn-sm btn-info"
+                          (click)="editItem(editItemTpl, item, group, false)">
+                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                          </fa-icon>
+                        </button>
+                        <button type="button" class="btn btn-round btn-sm btn-info"
+                          (click)="removeItem(removeItemTpl,item,$idx_item)">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                        @if (!$idx_first) {
+                          <button type="button" class="btn btn-info btn-round btn-sm"
+                            (click)="swapItem(group,group.items, $idx_item-1, $idx_item)">
+                            <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
+                            </fa-icon>
+                          </button>
+                        }
+                        @if (!$idx_last) {
+                          <button type="button" class="btn btn-info btn-round btn-sm"
+                            (click)="swapItem(group,group.items, $idx_item, $idx_item+1)">
+                            <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
+                            </fa-icon>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="card-footer">
+                  <a class="pointer" (click)="editItem(editItemTpl, {}, group, true)">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                    Add Item
+                  </a>
+                </div>
+              </div>
+            }
+            <div class="row">
+              <div class="col-12 text-center p-2 mb-3">
+                <a class="p-2 pointer" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length}, true)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                  Add Group
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="input-group">
+              <span class="input-group-text">
+                View as
+              </span>
+              <input class="form-control" type="text" placeholder="ie: admin@email.com"  autocapitalize="none"
+                [(ngModel)]="viewAs" (keyup.enter)="getNaviData(appId)">
+            </div>
+            <div class="d-flex flex-wrap flex-row align-content-center">
+              @for (group of navis; track $index) {
+                <div
+                  [class.group-hidden]="!(!group?.access||group?.access?.users?.indexOf(viewAs||'*')>-1)" style="flex-grow:1">
+                  <div class="s-icon-heading">
+                    {{group.title}}
+                  </div>
+                  <div class="s-icon-wrap">
+                    @for (item of group.items; track $index) {
+                      @let naviDataItem = naviData[item.type+'-'+item.screenId];
+                      @if (!naviDataItem?.access||naviDataItem?.access.users.indexOf(viewAs||'*')>-1) {
+                        @if (!naviDataItem && ['external','internal','user','start'].indexOf(item.type)==-1) {
+                          <div class="s-icon text-danger disabled"
+                            >
+                            <fa-icon [icon]="['fas','exclamation-triangle']" size="3x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                            <div class="title">{{item.title}}</div>
+                          </div>
+                        }
+                        @if (naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) {
+                          @if (item.type=='form') {
+                            <a class="s-icon"
+                              [class.disabled]="naviDataItem?.inactive">
+                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                                [fixedWidth]="true">
+                              </fa-icon>
+                              <div class="title">{{item.title}}</div>
+                              @if (!naviDataItem?.inactive) {
+                                @if(!item.x?.hideDesc){
+                                  <div class="sub">
+                                    {{naviDataItem?.description}}
+                                  </div>
+                                }
+                              }
+                              @if (naviDataItem?.inactive) {
+                                <span class="sub text-danger">Open
+                                  within:
+                                  {{naviDataItem?.startDate|date:'mediumDate'}}
+                                  -
+                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
+                              }
+                            </a>
+                          }
+                          @if (item.type=='form-single') {
+                            <a class="s-icon"
+                              [class.disabled]="naviDataItem?.inactive">
+                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                                [fixedWidth]="true">
+                              </fa-icon>
+                              <div class="title">{{item.title}}</div>
+                              @if (!naviDataItem?.inactive) {
+                                @if(!item.x?.hideDesc){
+                                  <div class="sub">
+                                    {{naviDataItem?.description}}
+                                  </div>
+                                }
+                              }
+                              @if (naviDataItem?.inactive) {
+                                <span class="sub text-danger"
+                                  >Open
+                                  within:
+                                  {{naviDataItem?.startDate|date:'mediumDate'}}
+                                  -
+                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
+                              }
+                            </a>
+                          }
+                          @if (item.type=='view-single') {
+                            <a class="s-icon"
+                              [class.disabled]="naviDataItem?.inactive">
+                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                                [fixedWidth]="true">
+                              </fa-icon>
+                              <div class="title">{{item.title}}</div>
+                              @if (!naviDataItem?.inactive) {
+                                @if(!item.x?.hideDesc){
+                                  <div class="sub">
+                                    {{naviDataItem?.description}}
+                                  </div>
+                                }
+                              }
+                              @if (naviDataItem?.inactive) {
+                                <span class="sub text-danger"
+                                  >Open
+                                  within:
+                                  {{naviDataItem?.startDate|date:'mediumDate'}}
+                                  -
+                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
+                              }
+                            </a>
+                          }
+                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start'].indexOf(item.type)>-1) {
+                            <ng-container>
+                              <a class="s-icon">
+                                <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                                [fixedWidth]="true"></fa-icon>
+                                <div class="title">{{item.title}}</div>
+                                @if(!item.x?.hideDesc){
+                                  <div class="sub">
+                                    {{naviDataItem?.description}}
+                                  </div>
+                                }
+                              </a>
+                            </ng-container>
+                          }
+                        }
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @if (!showPalette) {
+    <button type="button" class="position-relative border-0 rounded end-0 d-none d-md-flex flex-column py-2 px-1" (click)="showPalette=true">
+      <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+      </fa-icon>
+      <div style="width:20px; margin-top:2.5em;font-weight: bold;">
+        <div class="small" style="transform: rotate(270deg)">Palette</div>
+      </div>
+    </button>
+  }
+  @if (showPalette) {
+    <div class="bg-white d-none d-md-block"
+      style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+      <div class="small" cdkDragHandle >
+        <button type="button" class="p-2 border-0 w-100" (click)="showPalette=false">
+          <strong>Palette</strong>
+          <div class="float-end pointer" style="width:20px;">
+            @if (showPalette) {
+              <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
+              </fa-icon>
+            }
+            @if (!showPalette) {
+              <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+              </fa-icon>
+            }
+          </div>
+        </button>
+        <div class="p-2 pb-0">
+          <select class="form-select" name="paletteAppId" (change)="loadPaletteList(paletteAppId)"
+            [(ngModel)]="paletteAppId">
+            @for (app of otherAppList; track app.id) {
+              <option [ngValue]="app.id">{{app.title}}</option>
+            }
+          </select>
+        </div>
+        <div class="p-2 bg-white  position-sticky sticky-top">
+          <input type="text" class="w-100 small p-1" placeholder="Type to filter" [(ngModel)]="paletteFilter"
+            name="paletteFilter" />
+        </div>
+      </div>
+      @if (showPalette) {
+        <div id="palette-pane" class="card-body p-1" cdkDropListSortingDisabled cdkDropList
+          [cdkDropListData]="(palettes|filter:paletteFilter)">
+          @for (item of palettes|filter:paletteFilter; track $index) {
+            <button type="button" class="btn bg-light text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;"
+              title="{{item.title}}"
+              cdkDrag>
+              <fa-icon class="float-start" size="1x" [icon]="getIcon(item.icon)" [fixedWidth]="true">
+              </fa-icon>
+              {{item.title}}
+            </button>
+          }
+          @if (palettes.length==0) {
+            <div class="p-3">
+              No component available
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #editGroupTpl let-c="close" let-d="dismiss">
+  <div #editGroupForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Group</h4>
+    </div>
+    <div class="single-pane">
+      <div class="form-group mb-3">
+        <label class="form-label">Title *</label>
+        <input type="text" class="form-control" [(ngModel)]="editGroupData.title" placeholder="ie: Registration"
+          name="title" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Access available for</label>
+          <div class="d-flex">
+            <ng-select class="flex-grow-1" [items]="accessList" bindLabel="name" [multiple]="true" bindValue="id" placeholder="Anyone"
+              [(ngModel)]="editGroupData.accessList" name="accessList">
+            </ng-select>
+            <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editRole(editRoleTpl,{x:{}},editGroupData,'accessList',true)">New&nbsp;Group</button>
+          </div>  
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Pre-requisite (hide group if condition not
+          satisfied)</label>
+          <div class="mx-n2">
+            <app-cm name="pre" lang="javascript" [(ngModel)]="editGroupData.pre"
+              [linenumber]="true" placeholder="Expression (ie: $user$.attributes?.staff)">
+            </app-cm>
+          </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editGroupForm.invalid"
+        (click)="c(editGroupData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Group
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editItemTpl let-c="close" let-d="dismiss">
+  <div #editItemForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Item</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Basic Info</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Title *</label>
+                <input type="text" class="form-control" [(ngModel)]="editItemData.title"
+                  placeholder="ie: Registration" name="title" required>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Type *</label>
+                <div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-form" name="type"
+                      [(ngModel)]="editItemData.type" value="form" required>
+                    <label for="type-form" class="form-check-label">Form</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-form-single" name="type"
+                      [(ngModel)]="editItemData.type" value="form-single" required>
+                    <label for="type-form-single" class="form-check-label">Form Single</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-view-single" name="type"
+                      [(ngModel)]="editItemData.type" value="view-single" required>
+                    <label for="type-view-single" class="form-check-label">View Single</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-dataset" name="type"
+                      [(ngModel)]="editItemData.type" value="dataset" required>
+                    <label for="type-dataset" class="form-check-label">Dataset</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-dashboard" name="type"
+                      [(ngModel)]="editItemData.type" value="dashboard" required>
+                    <label for="type-dashboard" class="form-check-label">Dashboard</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-screen" name="type"
+                      [(ngModel)]="editItemData.type" value="screen" required>
+                    <label for="type-screen" class="form-check-label">Screen</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-lookup" name="type"
+                      [(ngModel)]="editItemData.type" value="lookup" required>
+                    <label for="type-lookup" class="form-check-label">Lookup</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-external" name="type"
+                      [(ngModel)]="editItemData.type" value="external" required>
+                    <label for="type-external" class="form-check-label">External URL</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-internal" name="type"
+                      [(ngModel)]="editItemData.type" value="internal" required>
+                    <label for="type-internal" class="form-check-label">Internal URL</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-user" name="type"
+                      [(ngModel)]="editItemData.type" value="user" required>
+                    <label for="type-user" class="form-check-label">Manage User Group</label>
+                  </div>
+                </div>
+              </div>
+              @if (['form','form-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select App</label>
+                  <select class="form-select" name="appId"
+                    (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
+                    [(ngModel)]="editItemData.appId">
+                    @for (app of otherAppList; track app.id) {
+                      <option [ngValue]="app.id">{{app.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['form','form-single','view-single'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3"
+                  >
+                  <label class="form-label">Select Form *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId" required>
+                    <option value="" disabled>Select form...</option>
+                    @for (form of formList; track form.id) {
+                      <option [value]="form.id">{{form.title}} [{{form.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='dataset') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select Dataset *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId" required>
+                    <option value="" disabled>Select dataset...</option>
+                    @for (dataset of datasetList; track dataset.id) {
+                      <option [value]="dataset.id">{{dataset.title}}
+                        [{{dataset.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='dashboard') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select Dashboard *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId" required>
+                    <option value="" disabled>Select dashboard...</option>
+                    @for (dashboard of dashboardList; track dashboard.id) {
+                      <option [value]="dashboard.id">
+                      {{dashboard.title}} [{{dashboard.id}}]</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='screen') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select Screen *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId" required>
+                    <option value="" disabled>Select custom screen...</option>
+                    @for (screen of screenList; track screen.id) {
+                      <option [value]="screen.id">{{screen.title}}
+                        [{{screen.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='lookup') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select Lookup *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId" required>
+                    <option value="" disabled>Select lookup...</option>
+                    @for (lookup of lookupList; track lookup.id) {
+                      <option [value]="lookup.id">{{lookup.name}}
+                        [{{lookup.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='user') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select User Group *</label>
+                  <select class="form-select" name="screenId"
+                    [(ngModel)]="editItemData.screenId">
+                    <option [ngValue]="undefined">All group</option>
+                    @for (access of accessList; track access.id) {
+                      <option [value]="access.id">{{access.name}}
+                        [{{access.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='external'||editItemData.type=='internal') {
+                <div class="form-group mb-3">
+                  <label class="form-label">External/Internal URL *</label>
+                  <input class="form-control" type="text" name="url"
+                    [(ngModel)]="editItemData.url"
+                    placeholder="ie: https://organization.com/path" required>
+                </div>
+              }
+              <div class="form-group">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="slc"
+                    [(ngModel)]="editItemData.x.slc" name="slc">
+                  <label class="form-check-label" for="slc">Skip Location Change (hide URL change in address bar)</label>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="hideDesc"
+                    [(ngModel)]="editItemData.x.hideDesc" name="hideDesc">
+                  <label class="form-check-label" for="hideDesc">Hide description in Tiles page</label>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite (hide item if condition not
+                satisfied)</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
+                    [linenumber]="true" placeholder="Expression (ie: $user$.provider=='google')">
+                  </app-cm>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Icon @if (editItemData.icon) {
+            <fa-icon
+              [icon]="getIcon(editItemData.icon)"
+            [fixedWidth]="true"></fa-icon>
+          } *</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <app-icon-picker [(model)]="editItemData.icon" [showNone]="false"></app-icon-picker>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editItemForm.invalid"
+        (click)="c(editItemData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Item
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+
+<ng-template #editNaviTpl let-c="close" let-d="dismiss">
+  <div #editNaviForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Navi Setting</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <div class="single-pane">
+        <div class="form-group mb-3">
+          <label class="form-label">Init Function</label>
+          <div class="mx-n2">
+            <app-cm name="f" lang="javascript" subType="active"
+            [extraAutoComplete]="extraAutoCompleteJs"
+             [(ngModel)]="editNaviData.f" [linenumber]="true"></app-cm>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editNaviForm.invalid"
+        (click)="c(editNaviData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Setting
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #removeGroupTpl let-c="close" let-d="dismiss">
+  <div #removeGroupForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Group</h4>
+    </div>
+    <div class="single-pane">
+      <div class="form-group mb-3">
+        <label class="form-label">Title *</label>
+        <p>{{removeGroupData.title}}</p>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="removeGroupForm.invalid"
+        (click)="c(removeGroupData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Remove Group
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #removeItemTpl let-c="close" let-d="dismiss">
+  <div #removeItemForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Item</h4>
+    </div>
+    <div class="single-pane">
+      <div class="form-group mb-3">
+        <label class="form-label">Name *</label>
+        <p>{{removeItemData.title}}</p>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="removeItemForm.invalid"
+        (click)="c(removeItemData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Remove Item
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editRoleTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <app-edit-role [editGroupData]="editRoleData" [accessList]="accessList" [lookupList]="[]" [dismiss]="d" [close]="c"></app-edit-role>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

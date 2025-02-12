@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/icons/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js",
+          "/fontawesome-webfont*"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "aw-design-api-ui",
+      "urls": [
+        "https://io.aw.sarawakskills.edu.my/api/app/**",
+        "https://io.aw.sarawakskills.edu.my/api/form/**",
+        "https://io.aw.sarawakskills.edu.my/api/dataset/**",
+        "https://io.aw.sarawakskills.edu.my/api/screen/**",
+        "https://io.aw.sarawakskills.edu.my/api/dashboard/**",
+        "https://io.aw.sarawakskills.edu.my/api/group/**",
+        "https://io.aw.sarawakskills.edu.my/api/mailer/**",
+        "https://io.aw.sarawakskills.edu.my/user/me"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "10s",
+        "maxSize": 100,
+        "maxAge": "7d"
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/*.css",
+          "/*.js",
+          "/fontawesome-webfont*"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "leap-design-api-ui",
+      "urls": [
+        "https://reka-io.jls.gov.my/api/app/**",
+        "https://reka-io.jls.gov.my/api/form/**",
+        "https://reka-io.jls.gov.my/api/dataset/**",
+        "https://reka-io.jls.gov.my/api/screen/**",
+        "https://reka-io.jls.gov.my/api/dashboard/**",
+        "https://reka-io.jls.gov.my/api/group/**",
+        "https://reka-io.jls.gov.my/api/mailer/**",
+        "https://reka-io.jls.gov.my/user/me"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "10s",
+        "maxSize": 100,
+        "maxAge": "7d"
+      }
+    }
+  ]
+}

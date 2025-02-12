@@ -1,0 +1,819 @@
+<div class="fix-gutter ">
+  <div class="p-2 limit-width">
+    @if (datasetList?.length==0) {
+      <div class="m-a col-sm-12">
+        <div class="p-4 text-muted text-center">
+          <h1>:(</h1>
+          <h4>No dataset specified</h4>
+        </div>
+      </div>
+    }
+    @if (datasetList?.length>0 && !curDataset && !dsError) {
+      <div class="m-a col-sm-12" style="color:#aaa;">
+        <div class="p-4 text-muted text-center">
+          <h4>Please select dataset above</h4>
+        </div>
+      </div>
+    }
+    @if (dsError) {
+      <div class="m-3 p-3 bg-danger text-white">
+        <h5>Failed to load dataset with id <strong>{{curDatasetId}}</strong></h5>
+        <p>Message: {{dsError.message}}</p>
+        <button type="button" class="btn btn-outline-light btn-round"
+          (click)="removeDataset(removeDatasetTpl,{id:curDatasetId, title:'n/a', description:'n/a'})">Remove
+        Dataset</button>
+      </div>
+    }
+    @if (curDataset && !dsError) {
+      <div class="mb-2">
+        <div class="py-2">
+          <div class="d-flex flex-column">
+            <div class="me-auto d-flex flex-row w-100 mb-2">
+              <h5 class="m-0 text-truncate">{{cleanText(curDataset.title)}} <sup>{{curDataset.id}}</sup></h5>
+              <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curDataset.description)}}
+              </div>
+            </div>
+            <div class="d-flex align-items-baseline">
+              <div class="me-auto mt-2">
+                @if (curDataset.type == 'all') {
+                  <span>
+                    <fa-icon [icon]="['fas','list']" [fixedWidth]="true"></fa-icon>
+                    All
+                  </span>
+                }@else if (curDataset.type == 'action') {
+                  <span>
+                    <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                    Approver
+                  </span>
+                }@else if (curDataset.type == 'user') {
+                  <span>
+                    <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
+                    User
+                  </span>
+                }
+              </div>
+              <div>
+                <button type="button" class="btn btn-sm border border-2 ms-1"
+                 title="Resync Dataset" [class.disabled]="offline"
+                  (click)="resyncDataset(curDataset?.id)">
+                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-sm border border-2 ms-1 me-1"
+                title="Edit dataset"
+                  (click)="editDataset(editDatasetTpl,curDataset, false, form)">
+                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1 me-1"
+                title="Remove dataset"
+                  (click)="removeDataset(removeDatasetTpl,curDataset)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <a class="btn btn-sm border border-2 border-success btn-outline-success"
+                title="Run dataset"
+                  routerLink="/run/{{app?.id}}/dataset/{{curDataset.id}}">
+                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                </a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+        @if (datasetLoading || formLoading) {
+          Loading...
+        }@else{
+          @if (!form.data) {
+            <div class="text-white bg-danger p-3">
+              <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+              No form found associated with this dataset. It might has been removed.
+            </div>
+          }
+          @if (form.data) {
+            <div>
+              <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+                <div class="flex-grow-1 p-2 text-truncate">
+                  Form: <strong>{{form.data.title}}</strong>
+                  @if (form.data.description) {
+                    <div>{{form.data.description}}</div>
+                  }
+                </div>
+                <div class="p-2"><a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                [routerLink]="['../../../'+form.data.appId+'/ui/form']" [queryParams]="{id:form.data.id}">View Form</a></div>
+              </div>
+              @if (curDataset.items && form) {
+                <div class="mb-3">
+                  <h6>Displayed Columns</h6>
+                  <div style="position:relative">
+                    <div cdkDropList cdkDropListOrientation="horizontal"
+                      class="my-2 column-list touch-overflow scroll--h"
+                      (cdkDropListDropped)="dropField($event, curDataset)">
+                      @for (field of curDataset.items; track $index) {
+                        <div class="column-box d-flex flex-column"
+                            cdkDrag>
+                          <div class="element flex-grow-1 p-2" style="min-width:120px;min-height:50px"
+                            (dblclick)="editColumnText(field,field)">
+                            <div class="element-item" style="user-select:none;">
+                              <div style="font-size: 12px;">
+                                {{cleanText(form[field.root]?.title)}}
+                              </div>
+                              <span>{{field.label}}</span>
+                            </div>
+                            <div class="element-edit text-info position-absolute around-0">
+                              <div class="d-flex flex-column">
+                                <div class="cursor-move" style="top:5px; left:0px;position: absolute"
+                                  cdkDragHandle>
+                                  <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
+                                  </fa-icon>
+                                </div>
+                                <div style="position:absolute; bottom:5px; right:3px;">
+                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                    (click)="editItem(editItemTpl,field)">
+                                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                                    </fa-icon>
+                                  </button>
+                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                    (click)="removeDsItem(field)">
+                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          @if(field.subs && field.subs?.length>0){
+                            <div class="flex-grow-1 d-flex flex-row" style="border-top:solid 2px #ccc"  cdkDropList
+                            cdkDropListOrientation="horizontal"
+                            (cdkDropListDropped)="dropSubs($event, field.subs)">                            
+                              @for(cf of field.subs; track $index){
+                                <div class="f-subs-item" cdkDrag>
+                                  <div class="p-2 pb-0 text-truncate" style="max-width:120px">{{cf.label}}</div>
+                                  <div class="p-2 btn-group">
+                                    <div class="btn btn-sm btn-light cursor-move" cdkDragHandle>
+                                      <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-secondary" (click)="editColumnText(cf, field)">
+                                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" (click)="removeSub(cf, field, $index)">
+                                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                  </div>
+                              </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    Default Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong>
+                  </div>
+                  @if (curDataset.showIndex) {
+                    <div>
+                      <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true">
+                      </fa-icon>
+                      Show Index Number
+                    </div>
+                  }
+                  @if (curDataset.x?.showSummary) {
+                    <div>
+                      <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true">
+                      </fa-icon>
+                      Show Summary
+                    </div>
+                  }
+                </div>
+              }
+              @if (curDataset.showAction && (curDataset.canEdit||curDataset.canView||curDataset.canDelete||curDataset.canRetract||!isEmptyObject(curDataset?.screen)||!isEmptyObject(curDataset?.next))) {
+                <div class="mb-3">
+                  <h6>Allowed Actions</h6>
+                  @if (curDataset.x?.canAdd) {
+                    <div>
+                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
+                      </fa-icon>
+                      Can Add 
+                      @if (curDataset.x?.addLabel) {
+                        <span>- {{curDataset.x?.addLabel}} </span>
+                      }
+                      @if (curDataset.x?.inpopAdd) {
+                        <span>(in Modal
+                        Dialog)</span>
+                      }
+                    </div>
+                  }
+                  @if (curDataset.canBlast) {
+                    <div>
+                      <fa-icon [icon]="['far','envelope']" [fixedWidth]="true">
+                      </fa-icon>
+                      Field used to blast email: <strong>{{curDataset.blastTo}}</strong>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="p-2 border border-2 border-black-50 rounded mb-3">
+                <div class="row width-auto align-items-center g-2" cdkDropList
+                  cdkDropListOrientation="horizontal"
+                  (cdkDropListDropped)="dropAction($event, curDataset.actions)">
+                  @for (a of curDataset.actions; track $index) {
+                    <div class="col-auto pe-0 position-relative cursor-move"
+                      cdkDrag [cdkDragDisabled]="curAction!=a.id"
+                      (click)="curAction=a.id">
+                      <div class="input-group input-group-sm border border-2 rounded"
+                        [class.border-primary]="curAction==a.id">
+                        <span class="input-group-text border-0 bg-white">
+                          @if (a.icon) {
+                            <fa-icon [icon]="getIcon(a.icon)" [fixedWidth]="true">
+                            </fa-icon>
+                          }
+                          {{a.label}}
+                          @if (a.pre) {
+                            <div [title]="a.pre" style="font-size: 0.7em;"
+                              class="border-info small pointer border rounded d-inline-block px-1 py-0 ms-1">
+                            PRE</div>
+                          }
+                        </span>
+                        <button type="button" class="btn" (click)="deleteAction(a)">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                          </fa-icon>
+                        </button>
+                        <button type="button" class="btn" (click)="editAction(editActionTpl,a)">
+                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                          </fa-icon>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="mt-2">
+                  <button type="button" class="btn btn-secondary btn-sm"
+                    (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file'})">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
+                    </fa-icon>
+                  New Action</button>
+                </div>
+              </div>
+              @if (curDataset.filters.length>0 && form) {
+                <div class="mb-3">
+                  <h6>Allowed Filters</h6>
+                  <div style="position:relative">
+                    <div cdkDropList cdkDropListOrientation="vertical"
+                      (cdkDropListDropped)="dropFilter($event, curDataset.filters)">
+                      @for (field of curDataset.filters; track field.id) {
+                        <div class="element p-2 mb-1 bg-white small" style="" (dblclick)="editFilterText(field)"cdkDrag>
+                          <div class="element-item" style="user-select:none;">
+                            <div style="font-size: 12px;">
+                              {{cleanText(form[field.root]?.title)}}
+                            </div>
+                            <span>{{field.label}}</span>
+                          </div>
+                          <div class="element-edit text-info position-absolute around-0">
+                            <div class="d-flex flex-column">
+                              <div class="cursor-move" style="top:5px; left:0px;position: absolute"
+                                cdkDragHandle>
+                                <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
+                                </fa-icon>
+                              </div>
+                              <div style="position:absolute; bottom:5px; right:3px;">
+                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                  (click)="editFilterText(field)">
+                                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                                  </fa-icon>
+                                </button>
+                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                  (click)="removeFilter($index)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }      
+              @if (qFilter) {
+                <div>
+                  <h6>Filters Condition Structure</h6>
+                  <div class="my-2 ms-2">
+                    <div class="cond-badge" style="float:left">
+                      <div
+                        style="background:#ccc!important;font-weight: bold;"
+                        class="p-1 ms-1 text-center rounded-2 position-relative text-white">
+                        {{curDataset.presetFilters['@cond']||'AND'}}
+                      </div>
+                    </div>
+                    <div class="tree-cont" style="margin-left:60px">
+                      @for (node of qFilter; track $index) {
+                        <ng-container [ngTemplateOutlet]="treeNode"
+                          [ngTemplateOutletContext]="{ $implicit: node }">
+                        </ng-container>
+                      }
+                    </div>
+                  </div>
+                  <ng-template #treeNode let-data>
+                    @for (h of data|keyvalue; track $index; let i = $index) {
+                      @if (['$or','$and'].includes(h.key)) {
+                        <div class="tree-wrapper">
+                          <div class="cond-badge" style="float:left">
+                            <div
+                              style="background:#ccc!important;font-weight: bold;"
+                              class="p-1 ms-1 text-center rounded-2 position-relative text-white">
+                              @if (h.key=='$or') {
+                                <div>OR</div>
+                              }
+                              @if (h.key=='$and') {
+                                <div>AND</div>
+                              }
+                            </div>
+                          </div>
+                          <div class="tree-cont" style="margin-left:60px;">
+                            @for (child of data[h.key]; track $index) {
+                              <ng-container
+                                [ngTemplateOutlet]="treeNode"
+                                [ngTemplateOutletContext]="{ $implicit: child }">
+                              </ng-container>
+                            }
+                          </div>
+                        </div>
+                      } @else {
+                        <div class="param-badge pb-1" style="margin-left:0px;">
+                          <div
+                            style="border-color:#ccc!important;"
+                            class="p-2 py-1 ms-1 border border-2 rounded-1 position-relative bg-white">
+                            {{h.key}}
+                          </div>
+                        </div>
+                      }
+                    }
+                  </ng-template>
+                </div>
+              }
+              @if (!isEmptyObject(curDataset?.presetFilters)) {
+                <div class="mb-3">
+                  <h6>Preset Conditions</h6>
+                  @for (c of curDataset.presetFilters|keyvalue; track $index) {
+                    @if (c.key.startsWith('$')||c.key.startsWith('@')) {
+                      <div>
+                        <div class="input-group mb-1">
+                          <span class="input-group-text" style="cursor:pointer"
+                          (click)="editPresetKey(c)">{{c.key}}</span>
+                          <span class="input-group-text" style="cursor:pointer"
+                          (click)="editPresetValue(c)">{{c.value}}</span>
+                          <button type="button" class="btn btn-round btn-sm" (click)="removePreset(c.key)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+              @if (curDataset.exportXls||curDataset.exportCsv||curDataset.exportPdf) {
+                <div class="mb-3">
+                  <h6>Exportable to</h6>
+                  @if (curDataset.exportXls) {
+                    <div>
+                      <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true">
+                      </fa-icon>
+                      Microsoft Excel (.xlsx)
+                    </div>
+                  }
+                  @if (curDataset.exportCsv) {
+                    <div>
+                      <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true">
+                      </fa-icon>
+                      Comma separated value (.csv)
+                    </div>
+                  }
+                  @if (curDataset.exportPdf) {
+                    <div>
+                      <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true">
+                      </fa-icon>
+                      Portable document format (.pdf)
+                    </div>
+                  }
+                </div>
+              }
+              <div class="mb-3">
+                <h6>Accessible only to</h6>
+                @if (curDataset.accessList && curDataset.accessList.length>0) {
+                  @for (access of curDataset.accessList; track $index) {
+                    <div>
+                      <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon>
+                      {{accessListMap[access]?.name}} — {{access}}
+                    </div>
+                  }
+                }@else {
+                  <div>
+                    <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon> * Anyone
+                  </div>
+                }
+              </div>
+              @if (curDataset.statusFilter) {
+                <div class="mb-3">
+                  <h6>List entry with the following status</h6>
+                  <div class="small">
+                    <ng-container>
+                      <div>
+                        <fa-icon
+                          [icon]="['far',curDataset.statusFilter[-1]?.indexOf('drafted')>-1?'check-square':'square']"
+                        [fixedWidth]="true"></fa-icon>
+                        Drafted
+                      </div>
+                      @if (form['data']?.tiers?.length>0) {
+                        <div>
+                          <fa-icon
+                            [icon]="['far',curDataset.statusFilter[-1]?.indexOf('submitted')>-1?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Submitted
+                        </div>
+                      }
+                    </ng-container>
+                    @for (tier of form['data']?.tiers; track tier.id) {
+                      <div class="mt-1 ms-4">
+                        <div>{{tier.name}}</div>
+                        @for (action of tier.actions|keyvalue; track $index) {
+                          <div class="d-inline-block me-2">
+                            <fa-icon
+                              [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf(action.key)>-1?'check-square':'square']"
+                            [fixedWidth]="true"></fa-icon>
+                            {{action.value.label}}
+                          </div>
+                        }
+                        <div class="d-inline-block me-2">
+                          <fa-icon
+                            [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('resubmitted')>-1?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Resubmitted
+                        </div>
+                        @if (tier.alwaysApprove) {
+                          <div class="d-inline-block me-2">
+                            <fa-icon
+                              [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('always_approve')>-1?'check-square':'square']"
+                            [fixedWidth]="true"></fa-icon>
+                            Always Approve
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              <div class="mb-3">
+                <h6>RESTful Endpoints</h6>
+                <div>
+                  <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
+                  {{baseApi}}/entry/list?datasetId={{curDataset.id}}
+                </div>
+                <div>
+                  <fa-icon [icon]="['fas', 'history']" [fixedWidth]="true"></fa-icon>
+                  {{baseApi}}/entry/count?datasetId={{curDataset.id}}
+                </div>
+                <div>
+                  <fa-icon [icon]="['fas', 'sync']" [fixedWidth]="true"></fa-icon>
+                  {{baseApi}}/entry/resync?datasetId={{curDataset.id}}
+                </div>
+                @if (curDataset.publicEp) {
+                  <div>
+                    <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
+                    {{baseApi}}/public/entry/list?datasetId={{curDataset.id}}
+                  </div>
+                }@else {
+                  <div class="text-danger">
+                    Public Endpoint not available. To enable, change the setting in Edit Dataset &gt; Options
+                    &gt;
+                    Public endpoint
+                  </div>
+                }
+              </div>
+              <div class="bg-danger text-white mb-3 p-3">
+                <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all
+                entry</button>
+                Clear entries for the dataset
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<ng-template #editDatasetTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle){
+    <!-- {{editDatasetData}} -->
+    <app-edit-dataset [dismiss]="d" [close]="c" [user]="user" [(dataset)]="editDatasetData" 
+      [appList]="otherAppList" [app]="app" [accessList]="accessList"></app-edit-dataset>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #removeDatasetTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove List</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this data list?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Data List Title</label>
+        <p class="form-control-static">{{removeDatasetData.title}}</p>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Data List Description</label>
+        <p class="form-control-static">{{removeDatasetData.description}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeDatasetData)">
+      Remove Data List
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #editItemTpl let-c="close" let-d="dismiss">
+  <div #editItemForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Item</h4>
+    </div>
+    <div class="single-pane">
+      <div class="form-group mb-3">
+        <label class="form-label">Label *</label>
+        <input type="text" class="form-control" [(ngModel)]="editItemData.label" name="label"
+          required>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Pre-requisite</label>
+        <div class="mx-n2">
+          <app-cm name="f" lang="javascript" [(ngModel)]="editItemData.pre"
+            [extraAutoComplete]="extraAutoCompleteJs" subType="active"
+            placeholder="ie: $user$.groups['1234']" [linenumber]="true">
+          </app-cm>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editItemForm.invalid"
+        (click)="c(editItemData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Item
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editActionTpl let-c="close" let-d="dismiss">
+  <div #editActionForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Action</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Overview</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Label *</label>
+                <input type="text" class="form-control"
+                  [(ngModel)]="editActionData.label" name="label" required>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Button Type *</label>
+                    <div>
+                      <div class="btn-group">
+                        <input class="btn-check" type="radio" value="inline" id="type-inline"
+                          name="type-inline"
+                          [(ngModel)]="editActionData.type" required>
+                        <label for="type-inline" class="btn btn-outline-secondary">
+                        Inline</label>
+                        <input class="btn-check" type="radio" value="dropdown"
+                          id="type-dropdown" name="type-dropdown"
+                          [(ngModel)]="editActionData.type" required>
+                        <label for="type-dropdown" class="btn btn-outline-secondary">
+                        Dropdown</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Color *</label>
+                    <div class="btn-group-toggle">
+                      @for (c of btnColors; track c) {
+                        <input type="radio" class="btn-check" [value]="c" id="color-{{c}}"
+                          name="color-{{c}}"
+                          [(ngModel)]="editActionData.style" required>
+                        <label for="color-{{c}}" class="btn btn-round color-item me-1 mb-1"
+                          [ngClass]="c" [class.active-outline]="editActionData.style==c">
+                          {{$index+1}}
+                        </label>
+                      }
+                    </div>
+                    <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.color"
+                    name="color">         -->
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Button Action *</label>
+                <select class="form-select" name="action"
+                  [(ngModel)]="editActionData.action" required>
+                  <option value="" disabled>Select action...</option>
+                  <optgroup [label]="form.data?.title + ' (current)'">
+                    <option value="view">View Entry</option>
+                    <option value="edit">Edit Entry</option>
+                    <option value="delete">Delete Entry</option>
+                    <option value="retract">Retract Entry</option>
+                    <option value="approve">Approve Entry</option>
+                    <option value="screen">Open in Screen</option>
+                    <option value="facet">Open in Facet</option>
+                    <option value="prev">Next Form</option>
+                    <!-- <option value="prev">Add Sibling</option> -->
+                    <option value="edit-single">Edit Single</option>
+                    <option value="view-single">View Single</option>
+                  </optgroup>
+                  @if (form.prev) {
+                    <optgroup [label]="form.prev?.title + ' (prev)'">
+                      <option value="prev-view">View Entry</option>
+                      <option value="prev-edit">Edit Entry</option>
+                      <option value="prev-screen">Open in Screen</option>
+                      <option value="prev-facet">Open in Facet</option>
+                      <option value="prev-prev">Next Form (Add Sibling)</option>
+                    </optgroup>
+                  }
+                  <!-- <option value="route">Open Internal URL</option> -->
+                  <option value="url">Open External URL</option>
+                  <option value="function">Run Function</option>
+                </select>
+              </div>
+              @if (['prev','prev-prev'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next form *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select form...</option>
+                    @for (item of formList; track item.id) {
+                      <option [value]="item.id">{{item.title}}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['edit-single','view-single'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select form *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select form...</option>
+                    @for (item of formList; track item.id) {
+                      <option [value]="item.id">{{item.title}}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['screen'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next screen *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select screen...</option>
+                    @for (item of screenList; track item.id) {
+                      <option [value]="item.id">{{item.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['prev-screen'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next screen *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select screen...</option>
+                    @for (item of screenList; track item.id) {
+                      <option [value]="item.id">{{item.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['facet'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next facet *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select facet...</option>
+                    @for (item of removeFromArray(getAsList(form.data?.x?.facet),['add','edit','view']); track $index) {
+                      <option
+                      [value]="item">{{item}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['prev-facet'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next facet *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select facet...</option>
+                    @for (item of removeFromArray(getAsList(form.prev?.x?.facet),['add','edit','view']); track $index) {
+                      <option
+                      [value]="item">{{item}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (['url'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">URL</label>
+                  <input type="text" class="form-control" name="url" id="url"
+                    placeholder="ie: https://social.media.com/user/{{'{'}}{{'{'}}$.social_id{{'}'}}{{'}'}}"
+                    [(ngModel)]="editActionData.url">
+                </div>
+              }
+              @if (['route'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">URL</label>
+                  <input type="text" class="form-control" name="url" id="url"
+                    [(ngModel)]="editActionData.url">
+                </div>
+              }
+              @if (['function'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Function</label>
+                  <div class="mx-n2">
+                    <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
+                      [extraAutoComplete]="extraAutoCompleteJs" subType="active"
+                      placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
+                      [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+              }
+              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','route','url'].includes(editActionData.action)) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Params</label>
+                  <div class="mx-n2">
+                    <app-cm name="params" lang="javascript" [(ngModel)]="editActionData.params"
+                      [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
+                      placeholder="ie: {'entryId':$.$id}" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+              }
+              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','prev-prev','route','url'].includes(editActionData.action)) {
+                <div class="form-check form-switch mb-1"
+                  >
+                  <input class="form-check-input" type="checkbox" id="inpop"
+                    [(ngModel)]="editActionData.inpop" name="inpop">
+                  <label class="form-check-label" for="inpop">Open in Modal Dialog</label>
+                </div>
+              }
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite</label>
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript" hideControl="true"
+                    [(ngModel)]="editActionData.pre" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink>Icon @if (editActionData.icon) {
+            <fa-icon [icon]="getIcon(editActionData.icon)"
+            [fixedWidth]="true"></fa-icon>
+          } *</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <app-icon-picker [(model)]="editActionData.icon"
+              [showNone]="true"></app-icon-picker>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editActionForm.invalid"
+        (click)="c(editActionData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Action
+      </button>
+    </div>
+  </div>
+</ng-template>

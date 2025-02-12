@@ -1,0 +1,16 @@
+.form-inline.width-auto .input-group-sm{
+    width: auto;
+}
+
+.dropdown-toggle::after {
+    display: none;
+  }
+
+.limit-height{
+    max-height: 400px;overflow: auto;
+}
+
+.code-container {
+    display: flex;
+    flex-direction: column-reverse;
+  }

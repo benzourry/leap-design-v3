@@ -1,0 +1,7 @@
+.lookup-disabled{
+    text-decoration: line-through;
+}
+.dropdown-toggle::after {
+    display: none;
+  }
+  .extra-data-tbl tr:last-child{border-bottom:transparent;}

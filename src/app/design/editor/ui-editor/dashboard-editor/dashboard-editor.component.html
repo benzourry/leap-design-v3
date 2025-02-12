@@ -1,0 +1,792 @@
+<div class="fix-gutter">
+  <div class="p-2">
+    <div class="limit-width">
+      @if (dashboardList?.length==0) {
+        <div class="m-a col-sm-12">
+          <div class="p-4 text-muted text-center">
+            <h1>:(</h1>
+            <h4>No dashboard specified</h4>
+          </div>
+        </div>
+      }
+      @if (dashboardList?.length>0 && !curDashboard) {
+        <div class="m-a col-sm-12">
+          <div class="p-4 text-muted text-center">
+            <h4>Please select dashboard above</h4>
+          </div>
+        </div>
+      }
+    </div>
+    @if (curDashboard) {
+      <div class="mb-2">
+        <div class="py-2 limit-width">
+          <div class="d-flex flex-column">
+            <div class="me-auto d-flex flex-row w-100 mb-2">
+              <h5 class="m-0 text-truncate">{{cleanText(curDashboard.title)}} <sup>{{curDashboard.id}}</sup></h5>
+              <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curDashboard.description)}}</div>
+            </div>
+            <div class="ps-3 d-flex align-items-center ms-auto">
+              <div>
+                <button type="button" class="btn btn-sm border border-2 ms-1"
+                  (click)="editDashboard(editDashboardTpl,curDashboard)">
+                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1 me-1"
+                  (click)="removeDashboard(removeDashboardTpl,curDashboard)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <a class="btn btn-sm border border-2 border-success btn-outline-success"
+                  routerLink="/run/{{app?.id}}/dashboard/{{curDashboard.id}}">
+                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div [class.limit-width]="!curDashboard?.wide">
+          <div class="row g-3 grid-animate" cdkDropList cdkDropListOrientation="mixed" cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="dropChart($event, curDashboard)">
+            @if (curDashboard?.charts.length==0) {
+              <div class="col-md-12">
+                <div class="p-4 text-muted text-center">
+                  <h1>:(</h1>
+                  <h4>No chart specified</h4>
+                </div>
+              </div>
+            }
+            @for (e of curDashboard.charts; track e.id; let $c_index = $index; let $c_first = $first; let $c_last = $last) {
+              <div [ngClass]="e.size" cdkDrag
+                >
+                <div class="card element bg-secondary text-white border-secondary" [ngClass]="e.altClass"
+                  [ngStyle]="{'height.px':e.height?e.height-100:350}">
+                  <div
+                    class="card-body pointer element d-flex text-truncate justify-content-center around-0 position-absolute">
+                    <div class="element-edit mt-1 cursor-move text-info position-absolute"
+                      style="top:3px;left:10px;" cdkDragHandle>
+                      <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
+                      </fa-icon>
+                    </div>
+                    <div class="text-center" style="align-self:center">
+                      @if (!e.form && e.source=='db') {
+                        <div class="text-light bg-danger p-3">
+                          <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                          No form found associated with this chart. It might has been removed.
+                        </div>
+                      }
+                      <div class="element-item">
+                        <h6 class="card-title">{{e.title}}</h6>
+                        @if (e.description) {
+                          <p class="card-subtitle">
+                          {{e.description}}</p>
+                        }
+                        <div style="color:#eee; text-align: center">
+                          @if (e.type=='pie') {
+                            <fa-icon [icon]="['fas','chart-pie']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='rose') {
+                            <fa-icon [icon]="['fas','chart-pie']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='doughnut') {
+                            <fa-icon [icon]="['far','circle']" size="5x"
+                            [fixedWidth]="true"></fa-icon>
+                          }@else if (e.type=='bar') {
+                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-bar']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='hbar') {
+                            <fa-icon [icon]="['fas','chart-bar']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='line') {
+                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-line']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='hline') {
+                            <fa-icon [icon]="['fas','chart-line']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='area') {
+                            <fa-icon [icon]="['fas','chart-area']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='gauge') {
+                            <fa-icon [icon]="['fas','tachometer-alt']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }@else if (e.type=='radar') {
+                            <fa-icon [icon]="['fas','circle-nodes']" size="5x"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }
+                          <!-- <div class="p-3 small">{{baseApi}}/entry/chart/{{e.id}}</div> -->
+                        </div>
+                      </div>
+                      
+                      <div class="p-3">
+                        <div class="m-2 text-start">
+                          <div class="form-check small">
+                            <input type="checkbox" class="form-check-input" id="publicEp_{{e.id}}"
+                              [(ngModel)]="publicEp[e.id]" name="hideHeader_{{e.id}}">
+                            <label class="form-check-label" for="publicEp_{{e.id}}"> Show public endpoint</label>
+                          </div>
+                        </div>
+                        <div class="m-2 text-start">
+                          <div class="small">Endpoint (as array)</div>
+                          <div class="input-group input-group-sm w-100">
+                            <span class="input-group-text bg-secondary text-white">
+                              @if(publicEp[e.id]){
+                                <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
+                              }@else {
+                                <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
+                              }
+                            </span>
+                            <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}{{publicEp[e.id]?'/public':''}}/entry/chart/{{e.id}}" 
+                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+                          </div>
+                          
+                        </div>
+                        <div class="m-2 text-start">
+                          <div class="small">Endpoint (as map)</div>
+                          <div class="input-group input-group-sm w-100">
+                            <span class="input-group-text bg-secondary text-white">
+                              @if(publicEp[e.id]){
+                                <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
+                              }@else {
+                                <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
+                              }
+                            </span>
+                            <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}/entry/{{publicEp[e.id]?'public/':''}}chart-map/{{e.id}}" 
+                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="element-edit" style="position:absolute;top:5px;right:10px;">
+                      <a class="btn btn-round btn-light btn-sm ms-1" target="_blank"
+                        href="{{baseApi}}/entry/chart/{{e.id}}">
+                        <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
+                      </a>
+                      @if (!$c_first) {
+                        <button type="button" class="btn btn-round btn-info btn-sm"
+                          (click)="reorderChart(curDashboard,$c_index, -1)">
+                          <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }
+                      @if (!$c_last) {
+                        <button type="button" class="btn btn-round btn-info btn-sm"
+                          (click)="reorderChart(curDashboard,$c_index, 1)">
+                          <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }
+                      <button type="button" class="btn btn-round btn-info btn-sm"
+                        (click)="editChart(editChartTpl,curDashboard.id,e,false)">
+                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <button type="button" class="btn btn-round btn-info btn-sm"
+                        (click)="removeChart(removeChartTpl,e)">
+                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="p-3 text-center">
+            <a class="pointer"
+              (click)="editChart(editChartTpl,curDashboard.id,{sortOrder:curDashboard.charts.length, size:'col-sm-12', sourceType:'db', height:'450', filters:[],x:{}}, true)">
+              <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+              Add Chart
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<ng-template #editDashboardTpl let-c="close" let-d="dismiss">
+  @defer (prefetch on idle){
+    <app-edit-dashboard [dismiss]="d" [close]="c" [dashboard]="editDashboardData" [app]="app" [accessList]="accessList"></app-edit-dashboard>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<ng-template #editChartTpl let-c="close" let-d="dismiss">
+  <div #editChartForm="ngForm" class="fix-gutter" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Chart</h4>
+    </div>
+    <div class="tab-simple">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        <li ngbNavItem>
+          <a ngbNavLink>Basic Info</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane">
+              <div class="form-group mb-3">
+                <label class="form-label">Chart Caption *</label>
+                <input class="form-control" type="text" [(ngModel)]="editChartData.title" name="title"
+                  required>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" [(ngModel)]="editChartData.description"
+                name="description"></textarea>
+              </div>
+              <div class="form-group mb-3" [class.disabled]="editChartData.id">
+                <label class="form-label">Source Type</label>
+                <div>
+                  <div class="">
+                    <input class="btn-check" type="radio" value="db" id="sourceTypeDb"
+                      name="sourceTypeDb" #sourceType="ngModel"
+                      [(ngModel)]="editChartData.sourceType" required>
+                    <label for="sourceTypeDb" class="btn btn-outline-secondary me-1 mb-1">Internal Form
+                    </label>
+                    <input class="btn-check" type="radio" value="rest" id="sourceTypeRest"
+                      name="sourceTypeRest" #sourceType="ngModel"
+                      [(ngModel)]="editChartData.sourceType" required>
+                      <label for="sourceTypeRest" class="btn btn-outline-secondary me-1 mb-1">RESTFul
+                      Endpoint</label>
+                  </div>
+                </div>
+                @if (sourceType?.invalid) {
+                  <small class="form-text has-warning">
+                    @if (sourceType?.errors?.required) {
+                      <span class="help-block">Source type is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+              @if (editChartData.sourceType=='rest') {
+                <div class="form-group mb-3">
+                  <label class="form-label">RESTful Endpoint *</label>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="editChartData.endpoint" #endpoint="ngModel"
+                    name="endpoint" required>
+                  @if (endpoint?.invalid) {
+                    <small class="form-text has-warning">
+                      @if (endpoint?.errors?.required) {
+                        <span class="help-block">Endpoint URL is
+                        required</span>
+                      }
+                    </small>
+                  }
+                </div>
+              }
+              @if (editChartData.sourceType=='db') {
+                <div class="form-group mb-3" [class.disabled]="editChartData.id"
+                  >
+                  <label class="form-label">Select Form</label>
+                  <select class="form-select" name="form" #cForm
+                    (change)="loadForm(editChartData.form.id, editHolderForm, editChartData)"
+                    [compareWith]="compareByIdFn" [(ngModel)]="editChartData.form">
+                    <option value="" disabled>Select model...</option>
+                    @for (form of formList; track form.id) {
+                      <option [ngValue]="form">{{form.title}}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editChartData.form && editChartData.agg&&editChartData.fieldValue&&editChartData.fieldCode) {
+                <p class="">
+                {{editChartData.agg}}(<strong>{{editChartData.fieldValue}}</strong>) by
+                <strong>@for (h of forceArray(editChartData.fieldCode); track $index) {
+                  <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">{{h}}</div>
+                }</strong>
+                @if (editChartData.fieldSeries) {
+                  <span> by
+                    <strong>{{editChartData.fieldSeries}}</strong></span>
+                  }
+                </p>
+              }
+              <!-- category, value, isseries, series -->
+              @if (editChartData.form) {
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Plottable Category *</label>
+                      <select class="form-select" name="fieldCode" multiple
+                        [(ngModel)]="editChartData.fieldCode" required>
+                        <option value="" disabled>Select field...</option>
+                        @for (fm of ['prev','data']; track fm) {
+                          @if (editHolderForm[fm]) {
+                            <optgroup [label]="editHolderForm[fm].title">
+                              <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
+                              @for (s of sectionItems[fm]; track $index) {
+                                <!-- @if (s.tier!=null) {
+                                  @for (f of s.items; track f.id) {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code;
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="prefixedField">
+                                        {{editHolderForm[fm].items[f.code]?.label}} ^
+                                      </option>
+                                    } -->
+                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="'approval#'+ s.tier.id + '.' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
+                                        {{editHolderForm[fm].items[f.code]?.label}} ^
+                                      </option>
+                                    } -->
+                                  <!-- } -->
+                                <!-- } @else { -->
+                                  @for (f of s.items; track f.id) {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderForm[fm].items[f.code]);
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      @if (true){
+                                        <option
+                                          [ngValue]="prefixedField">
+                                          {{editHolderForm[fm].items[f.code]?.label}}
+                                          @if(s.tier){^}
+                                        </option>
+                                      }
+                                    }
+                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="fm+'#' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
+                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                      </option>
+                                    } -->
+                                  }
+                                <!-- } -->
+                              }
+                            </optgroup>
+                          }
+                        }
+                        @if (editHolderForm['data']?.tiers?.length>0) {
+                          <option value="$_.current_status"># Current Status</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Plottable Value *</label>
+                      <select class="form-select" name="fieldValue"
+                        [(ngModel)]="editChartData.fieldValue" required>
+                        <option value="" disabled>Select field...</option>
+                        @for (fm of ['prev','data']; track fm) {
+                          @if (editHolderForm[fm]) {
+                            <optgroup [label]="editHolderForm[fm].title">
+                              <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
+                              @for (s of sectionItems[fm]; track $index) {
+                                <!-- @if (s.tier!=null) { -->
+                                  @for (f of s.items; track f.id) {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+ getPostfix(editHolderForm[fm].items[f.code]);
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="prefixedField">
+                                        {{editHolderForm[fm].items[f.code]?.label}} 
+                                        @if(s.tier){^}
+                                      </option>
+                                    }
+                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="'approval#'+ s.tier.id + '.' + f.code + (['select','radio'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?'.name':'')">
+                                        {{editHolderForm[fm].items[f.code]?.label}} ^
+                                      </option>
+                                    } -->
+                                  }
+                                <!-- } @else {
+                                  @for (f of s.items; track f.id) {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code;
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="prefixedField">
+                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                      </option>
+                                    } -->
+                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="fm+'#' + f.code + (['select','radio'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?'.name':'')">
+                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                      </option>
+                                    } -->
+                                  <!-- } -->
+                                <!-- } -->
+                              }
+                            </optgroup>
+                          }
+                        }
+                        @if (editHolderForm['data']?.tiers?.length>0) {
+                          <option value="$_.current_status"># Current Status</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              }
+              <div class="row">
+                @if (forceArray(editChartData.fieldCode).length==1) {
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="series"
+                          [(ngModel)]="editChartData.series" name="series" (ngModelChange)="seriesChange(editChartData.series)">
+                        <label class="form-check-label" for="series">
+                          Series chart
+                          <div class="small">
+                            Enable series statistics for progression chart (bar, line, area)
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                }
+                @if (editChartData.form && editChartData.series) {
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Plottable Series </label>
+                      <select class="form-select" name="fieldSeries"
+                        [(ngModel)]="editChartData.fieldSeries" required>
+                        <option value="" disabled>Select field...</option>
+                        @for (fm of ['prev','data']; track fm) {
+                          @if (editHolderForm[fm]) {
+                            <optgroup [label]="editHolderForm[fm].title">
+                              <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
+                              @for (s of sectionItems[fm]; track $index) {
+                                <!-- @if (s.tier!=null) { -->
+                                  @for (f of s.items; track f.id) {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderForm[fm].items[f.code]);
+                                    {{f.type}}
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="prefixedField">
+                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                        @if(s.tier){^}
+                                      </option>
+                                    }
+                                  }
+                                <!-- } @else { -->
+                                  <!-- @for (f of s.items; track f.id) {
+                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                      <option
+                                        [ngValue]="fm+'#' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
+                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                      </option>
+                                    }
+                                  } -->
+                                <!-- } -->
+                              }
+                            </optgroup>
+                          }
+                        }
+                      </select>
+                    </div>
+                  </div>
+                }
+                <!-- @if (editChartData.form) {
+                  <div class="col-sm-12"></div>
+                } -->
+                @if (editChartData.form) {
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Aggregate Type *</label>
+                      <select class="form-select" name="agg"
+                        [(ngModel)]="editChartData.agg" required>
+                        <option value="" disabled>Select aggregate...</option>
+                        @for (item of aggType; track $index) {
+                          <option [value]="item.code">{{item.name}}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                }
+                <div class="col-md-3">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Width</label>
+                    <select class="form-select" name="size"
+                      [(ngModel)]="editChartData.size">
+                      <option value="" disabled>Select width...</option>
+                      @for (item of sizeList; track $index) {
+                        <option [value]="item.value">{{item.name}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Height</label>
+                    <select class="form-select" name="height"
+                      [(ngModel)]="editChartData.height">
+                      <option value="" disabled>Select height...</option>
+                      @for (item of heightList; track $index) {
+                        <option [value]="item.value">
+                          {{item.name}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <!-- Chart Type -->
+              <div class="form-group mb-3">
+                <label class="col-form-label">Chart Type *</label>
+                <div class="row">
+                  @for (type of chartTypeList; track $index) {
+                    <div class="col-6 col-sm-4"
+                      [class.disabled-more]="(editChartData.series||forceArray(editChartData.fieldCode).length>1) && type.noseries">
+                      <div class="form-check nobreak">
+                        <input type="radio" class="form-check-input" id="ct-{{type.code}}"
+                          name="layout" [(ngModel)]="editChartData.type" [value]="type.code"
+                          required>
+                        <label for="ct-{{type.code}}" class="form-check-label"
+                          [class.text-primary]="editChartData.type==type.code">{{type.name}}
+                          <div class="ms-0 my-3">
+                            <fa-icon [icon]="type.icon" [transform]="type.transform" size="4x"
+                            [fixedWidth]="true"></fa-icon>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  }
+                  <div class="ms-auto col"></div>
+                </div>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" id="tooltip"
+                    [(ngModel)]="editChartData.x.tooltip" name="tooltip">
+                  <label class="form-check-label" for="tooltip">
+                    Show tooltip label
+                  </label>
+                </div>
+                @if (['line','hline','area'].indexOf(editChartData.type)>-1) {
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="smooth"
+                      [(ngModel)]="editChartData.x.smooth" name="smooth">
+                    <label class="form-check-label" for="smooth">
+                      Smoothen line curves
+                    </label>
+                  </div>
+                }
+                @if (['bar','hbar','line','hline','area'].indexOf(editChartData.type)>-1) {
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="stack"
+                      [(ngModel)]="editChartData.x.stack" name="stack">
+                    <label class="form-check-label" for="stack">
+                      Stack chart
+                    </label>
+                  </div>
+                }
+                @if (forceArray(editChartData.fieldCode).length>1) {
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="swap"
+                      [(ngModel)]="editChartData.x.swap" name="swap">
+                    <label class="form-check-label" for="swap">
+                      Swap Chart Axes (for multi-category)
+                    </label>
+                  </div>
+                }
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" id="showAgg"
+                    [(ngModel)]="editChartData.showAgg" name="showAgg">
+                  <label class="form-check-label" for="showAgg">
+                    Show Total in statistic-table
+                  </label>
+                </div>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" id="flipped"
+                    [(ngModel)]="editChartData.x.flipped" name="flipped">
+                  <label class="form-check-label" for="flipped">
+                    Initially Flipped (show statistic-table first)
+                  </label>
+                </div>
+                <div class="form-check form-switch" [class.disabled]="!editChartData.showAgg">
+                  <input type="checkbox" class="form-check-input" id="percentage"
+                    [(ngModel)]="editChartData.x.percentage" name="percentage">
+                  <label class="form-check-label" for="percentage">
+                    Show percentage (require 'Show Total ...' enabled)
+                  </label>
+                </div>
+              </div>
+              <!-- Status Filter -->
+              @if (editChartData.form) {
+                <div class="form-group mb-3">
+                  <div class="btn-group float-end">
+                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(true)">All</button>
+                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(false)">None</button>
+                  </div>
+                  <label class="form-label">List entry with status</label>
+                  <div class="form-check">
+                    <input [(ngModel)]="statusFilterForm['-1'].drafted"
+                      class="form-check-input" name="draftedFilter" id="draftedFilter11"
+                      type="checkbox">
+                    <label class="form-check-label" for="draftedFilter11">Drafted</label>
+                  </div>
+                  <div class="form-check">
+                    <input [(ngModel)]="statusFilterForm['-1'].submitted"
+                      class="form-check-input" name="submittedFilter" id="submittedFilter11"
+                      type="checkbox">
+                    <label class="form-check-label" for="submittedFilter11">Submitted</label>
+                  </div>
+                  <div>
+                    @for (tier of editHolderForm['data']?.tiers; track tier.id) {
+                      <div class="p-2">
+                        <h6>{{tier.name}}</h6>
+                        @for (action of tier.actions|keyvalue; track $index) {
+                          <div class="form-check">
+                            <input
+                              [(ngModel)]="statusFilterForm[tier.id][action.key]"
+                              class="form-check-input" name="{{action.key+'_'+tier.id}}"
+                              id="{{action.key+'_'+tier.id}}" type="checkbox">
+                            <label class="form-check-label"
+                            for="{{action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                          </div>
+                        }
+                        <div class="form-check">
+                          <input
+                            [(ngModel)]="statusFilterForm[tier.id].resubmitted"
+                            class="form-check-input" name="resubmitted{{tier.id}}"
+                            id="resubmitted11{{tier.id}}" type="checkbox">
+                          <label class="form-check-label"
+                          for="resubmitted11{{tier.id}}">Resubmitted</label>
+                        </div>
+                        @if (tier.alwaysApprove) {
+                          <div class="form-check">
+                            <input
+                              [(ngModel)]="statusFilterForm[tier.id].always_approve"
+                              class="form-check-input" name="resubmitted{{tier.id}}"
+                              id="resubmitted11{{tier.id}}" type="checkbox">
+                            <label class="form-check-label" for="resubmitted11{{tier.id}}">Always
+                            Approve</label>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+        @if (editChartData.type) {
+          <li ngbNavItem>
+            <a ngbNavLink>Options</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane">
+                <div class="form-group mb-3">
+                  <label class="form-label">Additional options for chart (Echarts)</label>
+                  <div class="mx-n2">
+                    <app-cm name="ecOpt" lang="javascript"
+                      [(ngModel)]="editChartData.x.ecOpt" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                  Learn more chart option <a href="https://echarts.apache.org/en/option.html"
+                target="_blank">here</a>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Transform Function</label>
+                <div class="mx-n2">
+                  <app-cm name="f" lang="javascript" [(ngModel)]="editChartData.f"
+                    [linenumber]="true">
+                  </app-cm>
+                </div>
+                <div class="small mt-2 text-muted">
+                  <p>You can use the following hook</p>
+                  <ul>
+                    <li><code>$dataset$</code> - To access chart dataset</li>
+                    <li><code>$chart$</code> - To access chart metadata</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Pre-requisite</label>
+                <!-- <app-codejar [(ngModel)]="editChartData && editChartData.x.pre" lang="js" name="pre"
+                [linenumber]="true" [options]="{lineNumbers: true,mode: 'javascript'}">
+              </app-codejar> -->
+                <div class="mx-n2">
+                  <app-cm name="pre" lang="javascript"
+                    [(ngModel)]="editChartData.x.pre" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        }
+        @if (editChartData.form) {
+          <li ngbNavItem>
+            <a ngbNavLink>Filters</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane">
+                <!-- {{editChartData.filters}} -->
+                <app-entry-filter [formHolder]="editHolderForm" [presetFilters]="editChartData.presetFilters"
+                  [(filters)]="editChartData.filters" [sectionItems]="sectionItems"
+                [lookup]="lookup"></app-entry-filter>
+              </div>
+            </ng-template>
+          </li>
+        }
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editChartForm.invalid"
+        (click)="c(editChartData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Chart
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #removeDashboardTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Dashboard</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+    Are you sure you want to remove this dashboard?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Dashboard Title</label>
+        <p class="form-control-static">{{removeDashboardData.title}}</p>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <p class="form-control-static">{{removeDashboardData.description}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeDashboardData)">
+    Remove Dashboard
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #removeChartTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Chart</h4>
+  </div>
+  <div class="modal-body">
+    <p>
+      Are you sure you want to remove this Chart?
+    </p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Chart Caption</label>
+        <p class="form-control-static">{{removeChartData.title}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeChartData)">
+    Remove Chart
+    </button>
+  </div>
+</ng-template>

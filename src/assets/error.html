@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Error...</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- <script src="oauth-config.js" type="application/javascript"></script> -->
+    
+    <style>
+        html,body{height:100%}body{margin:0;display:flex;align-items:center;justify-content:center}
+        .btn-next{margin-top:2em;color: #fff;background-color: #0d6efd;
+            display: none;font-weight: 400;line-height: 1.5;text-decoration: none;
+            vertical-align: middle;padding: 0.375rem 0.75rem;font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="msg" style="padding:20px; color: #333; font-family:Arial, Helvetica, sans-serif">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width:2em; margin-right:1em;"
+            class="svg-inline--fa fa-exclamation-triangle fa-w-18 fa-fw" role="img" aria-hidden="true"
+            viewBox="0 0 576 512" focusable="false" data-icon="exclamation-triangle" data-prefix="fas">
+            <path fill="currentColor"
+                d="M 569.517 440.013 C 587.975 472.007 564.806 512 527.94 512 H 48.054 c -36.937 0 -59.999 -40.055 -41.577 -71.987 L 246.423 23.985 c 18.467 -32.009 64.72 -31.951 83.154 0 l 239.94 416.028 Z M 288 354 c -25.405 0 -46 20.595 -46 46 s 20.595 46 46 46 s 46 -20.595 46 -46 s -20.595 -46 -46 -46 Z m -43.673 -165.346 l 7.418 136 c 0.347 6.364 5.609 11.346 11.982 11.346 h 48.546 c 6.373 0 11.635 -4.982 11.982 -11.346 l 7.418 -136 c 0.375 -6.874 -5.098 -12.654 -11.982 -12.654 h -63.383 c -6.884 0 -12.356 5.78 -11.981 12.654 Z">
+        </svg>
+        <span style="font-size:2em;">Oopss! Sorry</span>
+        <div id="msg-c" style="padding:10px 0px;"></div>
+        <a id="nextUrl" class="btn-next" href="">OK, Proceed</a>
+    </div>
+</body>
+
+<script>
+    var messageContent = document.getElementById("msg-c");
+    messageContent.innerHTML = window.localStorage.getItem("error");
+    var nextButton = document.getElementById("nextUrl");
+    if (window.localStorage.getItem("nextUrl")){
+        nextButton.style.display='inline-block';
+        nextButton.setAttribute("href",window.localStorage.getItem("nextUrl"));
+        window.localStorage.removeItem("nextUrl");
+    }
+
+    window.localStorage.removeItem("error");
+
+    //     gP = function (e) {
+    //         var n = new RegExp("[\\?&]" + e + "=([^&#]*)").exec(location.search);
+    //         return null === n ? "" : decodeURIComponent(n[1].replace(/\+/g, " "))
+    //     },
+    //     aP = function (url,param) {
+    //         return url + (url.split('?')[1] ? '&' : '?') + param;
+    //     },
+    //     accessToken = gP("accessToken"),
+    //     provider = gP("provider");
+    // if (accessToken) {
+    //     fetch(`${OAUTH.TOKEN_GET}?access_token=${accessToken}&provider=${provider}`)
+    //     .then(function (d) {
+    //         d.json().then(function (f) {
+    //             if (f.auth) {
+    //                 window.localStorage.setItem("auth", JSON.stringify(f.auth)),
+    //                 window.localStorage.setItem("user", JSON.stringify(f.user)), 
+    //                 window.location.href =  aP(window.localStorage.getItem("redirect") ? "/#" + window.localStorage.getItem("redirect") : OAUTH.FINAL_URI,window.location.href.split('?')[1]);
+    //             } else loadr.style.display = "none", message.style.display = "block", messageContent.innerHTML = f.error;
+    //         })
+    //     })
+    // }
+
+</script>
+</html>

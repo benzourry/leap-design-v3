@@ -1,0 +1,62 @@
+<style>
+    .col-key{
+        float:left;
+        width: 120px;
+    }
+    .col-value{
+        margin-left:140px;
+    }
+</style>
+<div class="tree-cont">
+    <div class="list-group list-group-flush small">
+        <ng-container [ngTemplateOutlet]="treeNode"
+                    [ngTemplateOutletContext]="{ data: data() }">
+        </ng-container>
+    </div>
+</div>
+
+<ng-template #treeNode let-data="data">
+    <!-- [{{data|json}}] -->
+    @for (item of data|keyvalue:asIsOrder; track $index; let i = $index) {
+        <div class="list-group-item p-2">
+            @if( !(isArray(item.value)||isObject(item.value))){
+                <!-- simple value -->
+                <div class="">
+                    <div class="col-key">{{item.key}}</div>
+                    <div class="col-value">{{item.value}}</div>
+                    <div class="clearfix"></div>
+                </div>
+            }@else {
+                @if (isArray(item.value)){
+                    <!-- array -->
+                    <div class="">
+                        <div class="col-key" >{{item.key}}</div>
+                        <div class="col-value">
+                            @for (node of item.value; track $index) {
+                                <div class="list-group mb-3">
+                                    <ng-container [ngTemplateOutlet]="treeNode"
+                                    [ngTemplateOutletContext]="{ data: node }">
+                                    </ng-container>
+                                </div>
+                            }
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                }@else if (isObject(item.value)){
+                    <!-- object {{item.value|json}} -->
+                    <!-- @for (node of item.value|keyvalue:asIsOrder; track $index) { -->
+                    <div class="">
+                        <div class="col-key">{{item.key}}</div>
+                        <div class="col-value">
+                            <ng-container [ngTemplateOutlet]="treeNode"
+                            [ngTemplateOutletContext]="{ data: item.value }">
+                            </ng-container>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <!-- } -->
+                }
+            }
+        </div>
+    }
+</ng-template>

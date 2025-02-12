@@ -1,0 +1,19 @@
+tr.row-danger *{
+    background-color: rgb(220, 53, 69);
+    color: white !important;
+  }
+
+  tr.row-vault *{
+    background-color: #eee;
+    color: rgba(0,0,0,.5) !important;
+    // opacity: 0.5;
+  }
+
+  .limit-height{
+    max-height: 400px;overflow: auto;
+}
+
+.code-container {
+    display: flex;
+    flex-direction: column-reverse;
+  }

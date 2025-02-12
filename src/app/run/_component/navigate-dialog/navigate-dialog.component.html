@@ -1,0 +1,10 @@
+<div class="modal-header" style="text-align: center">
+    <h3 class="modal-title">Unsaved changes</h3>
+</div>
+<div class="modal-body">
+    <p>There are unsaved changes in the form. Are you sure you want to navigate away without saving?</p>
+</div>
+<div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-default" (click)="activeModal.close(true)">Yes, navigate</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="activeModal.close(false)">Stay on Page</button>
+</div>

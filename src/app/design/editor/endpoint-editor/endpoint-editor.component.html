@@ -1,0 +1,472 @@
+<style>
+  input[type=search].start {
+  /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+background-size: 20px 16px;
+border: none;
+padding: 6px 10px 6px 32px;
+vertical-align: middle;
+border-radius: 10em;
+color: black;
+max-width: 100%;
+}
+input[type=search].start:focus {
+border-color: #0078d7;
+outline: none;
+-webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+-moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+}
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+    <!-- <h4>{{app?.title}}</h4>
+    <p>{{app?.description}}</p> -->
+    <h5 class="mb-3">Endpoint Manager</h5>
+    <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadEndpointList(1)"
+      autocapitalize="none"
+      [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }
+      @if (!itemLoading) {
+        <div class="mb-3">
+          @for (a of endpointList | filter:searchText; track a.id) {
+            <a class="pointer element" (click)="loadEndpoint(a?.id)" [routerLink]="['/design',appId,'endpoint']"
+              [queryParams]="{id:a?.id}" [class.active]="a.id==endpointId"
+              routerLinkActive="active"
+              >
+              <div class="list-group-item-heading">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editEndpoint(editEndpointTpl,{method:'GET',responseType:'json',enabled:1,email: user.email}, true)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Endpoint
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (endpointTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="endpointTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadEndpointList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (endpoint) {
+          <div>
+            <div class="">
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{endpoint.name}}</h5>
+                <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{endpoint.description}}
+                </div>
+              </div>
+              <div class="d-flex flex-row">
+                <div class="flex-grow-1 pt-2">
+                  @if (endpoint.shared) {
+                    <span>
+                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
+                      Shared Endpoint
+                    </span>
+                  }
+                  @if (!endpoint.shared) {
+                    <span class="text-danger">
+                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                      Private Endpoint
+                    </span>
+                  }
+                </div>
+                <!-- lambda.email.indexOf(user.email)>-1 -->
+                <div class="d-flex flex-row">
+                  @if (endpoint && (endpoint.email?.indexOf(user.email)>-1) && (endpoint.app?.id == appId)) {
+                    <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                      (click)="editEndpoint(editEndpointTpl,endpoint,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                      (click)="removeEndpoint(removeEndpointTpl,endpoint)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  }
+                  <button type="button" class="btn border border-2 border-success btn-outline-success btn-sm ms-1" (click)="runEndpoint()">
+                    <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+            @if (!loading) {
+              <div class="card mt-2">
+                <div class="card-body">
+                  <span style="text-transform: uppercase;font-weight: bold;">{{endpoint.method}}</span>
+                  {{endpoint.url}}
+                </div>
+                <div class="card-footer">
+                  Code: {{endpoint.code}}
+                </div>
+              </div>
+            }
+            @if (endpoint.auth) {
+              <div class="card mt-2">
+                <div class="card-header">Authentication Info</div>
+                <div class="list-group list-group-flush">
+                  @if (endpoint.authFlow=='client_credential') {
+                    <div class="list-group-item">
+                      <div class="small">Token Endpoint</div>
+                      {{endpoint.tokenEndpoint}}
+                    </div>
+                    <div class="list-group-item">
+                      <div class="small">Client ID</div>
+                      {{endpoint.clientId}}
+                    </div>
+                    <div class="list-group-item">
+                      <div class="small">Client Secret</div>
+                      {{endpoint.clientSecret}}
+                    </div>
+                  } @else {
+                    <div class="list-group-item">
+                      Authorization Flow (current user's token)
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <div class="card mt-2">
+              <div class="card-body">
+                <div class="small mb-3">Snippet Sample</div>
+                <pre>
+                  {{ "$endpoint$('" + endpoint.code + "', {" }}
+                  @for (p of params; track $index; let last = $last) {
+                    {{ "    "+p+":'value'"}}{{last?'':','}}
+                  }
+                  {{ " }, data => {"}}
+                  // data
+                  {{ " }, error => {"}}
+                  // error handling
+                  {{ " })" }}
+                </pre>
+              </div>
+            </div>
+            @if (result) {
+              <div class="card mt-2 mb-2">
+                <!-- <div class="card-body"> -->
+                <div class="small mb-3 p-2 text-white bg-success d-flex">
+                  <div>
+                    Result
+                  </div>
+                  
+
+                  <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
+                    <input type="radio" class="btn-check" name="resultTypeText" id="resultTypeText"
+                      [(ngModel)]="resultType" value="text">
+                    <label class="btn btn-light" for="resultTypeText"> Print </label>
+                    <input type="radio" class="btn-check" name="resultTypeJson" id="resultTypeJson"
+                      [(ngModel)]="resultType" value="json">
+                    <label class="btn btn-light" for="resultTypeJson"> Parsed </label>
+                  </div>
+                
+                </div>
+                @if (resultType=='text'){
+                  <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                    <pre class="m-0"><code class="language-js">{{result | json}}</code></pre>
+                  </div>
+                }@else{
+                  <app-obj-viewer class="small" [data]="result"></app-obj-viewer>
+                }
+
+              <!-- </div> -->
+            </div>
+            
+            
+          }
+          @if (error) {
+            <div class="card mt-2">
+              <!-- <div class="card-body"> -->
+              <div class="small mb-3 p-3 text-white bg-danger">Error</div>
+              <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                <pre class="m-0"><code class="language-js">{{error.error | json}}</code></pre>
+              </div>
+            <!-- </div> -->
+          </div>
+        }
+      </div>
+    }
+    @if (!endpoint) {
+      <div style="color:#aaa;">
+        <h3>Please select Endpoint from the list on the left to view it's data.</h3>
+      </div>
+    }
+  </div>
+</div>
+</div>
+</div>
+<ng-template #removeEndpointTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Endpoint</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Endpoint Name</label>
+          <p class="form-control-static">{{removeEndpointData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeEndpointData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeEndpointData)">
+        <i class="icon-minus-sign-alt"></i> Remove Endpoint
+      </button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #editEndpointTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Endpoint</h4>
+  </div>
+  <div class="modal-body fix-gutter" #endpointEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Endpoint Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editEndpointData.name"
+        #name="ngModel"
+        (ngModelChange)="editEndpointData.id||editEndpointData.code=toSnakeCase(editEndpointData.name)"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3" [class.element]="!editCode">
+        <label class="form-label">Code *</label>
+        <input type="text" class="form-control element-item" [(ngModel)]="editEndpointData.code" name="code"
+          placeholder="ie: firstName" [readonly]="!editCode" required>
+        @if (!editCode) {
+          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+            style="position:absolute;top:10px;right:10px;" (click)="editCode=true">
+            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+          </button>
+        }
+        @if (editCode) {
+          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+            style="position:absolute;top:10px;right:10px;" (click)="editCode=false">
+            <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+          </button>
+        }
+        @if (itemExist(editEndpointData)) {
+          <small class="text-danger blink_me">Code
+          already used! Please edit</small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [ngModel]="editEndpointData && editEndpointData.description" (ngModelChange)="editEndpointData && (editEndpointData.description = $event)"
+        name="description"></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Request Method Type</label>
+        <div>
+          <!-- <div class="btn-group btn-group-toggle" ngbRadioGroup name="method" #method="ngModel"
+          [(ngModel)]="editEndpointData && editEndpointData.method" required>
+          <label ngbButtonLabel class="btn btn-outline-secondary">
+            <input ngbButton type="radio" class="btn-check" value="GET"> GET </label>
+            <label ngbButtonLabel class="btn btn-outline-secondary">
+              <input ngbButton type="radio" class="btn-check" value="POST"> POST </label>
+            </div> -->
+          <div class="" role="group">
+            <input type="radio" name="method" #method="ngModel" [ngModel]="editEndpointData && editEndpointData.method" (ngModelChange)="editEndpointData && (editEndpointData.method = $event)"
+              [required]="true" value="GET" class="btn-check" id="methodGET">
+            <label class="btn btn-outline-secondary me-1 mb-1" for="methodGET">GET</label>
+            <input type="radio" name="method" #method="ngModel" [ngModel]="editEndpointData && editEndpointData.method" (ngModelChange)="editEndpointData && (editEndpointData.method = $event)"
+              [required]="true" value="POST" class="btn-check" id="methodPOST">
+            <label class="btn btn-outline-secondary me-1 mb-1" for="methodPOST">POST</label>
+          </div>
+        </div>
+        @if (method?.invalid) {
+          <small class="form-text has-warning">
+            @if (method?.errors?.required) {
+              <span class="help-block">Request Method Type is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Endpoint URL *</label>
+        <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.url" (ngModelChange)="editEndpointData && (editEndpointData.url = $event)" name="url"
+          placeholder="ie: https://research.unimas.my/api/research/list" required>
+      </div>
+      <div class="form-group mb-3">
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="auth"
+            [ngModel]="editEndpointData && editEndpointData.auth" (ngModelChange)="editEndpointData && (editEndpointData.auth = $event)" name="auth">
+          <label class="form-check-label" for="auth">Authenticate</label>
+        </div>
+      </div>
+      @if (editEndpointData.auth) {
+        <div class="form-group mb-3">
+          <label class="form-label">Authorization Flow Type *</label>
+          <div>
+            <div class="" role="group">
+              <input type="radio" name="authFlow" #authFlow="ngModel" [ngModel]="editEndpointData && editEndpointData.authFlow" (ngModelChange)="editEndpointData && (editEndpointData.authFlow = $event)"
+                [required]="true" value="authorization" class="btn-check" id="authFlowAuth">
+              <label class="btn btn-outline-secondary me-1 mb-1" for="authFlowAuth">Authorization</label>
+              <input type="radio" name="authFlow" #authFlow="ngModel" [ngModel]="editEndpointData && editEndpointData.authFlow" (ngModelChange)="editEndpointData && (editEndpointData.authFlow = $event)"
+                [required]="true" value="client_credential" class="btn-check" id="authFlowClient">
+              <label class="btn btn-outline-secondary me-1 mb-1" for="authFlowClient">Client Credential</label>
+            </div>
+          </div>
+          @if (authFlow?.invalid) {
+            <small class="form-text has-warning">
+              @if (authFlow?.errors?.required) {
+                <span class="help-block">Auth flow is required</span>
+              }
+            </small>
+          }
+        </div>
+        @if (editEndpointData.authFlow=='client_credential') {
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Client ID *</label>
+                <input type="text" class="form-control"
+                  [ngModel]="editEndpointData && editEndpointData.clientId" (ngModelChange)="editEndpointData && (editEndpointData.clientId = $event)" name="clientId"
+                  placeholder="ie: client00001" required>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Client Secret *</label>
+                <input type="text" class="form-control"
+                  [ngModel]="editEndpointData && editEndpointData.clientSecret" (ngModelChange)="editEndpointData && (editEndpointData.clientSecret = $event)" name="clientSecret"
+                  placeholder="ie: 87897jhjd-9182731yye" required>
+              </div>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Token Endpoint *</label>
+            <input type="text" class="form-control"
+              [ngModel]="editEndpointData && editEndpointData.tokenEndpoint" (ngModelChange)="editEndpointData && (editEndpointData.tokenEndpoint = $event)" name="tokenEndpoint"
+              placeholder="ie: https://identity.unimas.my/oauth/token" required>
+          </div>
+        }
+        <div class="form-group mb-3">
+          <div class="form-check form-switch mt-1">
+            <input type="checkbox" class="form-check-input"
+              (change)="editEndpointData.tokenTo = $event.target.checked ? 'url': 'header'"
+              [checked]="editEndpointData.tokenTo=='url'" name="tokenTo" id="tokenTo">
+            <label class="form-check-label" for="tokenTo">Add access token to URL (instead of
+            Header)</label>
+          </div>
+        </div>
+      }
+      <div class="form-group mb-3">
+        <label class="form-label">Response Type *</label>
+        <div>
+          <div class="">
+            <input type="radio" class="btn-check" value="json" id="typeJson" name="typeJson"
+              #responseType="ngModel" [ngModel]="editEndpointData && editEndpointData.responseType" (ngModelChange)="editEndpointData && (editEndpointData.responseType = $event)"
+              [required]="true">
+            <label class="btn btn-outline-secondary me-1 mb-1" for="typeJson"> JSON  </label>
+            <input type="radio" class="btn-check" value="text" id="typeText" name="typeText"
+              #responseType="ngModel" [ngModel]="editEndpointData && editEndpointData.responseType" (ngModelChange)="editEndpointData && (editEndpointData.responseType = $event)"
+              [required]="true">
+            <label class="btn btn-outline-secondary me-1 mb-1" for="typeText"> As-is  </label>
+            <input type="radio" class="btn-check" value="byte" id="typeByte" name="typeByte"
+              #responseType="ngModel" [ngModel]="editEndpointData && editEndpointData.responseType" (ngModelChange)="editEndpointData && (editEndpointData.responseType = $event)"
+              [required]="true">
+            <label class="btn btn-outline-secondary me-1 mb-1" for="typeByte"> Byte Array </label>
+          </div>
+        </div>
+        @if (responseType?.invalid) {
+          <small class="form-text has-warning">
+            @if (responseType?.errors?.required) {
+              <span class="help-block">Response type is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Http Headers</label>
+        <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.headers" (ngModelChange)="editEndpointData && (editEndpointData.headers = $event)"
+          #headers="ngModel" name="headers">
+        <small class="form-text">
+          <span class="help-block">
+            <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
+            Format: name1->value1|name2->value2
+          </span>
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Creator (email, comma separated)</label>
+        <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.email" (ngModelChange)="editEndpointData && (editEndpointData.email = $event)" name="email"
+          #email="ngModel" required>
+        @if (email?.invalid) {
+          <small class="form-text has-warning">
+            @if (email?.errors?.required) {
+              <span class="help-block">Creator email is required</span>
+            }
+          </small>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="endpointEditForm.invalid"
+        (click)="c(editEndpointData)">
+      <!-- <i class="fa fa-plus"></i>  -->
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Endpoint
+    </button>
+  </div>
+</ng-template>

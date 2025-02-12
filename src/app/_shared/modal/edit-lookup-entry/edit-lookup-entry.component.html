@@ -1,0 +1,152 @@
+<div #editLookupEntryForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Add <strong>{{lookup().name}}</strong> Entry</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form">
+        @if (!lookup().x?.codeHidden){
+            <div class="form-group mb-3">
+                <label class="form-label">Code *</label>
+                <input type="text" class="form-control" name="code" #code="ngModel"
+                    [(ngModel)]="lookupEntry().code" required />
+                @if (code?.invalid) {
+                    <small class="form-text has-warning">
+                    @if (code.errors?.required) {
+                        <span class="help-block">Code is required</span>
+                    }
+                    </small>
+                }
+            </div>
+        }
+        <div class="form-group mb-3">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-control" name="name" #name="ngModel"
+            [(ngModel)]="lookupEntry().name" required />
+          @if (name?.invalid) {
+            <small class="form-text has-warning">
+              @if (name.errors?.required) {
+                <span class="help-block">Description is required</span>
+              }
+            </small>
+          }
+        </div>
+        @if(!lookup().x?.extraDisabled){
+          <div class="form-group mb-3">
+            <label class="form-label">Extra</label>
+            <input type="text" class="form-control" name="extra" #extra="ngModel"
+              [(ngModel)]="lookupEntry().extra" />
+            @if (extra?.invalid) {
+              <small class="form-text has-warning">
+                @if (extra.errors?.required) {
+                  <span class="help-block">Description is required</span>
+                }
+              </small>
+            }
+          </div>
+        }
+        @if (lookup().dataEnabled) {
+          <div class="form-group mb-3">
+            <label class="form-label">Data (Additional attributes)</label>
+            <table width="100%">
+              @for (e of lookupEntryFields; track $index) {
+                <tr>
+                  <td style="vertical-align:top">
+                    {{e.key}}
+                  </td>
+                  <td style="vertical-align:top">
+                    @if (e.type=='text') {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="value_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]">
+                    }
+                    @if (e.type=='longtext') {
+                      <textarea class="form-control form-control-sm" style="width:100%"
+                        name="value_{{$index}}"
+                      [(ngModel)]="lookupEntry().data[e.key]"></textarea>
+                    }
+                    @if (e.type=='number') {
+                      <input class="form-control form-control-sm" style="width:100%" type="number"
+                        name="value_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]">
+                    }
+                    @if (e.type=='date') {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="value_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]" (click)="d2.toggle()" ngbDatepicker
+                        #d2="ngbDatepicker">
+                    }
+                    @if (e.type=='options') {
+                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]">
+                        @for (a of e.opts; track $index) {
+                          <option [ngValue]="a">{{a}}</option>
+                        }
+                      </select>
+                    }
+                    @if (e.type=='file') {
+                      <label style="width:100%">
+                        <input type="file" [hidden]="true" (change)="uploadFile($event, lookupEntry().data, e.key)"
+                          name="file" />
+                        <div class="form-control form-control-sm" style="background: white">
+                          <fa-icon [icon]="['fas','upload']"></fa-icon>
+                          {{lookupEntry().data[e.key]||'Browse'}}
+                        </div>
+                      </label>
+                    }
+                  </td>
+                  <td style="width:30px;vertical-align:top">
+                    <button type="button" class="btn btn-sm btn-light"
+                      (click)="deleteDataRow(lookupEntry().data, e.key)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @for (e of lookupEntryFieldsOrphan|keyvalue; track $index) {
+                <tr>
+                  <td>
+                    {{e.key}} (orphan)
+                  </td>
+                  <td>
+                    @if (!isNumber(lookupEntry().data[e.key])) {
+                      <input class="form-control form-control-sm" style="width:100%" type="text"
+                        name="valueorph_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]">
+                    }
+                    @if (isNumber(lookupEntry().data[e.key])) {
+                      <input class="form-control form-control-sm" style="width:100%" type="number"
+                        name="valueorph_{{$index}}"
+                        [(ngModel)]="lookupEntry().data[e.key]">
+                    }
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-light"
+                      (click)="deleteDataRow(lookupEntry().data, e.key)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </table>
+          </div>
+        }
+        <div class="form-group mb-3">
+          <div class="form-check form-switch mt-1">
+            <input type="checkbox" class="form-check-input"
+              (change)="lookupEntry().enabled = $event.target.checked ? 1: 0"
+              [(ngModel)]="lookupEntry().enabled" name="enabled"
+              id="enabled">
+            <label class="form-check-label" for="enabled">Enabled</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editLookupEntryForm.invalid"
+        (click)="close()(lookupEntry())">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Lookup
+      </button>
+    </div>
+</div>

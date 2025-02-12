@@ -1,0 +1,57 @@
+:root {
+  
+}
+.f-label{
+    /* font-size: 13px; */
+    opacity:.7;
+    z-index:3;
+    line-height:1rem;
+    margin-bottom: 0.5rem;
+    /* padding:0 1px; */
+  }
+  .ta-btn:hover, .ta-btn:active, .btn-check:checked + .ta-btn{
+    --tabg: #6c757d;
+    background-color: var(--tabg);
+  }
+
+  @media print {
+    @page {
+      margin: 0.34in 0.3in 0.34in 0.3in;
+    }
+
+    /* @page {
+           margin-top: 0;
+           margin-bottom: 0;
+         }
+         body  {
+           padding-top: 72px;
+           padding-bottom: 72px ;
+         } */
+    page-title{display: block;}
+    /* ::ng-deep .row{
+      display: block;
+    }  */
+    ::ng-deep div.form-group,::ng-deep .card-header{
+      /* display: table; */
+      break-inside: avoid;
+    }
+    ::ng-deep .card {
+      display: block;
+    }
+    ::ng-deep .form-group *{
+      font-size: 0.85rem !important;
+    }
+    ::ng-deep .card card-body{
+      padding: 1rem;
+    }
+    ::ng-deep .card-header * {
+      /* font-size: 14px; */
+      /* break-before: page; */
+    }
+    ::ng-deep .card{
+      border:none;
+    }
+    ::ng-deep .card-header,
+    ::ng-deep .card-body{padding:.8em !important;}
+    
+  }

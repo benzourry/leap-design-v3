@@ -1,0 +1,19 @@
+.selected{
+    filter: sepia(100%) saturate(1000%) hue-rotate(180deg);
+}
+
+.btn-group .active{
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.7);
+}
+.form-group>label{ font-size:14px;}
+.repo-title{
+    padding: 5px 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+.repo-item{
+    margin-top: 15px;
+    /* height: fit-content !important;
+    margin: auto; */
+}
