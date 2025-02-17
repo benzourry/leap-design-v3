@@ -115,11 +115,14 @@
                                         @for (f of tier.section.items; track f.id) {
                                           @let field = form?.items[f.code];
                                           @if (preCheckAppr(field?.pre,appr[tier.id])) {
+                                            @let dynDefVal = _eval(entry?.data, appr[tier.id], field?.x?.dyn_default, form);
                                             @defer(prefetch on idle){
                                               <field-edit [ngClass]="field.size||'col-sm-12'" name="{{f.code}}"
                                                 [fileProgress]="uploadProgress[f.code+($index??'')]"
+                                                [class.mt-0]="field.subType=='clearfix'"
                                                 [hidden]="field.hidden"
                                                 [field]="field" [lookupList]="lookup[f.code]"
+                                                [selectGroupBy]="field?.x?.groupBy"
                                                 [(ngModel)]="appr[tier.id].data[f.code]"
                                                 (valueChange)="fieldChange($event,appr[tier.id],field, false)"
                                                 (valueSearch)="getLookupSearch($event,f.code,appr[tier.id],field.dataSourceInit)"
@@ -130,7 +133,8 @@
                                                 [required]="field?.v?.required"
                                                 [maxlength]="field?.v?.maxlength"
                                                 [minlength]="field?.v?.minlength"
-                                                [pattern]="field?.v?.pattern">
+                                                [pattern]="field?.v?.pattern"                                                
+                                                [defaultValue]="field.x?.use_dyn_default?dynDefVal:field?.x?.default">
                                               </field-edit>
                                             }
                                           }

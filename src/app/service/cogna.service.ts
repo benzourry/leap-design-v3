@@ -105,8 +105,15 @@ export class CognaService {
     return this.http.post(`${this.baseApi}/cogna/${cId}/src`, data)
   }
 
+  saveTool(cId, data):any{
+    return this.http.post(`${this.baseApi}/cogna/${cId}/tool`, data)
+  }
+
   removeSrc(cId):any{
     return this.http.post(`${this.baseApi}/cogna/delete-src/${cId}`, {})
+  }
+  removeTool(cId):any{
+    return this.http.post(`${this.baseApi}/cogna/delete-tool/${cId}`, {})
   }
   // saveOld(email: string, data: any): any {
   //   return this.http.post(`${this.baseApi}/cogna?email=${email}`, data)

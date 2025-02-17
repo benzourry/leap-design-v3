@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Inject, OnChanges, OnDestroy, OnInit, Sim
 import { UserService } from '../../_shared/service/user.service';
 import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 // import { EntryService } from '../../service/entry.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, NavigationExtras, Router, RouterLink } from '@angular/router';
 // import { LookupService } from '../../service/lookup.service';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
@@ -704,6 +704,19 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
        }, err => { });
 
   }
+  
+  // #### ATTEMPT TO UNIFY POPUP AND NAVIGATE
+  runAction(url,inpop, content, entryId, formId, type, facet, params) {
+    if (inpop){
+      this.inPop(content, entryId, formId, type, facet, params) 
+    }else{
+      let navigationExtras: NavigationExtras = {
+        queryParams: deepMerge({entryId:entryId},params),
+      };
+      this.router.navigate([this.preurl + url], navigationExtras);
+    }
+  }
+  
   
 
   // entry: any = {};

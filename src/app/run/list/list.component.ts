@@ -573,19 +573,9 @@ export class ListComponent implements OnInit, OnChanges {
   }
   // #### ATTEMPT TO UNIFY POPUP AND NAVIGATE
   runAction(url,inpop, content, entryId, formId, type, facet, params) {
-    // console.log(params);
-    if (inpop){
-      // this.inPopEntryId = entryId;
-      // this.inPopType = type;
-      // this.inPopFacet = facet;
-      // this.inPopFormId = formId;
-
-      // history.pushState(null, null, window.location.href);
-      // this.modalService.open(content, { backdrop: 'static', size: 'lg' })
-      //   .result.then(res => { }, err => { });      
+    if (inpop){ 
       this.inPop(content, entryId, formId, type, facet, params) 
     }else{
-      // this.router.navigate([this.preurl, url], { queryParams: params });
       let navigationExtras: NavigationExtras = {
         queryParams: deepMerge({entryId:entryId},params),
       };
@@ -775,7 +765,8 @@ export class ListComponent implements OnInit, OnChanges {
     this.groupFieldName = name;
     this.groupedEntryList = this.groupByPipe.transform(this.entryList, this.getPathForGrouping(this.groupFieldCode));
     this.groupFilter = null;
-  }  
+  }
+  
   // groupByField2(id,root: string, code: string) {
   //   this.groupFieldId = id;
   //   this.groupFieldCode = root+'.'+code;

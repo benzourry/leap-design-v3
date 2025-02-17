@@ -30,6 +30,7 @@ import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
 import { marked} from 'marked';
 import mermaid from "mermaid";
+import { LambdaService } from '../../../service/lambda.service';
 
 mermaid.initialize({startOnLoad:false})
 // import { RunService } from '../../../service/run.service';
@@ -174,6 +175,7 @@ export class CognaEditorComponent implements OnInit {
 
   constructor(private userService: UserService, private route: ActivatedRoute, private cognaService: CognaService,
     private datasetService: DatasetService,
+    private lambdaService: LambdaService,
     private bucketService: BucketService,
     private dashboardService: DashboardService,
     private lookupService: LookupService,
@@ -412,11 +414,14 @@ export class CognaEditorComponent implements OnInit {
     this.editSrcData = cognaSrc;
 
     // console.log(this.editSrcData);
-    if (this.editSrcData.appId){
-      this.loadOtherAppList(this.editSrcData?.type, this.editSrcData?.appId)
-    }else{
-      this.editSrcData.appId = this.app.id;
-    }
+    if (!this.editSrcData.appId) this.editSrcData.appId = this.app.id;
+      
+    this.loadOtherAppList(this.editSrcData?.type, this.editSrcData?.appId)
+    // if (this.editSrcData.appId){
+    //   this.loadOtherAppList(this.editSrcData?.type, this.editSrcData?.appId)
+    // }else{
+    //   this.editSrcData.appId = this.app.id;
+    // }
         // if (this.editItemData.type == 'modelPicker' && this.editItemData.dataSource) {
         //     this.loadDataset(this.editItemData.dataSource);
         // } else {
@@ -455,6 +460,62 @@ export class CognaEditorComponent implements OnInit {
             this.toastService.show("Cogna source saving failed", { classname: 'bg-danger text-light' });
           });
       }, res => { })
+  }
+
+  // toSnakeCase = toSnakeCase
+
+  isParamEdit = () => Object.values(this.paramEdit).includes(true);
+  paramEdit:any={}
+  editToolData: any;
+  editCognaTool(content, cognaTool, isNew) {
+    // console.log(cogna);
+    // cogna.content = this.br2nl(cogna.content);
+    this.editToolData = cognaTool;
+
+    // console.log(this.editSrcData);
+    if (!this.editToolData.appId) this.editToolData.appId = this.app.id;
+
+
+    // if (this.editToolData.appId){
+      this.getLambdaList(this.editToolData.appId)
+      // this.loadOtherAppList(this.editToolData?.type, this.editToolData?.appId)
+    // }else{
+    //   this.editToolData.appId = this.app.id;
+    // }
+
+    console.log("lambdaId",this.editToolData.lambdaId)
+
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static' })
+      .result.then(data => {
+
+        this.cognaService.saveTool(this.cognaId, data)
+          .subscribe(res => {
+            this.loadCognaList(this.pageNumber);
+            this.loadCogna(this.cognaId);
+            this.toastService.show("Cogna source successfully saved", { classname: 'bg-success text-light' });
+          }, err => {
+            this.toastService.show("Cogna source saving failed", { classname: 'bg-danger text-light' });
+          });
+      }, res => { })
+  }
+
+  parameterKey:string;
+  parameterDesc:string;
+  addToolParam(obj){
+    if (!this.editToolData?.params) this.editToolData.params=[];
+    this.editToolData.params.push(obj);
+  }
+
+  removeToolParam(index){
+    if (confirm("Are you sure you want to remove this parameter?")){
+      this.editToolData.params.splice(index, 1);
+      // this.screenService.saveScreen(this.app.id, this.curScreen)
+      //     .subscribe(res => {
+      //       this.getScreenData(res.id);
+      //       this.toastService.show("Screen saved successfully", { classname: 'bg-success text-light' });
+      //     });
+    }
   }
 
   dataset: any;
@@ -508,6 +569,22 @@ export class CognaEditorComponent implements OnInit {
         })
     }
   }
+
+  removeCognaTool(cognaTool) {
+    if (confirm("Are you sure you want to remove this tool?")) {
+      this.cognaService.removeTool(cognaTool.id)
+        .subscribe({
+          next: res => {
+            this.toastService.show("Cogna tool successfully removed", { classname: 'bg-success text-light' });
+            this.loadCogna(this.cognaId);
+          },
+          error: err => {
+            this.toastService.show("Cogna tool removal failed", { classname: 'bg-danger text-light' });
+          }
+        })
+    }
+  }
+
 
   removeCognaData: any;
   removeCogna(content, cogna) {
@@ -983,6 +1060,7 @@ export class CognaEditorComponent implements OnInit {
 
   datasetList: any[];
   bucketList: any[];
+  lambdaList: any[];
   // formList: any[];
   getDatasetList(appId) {
     this.datasetService.getDatasetList(appId)
@@ -1003,6 +1081,14 @@ export class CognaEditorComponent implements OnInit {
         })
       })
   }
+
+  getLambdaList(appId) {
+    this.lambdaService.getLambdaList({ appId: appId })
+      .subscribe(res => {
+        this.lambdaList = res.content;
+      })
+  }
+
   keepMinute00 = (object) => {
     if (object['clock'].length >= 4) {
       object['clock'] = object['clock'].slice(0, -1) + '0';
@@ -1259,6 +1345,9 @@ export class CognaEditorComponent implements OnInit {
     }
     if (['dataset'].indexOf(type) > -1) {
         this.getDatasetList(appId);
+    }
+    if (['lambda'].indexOf(type) > -1) {
+        this.getLambdaList(appId);
     }
   }
 }

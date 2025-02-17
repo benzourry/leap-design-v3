@@ -484,17 +484,6 @@
               <label class="form-check-label" for="freqYearly">Yearly</label>
             </div>
             <input type="hidden" [ngModel]="editLambdaData && editLambdaData.freq" (ngModelChange)="editLambdaData && (editLambdaData.freq = $event)" name="freqHdn" required>
-              <!-- <div class="btn-group btn-group-toggle" ngbRadioGroup name="freq"
-              [(ngModel)]="editLambdaData && editLambdaData.freq" required>
-              <label ngbButtonLabel class="btn btn-outline-secondary">
-                <input ngbButton type="radio" value="daily"> Daily</label>
-                <label ngbButtonLabel class="btn btn-outline-secondary">
-                  <input ngbButton type="radio" value="weekly"> Weekly</label>
-                  <label ngbButtonLabel class="btn btn-outline-secondary">
-                    <input ngbButton type="radio" value="monthly"> Monthly</label>
-                    <label ngbButtonLabel class="btn btn-outline-secondary">
-                      <input ngbButton type="radio" value="yearly"> Yearly</label>
-                    </div> -->
           </div>
         </div>
         <div class="row">

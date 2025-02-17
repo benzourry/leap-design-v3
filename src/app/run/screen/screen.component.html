@@ -22,7 +22,12 @@
 
               @if (dataset?.x?.canAdd && preCheck({}, dataset?.x?.addPre, false)) {
                 @if (!(form?.data?.prev && !prevId)) {
-                  @if (dataset?.x?.inpopAdd) {
+                  <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
+                    (click)="runAction('/form/'+form['data']?.id+'/'+(form.data.prev?'prev':'add'),dataset?.x?.inpopAdd, inPopTpl,prevId,form?.data?.id,'form',form.data.prev?'prev':'add', $param$())">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                    {{dataset?.x?.addLabel}}
+                  </button>
+                  <!-- @if (dataset?.x?.inpopAdd) {
                     <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
                       (click)="inPop(inPopTpl,prevId,{next:form?.data?.id},'form',form.data.prev?'prev':'add', false)">
                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -36,7 +41,7 @@
                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                       {{dataset?.x?.addLabel}}
                     </button>
-                  }
+                  } -->
                 }
               }
               @if (!dataset?.x?.hideSearch) {

@@ -349,17 +349,6 @@
                     }
                   </div>
                 </div>
-
-                <!-- <div class="list-group-item">
-                  <div class="small text-muted">
-                    What: {{cogna.data?.txtclsWhat}}
-                  </div>
-                  <div>Classification: 
-                    @for(le of lookupEntries;track $index){
-                      {{le.name}}
-                    }  
-                  </div>
-                </div> -->
               }
 
               @if(['txtgen'].includes(cogna.type) || (['txtcls'].includes(cogna.type) && !cogna.data?.txtclsLlm)){
@@ -435,7 +424,7 @@
                       <div class="text-black-50 p-3 text-center fs-4"> No sources specified</div>
                     }
                     <div class="list-group-item p-2">
-                      <a class="pointer" (click)="editCognaSrc(editCognaSrcTpl,{},false)">
+                      <a class="pointer" (click)="editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
                         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                         Add Source
                       </a>
@@ -455,6 +444,42 @@
                   
 
 
+                </div>
+
+                <div class="card border border-2 mb-2">
+                  <div class="card-header p-2">                    
+                    Tools
+                    <div class="small">{{cogna.tools?.length}} tools</div>                                
+                  </div>
+                  <div class="list-group list-group-flush">
+                    @for (b of cogna.tools; track b.id) {
+                      <div class="list-group-item p-2 element">
+                        <div class="element-edit nowrap"
+                          style="position:absolute;top:3px;right:3px; padding:3px">
+                            <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Tool"
+                              (click)="editCognaTool(editCognaToolTpl, b, false)">
+                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                              </fa-icon>
+                            </button>
+                          <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Tool"
+                            (click)="removeCognaTool(b)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                            </fa-icon>
+                          </button>
+                        </div>
+                        <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>                        
+                        <div class=" ms-4">{{b.name}}</div>
+                      </div>
+                    }@empty {
+                      <div class="text-black-50 p-3 text-center fs-4"> No tool specified</div>
+                    }
+                    <div class="list-group-item p-2">
+                      <a class="pointer" (click)="editCognaTool(editCognaToolTpl,{appId:app.id},false)">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Tool
+                      </a>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="card border border-2 mb-2">
@@ -485,6 +510,7 @@
                   </div>
                 </div>
               }
+
             </div>
             <div class="col-sm-8 col-lg-9">
               @if(['txtgen'].includes(cogna.type)){
@@ -1973,6 +1999,145 @@
       (click)="c(editSrcData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save Source
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #editCognaToolTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Tool</h4>
+  </div>
+  <div class="modal-body fix-gutter" #cognaToolEditForm="ngForm" ngForm>
+    
+    <div class="form-group mb-3">
+      <label class="form-label">Tool Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editToolData.name" #name="ngModel"
+        (ngModelChange)="editToolData.name=toSnakeCase(editToolData.name)"
+        name="name"
+        required>
+      @if (name?.invalid) {
+        <small class="form-text has-warning">
+          @if (name?.errors?.required) {
+            <span class="help-block">Name is required</span>
+          }
+        </small>
+      }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" [(ngModel)]="editToolData.description"
+      name="description" required></textarea>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label">Select App</label>
+      <select class="form-select" name="appId"
+        (change)="getLambdaList(editToolData.appId)"
+        [(ngModel)]="editToolData.appId">
+        @for (app of otherAppList; track app.id) {
+          <option [ngValue]="app.id">{{app.title}}</option>
+        }
+      </select>
+    </div>
+
+    <!-- @if (editSrcData.type=='bucket') {
+      <p>Note: Cogna will crawl and ingest any file with the supported format (pdf, docx, pptx, xlsx and txt)</p> -->
+      <select class="form-select mb-3" name="lambdaId"
+        [(ngModel)]="editToolData.lambdaId" required>
+        <option value="" disabled>Select lambda...</option>
+        @for (lambda of lambdaList; track $index){ 
+          <option [ngValue]="lambda.id">{{lambda.name}}
+            [{{lambda.id}}]
+          </option>
+        }
+      </select>
+      <!-- <div class="form-group mb-3">
+        <label class="form-label">Select Lambda *</label>
+        <ng-select [items]="lambdaList" bindLabel="name" bindValue="id" placeholder="No lambda"
+          [ngModel]="editToolData.lambdaId" (ngModelChange)="editToolData && (editToolData.lambdaId = $event)" name="lambdaId">
+        </ng-select>
+      </div> -->
+
+      <div class="list-group">
+        <div class="list-group-item small">
+          Tool Parameters
+        </div>
+          @if(editToolData.params && editToolData.params.length>0){
+            @for(p of editToolData.params; track $index){
+              @if (paramEdit[p.key]){
+                <div class="list-group-item p-3 bg-light">
+                  <div class="mb-2">
+                    <label class="form-label small">Parameter Key</label>
+                    <input type="text" class="form-control form-control-sm" [(ngModel)]="p.key"
+                      (ngModelChange)="p.key=toSnakeCase(p.key)"
+                      name="parameterKeyEdit_{{p.key}}">
+                  </div>
+                  <div class="form-group mb-2">
+                    <label class="form-label small">Parameter Description</label>
+                    <textarea class="form-control form-control-sm" [(ngModel)]="p.description"
+                    name="parameterDescEdit_{{p.key}}"></textarea>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" (disabled)="!(p.key&&p.description)" (click)="paramEdit[p.key]=false">Save Parameter</button>
+                </div>
+              }@else {
+                <div class="list-group-item">                
+                  <button class="btn btn-sm float-end">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true" (click)="removeToolParam($index)">
+                    </fa-icon>
+                  </button>
+                  <button class="btn btn-sm float-end" (click)="paramEdit[p.key]=true">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                    </fa-icon>
+                  </button>
+                  <div class="fw-bold">{{p.key}}</div>
+                  <div class="small">{{p.description}}</div>
+                </div>
+              }
+            }
+          }@else {
+            <div class="list-group-item">
+              <div class="fs-5 text-muted text-center">No parameter specified</div>
+            </div>
+          }
+          @if (!isParamEdit()){
+            <div class="list-group-item p-3 bg-light">
+              <div class="fw-bold mb-2">Add new parameter</div>
+              <div class="mb-2">
+                <label class="form-label small">Parameter Key</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="parameterKey" #name="ngModel"
+                  (ngModelChange)="parameterKey=toSnakeCase(parameterKey)"
+                  name="parameterKey">
+              </div>
+              <div class="form-group mb-2">
+                <label class="form-label small">Parameter Description</label>
+                <textarea class="form-control form-control-sm" [(ngModel)]="parameterDesc"
+                name="parameterDesc"></textarea>
+              </div>
+              <button class="btn btn-secondary btn-sm" (disabled)="!(parameterKey&&parameterDesc)" (click)="addToolParam({key:parameterKey, description:parameterDesc})">Add Parameter</button>
+            </div>
+          }
+      </div>
+
+
+
+    <!-- }        -->
+    <!-- @if (editSrcData.type=='url') {
+      <p>Note: Cogna will try to read and ingest the content of the website</p>
+      <div class="form-group mb-3">
+        <label class="form-label">Please specify the web URL</label>
+        <input type="text" class="form-control" [ngModel]="editSrcData && editSrcData.srcUrl" (ngModelChange)="editSrcData && (editSrcData.srcUrl = $event)" #srcUrl="ngModel" name="srcUrl"
+          placeholder="ie: https://www.unimas.my/"
+          required>
+      </div>
+    }   -->
+
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button> {{editToolData.params?.length}}
+    <button type="button" class="btn btn-round btn-primary" [disabled]="cognaToolEditForm.invalid || editToolData.params?.length==0"
+      (click)="c(editToolData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Tool
     </button>
   </div>
 </ng-template>
