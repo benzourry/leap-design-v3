@@ -468,13 +468,13 @@
                           </button>
                         </div>
                         <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>                        
-                        <div class=" ms-4">{{b.name}}</div>
+                        <div class="ms-4" [class.strike]="!b.enabled" [class.text-muted]="!b.enabled">{{b.name}}</div>
                       </div>
                     }@empty {
                       <div class="text-black-50 p-3 text-center fs-4"> No tool specified</div>
                     }
                     <div class="list-group-item p-2">
-                      <a class="pointer" (click)="editCognaTool(editCognaToolTpl,{appId:app.id},false)">
+                      <a class="pointer" (click)="editCognaTool(editCognaToolTpl,{appId:app.id, enabled: true, params:[]},false)">
                         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                         Add Tool
                       </a>
@@ -2009,8 +2009,8 @@
   </div>
   <div class="modal-body fix-gutter" #cognaToolEditForm="ngForm" ngForm>
     
-    <div class="form-group mb-3">
-      <label class="form-label">Tool Name</label>
+    <div class="mb-1">
+      <label class="form-label">Tool Name *</label>
       <input type="text" class="form-control" [(ngModel)]="editToolData.name" #name="ngModel"
         (ngModelChange)="editToolData.name=toSnakeCase(editToolData.name)"
         name="name"
@@ -2023,8 +2023,15 @@
         </small>
       }
     </div>
-    <div class="form-group mb-3">
-      <label class="form-label">Description</label>
+    <div class="mb-3">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="enabled"
+          [(ngModel)]="editToolData.enabled" name="enabled">
+          <label class="form-check-label" for="enabled">Tool Enabled</label>
+      </div>
+    </div> 
+    <div class="mb-3">
+      <label class="form-label">Description *</label>
       <textarea class="form-control" [(ngModel)]="editToolData.description"
       name="description" required></textarea>
     </div>
@@ -2042,6 +2049,8 @@
 
     <!-- @if (editSrcData.type=='bucket') {
       <p>Note: Cogna will crawl and ingest any file with the supported format (pdf, docx, pptx, xlsx and txt)</p> -->
+    <div class="form-group mb-3">
+      <label class="form-label">Select Lambda</label>
       <select class="form-select mb-3" name="lambdaId"
         [(ngModel)]="editToolData.lambdaId" required>
         <option value="" disabled>Select lambda...</option>
@@ -2051,6 +2060,7 @@
           </option>
         }
       </select>
+    </div>
       <!-- <div class="form-group mb-3">
         <label class="form-label">Select Lambda *</label>
         <ng-select [items]="lambdaList" bindLabel="name" bindValue="id" placeholder="No lambda"
@@ -2072,11 +2082,18 @@
                       (ngModelChange)="p.key=toSnakeCase(p.key)"
                       name="parameterKeyEdit_{{p.key}}">
                   </div>
-                  <div class="form-group mb-2">
+                  <div class="mb-2">
                     <label class="form-label small">Parameter Description</label>
                     <textarea class="form-control form-control-sm" [(ngModel)]="p.description"
                     name="parameterDescEdit_{{p.key}}"></textarea>
                   </div>
+                  <div class="mb-2">
+                    <div class="form-check small">
+                      <input type="checkbox" class="form-check-input" id="paramRequired"
+                        [(ngModel)]="p.required" name="paramRequired">
+                        <label class="form-check-label" for="paramRequired">Required parameter</label>
+                    </div>
+                  </div>   
                   <button class="btn btn-secondary btn-sm" (disabled)="!(p.key&&p.description)" (click)="paramEdit[p.key]=false">Save Parameter</button>
                 </div>
               }@else {
@@ -2089,7 +2106,7 @@
                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                     </fa-icon>
                   </button>
-                  <div class="fw-bold">{{p.key}}</div>
+                  <div class="fw-bold">{{p.key}} @if (p.required){<sup>*</sup>}</div>
                   <div class="small">{{p.description}}</div>
                 </div>
               }
@@ -2108,33 +2125,26 @@
                   (ngModelChange)="parameterKey=toSnakeCase(parameterKey)"
                   name="parameterKey">
               </div>
-              <div class="form-group mb-2">
+              <div class="mb-2">
                 <label class="form-label small">Parameter Description</label>
                 <textarea class="form-control form-control-sm" [(ngModel)]="parameterDesc"
                 name="parameterDesc"></textarea>
               </div>
-              <button class="btn btn-secondary btn-sm" (disabled)="!(parameterKey&&parameterDesc)" (click)="addToolParam({key:parameterKey, description:parameterDesc})">Add Parameter</button>
+              <div class="mb-2">
+                <div class="form-check small">
+                  <input type="checkbox" class="form-check-input" id="paramRequired"
+                    [(ngModel)]="parameterRequired" name="paramRequired">
+                    <label class="form-check-label" for="paramRequired">Required parameter</label>
+                </div>
+              </div> 
+              <button class="btn btn-secondary btn-sm" (disabled)="!(parameterKey&&parameterDesc)" (click)="addToolParam({key:parameterKey, description:parameterDesc, required: parameterRequired})">Add Parameter</button>
             </div>
           }
       </div>
-
-
-
-    <!-- }        -->
-    <!-- @if (editSrcData.type=='url') {
-      <p>Note: Cogna will try to read and ingest the content of the website</p>
-      <div class="form-group mb-3">
-        <label class="form-label">Please specify the web URL</label>
-        <input type="text" class="form-control" [ngModel]="editSrcData && editSrcData.srcUrl" (ngModelChange)="editSrcData && (editSrcData.srcUrl = $event)" #srcUrl="ngModel" name="srcUrl"
-          placeholder="ie: https://www.unimas.my/"
-          required>
-      </div>
-    }   -->
-
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button> {{editToolData.params?.length}}
-    <button type="button" class="btn btn-round btn-primary" [disabled]="cognaToolEditForm.invalid || editToolData.params?.length==0"
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="cognaToolEditForm.invalid"
       (click)="c(editToolData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save Tool

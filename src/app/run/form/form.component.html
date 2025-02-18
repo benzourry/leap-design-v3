@@ -59,22 +59,24 @@
                 <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre, isPrePost: true}"></ng-container>
               }
               <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
-                @for (t of filteredTabs; track t.id) {
-                  <div class="acc-card" [hidden]="(t.x?.facet?.[_action]=='hidden')" [ngbAccordionItem]="_action+$index" [collapsed]="$index != tab"
-                    [disabled]="!disabledTabs[t.id]" #accitem="ngbAccordionItem">
+                @for (tab of filteredTabs; track tab.id) {
+                  <div class="acc-card" [hidden]="(tab.x?.facet?.[_action]=='hidden')" [ngbAccordionItem]="_action+$index" [collapsed]="$index != navIndex"
+                    [disabled]="!disabledTabs[tab.id]"  #accitem="ngbAccordionItem">
                     <div ngbAccordionHeader>
                       <div class="acc-btn-wrap centered" [class.limit-width]="!form?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
-                        <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
+                        <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;"
+                          [class.pe-none]="form.x?.progression && form.x?.noPageSkip && ($index != navIndex)"
+                         (click)="tabPostAction($index)">
                           @if (form.showIndex) {
                             <div style="float:left;height:25px; width:25px;background:#666; color:white;
                               padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
                             border-radius:20px;">{{$index+1}}</div>
                           }
                           @if (tab.x?.icon){
-                            <fa-icon [icon]="getIcon(t.x?.icon)" [fixedWidth]="true"></fa-icon>
+                            <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
                           }
                           <h5 class="m-0">
-                            {{t.title}}
+                            {{tab.title}}
                           </h5>
                         </button>
                       </div>
@@ -82,7 +84,7 @@
                     <div ngbAccordionCollapse>
                       <div ngbAccordionBody>
                         <ng-template>
-                          <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:t, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
+                          <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tab, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
                         </ng-template>
                       </div>
                     </div>
@@ -101,12 +103,12 @@
               }
 
               <div class="tab-simple">
-                <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + tab"
+                <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + navIndex"
                   [class.limit-width]="!form?.x?.wide"
-                  class="nav-{{form.nav}} justify-content-center centered" [class.pe-none]="form.x?.noPageSkip">
+                  class="nav-{{form.nav}} justify-content-center centered" [class.pe-none]="form.x?.progression && form.x?.noPageSkip">
                   @for (tab of filteredTabs; track tab.id) {
                     <li [ngbNavItem]="_action + $index" [hidden]="(tab.x?.facet?.[_action]=='hidden')" [disabled]="!disabledTabs[tab.id]">
-                      <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" queryParamsHandling="preserve">
+                      <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}"  (click)="tabPostAction($index)" queryParamsHandling="preserve">
                         @if (form.showIndex) {
                           <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
                             padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
@@ -634,7 +636,7 @@
                 }
                 @if (!tablast) {
                   <button type="button" class="btn btn-round btn-primary ms-auto" title="Save and proceed"
-                    [disabled]="form.x?.validateProgress && tForm?.invalid || saving || !disabledTabs[filteredTabs[tabidx+1]?.id]" (click)="progNext(tabidx)">
+                    [disabled]="(form.x?.progression && form.x?.validateProgress) && tForm?.invalid || saving || !disabledTabs[filteredTabs[tabidx+1]?.id]" (click)="progNext(tabidx)">
                     <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                     @if (saving) {
                       <div class="spinner-border spinner-border-sm" role="status">

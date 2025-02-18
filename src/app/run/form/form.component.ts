@@ -289,9 +289,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   sectionMap: any = {};
   // tabMap:any = {}
   getForm(formId, entryId, action) {
-    // console.log("formId-form:"+formId);
     this.loading = true;
-    // this.userUnauthorized = false;
     this.runService.getForm(formId)
       .subscribe(form => {
         // console.log("form equal(old)",this._formId == form.id)
@@ -383,7 +381,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.filterTabs();
           this.filterItems();
 
-        // }
+          // perlu engkah lepas filterTabs(); Tp knak nya run twice??!!
+          this.tabPostAction(0);
 
       });
   }
@@ -446,7 +445,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         this.lookupIds.forEach(key => {
           this.lookupKey[key.code] = {
             ds: key.dataSource,
-            type: key.type
+            type: key.type,
+            skipLoadSource: key.skipLoadSource
           }
           // var param = null;
           // try {
@@ -455,7 +455,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
           // only pre-load lookup data if not select or text. select/text init param value might not available for loading
           // select/text also loaded when onfocus.
-          if (['select', 'text'].indexOf(res.type) == -1) {
+          if (['select', 'text'].indexOf(key.type) == -1 && !key.skipLoadSource) {
             this.getLookup(key.code, key.dataSourceInit, this.entry.data);
           }
         });
@@ -512,7 +512,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   getLookup = (code, dsInit: string, dataV?: any) => {
-    if (this.lookupKey[code]?.ds) {
+    if (this.lookupKey[code]?.ds && !this.lookupKey[code].skipLoadSource) {
       if (!dataV) {
         dataV = this.entry.data;
       }
@@ -967,7 +967,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .subscribe({
         next: res => {
           this.saving = false;
-          this.setActive(index - 1);
+          this.tabPostAction(index - 1);
+          this.setActive(index - 1); // utk tukar tab
         },
         error: err => {
           this.saving = false;
@@ -984,7 +985,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .subscribe({
         next: res => {
           this.saving = false;
-          this.setActive(index + 1);
+          this.tabPostAction(index + 1);
+          this.setActive(index + 1); // utk tukar tab
         },
         error: err => {
           this.saving = false;
@@ -992,6 +994,18 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       })
     // this.timestamp = Date.now();
     // console.log("time", this.timestamp)
+
+  }
+
+  tabPostAction(index){ 
+    console.log("index",index)   
+    this.navIndex = index;
+    var curTab = this.filteredTabs[index];
+    if (curTab && curTab?.x?.post) {
+      try {
+        this._eval(this.entry.data, curTab?.x?.post, this.form);
+      } catch (e) { this.logService.log(`{form-${this.form.title}-onSave}-${e}`) }
+    }
 
   }
 
@@ -1295,29 +1309,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 .subscribe({
                   next: res => {
                     this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, true, list);
-                    // if (res.type === HttpEventType.UploadProgress) {
-                    //   progressSize = res.loaded;
-                    //   this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
-                    // } else if (res instanceof HttpResponse) {
-                    //   if (res.body?.success){
-                    //     list.push(res.body.fileUrl);
-                    //     data[f.code] = list;
-                    //     this.filesMap[res.body.fileUrl] = res.body;
-                    //     this.fieldChange(fileList, data, f, evalEntryData);
-                    //     this.entryFiles.push(res.body.fileUrl);
-
-                    //     // EXTRACT BY AI
-                    //     if (f.x?.extractor) {
-                    //       this.extractData(f, f.x?.extractor, [res.body.fileUrl],null, data);
-                    //     }
-                    //     if (f.x?.imgcls){
-                    //       this.imgclsData(f, f.x?.imgcls,[res.body.fileUrl], data );
-                    //     }
-  
-                    //   }else{
-                    //     this.toastService.show(res.body?.message, { classname: 'bg-danger text-light' });
-                    //   }
-                    // }
                   }, error: err => {
                     this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                     console.error(err);
@@ -1343,28 +1334,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               .subscribe({
                 next: res => {
                   this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, false, list);
-                  // if (res.type === HttpEventType.UploadProgress) {
-                  //   progressSize = res.loaded;
-                  //   this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
-                  // } else if (res instanceof HttpResponse) {
-                  //   if (res.body?.success){
-                  //     data[f.code] = res.body.fileUrl;
-                  //     this.filesMap[res.body.fileUrl] = res.body;
-                  //     this.fieldChange(fileList, data, f, evalEntryData);
-                  //     this.entryFiles.push(res.body.fileUrl);
-
-                  //     // EXTRACT BY AI
-                  //     if (f.x?.extractor) {
-                  //       this.extractData(f, f.x?.extractor, [res.body.fileUrl],null, data);
-                  //     }
-                  //     if (f.x?.imgcls){
-                  //       this.imgclsData(f, f.x?.imgcls,[res.body.fileUrl], data );
-                  //     }
-
-                  //   }else{
-                  //     this.toastService.show(res.body?.message, { classname: 'bg-danger text-light' });
-                  //   }
-                  // }
                 }, error: err => {
                   this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
@@ -1393,28 +1362,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               .subscribe({
                 next: res => {
                   this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, true, list);
-                  // if (res.type === HttpEventType.UploadProgress) {
-                  //   progressSize = res.loaded;
-                  //   this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
-                  // } else if (res instanceof HttpResponse) {
-                  //   if (res.body?.success){
-                  //     list.push(res.body.fileUrl);
-                  //     data[f.code] = list;
-                  //     this.filesMap[res.body.fileUrl] = res.body;
-                  //     this.fieldChange(fileList, data, f, evalEntryData);
-                  //     this.entryFiles.push(res.body.fileUrl);
-
-                  //     // EXTRACT FOR AI
-                  //     if (f.x?.extractor) {
-                  //       this.extractData(f, f.x?.extractor, [res.body.fileUrl],null, data);
-                  //     }
-                  //     if (f.x?.imgcls){
-                  //       this.imgclsData(f, f.x?.imgcls,[res.body.fileUrl], data );
-                  //     }
-                  //   }else{
-                  //     this.toastService.show(res.body?.message, { classname: 'bg-danger text-light' });
-                  //   }
-                  // }
                 },
                 error: err => {
                   this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
@@ -1437,26 +1384,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             .subscribe({
               next: res => {
                 this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, false, list);
-                // if (res.type === HttpEventType.UploadProgress) {
-                //   progressSize = res.loaded;
-                //   this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
-                // } else if (res instanceof HttpResponse) {
-                //   if (res.body?.success){
-                //     data[f.code] = res.body.fileUrl;
-                //     this.filesMap[res.body.fileUrl] = res.body;
-                //     this.fieldChange(fileList, data, f, evalEntryData);
-                //     this.entryFiles.push(res.body.fileUrl);
-
-                //     if (f.x?.extractor) {
-                //       this.extractData(f, f.x?.extractor, [res.body.fileUrl],null, data);
-                //     }
-                //     if (f.x?.imgcls){
-                //       this.imgclsData(f, f.x?.imgcls,[res.body.fileUrl], data );
-                //     }
-                //   }else{
-                //     this.toastService.show(res.body?.message, { classname: 'bg-danger text-light' });
-                //   }
-                // }
               },
               error: err => {
                 console.log(err)

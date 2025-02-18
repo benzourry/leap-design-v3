@@ -445,6 +445,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             { c: 1, label: "$lookupList$", type: "property", apply: "$lookupList$.#{field-code}", detail: "Get/set lookup list for the field" },
             { c: 2, label: "$el$", type: "text", apply: "$el$.#{field-code}", detail: "Access field\'s metadata" },
             { c: 2, label: "$activate$", type: "function", apply: "$activate$(#{tab-index})", detail: "Activate selected tab/accordion" },
+            { c: 2, label: "$activeIndex$", type: "function", apply: "$activeIndex$", detail: "Get current tab/accordion index" },
             { c: 2, label: "$save$", type: "function", apply: "$save$().subscribe(res=>{\n\t#{//after save}\n})", detail: "Save entry data" },
             { c: 2, label: "$saveAndView$", type: "function", apply: "$saveAndView$()", detail: "Save entry data and navigate to view entry" },
             { c: 2, label: "$submit$", type: "function", apply: "$submit$(#{resubmit?})", detail: "Submit entry", info: "After-submit navigation depends on form setting" },

@@ -1398,6 +1398,14 @@
                   </app-cm>
                 </div>
               </div>
+              <div class="form-group mb-3">
+                <label class="form-label">On Tab Activate</label>
+                <div class="mx-n2">
+                  <app-cm name="post" lang="javascript" [(ngModel)]="editTabData.x.post"
+                    [extraAutoComplete]="extraAutoCompleteJs" subType="active" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
               <!-- <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
                 <input type="text" class="form-control" [(ngModel)]="editTabData && editTabData.pre" name="pre"
@@ -2033,7 +2041,7 @@
                 </div>
               </div>
               @if (['select','radio','radioBtn','checkboxOption','modelPicker','text','dataset'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
+                <div class="form-group mb-1">
                   <label class="form-label">Select App</label>
                   <select class="form-select" name="appId"
                     (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
@@ -2045,7 +2053,7 @@
                 </div>
               }
               @if (['select','radio','radioBtn','checkboxOption','text'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
+                <div class="form-group mb-1">
                   <label class="form-label">List Source 
                     @if (editItemData?.type=='text') {
                     <span>(Optional. Used for text auto-complete)</span>
@@ -2067,7 +2075,7 @@
                   </div>
                 </div>
                 @if (lookupMap[editItemData.dataSource]?.sourceType=='db') {
-                  <div class="form-group form-check mb-3">
+                  <div class="form-group form-check mb-1">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="editItemData.x.addEntryEnabled"
                       id="addEntryEnabled" name="addEntryEnabled">
                     <label class="form-check-label" for="addEntryEnabled">Enable 'Add Option' button, allow user to add new option</label>
@@ -2075,8 +2083,7 @@
                 }
               }
               @if (['modelPicker','dataset'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3"
-                  >
+                <div class="form-group mb-1">
                   <label class="form-label">List Source</label>
                   <select class="form-select" name="dataSource" (change)="loadDataset(mPicker.value)"
                     [(ngModel)]="editItemData.dataSource" #mPicker>
@@ -2084,9 +2091,19 @@
                     @for (item of datasetList; track item.id) {
                       <option [value]="item.id">{{item.title}}</option>
                     }
-                  </select>
+                  </select>                  
                 </div>
               }
+              
+              @if ((['modelPicker','dataset','select','radio','radioBtn','checkboxOption','text'].indexOf(editItemData.type)>-1)){
+                <div class="form-check mb-3">
+                  <input type="checkbox" class="form-check-input" id="skipLoadSource"
+                    [(ngModel)]="editItemData.x.skipLoadSource" name="skipLoadSource">
+                  <label for="skipLoadSource" class="form-check-label">Don't load list source (load manually)</label>
+                </div>
+              }
+
+
               @if (['screen'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Select screen</label>

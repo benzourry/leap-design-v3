@@ -502,6 +502,7 @@ export class CognaEditorComponent implements OnInit {
 
   parameterKey:string;
   parameterDesc:string;
+  parameterRequired:boolean;
   addToolParam(obj){
     if (!this.editToolData?.params) this.editToolData.params=[];
     this.editToolData.params.push(obj);
