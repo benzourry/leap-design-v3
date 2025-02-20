@@ -137,6 +137,9 @@ export class ViewComponent implements OnInit {
       //   });
 
       if (this.asComp()) {
+
+        // this.navIndex = this._param?.['navIndex'] ?? 0;
+
         this.getForm(this._formId, this._entryId);
         this.getLookupIdList(this._formId);
 
@@ -153,6 +156,8 @@ export class ViewComponent implements OnInit {
 
           this.$param$ = queryParams;
           this._entryId = queryParams['entryId'];
+
+          this.navIndex = queryParams['navIndex'] ?? 0;
 
           if (this._entryId) {
             // this.entryId.set(entryId);
@@ -190,20 +195,6 @@ export class ViewComponent implements OnInit {
     } catch (e) { this.logService.log(`{form-precheck}-:${code}:${e}`) }
     return !code || res;
   }
-
-  // preCheck(f, dataV?: any, prop?:string) {
-  //   let res = undefined;
-  //   try {
-  //     if (!dataV) {
-  //       dataV = this.entry.data;
-  //     }
-  //     if (!prop){
-  //       prop = 'pre';
-  //     }
-  //     res = this._pre(dataV, f?.[prop]);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
-  //   } catch (e) { this.logService.log(`{view-${f?.code}-precheck}-${e}`) }
-  //   return !f?.[prop] || res;
-  // }
 
   preCheckAppr(code, dataV?: any) {
     let res = undefined;

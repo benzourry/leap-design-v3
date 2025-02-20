@@ -104,8 +104,7 @@
       @defer(prefetch on idle){
         <angular-editor class="clean" [config]="editorConfig"
           [class.is-invalid]="formField?.invalid" id="f-{{field().id}}-{{id()}}"
-          name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
-         
+          name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
           [required]="field()?.v?.required"
           [placeholder]="field().placeholder||'&nbsp;'">
         </angular-editor>

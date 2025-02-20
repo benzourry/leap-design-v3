@@ -91,6 +91,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'HuggingFace', code: 'huggingface' },
     { name: 'VertexAi', code: 'vertex-ai' },
     { name: 'LocalAI', code: 'localai' },
+    { name: 'Ollama', code: 'ollama' },
   ]
 
   embedModelTypeMap = {
@@ -100,6 +101,7 @@ export class CognaEditorComponent implements OnInit {
     'vertex-ai': { name: 'Vertex AI', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'vertex-ai-gemini': { name: 'Vertex AI Gemini', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'localai': { name: 'LocalAI', logo: 'https://github.com/go-skynet/LocalAI/assets/2420543/0966aa2a-166e-4f99-a3e5-6c915fc997dd' },
+    'ollama': { name: 'Ollama', logo: 'https://ollama.com/public/ollama.png' },
   }
   embedModelNameList = [
     { name: 'GPT3.5 TURBO', code: 'gpt-3.5-turbo', type: 'openai' },
@@ -111,6 +113,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'BGE SMall EN v1.5', code: 'BAAI/bge-small-en-v1.5', type: 'huggingface' },
     { name: 'All MPnet Base v2', code: 'sentence-transformers/all-mpnet-base-v2', type: 'huggingface' },
     { name: 'IntFloat E5 Large v2', code: 'intfloat/e5-large-v2', type: 'huggingface' },
+    { name: 'Nomic Embed Text', code: 'nomic-embed-text', type: 'ollama' },
     // { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface' },
     // { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface' },
   ]
@@ -122,6 +125,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'HuggingFace', code: 'huggingface', use: ['txtgen','txtcls','txtext'] },
     { name: 'VertexAi Gemini', code: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'LocalAI', code: 'localai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Ollama', code: 'ollama', use: ['txtgen','txtcls','txtext'] },
     { name: 'Zhipu AI', code: 'zhipuai', use: ['txtgen','txtcls','txtext'] },
     { name: 'CF Workers AI', code: 'cf-wai', use: ['txtgen','txtcls','txtext'] },
     { name: 'ONNX', code: 'onnx', use: ['imgcls'] },
@@ -150,6 +154,14 @@ export class CognaEditorComponent implements OnInit {
     { name: 'Gemini Pro', code: 'gemini-pro', type: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
     { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
+
+    { name: 'DeepSeek R1', code: 'deepseek-r1', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'DeepSeek V3', code: 'deepseek-v3', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Llama3.3', code: 'llama3.3', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Llama3.2', code: 'llama3.2', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Mistral', code: 'mistral', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Phi4', code: 'phi4', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Qwen2.5', code: 'qwen2.5', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
 
     { name: 'LLaVA 1.6 Vicuna', code: 'llava-1.6-vicuna', type: 'localai', use: ['txtgen','txtcls','txtext'] },
     { name: 'LLaVA 1.6 Mistral', code: 'llava-1.6-mistral', type: 'localai', use: ['txtgen','txtcls','txtext'] },
@@ -502,10 +514,13 @@ export class CognaEditorComponent implements OnInit {
 
   parameterKey:string;
   parameterDesc:string;
-  parameterRequired:boolean;
+  parameterRequired:boolean = true;
   addToolParam(obj){
     if (!this.editToolData?.params) this.editToolData.params=[];
     this.editToolData.params.push(obj);
+    delete this.parameterKey;
+    delete this.parameterDesc;
+    this.parameterRequired = true;
   }
 
   removeToolParam(index){

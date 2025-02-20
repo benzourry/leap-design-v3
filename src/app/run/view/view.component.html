@@ -49,6 +49,7 @@
               @if (form) {
                 <div class="form-current">
                   <form-view [form]="form" [data]="entry?.data" [user]="user" [$this$]="$this$" [$param$]="$param$"
+                    [navIndex]="navIndex"
                     [timestamp]="timestamp"
                     [$action$]="action()"
                     [$baseUrl$]="baseUrl" [$token$]="accessToken" [entry]="entry" [$file$]="filesMap?.data"></form-view>

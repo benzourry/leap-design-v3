@@ -81,25 +81,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   base: string = base;
   baseUrl: string = '';
   hideTitle = input<boolean>(false);
-  // prevEntry: any;
-  // prevForm: any;
-  hideGroup:any={}
-
+  hideGroup:any={};
   pageSize = 15;
-
   accessToken: string = "";
-
   entry: any = { currentStatus: 'drafted', data: {} };
-
-  data: any = {}
-
+  data: any = {};
   lookup = {};
-
   saving = false;
   submitting = false;
-
   lookupKey = {};
-
   lookups = {};
   // appId: number;
   // @Input() entryId: number;
@@ -124,7 +114,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   $param$ = input<any>({});
   _param:any = {};
   // @Input() tab: number = 0;
-  tab: number = 0;
+  // tab: number = 0;
 
   isEmpty = inputObject => inputObject && Object.keys(inputObject).length === 0;
 
@@ -177,8 +167,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.preurl = this.runService.$preurl();
     this.user = this.runService.$user();
 
-    // this.app = this.runService.app;
-
     // new add
     // this._param = deepMerge(this._param,this.$param$());
 
@@ -209,7 +197,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         this._action = this.action();
         this._param = this.$param$();
 
-        // console.log("## UPDATED INPUT", "entryId",this._entryId, "formId", this._formId, "action", this._action, "param", this._param );
+        this.navIndex = this._param?.['navIndex'] ?? 0;
 
         this.getForm(this._formId, this._entryId, this._action);
         this.getLookupIdList(this._formId);
@@ -232,7 +220,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // this._param = deepMerge(this._param,queryParams);
           // this.$param$.update(p=>({...p, ...queryParams}));
           this._param = queryParams;
-          this.tab = queryParams['tab'] ?? 0;
+          this.navIndex = queryParams['navIndex'] ?? 0;
+          // console.log(this.navIndex);
           this._entryId = queryParams['entryId'];
 
           // tok comment lok: 1/nov/2024
@@ -271,11 +260,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.cdr.detectChanges();
   }
 
-  // activeTab=0;
-  // getForm(formId, entryId, prevEntryId) {
   watchList = new Map();
   watchListSection: any = {};
-  // userUnauthorized: boolean;
 
   onInit;
   onSave;
@@ -382,7 +368,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.filterItems();
 
           // perlu engkah lepas filterTabs(); Tp knak nya run twice??!!
-          this.tabPostAction(0);
+          this.tabPostAction(this.navIndex);
 
       });
   }
@@ -844,8 +830,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
   getData(id, form) {
-    // console.log(this.entry);
-    // console.log("try to load entry", id)
     if (id) {
       // if using entry id
       this.loading = true;
@@ -860,15 +844,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.initForm(this.form.f, this.entry.data, this.form);
             this.loading = false;
             this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
-            // console.log("isAuthorized", this.isAuthorized);
             if (form.prev) {
-              // this.prevEntry = res.prev;
-              // this.entry.prev = res.data;
-              // this.getDataFiles('prev', res.id);
-              // this.evalAll(this.entry.data);
-              // this.initForm(form?.onView, res.data, form);
-              // this.initForm(this.form.f, this.entry.data, this.form);
-              // this.loading = false;
               this.getPrevData(res.prev?.$id, {}, form.prev);
             }else{
               this.prevId = undefined;
@@ -892,7 +868,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               this.initForm(this.form.f, this.entry.data, this.form);
               this.loading = false;
               this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
-              // console.log("isAuthorized", this.isAuthorized);
             }, error: err => {
               this.loading = false;
             }
@@ -909,7 +884,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.initForm(this.form.f, this.entry.data, this.form);
                 this.loading = false;
                 this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
-                // console.log("isAuthorized", this.isAuthorized);
               }, error: err => {
                 this.loading = false;
               }
@@ -974,9 +948,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.saving = false;
         }
       })
-    // this.timestamp = Date.now();
-    // console.log("time", this.timestamp)
-
   }
 
   progNext(index) {
@@ -992,13 +963,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.saving = false;
         }
       })
-    // this.timestamp = Date.now();
-    // console.log("time", this.timestamp)
-
   }
 
-  tabPostAction(index){ 
-    console.log("index",index)   
+  tabPostAction(index){  
     this.navIndex = index;
     var curTab = this.filteredTabs[index];
     if (curTab && curTab?.x?.post) {
@@ -1144,7 +1111,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   // added data parameter because form with prev data, prev view initform will evaluate this.entry.data instead of with previous data
   initForm(js, data, form) {
-    // console.log("hhhh")
     let res = undefined;
     setTimeout(()=>{
       try {
@@ -1152,11 +1118,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       } catch (e) { this.logService.log(`{form-${this.form.title}-initForm}-${e}`) }
       this.filterTabs();
       this.filterItems();
-
-      // setTimeout(()=>{
-      //   mermaid.run({querySelector:'.mermaid'})
-      // },100) 
-  
     },0)
 
     return res;
@@ -1266,7 +1227,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     var fileList = f.subType.indexOf('multi') > -1 ? $event : [$event];
     this.entryService.deleteAttachment($event)
       .subscribe(res => {
-        // data[f.code]=null;
         delete this.uploadProgress[f.code+(index??'')];
         this.fieldChange($event, data, f, evalEntryData);
         fileList.forEach(file => {
@@ -1329,7 +1289,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: fileList[0], $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
                          +ext;
             }              
-            console.log("FILENAME### : " + filename)
+            // console.log("FILENAME### : " + filename)
             this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, filename)
               .subscribe({
                 next: res => {
@@ -1357,7 +1317,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
                          +ext;
             }              
-            console.log("FILENAME### : " + filename)
+            // console.log("FILENAME### : " + filename)
             this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form.appId, file.name)
               .subscribe({
                 next: res => {

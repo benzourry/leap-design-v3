@@ -1127,6 +1127,25 @@
                       </div>
                     </div>
                   </div>
+                } @else if (['localai','ollama'].includes(editCognaData.embedModelType)){
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Base URL</label>
+                        <input type="text" class="form-control form-control-sm" 
+                        [(ngModel)]="editCognaData.data.embedBaseUrl" 
+                        #embedBaseUrl="ngModel" name="embedBaseUrl"
+                          required>
+                      </div>
+                    </div>
+                    <!-- <div class="col-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control form-control-sm" [(ngModel)]="editCognaData.data && editCognaData.data.inferLocation" #inferModelLocation="ngModel" name="inferModelLocation"
+                          required>
+                      </div>
+                    </div> -->
+                  </div>
                 }@else {
                   <div class="form-group mb-3">
                     <label class="form-label">Model API Key/Access Token</label>
@@ -1408,14 +1427,14 @@
                       </div>
                     </div>
                   </div>
-                } @else if (editCognaData.inferModelType=='localai'){
+                } @else if (['localai','ollama'].includes(editCognaData.inferModelType)){
                   <div class="row">
                     <div class="col-6">
                       <div class="form-group mb-3">
-                        <label class="form-label">LocalAI Base URL</label>
+                        <label class="form-label">Base URL</label>
                         <input type="text" class="form-control form-control-sm" 
-                        [(ngModel)]="editCognaData.data.localAiBaseUrl" 
-                        #localAiBaseUrl="ngModel" name="localAiBaseUrl"
+                        [(ngModel)]="editCognaData.data.inferBaseUrl" 
+                        #inferBaseUrl="ngModel" name="inferBaseUrl"
                           required>
                       </div>
                     </div>
@@ -2050,7 +2069,7 @@
     <!-- @if (editSrcData.type=='bucket') {
       <p>Note: Cogna will crawl and ingest any file with the supported format (pdf, docx, pptx, xlsx and txt)</p> -->
     <div class="form-group mb-3">
-      <label class="form-label">Select Lambda</label>
+      <label class="form-label">Select Lambda *</label>
       <select class="form-select mb-3" name="lambdaId"
         [(ngModel)]="editToolData.lambdaId" required>
         <option value="" disabled>Select lambda...</option>
@@ -2068,10 +2087,12 @@
         </ng-select>
       </div> -->
 
+      <label class="form-label">Tool Parameters</label>
+
       <div class="list-group">
-        <div class="list-group-item small">
+        <!-- <div class="list-group-item small">
           Tool Parameters
-        </div>
+        </div> -->
           @if(editToolData.params && editToolData.params.length>0){
             @for(p of editToolData.params; track $index){
               @if (paramEdit[p.key]){
@@ -2113,7 +2134,7 @@
             }
           }@else {
             <div class="list-group-item">
-              <div class="fs-5 text-muted text-center">No parameter specified</div>
+              <div class="fs-5 text-muted text-center p-3">No parameter specified</div>
             </div>
           }
           @if (!isParamEdit()){

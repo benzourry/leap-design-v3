@@ -198,7 +198,7 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
             }
             this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show("App properties saved failure", { classname: 'bg-danger text-light' });
+            this.toastService.show("App properties saved failure<br/>"+err.error?.message, { classname: 'bg-danger text-light' });
           }
         })
     }, res => { });

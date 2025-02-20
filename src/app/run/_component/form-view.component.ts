@@ -42,9 +42,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre}"></ng-container>
   }
   <div ngbAccordion class="pb-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
-    @for (t of formTab; track t.id) {
-      <div class="acc-card" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index!=0"
-        [disabled]="!disabledTabs[t.id]"
+    @for (tab of formTab; track tab.id) {
+      <div class="acc-card" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index != navIndex()"
+        [disabled]="!disabledTabs[tab.id]"
         #accitem="ngbAccordionItem">
         <div ngbAccordionHeader>
           <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
@@ -55,7 +55,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                 border-radius:20px;">{{$index+1}}</div>
               }
               <h5 class="m-0">
-                {{t.title}}
+                {{tab.title}}
               </h5>
             </button>
           </div>
@@ -63,7 +63,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
         <div ngbAccordionCollapse>
           <div ngbAccordionBody>
             <ng-template>
-              <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:t}"></ng-container>
+              <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tab}"></ng-container>
             </ng-template>
           </div>
         </div>
@@ -81,7 +81,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre}"></ng-container>
   }
   <div class="tab-simple">
-    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view0'"
+    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
       [class.limit-width]="!form()?.x?.wide"
       class="nav-{{form().nav}} justify-content-center  d-print-none centered">
       @for (tab of formTab; track tab.id) {
@@ -401,6 +401,7 @@ export class FormViewComponent implements OnInit {
   user = input<any>();
   // @Input() $this$: any;
   $this$ = input<any>();
+  navIndex = input<number>(0);
   // @Input() $baseUrl$: any;
   $baseUrl$ = input<any>();
   // @Input() $param$: any;
