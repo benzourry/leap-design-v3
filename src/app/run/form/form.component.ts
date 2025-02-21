@@ -67,7 +67,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody,
     NgTemplateOutlet, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, RouterLink, NgbNavContent, NgbNavOutlet,
     NgStyle, NgClass, FaIconComponent, FieldViewComponent, FieldEditComponent, ListComponent, ScreenComponent, DatePipe,
-    NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, GroupByPipe,
+    NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,
     EditLookupEntryComponent]
 })
 export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, ComponentCanDeactivate {

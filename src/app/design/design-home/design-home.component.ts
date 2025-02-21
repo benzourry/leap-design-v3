@@ -78,8 +78,7 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
     { name: "Indigo", color: "#3F51B5" },
   ]
   // initialAppPath: string="";
-  constructor(private http: HttpClient,
-    private userService: UserService,
+  constructor(private userService: UserService,
     private appService: AppService,
     private router: Router,
     private modalService: NgbModal,
