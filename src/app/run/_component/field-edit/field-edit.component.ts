@@ -285,7 +285,9 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
         // this.value = this.value??this.defaultValue();
         // this.value = this.checkDefValue();
         // console.log("defval",this.field().code, this.defaultValueComputed());
-        this.valueChanged(this.value);   
+
+        // tok caused infinite run
+        // this.valueChanged(this.value);   
       }
     })
   }
@@ -297,6 +299,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     if (this.field().x?.use_default){
       setTimeout(()=>{
         this.value = this.defaultValueComputed();
+        // console.log("@@@@@@@@@@@ngAfterViewInit")
         this.valueChanged(this.value);
       })
     }
@@ -419,6 +422,8 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
       this.value = d.getTime();
       // console.log(d);
     }
+
+    console.log(">>>>>>>>>valueChanged")
 
     this.valueChange.emit(event);
     // console.log("...")

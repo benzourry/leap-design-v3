@@ -127,6 +127,9 @@ export class AppService {
     let param = appId?`?appId=${appId}`:''
     return this.http.post<any>(`${this.baseApi}/app/logo${param}`, f);
   }
+  clearLogo(appId:number) {
+    return this.http.post<any>(`${this.baseApi}/app/delete-logo?appId=${appId}`, {});
+  }
   // saveNavi(appId: number, data: any) {
   //   return this.http.post<any>(`${this.baseApi}/app/${appId}/navi`, data);
   // }

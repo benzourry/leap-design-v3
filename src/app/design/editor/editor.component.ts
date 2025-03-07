@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, ElementRef, OnInit, effect, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, effect, viewChild } from '@angular/core';
 import { FormService } from '../../service/form.service';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 // import { HttpParams } from '@angular/common/http';
@@ -74,23 +74,25 @@ export class EditorComponent implements OnInit {
 
 
 
-    constructor(private formService: FormService, private lookupService: LookupService,
-        private mailerService: MailerService,
+    constructor(
         private modalService: NgbModal, private userService: UserService,
         private route: ActivatedRoute, private appService: AppService,
         private router: Router,
-        private entryService: EntryService,
         private utilityService: UtilityService,
         private toastService: ToastService,
-        private location: PlatformLocation, private titleService: Title,
+        location: PlatformLocation, private titleService: Title,
+        private cdref: ChangeDetectorRef,
         public loadingService: LoadingService) {
         location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
 
         effect(() => {
-            // this.loading = this.loadingSignal();
-            this.loading = this.loadingService.isLoadingSignal();
-        })
+            // setTimeout(()=>{
+                // this.loading = this.loadingSignal();
+                this.loading = this.loadingService.isLoadingSignal();
+                // cdref.detectChanges();
+            // })       
+        })  
         // loadingService.isLoading$.subscribe(r=>this.loading=r);
     }
 
@@ -177,7 +179,7 @@ export class EditorComponent implements OnInit {
                                     this.getCopyRequestList();
                                     this.loading = false;
                                     // this.loadingNew.set(false);
-                                }, error: err => {
+                                }, error: () => {
                                     this.loading = false;
                                     // this.loadingNew.set(false);
                                 }
@@ -240,11 +242,11 @@ export class EditorComponent implements OnInit {
     viewCopyRequest(content) {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
-            .result.then(res => { });
+            .result.then(() => { });
     }
     activateCp(id, action) {
         this.appService.activateCp(id, action)
-            .subscribe(res => {
+            .subscribe(() => {
                 this.getCopyRequestList();
             })
     }
@@ -265,9 +267,9 @@ export class EditorComponent implements OnInit {
         if (runas) {
             this.userService.getUserDebug(runas, appId)
                 .subscribe({
-                    next: user_debug => {
+                    next: () => {
                         this.router.navigate(['run', this.app.id]);
-                    }, error: err => {
+                    }, error: () => {
                         alert("User " + runas + " not found in this app");
                     }
                 })
@@ -319,7 +321,7 @@ export class EditorComponent implements OnInit {
                             this.toastService.show("App properties saving failed: " + error.error.message, { classname: 'bg-danger text-light' });
                         }
                     });
-            }, dismiss => { })
+            }, () => { })
 
         // const modalRef = this.modalService.open(AppEditComponent, { backdrop: 'static' })
         // modalRef.componentInstance.user = this.user;

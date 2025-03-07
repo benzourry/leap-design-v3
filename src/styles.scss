@@ -1,14 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
-$enable-negative-margins:true !default;
 /* Importing Bootstrap SCSS file. */
-@import 'bootstrap/scss/bootstrap';
+@use 'bootstrap/scss/bootstrap';
 
-@import url(assets/css/print.css);
+@use 'assets/css/print.css';
 //@import "@fullcalendar/common/main.css";
 //@import "@fullcalendar/daygrid/main.css";
 //@import "@fullcalendar/timegrid/main.css";
-@import "leaflet/dist/leaflet.css";
+@use "leaflet/dist/leaflet.css";
 
+/* You can add global styles to this file, and also import other style files */
+$enable-negative-margins:true !default;
 
 html,
 body {

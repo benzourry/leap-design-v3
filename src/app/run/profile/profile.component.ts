@@ -59,11 +59,7 @@ export class ProfileComponent implements OnInit {
     public runService: RunService, private swPush: SwPush, private pushService: PushService,
     private modalService: NgbModal, private toastService: ToastService,
     private route: ActivatedRoute
-  ) { 
-    // effect(()=>{
-      // this.init();
-    // })
-  }
+  ) { }
 
   // appId: number;
   app: any;
@@ -74,13 +70,7 @@ export class ProfileComponent implements OnInit {
     this.userService.getUser()
       .subscribe(user => {
         this.user = user;
-        // console.log(this.app)
-        // this.app = this.runService.app;
-        // this.appId = this.runService.appId;
-        // if (this.appId) {
         this.loadNotif(this.app?.id, this.user.email);
-        // }
-        // });
         this.loadSubscription();
       });
 

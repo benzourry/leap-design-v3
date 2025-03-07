@@ -208,11 +208,11 @@
                     <thead>
                       <tr>
                         @if (!lookup.x?.codeHidden){
-                          <th class="w-10">CODE</th>
+                          <th class="w-10">{{lookup?.x?.codeLbl||'CODE'}}</th>
                         }
-                        <th class="w-90">NAME</th>
+                        <th class="w-90">{{lookup?.x?.nameLbl||'NAME'}}</th>
                         @if(!lookup?.x?.extraDisabled){
-                          <th class="w-10">EXTRA</th>
+                          <th class="w-10">{{lookup?.x?.extraLbl||'EXTRA'}}</th>
                         }
                         @if (lookup.dataEnabled) {
                           <th class="w-10">DATA</th>
@@ -365,14 +365,16 @@
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
-        <div class="form-group mb-3">
-          <label class="col-form-label col-md-3">Code</label>
-          <div class="col-md-6">
-            <p class="form-control-static">{{removeLookupEntryData.code}}</p>
+        @if (!lookup.x?.codeHidden){
+          <div class="form-group mb-3">
+            <label class="col-form-label col-md-3">{{lookup?.x?.codeLbl||'Code'}}</label>
+            <div class="col-md-6">
+              <p class="form-control-static">{{removeLookupEntryData.code}}</p>
+            </div>
           </div>
-        </div>
+        }
         <div class="form-group mb-3">
-          <label class="col-form-label col-md-3">Name</label>
+          <label class="col-form-label col-md-3">{{lookup?.x?.nameLbl||'Name'}}</label>
           <div class="col-md-6">
             <p class="form-control-static">{{removeLookupEntryData.name}}</p>
           </div>
@@ -510,14 +512,24 @@
             @if (lookup.sourceType=='db'){
               <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
             }
-            <option value="code">Code</option>
-            <option value="name">Name</option>
-            <option value="extra">Extra</option>
+            <option value="code">Code @if(lookup?.x?.codeLbl){ ({{lookup?.x?.codeLbl}}) }</option>
+            <option class="text-danger" value="name">Name @if(lookup?.x?.nameLbl){ ({{lookup?.x?.nameLbl}}) } <span class="text-danger">!!!</span></option>
+            <option class="text-danger" value="extra">Extra @if(lookup?.x?.extraLbl){ ({{lookup?.x?.extraLbl}}) } <span class="text-danger">!!!</span></option>
           </select>
           <div class="mt-2"><small>Reference column is a common identifier for target data & replacement data.
             To
             synchronize, both target and replacement should have the same value for reference
           column.</small></div>
+          <!-- <div class="mt-2 text-danger"><small>
+            * Please ensure that the reference column is unique. This operation is not reversible.
+          </small></div> -->
+
+          @if(syncLookupData.refCol=='name' || syncLookupData.refCol=='extra'){
+            <div class="mt-2 text-danger"><small>
+              * Using <strong>name</strong> or <strong>extra</strong> as reference column may cause data
+              inconsistency. Please ensure that the reference column is unique.
+            </small></div>
+          }
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, JsonPipe } from '@angular/common';
@@ -61,6 +61,7 @@ export class LambdaEditorComponent implements OnInit {
     private formService: FormService,
     private modalService: NgbModal,
     private location: PlatformLocation,
+    private router: Router,
     private appService: AppService,
     private toastService: ToastService,
     private endpointService: EndpointService,
@@ -176,7 +177,8 @@ export class LambdaEditorComponent implements OnInit {
         this.lambdaService.save(data.email, this.appId, data)
           .subscribe(res => {
             this.loadLambdaList(this.pageNumber);
-            this.loadLambda(res.id);
+            this.loadLambda(res.id);            
+            this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
           }, err => {
             this.toastService.show("Lambda saving failed", { classname: 'bg-danger text-light' });

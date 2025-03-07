@@ -375,9 +375,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 `,
     styles: [`.form-group>label,.custom-checkbox>label{ font-size:14px;font-weight:600;}`],
     imports: [NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,
-        NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
-        NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, GroupByPipe,
-        NgStyle, NgClass, FaIconComponent, FieldViewComponent, forwardRef(() => ListComponent), ScreenComponent]
+    NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
+    NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
+    NgStyle, NgClass, FaIconComponent, FieldViewComponent, forwardRef(() => ListComponent), ScreenComponent]
 })
 export class FormViewComponent implements OnInit {
 

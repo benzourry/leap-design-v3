@@ -1071,13 +1071,13 @@
                         </div>
                       </div>
                     }
-                    <!-- @if (ac.nextType=='facet') {
+                    @if (ac.nextType=='facet') {
                       <div>
-                        <div class="d-inline">Open in 
-                          <strong>ac.next</strong> Facet 
+                        <div class="d-inline">Open 
+                          <strong>{{ac.x?.nextFacet}}</strong> in {{actionComps.forms?.[ac.next]?.title}}
                         </div>
                       </div>
-                    } -->
+                    }
                     @if (ac.nextType=='edit') {
                       <div>
                         <div class="d-inline">Edit
@@ -1180,7 +1180,7 @@
             <option value="screen" [disabled]="[''].indexOf(curScreen.type)>-1">View Entry in
             Screen</option>
             <option value="form">Open Form</option>
-            <!-- <option value="facet">Open in Facet</option> -->
+            <option value="facet">Open in Facet</option>
             <option value="static">Open Static/Entry Page Screen</option>
             <option value="dataset">Open Dataset</option>
             <option value="dashboard">Open Dashboard</option>
@@ -1219,17 +1219,29 @@
               </select>
             </div>
           }
-          @if (['edit','view','form','prev','edit-single','view-single'].indexOf(editActionData.nextType)>-1) {
-            <div class="form-group mb-3"
-              >
+          @if (['edit','view','form','prev','edit-single','view-single','facet'].indexOf(editActionData.nextType)>-1) {
+            <div class="form-group mb-3">
               <label class="form-label">Action Target</label>
-              <select class="form-select" name="next" [(ngModel)]="editActionData.next" required>
+              <select class="form-select" name="next" [(ngModel)]="editActionData.next" (change)="loadFacet(editActionData.next)" required>
                 <option value="" disabled>Select form...</option>
                 @for (item of formList; track item.id) {
-                  <option [value]="item.id">{{item.title}}</option>
+                  <option [value]="item.id" >{{item.title}}</option>
                 }
               </select>
             </div>
+            @if (['facet'].indexOf(editActionData.nextType)>-1) {
+              <div class="form-group mb-3">
+                <label class="form-label">Next facet *</label>
+                <select class="form-select" name="nextFacet"
+                  [(ngModel)]="editActionData.x.nextFacet" required>
+                  <option value="" disabled>Select facet...</option>
+                  @for (item of facetList; track item) {
+                    <option
+                    [value]="item">{{item}}</option>
+                  }
+                </select>
+              </div>
+            }
           }@else if (['screen','static'].indexOf(editActionData.nextType)>-1) {
             <div class="form-group mb-3">
               <label class="form-label">Action Target</label>
@@ -1260,21 +1272,7 @@
                 }
               </select>
             </div>
-          }
-          <!-- @if (['facet'].indexOf(editActionData.nextType)>-1) {
-            <div class="form-group mb-3">
-              <label class="form-label">Next facet *</label>
-              <select class="form-select" name="next"
-                [(ngModel)]="editActionData && editActionData.next" required>
-                <option value="" disabled>Select facet...</option>
-                @for (item of removeFromArray(getAsList(form?.x?.facet),['add','edit','view']); track item) {
-                  <option
-                  [value]="item">{{item}}</option>
-                }
-              </select>
-            </div>
-          } -->
-          @else if (['lookup'].indexOf(editActionData.nextType)>-1) {
+          }@else if (['lookup'].indexOf(editActionData.nextType)>-1) {
             <div class="form-group mb-3">
               <label class="form-label">Action Target</label>
               <select class="form-select" name="next" [(ngModel)]="editActionData.next" required>

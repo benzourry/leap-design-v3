@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { GroupService } from '../../../service/group.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
@@ -46,6 +46,7 @@ export class GroupEditorComponent implements OnInit {
   constructor(private userService: UserService, private route: ActivatedRoute, private groupService: GroupService,
     private modalService: NgbModal,
     private location: PlatformLocation,
+    private router: Router,
     private runService: RunService,
     private appService: AppService,
     private toastService: ToastService,
@@ -240,6 +241,7 @@ export class GroupEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadGroupList(this.pageNumber);
             this.loadGroup(res.id);
+            this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
           }, res => {
             this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });

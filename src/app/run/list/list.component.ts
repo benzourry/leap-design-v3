@@ -61,11 +61,11 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     styleUrls: ['./list.component.css'],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
         { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
-    imports: [PageTitleComponent, NgbTooltip, FaIconComponent, RouterLink, FormsModule, NgbDropdown, NgbDropdownToggle,
-        NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
-        NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, UserEntryFilterComponent, AngularEditorModule, 
-        forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
-        SafePipe, KeyValuePipe]
+    imports: [PageTitleComponent, NgbTooltip, FaIconComponent, FormsModule, NgbDropdown, NgbDropdownToggle,
+    NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
+    NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, UserEntryFilterComponent, AngularEditorModule,
+    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), JsonPipe,
+    SafePipe, KeyValuePipe]
 })
 export class ListComponent implements OnInit, OnChanges {
 
@@ -432,14 +432,19 @@ export class ListComponent implements OnInit, OnChanges {
       size: this.pageSize
     }
 
+    // reason da benda tok, knak??? Sbb utk support $conf$, mn ada akan set as parameter
+    // utk handle $conf$, if ada $conf$, override dengan value dari frontend
     if (this.dataset.presetFilters){
-      Object.keys(this.dataset.presetFilters).forEach(k=>{
-        params[k] = compileTpl(this.dataset.presetFilters[k]??'', { $user$: this.user, $conf$:this.runService.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param })
+      Object.keys(this.dataset.presetFilters)
+      .filter(k=>(this.dataset.presetFilters[k]+"").includes("$conf$"))
+      .forEach(k=>{
+          params[k] = compileTpl(this.dataset.presetFilters[k]??'', { $user$: this.user, $conf$:this.runService.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param })
       })
     }
 
 
     params = Object.assign(params, this._pre({},this.dataset.x?.initParam, false));
+
     if (this.sort) {
       params['sorts'] = this.sort;
     }

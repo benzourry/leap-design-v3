@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass } from '@angular/common';
@@ -47,6 +47,7 @@ export class MailerEditorComponent implements OnInit {
         private schedService: SchedService,
         private modalService: NgbModal,
         private location: PlatformLocation,
+        private router: Router,
         private appService: AppService,
         private formService: FormService,
         private datasetService: DatasetService,
@@ -160,6 +161,7 @@ export class MailerEditorComponent implements OnInit {
                     .subscribe(res => {
                         this.loadMailerList(this.pageNumber);
                         this.loadMailer(res.id);
+                        this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });

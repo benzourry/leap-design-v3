@@ -25,7 +25,7 @@ import { PageTitleService } from '../../_shared/service/page-title-service';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
-import { DatePipe, formatDate, JsonPipe, NgClass } from '@angular/common';
+import { DatePipe, formatDate, NgClass } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 // import { PageTitleComponent } from '../../_shared/component/page-title.component';
@@ -55,10 +55,10 @@ import { RunService } from '../_service/run.service';
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
         { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
     imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
-        ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule, RouterLink,
-        forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
-        NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle, JsonPipe,
-        NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, BucketComponent, NgLeafletComponent, MailboxComponent, CombinedComponent]
+    ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule, RouterLink,
+    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
+    NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle,
+    NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, BucketComponent, NgLeafletComponent, MailboxComponent, CombinedComponent]
 })
 export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
 
@@ -603,6 +603,9 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
       if (ac.nextType == 'edit') {
         obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/edit${noParam ? '' : '?entryId=' + (entryId || '')}`
       }
+      if (ac.nextType == 'facet') {
+        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/${ac.x?.nextFacet}${noParam ? '' : '?entryId=' + (entryId || '')}`
+      }
       if (ac.nextType == 'edit-single') {
         obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/edit-single`
       }
@@ -647,6 +650,9 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
       }
       if (ac.nextType == 'edit') {
         pop[ac.id] = (entryId?)=> this.inPop(this.inPopTpl(),entryId,ac,'form','edit',noParam?{}:{entryId: entryId??eId})
+      }
+      if (ac.nextType == 'facet') {
+        pop[ac.id] = (entryId?)=> this.inPop(this.inPopTpl(),entryId,ac,'form',ac.x?.nextFacet,noParam?{}:{entryId: entryId??eId})
       }
       if (ac.nextType == 'edit-single') {
         pop[ac.id] = (entryId?)=> this.inPop(this.inPopTpl(),entryId,ac,'form','edit-single',{})
@@ -886,9 +892,12 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
     }
     params['@cond'] = this.filtersCond;
 
+    // utk handle $conf$, if ada $conf$, override dengan value dari frontend
     if (ds.presetFilters){
-      Object.keys(ds.presetFilters).forEach(k=>{
-        params[k] = compileTpl(ds.presetFilters[k]??'', { $user$: this.user, $conf$:this.runService.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this.$param$ })
+      Object.keys(ds.presetFilters)
+      .filter(k=>(ds.presetFilters[k]+"").includes("$conf$"))
+      .forEach(k=>{
+          params[k] = compileTpl(ds.presetFilters[k]??'', { $user$: this.user, $conf$:this.runService.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this.$param$ })
       })
     }
 
@@ -1127,6 +1136,12 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
       res = this._pre(entry,code,bulk);
     } catch (e) { this.logService.log(`{list}-${e}`) }
     return !code || res;
+  }
+
+  modalClose(d){
+    // this.ngOnInit();
+    this.getScreen(this.screen.id);
+    d();
   }
 
   getLookupInFilter() {

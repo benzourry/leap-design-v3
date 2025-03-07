@@ -18,15 +18,12 @@
 import { Component, OnInit, AfterViewChecked, ChangeDetectorRef, OnDestroy, input, output, effect, viewChild } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-// import { LookupService } from '../../service/lookup.service';
-// import { EntryService } from '../../service/entry.service';
 import { NgbModal, NgbDateAdapter, NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { PlatformLocation, NgTemplateOutlet, NgStyle, NgClass, DatePipe, JsonPipe } from '@angular/common';
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
-// import { RunService } from '../../service/run.service';
 import { LogService } from '../../_shared/service/log.service';
 import { ServerDate, btoaUTF, compileTpl, deepMerge, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import { debounceTime, distinctUntilChanged, first, map, share, tap, withLatestFrom } from 'rxjs/operators';
@@ -34,7 +31,6 @@ import { ViewChild } from '@angular/core';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { Observable, Subject, lastValueFrom } from 'rxjs';
-// import { RxStompService } from '../../_shared/service/rx-stomp.service';
 import { ComponentCanDeactivate } from '../../_shared/service/can-deactivate-guard.service';
 import { NgForm, FormsModule } from '@angular/forms';
 import { ScreenComponent } from '../screen/screen.component';
@@ -148,6 +144,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .pipe(debounceTime(150))
       .subscribe((obj: any) => {
         // Call your search function here
+        // console.log("valueUpdate")
         this.fieldChange(obj.event, obj.data, obj.field, obj.section);
       });
   }
@@ -252,6 +249,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   dsChanged(ev, fieldCode) {
     this.$this$[fieldCode] = ev;
     // console.log(ev);
+    // console.log("dsChanged")
     this.fieldChange(ev, this.entry?.data, this.form.items[fieldCode], false)
     this.cdr.detectChanges();
   }
@@ -458,6 +456,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this._getLookupObs(code, param, cb, err)
         .subscribe({
           next: res => {
+            // console.log("----------")
             this.lookup[code] = res;
             this.lookupLoading[code] = false;
           }, error: err => {
@@ -507,6 +506,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         param = this._eval(dataV, dsInit, this.form);// new Function('$', '$prev$', '$user$', '$lookup$', '$http$', 'return ' + key.dataSourceInit)(this.entry, this.entry && this.entry.prev, this.user, this.getLookup, this.httpGet)
       } catch (e) { this.logService.log(`{form-lookup-${code}-dsInit}-${e}`) }
       this._getLookup(code, param);
+      // console.log("$$$$$$$$")
     }
   }
 
@@ -514,6 +514,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     if (dsInit && dsInit.indexOf('$search$') > -1) {
       dsInit = dsInit.replace('$search$', event.term);
       this.getLookup(code, dsInit, dataV);
+      // console.log("lkSearch")
     }
   }
 
@@ -597,6 +598,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             if (['checkboxOption', 'radio'].indexOf(this.form.items[i.code].type) > -1) {
               // console.log(this.form.items[i.code].dataSourceInit);
               try{
+                // console.log("dlm filterItems");
                 this.getLookup(i.code,this.form.items[i.code].dataSourceInit, this.entry?.data);
                 // this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
               }catch(e){}
@@ -717,7 +719,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         this.extractData(field, field.x?.extractor, [], $event, data);        
       }
     }
-    
+    // console.log("debFieldChange")
     this.valueUpdate.next({ event: $event, data: data, field: field, section: section })
   }
   // $el='as';
@@ -745,6 +747,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // mn _pre direct value sentiasa diupdate.
     // need more study
     // update: dlm built-in anonymous function semua dh tap(filterItems);
+    // console.log("fieldChange");
     this.filterItems();
   }
 
@@ -995,6 +998,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.saved.emit(res);
           } else {
             if (!(this.form.x && this.form.x.saveAndStay)) {
+              console.log("preurl", this.preurl);
               this.router.navigate([this.preurl, "form", this.form.id, "view"], { queryParams: { entryId: this.entry.id } });
             }
           }
@@ -1104,6 +1108,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   $digest$ = () => {
     this.filterTabs();
+    // console.log("$digest$")
     this.filterItems();
     this.evalAll(this.entry.data);
     this.cdr.detectChanges()

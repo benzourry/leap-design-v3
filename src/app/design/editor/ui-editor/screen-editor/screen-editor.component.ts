@@ -648,6 +648,9 @@ defaultMapStyle:string = `height: 600px;`
 
   editActionData: any;
   editAction(content, data) {
+    if (!data.x) {
+      data['x'] = {};
+    }
     this.editActionData = data;
     this.editActionData.appId = this.app.id;
     history.pushState(null, null, window.location.href);
@@ -912,6 +915,14 @@ defaultMapStyle:string = `height: 600px;`
   formatJson(text) {
     var g = JSON.stringify(JSON.parse(text));
     return g;
+  }
+
+  facetList:any[]=[];
+  loadFacet(formId){
+    this.formService.getForm(formId)
+    .subscribe(res => {
+      this.facetList = this.removeFromArray(this.getAsList(res?.x?.facet),['add','edit','view'])
+    });
   }
 
   

@@ -211,7 +211,7 @@
               }
               <div class="p-2 border border-2 border-black-50 rounded mb-3">
                 <div class="row width-auto align-items-center g-2" cdkDropList
-                  cdkDropListOrientation="horizontal"
+                  cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
                   @for (a of curDataset.actions; track $index) {
                     <div class="col-auto pe-0 position-relative cursor-move"

@@ -143,6 +143,7 @@ export class StartComponent implements OnInit {
             if (this.appId) {
               this.preurl = `/run/${this.appId}`;
               this.runService.$preurl.set(this.preurl);
+              console.log("set preurl");
               this.getApp(this.appId);
 
 

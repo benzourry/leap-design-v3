@@ -119,6 +119,18 @@ export class AppEditComponent implements OnInit {
     }
   }
 
+  clearLogo(){
+    if (confirm("Are you sure you want to clear the app logo?")){
+      this.appService.clearLogo(this.data().id)
+        .subscribe(res => {
+          this.data.update(app=>{
+            app.logo = null;
+            return app;
+          })
+        })      
+    }
+  }
+
   toHyphen = toHyphen; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
   toSpaceCase = toSpaceCase; // (string)=> string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
   getHost = () => window.location.host;

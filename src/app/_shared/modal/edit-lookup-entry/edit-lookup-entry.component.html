@@ -6,39 +6,39 @@
       <div class="form">
         @if (!lookup().x?.codeHidden){
             <div class="form-group mb-3">
-                <label class="form-label">Code *</label>
+                <label class="form-label">{{lookup().x?.codeLbl??'Code'}} *</label>
                 <input type="text" class="form-control" name="code" #code="ngModel"
                     [(ngModel)]="lookupEntry().code" required />
                 @if (code?.invalid) {
                     <small class="form-text has-warning">
                     @if (code.errors?.required) {
-                        <span class="help-block">Code is required</span>
+                        <span class="help-block">{{lookup().x?.codeLbl??'Code'}} is required</span>
                     }
                     </small>
                 }
             </div>
         }
         <div class="form-group mb-3">
-          <label class="form-label">Name *</label>
+          <label class="form-label">{{lookup().x?.nameLbl??'Name'}} *</label>
           <input type="text" class="form-control" name="name" #name="ngModel"
             [(ngModel)]="lookupEntry().name" required />
           @if (name?.invalid) {
             <small class="form-text has-warning">
               @if (name.errors?.required) {
-                <span class="help-block">Description is required</span>
+                <span class="help-block">{{lookup().x?.nameLbl??'Name'}} is required</span>
               }
             </small>
           }
         </div>
         @if(!lookup().x?.extraDisabled){
           <div class="form-group mb-3">
-            <label class="form-label">Extra</label>
+            <label class="form-label">{{lookup().x?.extraLbl??'Extra'}}</label>
             <input type="text" class="form-control" name="extra" #extra="ngModel"
               [(ngModel)]="lookupEntry().extra" />
             @if (extra?.invalid) {
               <small class="form-text has-warning">
                 @if (extra.errors?.required) {
-                  <span class="help-block">Description is required</span>
+                  <span class="help-block">{{lookup().x?.extraLbl??'Extra'}} is required</span>
                 }
               </small>
             }

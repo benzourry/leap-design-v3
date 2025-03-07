@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { EndpointService } from '../../../service/endpoint.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, JsonPipe } from '@angular/common';
@@ -42,6 +42,7 @@ export class EndpointEditorComponent implements OnInit {
     constructor(private userService: UserService, private route: ActivatedRoute, private endpointService: EndpointService,
         private modalService: NgbModal,
         private location: PlatformLocation,
+        private router: Router,
         private appService: AppService,
         private toastService: ToastService,
         private utilityService: UtilityService) {
@@ -152,6 +153,7 @@ export class EndpointEditorComponent implements OnInit {
                     .subscribe(res => {
                         this.loadEndpointList(this.pageNumber);
                         this.loadEndpoint(res.id);
+                        this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });

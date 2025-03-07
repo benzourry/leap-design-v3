@@ -397,9 +397,9 @@
   <div style="margin-bottom:-68px; background: whitesmoke;">
     @if (['form'].indexOf(inPopType)>-1) {
       @defer(prefetch on idle){
-        <app-form (saved)="onSavedInit();d()" (submitted)="onSavedInit();d()"
+        <app-form (saved)="onSavedInit();modalClose(d)" (submitted)="onSavedInit();modalClose(d)"
           [$param$]="inPopParams"
-          (closed)="d()" [formId]="inPopFormId" [entryId]="inPopEntryId"
+          (closed)="modalClose(d)" [formId]="inPopFormId" [entryId]="inPopEntryId"
           [asComp]="true" [action]="inPopFacet" ></app-form>
       }@loading {
         <div class="text-center m-5">
@@ -411,7 +411,7 @@
     }
     @if (['view','approve'].indexOf(inPopType)>-1) {
       @defer(prefetch on idle){
-        <app-view (approved)="loadDatasetEntry(dataset, pageNumber,sort);d()" (closed)="d()"
+        <app-view (approved)="loadDatasetEntry(dataset, pageNumber,sort);modalClose(d)" (closed)="modalClose(d)"
           [formId]="inPopFormId" [entryId]="inPopEntryId"
         asComp="true" [action]="inPopType" [facet]="inPopFacet"></app-view>
       }@loading {
@@ -424,7 +424,7 @@
     }
     @if (['screen'].indexOf(inPopType)>-1) {
       @defer(prefetch on idle){
-        <app-screen (closed)="d()" [screenId]="inPopFormId" [param]="inPopParams"
+        <app-screen (closed)="modalClose(d)" [screenId]="inPopFormId" [param]="inPopParams"
         [entryId]="inPopEntryId" asComp="true" [action]="inPopType"></app-screen>
       }@loading {
         <div class="text-center m-5">

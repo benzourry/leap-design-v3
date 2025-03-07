@@ -119,17 +119,29 @@
         }
       </div>
     }
+
+    <label class="form-label mt-2">Override column label</label>
+    @if (!lookup().x.codeHidden){
+      <div class="input-group input-group-sm mb-2">
+        <label class="input-group-text" for="codeLbl">Code</label>
+        <input class="form-control" name="codeLbl" type="text"
+          placeholder="Code" [(ngModel)]="lookup().x.codeLbl">
+      </div>
+    }
+    <div class="input-group input-group-sm mb-2">
+      <label class="input-group-text" for="nameLbl">Name</label>
+      <input class="form-control" name="nameLbl" type="text"
+        placeholder="Name" [(ngModel)]="lookup().x.nameLbl">
+    </div>
+    @if(!lookup().x.extraDisabled){
+      <div class="input-group input-group-sm mb-2">
+        <label class="input-group-text" for="extraLbl">Extra</label>
+        <input class="form-control" name="extraLbl" type="text"
+          placeholder="Extra" [(ngModel)]="lookup().x.extraLbl">
+      </div>
+    }
+
     @if (lookup()?.sourceType == 'db') {
-      <!-- <div class="form-group mb-3">
-        <label class="form-label">Access to edit available for</label>
-        <select class="form-select" name="access" [compareWith]="compareByIdFn"
-          [(ngModel)]="lookup().access">
-          <option [ngValue]="null">* Anyone </option>
-          @for (access of accessList(); track access.id) {
-            <option [ngValue]="access">{{access.name}}</option>
-          }
-        </select>
-      </div> -->
       <div class="form-group mb-3">
         <label class="form-label">Access to edit available for</label>
         <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { BucketService } from '../../../service/bucket.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgStyle, DecimalPipe, DatePipe, NgClass } from '@angular/common';
@@ -40,6 +40,7 @@ export class BucketManagerComponent implements OnInit {
   constructor(private userService: UserService, private route: ActivatedRoute, private bucketService: BucketService,
     private modalService: NgbModal,
     private location: PlatformLocation,
+    private router: Router,
     private runService: RunService,
     private appService: AppService,
     private toastService: ToastService,
@@ -141,6 +142,7 @@ export class BucketManagerComponent implements OnInit {
           .subscribe(res => {
             this.loadBucketList(this.pageNumber);
             this.loadBucket(res.id);
+            this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Bucket successfully saved", { classname: 'bg-success text-light' });
           }, res => {
             this.toastService.show("Bucket saving failed", { classname: 'bg-danger text-light' });

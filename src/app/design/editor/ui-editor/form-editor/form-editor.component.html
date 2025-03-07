@@ -8,14 +8,14 @@
             <div class="d-flex flex-row justify-content-center mt-3">
               <button type="button"
                 class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
-                (click)="editForm(editFormTpl,newForm, true)" style="height:70px;width:140px"
+                (click)="editForm(editFormTpl,newForm, true)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                 <div>New Form</div>
               </button>
               <button type="button"
                 class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
-                (click)="cloneForm(cloneFormTpl)" style="height:70px;width:140px"
+                (click)="cloneForm(cloneFormTpl)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
                 <div>Clone Form</div>

@@ -3,13 +3,12 @@ import { ActivatedRoute, Params, RouterOutlet } from '@angular/router';
 import { base, baseApi, domainBase, domainRegex } from '../../_shared/constant.service';
 import { UserService } from '../../_shared/service/user.service';
 import { RunService } from '../_service/run.service';
-import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'app-headless',
     templateUrl: './headless.component.html',
     styleUrls: ['./headless.component.scss'],
-    imports: [RouterOutlet, JsonPipe]
+    imports: [RouterOutlet]
 })
 export class HeadlessComponent implements OnInit {
 

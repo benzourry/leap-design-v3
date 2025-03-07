@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { CognaService } from '../../../service/cogna.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbAccordionModule, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe, JsonPipe, KeyValuePipe, PlatformLocation } from '@angular/common';
@@ -194,6 +194,7 @@ export class CognaEditorComponent implements OnInit {
     private formService: FormService,
     private modalService: NgbModal,
     private location: PlatformLocation,
+    private router: Router,
     private appService: AppService,
     private toastService: ToastService,
     private endpointService: EndpointService,
@@ -412,6 +413,7 @@ export class CognaEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(res.id);
+            this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Cogna successfully saved", { classname: 'bg-success text-light' });
           }, err => {
             this.toastService.show("Cogna saving failed", { classname: 'bg-danger text-light' });

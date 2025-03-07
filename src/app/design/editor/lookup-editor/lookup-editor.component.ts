@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 // import { LookupService } from '../../../service/lookup.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
@@ -52,6 +52,7 @@ export class LookupEditorComponent implements OnInit {
     constructor(private userService: UserService, private route: ActivatedRoute, private lookupService: LookupService,
         private modalService: NgbModal, private groupService: GroupService, private appService: AppService,
         private runService: RunService, private toastService: ToastService,
+        private router: Router,
         private location: PlatformLocation, private utilityService: UtilityService) {
         location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
@@ -147,6 +148,7 @@ export class LookupEditorComponent implements OnInit {
                         next: (res) => {
                             this.loadLookupList(this.pageNumber);
                             this.loadLookup(res.id);
+                            this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                             this.toastService.show("Lookup successfully saved", { classname: 'bg-success text-light' });
                         }, error: (err) => {
                             this.toastService.show("Lookup saving failed", { classname: 'bg-danger text-light' });
@@ -432,10 +434,10 @@ export class LookupEditorComponent implements OnInit {
                             this.toastService.show("Lookup successfully sync", { classname: 'bg-success text-light' });
                         },
                         error: (err) => {
-                            this.toastService.show("Lookup sync failed", { classname: 'bg-danger text-light' });
+                            this.toastService.show("Lookup sync failed.\n "+ err.error?.message, { classname: 'bg-danger text-light' });
                         }
                     })
-            })
+            }).catch(err => { });
 
     }
 

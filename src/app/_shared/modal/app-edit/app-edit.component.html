@@ -22,6 +22,7 @@
                     @if (data().logo) {
                       <img src="{{baseApi}}/app/logo/{{data().logo}}" alt="Image preview..."
                         onError="this.src='assets/img/blank_product.png'" style="max-width:100%">
+                      <button class="mt-2 btn btn-xs btn-light mx-auto" (click)="clearLogo()">Clear Logo</button>
                     }@else{
                       <img style="background: #aaa" src="assets/img/blank_product.png" width="100%">
                     }

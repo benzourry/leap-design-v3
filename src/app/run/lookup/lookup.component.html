@@ -95,10 +95,12 @@
                 <table class="table table-bordered table-striped bg-white">
                   <thead>
                     <tr>
-                      <th class="w-10">CODE</th>
-                      <th class="w-90">NAME</th>
+                      @if (!lookup?.x?.codeHidden){
+                        <th class="w-10">{{lookup?.x?.codeLbl||'CODE'}}</th>
+                      }
+                      <th class="w-90">{{lookup?.x?.nameLbl||'NAME'}}</th>
                       @if(!lookup?.x?.extraDisabled){
-                        <th class="w-10">EXTRA</th>
+                        <th class="w-10">{{lookup?.x?.extraLbl||'EXTRA'}}</th>
                       }
                       @if (lookup.dataEnabled) {
                         <th class="w-10">DATA</th>
@@ -111,7 +113,9 @@
                       <tr
                         [class.lookup-disabled]="lookup.sourceType=='db' && !entry.enabled"
                         [ngClass]="entry.altClass">
-                        <td>{{entry.code}}</td>
+                        @if (!lookup.x?.codeHidden){
+                          <td>{{entry.code}}</td>
+                        }
                         <td>{{entry.name}}</td>
                         @if(!lookup?.x?.extraDisabled){
                           <td>{{entry.extra}}</td>
@@ -250,14 +254,16 @@
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
-        <div class="form-group mb-3">
-          <label class="form-label col-md-3">Code</label>
-          <div class="col-md-6">
-            <p class="form-control-static">{{removeLookupEntryData.code}}</p>
+        @if (!lookup?.x?.codeHidden){
+          <div class="form-group mb-3">
+            <label class="form-label col-md-3">{{lookup?.x?.codeLbl||'Code'}}</label>
+            <div class="col-md-6">
+              <p class="form-control-static">{{removeLookupEntryData.code}}</p>
+            </div>
           </div>
-        </div>
+        }
         <div class="form-group mb-3">
-          <label class="form-label col-md-3">Name</label>
+          <label class="form-label col-md-3">{{lookup?.x?.nameLbl||'Name'}}</label>
           <div class="col-md-6">
             <p class="form-control-static">{{removeLookupEntryData.name}}</p>
           </div>
@@ -279,20 +285,22 @@
     </div>
     <div class="modal-body">
       <div class="form">
+        @if (!lookup?.x?.codeHidden){
+          <div class="form-group mb-3">
+            <label class="form-label">{{lookup?.x?.codeLbl||'Code'}} *</label>
+            <input type="text" class="form-control" name="code" #code="ngModel"
+              [(ngModel)]="editLookupEntryData.code" required />
+            @if (code?.invalid) {
+              <small class="form-text has-warning">
+                @if (code.errors?.required) {
+                  <span class="help-block">Code is required</span>
+                }
+              </small>
+            }
+          </div>
+        }
         <div class="form-group mb-3">
-          <label class="form-label">Code *</label>
-          <input type="text" class="form-control" name="code" #code="ngModel"
-            [(ngModel)]="editLookupEntryData.code" required />
-          @if (code?.invalid) {
-            <small class="form-text has-warning">
-              @if (code.errors?.required) {
-                <span class="help-block">Code is required</span>
-              }
-            </small>
-          }
-        </div>
-        <div class="form-group mb-3">
-          <label class="form-label">Name *</label>
+          <label class="form-label">{{lookup?.x?.nameLbl||'Name'}} *</label>
           <input type="text" class="form-control" name="name" #name="ngModel"
             [(ngModel)]="editLookupEntryData.name" required />
           @if (name?.invalid) {
@@ -305,7 +313,7 @@
         </div>
         @if(!lookup?.x?.extraDisabled){
           <div class="form-group mb-3">
-            <label class="form-label">Extra</label>
+            <label class="form-label">{{lookup?.x?.extraLbl||'Extra'}}</label>
             <input type="text" class="form-control" name="extra" #extra="ngModel"
               [(ngModel)]="editLookupEntryData.extra" />
             @if (extra?.invalid) {
@@ -441,9 +449,9 @@
             @if (lookup?.sourceType=='db'){
               <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
             }
-            <option value="code">Code</option>
-            <option value="name">Name</option>
-            <option value="extra">Extra</option>
+            <option value="code">Code @if(lookup?.x?.codeLbl){ ({{lookup?.x?.codeLbl}}) }</option>
+            <option value="name">Name @if(lookup?.x?.nameLbl){ ({{lookup?.x?.nameLbl}}) }</option>
+            <option value="extra">Extra @if(lookup?.x?.extraLbl){ ({{lookup?.x?.extraLbl}}) }</option>
           </select>
           <div class="mt-2"><small>Reference column is a common identifier for target data & replacement data.
             To synchronize, both target and replacement should have the same value for reference
