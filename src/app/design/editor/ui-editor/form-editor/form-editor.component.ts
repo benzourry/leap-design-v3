@@ -1951,8 +1951,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
           this.groupService.save(this.app.id, data)
             .subscribe(res => {
                 this.getAccessList();
-            //   this.loadGroupList(this.pageNumber);
-            //   this.loadGroup(res.id);
                 if (multi){
                     if (!obj[prop]){
                         obj[prop]=[];

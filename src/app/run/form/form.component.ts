@@ -27,7 +27,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { ServerDate, btoaUTF, compileTpl, deepMerge, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import { debounceTime, distinctUntilChanged, first, map, share, tap, withLatestFrom } from 'rxjs/operators';
-import { ViewChild } from '@angular/core';
+
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { Observable, Subject, lastValueFrom } from 'rxjs';
@@ -149,7 +149,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       });
   }
 
-  @ViewChild('entryForm', { static: false }) entryForm: NgForm;
+  readonly entryForm = viewChild<NgForm>('entryForm');
 
   formInactive: boolean;
 
@@ -578,7 +578,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // console.log("filter items")
     this.form.sections.forEach(s => {
       this.preSection[s.id] = this.preCheckStr(s.pre);
-      this.classSection[s.id] = compileTpl(s.style??'', { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+      this.classSection[s.id] = compileTpl(s.style??'', { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
       if (this.preSection[s.id]) {
         // only evaluate items pre when section is available. If not, no need.
         if (s.type != 'list') {
@@ -1013,7 +1013,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // console.log("Saving form...", form);
     let userKey = this.user.email;
     if (form?.x?.userKey) {
-      userKey = compileTpl(form?.x?.userKey, { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+      userKey = compileTpl(form?.x?.userKey, { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
     }
     return this.entryService.save(form.id, this.entry, this.prevId, userKey)
       .pipe(
@@ -1026,7 +1026,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             // console.log("time (save)", this.timestamp)
             this.linkFiles(e);
             // this.$digest$(); // this prevent ask navigate to be displayed!! NOT-WORKING. Actual reason for dirty is html keep-value
-            this.entryForm.form.markAsPristine();
+            this.entryForm().form.markAsPristine();
           }
         }), first()
       )
@@ -1144,9 +1144,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   $this$ = {};
   _eval = (data, v, form) => new Function('setTimeout', 'setInterval', '$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$setAction$', '$lookup$', '$http$', '$post$', '$upload$', '$endpoint$', '$saveAndView$', '$save$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$activate$', '$activeIndex$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$file$', 'onInit', 'onSave', 'onSubmit', 'onView', '$q$',
-    `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.setAction, this._getLookup, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this.save, () => this._save(form || this.form), this.submit, form?.items || this.form?.items, form || this.form, this.$this$, this.loadScript, this.$digest$, this._param, this.log, this.setActive, this.navIndex, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.entryForm, this.lookup, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.filesMap, this.onInit, this.onSave, this.onSubmit, this.onView, this.$q);
+    `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.setAction, this._getLookup, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this.save, () => this._save(form || this.form), this.submit, form?.items || this.form?.items, form || this.form, this.$this$, this.loadScript, this.$digest$, this._param, this.log, this.setActive, this.navIndex, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.entryForm(), this.lookup, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.filesMap, this.onInit, this.onSave, this.onSubmit, this.onView, this.$q);
   _pre = (data, v) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$file$', '$activeIndex$',
-    `return ${v}`)(this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.form && this.form.items, this.form, this.$this$, this.$digest$, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.entryForm, this.lookup, dayjs, ServerDate, this.accessToken, this.filesMap, this.navIndex);
+    `return ${v}`)(this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.form && this.form.items, this.form, this.$this$, this.$digest$, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.entryForm(), this.lookup, dayjs, ServerDate, this.accessToken, this.filesMap, this.navIndex);
 
 
   setAction = (action)=> this._action=action;
@@ -1199,7 +1199,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           res['$index'] = this.entry.data[section.code].length;
           this.entry.data[section.code].push(res);
         }
-        this.entryForm.form.markAsDirty();
+        this.entryForm().form.markAsDirty();
         this.evalAll(this.entry.data);
         this.filterItems();
       }, err => { });
@@ -1209,13 +1209,12 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     if (section.confirmable) {
       if (confirm("Are you sure you want to remove this data?")) {
         this.entry.data[section.code].splice($index, 1);
-        this.entryForm.form.markAsDirty();
+        this.entryForm().form.markAsDirty();
       }
     } else {
       this.entry.data[section.code].splice($index, 1);
-      this.entryForm.form.markAsDirty();
+      this.entryForm().form.markAsDirty();
     }
-
     this.evalAll(this.entry.data);
   }
 
@@ -1266,7 +1265,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               let filename = file.name;
               if (f.x?.filenameTpl && f.x?.bucket){
                 let ext = getFileExt(filename);
-                filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+                filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
                            +ext;
               }              
               console.log("FILENAME### : " + filename)
@@ -1291,7 +1290,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             let filename = fileList[0].name;
             if (f.x?.filenameTpl && f.x?.bucket){
               let ext = getFileExt(filename);
-              filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: fileList[0], $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+              filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: fileList[0], $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
                          +ext;
             }              
             // console.log("FILENAME### : " + filename)
@@ -1319,10 +1318,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             let filename = file.name;
             if (f.x?.filenameTpl && f.x?.bucket){
               let ext = getFileExt(filename);
-              filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+              filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
                          +ext;
-            }              
-            // console.log("FILENAME### : " + filename)
+            }
             this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form.appId, file.name)
               .subscribe({
                 next: res => {
@@ -1342,7 +1340,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           let filename = file.name;
           if (f.x?.filenameTpl && f.x?.bucket){
             let ext = getFileExt(filename);
-            filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm })
+            filename = compileTpl(f.x?.filenameTpl, { $user$: this.user, $unique$: Date.now(), $file$: file, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
                        +ext;
           }
           this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form.appId, filename)
@@ -1526,7 +1524,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   canDeactivate() {
-    return !(this.form?.x?.askNavigate && this.entryForm?.dirty); //asknavigate && dirty --> modal
+    return !(this.form?.x?.askNavigate && this.entryForm()?.dirty); //asknavigate && dirty --> modal
   }
 
   ngOnDestroy() {
