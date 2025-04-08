@@ -234,10 +234,19 @@ export class ChartComponent implements OnInit {
     if (c.type == 'rose') {
       this.chartOption.series[0].radius = [20, 110];
       this.chartOption.series[0].roseType = 'radius';
+      this.chartOption.series[0].label.formatter = function(params){
+          return `${params.value.name}: ${params.value.value} (${params.percent}%)`
+      };
+    }
+    if (['pie', 'gauge'].includes(c.type)) {
+      this.chartOption.series[0].label.formatter = function(params){
+        return `${params.value.name}: ${params.value.value} (${params.percent}%)`
+      };
     }
     if (c.type == 'doughnut') {
       this.chartOption.series[0].radius = ['50%', '70%'];
     }
+
     if (c.type == 'area') {
       // var series = []
       for (var i = 1; i < cd.data[0].length; i++) {

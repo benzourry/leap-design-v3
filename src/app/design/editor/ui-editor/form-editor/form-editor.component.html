@@ -93,6 +93,21 @@
                         </div>
                       </div>
                     }
+                    @if (curForm.x?.extended && superForm) {
+                      <div class="rounded bg-info mb-3 d-flex flex-row flex-no-wrap">
+                        <div class="flex-grow-1 p-2 text-truncate">
+                          Super Form: <strong>{{superForm?.title}}</strong>
+                          @if (superForm?.description) {
+                            <div class="text-truncate">
+                            {{superForm.description}}</div>
+                          }
+                        </div>
+                        <div class="p-2">
+                          <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                            [routerLink]="[]" [queryParams]="{id:superForm.id}">View Form</a>
+                        </div>
+                      </div>
+                    }
                     @if (curForm.nav!='simple') {
                       <div style="text-align:center">
                         <div class="flex-wrap text-center">
@@ -499,35 +514,37 @@
                                 [class.selected-tier]="selectedTier==tier.id"
                                 [ngStyle]="{'outline-color':selectedColor}">
                                 <div class="card-header element ps-3 overflow-hidden" style="font-size:18px;">
-                                  <div class="element-edit" style="position:absolute;top:6px;right:12px;">
-                                    @if (!$first) {
+                                  @if (!curForm.x?.extended){
+                                    <div class="element-edit" style="position:absolute;top:6px;right:12px;">
+                                      @if (!$first) {
+                                        <button type="button" class="btn btn-round btn-info btn-sm"
+                                          (click)="reorderTier($index, -1)">
+                                          <fa-icon [icon]="['fas','arrow-up']"
+                                            [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
+                                      @if (!$last) {
+                                        <button type="button" class="btn btn-round btn-info btn-sm"
+                                          (click)="reorderTier($index, 1)">
+                                          <fa-icon [icon]="['fas','arrow-down']"
+                                            [fixedWidth]="true">
+                                          </fa-icon>
+                                        </button>
+                                      }
                                       <button type="button" class="btn btn-round btn-info btn-sm"
-                                        (click)="reorderTier($index, -1)">
-                                        <fa-icon [icon]="['fas','arrow-up']"
+                                        (click)="editTier(editTierTpl,tier)">
+                                        <fa-icon [icon]="['fas','pencil-alt']"
                                           [fixedWidth]="true">
                                         </fa-icon>
                                       </button>
-                                    }
-                                    @if (!$last) {
                                       <button type="button" class="btn btn-round btn-info btn-sm"
-                                        (click)="reorderTier($index, 1)">
-                                        <fa-icon [icon]="['fas','arrow-down']"
-                                          [fixedWidth]="true">
-                                        </fa-icon>
+                                        (click)="removeTier(removeTierTpl,tier)">
+                                        <fa-icon [icon]="['fas','trash']"
+                                        [fixedWidth]="true"></fa-icon>
                                       </button>
-                                    }
-                                    <button type="button" class="btn btn-round btn-info btn-sm"
-                                      (click)="editTier(editTierTpl,tier)">
-                                      <fa-icon [icon]="['fas','pencil-alt']"
-                                        [fixedWidth]="true">
-                                      </fa-icon>
-                                    </button>
-                                    <button type="button" class="btn btn-round btn-info btn-sm"
-                                      (click)="removeTier(removeTierTpl,tier)">
-                                      <fa-icon [icon]="['fas','trash']"
-                                      [fixedWidth]="true"></fa-icon>
-                                    </button>
-                                  </div>
+                                    </div>
+                                  }
                                   <!-- [ngClass]="{'border-primary text-primary':selectedLineTier==tier.id}" -->
                                   <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
                                     [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
@@ -670,44 +687,48 @@
                                             [icon]="['far','envelope']" [fixedWidth]="true">
                                           </fa-icon>
                                         }
-                                        <div class="element-edit shadow-sm leafup nowrap">
-                                          <button type="button" class="btn btn-round btn-sm btn-info"
-                                            (click)="editTierAction(editTierActionTpl,tier,o.value)">
-                                            <fa-icon [icon]="['fas','pencil-alt']"
-                                              [fixedWidth]="true">
-                                            </fa-icon>
-                                          </button>
-                                          <button type="button" class="btn btn-round btn-sm btn-info"
-                                            (click)="removeTierAction(o.value)">
-                                            <fa-icon [icon]="['fas','trash']"
-                                              [fixedWidth]="true">
-                                            </fa-icon>
-                                          </button>
-                                          @if (!$a_first) {
-                                            <button type="button" class="btn btn-info btn-round btn-sm"
-                                              (click)="reorderTierAction($index,$a_index, -1)">
-                                              <fa-icon [icon]="['fas','arrow-left']"
+                                        @if (!curForm.x?.extended){
+                                          <div class="element-edit shadow-sm leafup nowrap">
+                                            <button type="button" class="btn btn-round btn-sm btn-info"
+                                              (click)="editTierAction(editTierActionTpl,tier,o.value)">
+                                              <fa-icon [icon]="['fas','pencil-alt']"
                                                 [fixedWidth]="true">
                                               </fa-icon>
                                             </button>
-                                          }
-                                          @if (!$a_last) {
-                                            <button type="button" class="btn btn-info btn-round btn-sm"
-                                              (click)="reorderTierAction($index,$a_index, 1)">
-                                              <fa-icon [icon]="['fas','arrow-right']"
+                                            <button type="button" class="btn btn-round btn-sm btn-info"
+                                              (click)="removeTierAction(o.value)">
+                                              <fa-icon [icon]="['fas','trash']"
                                                 [fixedWidth]="true">
                                               </fa-icon>
                                             </button>
-                                          }
-                                        </div>
+                                            @if (!$a_first) {
+                                              <button type="button" class="btn btn-info btn-round btn-sm"
+                                                (click)="reorderTierAction($index,$a_index, -1)">
+                                                <fa-icon [icon]="['fas','arrow-left']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                            }
+                                            @if (!$a_last) {
+                                              <button type="button" class="btn btn-info btn-round btn-sm"
+                                                (click)="reorderTierAction($index,$a_index, 1)">
+                                                <fa-icon [icon]="['fas','arrow-right']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                            }
+                                          </div>
+                                        }
                                       </button>
                                     }
-                                    <button
-                                      class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
-                                      (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
-                                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
-                                      </fa-icon>
-                                    </button>
+                                    @if (!curForm.x?.extended){
+                                      <button
+                                        class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
+                                        (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
+                                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
+                                        </fa-icon>
+                                      </button>
+                                    }
                                   </div>
                                   <div style="position:absolute;right:0px; top:0px; width:0px; height:100%">
                                     @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
@@ -768,13 +789,15 @@
                             </div>
                           </div>
                         }
-                        <div class="ballx" style="min-height:55px;">
-                          <button type="button" class="btn btn-sm btn-primary btn-round"
-                            (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
-                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
-                            Tier
-                          </button>
-                        </div>
+                        @if(!curForm.x?.extended){
+                          <div class="ballx" style="min-height:55px;">
+                            <button type="button" class="btn btn-sm btn-primary btn-round"
+                              (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
+                              <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
+                              Tier
+                            </button>
+                          </div>
+                        }
                         <div class="ballx position-relative" style="min-height:55px;">
                           <div id="t_999"
                             [style.background-color]="selectedLineTier==999?selectedColor:'#ccc'"
@@ -789,19 +812,21 @@
                             </div>
                           }
                         </div>
-                        <div>
-                          <button type="button" class="btn btn-secondary btn-round btn-sm mb-3"
-                            (click)="reconApprover()" [disabled]="efLoading['all']">
-                            @if (efLoading['all']) {
-                              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-                              Processing...
-                            } @else {
-                              <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
-                              Update
-                              approver for all tiers
-                            }
-                          </button>
-                        </div>
+                        @if(!curForm.x?.extended){
+                          <div>
+                            <button type="button" class="btn btn-secondary btn-round btn-sm mb-3"
+                              (click)="reconApprover()" [disabled]="efLoading['all']">
+                              @if (efLoading['all']) {
+                                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                                Processing...
+                              } @else {
+                                <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                                Update
+                                approver for all tiers
+                              }
+                            </button>
+                          </div>
+                        }
                       </div>
                     }
                     @if (curForm.tiers.length==0) {
@@ -859,6 +884,11 @@
                         <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon> 
                         Get data JSON Schema
                       </a> -->
+                      <button type="button" title="Get data JSON Schema" [class.disabled]="offline"
+                        (click)="moveFormToApp(moveFormToAppTpl)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','random']" [fixedWidth]="true"></fa-icon>
+                        Move to Other App
+                      </button>
                       <button type="button" title="Prepare RDB view" [class.disabled]="offline"
                         (click)="genView(curForm.id)" ngbDropdownItem>
                         <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Prepare
@@ -866,6 +896,7 @@
                         <div class="small text-muted text-end">app_{{app?.id}}_form_{{curForm.id}}
                         </div>
                       </button>
+
                       <div class="dropdown-divider"></div>
                       <button type="button" class="text-danger" (click)="removeForm(removeFormTpl,curForm)"
                         ngbDropdownItem>
@@ -890,51 +921,82 @@
       }
     </div>
   </div>
-  @if (!showPalette) {
-    <button type="button" class="position-relative border-0 rounded end-0 d-none d-sm-flex flex-column py-2 px-1"
-      (click)="showPalette=true">
-      <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
-      </fa-icon>
-      <div style="width:20px; margin-top:2.5em;font-weight: bold;">
-        <div class="small" style="transform: rotate(270deg)">Palette</div>
-      </div>
-    </button>
-  }@else{
-    <div class="bg-white d-none d-sm-block"
-      style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
-      <!-- cdkDrag> -->
-      <button type="button" class="p-2 small border-0 w-100" (click)="showPalette=false">
-        <strong>Palette</strong>
-        <div class="float-end pointer" style="width:20px;">
-          <!-- @if (showPalette) { -->
-            <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
-            </fa-icon>
-          <!-- } -->
-          <!-- @if (!showPalette) {
-            <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
-            </fa-icon>
-          } -->
-        </div>
-      </button>
-      <!-- @if (showPalette) { -->
-        <div id="palette-pane" class="p-1" cdkDropListSortingDisabled cdkDropList
-          [cdkDropListData]="palettes" style="overflow-x: hidden;">
-          @for (p of palettes; track $index) {
-            <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
-              cdkDrag>
+  <div class="d-flex flex-column" style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+    
+    @if (curForm?.x?.extended && superForm){
+      @if (!showSuper && !showPalette) {
+        <button type="button" class="flex-1 bg-info position-relative border-0 rounded-0 end-0 d-none d-sm-flex flex-column py-2 px-1"
+          (click)="showSuper=!showSuper">
+          <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+          </fa-icon>
+          <div style="width:20px; margin-top:2.5em;font-weight: bold;">
+            <div class="small" style="transform: rotate(270deg)">Super</div>
+          </div>
+        </button>
+      }@else{
+        <button type="button" class="p-2 small bg-info border-0 w-100 text-start" (click)="showSuper=!showSuper">
+          <strong>Super</strong>
+          <div class="float-end pointer" style="width:20px;">
+              <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
+              </fa-icon>
+          </div>
+        </button>
+      }
+      @if (showSuper) {
+        <div id="palette-pane" class="flex-1 list-group list-group-flush" cdkDropListSortingDisabled cdkDropList
+          [cdkDropListData]="superItems"
+          style="max-width:180px; border-left:solid 1px #e6e6e6">
+          @for (p of superItems; track $index) {
+            <div class="list-group-item p-2 list-group-item-info bg-opacity-10"  style="font-size:11px; cursor:pointer;" cdkDrag>
               {{p.label}}
               <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
-            </button>
+            </div>
+            <!-- <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
+             >
+              
+            </button> -->
           }
         </div>
-      <!-- } -->
-    </div>
-  }
+      }
+    }
+
+
+    @if (!showPalette && (!curForm?.x?.extended || !showSuper)) {
+      <button type="button" class="flex-1 bg-body-secondary position-relative border-0 rounded-0 end-0 d-none d-sm-flex flex-column py-2 px-1"
+        (click)="showPalette=!showPalette">
+        <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
+        </fa-icon>
+        <div style="width:20px; margin-top:2.5em;font-weight: bold;">
+          <div class="small" style="transform: rotate(270deg)">Palette</div>
+        </div>
+      </button>
+    }@else{
+      <button type="button" class="p-2 bg-body-secondary small border-0 w-100 text-start" (click)="showPalette=!showPalette">
+        <strong>Palette</strong>
+        <div class="float-end pointer" style="width:20px;">
+            <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
+            </fa-icon>
+        </div>
+      </button>
+    }
+    @if (showPalette) {
+      <div id="palette-pane" class="p-1 flex-1" cdkDropListSortingDisabled cdkDropList
+        [cdkDropListData]="palettes"
+        style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+        @for (p of palettes; track $index) {
+          <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
+            cdkDrag>
+            {{p.label}}
+            <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
+          </button>
+        }
+      </div>
+    }
+  </div>
 </div>
 
 <ng-template #editFormTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
-    <!-- [editMailer]="editMailer" -->
     <app-edit-form [form]="editFormData" [app]="app" [user]="user"
      [formList]="formList" [accessList]="accessList"
      [extraAutoCompleteJs]="extraAutoCompleteJs" [close]="c" [dismiss]="d"></app-edit-form>
@@ -1539,34 +1601,28 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group mb-3">
-            <label class="form-label">Select Mailer</label>
-            <div class="d-flex">
-              <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
-                placeholder="No mailer" [(ngModel)]="editTierActionData.mailer"
-                id="mailer" name="mailer">
-              </ng-select>
-              <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierActionData,'mailer')">New&nbsp;Mailer</button>
-            </div>            
-          </div>
+      @if (editTierActionData.action=='goTier') {
+        <div class="form-group mb-3">
+          <label class="form-label">Select Tier</label>
+          <select class="form-control custom-select" id="tierId" name="tierId"
+            [(ngModel)]="editTierActionData.nextTier" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of curForm.tiers; track item.id) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]
+              </option>
+            }
+          </select>
         </div>
-        @if (editTierActionData.action=='goTier') {
-          <div class="col-md-6">
-            <div class="form-group mb-3">
-              <label class="form-label">Select Tier</label>
-              <select class="form-control custom-select" id="tierId" name="tierId"
-                [(ngModel)]="editTierActionData.nextTier" required>
-                <option [ngValue]="undefined" style="color:gray">No Tier</option>
-                @for (item of curForm.tiers; track item.id) {
-                  <option [value]="item.id">{{item.name}} [{{item.id}}]
-                  </option>
-                }
-              </select>
-            </div>
-          </div>
-        }
+      }
+      <div class="form-group mb-3">
+        <label class="form-label">Select Mailer</label>
+        <div class="d-flex">
+          <ng-select class="flex-grow-1" [items]="mailerList" bindLabel="name" [multiple]="true" bindValue="id"
+            placeholder="No mailer" [(ngModel)]="editTierActionData.mailer"
+            id="mailer" name="mailer">
+          </ng-select>
+          <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="editMailer(editMailerTpl,{enabled:1},editTierActionData,'mailer')">New&nbsp;Mailer</button>
+        </div>            
       </div>
       <div class="form-check form-group">
         <input type="checkbox" class="form-check-input" [(ngModel)]="editTierActionData.userEdit"
@@ -3587,5 +3643,51 @@
   <div class="modal-footer justify-content-between">
     <!-- <button type="button" class="btn btn-round btn-secondary" (click)="c()">Download Excel</button> -->
     <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #moveFormToAppTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Move Form to Other App</h4>
+  </div>
+  <div class="modal-body">
+    <div class="form-group mb-3">
+      <label class="form-label">Select Destination App</label>
+      <select class="form-select" name="appId"
+        [(ngModel)]="moveFormToAppData.appId">
+        @for (app of otherAppList; track app.id) {
+          <option [ngValue]="app.id">{{app.title}}</option>
+        }
+      </select>
+    </div>
+    @if (formRelatedComps?.dataset?.length>0){
+      <div class="form-group mb-2">
+        <label class="form-label">Include the following dataset</label>
+
+        @for (ds of formRelatedComps.dataset; track $index) {
+          <div class="form-check">
+            <input type="checkbox" id="rf-ds-{{$index}}" class="form-check-input" [(ngModel)]="ds.isChecked">
+            <label class="form-check-label" for="rf-ds-{{$index}}">{{ds.title}}</label>
+          </div>
+        }
+      </div>
+    }
+    @if (formRelatedComps?.screen?.length>0){
+      <div class="form-group mb-2">
+        <label class="form-label">Include the following screen</label>
+
+        @for (sc of formRelatedComps.screen; track $index) {
+          <div class="form-check">
+            <input type="checkbox" id="rf-sc-{{$index}}" class="form-check-input" [(ngModel)]="sc.isChecked">
+            <label class="form-check-label" for="rf-sc-{{$index}}">{{sc.title}}</label>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(moveFormToAppData)">Move Form</button>
   </div>
 </ng-template>

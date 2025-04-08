@@ -45,10 +45,6 @@ export class FormWebComponent implements OnInit, ComponentCanDeactivate  {
   formId:number;
   
   $param$:any = {};
-  
-  // tab: number = 0;
-
-  // isEmpty = inputObject => inputObject && Object.keys(inputObject).length === 0;
 
   constructor(private route: ActivatedRoute, 
     location: PlatformLocation) {

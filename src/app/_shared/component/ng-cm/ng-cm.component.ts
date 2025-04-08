@@ -40,7 +40,9 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
     standalone: true,
 })
 export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
-  @ViewChild(NgModel, { static: false }) model: NgModel;
+  // @ViewChild(NgModel, { static: false }) model: NgModel;
+  model = viewChild(NgModel)
+  
 
   // @Output() valueChange = new EventEmitter();
   valueChange = output<any>();

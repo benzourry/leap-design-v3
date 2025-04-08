@@ -68,6 +68,13 @@ export class FormService {
   getItemMap(id: number, params: any): any {
     return this.http.get<any>(`${this.baseApi}/form/${id}/item-map`, { params: params });
   }
+  getRelatedComps(id: number): any {
+    return this.http.get<any>(`${this.baseApi}/form/${id}/related-comps`, {});
+  }
+  
+  moveToApp(formId:number, data:any): any {
+    return this.http.post<any>(`${this.baseApi}/form/${formId}/move-to-app`, data)
+  }
   getForm(id: number): any {
     return this.http.get<any>(`${this.baseApi}/form/` + id);
   }

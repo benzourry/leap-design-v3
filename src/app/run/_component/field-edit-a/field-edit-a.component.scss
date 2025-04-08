@@ -261,4 +261,63 @@
 }
 
 
+.has-float-label {
+    angular-editor .angular-editor {
+      min-height: 58px !important;
+      width: 100%;
+      border-radius: 0.375rem;
+      padding: 1.4rem 0.75rem 0.175rem !important;
+      margin-top: 0px !important;
+      border: 1px solid #ddd;
+      // overflow:hidden;
+    }
+  
+    angular-editor .angular-editor-toolbar {
+      margin-top: 8px;
+      padding: 5px 0px 0px;
+      border-top: solid 1px #ddd !important;
+    }
+  
+    angular-editor .angular-editor-textarea {
+      border:none !important;
+      outline: none !important;
+      padding:0 !important;
+      margin-top:2px; margin-bottom:5px;
+    }
+    // angular-editor .angular-editor-textarea:focus-visible {
+    //   outline:none !important;
+    // }
+  
+    // angular-editor.hide-toolbar angular-editor-toolbar {
+    //   display: none !important;
+    // }
+  
+    angular-editor .angular-editor-placeholder {
+      // padding: 1.4rem 0.75rem 0.175rem !important;
+      padding: 0 !important;
+    }
+  
+    angular-editor .angular-editor:focus-within {
+      border-color: #007eff !important;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+      outline: solid 1.5px white;
+    }  
+    
+    angular-editor angular-editor-toolbar {
+      display: none !important;
+    }  
+    angular-editor:focus-within angular-editor-toolbar {
+      display: block !important;
+    }
+  
+    angular-editor.is-invalid .angular-editor:focus-within {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
+      outline: solid 1.5px white;
+    }
+  
+  
+  }
+
+
   

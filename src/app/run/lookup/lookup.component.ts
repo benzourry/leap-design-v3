@@ -132,6 +132,7 @@ export class LookupComponent implements OnInit {
     fieldsAsMap = (str: string) => {
         var rval = {};
         var arr = str ? str.split(',') : [];
+        
         arr.forEach(r => {
             var h = r.split("@");
             let g = h[0].split(":");
@@ -140,16 +141,29 @@ export class LookupComponent implements OnInit {
         return rval;
     }
 
+    lookupListMap:any = {};
+
     fieldsAsList = (str: string) => {
         var rval = [];
         var arr = str ? str.split(',') : [];
         arr.forEach(r => {
             var h = r.split("@");
             let g = h[0].split(":");
+
+            if (g.length > 1 && g[1].trim() == 'lookup'){
+                let lookupId = +g[2].trim();
+                this.lookupService.getEntryListFull(lookupId, {}).subscribe({
+                  next: (res) => {            
+                      this.lookupListMap[lookupId] = res.content;
+                  }, error: (error) => {}
+                })
+            }
+              
             rval.push({
                 key: g[0].trim(),
                 type: g.length > 1 ? g[1].trim() : 'text',
-                opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') : []
+                opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') :
+                      g.length > 2 && g[1].trim() == 'lookup' ? +g[2].trim() : []
             });
         })
         return rval;
@@ -318,6 +332,8 @@ export class LookupComponent implements OnInit {
 
     getUrl(pre, path) {
         return baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
-      }
+    }
+
+    compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
 
 }

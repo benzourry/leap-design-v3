@@ -132,6 +132,9 @@
                                         @if (['longtext','text','options'].indexOf(mapDataFields[o.key])>-1) {
                                           <span [innerHtml]="o.value"></span>
                                         }
+                                        @if (mapDataFields[o.key]=='lookup') {
+                                          <span>{{o.value?.name}}</span>
+                                        }
                                         @if (mapDataFields[o.key]=='number') {
                                           <span>{{o.value}}</span>
                                         }
@@ -278,6 +281,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">
   <div #editLookupEntryForm="ngForm" ngForm>
     <div class="modal-header">
@@ -327,7 +331,7 @@
         }
         @if (lookup.dataEnabled) {
           <div class="form-group mb-3">
-            <label class="form-label">Data (Additional attributes)</label>
+            <label class="form-label small text-muted fw-bold">Data (Additional attributes)</label>
             <table width="100%">
               @for (e of editLookupEntryDataFields; track $index) {
                 <tr>
@@ -361,6 +365,15 @@
                         [(ngModel)]="editLookupEntryData.data[e.key]">
                         @for (a of e.opts; track $index) {
                           <option [ngValue]="a">{{a}}</option>
+                        }
+                      </select>
+                    }
+                    @if (e.type=='lookup') {
+                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
+                        [compareWith]="compareByCodeFn"
+                        [(ngModel)]="editLookupEntryData.data[e.key]">
+                        @for (a of lookupListMap[e.opts]; track $index) {
+                          <option [ngValue]="a">{{a.name}}</option>
                         }
                       </select>
                     }

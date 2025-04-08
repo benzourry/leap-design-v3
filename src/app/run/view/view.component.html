@@ -224,8 +224,19 @@
                                     </div>
                                     <div class="row display-flex mt-4">
                                       @if (tier?.section?.type=='approval') {
+                                        
+
+                                        <!-- @for (f of tier.section.items; track f.id) {
+                                          @let field = form?.items[f.code];
+                                          @if (preCheckAppr(field?.pre,appr[tier.id])) {
+                                            @let dynDefVal = _eval(entry?.data, appr[tier.id], field?.x?.dyn_default, form);
+
+
+                                          }
+                                        } -->
+
                                         @for (f of tier?.section?.items; track f.id) {
-                                          @if (!form?.items[f.code].hidden && preCheckStr(form?.items[f.code]?.pre,entry?.approval[tier.id])) {
+                                          @if (!form?.items[f.code].hidden && preCheckAppr(form?.items[f.code]?.pre,entry?.approval[tier.id])) {
                                             <div [ngClass]="form?.items[f.code].size">
                                               <div class="form-group mb-3" [ngClass]="f.altClass">
                                                 @if (!form?.items[f.code].hideLabel) {

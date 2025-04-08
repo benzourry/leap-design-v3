@@ -35,14 +35,9 @@ import { ComponentCanDeactivate } from '../../_shared/service/can-deactivate-gua
 import { NgForm, FormsModule } from '@angular/forms';
 import { ScreenComponent } from '../screen/screen.component';
 import { ListComponent } from '../list/list.component';
-// import { FieldEditComponent } from '../../_shared/component/field-edit/field-edit.component';
-// import { FieldViewComponent } from '../../_shared/component/field-view.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-// import { FormViewComponent } from '../../_shared/component/form-view.component';
-// import { StepWizardComponent } from '../../_shared/component/step-wizard.component';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 import { EditLookupEntryComponent } from '../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
-import { FieldEditComponent } from '../_component/field-edit/field-edit.component';
+import { FieldEditComponent } from '../_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
@@ -248,8 +243,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   dsChanged(ev, fieldCode) {
     this.$this$[fieldCode] = ev;
-    // console.log(ev);
-    // console.log("dsChanged")
     this.fieldChange(ev, this.entry?.data, this.form.items[fieldCode], false)
     this.cdr.detectChanges();
   }
@@ -456,7 +449,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this._getLookupObs(code, param, cb, err)
         .subscribe({
           next: res => {
-            // console.log("----------")
             this.lookup[code] = res;
             this.lookupLoading[code] = false;
           }, error: err => {

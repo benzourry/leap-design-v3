@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, forwardRef, ViewChild, Optional, Inject, ChangeDetectorRef, output, input, computed, AfterViewInit, effect } from '@angular/core';
+import { Component, OnInit, forwardRef, ViewChild, Optional, Inject, ChangeDetectorRef, output, input, computed, AfterViewInit, effect, viewChild } from '@angular/core';
 import { baseApi } from '../../../_shared/constant.service';
 import { NG_VALUE_ACCESSOR, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NgModel, FormsModule } from '@angular/forms';
 import { NgbDateAdapter, NgbTimeAdapter, NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
@@ -66,82 +66,51 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
 
 @Component({
     selector: 'field-edit',
-    templateUrl: './field-edit.component.html',
-    styleUrls: ['./field-edit.component.scss'],
+    templateUrl: './field-edit-b.component.html',
+    styleUrls: ['./field-edit-b.component.scss'],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
         { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter },
         CUSTOMINPUT_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     imports: [FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, AngularEditorModule,
-        NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe,
+        NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe,
         SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent]
 })
 
 export class FieldEditComponent extends ElementBase<any> implements OnInit, AfterViewInit {
 
 
-  // @Input() field: any;
   field = input<any>();
-  // @Input() user: any;
   user= input<any>();
-  // @Input() data: any;
   data = input<any>();
-  // @Input() loading: any;
   loading=input<boolean>();
   extractLoading=input<boolean>();
-  // @Input() itemList: any;
   itemList= input<any>();
-  // @Input() always: boolean = false;
   always = input<boolean>(false);
-  // @Input() id: string = "";
   id = input<string>("");
-  // @Input() facet: string = "";
-  // facet = input<string>("");
-  // @Input() fileProgress: number;
   fileProgress = input<number>();
   
   file: any = {}
   scaleTo = { scaleTo10 : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
               scaleTo5 : [1, 2, 3, 4, 5]}
-  // minDate = { year: 1850, month: 1, day: 1 };
   baseApi: string = baseApi;
   codeReader = new BrowserQRCodeReader();
-  // qrCodeWriter = new BrowserQRCodeSvgWriter();
-  // evin="";
-
-  // @Input() lookupList: any;
+  
   lookupList = input<any>();
-  // @Input() hideAddAction: boolean;
   hideAddAction = input<boolean>();
 
-  // @Output() valueChange = new EventEmitter();
   valueChange = output<any>();
 
   valueBlur = output<any>();
-  // @Output() valueSearch = new EventEmitter();
   valueSearch = output<any>();
-  // @Output() selectFocus = new EventEmitter();
   selectFocus = output<any>();
-  // @Output() fileValueChange = new EventEmitter();
   fileValueChange = output<any>();
-  // @Output() fileValueClear = new EventEmitter();
   fileValueClear = output<any>();
-  // @Output() addAction = new EventEmitter();
   addAction = output<any>();
 
   defaultValue = input<any>();
 
-  // txtQueryChanged: Subject<string> = new Subject<string>();
-  
-
-
-
-  @ViewChild(NgModel, { static: false }) model: NgModel;
-  // model = viewChild(NgModel)
-
-  @ViewChild('formField', { static: false }) formField;
-  // formField = viewChild('formField') ;
-
+  readonly model = viewChild<NgModel>('formField');
 
   public identifier = `form-text-${identifier++}`;
   hasFocus:boolean=false;
@@ -242,12 +211,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     ]
   };
 
-  // preCompile= computed(()=>{
-  //   console.log("&&&&&&&")
-  //   return this.compileTpl(this.field().placeholder,this.data(),this.field().subType=='htmlSave')
-  // });
-
-
   constructor(
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
     @Optional() @Inject(NG_ASYNC_VALIDATORS) asyncValidators: Array<any>,
@@ -299,14 +262,10 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     if (this.field().x?.use_default){
       setTimeout(()=>{
         this.value = this.defaultValueComputed();
-        // console.log("@@@@@@@@@@@ngAfterViewInit")
         this.valueChanged(this.value);
       })
     }
   }
-
-
-  // generateQR = (code)=>this.qrCodeWriter.write(code, 256,256).outerHTML;
 
 
   ngOnInit(): void {
@@ -317,8 +276,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     }
     
   }
-
-  // const range = (start, stop) => Array.from({ length: stop - start + 1 }, (_, i) => start + i)
 
   selectGroupBy = (item) => this.field()?this.compileTpl(this.field()?.x?.groupBy,{'$':item}):undefined;
 
@@ -352,58 +309,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     return false;
   }
 
-  // ngAfterContentChecked() {
-  //   // this.cdref.detectChanges();    
-  // }
-
-  // fileClear(event){
-  //   // alert('kjhjh');
-  //   this.fileValueClear.emit(this.value);
-  //   // alert("clear");
-  // }
-
-
-  // ngOnChanges(changes: SimpleChanges) {
-  //   this.valueChanged(this.value);
-  //   // changes.prop contains the old and the new value...
-  // }
-
-  // ngAfterViewInit(): void {
-  //   // this.ngControl = this.injector.get(NgControl);
-
-  //   // Force restart of validation
-  //   if (this.input && this.input.control) {
-  //     this.input.control.updateValueAndValidity({
-  //       onlySelf: true
-  //     });
-  //   }
-  // }
-
-
-  // // ControlValueAccessor Interface
-  // writeValue(value: any) {
-  //   // if (value !== this.data) {
-  //     this.data = value;
-  //   // }
-  // }
-
-
-  // // ControlValueAccessor Interface
-  // registerOnChange(fn: any) {
-  //   this.onChangeCallback = fn;
-  // }
-
-  // // ControlValueAccessor Interface
-  // registerOnTouched(fn: any) {
-  //   // this.onTouchedCallback = fn;
-  // }
-
   compareFn = (val1: any, val2: any) => val1 && val1.code == val2.code;
-
-  // textValueChanged(query:string){
-  //   this.txtQueryChanged.next(query);
-  // }
-
   valueBlured(event){
     this.valueBlur.emit(event);
   }
@@ -423,12 +329,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
       // console.log(d);
     }
 
-    console.log(">>>>>>>>>valueChanged")
-
     this.valueChange.emit(event);
-    // console.log("...")
-    // console.log(this.formField.control.errors);
-    //   this.onChangeCallback(event);
   }
 
   checkValueChanged(event) {
@@ -451,10 +352,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   }
 
   list = []
-  // isNaN(value){
-  //   return Number.isNaN(value);
-  // }
-
 
   fileValueChanged($event) {
     var fileList = [];
@@ -475,29 +372,14 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
       });
 
       if (i>0){
-        this.formField.control.setErrors({'maxsize':true, files:fileError.map(f=>`${f.name} (${(f.size/(1024*1024)).toFixed(2)}MB)`).join(", ")});
-        this.formField.control.markAsTouched();
+        this.model().control.setErrors({'maxsize':true, files:fileError.map(f=>`${f.name} (${(f.size/(1024*1024)).toFixed(2)}MB)`).join(", ")});
+        this.model().control.markAsTouched();
         this.value=null;
       }    
     }
 
     this.fileValueChange.emit(fileList);
   }
-
-  // qrValueChanged(event) {
-  //   const file = event.target.files[0];
-  //   const reader = new FileReader();
-  //   if (file){
-  //   reader.readAsDataURL(file);
-  //   reader.onload = (e: any) => {
-  //       const data = e.target.result;
-  //       qrcode.callback = (res) => {
-  //         this.value = res;
-  //         this.valueChanged(res)};
-  //       qrcode.decode(data);
-  //     };
-  //   }
-  // }
 
   isArray = (value) => Array.isArray(value)
 
@@ -535,8 +417,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
       reader.onload = (e: any) => {
         const data = e.target.result;
 
-        // var elem = document.createElement('canvas');
-        // var ctx = elem.getContext('2d');
         const img = new Image();
 
         img.onload = () => {
@@ -549,19 +429,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
             })
             .catch(err => console.error(err));
 
-          // here canvas behavior
-          /*elem.width = img.width;
-          elem.height = img.height;
-
-          ctx.drawImage(img, 0, 0);
-          var imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-          var code = zdecoder.zbarProcessImageData(imageData);
-          if (code.length > 0) {
-            var res = code[0][2];
-            this.value = res;
-            this.valueChanged(res);
-          }*/
         };
         img.src = data;
 
@@ -571,18 +438,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
 
   translate = (value: number): string => Number.isNaN(value) ? "" : value + "";
 
-
-  // // Validator Interface
-  // public validate(c: FormControl): any {
-  //   // console.log(this.form.invalid);
-  //   return this.form.invalid?{'error':true}:null;
-  //     // return this.input && this.input.control && this.input.control.errors;
-  // }
-
-  // preCheck(f) {
-  //   return !f.pre || new Function('$', 'user', 'return ' + f.pre)(this.data.content, this.user);
-  // }
-  // v:any;
   compileTpl(a, b, keep?) {
     var f = "";
     // console.log(a);
@@ -605,7 +460,6 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
 
 
   triggerAddAction=(addValue)=>{ // using lambda supaya this <- refer to class
-    // console.log("dlm trigger Add Action")
     this.addAction.emit(addValue);
   }
 

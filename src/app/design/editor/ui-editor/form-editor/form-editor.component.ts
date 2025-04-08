@@ -40,7 +40,7 @@ import { EditLookupComponent } from '../../../../_shared/modal/edit-lookup/edit-
 import { EditLookupEntryComponent } from '../../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
 import { EditMailerComponent } from '../../../../_shared/modal/edit-mailer/edit-mailer.component';
 import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role.component';
-import { FieldEditComponent } from '../../../../run/_component/field-edit/field-edit.component';
+import { FieldEditComponent } from '../../../../run/_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../../../../run/_component/field-view.component';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
@@ -220,6 +220,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } }
 
     palettes: any[] = [];
+    showSuper: boolean = true;
     showPalette: boolean = true;
     buildPalettes() {
         var palettes = [];
@@ -252,6 +253,19 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }
         })
         this.palettes = palettes;
+    }
+
+    superItems = [];
+    buildSuper(){
+        console.log("superForm",this.superForm)
+        this.superItems = Object.values(this.superForm?.items).map((i: any)=>{
+            delete i.id;
+            i.x.extended = true;
+            return {
+                label: i.label,
+                item: i
+            }
+        })
     }
 
     formLoading: boolean; // loading formList
@@ -520,8 +534,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     getHiddenList = (list) => list.filter(i => i.hidden == true);
 
+    superForm:any = null; // form that is being extended
+
     getFormData(id) {
-        this.formError = null;
+        delete this.superForm
+        delete this.formError;
         this.curFormId = id;
         this.formService.getForm(id)
             .subscribe(res => {
@@ -543,6 +560,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     // Highlight first line
                     this.highlightSubmit();
                     // this.highlightLine({id:-1}, {id:-1, color:'rgb(0, 123, 255)', action:'goTier', nextTier:res.tiers[0].id});// {
+                }
+                if (res?.x?.extended){
+                    this.formService.getForm(res?.x?.extended)
+                        .subscribe(r1 => {
+                            this.superForm = r1;
+                            this.buildSuper();
+                        }
+                    );
                 }
                 this.loadTrails(this.curForm.id, 1);
                 // }
@@ -1191,7 +1216,23 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 item['code'] = item.subType + '_' + rnd;
             }
 
-            this.editItem(this.editItemTpl(), parent, Object.assign({}, item), event.currentIndex - 1, true);
+            if (!item.x?.extended){
+                this.editItem(this.editItemTpl(), parent, Object.assign({}, item), event.currentIndex - 1, true);
+            }else{
+                if (!this.curForm.items[item.code]){
+                    this.formService.saveItem(this.curForm.id, parent.id, item, event.currentIndex - 1)
+                    .subscribe({
+                        next: (e) => {
+                            this.getFormData(this.curForm.id);
+                            this.getLookupIdList(this.curForm.id);
+                            this.saveItemOrder(parent);
+                            this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
+                        }, error: (e) => {
+                            this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
+                        }
+                    })
+                }
+            }
 
         } else {
             if (event.previousContainer === event.container) {
@@ -1655,6 +1696,32 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .result.then(data => {
 
             }, res => { })
+    }
+
+    moveFormToAppData: any = {};
+    formRelatedComps: any = {};
+    moveFormToApp(content) {
+        this.formService.getRelatedComps(this.curFormId)
+        .subscribe(res => {
+            this.formRelatedComps = res;        
+            history.pushState(null, null, window.location.href);
+            this.modalService.open(content, { backdrop: 'static' })
+            .result.then(data => {
+                this.moveFormToAppData.datasetIds = this.formRelatedComps.dataset.filter(e=>e.isChecked).map(e=>e.id);
+                this.moveFormToAppData.screenIds = this.formRelatedComps.screen.filter(e=>e.isChecked).map(e=>e.id);
+                // console.log(this.moveFormToAppData);
+                this.formService.moveToApp(this.curFormId, this.moveFormToAppData)
+                .subscribe(data=>{   
+                    this.commService.emitChange({ key: 'form', value: 0 });
+                    this.commService.emitChange({ key: 'dataset', value: 0 });
+                    this.commService.emitChange({ key: 'screen', value: 0 });
+                    this.toastService.show("Form moved successfully", { classname: 'bg-success text-light' });
+                });
+
+            }, res => { })
+        
+        
+        });
     }
 
     formJsonSchema:any;

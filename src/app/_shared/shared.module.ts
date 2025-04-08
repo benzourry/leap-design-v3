@@ -85,7 +85,7 @@ import {
      faToggleOn, faToggleOff, faLink, faMapMarkedAlt, faUsers, faHistory, faBox, 
      faRocket, faSync, faShoppingCart, faInbox, faCircleNodes, faFileWaveform, faStop, faRobot, faAlignJustify, 
      faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, 
-     faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faDiagramProject,
+     faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faDiagramProject, faRandom,
      faMicrophone,
      faAngleDoubleLeft
 } from '@fortawesome/free-solid-svg-icons';
@@ -118,7 +118,7 @@ export class SharedModule {
         // library.addIconPacks(fas);
         library.addIcons(faExpand, faCompress, faEdit, faTasks,faChevronLeft, faUsersCog, faPrint, faWpforms, faChevronRight, faGoogle, faFacebookF, faUniversity, faGithub, faLinkedin, faCheckSquare, faCheck, faSquare, faQuidditch, faTh, faPlusCircle, faThumbsUp, faChartBar, faChartArea, faChartLine, faChartPie, faPencilAlt, faCog, faTrash, faPlus,faTimes,faCopy,
             faFileExcel, faFileCsv, faSync, faFilePdf, faSave, faFileCode, faStream, farFile, faLink, faEllipsisH, faBox,faMicrosoft, faTwitter,
-            farCheckSquare, farSquare, faSignOutAlt, faAngleDown, faAngleUp, faTerminal, faToggleOn, faToggleOff, faMapMarkedAlt, faInbox,
+            farCheckSquare, farSquare, faSignOutAlt, faAngleDown, faAngleUp, faRandom, faTerminal, faToggleOn, faToggleOff, faMapMarkedAlt, faInbox,
             faThLarge, faEnvelope, faGripVertical, faCircleUser, faCommentDots, faSearch, faFilter, faCaretSquareDown, faShoppingBag, faShoppingCart, faQuestionCircle, faUser, faSignOutAlt, faSave, faAngleRight, faFile, faTimes, faPlay, faTachometerAlt, faPlusSquare, farPlusSquare, faMinusSquare,
             faListOl, faCalendar, faCalendarAlt, faRocket, faPaperPlane, faQuestion, faArrowUp, faArrowDown, faInfoCircle, faAngleRight, faAngleLeft, faArrowLeft, faArrowRight, faExclamationTriangle, faHistory,
             faReply, faAlignLeft, faAlignCenter, faAlignRight, faAlignJustify, faQrcode, faShare, faTable, faList, farCircle, fasCircle, faMailBulk, faUsersCog, faFileExcel, faListAlt, faCircleNotch, faUpload, faDownload, faAngleDoubleRight, faAngleDoubleLeft, faWindowRestore, faSitemap, faGlobe, faSort, faShareAlt, faLock, faUsers,

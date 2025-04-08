@@ -64,7 +64,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     imports: [PageTitleComponent, NgbTooltip, FaIconComponent, FormsModule, NgbDropdown, NgbDropdownToggle,
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
     NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, UserEntryFilterComponent, AngularEditorModule,
-    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), JsonPipe,
+    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
     SafePipe, KeyValuePipe]
 })
 export class ListComponent implements OnInit, OnChanges {

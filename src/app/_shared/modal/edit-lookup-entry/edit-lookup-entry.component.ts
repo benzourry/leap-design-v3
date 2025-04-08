@@ -6,10 +6,11 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 // import { LookupService } from '../../../service/lookup.service';
 import { ToastService } from '../../service/toast-service';
 import { LookupService } from '../../../run/_service/lookup.service';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
     selector: 'app-edit-lookup-entry',
-    imports: [FormsModule, FaIconComponent, KeyValuePipe, NgbInputDatepicker],
+    imports: [FormsModule, FaIconComponent, KeyValuePipe, NgbInputDatepicker, NgSelectComponent],
     templateUrl: './edit-lookup-entry.component.html',
     styleUrl: './edit-lookup-entry.component.scss'
 })
@@ -57,16 +58,29 @@ export class EditLookupEntryComponent {
   // editLookupEntryDataFields: any[];
   lookupEntryFieldsOrphan: any;
 
+  lookupListMap:any = {};
+
   fieldsAsList = (str: string) => {
     var rval = [];
     var arr = str ? str.split(',') : [];
     arr.forEach(r => {
         var h = r.split("@");
         let g = h[0].split(":");
+
+        if (g.length > 1 && g[1].trim() == 'lookup'){
+          let lookupId = +g[2].trim();
+          this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
+            next: (res) => {            
+                this.lookupListMap[lookupId] = res.content;
+            }, error: (error) => {}
+          })
+        }
+        
         rval.push({
             key: g[0].trim(),
             type: g.length > 1 ? g[1].trim() : 'text',
-            opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') : []
+            opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') :
+                  g.length > 2 && g[1].trim() == 'lookup' ? +g[2].trim() : []
         });
     })
     return rval;
@@ -91,6 +105,8 @@ export class EditLookupEntryComponent {
             })
     }
   }
+
+  compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
 
 
 }

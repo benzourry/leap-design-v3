@@ -15,7 +15,7 @@
         <!-- <input type="file" /> -->
         @if (!valueText) {
             <div class="form-control nobreak cursor-pointer extracting" (click)="isUserSpeaking?stopRecording():startRecording()" [class.is-invalid]="formField?.invalid">
-                <div class="py-1">
+                <div class="">
                     @if(isUserSpeaking){
                         <fa-icon [icon]="['fas','square']" [fixedWidth]="true"></fa-icon>
                         <span class="blink_me"> Listening...</span>
@@ -27,7 +27,7 @@
                 </div>
             </div>
 
-            <div style="position:absolute;top:5px; right:5px;font-size:12px;">
+            <div style="position:absolute;top:3px; right:3px;font-size:12px;">
                 <div ngbDropdown class="d-inline-block">
                     <div type="button" class="p-0 me-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Choose language" id="chooseLang"
                       ngbDropdownToggle>
@@ -44,8 +44,8 @@
             </div>
 
         }@else{
-            <div class="form-control" style="background: white;padding-right:30px;height:auto; min-height:calc(3.5rem + 2px);">
-                <div class="pt-1">
+            <div class="form-control" style="background: white;padding-right:30px;height:auto;">
+                <div class="">
                     {{valueText}}
                 </div>
             </div>
@@ -64,11 +64,11 @@
 
          
 
-        @if (!field().hideLabel) {
+        <!-- @if (!field().hideLabel) {
         <span class="label-span">{{field().label}} @if (field()?.v?.required) {
             <span>*</span>
             }</span>
-        }
+        } -->
 
         
 

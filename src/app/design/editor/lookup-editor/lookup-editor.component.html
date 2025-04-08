@@ -244,6 +244,9 @@
                                           @if (['longtext','text','options'].indexOf(mapDataFields[o.key])>-1) {
                                             <span [innerHtml]="o.value"></span>
                                           }
+                                          @if (mapDataFields[o.key]=='lookup') {
+                                            <span>{{o.value?.name}}</span>
+                                          }
                                           @if (mapDataFields[o.key]=='number') {
                                             <span>{{o.value}}</span>
                                           }
@@ -458,13 +461,12 @@
                 accept=".xlsx" />
               @if (!importLoading) {
                 <div class="form-control" style="background: white">
+                  Importing...
+                </div>
+              }@else{
+                <div class="form-control" style="background: white">
                   <fa-icon [icon]="['fas','upload']"></fa-icon>
                   Browse
-                </div>
-              }
-              @if (importLoading) {
-                <div class="form-control" style="background: white">
-                  Importing...
                 </div>
               }
             </label>

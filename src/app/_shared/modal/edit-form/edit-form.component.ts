@@ -1,4 +1,4 @@
-import { Component, OnInit, input, model } from '@angular/core';
+import { Component, OnInit, computed, input, model } from '@angular/core';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -21,6 +21,7 @@ export class EditFormComponent implements OnInit {
   // @Input("formList")
   formList = input<any[]>([])
 
+  formListRoot = computed(() => this.formList().filter(f => !f.x?.extended));
 
   // @Input("form")
   editFormData = model<any>({},{alias:'form'});

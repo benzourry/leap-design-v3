@@ -373,7 +373,10 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
   </div>
 </ng-template>
 `,
-    styles: [`.form-group>label,.custom-checkbox>label{ font-size:14px;font-weight:600;}`],
+    styles: [
+      `.form-group>label,.custom-checkbox>label{ font-size:14px;font-weight:600;}`,
+      `.label-span { opacity: 0.7; font-size: 0.95em; margin-bottom: 0.3rem;}`
+    ],
     imports: [NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,
     NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
     NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,

@@ -12,9 +12,10 @@ import {
   validate,
 } from './validate';
 import { map } from 'rxjs/operators';
+import { Signal } from '@angular/core';
 
 export abstract class ElementBase<T> extends ValueAccessorBase<T> {
-  protected abstract model: NgModel;
+  protected abstract model: Signal<NgModel>;
 
   constructor(
     private validators: ValidatorArray,
@@ -26,7 +27,7 @@ export abstract class ElementBase<T> extends ValueAccessorBase<T> {
   protected validate(): Observable<ValidationErrors> {
     return validate
       (this.validators, this.asyncValidators)
-      (this.model.control);
+      (this.model().control);
   }
 
   protected get invalid(): Observable<boolean> {

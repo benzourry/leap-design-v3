@@ -90,7 +90,6 @@ export class EditMailerComponent {
 
           });
   }
-
   
   insertTextAtCursor(text, cm) {
     cm.insertText("{{" + text + "}}");

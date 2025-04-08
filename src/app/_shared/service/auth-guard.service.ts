@@ -91,7 +91,6 @@ export class AuthGuardService {
             })
           })
       } else if (token) {
-        // console.log("redirect:"+window.localStorage.getItem("redirect"));
         window.localStorage.setItem("auth", btoaUTF(JSON.stringify({accessToken: token})));
         fetch(`${OAUTH.USER_URI}`, { headers: { Authorization: "Bearer " + token } })
           .then(d=>{
@@ -102,15 +101,9 @@ export class AuthGuardService {
                 subject.next(false);
 
               } else {
-                // window.localStorage.setItem("auth", JSON.stringify(f.auth));
                 window.localStorage.setItem("user", btoaUTF(JSON.stringify(f)));
                 window.localStorage.setItem("noframe", noframe);
-                // window.localStorage.removeItem("userexp");
-
-                // console.log(window.localStorage.getItem("redirect") ? "/#" + window.localStorage.getItem("redirect") : OAUTH.FINAL_URI);
-                // this.router.navigate([window.localStorage.getItem("redirect") ? window.localStorage.getItem("redirect") : OAUTH.FINAL_URI])
                 this.router.navigateByUrl(window.localStorage.getItem("redirect") ? window.localStorage.getItem("redirect") : OAUTH.FINAL_URI);
-                // window.location.href = window.localStorage.getItem("redirect") ? "/#" + window.localStorage.getItem("redirect") : OAUTH.FINAL_URI;
                 subject.next(true); 
               }
             })
