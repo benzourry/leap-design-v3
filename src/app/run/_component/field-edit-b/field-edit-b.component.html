@@ -58,8 +58,8 @@
     </ng-container>
     @if (field().hint) {
       <small class="val-text form-text text-muted d-block">
-        <fa-icon [icon]="['fas','info-circle']"></fa-icon>
-        <span>{{field().hint}}</span>
+        <fa-icon [icon]="['fas','info-circle']" class="float-start"></fa-icon>
+        <div class="ms-4">{{field().hint}}</div>
       </small>
     }
   }

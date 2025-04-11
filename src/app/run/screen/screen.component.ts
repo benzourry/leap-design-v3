@@ -545,14 +545,14 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
 
 
   updateField = (entryId, value, callback, error) => {
-    return lastValueFrom(this.entryService.updateField(entryId, value, this.app?.id)
+    return lastValueFrom(this.entryService.updateField(entryId, value, this.screen?.appId)
       .pipe(
         tap({ next: callback, error: error }), first()
       ));
   }
 
   updateLookup = (entryId, value, callback, error) => {
-    return lastValueFrom(this.entryService.updateLookup(entryId, value, this.app?.id)
+    return lastValueFrom(this.entryService.updateLookup(entryId, value, this.screen?.appId)
       .pipe(
         tap({ next: callback, error: error }), first()
       ));
