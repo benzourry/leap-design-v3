@@ -1210,7 +1210,7 @@
         }@else {
           @if (editActionData.nextType) {
             <div class="form-group mb-3">
-              <label class="form-label">Select App</label>
+              <label class="form-label">Select App *</label>
               <select class="form-select" name="appId" (change)="loadOtherAppList(editActionData.appId)"
                 [(ngModel)]="editActionData.appId">
                 @for (app of otherAppList; track app.id) {
@@ -1498,6 +1498,19 @@
       
               </div>
             </div>
+
+            @if (['form','form-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(addCombineCompData.type)>-1) {
+              <div class="form-group mb-3">
+                <label class="form-label">Select App</label>
+                <select class="form-select" name="appId"
+                  (change)="loadOtherAppList(addCombineCompData.type,addCombineCompData.appId)"
+                  [(ngModel)]="addCombineCompData.appId">
+                  @for (app of otherAppList; track app.id) {
+                    <option [ngValue]="app.id">{{app.title}}</option>
+                  }
+                </select>
+              </div>
+            }
       
       
             @if (['add','form-single','view-single'].indexOf(addCombineCompData.type)>-1) {

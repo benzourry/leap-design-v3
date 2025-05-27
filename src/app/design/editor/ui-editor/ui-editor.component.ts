@@ -37,6 +37,7 @@ import { LookupService } from '../../../run/_service/lookup.service';
 import { EntryService } from '../../../run/_service/entry.service';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
+import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/clone-dashboard.component';
 
 @Component({
     selector: 'app-ui-editor',
@@ -46,7 +47,7 @@ import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
     imports: [SplitPaneComponent, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, RouterLinkActive, NgbCollapse,
         NgbAccordionCollapse, NgbAccordionBody, CdkDropList, CdkDrag, CdkDragHandle, RouterLink, FaIconComponent, RouterOutlet, FormsModule,
         EditFormComponent, CloneFormComponent, CloneDatasetComponent, CloneScreenComponent, EditDatasetComponent,
-        EditDashboardComponent, EditScreenComponent, FilterPipe, GroupByPipe]
+        EditDashboardComponent, CloneDashboardComponent, EditScreenComponent, FilterPipe, GroupByPipe]
 })
 export class UiEditorComponent implements OnInit {
 
@@ -487,8 +488,33 @@ export class UiEditorComponent implements OnInit {
             }, dismiss => { })
     }
 
+    @ViewChild("editDashboardTpl") editDashboardTpl: TemplateRef<any>;
+    cloneDashboard(tpl) {
+        // this.formEditData = {x:{}}
+        history.pushState(null, null, window.location.href);
+        this.modalService.open(tpl, { backdrop: 'static' })
+            .result.then(cloneDashboardData => {
+                this.dashboardService.cloneDashboard(cloneDashboardData.dashboardId, this.app.id)
+                    .subscribe({
+                        next: (res) => {
+                            this.getDashboardList();
+                            res.title = res.title + " (cloned)";
+                            // this.editDatasetFormHolder = {data:res.form, prev: res.form?.prev}
+                            this.editDashboard(this.editDashboardTpl, res);
+                            // delete this.curForm;
+                            this.toastService.show("Dashboard cloned successfully", { classname: 'bg-success text-light' });
+                        }, error: (err) => {
+                            this.toastService.show("Dashboard cloning failed", { classname: 'bg-danger text-light' });
+                        }
+                    })
+            }, dismiss => { })
+    }
+
     newDashboard: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, canView: true, canEdit: true, canDelete: true };
-    editDashboard(tpl) {
+    editDashboardData: any = {};
+    editDashboard(tpl, data) {
+        this.editDashboardData = data;
+        this.editDashboardData.appId = this.app.id;
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static' })
             .result.then(res => {

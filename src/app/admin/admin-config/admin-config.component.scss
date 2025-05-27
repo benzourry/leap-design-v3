@@ -1,0 +1,124 @@
+// .props-disabled{
+//     text-decoration: line-through;
+//     color: #aaa !important;
+// }
+
+.props-disabled td:not(.action){
+    text-decoration: line-through;
+    color: #aaa !important;
+}
+
+
+td.action{
+    width:1%; 
+    white-space: nowrap;
+}
+
+
+
+table.tbl-child *{
+    text-align: left;
+    font-size:0.8rem;
+  }
+  table.tbl-child>thead th{
+    color:#666
+  }  
+  table.tblcard>.list-tmid>tr>td.td-list{
+    padding: 0 !important;
+  }
+  table.tblcard>.list-tmid>tr>td.td-list::before{
+    padding: 0.5rem !important;
+  }
+
+@media screen and (max-width: 576px) {
+  /* table.tblcard>.tmid>tr>td.td-list{
+    padding: 0.25em;
+  } */
+  table.tbl-child{
+    border-left: solid 5px #ddd;
+  }
+  table.tblcard {
+    border: 0;
+    background-color: transparent !important;
+  }
+
+  table.tblcard > thead.list-tmid {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  table.tblcard > .list-tmid >  tr {
+    /* border-bottom: 3px solid #ddd; */
+    display: block;
+    margin-bottom: .625em;
+    /* border: solid 2px white; */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.12);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    background:white;
+  }
+
+  table.tblcard > .list-tmid >  tr.ds-group-header {
+    box-shadow:none;
+  }
+
+  table.tblcard > .list-tmid > tr.selected-row {
+    background-color: #eaf4fe;
+    outline: solid 2px #0d6efd;
+  }
+
+  table.tblcard > .list-tmid > tr > td.ds-check,
+  table.tblcard > .list-tmid > tr > td.ds-index{    
+    display: inline-block;
+    border-bottom: none;
+  }
+
+  table.tblcard > .list-tmid > tr > .ds-check{
+    text-align: left;
+    padding-left:0.8em;
+    /* width:70%; */
+  }  
+  /* table.tblcard .ds-index{
+    background-color: white;
+    color: black;
+  } */
+
+
+  table.tblcard > .list-tmid > .selected-row > td {
+    background-color: #eaf4fe;
+  }
+
+  table.tblcard  > .list-tmid > tr > td {
+    border-bottom: 1px solid var(--bs-border-color);
+    display: block;
+    font-size: .8em;
+    text-align: right;
+    background-color: white;
+  }
+
+  .tblcard.table-striped>tbody.list-tmid>tr:nth-of-type(odd)>* {
+    --bs-table-accent-bg: unset;
+  }
+
+  table.tblcard > .list-tmid > tr > td::before {
+    /*
+      * aria-label has no advantage, it won't be read inside a table
+      content: attr(aria-label);
+      */
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-right: 1em;
+  }
+
+  table.tblcard>.list-tmid>tr>td:last-child {
+    border-bottom: 0;
+  }
+}

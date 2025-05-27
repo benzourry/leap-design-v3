@@ -1,5 +1,6 @@
 <div id="dataset-{{dataset?.id}}" class="viewport section-to-print">
 <div>
+  <!-- datasetid: {{dataset?.id}} -->
   @if (!asComp() && !hideTitle()) {
     <page-title>
       <h4 [innerHtml]="compileTpl(dataset?.title,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.title}}</h4>

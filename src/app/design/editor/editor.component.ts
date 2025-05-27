@@ -174,7 +174,7 @@ export class EditorComponent implements OnInit {
                             .subscribe({
                                 next: res => {
                                     this.app = res;
-                                    this.authorized = res.email.includes(user.email);
+                                    this.authorized = res.email.includes(user.email) || res.group?.manager?.includes(user.email);
                                     this.titleService.setTitle("Design - " + this.app.title);
                                     this.getCopyRequestList();
                                     this.loading = false;

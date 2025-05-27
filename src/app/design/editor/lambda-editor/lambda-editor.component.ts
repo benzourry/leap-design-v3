@@ -390,7 +390,8 @@ export class LambdaEditorComponent implements OnInit {
   showPrompt(script) {
     this.request = {};
     const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
-    array.forEach(e => {
+    const arrayParam = [...script.matchAll(/_param\.(.+?)\s*/ig)];
+    [...array, ...arrayParam].forEach(e => {
       if (!this.request[e[1]]) {
         this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
       }

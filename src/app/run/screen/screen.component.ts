@@ -85,6 +85,7 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   cogna: any = {};
   // @Input() screenId: number;
   screenId = input<number>();
+  _screenId: number;
   // @Input() entryId: number;
   entryId = input<number>();
   _entryId:number; // use private variable to store entryId
@@ -102,6 +103,7 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   // @ViewChild('inPopTpl', { static: false }) inPopTpl;
   inPopTpl = viewChild<TemplateRef<any>>('inPopTpl')
 
+  prevSignalKey:string='';
 
   constructor(private userService: UserService, private modalService: NgbModal,
     private entryService: EntryService, private route: ActivatedRoute, private lookupService: LookupService,
@@ -113,7 +115,19 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
 
     effect(()=>{
+
       this._entryId = this.entryId();
+      this._screenId = this.screenId();
+
+      const key = `${this._screenId}|${this._entryId}`;
+
+      if (this._screenId && this.prevSignalKey != key){
+        this.prevSignalKey = key;
+        this.getScreen(this.screenId());
+      }
+      // if (this._entryId != this.entryId()){
+      //   this._entryId = this.entryId();
+      // }      
     })
 
     // effect(()=>{
@@ -170,7 +184,7 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
           // NYA RUN 2x kali tok if REFRESH
           // console.log("with latest", params, queryParams)
           this._entryId = queryParams['entryId'];
-          const screenId = params['screenId'];
+          this._screenId = params['screenId'];
           this.$param$ = queryParams;
           // this.$param$.update(p=>({...p,...queryParams}));
           // console.log("_entryId b4",this._entryId)
@@ -182,8 +196,8 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
             // this._entryId = null;
           }
           // console.log("_entryId after",this._entryId)
-          if (screenId) {
-            this.getScreen(screenId);
+          if (this._screenId) {
+            this.getScreen(this._screenId);
           }
         });
 

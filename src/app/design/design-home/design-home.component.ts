@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
 import { AppService } from '../../service/app.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { PlatformLocation, NgStyle, NgClass } from '@angular/common';
+import { PlatformLocation, NgStyle, NgClass, JsonPipe } from '@angular/common';
 import { baseApi, domainBase } from '../../_shared/constant.service';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.component';
@@ -29,6 +29,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { FilterPipe } from '../../_shared/pipe/filter.pipe';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 // import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 // import { SpeechRecognitionService } from '../../_shared/service/speech-recognition.service';
 
@@ -36,7 +37,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     selector: 'app-design-home',
     templateUrl: './design-home.component.html',
     styleUrls: ['../../../assets/css/tile.css', './design-home.component.css'],
-    imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination,
+    imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination, GroupByPipe, JsonPipe,
         NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, AppEditComponent]
 })
 export class DesignHomeComponent implements OnInit, OnDestroy {
@@ -45,10 +46,15 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
   // @ViewChild('editItemTpl', { static: false }) public editItemTpl: TemplateRef<any>;
   // public editItemTpl = viewChild<TemplateRef<any>>('editItemTpl');  
 
+  groupByPipe = new GroupByPipe();
+
   offline = false;
 
   editItemData: any;
   itemList: any[];
+  groupedItemList: any[];
+  groupFilter:string;
+  hideGroupItems: any={};
   itemTotal: number;
   itemLoading: boolean;
   // sharedList: any[];
@@ -140,7 +146,7 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
       page: pageNumber - 1,
       searchText: this.searchText,
       email: this.user.email,
-      sort: 'id,desc'
+      sort: ['group.name,desc','id,desc']
     }
     if (this.appStatusFilter!='all'){
       params.live = this.appStatusFilter
@@ -151,6 +157,9 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
         next: res => {
           this.itemTotal = res.page?.totalElements;
           this.itemList = res.content;
+
+          this.groupedItemList = this.groupByPipe.transform(this.itemList,        'group.name');
+
           this.itemLoading = false;
         }, error: err => {
           this.itemLoading = false;

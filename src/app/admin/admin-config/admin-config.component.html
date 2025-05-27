@@ -1,0 +1,336 @@
+<div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
+    <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
+        <div class="home-top-l p-2">
+            <img src="assets/icons/logo-w.svg" width="38">
+        </div>
+        <div class="home-top-r pe-2">
+            <div class="d-flex">
+                <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+                <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+                @if (user?.manager){
+                <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+                }
+                <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+                    <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="limit-width centered p-3 tab-simple">
+    <div class="mb-3">
+        <button class="btn btn-light bg-white btn-rounded fs-5" routerLink="/admin">
+            <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
+            Home
+        </button>
+    </div>
+
+
+    @if (user?.manager){
+    <div class="alert alert-warning">
+        <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
+    </div>
+
+    <h5 class="mb-3">Platform Management: Configurations</h5>
+
+    <ul ngbNav #nav="ngbNav" class="nav-tabs mt-3 ">
+        <li [ngbNavItem]="1">
+            <button ngbNavLink>General Setting</button>
+            <ng-template ngbNavContent>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" placeholder="Key" [(ngModel)]="playtformPropsFilter">
+                    <button class="btn btn-primary" (click)="editProps(editPropsTpl,{group:'platform', enabled:1})">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Property</button>
+                </div>
+                @if (platformProps?.length > 0) {
+                <table class="table tblcard">
+                    <thead class="bg-light list-tmid ds-thead">
+                        <tr>
+                            <th class="ds-item">Key</th>
+                            <th class="ds-item">Value</th>
+                            <th style="width:1%; white-space: nowrap;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list-tmid ds-tbody">
+                        @for(i of platformProps|filter: playtformPropsFilter; track $index){
+                        <tr class="ds-row" [class.props-disabled]="!i.enabled">
+                            <td data-label="Key" class="ds-item">{{ i.key }}</td>
+                            <td data-label="Value" class="ds-item">
+                                @if (i.group=='platform' && i.key=='managers'){
+                                    @for(splitted of splitAsList(i.value); track $index){
+                    
+                                        <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
+                                            <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
+                                          height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
+                                            {{splitted}}
+                                        </div>
+                                        }
+                                }@else {
+                                    {{ i.value }}
+                                } 
+                            </td>
+                            <td class="action">
+                                <button (click)="editProps(editPropsTpl,i)"
+                                    class="btn btn-sm me-1 btn-primary">Edit</button>
+                                <button (click)="removeProps(i.id)" class="btn btn-sm btn-danger">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                        }
+                </table>
+            }@else {
+                <div class="alert alert-info">
+                    <strong>Info:</strong> No properties found.
+                </div>
+            }
+
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="2">
+            <button ngbNavLink>application.properties</button>
+            <ng-template ngbNavContent>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" placeholder="Key" [(ngModel)]="appPropsFilter">
+                    <button class="btn btn-primary" (click)="editProps(editPropsTpl,{group:'app.prop', enabled:1})">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Property</button>
+                </div>
+
+                @if (appProps?.length > 0) {
+                <table class="table tblcard">
+                    <thead class="bg-light list-tmid ds-thead">
+                        <tr>
+                            <th class="ds-item">Key</th>
+                            <th class="ds-item">Value</th>
+                            <th style="width:1%; white-space: nowrap;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list-tmid ds-tbody">
+                        @for(i of appProps|filter: appPropsFilter; track $index){
+                        <tr class="ds-row" [class.props-disabled]="!i.enabled">
+                            <td data-label="Key" class="ds-item">{{ i.key }}</td>
+                            <td data-label="Value" class="ds-item">{{ i.value }}</td>
+                            <td style="width:1%; white-space: nowrap;">
+                                <button (click)="editProps(editPropsTpl,i)"
+                                    class="btn btn-sm  me-1 btn-primary">Edit</button>
+                                <button (click)="removeProps(i.id)" class="btn btn-sm btn-danger">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                        }
+                </table>
+                }@else {    
+                    <div class="alert alert-info">
+                        <strong>Info:</strong> No properties found.
+                    </div>
+                }
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="3">
+            <button ngbNavLink>App Groups</button>
+            <ng-template ngbNavContent>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" placeholder="Key" [(ngModel)]="appGroupsFilter">
+                    <button class="btn btn-primary" (click)="editAppGroup(editAppGroupTpl,{})">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Group</button>
+                </div>
+
+                @if (appGroups?.length > 0) {
+                <table class="table tblcard">
+                    <thead class="bg-light list-tmid ds-thead">
+                        <tr>
+                            <th class="ds-item">Name</th>
+                            <th class="ds-item">Description</th>
+                            <th class="ds-item">Managers</th>
+                            <th style="width:1%; white-space: nowrap;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list-tmid ds-tbody"> 
+                        @for(i of appGroups|filter: appGroupsFilter; track $index){
+                        <tr class="ds-row" [class.props-disabled]="!i.enabled">
+                            <td class="ds-item" data-label="Name" >{{ i.name }}</td>
+                            <td class="ds-item" data-label="Description">{{ i.description }}</td>
+                            <td class="ds-item" data-label="Managers">
+                                @for(splitted of splitAsList(i.managers); track $index){
+                    
+                                    <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
+                                        <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
+                                      height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
+                                        {{splitted}}
+                                    </div>
+                                }
+                            </td>
+                            <td style="width:1%; white-space: nowrap;">
+                                <button (click)="editAppGroup(editAppGroupTpl,i)"
+                                    class="btn btn-sm  me-1 btn-primary">Edit</button>
+                                <button (click)="removeAppGroup(i.id)" class="btn btn-sm btn-danger">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                        }
+                </table>
+                }@else {    
+                    <div class="alert alert-info">
+                        <strong>Info:</strong> No groups found.
+                    </div>
+                }
+            </ng-template>
+        </li>
+    </ul>
+
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    }@else {
+    <div class="alert alert-danger">
+        <strong>Warning:</strong> You are not authorized to access this area. Please contact your administrator.
+    </div>
+    }
+
+
+
+</div>
+
+
+
+<ng-template #editPropsTpl let-c="close" let-d="dismiss">
+    <div #editPropsForm="ngForm" ngForm>
+        <div class="modal-header">
+            <h4 class="modal-title">Add Properties</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group mb-3">
+                    <label class="form-label">Group *</label>
+                    <select class="form-select" name="userFromApp" disabled [(ngModel)]="editPropsData.group" required>
+                        <!-- <option [ngValue]="undefined" class="text-muted">Use own local user</option> -->
+                        <!-- @for (app of otherAppList; track app.id) { -->
+                        <option value="platform">Platform</option>
+                        <option value="app.prop">application.properties</option>
+                        <!-- } -->
+                    </select>
+                    <!-- <input type="text" class="form-control" name="code" #propsGroup="ngModel"
+                        [(ngModel)]="editPropsData.group" required /> -->
+                    @if (propsGroup?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (propsGroup.errors?.required) {
+                        <span class="help-block">Group is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Key *</label>
+                    <input type="text" class="form-control" name="name" #propsKey="ngModel"
+                        [(ngModel)]="editPropsData.key" required />
+                    @if (propsKey?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (propsKey.errors?.required) {
+                        <span class="help-block">Key is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Value *</label>
+                    <textarea class="form-control" name="value" #propsValue="ngModel" [(ngModel)]="editPropsData.value"
+                        required></textarea>
+                    <!-- <input type="text" class="form-control" name="value" #propsValue="ngModel"
+                        [(ngModel)]="editPropsData.value" required /> -->
+                    @if (propsValue?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (propsValue.errors?.required) {
+                        <span class="help-block">Value is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input"
+                            (change)="editPropsData.enabled = $event.target.checked ? 1: 0"
+                            [(ngModel)]="editPropsData.enabled" name="enabled" id="enabled">
+                        <label class="form-check-label" for="enabled">Enabled</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round btn-primary" [disabled]="editPropsForm.invalid"
+                (click)="c(editPropsData)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                Save Property
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #editAppGroupTpl let-c="close" let-d="dismiss">
+    <div #editAppGroupForm="ngForm" ngForm>
+        <div class="modal-header">
+            <h4 class="modal-title">Add App Group</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group mb-3">
+                    <label class="form-label">Name *</label>
+                    <input type="text" class="form-control" name="agname" #appGroupName="ngModel"
+                        [(ngModel)]="editAppGroupData.name" required />
+                    @if (appGroupName?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (appGroupName.errors?.required) {
+                        <span class="help-block">Name is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Description *</label>
+                    <textarea class="form-control" name="agdesc" #appGroupDesc="ngModel" [(ngModel)]="editAppGroupData.description"
+                        required></textarea>
+                    @if (appGroupDesc?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (appGroupDesc.errors?.required) {
+                        <span class="help-block">Description is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+               <div class="form-group mb-3">
+                    <label class="form-label">Managers (email, comma-separated) *</label>
+                    <textarea class="form-control" name="agmanagers" #appGroupManagers="ngModel" [(ngModel)]="editAppGroupData.managers"
+                        required></textarea>
+                    @if (appGroupManagers?.invalid) {
+                    <small class="form-text has-warning">
+                        @if (appGroupManagers.errors?.required) {
+                        <span class="help-block">Managers is required</span>
+                        }
+                    </small>
+                    }
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input"
+                            (change)="editAppGroupData.enabled = $event.target.checked ? 1: 0"
+                            [(ngModel)]="editAppGroupData.enabled" name="enabled" id="enabled">
+                        <label class="form-check-label" for="enabled">Enabled</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round btn-primary" [disabled]="editAppGroupForm.invalid"
+                (click)="c(editAppGroupData)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                Save Group
+            </button>
+        </div>
+    </div>
+</ng-template>

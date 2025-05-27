@@ -5,8 +5,8 @@
     <circle cx='6' cy='8.2' r='.6' fill='#dc3545' stroke='none' />
   </svg>
 </ng-template>
-
 <ng-template #valError let-formField="formField" let-field="field">
+<!-- nuuuuu---{{imgclsVal()}}----{{formField?.touched}} -->
   @if (formField?.touched && formField?.invalid) {
     <small class="val-text text-danger">
       <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>
@@ -38,6 +38,12 @@
       }
     </small>
   }
+  @if (value && field()?.x?.imgcls && field()?.v?.imgcls && !imgclsVal()) {
+    <small class="val-text text-danger">
+      <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>
+        <span>Image doesn't contain any '{{field().v.imgcls}}'</span>
+    </small>
+  }
 </ng-template>
 
 <div class="form-group position-relative" [ngClass]="field().altClass">
@@ -59,7 +65,7 @@
 <ng-template #text>
   @if (field().subType=='input') {
     <label class="has-float-label" [class.always]="always()" for="f-{{field().id}}-{{id()}}">
-      <input class="form-control" [attr.list]="'datalist-'+field().id+'-'+id" [class.is-invalid]="formField?.invalid"
+      <input class="form-control" [attr.list]="'datalist-'+field().id+'-'+id()" [class.is-invalid]="formField?.invalid"
         type="text" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
         [maxlength]="field()?.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="field()?.v?.mask"
         [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'" [pattern]="field()?.v?.pattern"
@@ -743,7 +749,7 @@
       }
       <input type="file" style="display: none" #native #formField="ngModel" (change)="fileValueChanged($event)"
         id="f-{{field().id}}-{{id()}}" [(ngModel)]="file[field().code]" name="f-{{field().id}}-{{id()}}"
-        [multiple]="field().subType == 'imagemulti'" [required]="!value  && field()?.v?.required" accept="image/*" />
+        [multiple]="field().subType == 'imagemulti'" [required]="(!value  && field()?.v?.required) || (field()?.v?.imgcls && !imgclsVal())" accept="image/*" />
       <label class="mb-0 d-block position-relative" for="f-{{field().id}}-{{id()}}">
         @if (fileProgress()) {
           <div
@@ -800,6 +806,10 @@
       <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
     </div>
   }
+  <!-- @if (value && field()?.v?.imgcls && !imgclsVal()) {
+    <input type="hidden" id="f-{{field().id}}-{{id()}}-hid-imgcls" name="f-{{field().id}}-{{id()}}-hid-imgcls"
+      required>
+  } -->
 </ng-template>
 
 <ng-template #eval>

@@ -1,5 +1,5 @@
 <div class="bg-reka" [ngClass]="bgClassName" >
-  <div style="max-width:710px" class="limit-width centered d-flex justify-content-between">
+  <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
       <img src="assets/icons/logo-w.svg" width="38">
       </div>
@@ -7,10 +7,12 @@
         <div class="d-flex">
           <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
           <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          @if (user?.manager){
+            <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          }
           <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
-          <!-- <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon> -->
-          <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
-        </a>
+            <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+          </a>
       </div>
     </div>
   </div>

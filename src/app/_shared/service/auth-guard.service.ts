@@ -49,8 +49,8 @@ export class AuthGuardService {
       if (apiKey){
         window.localStorage.setItem("auth", btoaUTF(JSON.stringify({apiKey: apiKey})));
         fetch(`${OAUTH.USER_URI}?appId=${appId}`, {headers: { Authorization: `ApiKey ${apiKey}`} })
-          .then(function (d) {
-            d.json().then(function (f) {
+          .then(d => {
+            d.json().then(f => {
               if (f.error) {
                 window.localStorage.setItem("error", JSON.stringify(f.error));
                 window.location.href = "/assets/error.html";
@@ -70,8 +70,8 @@ export class AuthGuardService {
       }else if (accessToken) {
         // cannot pass as header, sbb tok ialah endpoint n nya perlu dipass as parameter
         fetch(`${OAUTH.TOKEN_GET}?access_token=${accessToken}&provider=${provider}&appId=${appId}`)
-          .then(function (d) {
-            d.json().then(function (f) {
+          .then(d => {
+            d.json().then(f => {
               if (f.auth) {
                 window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth))),
                 window.localStorage.setItem("user", btoaUTF(JSON.stringify(f.user)));

@@ -60,6 +60,9 @@ export class CognaService {
   check(cognaId: number): any {
     return this.http.get(`${this.baseApi}/cogna/${cognaId}/check`);
   }
+  history(cognaId: number, params:any): any {
+    return this.http.get(`${this.baseApi}/cogna/${cognaId}/history`,{params:params});
+  }
 
   searchDb(cognaId: number, searchDbData): any {
     searchDbData.minScore = searchDbData.minScore??0;
@@ -109,11 +112,19 @@ export class CognaService {
     return this.http.post(`${this.baseApi}/cogna/${cId}/tool`, data)
   }
 
+  saveMcp(cId, data):any{
+    return this.http.post(`${this.baseApi}/cogna/${cId}/mcp`, data)
+  }
+
   removeSrc(cId):any{
     return this.http.post(`${this.baseApi}/cogna/delete-src/${cId}`, {})
   }
   removeTool(cId):any{
     return this.http.post(`${this.baseApi}/cogna/delete-tool/${cId}`, {})
+  }
+
+  removeMcp(cId):any{
+    return this.http.post(`${this.baseApi}/cogna/delete-mcp/${cId}`, {})
   }
   // saveOld(email: string, data: any): any {
   //   return this.http.post(`${this.baseApi}/cogna?email=${email}`, data)

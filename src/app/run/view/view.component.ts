@@ -41,7 +41,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 // import { FormViewComponent } from '../../_shared/component/form-view.component';
 import { FormsModule } from '@angular/forms';
-import { FieldEditComponent } from '../_component/field-edit-a/field-edit-a.component';
+import { FieldEditComponent } from '../_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
@@ -96,6 +96,8 @@ export class ViewComponent implements OnInit {
 
   offline = false;
 
+  prevSignalKey:string='';
+
   constructor(private userService: UserService, private modalService: NgbModal,
     private entryService: EntryService, private route: ActivatedRoute, private lookupService: LookupService,
     private http: HttpClient, private toastService: ToastService, private logService: LogService,
@@ -104,14 +106,34 @@ export class ViewComponent implements OnInit {
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
 
     effect(()=>{
-      this._entryId = this.entryId();
-      this._formId = this.formId();
-    })
 
-    // effect(()=>{
-    //   this.app = this.runService.$app();
-    //   this.baseUrl = this.runService.$baseUrl();
-    // })
+      if (this.formId() && this._formId != this.formId()){
+        this.getLookupIdList(this.formId());
+      }
+
+      // if (this._entryId != this.entryId()){
+        this._entryId = this.entryId();
+      // }
+      // if (this._formId != this.formId()){
+        this._formId = this.formId();
+        
+      // }
+
+      const key = `${this._formId}|${this._entryId}`;
+
+      if (this._formId && this._entryId && this.prevSignalKey != key){
+        this.prevSignalKey = key;
+        this.getForm(this._formId, this._entryId);
+      }
+
+      // if (
+      //   this.entryId() && this.formId() &&
+      //   (this._entryId != this.entryId() || this._formId != this.formId())
+      // ){
+      //   this.getForm(this._formId, this._entryId);
+      // }
+      
+    })
   }
 
   liveSubscription: any[] = [];
@@ -484,6 +506,8 @@ export class ViewComponent implements OnInit {
           // this.onSubmit = () => this.initForm(res.onSubmit, this.form);
 
           this.getData(entryId, this.form);
+
+          // just to initialize this.appr
           this.form.tiers.forEach(t => {
             this.appr[t.id] = { data: {}, list: [], tierId: t.id }
           });

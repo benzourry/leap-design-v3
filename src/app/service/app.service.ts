@@ -58,6 +58,9 @@ export class AppService {
   getCount(id: any) {
     return this.http.get<any>(`${this.baseApi}/app/${id}/counts`);
   }
+  getSummary(id: any) {
+    return this.http.get<any>(`${this.baseApi}/app/${id}/summary`);
+  }
   activateCp(id: any, action: string) {
     return this.http.post<any>(`${this.baseApi}/app/request/${id}/${action}`, {})
   }
@@ -111,6 +114,9 @@ export class AppService {
   }
   getAppByStatusList(httpParam: any) {
     return this.http.get<any>(`${this.baseApi}/app/status`, { params: httpParam });
+  }
+  getSuperList(httpParam: any) {
+    return this.http.get<any>(`${this.baseApi}/app/super`, { params: httpParam })
   }
   getAppList(httpParam: any) {
     return this.http.get<any>(`${this.baseApi}/app`, { params: httpParam })
@@ -176,6 +182,7 @@ export class AppService {
     // console.log(data);
     return this.http.post<any>(`${this.baseApi}/app/delete-api-key/${apiKeyId}`, {});
   }
+
 
   searchInApp = new Map();
 

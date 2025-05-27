@@ -427,7 +427,13 @@ export class NaviComponent implements OnInit {
         item['x'] = { facet: {} };
     }
     this.editItemData = item;
-    this.editItemData.appId = this.app.id;
+    if (!this.editItemData.appId){      
+      this.editItemData.appId = this.app.id;
+    }
+    // console.log(this.editItemData.appId)
+    // this.editItemData.appId = this.app.id;
+    this.loadOtherAppList(this.editItemData.type,this.editItemData.appId);
+
     history.pushState(null, null, window.location.href);
     this.modalService.open(content)
       .result.then(res => {

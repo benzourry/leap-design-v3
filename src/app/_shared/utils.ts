@@ -360,7 +360,10 @@ export function atobUTF(str) {
   }).join(''))
 }
 
-export const deepMerge = (target, source) => {
+export const deepMerge = (t, s) => {
+
+  var source = Object.assign({}, s);
+  var target = Object.assign({}, t);
   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
   if (source != null) {
     for (const key of Object.keys(source)) {
@@ -467,6 +470,7 @@ export function byString(o, s) {
         return;
       }
   }
+  // console.log("o",o);
   return o;
 }
 

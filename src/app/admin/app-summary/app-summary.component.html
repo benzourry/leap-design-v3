@@ -1,0 +1,423 @@
+<div [class.centered]="platformView" class="limit-width p-3">
+    @if (platformView){
+        <div class="mb-3">
+            <button class="btn btn-light bg-white btn-rounded fs-5" routerLink="/admin/apps">
+                <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
+                Back
+            </button>
+        </div>
+    }
+    <h5 class="mb-3">App Summary</h5>
+    <div>
+        <img src="{{baseApi}}/app/logo/{{app.logo}}" alt="Logo" style="float:left"
+            onError="this.src='assets/icons/logo.svg'" width="60" height="60" class="me-2">
+        <div style="margin-left:80px">
+            <div class="fs-5">{{app.title}}</div>
+            @if(app.description){<p class="desc">{{app.description}}</p>}
+
+            @if(app.live){
+                <p class="text-success small">This app is live and can be accessed by the public.</p>
+            }@else {
+                <p class="text-danger small">This app is currently in DEV mode. Please note that the app may not be fully functional and is intended for testing purposes only.</p>
+            }
+            <!-- <p class="desc">Created on: {{item.dateCreated|date:'medium'}}</p> -->
+            <!-- <p></p> -->
+             <div class="input-group input-group-sm">
+                <span class="input-group-text text-muted small" id="basic-addon1">
+                    @if (checkLogin(app,'useSarawakid')) {
+                    <fa-icon [icon]="['far','circle-user']" title="Login with SarawakID" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useUnimasid')) {
+                    <fa-icon [icon]="['fas','university']" title="Login with UNIMAS ID" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useUnimas')) {
+                    <fa-icon [icon]="['fas','university']" title="Login with UNIMAS ID (legacy)"
+                        [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useIcatsid')) {
+                    <fa-icon [icon]="['fas','university']" title="Login with i-CATS Identity" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useSsone')) {
+                    <fa-icon [icon]="['fas','university']" title="Login with ssOne" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useGoogle')) {
+                    <fa-icon [icon]="['fab','google']" title="Login with Google" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useAzuread')) {
+                    <fa-icon [icon]="['fab','microsoft']" title="Login with Microsoft" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useFacebook')) {
+                    <fa-icon [icon]="['fab','facebook-f']" title="Login with Facebook" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useGithub')) {
+                    <fa-icon [icon]="['fab','github']" title="Login with GitHub" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useLinkedin')) {
+                    <fa-icon [icon]="['fab','linkedin']" title="Login with LinkedIn" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useTwitter')) {
+                    <fa-icon [icon]="['fab','twitter']" title="Login with Twitter" [fixedWidth]="true"></fa-icon>
+                    }
+                    @if (checkLogin(app,'useLocal')) {
+                    <fa-icon [icon]="['fas','ellipsis-h']" title="Login/Signup with email" [fixedWidth]="true"></fa-icon>
+                    }
+                </span>
+                <input name="endpointUrl" id="endpointUrl"
+                onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" type="text"
+                class="form-control"
+                value="{{getUrl(app)}}" readonly>
+             </div>
+            
+            
+            <div class="my-2">
+                @for(i of splitAsList(app.email); track $index){
+                    
+                <div class="d-inline-block me-1 border bg-light rounded small px-1 mb-1 overflow-hidden">
+                    <img src="{{base}}/user/{{app.id}}/photo/{{i}}" alt="Logo" onError="this.src='assets/img/avatar-big.png'" width="22"
+                  height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
+                    {{i}}
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">Design Summary</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Form</div>
+                        <div>{{summary.design?.form}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Dataset</div>
+                        <div>{{summary.design?.dataset}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Dashboard</div>
+                        <div>{{summary.design?.dashboard}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Screen</div>
+                        <div>{{summary.design?.screen}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Navi</div>
+                        <div>{{summary.design?.navi}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Lambda</div>
+                        <div>{{summary.design?.lambda}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Lookup</div>
+                        <div>{{summary.design?.lookup}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Mailer</div>
+                        <div>{{summary.design?.mailer}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Endpoint</div>
+                        <div>{{summary.design?.endpoint}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+
+            <div class="card">
+                <div class="card-header">Data Summary</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Entry</div>
+                        <div>{{summary.data?.entry}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Entry Size</div>
+                        <div>{{summary.data?.entrySize/(1024*1024)|number}} <sup>MiB</sup></div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Attachment Count</div>
+                        <div>{{summary.data?.attachment}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Attachment Size</div>
+                        <div>{{summary.data?.attachmentSize/(1024*1024)|number}} <sup>MiB</sup></div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Notification Log</div>
+                        <div>{{summary.data?.notification}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Users</div>
+                        <div>{{summary.data?.users}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Restore Points</div>
+                        <div>{{summary.data?.restorePoint}}</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Entry Log</div>
+                        <div>{{summary.data?.entryTrail}}</div>
+                    </div>
+                    <!-- <div class="list-group-item d-flex justify-content-between">
+                        <div>Approval Log</div>
+                        <div>{{summary.data?.entryApprovalTrail}}</div>
+                    </div> -->
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Prompt Log</div>
+                        <div>
+                            <!-- <a title="Export logs (CSV)" href="{{baseApi}}/cogna/export-log-csv" target="_blank"> -->
+                                {{summary.data?.promptLog}}
+                            <!-- </a> -->
+                        </div>
+                    </div>
+                    <!-- <div class="list-group-item d-flex justify-content-between">
+                        <div>Endpoint</div>
+                        <div>{{summary.endpoint}}</div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    <!-- </div>
+    <div class="row g-2"> -->
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">Entry Summary</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Total Entry</div>
+                        <div>{{summary.entry?.entryCount}}</div>
+                    </div>
+    
+                    @if (summary.entry?.entryCount>0){
+                    <div class="list-group-item pt-2 p-3">
+                        <label class="form-label">Size by Type</label>
+                        <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+                            @for (i of summary.entry?.formCount; track $index; let index = $index) {
+                            <div [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/summary.entry?.entryCount)*100+'%'}"
+                                style="height:8px; display:inline-flex;" title="{{i.name}}: {{i.value}}">
+                            </div>
+                            }
+                        </div>
+                        <div class="list-group small">
+                            @for (i of summary.entry?.formCount| slice:0:entryFormCountLimit; track $index; let index =
+                            $index) {
+                            <div class="list-group-item">
+                                <div class="row">
+                                    <div class="col-8 text-truncate">
+                                        <div [ngStyle]="{'background-color':selectColor(index)}"
+                                            style="height:8px; width:8px; display: inline-block"></div>
+                                        {{i.name}}
+                                    </div>
+                                    <div class="col-4" style="text-align:right">{{i.value|number}}
+                                    </div>
+                                </div>
+                            </div>
+                            }
+    
+                            @if (summary.entry?.formCount.length>5 ){
+                            @if (entryFormCountLimit){
+                            <button class="list-group-item" (click)="entryFormCountLimit=undefined">Read more...</button>
+                            }@else {
+                            <button class="list-group-item" (click)="entryFormCountLimit=5">Read less...</button>
+                            }
+                            }
+                        </div>
+                    </div>
+    
+                    }
+                </div>
+    
+            </div>
+        </div>
+        
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">Attachment Summary</div>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>Bucket Count</div>
+                        <div>{{summary.bucket?.bucketCount}}</div>
+                    </div>
+                    <!-- <div class="list-group-item d-flex justify-content-between">
+                        <div>Total Size</div>
+                        <div>{{summary.bucket?.totalSize/(1024*1024)|number}} MiB</div>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <div>File Count</div>
+                        <div>{{summary.bucket?.totalCount}}</div>
+                    </div> -->
+                </div>
+                @if (summary.bucket?.totalCount>0){
+                <div class="p-3 pt-2">
+                    <label class="form-label">Size by Type</label>
+                    <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
+                        @for (i of summary.bucket?.typeSize; track $index; let index = $index) {
+                        <div [ngStyle]="{'background-color':selectColor(index), 'width':(i.value/summary.bucket?.totalSize)*100+'%'}"
+                            style="height:8px; display:inline-flex;" title="{{i.name}}: {{i.value}}">
+                        </div>
+                        }
+                    </div>
+                    <div class="list-group small">
+                        @for (i of summary.bucket?.typeSize | slice:0:bucketTypeSizeLimit; track $index; let index = $index)
+                        {
+                        <div class="list-group-item">
+                            <div class="d-flex">
+                                <div class="flex-grow-1 text-truncate">
+                                    <div [ngStyle]="{'background-color':selectColor(index)}"
+                                        style="height:8px; width:8px; display: inline-block"></div>
+                                    {{i.name}}
+                                </div>
+                                <div class="flex-shrink-1" style="text-align:right">{{i.value/(1024*1024)|number}}<sup>MiB</sup>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        @if (summary.bucket?.typeSize.length>5 ){
+                            @if (bucketTypeSizeLimit){
+                            <button class="list-group-item" (click)="bucketTypeSizeLimit=undefined">Read more...</button>
+                            }@else {
+                            <button class="list-group-item" (click)="bucketTypeSizeLimit=5">Read less...</button>
+                            }
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="card">
+
+                
+                <div class="card-header pe-2">
+                    <div class="float-end">
+                        <input class="btn-check" type="radio" [value]="true" id="entry-cumulative"
+                          name="entry-cumulative" [(ngModel)]="entryMonthIsCumulative"
+                          required>
+                        <label for="entry-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                        Cumulative</label>
+                        <input class="btn-check" type="radio" [value]="false" id="entry-new"
+                          name="entry-new" [(ngModel)]="entryMonthIsCumulative" required>
+                        <label for="entry-new" class="btn btn-sm btn-outline-secondary">
+                        New</label>
+                    </div>
+                    Entry Monthly
+                    <div class="small">Monthly statistics of entry in app</div>
+
+                </div>
+
+                @if (entryMonthIsCumulative){
+                    @if(entryMonthlyCumulativeOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="entryMonthlyCumulativeOpt"></div>
+                     }
+                }@else {
+                    @if(entryMonthlyOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="entryMonthlyOpt"></div>
+                    }                    
+                }
+
+            </div>
+        </div>
+         <div class="col-sm-12">
+            <div class="card">
+
+                
+                <div class="card-header pe-2">
+                    <div class="float-end">
+                        <input class="btn-check" type="radio" [value]="true" id="user-cumulative"
+                          name="user-cumulative" [(ngModel)]="userMonthIsCumulative"
+                          required>
+                        <label for="user-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                        Cumulative</label>
+                        <input class="btn-check" type="radio" [value]="false" id="user-new"
+                          name="user-new" [(ngModel)]="userMonthIsCumulative" required>
+                        <label for="user-new" class="btn btn-sm btn-outline-secondary">
+                        New</label>
+                    </div>
+                    User Monthly
+                    <div class="small">Monthly statistics of user in app</div>
+
+                </div>
+
+                @if (userMonthIsCumulative){
+                    @if(userMonthlyCumulativeOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="userMonthlyCumulativeOpt"></div>
+                     }
+                }@else {
+                    @if(userMonthlyOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="userMonthlyOpt"></div>
+                    }                    
+                }
+
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header pe-2">
+                    <div class="float-end">
+                        <input class="btn-check" type="radio" [value]="true" id="attachment-cumulative"
+                          name="attachment-cumulative" [(ngModel)]="attachmentMonthIsCumulative"
+                          required>
+                        <label for="attachment-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                        Cumulative</label>
+                        <input class="btn-check" type="radio" [value]="false" id="attachment-new"
+                          name="attachment-new" [(ngModel)]="attachmentMonthIsCumulative" required>
+                        <label for="attachment-new" class="btn btn-sm btn-outline-secondary">
+                        New</label>
+                    </div>
+                    File Upload Monthly
+                    <div class="small">Monthly statistics of file upload in app</div>
+
+                </div>
+
+                @if (attachmentMonthIsCumulative){
+                    @if(attachmentMonthlyCumulativeOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="attachmentMonthlyCumulativeOpt"></div>
+                     }
+                }@else {
+                    @if(attachmentMonthlyOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="attachmentMonthlyOpt"></div>
+                    }                    
+                }
+
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header pe-2">
+                    <div class="float-end">
+                        <input class="btn-check" type="radio" [value]="true" id="attachmentsize-cumulative"
+                          name="attachmentsize-cumulative" [(ngModel)]="attachmentSizeMonthIsCumulative"
+                          required>
+                        <label for="attachmentsize-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                        Cumulative</label>
+                        <input class="btn-check" type="radio" [value]="false" id="attachmentsize-new"
+                          name="attachmentsize-new" [(ngModel)]="attachmentSizeMonthIsCumulative" required>
+                        <label for="attachmentsize-new" class="btn btn-sm btn-outline-secondary">
+                        New</label>
+                    </div>
+                    File Upload Monthly (Size GiB)
+                    <div class="small">Monthly statistics of file upload in app</div>
+
+                </div>
+
+                @if (attachmentSizeMonthIsCumulative){
+                    @if(attachmentSizeMonthlyCumulativeOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="attachmentSizeMonthlyCumulativeOpt"></div>
+                     }
+                }@else {
+                    @if(attachmentSizeMonthlyOpt){
+                        <div class="demo-chart" style="height: 450px" echarts [options]="attachmentSizeMonthlyOpt"></div>
+                    }                    
+                }
+
+            </div>
+        </div>
+       
+    </div>
+    
+</div>

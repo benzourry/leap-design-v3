@@ -16,6 +16,11 @@ export class GroupByPipe implements PipeTransform {
         return null;
     }
 
+    collection = collection.map((item, index) => {
+        item.__index = index;
+        return item;
+    })
+
     if(!property || !enabled){
         return [{key:'Ungroup',value:collection}];
     }

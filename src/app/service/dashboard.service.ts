@@ -17,6 +17,12 @@ export class DashboardService {
   saveChart(formId: any, chart: any): any {
     return this.http.post<any>(`${this.baseApi}/dashboard/${formId}/chart`, chart)
   }
+
+  
+  cloneDashboard(dashboardId: any, appId: any) {
+    return this.http.post<any>(`${this.baseApi}/dashboard/clone?dashboardId=${dashboardId}&appId=${appId}`, {})
+  }
+
   saveDashboard(appId: number, dashboard: any): any {
     return this.http.post<any>(`${this.baseApi}/dashboard?appId=${appId}`, dashboard)
   }

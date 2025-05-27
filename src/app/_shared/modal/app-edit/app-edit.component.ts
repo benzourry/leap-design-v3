@@ -10,6 +10,7 @@ import { UniqueAppPathDirective } from '../../app-path-validator';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PlatformService } from '../../../service/platform.service';
 
 @Component({
     selector: 'app-app-edit',
@@ -19,7 +20,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class AppEditComponent implements OnInit {
 
-  constructor(private appService: AppService,private screenService: ScreenService) { }
+  constructor(private appService: AppService,private screenService: ScreenService, private platformService: PlatformService) { }
 
   // @Input() data: any;
   data = model<any>();
@@ -67,6 +68,7 @@ export class AppEditComponent implements OnInit {
 
   isPathTaken = (path)=> ['io','create','design','core'].indexOf(path)>-1?of(true):this.appService.isPathTaken(path);
   
+  appGroups: any[] = [];
   ngOnInit() {
     // console.log("onInit")
     this.initialAppPath = this.data().appPath;
@@ -85,6 +87,11 @@ export class AppEditComponent implements OnInit {
     }).subscribe(res => {
         this.otherAppList = res.content;
     })
+
+    this.platformService.listAppGroup({size:9999, email:this.user().email})
+      .subscribe(res => { 
+        this.appGroups = res.content;
+      })
   }
 
 
@@ -136,5 +143,7 @@ export class AppEditComponent implements OnInit {
   getHost = () => window.location.host;
 
   domainBase = domainBase;
+
+  compareByIdFn = (a, b): boolean => (a && a.id) === (b && b.id);
 
 }

@@ -1,0 +1,274 @@
+<div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
+  <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
+    <div class="home-top-l p-2">
+      <img src="assets/icons/logo-w.svg" width="38">
+    </div>
+    <div class="home-top-r pe-2">
+      <div class="d-flex">
+        <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+        <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+        <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+        <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+          <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="limit-width centered p-3">
+  <div class="mb-3">
+    <button class="btn btn-light bg-white btn-rounded fs-5" routerLink="/admin">
+      <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
+      Home
+    </button>
+  </div>
+
+
+  @if(user.manager){
+    <div class="alert alert-warning">
+      <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
+  </div>
+
+    <h5 class="mb-3">Platform Management: All Apps</h5>
+
+    <div class="repo-tool text-center mt-3">
+      <div class="tool-container" style="max-width:480px;margin:auto">
+        <input type="search" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
+          (keyup.enter)="getItemList(1)" autocapitalize="none">
+      </div>
+    </div>
+
+
+
+    <div class="repo-item">
+      <div class="repo-title d-flex flex-row">
+        <div>
+          <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> All App Collection
+        </div>
+
+        <div class="ms-auto btn-group-xs small group-by-toggle">
+          <input class="btn-check" type="radio" value="all" id="dsgb-ungroup" name="dsgb-ungroup"
+            [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+          <label for="dsgb-ungroup" class="btn ms-2">All</label>
+          <input class="btn-check" type="radio" value="true" id="dsgb-form" name="dsgb-form" [(ngModel)]="appStatusFilter"
+            (ngModelChange)="getItemList(1)">
+          <label for="dsgb-form" class="btn">Live</label>
+          <input class="btn-check" type="radio" value="false" id="dsgb-type" name="dsgb-type"
+            [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+          <label for="dsgb-type" class="btn">Dev</label>
+        </div>
+      </div>
+
+      <div class="py-2">
+        <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+          <div class="row">
+            <div class="col d-flex align-items-center">
+              <strong>Summary</strong>
+            </div>
+            <div class="col">Total:
+              <div class="d-sm-inline">{{itemTotal}}</div>
+            </div>
+            <div class="col">Shown:
+              <div class="d-sm-inline">{{numberOfElements}}</div>
+            </div>
+            <div class="col">Pages:
+              <div class="d-sm-inline">{{entryPages}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      @if (!itemLoading){
+      @if(itemTotal==0){
+      <div class="p-4 text-muted text-center">
+        <h1>:(</h1>
+        <h4>No application available</h4>
+      </div>
+      }@else {
+      <div class="list-group">
+        @for (item of itemList | filter:searchText; track $index) {
+        <div class="list-group-item" [class.opacity-50]="!item.live">
+          <img src="{{baseApi}}/app/logo/{{item.logo}}" alt="Logo" style="float:left"
+            onError="this.src='assets/icons/logo.svg'" width="60" height="60" class="me-2">
+          <div style="margin-left:80px">
+            <h5 class="list-group-item-heading">{{item.title}}</h5>
+            <p class="desc">{{item.description}}</p>
+            <!-- <p class="desc">Created on: {{item.dateCreated|date:'medium'}}</p> -->
+            <!-- <p></p> -->
+
+            <div class="input-group input-group-sm mb-2">
+              <span class="input-group-text text-muted small" id="basic-addon1">
+                @if (checkLogin(item,'useSarawakid')) {
+                  <fa-icon [icon]="['far','circle-user']" title="Login with SarawakID" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useUnimasid')) {
+                  <fa-icon [icon]="['fas','university']" title="Login with UNIMAS ID" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useUnimas')) {
+                  <fa-icon [icon]="['fas','university']" title="Login with UNIMAS ID (legacy)" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useIcatsid')) {
+                  <fa-icon [icon]="['fas','university']" title="Login with i-CATS Identity" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useSsone')) {
+                  <fa-icon [icon]="['fas','university']" title="Login with ssOne" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useGoogle')) {
+                  <fa-icon [icon]="['fab','google']" title="Login with Google" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useAzuread')) {
+                  <fa-icon [icon]="['fab','microsoft']" title="Login with Microsoft" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useFacebook')) {
+                  <fa-icon [icon]="['fab','facebook-f']" title="Login with Facebook" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useGithub')) {
+                  <fa-icon [icon]="['fab','github']" title="Login with GitHub" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useLinkedin')) {
+                  <fa-icon [icon]="['fab','linkedin']" title="Login with LinkedIn" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useTwitter')) {
+                  <fa-icon [icon]="['fab','twitter']" title="Login with Twitter" [fixedWidth]="true"></fa-icon>
+                  }
+                  @if (checkLogin(item,'useLocal')) {
+                  <fa-icon [icon]="['fas','ellipsis-h']" title="Login/Signup with email" [fixedWidth]="true"></fa-icon>
+                  }
+              </span>
+              <input name="endpointUrl" id="endpointUrl"
+                onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" type="text"
+                class="form-control bg-light small" value="{{getUrl(item)}}" readonly>
+            </div>
+            
+            <!-- <div class="text-muted small mb-2">
+              
+            </div> -->
+            <div class="my-2">
+              @for(i of splitAsList(item.email); track $index){
+              <div class="d-inline-block me-1 border bg-light rounded small px-1 mb-1 overflow-hidden">
+                <img src="{{base}}/user/{{item.id}}/photo/{{i}}" alt="Logo" onError="this.src='assets/img/avatar-big.png'" width="22"
+                  height="22" style="margin-left:-3px; margin-top:-4px; " class="me-1">
+                {{i}}
+              </div>
+              }
+            </div>
+            <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
+
+            @if (item.live) {
+            <div class="d-inline-block me-2 bg-success text-white rounded px-1 small"
+              style="position:absolute; top:5px; right:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+            }
+
+            <div class="mt-3">
+              <button type="button" class="btn btn-sm btn-primary me-1 mb-1" [class.disabled]="offline"
+                routerLink="/admin/apps/{{item.id}}/summary">
+                Summary
+              </button>
+              <button type="button" class="btn btn-sm btn-light me-1 mb-1" [class.disabled]="offline" title="Copy App"
+                (click)="cloneItem(appEditTpl,item, true)">
+                Copy App
+              </button>
+              <button type="button" class="btn btn-sm btn-light me-1 mb-1" title="Edit Properties"
+                (click)="editItem(appEditTpl,item, false)">
+                Edit Properties
+              </button>
+              <button type="button" class="btn btn-sm btn-danger me-1 mb-1" [class.disabled]="offline" title="Remove App"
+                (click)="removeItem(removeItemTpl,item)">
+                Remove App
+              </button>
+            </div>
+          </div>
+
+        </div>
+        }
+      </div>
+      }
+      }@else {
+      <div class="p-4 text-muted text-center">
+        <div class="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      }
+
+      @if (itemTotal>pageSize) {
+      <div class="d-flex justify-content-center p-3 pagination-rounded">
+        <ngb-pagination [collectionSize]="itemTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="4"
+          [rotate]="true" (pageChange)="getItemList(pageNumber)" [boundaryLinks]="true" [directionLinks]="false">
+          <ng-template ngbPaginationFirst>
+            <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationPrevious>
+            <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationNext>
+            <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationLast>
+            <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+          </ng-template>
+        </ngb-pagination>
+      </div>
+      }
+    </div>
+  }@else {
+    <div class="alert alert-danger">
+        <strong>Warning:</strong> You are not authorized to access this area. Please contact your administrator.
+    </div>
+  }
+
+</div>
+
+
+<ng-template #removeItemTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header border-0">
+      <h5 class="modal-title">Remove App</h5>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to remove this app?
+      </p>
+      <div class="form">
+        <div class="form-group row">
+          <label class="col-form-label col-md-3">App Title</label>
+          <div class="col-md-6">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.title}}">
+            <!-- <p class="form-control-static">{{removeItemData.title}}</p> -->
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-form-label col-md-3">Description</label>
+          <div class="col-md-6">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.description}}">
+            <!-- <p class="form-control-static">{{removeItemData.description}}</p> -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer border-0 justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeItemData)">
+        <i class="icon-minus-sign-alt"></i> Remove App
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #appEditTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+  <app-app-edit [(data)]="editItemData" [offline]="offline" [user]="user" [dismiss]="d" [close]="c"></app-app-edit>
+  }@loading {
+  <div class="text-center m-5">
+    <div class="spinner-grow text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  }
+</ng-template>

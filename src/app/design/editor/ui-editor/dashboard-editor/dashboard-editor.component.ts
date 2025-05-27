@@ -433,6 +433,8 @@ checkAllStatus(checked){
         this.dashboardService.removeDashboard(data.id)
         .subscribe({next:(res)=>{
           this.getDashboardList(this.app.id);
+          delete this.curDashboard;
+          this.toastService.show("Dashboard removed successfully", { classname: 'bg-success text-light' });
         },error:(err)=>{
           this.toastService.show("Dashboard removal failed", { classname: 'bg-danger text-light' });
         }})

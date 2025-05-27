@@ -68,7 +68,7 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.userService.getUser()
+    this.userService.getCreator()
       .subscribe(user => {
         this.user = user;
         this.getItemList(1);

@@ -224,48 +224,19 @@
                                     </div>
                                     <div class="row display-flex mt-4">
                                       @if (tier?.section?.type=='approval') {
-                                        
-
-                                        <!-- @for (f of tier.section.items; track f.id) {
-                                          @let field = form?.items[f.code];
-                                          @if (preCheckAppr(field?.pre,appr[tier.id])) {
-                                            @let dynDefVal = _eval(entry?.data, appr[tier.id], field?.x?.dyn_default, form);
-
-
-                                          }
-                                        } -->
-
-                                        @for (f of tier?.section?.items; track f.id) {
-                                          @if (!form?.items[f.code].hidden && preCheckAppr(form?.items[f.code]?.pre,entry?.approval[tier.id])) {
-                                            <div [ngClass]="form?.items[f.code].size">
-                                              <div class="form-group mb-3" [ngClass]="f.altClass">
-                                                @if (!form?.items[f.code].hideLabel) {
-                                                  <label>{{form?.items[f.code].label}}</label>
-                                                }
-                                                <p class="form-control-static">
-                                                  <field-view [field]="form?.items[f.code]"
-                                                    [value]="getVal(form.items[f.code],entry?.approval[tier.id])"
-                                                    [data]="{$user$:user, $conf$:runService.appConfig,$:entry?.approval[tier.id].data,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
-                                                  </field-view>
-                                                </p>
-                                              </div>
-                                            </div>
-                                          }
-                                        }
-                                      }
-                                      @if (tier?.section?.type=='approval-list') {
-                                        @for (child of entry?.approval[tier.id].list; track $index) {
+                                        @if (tier.section && preCheckAppr(tier.section?.pre,entry?.approval[tier.id])) {
                                           @for (f of tier?.section?.items; track f.id) {
-                                            @if (!form?.items[f.code].hidden && preCheckStr(form?.items[f.code]?.pre,entry?.approval[tier.id])) {
+                                            @let field = form?.items[f.code];
+                                            @if (field && !field?.hidden && preCheckAppr(field?.pre,entry?.approval[tier.id])) {
                                               <div [ngClass]="form?.items[f.code].size">
                                                 <div class="form-group mb-3" [ngClass]="f.altClass">
-                                                  @if (!form?.items[f.code].hideLabel) {
-                                                    <label>{{form?.items[f.code].label}}</label>
+                                                  @if (!field?.hideLabel) {
+                                                    <label>{{field?.label}}</label>
                                                   }
                                                   <p class="form-control-static">
-                                                    <field-view [field]="form?.items[f.code]"
-                                                      [value]="getVal(form.items[f.code],entry?.approval[tier.id],child)"
-                                                      [data]="{$user$:user, $conf$:runService.appConfig,$:child,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
+                                                    <field-view [field]="field"
+                                                      [value]="getVal(field,entry?.approval[tier.id])"
+                                                      [data]="{$user$:user, $conf$:runService.appConfig,$:entry?.approval[tier.id].data,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
                                                     </field-view>
                                                   </p>
                                                 </div>
@@ -274,6 +245,28 @@
                                           }
                                         }
                                       }
+                                      <!-- @if (tier?.section?.type=='approval-list') {
+                                        @for (child of entry?.approval[tier.id].list; track $index) {
+                                          @for (f of tier?.section?.items; track f.id) {
+                                            @let field = form?.items[f.code];
+                                            @if (!field.hidden && preCheckStr(field?.pre,entry?.approval[tier.id])) {
+                                              <div [ngClass]="field.size">
+                                                <div class="form-group mb-3" [ngClass]="f.altClass">
+                                                  @if (!field.hideLabel) {
+                                                    <label>{{field.label}}</label>
+                                                  }
+                                                  <p class="form-control-static">
+                                                    <field-view [field]="field"
+                                                      [value]="getVal(field,entry?.approval[tier.id],child)"
+                                                      [data]="{$user$:user, $conf$:runService.appConfig,$:child,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
+                                                    </field-view>
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            }
+                                          }
+                                        }
+                                      } -->
                                     </div>
                                   </div>
                                 }

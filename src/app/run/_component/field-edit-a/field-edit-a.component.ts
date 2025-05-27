@@ -74,6 +74,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   always = input<boolean>(false);
   id = input<string>("");
   fileProgress = input<number>();
+  imgclsVal = input<boolean>(false);
   
   file: any = {}
   scaleTo = { scaleTo10 : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],

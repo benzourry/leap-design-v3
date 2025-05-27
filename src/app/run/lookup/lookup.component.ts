@@ -152,7 +152,7 @@ export class LookupComponent implements OnInit {
 
             if (g.length > 1 && g[1].trim() == 'lookup'){
                 let lookupId = +g[2].trim();
-                this.lookupService.getEntryListFull(lookupId, {}).subscribe({
+                this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
                   next: (res) => {            
                       this.lookupListMap[lookupId] = res.content;
                   }, error: (error) => {}

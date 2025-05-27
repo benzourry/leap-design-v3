@@ -13,9 +13,10 @@ export const routes: Routes = [
         { path: 'devprofile', component: DevProfileComponent },
         { path: 'run',    loadChildren: () => import('./run/run.routes').then(m => m.RUN_ROUTES) },
         { path: 'repo',    loadChildren: () => import('./repo/repo.routes').then(m => m.REPO_ROUTES) },
+        { path: 'admin',    loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES) },
         { path: 'design', loadChildren: () => import('./design/design.routes').then(m => m.DESIGN_ROUTES) },
   
-      ],
+      ], 
       canActivate: [CreatorGuardService]
     }
     // { path: 'run', loadChildren: './run/run.module#RunModule' }

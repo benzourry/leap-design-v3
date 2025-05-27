@@ -1,0 +1,159 @@
+<div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
+    <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
+      <div class="home-top-l p-2">
+        <img src="assets/icons/logo-w.svg" width="38">
+      </div>
+      <div class="home-top-r pe-2">
+        <div class="d-flex">
+          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+            <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="wrapper">
+    <div class="limit-width repo centered">
+
+        <div class="limit-width centered p-3 text-center">
+            <div>
+                <h3 class="mb-4">Platform Management</h3>
+            </div>
+            @if (user?.manager){
+              <div class="print-hide">
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
+                </div>
+
+                <a routerLink="/admin/config" class="btn btn-primary me-2 mb-2">
+                    <div>Platform Configuration</div>
+                    <div class="small">Configure overall platform settings</div>
+                </a>
+                <a routerLink="/admin/apps" class="btn btn-primary me-2 mb-2">
+                    <div>Manage All Apps</div>
+                    <div class="small">Manage apps and monitor app analytics</div>
+                </a>
+              </div>
+
+              
+              <div class="section-to-print">
+                <div class="my-3">
+                  <div class="fs-4">Platform Summary</div>
+                  <div class="small text-muted">Last updated: {{updatedOn}}</div>
+                </div>
+
+                <div class="card mb-3">
+                    <!-- {{appStatByLiveOpt|json}} -->
+                  <div class="card-header text-start">App by Status</div>
+                  <div class="demo-chart" style="height: 450px" echarts [options]="appStatByLiveOpt"></div>
+                </div>
+
+                <div class="card mb-3">                
+                  <div class="card-header pe-2 text-start">
+                      <div class="float-end">
+                          <input class="btn-check" type="radio" [value]="true" id="entry-cumulative"
+                            name="entry-cumulative" [(ngModel)]="entryStatIsCumulative"
+                            required>
+                          <label for="entry-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                          Cumulative</label>
+                          <input class="btn-check" type="radio" [value]="false" id="entry-new"
+                            name="entry-new" [(ngModel)]="entryStatIsCumulative" required>
+                          <label for="entry-new" class="btn btn-sm btn-outline-secondary">
+                          New</label>
+                      </div>
+                      Entry By Year/Month (Last 10 Month)
+                      <!-- <div class="small">Monthly statistics of entry in platform</div> -->
+
+                  </div>
+
+                  @if (entryStatIsCumulative){
+                    <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByYearMonthCumulativeOpt"></div>
+                  }@else {
+                    <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByYearMonthOpt"></div>
+                  }
+                </div>
+                
+                <!-- Entry By App (Top 10) -->
+                <div class="card mb-3">
+                  <div class="card-header text-start">Entry By App (Top 10)</div>  
+                  <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByAppOpt"></div>
+                </div>
+                
+                <!-- User By App (Top 10) -->
+                <div class="card mb-3">
+                  <div class="card-header text-start">User By App (Top 10)</div>  
+                  <div class="demo-chart" style="height: 450px" echarts [options]="userStatByAppOpt"></div>
+                </div>
+
+                <div class="card mb-3">                
+                  <div class="card-header pe-2 text-start">
+                      <div class="float-end">
+                          <input class="btn-check" type="radio" [value]="true" id="user-cumulative"
+                            name="user-cumulative" [(ngModel)]="userStatIsCumulative"
+                            required>
+                          <label for="user-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                          Cumulative</label>
+                          <input class="btn-check" type="radio" [value]="false" id="user-new"
+                            name="user-new" [(ngModel)]="userStatIsCumulative" required>
+                          <label for="user-new" class="btn btn-sm btn-outline-secondary">
+                          New</label>
+                      </div>
+                      User By Year/Month (Last 10 Month)
+                      <!-- <div class="small">Monthly statistics of user in platform</div> -->
+
+                  </div>
+
+                  @if (userStatIsCumulative){
+                          <div class="demo-chart" style="height: 450px" echarts [options]="userStatByYearMonthCumulativeOpt"></div>
+                  }@else {
+                        <div class="demo-chart" style="height: 450px" echarts [options]="userStatByYearMonthOpt"></div>
+                  }
+                </div>
+
+                <div class="card mb-3">
+                  <div class="card-header text-start">Attachment By App (Top 10)</div>  
+                  <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByAppOpt"></div>
+                </div>
+
+                <div class="card mb-3">                
+                  <div class="card-header pe-2 text-start">
+                      <div class="float-end">
+                          <input class="btn-check" type="radio" [value]="true" id="ea-cumulative"
+                            name="ea-cumulative" [(ngModel)]="attachmentStatIsCumulative"
+                            required>
+                          <label for="ea-cumulative" class="btn btn-sm btn-outline-secondary me-1">
+                          Cumulative</label>
+                          <input class="btn-check" type="radio" [value]="false" id="ea-new"
+                            name="ea-new" [(ngModel)]="attachmentStatIsCumulative" required>
+                          <label for="ea-new" class="btn btn-sm btn-outline-secondary">
+                          New</label>
+                      </div>
+                      Attachment By Year/Month (Last 10 Month)
+                      <!-- <div class="small">Monthly statistics of user in platform</div> -->
+
+                  </div>
+
+                  @if (attachmentStatIsCumulative){
+                    <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByYearMonthCumulativeOpt"></div>
+                  }@else {
+                    <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByYearMonthOpt"></div>
+                  }
+                </div>
+              </div>
+              
+              
+
+            }@else {
+                <div class="alert alert-danger">
+                    <strong>Warning:</strong> You are not authorized to access this area. Please contact your administrator.
+                </div>
+            }
+            
+        </div>
+
+    </div>
+</div>

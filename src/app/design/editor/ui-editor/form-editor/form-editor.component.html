@@ -2100,8 +2100,8 @@
                 <div class="form-group mb-1">
                   <label class="form-label">Select App</label>
                   <select class="form-select" name="appId"
-                    (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
-                    [(ngModel)]="editItemData.appId">
+                    (change)="loadOtherAppList(editItemData.type,editItemData?.x?.appId)"
+                    [(ngModel)]="editItemData.x.appId">
                     @for (app of otherAppList; track app.id) {
                       <option [ngValue]="app.id">{{app.title}}</option>
                     }
@@ -2620,7 +2620,15 @@
                     target="_blank">List of all the official MIME types &nearr;</a>
                   </div>
                 </div>
-              }                      
+              }  
+              @if(['file'].indexOf(editItemData.type)>-1 && editItemData.x.imgcls){
+                <div class="form-group mb-3">
+                  <label class="form-label">Image Classification Validation </label>
+                  <input type="text" class="form-control"
+                  [(ngModel)]="editItemData.v.imgcls" name="vimgcls">
+                </div>
+
+              }                    
             </div>
           </ng-template>
         </li>
@@ -2756,7 +2764,7 @@
                   <div class="input-group input-group-sm mt-1 mb-2">
                     <label class="input-group-text">Classifier field target *</label>
                     <select class="form-select" name="imgclsTarget"
-                      [(ngModel)]="editItemData.x.imgclsTarget" required>
+                      [(ngModel)]="editItemData.x.imgclsTarget">
                       <option [ngValue]="undefined" style="color:gray">No target field</option>
                       @for (f of curForm.items|keyvalue; track $index) {
                           <option [ngValue]="f.value.code">{{f.value.label}}</option>

@@ -6,6 +6,7 @@
   </svg>
 </ng-template>
 
+<!-- nnnnnnuuuu---{{imgclsVal()?'true':'false'}}  -->
 <ng-template #valError let-formField="formField" let-field="field">
   @if (formField?.touched && formField?.invalid) {
     <small class="val-text text-danger">
@@ -38,6 +39,13 @@
       }
     </small>
   }
+  @if (value && field()?.x?.imgcls && field()?.v?.imgcls && !imgclsVal()) {
+    <small class="val-text text-danger">
+      <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
+        <span>Image doesn't contain any '{{field().v.imgcls}}'</span>
+    </small>
+  }
+
 </ng-template>
 
 <div class="field-edit form-group position-relative" [ngClass]="field().altClass">
@@ -67,7 +75,7 @@
 
 <ng-template #text>
   @if (field().subType=='input') {
-    <input class="form-control" [attr.list]="'datalist-'+field().id+'-'+id" [class.is-invalid]="formField?.touched && formField?.invalid"
+    <input class="form-control" [attr.list]="'datalist-'+field().id+'-'+id()" [class.is-invalid]="formField?.touched && formField?.invalid"
       type="text" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
       [maxlength]="field()?.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="field()?.v?.mask"
       [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'" [pattern]="field()?.v?.pattern"

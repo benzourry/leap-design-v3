@@ -61,10 +61,19 @@ export class DashboardComponent implements OnInit {
   
   dashboardId = model<number>();
 
+  _dashboardId: number;
+
   constructor(private userService: UserService, public runService: RunService,
     private logService: LogService, private route: ActivatedRoute) { 
-      // effect(()=>{
-      // })
+      effect(()=>{
+        
+        if (this._dashboardId != this.dashboardId()){
+          this._dashboardId = this.dashboardId();
+          if (this._dashboardId) {
+            this.getDashboard(this._dashboardId);
+          }
+        }
+      })
     }
 
   ngOnInit() {

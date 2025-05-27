@@ -25,6 +25,9 @@
       </div>
       <div class="p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
+          <a type="button" class="btn btn-round btn-light ms-1" routerLink="/design/{{app?.id}}/summary" routerLinkActive="active">
+            <fa-icon [icon]="['fas','chart-bar']" [fixedWidth]="true"></fa-icon>
+          </a>
           <button type="button" class="btn btn-round btn-light ms-1" (click)="popShare(app?.id)">
             <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
           </button>

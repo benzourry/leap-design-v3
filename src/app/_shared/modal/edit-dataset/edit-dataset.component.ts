@@ -419,18 +419,18 @@ export class EditDatasetComponent implements OnInit {
 
   itemMap:any={}
   toggleItem(parent, list, f, root, formId, type, prefix, checkAll?) {
-    var size = parent[list].filter(i => i.code == f.code && i.root == root).length;
+    var size = parent[list].filter(i => i.code == f?.code && i.root == root).length;
 
     // Is currently selected
     if (size > 0) {
       if (!checkAll) {
-        parent[list] = parent[list].filter(i => !(i.code == f.code && i.root == root))
+        parent[list] = parent[list].filter(i => !(i.code == f?.code && i.root == root))
         delete this.itemMap[root+'-'+f.code];
       }
     } else {
       let item = {
-        code: f.code,
-        label: f.label||f.title,
+        code: f?.code,
+        label: f?.label||f?.title,
         sortOrder: parent[list].length,
         root: root,
         type: type,
@@ -438,7 +438,7 @@ export class EditDatasetComponent implements OnInit {
         formId: formId
       }
       parent[list].push(item);
-      this.itemMap[root+'-'+f.code]=item;
+      this.itemMap[root+'-'+f?.code]=item;
     }
 
     // this.getGroupableField();

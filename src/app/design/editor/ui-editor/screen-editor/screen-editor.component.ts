@@ -385,7 +385,7 @@ defaultMapStyle:string = `height: 600px;`
 
 }
 
-  loadOtherAppList(appId) {
+  loadOtherAppList(type,appId) {
     this.getScreenList(appId);
     this.getFormList(appId);
     this.getCognaList(appId);
@@ -652,7 +652,11 @@ defaultMapStyle:string = `height: 600px;`
       data['x'] = {};
     }
     this.editActionData = data;
-    this.editActionData.appId = this.app.id;
+    // console.log("appId",this.editActionData.appId)
+    if (!this.editActionData.appId){      
+      this.editActionData.appId = this.app.id;
+    }
+    this.loadOtherAppList(this.editActionData.type,this.editActionData.appId);   
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then((data) => {
@@ -873,6 +877,9 @@ defaultMapStyle:string = `height: 600px;`
       this.curScreen.data.comps = [];
     } 
     this.addCombineCompData = data;
+    if (this.addCombineCompData?.appId){
+      this.loadOtherAppList(this.addCombineCompData?.type,this.addCombineCompData?.appId);
+    }
     // console.log(this.addCombineCompData);
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
@@ -940,7 +947,12 @@ defaultMapStyle:string = `height: 600px;`
             return val;
         });
     this.saveScreen(this.curScreen, this.curScreenForm);
-}
+  }
+
+  compareByIdFn(a, b): boolean {
+    return (a && a.id) === (b && b.id);
+  }
+
 
 
 }

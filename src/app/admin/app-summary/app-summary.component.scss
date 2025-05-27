@@ -1,0 +1,20 @@
+.masonry-wrap{
+    column-count: 1;
+}
+
+.card{
+    break-inside: avoid-column;
+}
+
+.line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    overflow: hidden;
+    -webkit-box-orient: vertical;  
+  }
+
+@media (min-width: 576px) {
+    .masonry-wrap{
+        column-count: 2;
+    }
+}

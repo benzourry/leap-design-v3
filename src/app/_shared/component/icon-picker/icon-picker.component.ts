@@ -134,6 +134,7 @@ export class IconPickerComponent {
     { key: "fas:layer-group", value: ["fas", "layer-group"]},
     { key: "far:message", value: ["far", "message"]},
     { key: "fas:diagram-project", value: ["fas", "diagram-project"]},
+    { key: "far:clock", value: ["far", "clock"]},
   ];
 
 

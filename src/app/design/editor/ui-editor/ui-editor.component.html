@@ -140,9 +140,12 @@
                                 </a>
                               }
                             }
-                            <a class="element pointer text-truncate" (click)="editDashboard(editDashboardTpl)">
+                            <a class="element pointer text-truncate" (click)="editDashboard(editDashboardTpl, newDashboard)">
                                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dashboard
                             </a>
+                            <a class="element pointer text-truncate" (click)="cloneDashboard(cloneDashboardTpl)">
+                              <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dashboard
+                            </a>    
                         </div>
                     </div>
                 </div>
@@ -396,6 +399,19 @@
     </div>
   }
 </ng-template>
+<ng-template #cloneDashboardTpl let-d="dismiss" let-c="close">
+  @defer(prefetch on idle){
+    <app-clone-dashboard [dismiss]="d" [close]="c" [appId]="app.id" [appList]="otherAppList"
+        [data]="{appId:app.id}">
+    </app-clone-dashboard>
+  }@loading {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>
 <ng-template #cloneScreenTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
     <app-clone-screen [dismiss]="d" [close]="c" [appId]="app.id" [appList]="otherAppList"
@@ -423,7 +439,7 @@
 </ng-template>
 <ng-template #editDashboardTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
-    <app-edit-dashboard [dismiss]="d" [close]="c" [dashboard]="newDashboard" [form]="{}" [app]="app"
+    <app-edit-dashboard [dismiss]="d" [close]="c" [dashboard]="editDashboardData" [form]="{}" [app]="app"
         [accessList]="accessList"></app-edit-dashboard>
   }@loading {
     <div class="text-center m-5">

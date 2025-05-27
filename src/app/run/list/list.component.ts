@@ -187,7 +187,7 @@ export class ListComponent implements OnInit, OnChanges {
     // }
     
     effect(()=>{
-    //   const _datasetId = this.datasetId();
+      // const _datasetId = this.datasetId();
       this._param = this.$param$();
     //   // use `untracked` to trigger operation that might change signal (BUT WHERE!!!!!)
     //   untracked(()=>{
@@ -196,6 +196,16 @@ export class ListComponent implements OnInit, OnChanges {
     //       this.getDataset(_datasetId);
     //     }
     //   })
+      // why this is disabled before this
+      // this will trigger infinite request because $param$ in changed when dsChanged in form changed
+      // this.getDataset(this.datasetId());
+      // check if datasetId changed with condition. If changed then request 
+      if (this._datasetId != this.datasetId()){
+        this._datasetId = this.datasetId();
+        if (this._datasetId) {
+          this.getDataset(this._datasetId);
+        }
+      }
     })
   }
 
@@ -212,6 +222,7 @@ export class ListComponent implements OnInit, OnChanges {
   prevId: number;
 
   ngOnInit() {
+    console.log("ngoninit")
     this.app = this.runService.$app();
     // console.log("app",this.app)
     this.baseUrl = this.runService.$baseUrl();
@@ -241,12 +252,12 @@ export class ListComponent implements OnInit, OnChanges {
         this._param = this.$param$();
 
         this.getDataset(this._datasetId);
+        // console.log("get dataset by id true", this._datasetId);
         //$param$ ialah param passed ke init function, bukan dataset parameter
 
-        // listen to filter changes on @Input
-        
-
       } else {
+
+        // console.log("get dataset by id false", this._datasetId);
 
         // testt
         this.route.url.pipe(
@@ -268,29 +279,7 @@ export class ListComponent implements OnInit, OnChanges {
               this.pageNumber = page;
             }
         })
-        // testt
-
-
-        // this.route.params
-        //   .subscribe((params: Params) => {
-        //     this.datasetId.set(params['datasetId']);
-        //     this.pageNumber = 1;
-        //     if (this.datasetId()) {
-        //       this.getDataset(this.datasetId());
-        //     }
-        //   });
       }
-
-      // this.route.queryParams
-      //   .subscribe((params: Params) => {
-      //     this.$param$.update(p=>({...p,...params})); // so, user can pass parameter through init parameter
-      //     // this.$param$.set(params);
-      //     const page = params['page'];
-      //     if (page) {
-      //       this.pageNumber = page;
-      //     }
-      //   })
-
     });
   }
 
@@ -331,6 +320,7 @@ export class ListComponent implements OnInit, OnChanges {
   mailerList = [];
   totalColumn:number=0;
   getDataset(id) {
+    // console.log("getDataset()")
     this.loading = true;
     this.userUnauthorized = false;
     // console.log("--pre:loading data",id)
@@ -521,7 +511,7 @@ export class ListComponent implements OnInit, OnChanges {
                         </table>`;
           this.toastService.show("Blast successful <br/>" + result, { classname: 'bg-success text-light' });
         }, error: err => {
-          this.toastService.show("Email blast failed", { classname: 'bg-danger text-light' });
+          this.toastService.show("Email blast failed: "+ err.error.message, { classname: 'bg-danger text-light' });
         }
       })
   }

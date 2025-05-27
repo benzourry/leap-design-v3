@@ -249,25 +249,28 @@
                                       } @else {
                                         <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
                                           [fileProgress]="uploadProgress[f.code+(index??'')]"
-                                          [extractLoading]="extractLoading[f.code]"
+                                          [extractLoading]="extractLoading[f.code+(index??'')]"
                                           [class.mt-0]="field.subType=='clearfix'"
                                           [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
                                           [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field"
                                           [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
                                           [selectGroupBy]="field?.x?.groupBy"
                                           [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
-                                          (valueChange)="debFieldChange($event,data,field,section)"                                          
+                                          (valueChange)="debFieldChange($event,data,field,section, index)"                                          
                                           (valueBlur)="onBlur($event,data,field,section)"
                                           (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
                                           (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
                                           (fileValueChange)="onUpload($event,data,field,section,index)"
                                           (fileValueClear)="onFileClear($event,data,field,section,index)"
+                                          [imgclsVal]="imgclsVal[field.code+(index??'')]"
                                           [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
-                                          (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                                          (selectFocus)="getLookup(field?.code,field.dataSourceInit, data)"
                                           [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                                           [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
-                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default">
-                                        </field-edit>
+                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+                                        @if (field.type=='file' && field.x?.imgcls && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+                                          <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+                                        }
                                       }
                                     </ng-template>
                                   } @else {
@@ -280,8 +283,10 @@
                                         @if (form.items[f.code].type=='dataset') {
                                           @defer(prefetch on idle){
                                             <!-- {{preCompFilter[f.code]|json}} -->
+                                             <!-- dsChanged caused infinite loop -->
                                             <app-list [asComp]="true"
-                                              (changed)="dsChanged($event,f.code)" [datasetId]="form.items[f.code].dataSource"
+                                              (changed)="dsChanged($event,f.code)" 
+                                              [datasetId]="form.items[f.code].dataSource"
                                               [filters]="preCompFilter[f.code]"
                                               [$param$]="preCompFilter[f.code]"></app-list>
                                           }@loading {
@@ -405,7 +410,7 @@
                                         </tr>
                                       }
                                       @if(!hideGroup[e.code+listKv?.key]){
-                                        @for (child of listKv.value; track $index; let $index_c = $index) {
+                                        @for (child of listKv.value; track $index; let $index_c = $index; let $first_c = $first; let $last_c = $last) {
                                           @let $index_child = $index_g +'-'+ $index_c;
                                           <tr>
                                             @for (f of e.x?.tableFields; track $index; let $index_f = $index) {
@@ -425,16 +430,16 @@
                                               <td class="p-1 print-hide text-end">
                                                 <div class="d-flex">
                                                   @if (e.orderable) {
-                                                    @if (!$first) {
+                                                    @if (!$first_c) {
                                                       <button type="button" class="btn btn-light btn-round btn-sm ms-1"
-                                                        (click)="reorder(entry.data[e.code],$index, -1)">
+                                                        (click)="reorder(entry.data[e.code],child.__index, -1)">
                                                         <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
                                                         </fa-icon>
                                                       </button>
                                                     }
-                                                    @if (!$last) {
+                                                    @if (!$last_c) {
                                                       <button type="button" class="btn btn-light btn-round btn-sm ms-1"
-                                                        (click)="reorder(entry.data[e.code],$index, 1)">
+                                                        (click)="reorder(entry.data[e.code],child.__index, 1)">
                                                         <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
                                                         </fa-icon>
                                                       </button>
@@ -448,7 +453,7 @@
                                                   }
                                                   @if (!e.x?.sticky) {
                                                     <button type="button" class="btn btn-info btn-round btn-sm ms-1"
-                                                      (click)="removeChild(e,$index)">
+                                                      (click)="removeChild(e,child.__index)">
                                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                                     </button>
                                                   }
@@ -486,7 +491,7 @@
                                 }
                                 @if(!hideGroup[e.code+listKv?.key]){
                                   <div class="list-group list-group-flush list-child position-relative px-3 py-1">
-                                    @for (child of listKv.value; track $index; let $index_c = $index) {
+                                    @for (child of listKv.value; track $index; let $index_c = $index; let $first_c = $first; let $last_c = $last) {
                                       @let $index_child = $index_g +'-'+ $index_c;
                                       <div class="list-group-item px-0 py-3 form-horizontal fix-gutter"
                                         [class.element]="!e.inline" [ngClass]="child.altClass">
@@ -521,24 +526,28 @@
                                                 } @else {
                                                   <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{$index_child}}"
                                                     [fileProgress]="uploadProgress[f.code+(index??'')]"
-                                                    [extractLoading]="extractLoading[f.code]"
+                                                    [extractLoading]="extractLoading[f.code+(index??'')]"
                                                     [class.mt-0]="field.subType=='clearfix'"
                                                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
                                                     [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{$index_child}}" [field]="field"
                                                     [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
                                                     [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
-                                                    (valueChange)="debFieldChange($event,data,field,section)"                                                
+                                                    (valueChange)="debFieldChange($event,data,field,section,index)"                                                
                                                     (valueBlur)="onBlur($event,data,field,section)"
                                                     (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
                                                     (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
                                                     (fileValueChange)="onUpload($event,data,field,section,index)"
                                                     (fileValueClear)="onFileClear($event,data,field,section,index)"
+                                                    [imgclsVal]="imgclsVal[field.code+(index??'')]"
                                                     [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
                                                     (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                                                     [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                                                     [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
                                                     [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][$index_child][f.code]:field.x?.default"></field-edit>
-                                                }
+                                                    @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+                                                      <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+                                                    }            
+                                                 }
                                               </ng-template>
                                             }
                                           }
@@ -546,16 +555,16 @@
                                         @if ((e.x?.facet?.[_action])!='view') {
                                           <div class="element-edit" style="position:absolute;top:5px;right:-10px;">
                                             @if (e.orderable) {
-                                              @if (!$first) {
+                                              @if (!$first_c) {
                                                 <button type="button" class="btn btn-light btn-round btn-sm ms-1"
-                                                  (click)="reorder(entry.data[e.code],$index, -1)">
+                                                  (click)="reorder(entry.data[e.code],child.__index, -1)">
                                                   <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
                                                   </fa-icon>
                                                 </button>
                                               }
-                                              @if (!$last) {
+                                              @if (!$last_c) {
                                                 <button type="button" class="btn btn-light btn-round btn-sm ms-1"
-                                                  (click)="reorder(entry.data[e.code],$index, 1)">
+                                                  (click)="reorder(entry.data[e.code],child.__index, 1)">
                                                   <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
                                                   </fa-icon>
                                                 </button>
@@ -569,7 +578,7 @@
                                             }
                                             @if (!e.x?.sticky) {
                                               <button type="button" class="btn btn-info btn-round btn-sm ms-1"
-                                                (click)="removeChild(e,$index)">
+                                                (click)="removeChild(e,child.__index)">
                                                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                               </button>
                                             }
@@ -774,22 +783,26 @@
                 } @else {
                   <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
                     [fileProgress]="uploadProgress[f.code+(index??'')]"
-                    [extractLoading]="extractLoading[f.code]"
+                    [extractLoading]="extractLoading[f.code+(index??'')]"
                     [class.mt-0]="field.subType=='clearfix'"
                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
                     [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field"
                     [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
                     [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
-                    (valueChange)="debFieldChange($event,data,field,section)"
+                    (valueChange)="debFieldChange($event,data,field,section,index)"
                     (valueBlur)="onBlur($event,data,field,section)"
                     (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
                     (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
                     (fileValueChange)="onUpload($event,data, field,section,index)"
                     (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+                    [imgclsVal]="imgclsVal[field.code+(index??'')]"
                     [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                     [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                     [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
                     [defaultValue]="field.x?.use_dyn_default?childDynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+                    @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+                      <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+                    }
                 }
               </ng-template>
             }
@@ -835,22 +848,26 @@
       <!-- index should only refer to child index, not field index -->
       <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
         [fileProgress]="uploadProgress[f.code+(index??'')]"
-        [extractLoading]="extractLoading[f.code]"
+        [extractLoading]="extractLoading[f.code+(index??'')]"
         [class.mt-0]="field.subType=='clearfix'"
         [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
         [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field" [lookupList]="lookup[f.code]"
         [(ngModel)]="data[field.code]"
         [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
-        (valueChange)="debFieldChange($event,data,field,section)"        
+        (valueChange)="debFieldChange($event,data,field,section, index)"        
         (valueBlur)="onBlur($event,data,field,section)"
         (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
         (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
         (fileValueChange)="onUpload($event,data, field,section,index)"
         (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+        [imgclsVal]="imgclsVal[field.code+(index??'')]"
         [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
         [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
         [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
         [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+        @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+          <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+        }
     }
   </ng-template>
 

@@ -507,9 +507,9 @@ export class CognaEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(this.cognaId);
-            this.toastService.show("Cogna source successfully saved", { classname: 'bg-success text-light' });
+            this.toastService.show("Cogna tool successfully saved", { classname: 'bg-success text-light' });
           }, err => {
-            this.toastService.show("Cogna source saving failed", { classname: 'bg-danger text-light' });
+            this.toastService.show("Cogna tool saving failed", { classname: 'bg-danger text-light' });
           });
       }, res => { })
   }
@@ -535,6 +535,41 @@ export class CognaEditorComponent implements OnInit {
       //     });
     }
   }
+
+  editMcpData: any;
+  editCognaMcp(content, cognaMcp, isNew) {
+    // console.log(cogna);
+    // cogna.content = this.br2nl(cogna.content);
+    this.editMcpData = cognaMcp;
+
+    // console.log(this.editSrcData);
+    if (!this.editMcpData.appId) this.editMcpData.appId = this.app.id;
+
+
+    // if (this.editToolData.appId){
+      // this.getLambdaList(this.editToolData.appId)
+      // this.loadOtherAppList(this.editToolData?.type, this.editToolData?.appId)
+    // }else{
+    //   this.editToolData.appId = this.app.id;
+    // }
+
+    // console.log("lambdaId",this.editToolData.lambdaId)
+
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static' })
+      .result.then(data => {
+
+        this.cognaService.saveMcp(this.cognaId, data)
+          .subscribe(res => {
+            this.loadCognaList(this.pageNumber);
+            this.loadCogna(this.cognaId);
+            this.toastService.show("Cogna MCP server successfully saved", { classname: 'bg-success text-light' });
+          }, err => {
+            this.toastService.show("Cogna MCP server saving failed", { classname: 'bg-danger text-light' });
+          });
+      }, res => { })
+  }
+
 
   dataset: any;
   loadDataset(dsId) {
@@ -598,6 +633,21 @@ export class CognaEditorComponent implements OnInit {
           },
           error: err => {
             this.toastService.show("Cogna tool removal failed", { classname: 'bg-danger text-light' });
+          }
+        })
+    }
+  }
+
+  removeCognaMcp(cognaMcp) {
+    if (confirm("Are you sure you want to remove this MCP server?")) {
+      this.cognaService.removeMcp(cognaMcp.id)
+        .subscribe({
+          next: res => {
+            this.toastService.show("Cogna MCP server successfully removed", { classname: 'bg-success text-light' });
+            this.loadCogna(this.cognaId);
+          },
+          error: err => {
+            this.toastService.show("Cogna MCP server removal failed", { classname: 'bg-danger text-light' });
           }
         })
     }
@@ -887,6 +937,50 @@ export class CognaEditorComponent implements OnInit {
     .subscribe({
       next:res=>{
         this.searchDbList = res;
+      },
+      error:err=>{
+
+      }
+    })
+  }
+
+  viewChatHistory(tpl, cogna){
+    this.loadChatHistory(cogna.id, 1,25);
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(tpl, { backdrop: 'static', size:'lg' })
+      .result.then(data => {
+      }, res => { });
+  }
+
+  chatHistoryList:any[]=[];
+  chatHistorySearchText: string = "";
+  // trails: any[] = [];
+  chatHistoryTotal: number = 0;
+  chatHistoryPageSize: number = 25;
+  chatHistoryPageNumber: number = 1;
+  loadChatHistory(cognaId, pageNumber, pageSize){
+    this.chatHistoryPageNumber = pageNumber;
+    if (pageSize) {
+        this.chatHistoryPageSize = pageSize
+    }
+    var params = {
+        page: pageNumber - 1,
+        size: this.chatHistoryPageSize,
+        searchText: this.chatHistorySearchText,
+        sort: ['timestamp,desc']
+    }
+    // if (this.trailFrom) {
+    //     params['dateFrom'] = this.trailFrom;
+    // }
+    // if (this.trailTo) {
+    //     params['dateTo'] = this.trailTo;
+    // }
+
+    this.cognaService.history(cognaId,params)
+    .subscribe({
+      next:res=>{
+        this.chatHistoryList = res.content;
+        this.chatHistoryTotal = res.page?.totalElements;
       },
       error:err=>{
 
