@@ -3,9 +3,9 @@
   <!-- datasetid: {{dataset?.id}} -->
   @if (!asComp() && !hideTitle()) {
     <page-title>
-      <h4 [innerHtml]="compileTpl(dataset?.title,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.title}}</h4>
+      <h4 class="m-0" [innerHtml]="compileTpl(dataset?.title,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.title}}</h4>
       @if (dataset?.description) {
-        <div [innerHtml]="compileTpl(dataset?.description,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.description}}</div>
+        <div class="mt-1" [innerHtml]="compileTpl(dataset?.description,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.description}}</div>
       }
     </page-title>
   }

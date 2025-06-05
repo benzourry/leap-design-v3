@@ -8,7 +8,7 @@ const svgCache: Record<string, string> = {};
 const tplCache: Record<number, string> = {};
 
 const hashCode = (s: string): number =>
-  s.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  s?.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
 
 marked.use({
   extensions: [{
@@ -42,6 +42,7 @@ const tag2sym = { table: 'table_', tr: 'tr_', td: 'td_', th: 'th_', tbody: 'tbod
 const sym2tag = { table_: 'table', tr_: 'tr', td_: 'td', th_: 'th', tbody_: 'tbody', thead_: 'thead', src_:'src' };
 
 export function compileTpl(templateText: string, data: any): string {
+  if (!templateText) return "";
   const tplHash = hashCode(templateText);
   let code = tplCache[tplHash];
 

@@ -6,10 +6,10 @@
           <div class="id-label">{{entry?.id}}</div>
         }
         <!-- <h4 [innerHtml]="screen.title">{{screen.title}}</h4> -->
-        <h4 [innerHtml]="compileTpl(screen.title, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.title}}</h4>
+        <h4 class="m-0" [innerHtml]="compileTpl(screen.title, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.title}}</h4>
         @if (screen.description) {
           <!-- <div [innerHtml]="screen.description">{{screen.description}}</div> -->
-          <div [innerHtml]="compileTpl(screen.description, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.description}}</div>
+          <div class="mt-1" [innerHtml]="compileTpl(screen.description, {$_:entry,$:entry?.data,$prev$:entry?.prev,$$_:entry?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'">{{screen.description}}</div>
         }
       </page-title>
     }

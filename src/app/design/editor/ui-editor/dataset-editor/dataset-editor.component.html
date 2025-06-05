@@ -58,17 +58,17 @@
                   (click)="resyncDataset(curDataset?.id)">
                     <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-2 ms-1 me-1"
+                <button type="button" class="btn btn-sm border border-2 ms-1"
                 title="Edit dataset"
                   (click)="editDataset(editDatasetTpl,curDataset, false, form)">
                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1 me-1"
+                <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
                 title="Remove dataset"
                   (click)="removeDataset(removeDatasetTpl,curDataset)">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <a class="btn btn-sm border border-2 border-success btn-outline-success"
+                <a class="btn btn-sm border border-2 border-success btn-outline-success ms-1"
                 title="Run dataset"
                   routerLink="/run/{{app?.id}}/dataset/{{curDataset.id}}">
                   <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>

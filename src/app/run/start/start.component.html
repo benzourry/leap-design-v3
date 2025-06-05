@@ -78,9 +78,9 @@
           @if (screen) {
             <div class="nomod">
               <page-title>
-                <h4 [innerHtml]="screen.title">{{screen.title}}</h4>
+                <h4 class="m-0" [innerHtml]="screen.title">{{screen.title}}</h4>
                 @if (screen.description) {
-                  <div [innerHtml]="screen.description">{{screen.description}}</div>
+                  <div class="mt-1" [innerHtml]="screen.description">{{screen.description}}</div>
                 }
               </page-title>
               <div class="single-pane section-to-print" style="padding-bottom: 5em;">
@@ -120,7 +120,7 @@
                         <h4 class="mb-0">{{app?.title}}</h4>
                       </a>
                       @if (app?.description) {
-                        <div>{{app?.description}}</div>
+                        <div class="mt-2">{{app?.description}}</div>
                       }
                     </div>
                     <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()"

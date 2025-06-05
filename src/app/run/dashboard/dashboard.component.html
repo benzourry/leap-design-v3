@@ -1,9 +1,9 @@
 <div id="dashboard-{{dashboard?.id}}" class="viewport section-to-print">
   @if (!asComp() && !hideTitle()) {
     <page-title>
-      <h4 [innerHtml]="dashboard?.title">{{dashboard?.title}}</h4>
+      <h4 class="m-0" [innerHtml]="dashboard?.title">{{dashboard?.title}}</h4>
       @if (dashboard?.description) {
-        <div [innerHtml]="dashboard?.description">{{dashboard?.description}}</div>
+        <div class="mt-1" [innerHtml]="dashboard?.description">{{dashboard?.description}}</div>
       }
     </page-title>
   }

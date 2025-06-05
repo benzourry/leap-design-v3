@@ -13,7 +13,9 @@ page-title {
     padding: 1rem !important;
     display: block;
     /* background: whitesmoke; */
-    background: rgba(245,245,245, 1);    
+    /* background: rgba(245,245,245, 1);     */
+    background: rgba(245, 245, 245, 0.5);
+    backdrop-filter: blur(5px);
     /* background: linear-gradient(rgba(245,245,245, 1),rgba(245,245,245, .8),rgba(245,245,245, 0));     */
     min-height: 60px;
     transition: all .5s ease;
@@ -27,7 +29,7 @@ page-title {
 
 page-title .nav-icon {
     position: absolute;
-    margin: 5px 14px 5px 5px;
+    margin: 2px 14px 5px 5px;
     width: 20px;
     /* float: left; */
     /*display: none; Hide dolok, until dpt setel sidenav*/

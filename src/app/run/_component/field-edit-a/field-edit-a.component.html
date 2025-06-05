@@ -378,6 +378,7 @@
         [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
         [loading]="loading()"
         [multiple]="field().subType?.indexOf('multiple')>-1"
+        [fixedPlaceholder]="true"
         [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')" [readonly]="field().readOnly"
         [searchFn]="lookupSearchFn">
         @if (field()?.placeholder) {
@@ -420,6 +421,7 @@
         [loading]="loading()"
         [multiple]="field().subType?.indexOf('multiple')>-1" (change)="valueChanged($event)" [readonly]="field().readOnly"
         [addTag]="field().x?.addEntryEnabled?triggerAddAction:null"
+        [fixedPlaceholder]="true"
         (search)="valueSearched($event)" [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')"
         [searchFn]="lookupSearchFn"
         >
@@ -607,6 +609,7 @@
         [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
         [virtualScroll]="true" (change)="valueChanged($event)" (focus)="selectFocused($event)"
         name="f-{{field().id}}-{{id()}}" [readonly]="field().readOnly" [required]="field()?.v?.required"
+        [fixedPlaceholder]="true"
         [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')">
       </ng-select>
     </label>
