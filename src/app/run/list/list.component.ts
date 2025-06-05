@@ -257,8 +257,6 @@ export class ListComponent implements OnInit, OnChanges {
 
       } else {
 
-        // console.log("get dataset by id false", this._datasetId);
-
         // testt
         this.route.url.pipe(
           withLatestFrom(this.route.params, this.route.queryParams),
@@ -738,9 +736,6 @@ export class ListComponent implements OnInit, OnChanges {
     return f;
   }
 
-
-
-
   sortDir = {};
   sortField: number;
   sortFieldName: string;
@@ -923,14 +918,9 @@ export class ListComponent implements OnInit, OnChanges {
       ));
   }
 
-  // httpGet = this.runService.httpGet;
-  // httpPost = this.runService.httpPost;
-  // endpointGet = (code, params, callback, error) => this.runService.endpointGet(code, this.form.appId, params, callback, error)
-
   httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error));
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error));
   endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.dataset.appId, params, callback, error))
-
 
   updateLookup = (entryId, value, callback, error) => {
     return lastValueFrom(this.entryService.updateLookup(entryId, value, this.dataset?.appId)

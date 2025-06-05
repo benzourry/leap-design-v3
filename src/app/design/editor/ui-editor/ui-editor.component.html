@@ -220,6 +220,12 @@
                     [fixedWidth]="true"></fa-icon>
                 }
             </a>
+            <a class="pointer text-truncate" (click)="importMetadata(importMetadataTpl)">
+                <fa-icon class="float-start" [icon]="['fas','file-import']" [fixedWidth]="true"></fa-icon>
+                <div class="list-group-item-heading ms-4">
+                    Import App Meta
+                </div>
+            </a>
             <a class="pointer text-truncate" (click)="importExcel(importExcelTpl)">
                 <fa-icon class="float-start" [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
                 <div class="list-group-item-heading ms-4">
@@ -352,6 +358,113 @@
         <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
             @if (importExcelData?.success) {
+            <button type="button" class="btn btn-round btn-success" (click)="c()">
+                <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                Done
+            </button>
+            }
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #importMetadataTpl let-c="close" let-d="dismiss">
+    <div #importMetadataForm="ngForm" ngForm>
+        <div class="modal-header">
+            <h4 class="modal-title">Create App and Import Metadata</h4>
+        </div>
+        <div class="modal-body">
+            <div class="form">
+              <p>Import app from metadata file (.appmeta.json)</p>
+                <!-- <p>You can import app from metadata file.</p> -->
+                <!-- <ul class="small">
+                    <li>The Excel file should contained a normalized tabular dataset</li>
+                    <li>Multiple worksheet will be imported as different group</li>
+                    <li>The first row should be the header. For title, REKA will use worksheet name.</li>
+                    <li>For simple option field, you can append <code>:simpleOption</code> in the field code</li>
+                    <li>For lookup field, you can append <code>:code</code>, <code>:name</code> in the field code</li>
+                    <li>For model field, you can append <code>:<i>[model field code]</i></code> in the field code</li>
+                    <li>To store as json object, you can append <code>:<i>json</i></code> in the field code</li>
+                    <li>Use <code>_:email</code> for entry email, <code>_:current_status</code> for entry status</li>
+                    <li>Email will be defaulted to uploaders email if not specified in excel</li>
+                </ul> -->
+                <!-- <div class="form-group mt-2">
+                    <label>Options</label>
+                    <div class="form-check form-switch disabled">
+                        <input type="checkbox" class="form-check-input" id="createField" checked name="createField">
+                        <label class="form-check-label" for="createField">Create form</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="createDataset" [(ngModel)]="createDataset"
+                            name="createDataset">
+                        <label class="form-check-label" for="createDataset">Create dataset automatically</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="createDashboard"
+                            [(ngModel)]="createDashboard" name="createDashboard">
+                        <label class="form-check-label" for="createDashboard">Create dashboard automatically</label>
+                    </div>
+                    <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="importToLive" [(ngModel)]="importToLive"
+                            name="importToLive">
+                        <label class="form-check-label" for="importToLive">Import to Live data</label>
+                    </div>
+                </div> -->
+                <div class="form-group mb-3 mt-3">
+                  @if (!importMetadataData) {
+                    <label class="form-label">
+                        <input type="file" [hidden]="true"
+                            (change)="uploadMetadata($event)" name="file"
+                            required accept=".appmeta.json" />
+                        @if (!importMetadataLoading) {
+                        <div class="form-control" style="background: white">
+                            <fa-icon [icon]="['fas','upload']"></fa-icon>
+                            Browse and Import
+                        </div>
+                        }
+                        @if (importMetadataLoading) {
+                        <div class="form-control" style="background: white">
+                            Importing...
+                        </div>
+                        }
+                    </label>
+                  }@else {
+                    <div class="mx-n3">
+                        @if (importMetadataData.logs && importMetadataData.logs.length>0) {
+                        <table class="table table-bordered table-sm table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Message</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (l of importMetadataData.logs; track $index) {
+                                <tr class="text-white bg-{{l[1]}}">
+                                    <td>{{l[0]}}</td>
+                                    <td>{{l[2]}}</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        }
+                    </div>
+                    @if (importMetadataData?.success) {
+                      <div class="alert alert-success">
+                          <h5>Data successfully imported</h5>
+                      </div>
+                    }@else{
+                      <div class="alert alert-success">
+                          <h5>Data import failed</h5>
+                          Message: {{importMetadataData.message}}
+                      </div>
+                    }
+                  }
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            @if (importMetadataData?.success) {
             <button type="button" class="btn btn-round btn-success" (click)="c()">
                 <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
                 Done

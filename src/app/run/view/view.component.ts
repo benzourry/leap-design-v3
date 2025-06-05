@@ -41,7 +41,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 // import { FormViewComponent } from '../../_shared/component/form-view.component';
 import { FormsModule } from '@angular/forms';
-import { FieldEditComponent } from '../_component/field-edit-b/field-edit-b.component';
+import { FieldEditComponent } from '../_component/field-edit-a/field-edit-a.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
@@ -517,9 +517,13 @@ export class ViewComponent implements OnInit {
 
   initForm(f:string, entry:any,form:any) {
     // console.log("*****initForm")
+
     let res = undefined;
+
+    let fTxt = this.compileTpl(f,{});
+    
     try {
-      res = this._eval(entry, entry.data, f, form);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
+      res = this._eval(entry, entry.data, fTxt, form);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
     } catch (e) { this.logService.log(`{view-${form.title}-initForm}-${e}`) }
     this.timestamp = Date.now();
 
@@ -1073,6 +1077,12 @@ export class ViewComponent implements OnInit {
         }
       })
   }
+
+  compileTpl = (code, additionalData) => {
+    let obj = Object.assign( additionalData, { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this.$param$ })
+    return compileTpl(code, obj)
+  }
+
 
   ngOnDestroy() {
     this.liveSubscription.forEach(sub => sub.unsubscribe());

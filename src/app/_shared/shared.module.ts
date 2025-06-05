@@ -87,14 +87,16 @@ import {
      faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, 
      faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faDiagramProject, faRandom,
      faMicrophone,
-     faAngleDoubleLeft
+     faAngleDoubleLeft,
+     faFileImport
 } from '@fortawesome/free-solid-svg-icons';
 import {
     faThumbsUp,
     faCalendarAlt, faFileArchive, faFlag as farFlag,
     faQuestionCircle,faCircle as farCircle, faFile as farFile, faCheckSquare as farCheckSquare, 
     faEye, faSquare as farSquare, faUser, faCaretSquareDown, faEnvelope, faCircleUser, faCommentDots, faFileCode, faMinusSquare, faPlusSquare as farPlusSquare, faMessage,
-    faClock
+    faClock,
+    faFileLines
 } from '@fortawesome/free-regular-svg-icons';
 import {
     faGoogle, faFacebookF, faGithub, faLinkedin, faWpforms,faMicrosoft, faTwitter, faUncharted
@@ -123,8 +125,8 @@ export class SharedModule {
             faThLarge, faEnvelope, faGripVertical, faCircleUser, faCommentDots, faSearch, faFilter, faCaretSquareDown, faShoppingBag, faShoppingCart, faQuestionCircle, faUser, faSignOutAlt, faSave, faAngleRight, faFile, faTimes, faPlay, faTachometerAlt, faPlusSquare, farPlusSquare, faMinusSquare,
             faListOl, faCalendar, faCalendarAlt, faRocket, faPaperPlane, faQuestion, faArrowUp, faArrowDown, faInfoCircle, faAngleRight, faAngleLeft, faArrowLeft, faArrowRight, faExclamationTriangle, faHistory,
             faReply, faAlignLeft, faAlignCenter, faAlignRight, faAlignJustify, faQrcode, faShare, faTable, faList, farCircle, fasCircle, faMailBulk, faUsersCog, faFileExcel, faListAlt, faCircleNotch, faUpload, faDownload, faAngleDoubleRight, faAngleDoubleLeft, faWindowRestore, faSitemap, faGlobe, faSort, faShareAlt, faLock, faUsers,
-            faFileArchive, faUserEdit, faFileExport, faUncharted, faCircleNodes, faFileWaveform, faStop, faRobot, faFlag, farFlag, faImage, faBolt, faEye,
-            faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faMessage, faDiagramProject,
+            faFileArchive, faUserEdit, faFileExport, faUncharted, faCircleNodes, faFileWaveform, faStop, faRobot, faFlag, farFlag, faImage, faBolt, faEye, faFileImport,
+            faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faMessage, faDiagramProject, faFileLines,
         faMicrophone, faClock);
     }
 }

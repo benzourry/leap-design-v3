@@ -257,20 +257,42 @@ export class DesignHomeComponent implements OnInit, OnDestroy {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(result => {
-        if (prompt("Are you sure you want to permanently remove this app?\n Type 'delete " + data.title.toLowerCase() + "' and press OK to proceed") == 'delete ' + data.title.toLowerCase()) {
-          this.appService.remove(data, this.user.email)
-            .subscribe({
-              next: res => {
-                this.getItemList(this.pageNumber);
-                this.toastService.show("App removed successfully", { classname: 'bg-success text-light' });
-              }, error: err => {
-                this.toastService.show("App removal failed", { classname: 'bg-danger text-light' });
-              }
-            });
-        } else {
-          this.toastService.show("Invalid removal confirmation key", { classname: 'bg-danger text-light' });
-        }
+        // if (prompt("Are you sure you want to permanently remove this app?\n Type 'delete " + data.title.toLowerCase() + "' and press OK to proceed") == 'delete ' + data.title.toLowerCase()) {
+        //   this.appService.remove(data, this.user.email)
+        //     .subscribe({
+        //       next: res => {
+        //         this.getItemList(this.pageNumber);
+        //         this.toastService.show("App removed successfully", { classname: 'bg-success text-light' });
+        //       }, error: err => {
+        //         this.toastService.show("App removal failed", { classname: 'bg-danger text-light' });
+        //       }
+        //     });
+        // } else {
+        //   this.toastService.show("Invalid removal confirmation key", { classname: 'bg-danger text-light' });
+        // }
       }, res => { });
+  }
+
+  removing:boolean=false;
+  realRemoveItem(d, data) {
+    if (prompt("Are you sure you want to permanently remove this app?\n Type 'delete " + data.title.toLowerCase() + "' and press OK to proceed") == 'delete ' + data.title.toLowerCase()) {
+      this.removing = true
+      this.appService.remove(data, this.user.email)
+        .subscribe({
+          next: res => {
+            this.getItemList(this.pageNumber);
+            this.toastService.show("App removed successfully", { classname: 'bg-success text-light' });
+            this.removing = false;
+            d();
+          }, error: err => {
+            this.toastService.show("App removal failed", { classname: 'bg-danger text-light' });
+            this.removing = false;
+          }
+        });
+    } else {
+      this.toastService.show("Invalid removal confirmation key", { classname: 'bg-danger text-light' });
+    }
+
   }
 
 }

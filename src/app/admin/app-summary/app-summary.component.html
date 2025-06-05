@@ -20,6 +20,11 @@
             }@else {
                 <p class="text-danger small">This app is currently in DEV mode. Please note that the app may not be fully functional and is intended for testing purposes only.</p>
             }
+
+            <a href="{{baseApi}}/app/{{app.id}}/export" target="_blank" class="btn btn-sm btn-outline-secondary mb-2">
+                <fa-icon [icon]="['fas','file-export']"></fa-icon>
+                Export Metadata
+            </a>
             <!-- <p class="desc">Created on: {{item.dateCreated|date:'medium'}}</p> -->
             <!-- <p></p> -->
              <div class="input-group input-group-sm">

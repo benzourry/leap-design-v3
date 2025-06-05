@@ -143,7 +143,7 @@ export class StartComponent implements OnInit {
             if (this.appId) {
               this.preurl = `/run/${this.appId}`;
               this.runService.$preurl.set(this.preurl);
-              console.log("set preurl");
+              // console.log("set preurl");
               this.getApp(this.appId);
 
 
@@ -188,7 +188,7 @@ export class StartComponent implements OnInit {
       name: this.user.name,
       autoReg: false
     }
-    this.runService.saveAppUser(this.app.id, payload)
+    this.runService.regAppUser(this.app.id, payload)
       .subscribe(res => {
         this.user = res.user;
         this.userService.setUser(res.user);
@@ -496,8 +496,9 @@ export class StartComponent implements OnInit {
 
   initScreen(js) {
     let res = undefined;
+    let jsTxt = this.compileTpl(js, {$param$:this.$param$,$this$:this.$this$,$user$:this.user, $conf$:this.runService.appConfig,$base$:base, $baseUrl$:this.baseUrl, $baseApi$:baseApi})
     try {
-      res = this._eval(js);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
+      res = this._eval(jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
     } catch (e) { this.logService.log(`{start-${this.app.title}-initNavi}-${e}`) }
     this.runPre();
     return res;

@@ -44,7 +44,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_reka",
+                "input": "./src/assets/icons_leap",
                 "output": "./assets/icons/"
               }
             ],
@@ -57,7 +57,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-ia.service.ts"
+                "with": "./src/app/_shared/constant-localhost.service.ts"
               }
             ]
           },
@@ -72,11 +72,11 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kB",
-                  "maximumError": "8kB"
+                  "maximumError": "6kB"
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_ia.json"
+              "serviceWorker": "ngsw-config_leap.json"
             },
             "development": {
               "optimization": false,

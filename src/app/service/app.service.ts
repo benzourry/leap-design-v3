@@ -39,6 +39,12 @@ export class AppService {
     return this.http.get<any>(`${this.baseApi}/restore-point?appId=${appId}&email=${email}`);
   }
     
+  uploadMetadata(appId:number,file: any, email: string) {
+    let f = new FormData();
+    f.append('file',file);
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/import?email=${email}`,f);
+  }
+    
   uploadExcel(appId:number,file: any, email: string, createDataset:boolean, createDashboard:boolean, importToLive:boolean) {
     let f = new FormData();
     f.append('file',file);

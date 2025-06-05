@@ -7,6 +7,8 @@
 //@import "@fullcalendar/timegrid/main.css";
 @use "leaflet/dist/leaflet.css";
 
+@import '@fontsource/inter';
+
 /* You can add global styles to this file, and also import other style files */
 $enable-negative-margins:true !default;
 
@@ -26,6 +28,7 @@ body {
     */
   background-color: whitesmoke;
   color: #000;
+  font-family: 'Inter', sans-serif;
   /* font-family: 'Open Sans',sans-serif; */
   /*font-family: Verdana, Arial, Helvetica, sans-serif;*/
   /*font-family: Roboto, "Helvetica Neue", sans-serif;

@@ -102,7 +102,7 @@ export class TilesComponent implements OnInit {
     this.userService.getUser()
       .subscribe((user) => {
         this.user = user;
-        console.log("user",user)
+        // console.log("user",user)
 
         this.getStart(this.app?.id); 
         this.route.queryParams
@@ -223,7 +223,7 @@ export class TilesComponent implements OnInit {
       group.items?.forEach(item=>{
         this.preItem[item.id]=this.preCheck(item);
         
-        console.log(item.id,this.preCheck(item))
+        // console.log(item.id,this.preCheck(item))
       })
     })
   }

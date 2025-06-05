@@ -21,7 +21,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 
 // /* LEAP */
 export const baseApi = 'http://10.28.114.194:8882/api';   // prefer
-export const base = 'http://10.28.114.194:8882/'; // prefer
+export const base = 'http://10.28.114.194:8882'; // prefer
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?leap\.my/;
 export const domainBase = "leap.my"; 
 export const OAUTH = {
@@ -39,7 +39,7 @@ export const OAUTH = {
 }
 
 export const myRxStompConfig: RxStompConfig = {
-    brokerURL: 'wss://rekapi.unimas.my/ping/ws',
+    brokerURL: 'wss://io.ireka.my/ping/ws',
     heartbeatIncoming: 0, // Typical value 0 - disabled
     heartbeatOutgoing: 20000, // Typical value 20000 - every 20 seconds
     reconnectDelay: 200,

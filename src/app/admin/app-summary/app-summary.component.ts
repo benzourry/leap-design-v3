@@ -152,11 +152,11 @@ export class AppSummaryComponent implements OnInit {
 
 
   
-    splitAsList = splitAsList
-  
-    checkLogin(app, prop){
-      return app[prop];
-    }
+  splitAsList = splitAsList
+
+  checkLogin(app, prop){
+    return app[prop];
+  }
   
 
 }

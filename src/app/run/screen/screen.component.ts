@@ -385,78 +385,6 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
           this.loadDatasetEntry(this.dataset, this.pageNumber);
           this.startListenFilter();
 
-          // if (this.screen.type == 'calendar') {
-          //   let datePipe = Inject(DatePipe);
-          //   this.calOptions = {
-          //     initialView: this.screen?.data?.defaultView,
-          //     weekends: true,
-          //     headerToolbar: {
-          //       start: 'prev,next',
-          //       center: 'title',
-          //       end: 'today'
-          //     },
-          //     buttonText: {
-          //       today: 'Today',
-          //       month: 'Month',
-          //       week: 'Week',
-          //       day: 'Day',
-          //       list: 'list'
-          //     },
-          //     height: 640,
-          //     plugins: [dayGridPlugin, timeGridPlugin],
-          //     events: (function (info, success, failure) {
-          //       var ds = this.screen.dataset;
-          //       var param = { email: this.user.email, size: 999 };
-          //       var filter = {};
-          //       if (this.screen.data.start) {
-          //         filter['$.' + this.screen.data.start + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
-          //       }
-          //       if (this.screen.data.end) {
-          //         filter['$.' + this.screen.data.end + '~between'] = info.end.valueOf() + ',' + info.end.valueOf();
-          //       }
-          //       param['filters'] = JSON.stringify(filter);
-          //       param['@cond'] = "OR";
-  
-          //       var ac = this.screen.actions[0];
-  
-          //       this.entryService.getListByDataset(ds.id, param)
-          //         .subscribe(res => {
-          //           this.entryList = res.content;
-          //           // console.log(this.entryList)
-          //           var events = this.entryList.filter(e => e.data[this.screen.data.start])
-          //             .map(e => {
-          //               // var acLink = ac ? this.buildGo(e.id)[ac.id] : `#${this.preurl}/form/${ds.form.id}/view?entryId=${e.id}`;
-          //               var eventObj:any = {
-          //                 title: this.screen.data?.titleTpl? 
-          //                         this.compileTpl(this.screen?.data?.titleTpl, {$:e.data,$prev$:e.prev,$_:e,$go:this.buildGo(e.id),$popup:this.buildPop(e.id),$param$:this.$param$,$this$:this.$this$,$user$:this.user, $conf$:this.runService.appConfig,$base$:base,$baseUrl$:this.baseUrl,$baseApi$:baseApi})
-          //                         :formatDate(e.data[this.screen.data.start],'hmma','en-US')+" "+e.data[this.screen.data.title],
-          //                 start: e.data[this.screen.data.start],
-          //                 end: e.data[this.screen.data.end] ? e.data[this.screen.data.end] : e.data[this.screen.data.start],
-          //                 id: e.id,
-          //                 // display:'block', // default will be dot, block is rectangle color
-          //                 backgroundColor: this.randomHsl()
-          //               };
-          //               if (!this.screen.data?.titleTpl){
-          //                 eventObj.display='block'
-          //               }
-          //               return eventObj;
-          //             });
-  
-          //             console.log(events);
-  
-          //           success(events);
-  
-          //           this.loading = false;
-          //         })
-          //     }).bind(this),
-          //     // this is flexible, but it will remove make default event styling (like rectangle color background)
-          //     // eventContent: function( info ) {
-          //     //   return {html: info.event.title};
-          //     // },    
-          //     eventClick: this.eventClick.bind(this)
-          //   }
-          // }
-
         }else if (this.screen.type == 'calendar') {
 
           this.dataset = this.screen.dataset;
@@ -506,11 +434,13 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
 
   initScreen(js) {
     // console.log("------",k)
+
+    let jsTxt = this.compileTpl(js, {$:this.entry?.data,$prev$:this.entry?.prev,$_:this.entry,$go:this.buildGo(this.entry?.id),$popup:this.buildPop(this.entry?.id),$param$:this.$param$,$this$:this.$this$,$user$:this.user, $conf$:this.runService.appConfig,$base$:base,$baseUrl$:this.baseUrl,$baseApi$:baseApi})
     
     let res = undefined;
     setTimeout(()=>{
       try {
-        res = this._eval(this.entry, js);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
+        res = this._eval(this.entry, jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
       } catch (e) { this.logService.log(`{screen-${this.screen.title}-initScreen}-${e}`) }
     },0);  
     return res;

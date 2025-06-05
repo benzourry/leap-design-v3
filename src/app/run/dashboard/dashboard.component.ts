@@ -17,22 +17,16 @@
 
 import { Component, OnInit, effect, input, model } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
-// import { EntryService } from '../../service/entry.service';
 import { ActivatedRoute, Params } from '@angular/router';
-// import { RunService } from '../../service/run.service';
 import { LogService } from '../../_shared/service/log.service';
-// import { ServerDate } from 'src/app/_shared/utils';
-// import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../_shared/constant.service';
 import { ChartComponent } from '../chart/chart.component';
 import { NgClass } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-// import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
 import { ServerDate } from '../../_shared/utils';
 import { PageTitleComponent } from '../_component/page-title.component';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 
 @Component({
     selector: 'app-dashboard',
@@ -43,14 +37,8 @@ import { PageTitleComponent } from '../_component/page-title.component';
 export class DashboardComponent implements OnInit {
 
   dashboard: any;
-  // chartData: any;
-  // form: any;
   user: any;
-  // chartOption: any = {};
-  // flipped: any = {};
   app: any;
-  // appId: number;
-  // preurl: string;
   $baseUrl$: string;
   baseApi: string = baseApi;
   base: string = base;
@@ -66,7 +54,7 @@ export class DashboardComponent implements OnInit {
   constructor(private userService: UserService, public runService: RunService,
     private logService: LogService, private route: ActivatedRoute) { 
       effect(()=>{
-        
+
         if (this._dashboardId != this.dashboardId()){
           this._dashboardId = this.dashboardId();
           if (this._dashboardId) {
@@ -79,17 +67,9 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.app = this.runService.$app();
     this.$baseUrl$ = this.runService.$baseUrl();
-    // this.app = this.runService.app;
     this.userService.getUser().subscribe((user) => {
       this.user = user;
-      // this.route.parent.params
-      //   .subscribe((params: Params) => {
-      //     this.appId = params['appId'];
-      //     if (this.appId) {
-      //       this.preurl = `/run/${this.appId}`;
-      //     }
-      //     this.$baseUrl$ = (location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')) + '/#' + this.preurl;
-      //   });
+      
       if (this.dashboardId()){
         this.getDashboard(this.dashboardId())
       }else{

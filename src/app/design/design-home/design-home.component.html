@@ -308,11 +308,14 @@
             <!-- <p class="form-control-static">{{removeItemData.description}}</p> -->
           </div>
         </div>
+        @if(removing){
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Removing
+        }
       </div>
     </div>
     <div class="modal-footer border-0 justify-content-between">
       <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
-      <button type="button" class="btn btn-round btn-primary" (click)="c(removeItemData)">
+      <button type="button" class="btn btn-round btn-primary" [class.disabled]="removing" [disabled]="removing" (click)="realRemoveItem(c,removeItemData)">
         <i class="icon-minus-sign-alt"></i> Remove App
       </button>
     </div>

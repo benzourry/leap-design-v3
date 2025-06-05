@@ -120,6 +120,9 @@ export class RunService {
   saveAppUser(appId:number,appUserData:any){
     return this.http.post<any>(`${this.baseApi}/app/${appId}/user`,appUserData)
   }
+  regAppUser(appId:number,appUserData:any){
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/register`,appUserData)
+  }
   saveUserDetails(userId:number,user:any){
     return this.http.post<any>(`${this.baseApi}/app/user/${userId}`,user);
   }

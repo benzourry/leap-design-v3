@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 // import { RunService } from '../../service/run.service';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
-import { ServerDate, compileTpl, deepMerge, tblToExcel } from '../../_shared/utils';
+import { ServerDate, deepMerge, tblToExcel } from '../../_shared/utils';
 // import { UserEntryFilterComponent } from '../../_shared/component/user-entry-filter/user-entry-filter.component';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 // import * as echarts from 'echarts/core';
@@ -100,13 +100,7 @@ export class ChartComponent implements OnInit {
     private modalService: NgbModal) {
   }
 
-  
-  preurl: string = '';
-  // baseUrl: string = '';
-
   ngOnInit() {
-    // this.baseUrl = this.runService.$baseUrl();
-    this.preurl = this.runService.$preurl();
     if (this.chart().formId) {
       this.runService.getForm(this.chart().formId)
         .subscribe(res => {
@@ -125,25 +119,7 @@ export class ChartComponent implements OnInit {
 
 
   loadChartData() {
-
-    let params = { filters: JSON.stringify(this.filtersData), email: this.user()?.email }
-
-    // reason da benda tok, knak??? Sbb utk support $conf$, mn ada akan set as parameter
-    // utk handle $conf$, if ada $conf$, override dengan value dari frontend
-    if (this.chart().presetFilters){
-      Object.keys(this.chart().presetFilters)
-      .filter(k=>(this.chart().presetFilters[k]+"").includes("$conf$"))
-      .forEach(k=>{
-        // console.log("pF",this.chart().presetFilters[k]+'')
-        params[k] = compileTpl(this.chart().presetFilters[k]??'', { $user$: this.user(), $conf$:this.runService.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.$baseUrl$(), $baseApi$: this.baseApi, $this$: this.$this$, $param$: this.$param$()})
-        // console.log('value',value);
-          // params[k] = value
-      })
-    }
-    
-    // console.log(params);
-
-    this.entryService.getChartData(this.chart().id, params)
+    this.entryService.getChartData(this.chart().id, { filters: JSON.stringify(this.filtersData), email: this.user().email })
       .subscribe(res => {
         this.chartDataset = res;
         let rv = this.chartDataset.data;
@@ -331,8 +307,6 @@ export class ChartComponent implements OnInit {
         }
         rdata.push(obj);
       }
-
-      // indicator = indicator.map(i=>{i.max=overallMax;return i});
 
       this.chartOption.radar = { indicator: indicator.map(i=>{i.max=overallMax;return i}) };
       this.chartOption.series[0].data = rdata;

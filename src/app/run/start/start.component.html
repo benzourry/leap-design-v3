@@ -159,7 +159,7 @@
                                           routerLinkActive="active">
                                           <fa-icon [icon]="getIcon(item.icon)"
                                           [fixedWidth]="true"></fa-icon>
-                                          {{item.title}}
+                                          <div class="menu-text">{{item.title}}</div>
                                         </a>
                                       <!-- } -->
                                     }
@@ -172,7 +172,7 @@
                                           routerLinkActive="active">
                                           <fa-icon [icon]="getIcon(item.icon)"
                                           [fixedWidth]="true"></fa-icon>
-                                          {{item.title}}
+                                          <div class="menu-text">{{item.title}}</div>
                                         </a>
                                       <!-- } -->
                                     }
@@ -185,7 +185,7 @@
                                           routerLinkActive="active">
                                           <fa-icon [icon]="getIcon(item.icon)"
                                           [fixedWidth]="true"></fa-icon>
-                                          {{item.title}}
+                                          <div class="menu-text">{{item.title}}</div>
                                         </a>
                                       <!-- } -->
                                     }
@@ -195,7 +195,7 @@
                                         [skipLocationChange]="item.x?.slc"
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                     @if (item.type=='dashboard') {
@@ -204,7 +204,7 @@
                                         [skipLocationChange]="item.x?.slc"
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                     @if (item.type=='lookup') {
@@ -213,7 +213,7 @@
                                         [skipLocationChange]="item.x?.slc"
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                     @if (item.type=='screen') {
@@ -222,7 +222,7 @@
                                         [skipLocationChange]="item.x?.slc"
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                     @if (item.type=='user') {
@@ -231,7 +231,7 @@
                                         [skipLocationChange]="item.x?.slc"
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }                                    
                                     @if (item.type=='external' || item.type=='internal') {
@@ -239,7 +239,7 @@
                                         [target]="item.type=='external'?'_blank':''">
                                         <fa-icon [icon]="getIcon(item.icon)"
                                         [fixedWidth]="true"></fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                     @if (item.type=='start') {
@@ -248,7 +248,7 @@
                                         (click)="hideSb()" routerLinkActive="active">
                                         <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true">
                                         </fa-icon>
-                                        {{item.title}}
+                                        <div class="menu-text">{{item.title}}</div>
                                       </a>
                                     }
                                   </div>

@@ -363,6 +363,68 @@ export class UiEditorComponent implements OnInit {
         }, res => { });
     }
 
+    importMetadataData: any;
+    importMetadata(content) {
+        this.importMetadataData = null;
+        history.pushState(null, null, window.location.href);
+        this.modalService.open(content, { backdrop: 'static' })
+            .result.then(data => {
+
+            }, res => { })
+    }
+
+    // createField:boolean;
+    // createDataset: boolean;
+    // createDashboard: boolean;
+    // importToLive: boolean;
+    metadataFile: any;
+    importMetadataLoading: boolean = false;
+    uploadMetadata($event) {
+        if ($event.target.files && $event.target.files.length) {
+            this.importMetadataLoading = true;
+            this.appService.uploadMetadata(this.app.id, $event.target.files[0], this.user.email)
+                .subscribe({
+                    next: (res) => {
+                        // let app = res.app;
+
+                        this.importMetadataData = res;
+                        this.importMetadataLoading = false;
+                        // this.getCounts(this.app.id);
+                        // this.commService.emitChange({ key: 'form', value: "import" });
+
+
+                        this.app = res.app;
+                        this.getCounts(this.app.id);
+                        // this.getCopyRequestList();
+
+                        this.getFormList();
+                        this.getDatasetList();
+                        this.getDashboardList();
+                        this.getScreenList();
+
+                        this.getCognaList(this.app.id);
+                        this.getMailerList(this.app.id);
+                        this.getAccessList(this.app.id);
+                        this.getLookupList(this.app.id);
+                        this.getBucketList(this.app.id);
+                        this.getLambdaList(this.app.id);
+
+
+                        this.toastService.show("Metadata successfully imported", { classname: 'bg-success text-light' });
+                    },
+                    error: (error) => {
+                        this.importMetadataData = {
+                            success: false,
+                            message: error.message
+                        }
+                        this.importMetadataLoading = false;
+                    }
+                })
+
+        }
+
+    }
+
     importExcelData: any;
     importExcel(content) {
         this.importExcelData = null;
