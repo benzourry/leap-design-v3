@@ -15,7 +15,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": "dist/design",
             "index": "src/index.html",
@@ -44,7 +44,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_leap",
+                "input": "./src/assets/icons_reka",
                 "output": "./assets/icons/"
               }
             ],
@@ -57,7 +57,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-kborneo.service.ts"
+                "with": "./src/app/_shared/constant-ireka.service.ts"
               }
             ]
           },
@@ -76,7 +76,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_kborneo.json"
+              "serviceWorker": "ngsw-config_ireka.json"
             },
             "development": {
               "optimization": false,
@@ -87,7 +87,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "leap-design-v3.4:build:production"
@@ -99,10 +99,10 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n"
+          "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "polyfills": [
               "zone.js",
@@ -124,6 +124,32 @@
           }
         }
       }
+    }
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
     }
   }
 }
