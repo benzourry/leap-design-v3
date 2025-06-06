@@ -37,7 +37,7 @@ import { ScreenComponent } from '../screen/screen.component';
 import { ListComponent } from '../list/list.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { EditLookupEntryComponent } from '../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
-import { FieldEditComponent } from '../_component/field-edit-a/field-edit-a.component';
+import { FieldEditComponent } from '../_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';

@@ -40,7 +40,7 @@ import { EditLookupComponent } from '../../../../_shared/modal/edit-lookup/edit-
 import { EditLookupEntryComponent } from '../../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
 import { EditMailerComponent } from '../../../../_shared/modal/edit-mailer/edit-mailer.component';
 import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role.component';
-import { FieldEditComponent } from '../../../../run/_component/field-edit-a/field-edit-a.component';
+import { FieldEditComponent } from '../../../../run/_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../../../../run/_component/field-view.component';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';

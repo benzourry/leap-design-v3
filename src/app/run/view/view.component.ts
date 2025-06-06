@@ -41,7 +41,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 // import { FormViewComponent } from '../../_shared/component/form-view.component';
 import { FormsModule } from '@angular/forms';
-import { FieldEditComponent } from '../_component/field-edit-a/field-edit-a.component';
+import { FieldEditComponent } from '../_component/field-edit-b/field-edit-b.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
