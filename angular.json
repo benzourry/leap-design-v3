@@ -44,7 +44,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_leap",
+                "input": "./src/assets/icons_aw",
                 "output": "./assets/icons/"
               }
             ],
@@ -57,7 +57,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-kborneo.service.ts"
+                "with": "./src/app/_shared/constant-aw.service.ts"
               }
             ]
           },
@@ -76,7 +76,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_kborneo.json"
+              "serviceWorker": "ngsw-config_aw.json"
             },
             "development": {
               "optimization": false,
