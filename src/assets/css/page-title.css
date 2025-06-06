@@ -3,6 +3,7 @@ page-title .title-text{
     /* margin:1px 0px; */
     text-align: center;
     white-space: nowrap;
+    margin-left: 35px;
 }
 page-title .title-text *{    
     white-space: nowrap;
@@ -76,7 +77,7 @@ page-title .nav-icon div {
         padding: 1rem !important;
     }
     page-title .title-text{
-        /*margin-left:0px;*/
+        margin-left:0px;
         text-align: center;
         /* margin:3px 45px; */
     }

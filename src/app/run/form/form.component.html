@@ -227,6 +227,53 @@
                                     <ng-container *ngTemplateOutlet="fieldRender;context:{data:entry.data, f:f, field:form.items[f.code], section:e, forceView: false, index: $index}"></ng-container>
                                     <!-- REFERRED TO BY ABOVE -->
                                     <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
+                                      let-field="field" let-forceView="forceView" let-index="index" let-index_child="index_child">
+                                      @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+                                        <div [ngClass]="field?.size||'col-sm-12'"
+                                          [class.mt-0]="field?.subType=='clearfix'"
+                                          [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
+                                          @if (field.type!='static') {
+                                            <div class="form-group">
+                                              @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                                                <label class="label-span form-label">{{field?.label}}</label>
+                                              }
+                                              <p class="form-control-static mb-0">                                                        
+                                                <field-view [field]="field" [value]="data[field.code]">
+                                                </field-view>
+                                              </p>
+                                            </div>
+                                          } @else {
+                                            <field-view [field]="field" [value]="data[field.code]"
+                                              [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                                          }
+                                        </div>
+                                      } @else {
+                                        <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index_child}}"
+                                          [fileProgress]="uploadProgress[f.code+(index??'')+(index_child??'')]"
+                                          [extractLoading]="extractLoading[f.code+(index??'')+(index_child??'')]"
+                                          [class.mt-0]="field.subType=='clearfix'"
+                                          [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+                                          [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
+                                          [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
+                                          [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+                                          (valueChange)="debFieldChange($event,data,field,section,index)"                                                
+                                          (valueBlur)="onBlur($event,data,field,section)"
+                                          (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+                                          (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+                                          (fileValueChange)="onUpload($event,data,field,section,index, index_child)"
+                                          (fileValueClear)="onFileClear($event,data,field,section,index, index_child)"
+                                          [imgclsVal]="imgclsVal[field.code+(index??'')]"
+                                          [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
+                                          (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                                          [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+                                          [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
+                                          @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+                                            <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+                                          }            
+                                      }
+                                    </ng-template>
+                                    <!-- <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
                                       let-field="field" let-forceView="forceView" let-index="index">
                                       @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
                                         <div [ngClass]="field?.size||'col-sm-12'"
@@ -272,7 +319,7 @@
                                           <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
                                         }
                                       }
-                                    </ng-template>
+                                    </ng-template> -->
                                   } @else {
                                     <div [hidden]="form.items[f.code].hidden"
                                       [ngClass]="form.items[f.code]?.size||'col-sm-12'">
@@ -282,8 +329,7 @@
                                         }
                                         @if (form.items[f.code].type=='dataset') {
                                           @defer(prefetch on idle){
-                                            <!-- {{preCompFilter[f.code]|json}} -->
-                                             <!-- dsChanged caused infinite loop -->
+                                            <!-- dsChanged caused infinite loop -->
                                             <app-list [asComp]="true"
                                               (changed)="dsChanged($event,f.code)" 
                                               [datasetId]="form.items[f.code].dataSource"
@@ -298,7 +344,6 @@
                                           }
                                         } @else {
                                           @defer(prefetch on idle){
-                                            <!-- {{preCompFilter[f.code]|json}} -->
                                             <app-screen [asComp]="true" [screenId]="form.items[f.code].dataSource"
                                               [filters]="preCompFilter[f.code]"
                                               [param]="preCompFilter[f.code]"></app-screen>
@@ -500,10 +545,10 @@
                                             @let field = form?.items[f.code];
                                             <!-- @if (form?.items[f.code] && preCheckStr(form?.items[f.code].pre,child)  && !((form.items[f.code]?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) { -->
                                             @if (field && preItem[e.code]?.[$index_child]?.[f.code]  && !((field?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) {
-                                              <ng-container *ngTemplateOutlet="fieldRender;context:{data:child, f:f, field:field, section:e, forceView: !e.inline, index: $index, $index_child: $index_child}"></ng-container>
+                                              <ng-container *ngTemplateOutlet="fieldRender;context:{data:child, f:f, field:field, section:e, forceView: !e.inline, index: $index, index_child: $index_child}"></ng-container>
                                               <!-- REFERRED TO BY ABOVE -->
                                               <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
-                                                let-field="field" let-forceView="forceView" let-index="index">
+                                                let-field="field" let-forceView="forceView" let-index="index" let-index_child="index_child">
                                                 @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
                                                   <div [ngClass]="field?.size||'col-sm-12'"
                                                     [class.mt-0]="field?.subType=='clearfix'"
@@ -524,26 +569,26 @@
                                                     }
                                                   </div>
                                                 } @else {
-                                                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{$index_child}}"
-                                                    [fileProgress]="uploadProgress[f.code+(index??'')]"
-                                                    [extractLoading]="extractLoading[f.code+(index??'')]"
+                                                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index_child}}"
+                                                    [fileProgress]="uploadProgress[f.code+(index??'')+(index_child??'')]"
+                                                    [extractLoading]="extractLoading[f.code+(index??'')+(index_child??'')]"
                                                     [class.mt-0]="field.subType=='clearfix'"
                                                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
-                                                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{$index_child}}" [field]="field"
+                                                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
                                                     [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
                                                     [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
                                                     (valueChange)="debFieldChange($event,data,field,section,index)"                                                
                                                     (valueBlur)="onBlur($event,data,field,section)"
                                                     (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
                                                     (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
-                                                    (fileValueChange)="onUpload($event,data,field,section,index)"
-                                                    (fileValueClear)="onFileClear($event,data,field,section,index)"
+                                                    (fileValueChange)="onUpload($event,data,field,section,index, index_child)"
+                                                    (fileValueClear)="onFileClear($event,data,field,section,index, index_child)"
                                                     [imgclsVal]="imgclsVal[field.code+(index??'')]"
                                                     [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
                                                     (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                                                     [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                                                     [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
-                                                    [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][$index_child][f.code]:field.x?.default"></field-edit>
+                                                    [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
                                                     @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
                                                       <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
                                                     }            
@@ -743,6 +788,8 @@
   </div>
 
   <ng-template #editChildTpl let-c="close" let-d="dismiss">
+    <!-- Nang xpat mok match kan editchild file upload progress id dgn yg dlm section sbb dlm section index nya pake index_group+index_child 
+     So, kita setel dgn xperlu progress lekak save dari editchild -->
     <div #editChildForm="ngForm" ngForm>
       <div class="modal-header">
         <h4 class="modal-title">Edit {{editChildItems.section.title}}</h4>
@@ -758,10 +805,56 @@
                 <div class="p-2 border rounded mb-3">Source Item Not Available</div>
               }
               <ng-container
-              *ngTemplateOutlet="fieldRender;context:{data:editChildData, f:f, field:field, section:editChildItems.section, forceView: false, index:$index}"></ng-container>
-              
-              <ng-template #fieldRender let-data="data" let-section="section" let-f="f" let-field="field"
-                let-forceView="forceView" let-index="$index">
+              *ngTemplateOutlet="fieldRender;context:{data:editChildData, f:f, field:field, section:editChildItems.section, forceView: false, index:$index, index_child:editChildData.$index}"></ng-container>
+              <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
+                let-field="field" let-forceView="forceView" let-index="index" let-index_child="index_child">
+                @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
+                  <div [ngClass]="field?.size||'col-sm-12'"
+                    [class.mt-0]="field?.subType=='clearfix'"
+                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
+                    @if (field.type!='static') {
+                      <div class="form-group">
+                        @if (field?.subType!='clearfix' && !field?.hideLabel) {
+                          <label class="label-span form-label">{{field?.label}}</label>
+                        }
+                        <p class="form-control-static mb-0">                                                        
+                          <field-view [field]="field" [value]="data[field.code]">
+                          </field-view>
+                        </p>
+                      </div>
+                    } @else {
+                      <field-view [field]="field" [value]="data[field.code]"
+                        [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+                    }
+                  </div>
+                } @else {
+                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index_child}}"
+                    [fileProgress]="uploadProgress[f.code+(index??'')+(index_child??'')]"
+                    [extractLoading]="extractLoading[f.code+(index??'')+(index_child??'')]"
+                    [class.mt-0]="field.subType=='clearfix'"
+                    [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
+                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
+                    [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
+                    [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
+                    (valueChange)="debFieldChange($event,data,field,section,index)"                                                
+                    (valueBlur)="onBlur($event,data,field,section)"
+                    (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
+                    (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
+                    (fileValueChange)="onUpload($event,data,field,section,index, index_child)"
+                    (fileValueClear)="onFileClear($event,data,field,section,index, index_child)"
+                    [imgclsVal]="imgclsVal[field.code+(index??'')]"
+                    [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
+                    (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+                    [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
+                    [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
+                    [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
+                    @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
+                      <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
+                    }            
+                }
+              </ng-template>
+              <!-- <ng-template #fieldRender let-data="data" let-section="section" let-f="f" let-field="field"
+                let-forceView="forceView" let-index="index" let-index_child="index_child">
                 @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
                   <div [ngClass]="field?.size||'col-sm-12'"
                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
@@ -781,20 +874,20 @@
                     }
                   </div>
                 } @else {
-                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
-                    [fileProgress]="uploadProgress[f.code+(index??'')]"
-                    [extractLoading]="extractLoading[f.code+(index??'')]"
+                  <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}-{{index_child}}"
+                    [fileProgress]="uploadProgress[f.code+(index??'')+(index_child??'')]"
+                    [extractLoading]="extractLoading[f.code+(index??'')+(index_child??'')]"
                     [class.mt-0]="field.subType=='clearfix'"
                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
-                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field"
+                    [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}-{{index_child}}" [field]="field"
                     [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
                     [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
                     (valueChange)="debFieldChange($event,data,field,section,index)"
                     (valueBlur)="onBlur($event,data,field,section)"
                     (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
                     (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
-                    (fileValueChange)="onUpload($event,data, field,section,index)"
-                    (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+                    (fileValueChange)="onUpload($event,data, field,section,index, index_child)"
+                    (fileValueClear)="onFileClear($event,data, field,section, index, index_child)" [required]="field?.v?.required"
                     [imgclsVal]="imgclsVal[field.code+(index??'')]"
                     [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                     [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
@@ -804,7 +897,7 @@
                       <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
                     }
                 }
-              </ng-template>
+              </ng-template> -->
             }
           }
         </div>
@@ -824,52 +917,53 @@
     </div>
   </ng-template>
 
-  <ng-template #fieldRender let-data="data" let-section="section" let-f="f" let-field="field" let-forceView="forceView" let-form
-    let-index="index">
+  <!-- <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
+    let-field="field" let-forceView="forceView" let-index="index" let-index_child="index_child">
     @if (forceView || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='view') {
       <div [ngClass]="field?.size||'col-sm-12'"
-        [hidden]="field.hidden || (field?.x?.facet?.[action]||section.x?.facet?.[action])=='hidden'">
+        [class.mt-0]="field?.subType=='clearfix'"
+        [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'">
         @if (field.type!='static') {
-          <div class="form-group mb-3">
+          <div class="form-group">
             @if (field?.subType!='clearfix' && !field?.hideLabel) {
               <label class="label-span form-label">{{field?.label}}</label>
             }
-            <p class="form-control-static">
+            <p class="form-control-static mb-0">                                                        
               <field-view [field]="field" [value]="data[field.code]">
               </field-view>
             </p>
           </div>
         } @else {
           <field-view [field]="field" [value]="data[field.code]"
-          [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
+            [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"></field-view>
         }
       </div>
     } @else {
-      <!-- index should only refer to child index, not field index -->
-      <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index}}"
-        [fileProgress]="uploadProgress[f.code+(index??'')]"
-        [extractLoading]="extractLoading[f.code+(index??'')]"
+      <field-edit [loading]="lookupLoading[f.code]" id="fn-{{f.id}}-{{index_child}}"
+        [fileProgress]="uploadProgress[f.code+(index??'')+(index_child??'')]"
+        [extractLoading]="extractLoading[f.code+(index??'')+(index_child??'')]"
         [class.mt-0]="field.subType=='clearfix'"
         [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
-        [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index}}" [field]="field" [lookupList]="lookup[f.code]"
-        [(ngModel)]="data[field.code]"
+        [ngClass]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
+        [lookupList]="lookup[f.code]" [(ngModel)]="data[field.code]"
         [class.disabled]="(field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='disabled'"
-        (valueChange)="debFieldChange($event,data,field,section, index)"        
+        (valueChange)="debFieldChange($event,data,field,section,index)"                                                
         (valueBlur)="onBlur($event,data,field,section)"
         (valueSearch)="getLookupSearch($event,field.code,field.dataSourceInit, data)"
         (addAction)="editLookupEntry(editLookupEntryTpl,field,data,{code:$event,name:$event,enabled:1})"
-        (fileValueChange)="onUpload($event,data, field,section,index)"
-        (fileValueClear)="onFileClear($event,data, field,section, index)" [required]="field?.v?.required"
+        (fileValueChange)="onUpload($event,data,field,section,index, index_child)"
+        (fileValueClear)="onFileClear($event,data,field,section,index, index_child)"
         [imgclsVal]="imgclsVal[field.code+(index??'')]"
-        [maxlength]="field?.v?.maxlength" (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
+        [required]="field?.v?.required" [maxlength]="field?.v?.maxlength"
+        (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
         [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
         [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
-        [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default"></field-edit>
+        [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
         @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
           <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
-        }
+        }            
     }
-  </ng-template>
+  </ng-template> -->
 
   
   <ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">

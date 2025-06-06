@@ -57,7 +57,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     imports: [FormsModule, PageTitleComponent, StepWizardComponent, FormViewComponent, NgbAccordionDirective, NgbAccordionItem,
     NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody,
     NgTemplateOutlet, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, RouterLink, NgbNavContent, NgbNavOutlet,
-    NgStyle, NgClass, FaIconComponent, FieldViewComponent, FieldEditComponent, ListComponent, ScreenComponent, DatePipe,
+    NgStyle, NgClass, FaIconComponent, FieldViewComponent, FieldEditComponent, ListComponent, ScreenComponent, DatePipe, JsonPipe,
     NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,
     EditLookupEntryComponent]
 })
@@ -1196,6 +1196,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.editChildItems = { section: section }
     // this.preItem[section.code]={}
 
+    // $index perlu diset awal supaya dlm template bleh pass sbg index_child
+    this.editChildData['$index'] = this.entry.data[section.code]?this.entry.data[section.code].length:0;
+
     this.filterChildItems(data, section);
 
     history.pushState(null, null, window.location.href);
@@ -1209,7 +1212,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           if (!this.entry.data[section.code]) {
             this.entry.data[section.code] = []
           }
-          res['$index'] = this.entry.data[section.code].length;
+          // res['$index'] = this.entry.data[section.code].length;
           this.entry.data[section.code].push(res);
         }
         this.entryForm().form.markAsDirty();
@@ -1233,7 +1236,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   // uploading = {};
 
-  onFileClear($event, data, f, evalEntryData, index) {
+  onFileClear($event, data, f, evalEntryData, index, index_child) {
     // console.log("FIle SELECT:" + $event);
     /** Problem, bila user click Cancel, akan remove suma dlm entryFIles
      * sbb $event return current file value;
@@ -1244,7 +1247,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     var fileList = f.subType.indexOf('multi') > -1 ? $event : [$event];
     this.entryService.deleteAttachment($event)
       .subscribe(res => {
-        delete this.uploadProgress[f.code+(index??'')];
+        delete this.uploadProgress[f.code+(index??'')+(index_child??'')];
         this.fieldChange($event, data, f, evalEntryData);
         fileList.forEach(file => {
           this.entryFiles.splice(this.entryFiles.indexOf(file), 1);
@@ -1258,7 +1261,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   uploadProgress: any = {};
 
-  onUpload(fileList, data, f, evalEntryData, index) {
+  onUpload(fileList, data, f, evalEntryData, index, index_child) {
 
     // console.log("fileList", fileList);
     if (fileList && fileList.length) {
@@ -1288,7 +1291,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, filename)
                 .subscribe({
                   next: res => {
-                    this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, true, list);
+                    this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, index_child, true, list);
                   }, error: err => {
                     this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                     console.error(err);
@@ -1313,7 +1316,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, filename)
               .subscribe({
                 next: res => {
-                  this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, false, list);
+                  this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, index_child, false, list);
                 }, error: err => {
                   this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
@@ -1340,7 +1343,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form.appId, file.name)
               .subscribe({
                 next: res => {
-                  this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, true, list);
+                  this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, index_child, true, list);
                 },
                 error: err => {
                   this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
@@ -1362,7 +1365,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form.appId, filename)
             .subscribe({
               next: res => {
-                this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, false, list);
+                this.processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, index_child, false, list);
               },
               error: err => {
                 console.log(err)
@@ -1374,14 +1377,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
 
-  processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, multi, list){
+  processUpload(res, data, fileList, evalEntryData, progressSize,f, totalSize, index, index_child, multi, list){
     if (res.type === HttpEventType.UploadProgress) {
       progressSize = res.loaded;
       // console.log("progressSize",progressSize);
-      this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
+      this.uploadProgress[f.code + (index ?? '') + (index_child ?? '')] = Math.round(100 * progressSize / totalSize);
     } else if (res instanceof HttpResponse) {
       if (res.body?.success){
-        this.uploadProgress[f.code + (index ?? '')] = 100;
+        this.uploadProgress[f.code + (index ?? '') + (index_child ?? '')] = 100;
         if (multi){
           list.push(res.body.fileUrl)
           data[f.code] = list

@@ -64,19 +64,28 @@ export function compileTpl(templateText: string, data: any): string {
         .replace(/<!--(.+?)-->/g, '')
         .replace(/\{\{(.+?)\}\}/g, r$val)
         .replace(/\[#(.+?)#\]/g, r$script)
-        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, '";if($1){\noutput+="')
+        // .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, '";if($1){\noutput+="')
+        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
         .replace(/<x-else\s*\/?\s*>/ig, '";}else{\noutput+="')
-        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, '";}else if($1){\noutput+="')
+        // .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, '";}else if($1){\noutput+="')
+        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
         .replace(/<\/x-if>/ig, '";}\noutput+="')
-        .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
+        // .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
+        .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
         .replace(/<\/x-for>/ig, '";}\noutput+="')
         .replace(/<x-foreach\s*\$\=\\\"(.+?)\\\"\s*>/ig, r$foreach)
         .replace(/<\/x-foreach>/ig, '";})\noutput+="')
         .replace(/<\?(.+?)\?>/g, '";$1\noutput+="')
+        // .replace(/<\?(.+?)\?>/g, (match, p1) => `";${p1.replace(/\s+/g, '')}\noutput+="`)
       + ";return output;"
-    ).replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m); //.replace(/(?:\\[rnt])+/gm, "")
+    );//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
     tplCache[tplHash] = code;
   }
+
+      // if (code.length>3000){
+      //   console.log(code);
+      //   console.log(data);
+      // }
 
   if (templateText && data) {
     data.dayjs = dayjs;
@@ -86,6 +95,7 @@ export function compileTpl(templateText: string, data: any): string {
       result = result.replaceAll("\n", "\\n")
                      .replace(/<x-markdown>(.+?)<\/x-markdown>/ig, r$markdown)
                      .replaceAll("\\n", "\n");
+
     } catch (err) {
       throw err;
     }
