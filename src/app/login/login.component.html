@@ -16,56 +16,56 @@
       </div>
     }
     @if (checkLogin('sarawakid')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('sarawakid')">
         <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true"></fa-icon>
         Login with SarawakID
       </button>
     }
     @if (checkLogin('unimasid')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('unimasid')">
         <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
         Login with UNIMAS ID
       </button>
     }
     @if (checkLogin('unimas')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('unimas')">
         <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
         Login with UNIMAS ID<sup> v1</sup>
       </button>
     }
     @if (checkLogin('icatsid')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('icatsid')">
         <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
         Login with i-CATS Identity
       </button>
     }
     @if (checkLogin('ssone')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('ssone')">
         <fa-icon [icon]="['fas','university']" [fixedWidth]="true"></fa-icon>
         Login with ssOne
       </button>
     }
     @if (checkLogin('google')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         (click)="login('google')">
         <fa-icon [icon]="['fab','google']" [fixedWidth]="true"></fa-icon>
         Login with Google
       </button>
     }
     @if (checkLogin('azuread')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         title="Login with Microsoft" (click)="login('azuread')">
         <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true"></fa-icon>
         Login with Microsoft
       </button>
     }
     @if (checkLogin('facebook')) {
-      <button type="button" class="btn text-start rounded-pill btn-primary m-1 px-2 pe-3" [class.disabled]="useEmail"
+      <button type="button" class="btn text-start rounded-pill btn-primary text-nowrap m-1 px-2 pe-3" [class.disabled]="useEmail"
         title="Login with Facebook" (click)="login('facebook')">
         <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true"></fa-icon>
         Login with Facebook
@@ -73,19 +73,19 @@
     }
     <div class="text-center d-flex justify-content-between">
       @if (checkLogin('github')) {
-        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary text-nowrap m-1 px-2" [class.disabled]="useEmail"
           title="Login with GitHub" (click)="login('github')">
           <fa-icon [icon]="['fab','github']" [fixedWidth]="true"></fa-icon>
         </button>
       }
       @if (checkLogin('linkedin')) {
-        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary text-nowrap m-1 px-2" [class.disabled]="useEmail"
           title="Login with LinkedIn" (click)="login('linkedin')">
           <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true"></fa-icon>
         </button>
       }
       @if (checkLogin('twitter')) {
-        <button type="button" class="btn text-start rounded-pill btn-outline-primary m-1 px-2" [class.disabled]="useEmail"
+        <button type="button" class="btn text-start rounded-pill btn-outline-primary text-nowrap m-1 px-2" [class.disabled]="useEmail"
           title="Login with Twitter" (click)="login('twitter')">
           <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true"></fa-icon>
         </button>
@@ -110,8 +110,19 @@
           }
           <input class="form-control rounded-50 my-1 w-unset" type="text" name="email"
             [(ngModel)]="cred.email" placeholder="Email" required>
-          <input class="form-control rounded-50 my-1 w-unset" type="password" name="password"
+          <div class="position-relative">
+            <div style="position:absolute; right:10px; top:8px; cursor: pointer;">
+              @if (passwordType=='password'){
+                  <fa-icon [icon]="['far','eye']" (click)="passwordType='text'" [fixedWidth]="true"></fa-icon>
+              }@else {
+                  <fa-icon [icon]="['far','eye-slash']" (click)="passwordType='password'" [fixedWidth]="true"></fa-icon>
+              }
+            </div>  
+  
+            <input class="form-control rounded-50 my-1 w-unset" [type]="passwordType" name="password"
             [(ngModel)]="cred.password" placeholder="Password" required>
+          </div>
+            
         </div>
         @if (!register) {
           <div class="text-center d-flex justify-content-between">

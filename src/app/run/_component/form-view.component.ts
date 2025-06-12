@@ -75,7 +75,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPost}"></ng-container>
   }
 }
-@if (['tabs','pills'].indexOf(form().nav)>-1) {
+@if (['tabs','pills','underline'].indexOf(form().nav)>-1) {
   @if (sectionMap[-1]?.length>0){
     @let tabPre = {id:-1,sortOrder:-1,title:"(head)"};
     <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre}"></ng-container>

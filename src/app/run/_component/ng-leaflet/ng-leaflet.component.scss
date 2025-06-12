@@ -3,3 +3,6 @@
 ::ng-deep .leaflet-control-attribution.leaflet-control{
     display: none;
 }
+::ng-deep .leaflet-pane {
+    z-index: 2;
+}

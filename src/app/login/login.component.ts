@@ -43,6 +43,8 @@ export class LoginComponent implements OnInit {
 
   checkLogin = (login) => OAUTH.SIGNIN_OPT.includes(login);
 
+  passwordType:string="password";
+
   ngOnInit() {
     // Get the query params
     this.route.queryParams

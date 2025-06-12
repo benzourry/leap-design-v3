@@ -285,7 +285,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   // tabMap:any = {}
   getForm(formId, entryId, action) {
     this.loading = true;
-    this.runService.getForm(formId)
+    this.runService.getRunForm(formId)
       .subscribe(form => {
         // console.log("form equal(old)",this._formId == form.id)
         // console.log("form equal(new)",formId == form.id)
@@ -318,10 +318,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
           // delete this.entry;
           this.entry = { currentStatus: 'drafted', data: {} }; // reset entry 
-          this.onInit = () => this.initForm(form.f, this.entry.data, form);
-          this.onView = () => this.initForm(form.onView, this.entry.data, form);
-          this.onSave = () => this.initForm(form.onSave, this.entry.data, form);
-          this.onSubmit = () => this.initForm(form.onSubmit, this.entry.data, form);
+          this.onInit = () => this.initForm(form._f, this.entry.data, form);
+          this.onView = () => this.initForm(form._onView, this.entry.data, form);
+          this.onSave = () => this.initForm(form._onSave, this.entry.data, form);
+          this.onSubmit = () => this.initForm(form._onSubmit, this.entry.data, form);
 
           this.loading = false;
 
@@ -344,7 +344,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.getPrevData(entryId, this._param, form.prev);
           } else if (action == 'add') {
             this.formInactive = (form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now())
-            this.initForm(this.form.f, this.entry.data, this.form);
+            this.initForm(this.form._f, this.entry.data, this.form);
           } else if (form.x?.facet?.includes(action)) {
             this.getData(entryId, form);
             // this.initForm(this.form.f); //comment after change initform receive data parameter
@@ -732,7 +732,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   // $el='as';
   fieldChange($event, data, field, section) {
     if (field.post) {
+      // console.log("before",field.post)
       let postTxt = this.compileTpl(field.post,{})
+      // console.log("after",postTxt)
+      // let postTxt = this.compileTpl(field.post,{})
       try {
         this._eval(data, postTxt, this.form);
       } catch (e) { this.logService.log(`{form-${field.code}-post}-${e}`) }
@@ -803,14 +806,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         next: res => {
           this.entry = res; //Object.assign(this.entry, res);
           this.evalAll(this.entry.data);
-          this.initForm(form.f, this.entry.data, form);
+          this.initForm(form._f, this.entry.data, form);
           this.loading = false;
         }, error: err => {
           // consider getPrevData() but need to add support for prevParam;
           if (form.prev) {
             this.getPrevData(null, this.getPrevParam(this._eval({}, form.singleQ, form)), form.prev);
           } else {
-            this.initForm(form.f, this.entry.data, form);
+            this.initForm(form._f, this.entry.data, form);
             this.loading = false;
           }
         }
@@ -851,7 +854,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry = res;//Object.assign(this.entry, res);
             this.getDataFiles('data', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(this.form.f, this.entry.data, this.form);
+            this.initForm(this.form._f, this.entry.data, this.form);
             this.loading = false;
             this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
             if (form.prev) {
@@ -875,7 +878,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               this.entry = res;//Object.assign(this.entry, res);
               this.getDataFiles('data', res.id);
               this.evalAll(this.entry.data);
-              this.initForm(this.form.f, this.entry.data, this.form);
+              this.initForm(this.form._f, this.entry.data, this.form);
               this.loading = false;
               this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
             }, error: err => {
@@ -891,7 +894,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.entry = res; //Object.assign(this.entry, res);
                 this.getDataFiles('data', res.id);
                 this.evalAll(this.entry.data);
-                this.initForm(this.form.f, this.entry.data, this.form);
+                this.initForm(this.form._f, this.entry.data, this.form);
                 this.loading = false;
                 this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
               }, error: err => {
@@ -918,8 +921,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry.prev = res.data;
             this.getDataFiles('prev', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(form?.onView, res.data, form);
-            this.initForm(this.form.f, this.entry.data, this.form);
+            this.initForm(form?._onView, res.data, form);
+            this.initForm(this.form._f, this.entry.data, this.form);
             this.prevLoading = false;
           }, error: err => {
             this.prevLoading = false;
@@ -935,8 +938,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry.prev = res.data;
             this.getDataFiles('prev', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(form?.onView, res.data, form);
-            this.initForm(this.form.f, this.entry.data, this.form);
+            this.initForm(form?._onView, res.data, form);
+            this.initForm(this.form._f, this.entry.data, this.form);
             this.prevLoading = false;
           }, error: err => {
             this.prevLoading = false;
@@ -1127,14 +1130,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   initForm(js, data, form) {
     let res = undefined;
 
-    let jsTxt = this.compileTpl(js,{})
-    setTimeout(()=>{
+    let jsTxt = this.compileTpl(btoaUTF(js),{})
+    // setTimeout(()=>{ // timeout utk flush DOM (utk markdown, mermaid n echarts)
       try {
-        res = this._eval(data, jsTxt, form);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
+        res = this._eval(data, jsTxt, form);
       } catch (e) { this.logService.log(`{form-${this.form.title}-initForm}-${e}`) }
       this.filterTabs();
       this.filterItems();
-    },0)
+    // },0)
 
     return res;
   }

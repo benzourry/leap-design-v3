@@ -242,7 +242,7 @@
         <div [class.table-responsive]="!dataset?.wide || asComp()"
           [ngClass]="{'px-2 p-sm-0': dataset?.x?.tblcard && !asComp()}" style="width:100%">
           @if (entryList?.length>0) {
-            <table class="table table-print ds-table mb-0 table-striped bg-white"
+            <table class="table table-print ds-table mb-0 bg-white"
               [class.has-both]="dataset?.x?.bulkAction && dataset?.showAction"
               [ngClass]="{'tblcard':dataset?.x?.tblcard && !asComp()}">
               <thead class="bg-light list-tmid ds-thead">

@@ -31,7 +31,7 @@
     </div>
 }
 <!-- {{activeTab|json}} -->
-@if (['tabs','pills'].indexOf(screen()?.data?.nav)>-1) {
+@if (['tabs','pills','underline'].indexOf(screen()?.data?.nav)>-1) {
   <div class="tab-simple">
     <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="activeTab[screen().id]??0"
       class="nav-{{screen()?.data?.nav}} justify-content-center" [class.limit-width]="!screen().wide">

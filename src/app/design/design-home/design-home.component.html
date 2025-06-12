@@ -163,7 +163,6 @@
             <h4>No application available</h4>
           </div>  
         }@else {
-
           <div class="px-2">
             <div class="py-1 small m-a" [class.limit-width]="!dataset?.wide">
               <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter==null}" (click)="groupFilter=null">
@@ -181,25 +180,24 @@
             </div>
           </div>
 
-<div class="d-flex flex-wrap flex-row align-content-center">
+          <div class="d-flex flex-wrap flex-row align-content-center">
 
-          <!-- <pre>{{itemList| groupBy: 'group' | json}}</pre> -->
-          @for (dsKv of groupedItemList | filter:searchText ; track $index) {
+            @for (dsKv of groupedItemList | filter:searchText ; track $index) {
 
-            @if( !groupFilter || groupFilter==dsKv.key){
+              @if( !groupFilter || groupFilter==dsKv.key){
 
-              <div style="flex-grow: 1;">
-                <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="hideGroupItems[dsKv.key]=!hideGroupItems[dsKv.key]">
-                  @if (dsKv.key!='undefined'){
-                    <span class="">{{dsKv.key}}</span>
-                  }@else {
-                    <span class="fst-italic text-muted">Ungrouped</span>
-                  }                  
-                </div>
-              
-                @if (!hideGroupItems[dsKv.key]){
-                  <div class="tile-wrap tile-center">
-                    @for (item of dsKv.value; track $index) {
+                <div style="flex-grow: 1;">
+                  <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="hideGroupItems[dsKv.key]=!hideGroupItems[dsKv.key]">
+                    @if (dsKv.key!='undefined'){
+                      <span class="">{{dsKv.key}}</span>
+                    }@else {
+                      <span class="fst-italic text-muted">Ungrouped</span>
+                    }                  
+                  </div>
+                
+                  @if (!hideGroupItems[dsKv.key]){
+                    <div class="tile-wrap tile-center">
+                      @for (item of dsKv.value; track $index) {
                         <div class="tile"
                           style="text-overflow: ellipsis" onclick="">
                           <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
@@ -241,14 +239,14 @@
                             <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
                           }
                         </div>
-                    }  
-                  </div>
-                }
-              </div>
+                      }  
+                    </div>
+                  }
+                </div>
+              }
             }
-          }
 
-        </div>
+          </div>
         }
       }@else {
         <div class="p-4 text-muted text-center">

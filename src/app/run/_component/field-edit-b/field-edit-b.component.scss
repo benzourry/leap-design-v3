@@ -1,3 +1,9 @@
+:root{
+    --bs-border-radius: 8px;
+    --ae-text-area-border-radius: 8px;
+    // --ae-text-area-border: solid #86b7fe 1px;
+    // --bs-focus-ring-x: 10px; --bs-focus-ring-y: 10px; --bs-focus-ring-blur: 4px
+}
 .field-edit{
     --bs-border-color: rgba(0, 0, 0, 0.15);
 }
@@ -11,12 +17,59 @@
     position: relative;
     margin-bottom: 0;
 }
+.smyds.form-control,
+.smyds.btn,
+.smyds .ng-select-container, 
+.smyds .img-holder, 
+.smyds .map-target-div,
+.smyds .angular-editor-textarea,
+.smyds.form-check-input{
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
+}
+
+.ng-select-container{
+    border-radius: var(--bs-border-radius) !important;
+}
+
+.btn:focus{
+    margin-top:0.5px;
+}
 
 .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
+.angular-editor .angular-editor-wrapper .angular-editor-textarea:focus,
 .form-control:focus {
-    border-color: #007eff;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
-    outline: solid 1.5px white;
+    // border-color: #007eff;
+    // box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+    // outline: solid 1.5px white;
+
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    --ae-text-area-border: solid #86b7fe 1px;
+    outline: none !important;
+    box-shadow: 0 0 0 0.18em rgba(13, 110, 253, .25);
+}
+.is-invalid.form-control:focus,
+.is-invalid .angular-editor .angular-editor-wrapper .angular-editor-textarea:focus{
+    box-shadow: 0 0 0 0.18em rgba(var(--bs-danger-rgb), 0.25);
+}
+.is-invalid .angular-editor .angular-editor-wrapper .angular-editor-textarea{
+    border-color: var(--bs-form-invalid-border-color) !important;
+}
+// .angular-editor .angular-editor-wrapper .angular-editor-textarea:focus,
+// .angular-editor .angular-editor-wrapper .angular-editor-textarea.focus{
+
+// }
+// .angular-editor .angular-editor-wrapper .angular-editor-textarea:focus,
+// .angular-editor .angular-editor-wrapper .angular-editor-textarea.focus {
+//     outline: var(--ae-focus-outline-color, -webkit-focus-ring-color auto 1px);
+// }
+.ng-dropdown-panel,ngb-datepicker.dropdown-menu {
+    border-radius: var(--bs-border-radius) !important;
+    box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05),0px 12px 50px 0px rgba(0, 0, 0, 0.10);
+    margin-top:5px !important;
+    margin-bottom:5px !important;
+    overflow: hidden;
 }
 
 // /* Float label */
@@ -68,79 +121,21 @@ angular-editor .angular-editor-textarea {
   }  
   angular-editor:focus-within angular-editor-toolbar {
     display: block !important;
+    border-radius: 8px;
+    box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05), 0px 12px 50px 0px rgba(0, 0, 0, 0.10);
+    border: solid 1px #eee;
+    margin-top: 5px;
   }
 
-// .has-float-label:not(.always) .form-control:placeholder-shown:not(:focus) + .label-span, 
-// .has-float-label:not(.always):not(.has-value) angular-editor:not(:focus-within) + .label-span,
-// .has-float-label .ng-select .ng-select-container .ng-value-container .ng-placeholder {
-//     position: absolute;
-//     top: 1.2em;
-//     left: 0.75em;
-//     font-size: 1rem;
-//     color: #495057;
-//     opacity: 0.7;
-//     font-weight: normal;
-//     text-transform: none;
-//     pointer-events: none;
-// }
-
-// .has-float-label .ng-select .ng-select-container .ng-value-container .ng-placeholder {
-//     top: 1em;
-// }
-
-// /* Input group */
-// .input-group .has-float-label {
-//     flex-grow: 1;
-//     margin-bottom: 0;
-//     display: flex;
-//     flex-direction: column;
-//     justify-content: center;
-//     width: 1%;
-// }
-
-// .input-group .has-float-label .label-span {
-//     white-space: nowrap;
-// }
-
-// .input-group .has-float-label:not(:last-child),
-// .input-group .has-float-label:not(:last-child) .form-control {
-//     border-bottom-right-radius: 0;
-//     border-top-right-radius: 0;
-//     border-right: 0;
-// }
-
-// .input-group .has-float-label:not(:first-child),
-// .input-group .has-float-label:not(:first-child) .form-control {
-//     border-bottom-left-radius: 0;
-//     border-top-left-radius: 0;
-// }
-
-// .has-float-label .form-control:not(textarea) {
-//     height: calc(3.5rem + 2px);
-// }
-
-// .has-float-label .form-control:not(:focus) {
-//     background-color: rgba(255, 255, 255, 0.3);
-//     border-color: rgba(0, 0, 0, 0.15);
-// }
-
-// .has-float-label .form-control {
-//     padding: 1.2rem 0.75rem 0.175rem;
-// }
-
-// .has-float-label textarea.form-control {
-//     padding: 1.4rem 0.75rem 0.175rem;
-//     min-height: 58px;
-// }
-
-// .has-float-label .ng-select .ng-select-container {
-//     min-height: calc(3.5rem + 2px);
-//     border-radius: 0.375rem;
-// }
-
-// .form-control{
-//     border: var(--bs-border-width) solid rgba(0, 0, 0, 0.15);
-// }
+  angular-editor{
+    position:relative;
+  }
+angular-editor-toolbar{
+    position: absolute;
+    top: 100%;
+    z-index: 3;
+    background: white;
+}
 
 .addon-timepicker{
     margin-top:-1em;
@@ -198,63 +193,6 @@ angular-editor.is-invalid .angular-editor {
     // background-position: right calc(0.375em + 0.1875rem) top 1.2em;
 }
 
-// .has-float-label .ng-select.ng-select-single .ng-select-container .ng-value-container .ng-input,
-// .has-float-label .ng-select .ng-select-container .ng-value-container {
-//     margin-top: 1.1rem;
-//     padding-left: 0.75rem;
-// }
-
-// /* Non-floating label */
-// .label-span {
-//     opacity: 0.7;
-//     z-index: 3;
-//     line-height: 1;
-//     margin-bottom: 0.5rem;
-// }
-
-// .val-text {
-//     margin-top: 3px;
-// }
-
-// .val-text fa-icon {
-//     margin-right: 0.5em;
-// }
-
-// .light.btn-outline-secondary {
-//     border-color: rgba(0, 0, 0, 0.15);
-// }
-
-// .ng-dropdown-panel {
-//     border: 1px solid rgba(0, 0, 0, 0.15);
-// }
-
-// .custom-file {
-//     min-height: calc(3.5rem + 2px);
-// }
-
-// .form-control-color {
-//     padding: 1.5rem 2rem 0.75rem 0.75rem !important;
-//     width: 100% !important;
-// }
-
-// .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
-// .form-control:focus {
-//     border-color: #007eff;
-//     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
-//     outline: solid 1.5px white;
-// }
-
-// .ng-select.ng-select-focused.is-invalid:not(.ng-select-opened) > .ng-select-container,
-// .was-validated .form-control:invalid:focus,
-// .form-control.is-invalid:focus {
-//     border-color: #dc3545;
-//     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
-//     outline: solid 1.5px white;
-// }
-
-// .width-38 {
-//     width: 38px;
-// }
 
 /* Image grid */
 .img-grid-cont {
@@ -305,28 +243,12 @@ angular-editor.is-invalid .angular-editor {
     }
 }
 
-// .form-check-inline {
-//     margin-right: 1.5rem;
-// }
-
-// .extracting .form-control {
-//     border-color: #007eff;
-//     box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.5);
-//     animation: lineblink 1s linear infinite;
-// }
-
-// @keyframes lineblink {
-//     50% {
-//         box-shadow: 0 0 0 0.25rem rgba(104, 114, 129, 0.5);
-//     }
-// }
-
 // /* Model Picker */
 .modelPicker .ng-select .ng-select-container.ng-select-container.ng-has-value{
-    border-radius: 0.375rem 0.375rem 0 0 !important; 
+    border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0 !important; 
 }
 .modelPicker>.card,.modelPicker>.list-group{
-    border-radius: 0px 0px 4px 4px;
+    border-radius: 0px 0px var(--bs-border-radius) var(--bs-border-radius);
     border-top: none;
     background: #f6f6f6;
 }
@@ -343,6 +265,7 @@ angular-editor.is-invalid .angular-editor {
     // z-index: 3;
     // line-height: 1;
     margin-bottom: 0.3rem;
+    font-weight: 500;
   }
 
 

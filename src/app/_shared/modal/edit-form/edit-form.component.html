@@ -119,6 +119,11 @@
                         required>
                       <label for="nav-pills" class="btn btn-outline-secondary me-1 mb-1">
                       Pills</label>
+                      <input class="btn-check" type="radio" value="underline" id="nav-underline"
+                        name="nav-underline" [(ngModel)]="editFormData().nav"
+                        required>
+                      <label for="nav-underline" class="btn btn-outline-secondary me-1 mb-1">
+                      Underline</label>
                       <input class="btn-check" type="radio" value="accordions" id="nav-acc"
                         name="nav-acc" [(ngModel)]="editFormData().nav" required>
                       <label for="nav-acc" class="btn btn-outline-secondary me-1 mb-1">
@@ -176,21 +181,21 @@
                   </div>
                 }
               </div>
-              @if (['tabs','pills','accordions'].includes(editFormData().nav)) {
+              @if (['tabs','pills','underline','accordions'].includes(editFormData().nav)) {
                 <div class="form-check form-switch mt-1">
                   <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.progression"
                     name="progression" id="progression">
                   <label class="form-check-label" for="progression">Progressive/Muti-step form</label>
                 </div>
               }
-              @if (['tabs','pills','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
+              @if (['tabs','pills','underline','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
                 <div class="form-check mt-1 ms-4">
                   <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.validateProgress"
                     name="validateProgress" id="validateProgress">
                   <label class="form-check-label" for="validateProgress">Validate page before progress next</label>
                 </div>
               }
-              @if (['tabs','pills','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
+              @if (['tabs','pills','underline','accordions'].includes(editFormData().nav) && editFormData().x?.progression) {
                 <div class="form-check mt-1 ms-4">
                   <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.noPageSkip"
                     name="noPageSkip" id="noPageSkip">
@@ -281,7 +286,7 @@
                   </app-cm>
                 </div>
               </div> -->
-              @if (['tabs','pills','accordions'].indexOf(editFormData().nav)>-1) {
+              @if (['tabs','pills','underline','accordions'].indexOf(editFormData().nav)>-1) {
                 <div class="form-check form-switch mt-1"
                   >
                   <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().showIndex"

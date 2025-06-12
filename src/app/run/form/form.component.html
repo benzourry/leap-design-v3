@@ -66,7 +66,7 @@
                           [class.pe-none]="form.x?.progression && form.x?.noPageSkip && ($index != navIndex)"
                          (click)="tabPostAction($index)">
                           @if (form.showIndex) {
-                            <div style="float:left;height:25px; width:25px;background:#666; color:white;
+                            <div style="float:left;height:25px; width:25px; min-width:25px;background:#666; color:white;
                               padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
                             border-radius:20px;">{{$index+1}}</div>
                           }
@@ -93,7 +93,7 @@
                 @let tabPost = {id:-999,sortOrder:999,title:"(bottom)"};
                 <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPost, isPrePost: true}"></ng-container>
               }
-            }@else if (['tabs','pills'].indexOf(form.nav)>-1  && form.tabs?.length>0) {
+            }@else if (['tabs','pills','underline'].indexOf(form.nav)>-1  && form.tabs?.length>0) {
             
               @if (sectionMap[-1]?.length>0){
                 @let tabPre = {id:-1,sortOrder:-1,title:"(head)"};
@@ -267,7 +267,7 @@
                                           (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                                           [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                                           [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
-                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
+                                          [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[field?.code]:field?.x?.default"></field-edit>
                                           @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
                                             <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
                                           }            
@@ -676,7 +676,7 @@
             <div class="single-pane pt-1">
               <div class="centered d-flex" [class.limit-width]="!form?.x?.wide">
                 @if (!tabfirst) {
-                  <button type="button" class="btn btn-round bg-white" (click)="progBack(tabidx)">
+                  <button type="button" class="btn btn-round bg-white text-truncate me-2" (click)="progBack(tabidx)">
                     <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                     {{app?.x?.lang=='ms'?'Kembali':'Back'}}
                     @if (saving) {
@@ -687,7 +687,7 @@
                   </button>
                 }
                 @if (!tablast) {
-                  <button type="button" class="btn btn-round btn-primary ms-auto" title="Save and proceed"
+                  <button type="button" class="btn btn-round btn-primary text-truncate ms-auto" title="Save and proceed"
                     [disabled]="(form.x?.progression && form.x?.validateProgress) && tForm?.invalid || saving || !disabledTabs[filteredTabs[tabidx+1]?.id]" (click)="progNext(tabidx)">
                     <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                     @if (saving) {
@@ -699,9 +699,9 @@
                     <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                   </button>
                 }@else {
-                  <div class="ms-auto">
+                  <div class="ms-auto d-flex text-truncate">
                     @if (form.canSave) {
-                      <button type="button" class="btn btn-round btn-primary ms-1" (click)="save()"
+                      <button type="button" class="btn btn-round btn-primary text-truncate ms-1" (click)="save()"
                         [disabled]="saving || (form.validateSave && entryForm.invalid)">
                         <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                         {{form?.x?.saveLbl??(app?.x?.lang=='ms'?'Simpan':'Save')}}
@@ -713,7 +713,7 @@
                       </button>
                     }
   
-                    <button type="button" class="btn btn-round btn-success ms-1"
+                    <button type="button" class="btn btn-round btn-success text-truncate ms-1"
                       [disabled]="saving || entryForm.invalid"
                       [hidden]="!(form.tiers?.length>0 && entry?.currentStatus=='drafted') || !form.canSubmit"
                       (click)="submit(false)">
@@ -727,7 +727,7 @@
                       }
                     </button>
                     @if (form.tiers?.length>0 && entry.currentEdit) {
-                      <button type="button" class="btn btn-round btn-success ms-1" 
+                      <button type="button" class="btn btn-round btn-success text-truncate ms-1" 
                         [disabled]="entryForm.invalid || saving"
                         (click)="submit(true)"
                         [hidden]="!form.canSubmit">
@@ -847,7 +847,7 @@
                     (selectFocus)="getLookup(field.code,field.dataSourceInit, data)"
                     [data]="{$user$:user, $conf$:runService.appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:$this$, $param$:_param, $ngForm$:entryForm, $file$:filesMap}"
                     [minlength]="field?.v?.minlength" [pattern]="field?.v?.pattern"
-                    [defaultValue]="field.x?.use_dyn_default?dynDefaultValue[section.code][index_child][f.code]:field.x?.default"></field-edit>
+                    [defaultValue]="field.x?.use_dyn_default?childDynDefaultValue[field?.code]:field?.x?.default"></field-edit>
                     @if (field.type=='file' && field.v?.imgcls && !imgclsVal[field.code+(index??'')]){
                       <input type="hidden" name="fn-{{field.id}}-{{index}}-hid-imgcls" [(ngModel)]="imgclsModel[field.code+(index??'')]" [required]="true">
                     }            

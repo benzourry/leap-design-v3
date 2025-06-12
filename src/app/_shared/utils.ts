@@ -20,7 +20,7 @@ marked.use({
           svgCache[id] = `<div class="spinner-grow text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                           </div>`;
-          createMermaidSvg(id, text.replaceAll("\\n", "\n")).then(svg => {
+          createMermaidSvg(id, text).then(svg => {
             const elem = document.getElementById(id);
             if (elem) elem.innerHTML = svg;
             svgCache[id] = svg;
@@ -61,6 +61,7 @@ export function compileTpl(templateText: string, data: any): string {
     code = (
       "Object.assign(this, data);var output=" +
       JSON.stringify(templateText)
+        //.replace(/\\n/g, "\n")
         .replace(/<!--(.+?)-->/g, '')
         .replace(/\{\{(.+?)\}\}/g, r$val)
         .replace(/\[#(.+?)#\]/g, r$script)
@@ -75,22 +76,21 @@ export function compileTpl(templateText: string, data: any): string {
         .replace(/<\/x-for>/ig, '";}\noutput+="')
         .replace(/<x-foreach\s*\$\=\\\"(.+?)\\\"\s*>/ig, r$foreach)
         .replace(/<\/x-foreach>/ig, '";})\noutput+="')
-        .replace(/<\?(.+?)\?>/g, '";$1\noutput+="')
-        // .replace(/<\?(.+?)\?>/g, (match, p1) => `";${p1.replace(/\s+/g, '')}\noutput+="`)
+        // .replace(/<\?(.+?)\?>/g, '";$1\noutput+="')
+        .replace(/<\?(.+?)\?>/g, r$script)
       + ";return output;"
     )//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
     tplCache[tplHash] = code;
   }
-  
+
+  // console.log(">>>>>>>",code);
+
   if (templateText && data) {
     data.dayjs = dayjs;
     let result = "";
     try {
       result = new Function("data", "get", "formatNumber", code)(data, get, formatNumber);
-      result = result.replaceAll("\n", "\\n")
-                     .replace(/<x-markdown>(.+?)<\/x-markdown>/ig, r$markdown)
-                     .replaceAll("\\n", "\n");
-
+      result = result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
     } catch (err) {
       throw err;
     }
@@ -101,7 +101,7 @@ export function compileTpl(templateText: string, data: any): string {
 }
 
 function r$markdown(match: string, p1: string): string {
-  return marked.parse(p1.replaceAll("\\n", "\n")).toString().trim()
+  return marked.parse(p1).toString().trim()
          .replace('<table>', '<table class="table table-bordered m-0">')
          .replace('<blockquote>', '<blockquote class="blockquote">');
 }
@@ -118,16 +118,16 @@ async function createMermaidSvg(id: string, text: string): Promise<string> {
   return `<div class="text-danger">Invalid <strong>Mermaid</strong> syntax</div>`;
 }
 
-function r$foreach(match: string, p1: string): string {
+function r$foreach(m: string, p1: string): string {
   const [iterator, list] = p1.split(" of ").map(s => s.trim());
   return `";${list} && Array.isArray(${list}) && ${list}.forEach(function(${iterator}, $index){\noutput+="`;
 }
 
-function r$script(match: string, p1: string): string {
-  return `";${p1.replace(/&nbsp;/ig, '')}\noutput+="`;
+function r$script(m: string, p1: string): string {
+  return `";${p1.replace(/&nbsp;/ig, '').replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r")}\noutput+="`;
 }
 
-function r$val(match: string, p1: string): string {
+function r$val(m: string, p1: string): string {
   p1 = p1.replace(/\\"/g, '"').replace(/\\[rnt]+/gm, '');
   const parts = p1.match(/(['"].*?["']|[^"|:\s]+)/g) || [];
   let aVal = "";
@@ -369,6 +369,8 @@ export function atobUTF(str) {
 
 export const deepMerge = (t, s) => {
 
+  // cannot return new object. Need to check other usage that require var mutation
+
   var source = Object.assign({}, s);
   var target = Object.assign({}, t);
   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
@@ -385,7 +387,7 @@ export const deepMerge = (t, s) => {
 
   // Join `target` and modified `source`
   Object.assign(target || {}, source)
-  return target;
+  return Object.assign(t,target);
 }
 
 function parseCSV(input) {

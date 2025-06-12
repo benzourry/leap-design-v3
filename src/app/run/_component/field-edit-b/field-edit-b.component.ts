@@ -112,6 +112,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   defaultValue = input<any>();
 
   readonly model = viewChild<NgModel>('formField');
+  formField = viewChild<NgModel>('formField');
 
   public identifier = `form-text-${identifier++}`;
   hasFocus:boolean=false;
@@ -305,7 +306,9 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     if (native){
       native.value=null;
     }
-    
+    // this.model().control.updateValueAndValidity();
+    this.model().control.reset();
+    this.model().control.markAsTouched();
     //delete this.file[this.field.code];
     return false;
   }

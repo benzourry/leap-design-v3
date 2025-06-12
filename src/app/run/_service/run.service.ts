@@ -83,6 +83,9 @@ export class RunService {
   getForm(id: number) {
     return this.http.get<any>(`${this.baseApi}/form/` + id);
   }
+  getRunForm(id: number) {
+    return this.http.get<any>(`${this.baseApi}/form/run/` + id);
+  }
   getDashboard(id: any) {
     return this.http.get<any>(`${this.baseApi}/dashboard/${id}`)
   }
