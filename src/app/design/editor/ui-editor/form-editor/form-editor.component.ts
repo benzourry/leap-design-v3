@@ -672,7 +672,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     _getLookupObs(code, param, cb?, err?): Observable<any> {
 
-        var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}));
+        var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}),null);
         // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
         // bleh consider cache observable instead of result.
         // tp bila pake observable.. request dipolah on subscribe();

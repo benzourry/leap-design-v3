@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectorRef, Component, ElementRef, OnInit, effect, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, viewChild } from '@angular/core';
 import { FormService } from '../../service/form.service';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 // import { HttpParams } from '@angular/common/http';
@@ -38,8 +38,8 @@ import { atobUTF, splitAsList, toSnakeCase, toSpaceCase } from '../../_shared/ut
 import { LoadingService } from '../../_shared/service/loading.service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { EntryService } from '../../run/_service/entry.service';
-import { LookupService } from '../../run/_service/lookup.service';
+// import { EntryService } from '../../run/_service/entry.service';
+// import { LookupService } from '../../run/_service/lookup.service';
 
 @Component({
     selector: 'app-editor',
@@ -86,18 +86,21 @@ export class EditorComponent implements OnInit {
         location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
 
-        effect(() => {
-            // setTimeout(()=>{
-                // this.loading = this.loadingSignal();
-                this.loading = this.loadingService.isLoadingSignal();
-                // cdref.detectChanges();
-            // })       
-        })  
+        // effect(() => {
+        //     // setTimeout(()=>{
+        //         // this.loading = this.loadingSignal();
+        //         this.loading = this.loadingService.isLoadingSignal();
+        //         // cdref.detectChanges();
+        //     // })       
+        // })  
+
+        
         // loadingService.isLoading$.subscribe(r=>this.loading=r);
     }
 
     public model: any;
-    loading: boolean = false;
+    // loading: boolean = false;
+    loading = computed(() => this.loadingService.isLoadingSignal());
     // loadingSignal = this.loadingService.isLoadingSignal; // toSignal<boolean>(this.loadingService.isLoading$);
     authorized: boolean = false;
 
@@ -144,7 +147,7 @@ export class EditorComponent implements OnInit {
 
     ngOnInit() {
 
-        this.loading = true;
+        // this.loading = true;
         // this.loadingNew.set(true);
 
         // this.loadingService.isLoading$.subscribe(e=>this.loading=e)
@@ -177,10 +180,10 @@ export class EditorComponent implements OnInit {
                                     this.authorized = res.email.includes(user.email) || res.group?.manager?.includes(user.email);
                                     this.titleService.setTitle("Design - " + this.app.title);
                                     this.getCopyRequestList();
-                                    this.loading = false;
+                                    // this.loading = false;
                                     // this.loadingNew.set(false);
                                 }, error: () => {
-                                    this.loading = false;
+                                    // this.loading = false;
                                     // this.loadingNew.set(false);
                                 }
                             });
@@ -255,7 +258,7 @@ export class EditorComponent implements OnInit {
 
         let runas = this.user.email;
         if (localStorage.getItem("user")) {
-            runas = JSON.parse(atobUTF(localStorage.getItem("user"))).email;
+            runas = JSON.parse(atobUTF(localStorage.getItem("user"),null)).email;
         }
 
         runas = prompt("Run preview as (email): ", runas);

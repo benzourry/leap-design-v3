@@ -110,18 +110,18 @@
           }
           <input class="form-control rounded-50 my-1 w-unset" type="text" name="email"
             [(ngModel)]="cred.email" placeholder="Email" required>
-          <div class="position-relative">
+          <!-- <div class="position-relative">
             <div style="position:absolute; right:10px; top:8px; cursor: pointer;">
               @if (passwordType=='password'){
                   <fa-icon [icon]="['far','eye']" (click)="passwordType='text'" [fixedWidth]="true"></fa-icon>
               }@else {
                   <fa-icon [icon]="['far','eye-slash']" (click)="passwordType='password'" [fixedWidth]="true"></fa-icon>
               }
-            </div>  
+            </div>   -->
   
             <input class="form-control rounded-50 my-1 w-unset" [type]="passwordType" name="password"
             [(ngModel)]="cred.password" placeholder="Password" required>
-          </div>
+          <!-- </div> -->
             
         </div>
         @if (!register) {

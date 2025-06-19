@@ -102,7 +102,7 @@ export class ChartComponent implements OnInit {
 
   ngOnInit() {
     if (this.chart().formId) {
-      this.runService.getForm(this.chart().formId)
+      this.runService.getRunForm(this.chart().formId)
         .subscribe(res => {
           this.form['data'] = res;
           this.form['prev'] = res.prev;
@@ -316,7 +316,7 @@ export class ChartComponent implements OnInit {
     }
 
     if (c.x?.ecOpt) {
-      deepMerge(this.chartOption, this._eval(c, cd.data, c.x?.ecOpt));
+      this.chartOption = deepMerge(this.chartOption, this._eval(c, cd.data, c.x?.ecOpt));
     }
   }
 

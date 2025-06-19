@@ -104,24 +104,25 @@ export class AppSummaryComponent implements OnInit {
               this.summary = data;
               this.summary.appId = this.appId;
 
-              this.userMonthlyOpt = deepMerge(this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: this.summary.users?.monthlyCount }});
-              this.userMonthlyCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: this.summary.users?.monthlyCountCumulative }});
-              this.entryMonthlyOpt = deepMerge(this.commonOpt, {series:[{name:'Entry count'}],dataset: { source: this.summary.entry?.monthlyCount }});
-              this.entryMonthlyCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Entry count'}], dataset: { source: this.summary.entry?.monthlyCountCumulative }});
+              // deepMerge(Object.assign({},data)) because deepMerge is mutable because it might used as mutable in user script
+              this.userMonthlyOpt = deepMerge({},this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: this.summary.users?.monthlyCount }});
+              this.userMonthlyCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: this.summary.users?.monthlyCountCumulative }});
+              this.entryMonthlyOpt = deepMerge({},this.commonOpt, {series:[{name:'Entry count'}],dataset: { source: this.summary.entry?.monthlyCount }});
+              this.entryMonthlyCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Entry count'}], dataset: { source: this.summary.entry?.monthlyCountCumulative }});
               // this.attachmentMonthlyOpt = Object.assign({}, this.commonOpt, {dataset: { source: this.summary.attachment?.monthlyCount }});
-              this.attachmentMonthlyOpt = deepMerge(this.commonOpt, {series:[{name:'File count'}], dataset: { source: this.summary.attachment?.monthlyCount.map(kv=>{
+              this.attachmentMonthlyOpt = deepMerge({},this.commonOpt, {series:[{name:'File count'}], dataset: { source: this.summary.attachment?.monthlyCount.map(kv=>{
                 // kv.value = Math.floor(kv.value/1000);
                 return kv;
               }) }});
-              this.attachmentMonthlyCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'File count'}], dataset: { source: this.summary.attachment?.monthlyCountCumulative.map(kv=>{
+              this.attachmentMonthlyCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'File count'}], dataset: { source: this.summary.attachment?.monthlyCountCumulative.map(kv=>{
                 // kv.value = Math.floor(kv.value/1000);
                 return kv;
               }) }});
-              this.attachmentSizeMonthlyOpt = deepMerge(this.commonOpt, {series:[{name:'Size (MiB)'}], dataset: { source: this.summary.attachment?.monthlySize.map(kv=>{
+              this.attachmentSizeMonthlyOpt = deepMerge({},this.commonOpt, {series:[{name:'Size (MiB)'}], dataset: { source: this.summary.attachment?.monthlySize.map(kv=>{
                 kv.value = Math.floor(kv.value/(1024*1024));
                 return kv;
               }) }});
-              this.attachmentSizeMonthlyCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Size (MiB)'}], dataset: { source: this.summary.attachment?.monthlySizeCumulative.map(kv=>{
+              this.attachmentSizeMonthlyCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Size (MiB)'}], dataset: { source: this.summary.attachment?.monthlySizeCumulative.map(kv=>{
                 kv.value = Math.floor(kv.value/(1024*1024));
                 return kv;
               }) }});

@@ -345,7 +345,7 @@ export class FieldViewComponent implements OnInit {
   //   return this.compileTpl(this.field()?.placeholder ?? this.field()?.label,this.data())
   // })
 
-  compiledTpl = () => this.compileTpl(this.field()?.placeholder ?? this.field()?.label,this.data())
+  compiledTpl = () => this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
 
   ngOnInit() {
     // console.log(this.value);

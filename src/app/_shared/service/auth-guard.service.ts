@@ -48,7 +48,7 @@ export class AuthGuardService {
 
       // cuma yg failed jk perlu redirect.. mn success/subject(true) xperlu, akan dihandle oleh route
       if (apiKey){
-        window.localStorage.setItem("auth", btoaUTF(JSON.stringify({apiKey: apiKey})));
+        window.localStorage.setItem("auth", btoaUTF(JSON.stringify({apiKey: apiKey}),null));
         fetch(`${OAUTH.USER_URI}?appId=${appId}`, {headers: { Authorization: `ApiKey ${apiKey}`} })
           .then(d => {
             d.json().then(f => {
@@ -58,7 +58,7 @@ export class AuthGuardService {
                 subject.next(false);
 
               } else {
-                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f)));
+                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f),null));
                 window.localStorage.setItem("noframe", noframe);
                 subject.next(true); 
               }
@@ -70,8 +70,8 @@ export class AuthGuardService {
           .then(d => {
             d.json().then(f => {
               if (f.auth) {
-                window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth))),
-                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f.user)));
+                window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth),null)),
+                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f.user),null));
                 window.localStorage.setItem("noframe", noframe);
                 if (!f.user.checked){
                   this.router.navigate['check'];
@@ -90,7 +90,7 @@ export class AuthGuardService {
             })
           })
       } else if (token) {
-        window.localStorage.setItem("auth", btoaUTF(JSON.stringify({accessToken: token})));
+        window.localStorage.setItem("auth", btoaUTF(JSON.stringify({accessToken: token}),null));
         fetch(`${OAUTH.USER_URI}`, { headers: { Authorization: "Bearer " + token } })
           .then(d=>{
             d.json().then(f=>{
@@ -102,7 +102,7 @@ export class AuthGuardService {
                 subject.next(false);
 
               } else {
-                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f)));
+                window.localStorage.setItem("user", btoaUTF(JSON.stringify(f),null));
                 window.localStorage.setItem("noframe", noframe);
                 this.router.navigateByUrl(window.localStorage.getItem("redirect") ? window.localStorage.getItem("redirect") : OAUTH.FINAL_URI);
                 window.localStorage.removeItem("redirect");

@@ -166,7 +166,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   defaultParam: string = "{'$prev$.$id':$.$id}";
 
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
 
   ngOnInit() {
 
@@ -318,10 +318,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
           // delete this.entry;
           this.entry = { currentStatus: 'drafted', data: {} }; // reset entry 
-          this.onInit = () => this.initForm(form._f, this.entry.data, form);
-          this.onView = () => this.initForm(form._onView, this.entry.data, form);
-          this.onSave = () => this.initForm(form._onSave, this.entry.data, form);
-          this.onSubmit = () => this.initForm(form._onSubmit, this.entry.data, form);
+          this.onInit = () => this.initForm(form.f, this.entry.data, form);
+          this.onView = () => this.initForm(form.onView, this.entry.data, form);
+          this.onSave = () => this.initForm(form.onSave, this.entry.data, form);
+          this.onSubmit = () => this.initForm(form.onSubmit, this.entry.data, form);
 
           this.loading = false;
 
@@ -344,7 +344,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.getPrevData(entryId, this._param, form.prev);
           } else if (action == 'add') {
             this.formInactive = (form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now())
-            this.initForm(this.form._f, this.entry.data, this.form);
+            this.initForm(this.form.f, this.entry.data, this.form);
           } else if (form.x?.facet?.includes(action)) {
             this.getData(entryId, form);
             // this.initForm(this.form.f); //comment after change initform receive data parameter
@@ -478,7 +478,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   _getLookupObs(code, param, cb?, err?): Observable<any> {
 
-    var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}));
+    var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}),null);
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
     // bleh consider cache observable instead of result.
     // tp bila pake observable.. request dipolah on subscribe();
@@ -513,7 +513,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       }
       var param = null;
       try {
-        param = this._eval(dataV, dsInit, this.form);// new Function('$', '$prev$', '$user$', '$lookup$', '$http$', 'return ' + key.dataSourceInit)(this.entry, this.entry && this.entry.prev, this.user, this.getLookup, this.httpGet)
+        param = this._eval(dataV, dsInit, this.form);
       } catch (e) { this.logService.log(`{form-lookup-${code}-dsInit}-${e}`) }
       this._getLookup(code, param);
     }
@@ -600,7 +600,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             if (['dataset', 'screen'].indexOf(this.form.items[i.code].type) > -1) {
               // console.log(this.form.items[i.code].dataSourceInit);
               try{
-                this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam);
+                this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam);
               }catch(e){}
             }
             if (['checkboxOption', 'radio'].indexOf(this.form.items[i.code].type) > -1) {
@@ -608,7 +608,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               try{
                 // console.log("dlm filterItems");
                 this.getLookup(i.code,this.form.items[i.code].dataSourceInit, this.entry?.data);
-                // this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
+                // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
               }catch(e){}
             }
           })
@@ -645,13 +645,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   }catch(e){}
                   if (['dataset', 'screen'].indexOf(this.form.items[i.code].type) > -1) {
                     try{
-                      this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
+                      this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
                     }catch(e){}
                   }
                   if (['checkboxOption', 'radio'].indexOf(this.form.items[i.code].type) > -1) {
                     try{
                       this.getLookup(i.code,this.form.items[i.code].dataSourceInit, child);
-                      // this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
+                      // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
                     }catch(e){}
                   }
                 })
@@ -670,13 +670,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 }catch(e){}
                 if (['dataset', 'screen'].indexOf(this.form.items[i.code].type) > -1) {
                   try{
-                    this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
+                    this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
                   }catch(e){}
                 }
                 if (['checkboxOption', 'radio'].indexOf(this.form.items[i.code].type) > -1) {
                   try{
                     this.getLookup(i.code,this.form.items[i.code].dataSourceInit, child);
-                    // this.preCompFilter[i.code] = this._pre(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
+                    // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form.items[i.code].dataSourceInit || this.defaultParam)
                   }catch(e){}
                 }
               })
@@ -697,7 +697,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         this.childDynDefaultValue[i.code] = this._eval(this.entry?.data, this.form.items[i.code]?.x?.dyn_default, this.form);
       }catch(e){}
       // if (['dataset','screen'].indexOf(this.form.items[i.code].type)>-1){
-      //   this.preCompFilter[i.code]=this._pre(this.entry?.data,this.form.items[i.code].dataSourceInit||this.defaultParam)
+      //   this.preCompFilter[i.code]=this._prePassive(this.entry?.data,this.form.items[i.code].dataSourceInit||this.defaultParam)
       // }
     })
   }
@@ -754,7 +754,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.filterTabs();
     // console.log(",,fieldchange,,", this.entry)
     // utk kes dataset, filterItems mungkin run awal gilak dari postaction, so preCompFilter mungkin belom proper
-    // mn _pre direct value sentiasa diupdate.
+    // mn _prePassive direct value sentiasa diupdate.
     // need more study
     // update: dlm built-in anonymous function semua dh tap(filterItems);
     // console.log("fieldChange");
@@ -806,14 +806,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         next: res => {
           this.entry = res; //Object.assign(this.entry, res);
           this.evalAll(this.entry.data);
-          this.initForm(form._f, this.entry.data, form);
+          this.initForm(form.f, this.entry.data, form);
           this.loading = false;
         }, error: err => {
           // consider getPrevData() but need to add support for prevParam;
           if (form.prev) {
             this.getPrevData(null, this.getPrevParam(this._eval({}, form.singleQ, form)), form.prev);
           } else {
-            this.initForm(form._f, this.entry.data, form);
+            this.initForm(form.f, this.entry.data, form);
             this.loading = false;
           }
         }
@@ -854,7 +854,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry = res;//Object.assign(this.entry, res);
             this.getDataFiles('data', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(this.form._f, this.entry.data, this.form);
+            this.initForm(this.form.f, this.entry.data, this.form);
             this.loading = false;
             this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
             if (form.prev) {
@@ -878,7 +878,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               this.entry = res;//Object.assign(this.entry, res);
               this.getDataFiles('data', res.id);
               this.evalAll(this.entry.data);
-              this.initForm(this.form._f, this.entry.data, this.form);
+              this.initForm(this.form.f, this.entry.data, this.form);
               this.loading = false;
               this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
             }, error: err => {
@@ -894,7 +894,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.entry = res; //Object.assign(this.entry, res);
                 this.getDataFiles('data', res.id);
                 this.evalAll(this.entry.data);
-                this.initForm(this.form._f, this.entry.data, this.form);
+                this.initForm(this.form.f, this.entry.data, this.form);
                 this.loading = false;
                 this.isAuthorized = this.checkAuthorized(this.form, this.user, this.entry)
               }, error: err => {
@@ -921,8 +921,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry.prev = res.data;
             this.getDataFiles('prev', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(form?._onView, res.data, form);
-            this.initForm(this.form._f, this.entry.data, this.form);
+            this.initForm(form?.onView, res.data, form);
+            this.initForm(this.form.f, this.entry.data, this.form);
             this.prevLoading = false;
           }, error: err => {
             this.prevLoading = false;
@@ -938,8 +938,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.entry.prev = res.data;
             this.getDataFiles('prev', res.id);
             this.evalAll(this.entry.data);
-            this.initForm(form?._onView, res.data, form);
-            this.initForm(this.form._f, this.entry.data, this.form);
+            this.initForm(form?.onView, res.data, form);
+            this.initForm(this.form.f, this.entry.data, this.form);
             this.prevLoading = false;
           }, error: err => {
             this.prevLoading = false;
@@ -992,7 +992,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   save = () => {
     this.saving = true;
-    // console.log(this.entry);
     this._save(this.form)
       .subscribe({
         next: res => {
@@ -1024,7 +1023,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // console.log("Saving form...", form);
     let userKey = this.user.email;
     if (form?.x?.userKey) {
-             // compileTpl(s.style??'',      { $user$: this.user, $: this.entry?.data, $_: this.entry, $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this.$this$, $param$: this._param, $ngForm$: this.entryForm() })
       userKey = this.compileTpl(form?.x?.userKey, {})
     }
     return this.entryService.save(form.id, this.entry, this.prevId, userKey)
@@ -1057,7 +1055,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       if (!dataV) {
         dataV = this.entry.data;
       }
-      res = this._pre(dataV, code);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+      res = this._prePassive(dataV, code);
     } catch (e) { this.logService.log(`{form-precheck}-:${code}:${e}`) }
     return !code || res;
   }
@@ -1089,7 +1087,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   //     if (!prop){
   //       prop = 'pre';
   //     }
-  //     res = this._pre(dataV, f?.[prop]);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+  //     res = this._prePassive(dataV, f?.[prop]);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
   //   } catch (e) { this.logService.log(`{form-${f?.code}-precheck}-${e}`) }
   //   return !f?.[prop] || res;
   // }
@@ -1113,7 +1111,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   changeEval(data, js) {
     let res = undefined;
     try {
-      res = this._eval(data, js, this.form);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f.f)(data, this.entry && this.entry.prev, this.user, this.httpGet);
+      res = this._eval(data, js, this.form);
     } catch (e) { this.logService.log(`{form-${this.form.title}-change}-${e}`) }
     return res;
   }
@@ -1130,7 +1128,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   initForm(js, data, form) {
     let res = undefined;
 
-    let jsTxt = this.compileTpl(btoaUTF(js),{})
+    console.log("js",js);
+    let jsTxt = this.compileTpl(js,{})
     // setTimeout(()=>{ // timeout utk flush DOM (utk markdown, mermaid n echarts)
       try {
         res = this._eval(data, jsTxt, form);
@@ -1162,7 +1161,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   _eval = (data, v, form) => new Function('setTimeout', 'setInterval', '$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$setAction$', '$lookup$', '$http$', '$post$', '$upload$', '$endpoint$', '$saveAndView$', '$save$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$activate$', '$activeIndex$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$file$', 'onInit', 'onSave', 'onSubmit', 'onView', '$q$',
     `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.setAction, this._getLookup, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this.save, () => this._save(form || this.form), this.submit, form?.items || this.form?.items, form || this.form, this.$this$, this.loadScript, this.$digest$, this._param, this.log, this.setActive, this.navIndex, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.entryForm(), this.lookup, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.filesMap, this.onInit, this.onSave, this.onSubmit, this.onView, this.$q);
   
-  _pre = (data, v) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$file$', '$activeIndex$',
+  _prePassive = (data, v) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$file$', '$activeIndex$',
     `return ${v}`)(this.app, this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this._action, this.form && this.form.items, this.form, this.$this$, this.$digest$, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.entryForm(), this.lookup, dayjs, ServerDate, this.accessToken, this.filesMap, this.navIndex);
 
   setAction = (action)=> this._action=action;
@@ -1290,7 +1289,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file})
                            +ext;
               }              
-              console.log("FILENAME### : " + filename)
               this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, filename)
                 .subscribe({
                   next: res => {
@@ -1315,7 +1313,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               filename = this.compileTpl(f.x?.filenameTpl, {$unique$: Date.now(), $file$: fileList[0]})
                          +ext;
             }              
-            // console.log("FILENAME### : " + filename)
             this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, filename)
               .subscribe({
                 next: res => {
@@ -1468,7 +1465,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         next: res => {
           var rval = res[0];
           delete rval[field.code];
-          deepMerge(data, rval);
+          data = deepMerge(data, rval);
           this.evalAll(data);
           this.filterItems();
           this.extractLoading[field.code+(index??'')] = false;
@@ -1566,8 +1563,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   ngOnDestroy() {
-    this.liveSubscription.forEach(sub => sub.unsubscribe());
-    // console.log("destroy");
+    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//(sub => sub.unsubscribe());
     this.intervalList.forEach(i=> clearInterval(i));
     this.timeoutList.forEach(i=> clearTimeout(i));
   }

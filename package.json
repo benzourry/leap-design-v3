@@ -46,6 +46,7 @@
     "leaflet": "^1.9.4",
     "marked": "^15.0.7",
     "mermaid": "^11.4.0",
+    "morphdom": "^2.7.5",
     "ngx-echarts": "^18.0.0",
     "prettier": "^3.3.2",
     "prismjs": "^1.29.0",
@@ -55,7 +56,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular/build": "^20.0.1",
+    "@angular/build": "^20.0.2",
     "@angular/cli": "^20.0.1",
     "@angular/compiler-cli": "^20.0.1",
     "@types/jasmine": "~5.1.0",

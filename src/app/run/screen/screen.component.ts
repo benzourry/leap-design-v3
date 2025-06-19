@@ -7,7 +7,7 @@ import { ActivatedRoute, NavigationExtras, Router, RouterLink } from '@angular/r
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UtilityService } from '../../_shared/service/utility.service';
-import { compileTpl, deepMerge, splitAsList, loadScript, btoaUTF, hashObject, ServerDate, linkify } from '../../_shared/utils';
+import { compileTpl, deepMerge, splitAsList, loadScript, btoaUTF, hashObject, ServerDate, linkify, deepEqual } from '../../_shared/utils';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 // import { RunService } from '../../service/run.service';
@@ -43,9 +43,6 @@ import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-e
 import { EntryService } from '../_service/entry.service';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
-// import mermaid from "mermaid";
-
-// mermaid.initialize({startOnLoad:false})
 
 
 @Component({
@@ -145,15 +142,18 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   
   // Untuk ngecek changes dari @Input
   ngOnChanges(changes: SimpleChanges): void {
-    if (JSON.stringify(changes.filters?.previousValue) != JSON.stringify(changes.filters?.currentValue)) {
-      // console.log("changes",changes.filters?.currentValue)
-      this._filter.next(changes.filters?.currentValue)
+    // if (JSON.stringify(changes.filters?.previousValue) != JSON.stringify(changes.filters?.currentValue)) {
+    //   // console.log("changes",changes.filters?.currentValue)
+    //   this._filter.next(changes.filters?.currentValue)
+    // }
+    if (!deepEqual(changes.filters?.previousValue, changes.filters?.currentValue)) {
+      this._filter.next(changes.filters?.currentValue);
     }
   }
 
 
   $param$: any = {}
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
   
   ngOnInit() {
     this.app = this.runService.$app();
@@ -206,36 +206,6 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   
-  // filters && $param$ berbeza
-  // startListenFilter() {
-  //   this._filter.pipe(
-  //     debounceTime(500),
-  //     distinctUntilChanged()
-  //   ).subscribe(f => {
-  //     // console.log("f1",f)
-  //     // console.log("f2",this.filters)
-  //     console.log("jjyyyy")
-
-  //     if (JSON.stringify(f)!=JSON.stringify(this.filters())){
-
-  //       this.filters.set(f);
-  //       // if ada prevId, pass as prev-entryId dlm add button. add button perlu da return.
-  //       if (f['$prev$.$id']) {
-  //         this.prevId = f['$prev$.$id'];
-  //       }
-
-  //       console.log("jjjjj")
-
-  //       if (this.screen.type=='calendar'){
-  //         this.populateCalendarEvent();
-  //         console.log("###########")
-  //       }else{
-  //         this.loadDatasetEntry(this.dataset,this.pageNumber, this.sort);
-  //       }        
-  //     }
-  //   })
-  // }
-
   startListenFilter() {
     this._filter.pipe(
       debounceTime(10),
@@ -249,7 +219,6 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
 
       if (this.screen.type=='calendar'){
         this.populateCalendarEvent();
-        // console.log("###########")
       }else{
         this.loadDatasetEntry(this.dataset,this.pageNumber, this.sort);
       } 
@@ -295,14 +264,11 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
         param['@cond'] = "OR";
         param['searchText'] = this.searchText;
 
-        // console.log(param)
-
         var ac = this.screen.actions[0];
 
         this.entryService.getListByDataset(ds.id, param)
           .subscribe(res => {
             this.entryList = res.content;
-            // console.log(this.entryList)
             var events = this.entryList.filter(e => e.data[this.screen.data.start])
               .map(e => {
                 // var acLink = ac ? this.buildGo(e.id)[ac.id] : `#${this.preurl}/form/${ds.form.id}/view?entryId=${e.id}`;
@@ -322,7 +288,6 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
                 return eventObj;
               });
 
-              // this.calendarComponent.getApi().render();
             success(events);
 
             this.loading = false;
@@ -345,10 +310,12 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
     this.loading = true;
     // this.userUnauthorized = false;
 
-    this.runService.getScreen(screenId)
+    this.runService.getRunScreen(screenId)
       .subscribe(res => {
         this.screen = res;
         this.dataset = {};
+        this.entry = {};
+        this.$this$ = {};
         this.loading = false;
         
         // RIGHT NOW, ALL SCREEN GO THROUGH THIS.
@@ -361,6 +328,8 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
         // ...CHANGE TO CHECKING INSIDE IF TYPE CONDITION
         // UPDATE. NO, DONT CONFUSE SCREEN ACCESS VS FORM ACCESS. SCREEN HAS IT'S OWN ACCESS SETTING
         this.isAuthorized = this.checkAuthorized(this.screen, this.user, null);
+
+        // console.log("F",this.screen.data.f)
 
         this.goObj = this.buildGo(this._entryId, true);
         this.goObjWParam = this.buildGo(this._entryId);
@@ -464,7 +433,7 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
     this.pageTitleService.open(opened);
   }
 
-  $this$ = {}
+  private $this$ = {}
   _eval = (data, v) => new Function('setTimeout', 'setInterval', '$app$','$screen$','$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$upload$', '$endpoint$', '$this$', '$loadjs$','$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$el$', '$form$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go','$popup','$q$','$showNav$',
   `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.screen, this.entry, this.entry && this.entry.data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this.$this$, this.loadScript, this.$digest$, this.$param$, this.log, this.updateField, this.updateLookup, this.form?.items, this.form,  this.$toast$, this.base, this.baseUrl, this.baseApi, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.goObj, this.popObj, this.$q, this.openNav);
 
@@ -1124,7 +1093,7 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   lookupDataObs:any={}
   _getLookupObs(code, param, cb?, err?):Observable<any>{
 
-      var cacheId =  'key_'+btoaUTF(this.lookupKey[code].ds + hashObject(param??{}));
+      var cacheId =  'key_'+btoaUTF(this.lookupKey[code].ds + hashObject(param??{}),null);
       // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
       // bleh consider cache observable instead of result.
       // tp bila pake observable.. request dipolah on subscribe();
@@ -1157,7 +1126,8 @@ export class ScreenComponent implements OnInit, OnDestroy, OnChanges {
   getIcon=(str)=>str?str.split(":"):['far','question-circle'];
 
   ngOnDestroy() {
-    this.liveSubscription.forEach(sub => sub.unsubscribe());
+    Object.keys(this.liveSubscription).forEach(key=> this.liveSubscription[key].unsubscribe());
+    // this.liveSubscription.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i=> clearInterval(i));
     this.timeoutList.forEach(i=> clearTimeout(i));
   }

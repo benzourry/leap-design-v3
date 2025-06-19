@@ -1,3 +1,9 @@
+:root{
+    --bs-border-radius: 8px;
+    --ae-text-area-border-radius: 8px;
+    // --ae-text-area-border: solid #86b7fe 1px;
+    // --bs-focus-ring-x: 10px; --bs-focus-ring-y: 10px; --bs-focus-ring-blur: 4px
+}
 /* Float label */
 .has-float-label {
     display: block;
@@ -92,6 +98,17 @@
     border-color: rgba(0, 0, 0, 0.15);
 }
 
+
+// .has-float-label .form-control,
+// .has-float-label .btn,
+// .has-float-label .ng-select-container, 
+// .has-float-label .img-holder, 
+// .has-float-label .map-target-div,
+// .has-float-label .angular-editor-textarea,
+// .has-float-label .form-check-input{
+//     box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
+// }
+
 .has-float-label .form-control {
     padding: 1.2rem 0.75rem 0.175rem;
 }
@@ -103,7 +120,7 @@
 
 .has-float-label .ng-select .ng-select-container {
     min-height: calc(3.5rem + 2px);
-    border-radius: 0.375rem;
+    border-radius: var(--bs-border-radius);
 }
 
 .has-float-label.is-invalid .ng-select-container,
@@ -246,10 +263,10 @@
 
 /* Model Picker */
 .modelPicker .ng-select .ng-select-container.ng-select-container.ng-has-value{
-    border-radius: 0.375rem 0.375rem 0 0 !important; 
+    border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0 !important; 
 }
 .modelPicker>.card,.modelPicker>.list-group{
-    border-radius: 0px 0px 4px 4px;
+    border-radius: 0px 0px var(--bs-border-radius) var(--bs-border-radius);
     border-top: none;
     background: #f6f6f6;
 }
@@ -265,7 +282,7 @@
     angular-editor .angular-editor {
       min-height: 58px !important;
       width: 100%;
-      border-radius: 0.375rem;
+      border-radius: var(--bs-border-radius);
       padding: 1.4rem 0.75rem 0.175rem !important;
       margin-top: 0px !important;
       border: 1px solid #ddd;

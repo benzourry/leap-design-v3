@@ -96,7 +96,7 @@ export class DashboardComponent implements OnInit {
   getDashboard(id) {
     this.loading = true;
     this.userUnauthorized = false;
-    this.runService.getDashboardBasic(id)
+    this.runService.getRunDashboard(id)
       .subscribe(res => {
         this.dashboard = res;
         this.loading = false;

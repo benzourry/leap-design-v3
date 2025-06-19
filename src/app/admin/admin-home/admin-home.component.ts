@@ -112,24 +112,28 @@ export class AdminHomeComponent {
 
         this.updatedOn = res.updatedOn;
 
-        this.entryStatByYearMonthOpt = deepMerge(this.commonOpt,{series:[{name:'Entry count'}], dataset: { source: res?.entryStatByYearMonth }});// Object.assign({}, this.commonOpt, {dataset: { source: res?.entryStatByYearMonth }});
-        this.entryStatByYearMonthCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Entry count'}], dataset: { source: res?.entryStatByYearMonthCumulative }});
-        this.entryStatByAppOpt = deepMerge(this.commonOpt,{series:[{name:'Entry count', type:'bar'}], dataset: { source: res?.entryStatByApp }}); // Object.assign({}, this.commonOpt, {dataset: { source: res?.entryStatByApp },series: [{type:'bar'}]});
-        this.appStatByLiveOpt = deepMerge(this.commonOptDual,{series: [{data:res?.appStatByLive}]});
-        this.userStatByAppOpt = deepMerge(this.commonOptDual,{series: [{data:res?.userStatByApp}]}); // Object.assign({}, this.commonOptDual, {series: [{data:res?.userStatByApp}]});
+        // deepMerge(Object.assign({},data)) because deepMerge is mutable because it might used as mutable in user
+        this.entryStatByYearMonthOpt = deepMerge({},this.commonOpt,{series:[{name:'Entry count'}], dataset: { source: res?.entryStatByYearMonth }});// Object.assign({}, this.commonOpt, {dataset: { source: res?.entryStatByYearMonth }});
+        // console.log('entryStatByYearMonthOpt', this.entryStatByYearMonthOpt);
+        this.entryStatByYearMonthCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Entry count'}], dataset: { source: res?.entryStatByYearMonthCumulative }});
+        // console.log('entryStatByYearMonthCumulativeOpt', this.entryStatByYearMonthCumulativeOpt);
+        this.entryStatByAppOpt = deepMerge({},this.commonOpt,{series:[{name:'Entry count', type:'bar'}], dataset: { source: res?.entryStatByApp }}); // Object.assign({}, this.commonOpt, {dataset: { source: res?.entryStatByApp },series: [{type:'bar'}]});
+        // console.log('entryStatByAppOpt', this.entryStatByAppOpt);
+        this.appStatByLiveOpt = deepMerge({},this.commonOptDual,{series: [{data:res?.appStatByLive}]});
+        this.userStatByAppOpt = deepMerge({},this.commonOptDual,{series: [{data:res?.userStatByApp}]}); // Object.assign({}, this.commonOptDual, {series: [{data:res?.userStatByApp}]});
 
-        this.userStatByYearMonthOpt = deepMerge(this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: res?.userStatByYearMonth }});
-        this.userStatByYearMonthCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: res?.userStatByYearMonthCumulative }});
+        this.userStatByYearMonthOpt = deepMerge({},this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: res?.userStatByYearMonth }});
+        this.userStatByYearMonthCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Unique user count'}], dataset: { source: res?.userStatByYearMonthCumulative }});
 
-        this.attachmentStatByAppOpt = deepMerge(this.commonOptDual,{series: [{name:'Size (GiB)',data:res?.attachmentStatByApp.map(kv=>{
+        this.attachmentStatByAppOpt = deepMerge({},this.commonOptDual,{series: [{name:'Size (GiB)',data:res?.attachmentStatByApp.map(kv=>{
           kv.value = Math.floor(kv.value/(1024*1024*1024));
           return kv;
         })}]}); // Object.assign({}, this.commonOptDual, {series: [{data:res?.userStatByApp}]});
-        this.attachmentStatByYearMonthOpt = deepMerge(this.commonOpt, {series:[{name:'Size (GiB)'}], dataset: { source: res?.attachmentStatByYearMonth.map(kv=>{
+        this.attachmentStatByYearMonthOpt = deepMerge({},this.commonOpt, {series:[{name:'Size (GiB)'}], dataset: { source: res?.attachmentStatByYearMonth.map(kv=>{
           kv.value = Math.floor(kv.value/(1024*1024*1024));
           return kv;
         }) }});
-        this.attachmentStatByYearMonthCumulativeOpt = deepMerge(this.commonOpt, {series:[{name:'Size (GiB)'}], dataset: { source: res?.attachmentStatByYearMonthCumulative.map(kv=>{
+        this.attachmentStatByYearMonthCumulativeOpt = deepMerge({},this.commonOpt, {series:[{name:'Size (GiB)'}], dataset: { source: res?.attachmentStatByYearMonthCumulative.map(kv=>{
           kv.value = Math.floor(kv.value/(1024*1024*1024));
           return kv;
         })

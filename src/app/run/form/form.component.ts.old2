@@ -1118,7 +1118,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         this.lookupLoading[field.code] = false;
         var rval = res[0];
         delete rval[field.code];
-        deepMerge(data, rval);
+        data = deepMerge(data, rval);
         this.evalAll(data);
       },
       error:err=>{

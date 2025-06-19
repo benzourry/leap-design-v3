@@ -50,7 +50,7 @@ export class CreatorGuardService {
         var auth:any = {
           apiKey: apiKey
         };
-        window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth)));
+        window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth),null));
         fetch(`${OAUTH.USER_URI}`, {headers: { Authorization: `ApiKey ${apiKey}`} })
           .then(d=>{
             d.json().then(f=>{
@@ -60,7 +60,7 @@ export class CreatorGuardService {
                 subject.next(false);
 
               } else {
-                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f)));
+                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f),null));
                 window.localStorage.setItem("noframe", noframe);
                 // window.localStorage.removeItem("userexp");
 
@@ -73,8 +73,8 @@ export class CreatorGuardService {
           .then(function (d) {
             d.json().then(function (f) {
               if (f.auth) {
-                window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth))),
-                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f.user)));
+                window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth),null)),
+                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f.user),null));
                 window.localStorage.setItem("noframe", noframe);
                 // window.localStorage.removeItem("userexp");
                 if (!f.user.checked){
@@ -95,7 +95,7 @@ export class CreatorGuardService {
         var auth:any = {
           accessToken: token
         };
-        window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth)));
+        window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth),null));
         fetch(`${OAUTH.USER_URI}`, { headers: { Authorization: "Bearer " + token } })
           .then(d=>{
             d.json().then(f=>{
@@ -105,7 +105,7 @@ export class CreatorGuardService {
                 subject.next(false);
 
               } else {
-                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f)));
+                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f),null));
                 window.localStorage.setItem("noframe", noframe);
                 // window.localStorage.removeItem("userexp");
 

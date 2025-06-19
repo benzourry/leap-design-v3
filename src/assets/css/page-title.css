@@ -44,6 +44,9 @@ page-title .nav-close {
 .noframe page-title .nav-icon,.nomod page-title .nav-icon{
     display:none;
 }
+.noframe page-title .title-text,.nomod page-title .title-text{
+    margin-left: 0;
+}
 
 page-title .nav-icon:after,
 page-title .nav-icon:before,

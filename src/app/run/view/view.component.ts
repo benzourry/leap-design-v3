@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectorRef, Component, OnInit, ViewChild, effect, input, model, output } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, effect, input, model, output } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 // import { EntryService } from '../../service/entry.service';
@@ -58,7 +58,7 @@ import { RunService } from '../_service/run.service';
     styleUrls: ['./view.component.css'],
     imports: [PageTitleComponent, FormsModule, FormViewComponent, NgClass, InitDirective, FieldEditComponent, FaIconComponent, FieldViewComponent, RouterLink, DatePipe, KeyValuePipe]
 })
-export class ViewComponent implements OnInit {
+export class ViewComponent implements OnInit, OnDestroy {
 
   lookupIds: any[];
   user: any;
@@ -136,7 +136,7 @@ export class ViewComponent implements OnInit {
     })
   }
 
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
   
   ngOnInit() {
     this.app = this.runService.$app();
@@ -213,7 +213,7 @@ export class ViewComponent implements OnInit {
       if (!dataV) {
         dataV = this.entry.data;
       }
-      res = this._pre(dataV, code);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+      res = this._pre(dataV, code);
     } catch (e) { this.logService.log(`{form-precheck}-:${code}:${e}`) }
     return !code || res;
   }
@@ -224,8 +224,7 @@ export class ViewComponent implements OnInit {
       if (!dataV) {
         dataV = this.entry.data;
       }
-      res = this._preAppr(dataV, code);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
-      // console.log(res);
+      res = this._preAppr(dataV, code);
     } catch (e) { this.logService.log(`{view-${code}-precheck}-${e}`) }
     return !code || res;
   }
@@ -259,28 +258,15 @@ export class ViewComponent implements OnInit {
       data[key] = this.changeEval(this.entry, data, value);
     })
   }
-  // evalAll(data) {
-  //   // console.log("evalAll$$$");
-  //   console.log(this.watchList);
-  //   this.watchList.forEach(f => {
-  //     data[f.code] = this.changeEval(data, f);//$scope.$eval(f.placeholder);
-  //     // console.log("evallAll::"+f.code)
-  //   })
-  // }
   timestamp:number;
 
   changeEval(entry,data, js) {
     let res;
     try {
-      res = this._eval(entry, data, js, this.form); // new Function('$', '$$', '$prev$', '$user$', 'return ' + f.f)(this.entry && this.entry.data, data, this.prevEntry && this.prevEntry.data, this.user);
+      res = this._eval(entry, data, js, this.form);
     } catch (e) { this.logService.log(`{view-${this.form.title}-changeEval}-${e}`) }
     return res;
   }
-
-  // getLookupName(lookupId, code) {
-  //   // return code && code.name;
-  //   return this.lookup[lookupId] && code && this.lookup[lookupId].filter(e => e.code == code)[0].name;
-  // }
 
   entry: any = { data: {} };
   form: any = { tiers: [] };
@@ -295,7 +281,6 @@ export class ViewComponent implements OnInit {
       .subscribe(res => {
         this.lookupIds = res;
         this.lookupIds.forEach((key) => {
-          //console.log("hhhh:"+key.code+","+key.dataSourceInit)
           this.lookupKey[key.code] = {
             ds: key.dataSource,
             type: key.type,
@@ -328,7 +313,7 @@ export class ViewComponent implements OnInit {
 
   _getLookupObs(code, param, cb?, err?): Observable<any> {
 
-    var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}));
+    var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}),null);
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
     // bleh consider cache observable instead of result.
     // tp bila pake observable.. request dipolah on subscribe();
@@ -361,7 +346,7 @@ export class ViewComponent implements OnInit {
   getLookup = (code, appr?, dsInit?: string) => {
     let param = null;
     try {
-      param = this._eval(this.entry, appr, dsInit, this.form);// new Function('$', '$prev$', '$user$', '$lookup$', '$http$', 'return ' + key.dataSourceInit)(this.entry, this.entry && this.entry.prev, this.user, this.getLookup, this.httpGet)
+      param = this._eval(this.entry, appr, dsInit, this.form);
     } catch (e) { this.logService.log(`view-{${code}-dsInit}-${e}`) }
 
     if (code && this.lookupKey[code]) {
@@ -396,7 +381,6 @@ export class ViewComponent implements OnInit {
   $digest$ = () => {
     this.cdr.detectChanges()
     this.timestamp = Date.now(); // setting new value for timestamp will force effect in field-view
-    // console.log(this.timestamp);
   }
 
 
@@ -464,7 +448,6 @@ export class ViewComponent implements OnInit {
   _eval = (entry:any, appr:any, v:string, form:any) => new Function('setTimeout','setInterval','$app$','$_', '$', '$$_', '$$', '$prev$', '$user$', '$conf$', '$action$', '$lookup$', '$http$', '$post$','$upload$', '$endpoint$', '$save$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$activate$', '$activeIndex$', '$toast$', '$update$',                       '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$','$web$', '$file$', 'onInit', 'onSave', 'onSubmit', 'onView', '$q$',
     `return ${v}`)(this._setTimeout, this._setInterval, this.app,entry, entry?.data, appr, appr && appr.data, entry?.prev, this.user, this.runService?.appConfig, this.action(), this._getLookup, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, ()=>this._save(entry,form||this.form), (resubmit:boolean)=>this.submit(resubmit,entry,form||this.form), form?.items||this.form?.items, form||this.form, this.$this$, this.loadScript, this.$digest$, this.$param$, this.log, this.setActive, this.navIndex, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.filesMap, this.onInit, this.onSave, this.onSubmit, this.onView, this.$q);
 
-
   _pre = (data:any, v:string) => new Function('$app$','$_', '$', '$prev$','$user$', '$conf$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$activeIndex$',
     `return ${v}`)(this.app,this.entry, data, this.entry && this.entry.prev, this.user, this.runService?.appConfig, this.form && this.form.items, this.form, this.$this$, this.$digest$, this.$param$, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, this.navIndex);
   _preAppr = (appr:any, v:string) => new Function('$app$','$_', '$', '$$_', '$$', '$prev$', '$user$', '$conf$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$',
@@ -495,7 +478,7 @@ export class ViewComponent implements OnInit {
   onView;
 
   getForm(formId:number, entryId:number) {
-    this.runService.getForm(formId)
+    this.runService.getRunForm(formId)
       .subscribe(res => {
         if (formId == res.id) { // check if the returned form is current formId, to solve twice firing
           // console.log(`dlm getForm:res::-formId:${formId},-entryId:${entryId}`);
@@ -583,7 +566,7 @@ export class ViewComponent implements OnInit {
               next: (prevEntry)=>{
                 this.prevEntry = prevEntry;
                 this.getDataFiles('prev', res.prev?.$id);
-                this.initForm(form.prev?.onView, prevEntry,form.prev);
+                this.initForm(form.prev?.onView, prevEntry, form.prev);
                 this.prevLoading=false;
               }, error: (err) => {
                 this.prevLoading=false;
@@ -1048,7 +1031,7 @@ export class ViewComponent implements OnInit {
       .pipe(
         tap({
           next: (e) => {
-            deepMerge(entry,e);
+            entry = deepMerge(entry,e);
             // this.linkFiles(e);
             // this.entryForm.form.markAsPristine();
           }
@@ -1069,7 +1052,7 @@ export class ViewComponent implements OnInit {
           if (this.asComp()) {
             this.submitted.emit(res);
           }
-          deepMerge(entry, res);
+          entry = deepMerge(entry, res);
           // this.entry = res;
           this.$digest$();
         }, error: err => {
@@ -1085,7 +1068,7 @@ export class ViewComponent implements OnInit {
 
 
   ngOnDestroy() {
-    this.liveSubscription.forEach(sub => sub.unsubscribe());
+    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i=> clearInterval(i));
     this.timeoutList.forEach(i=> clearTimeout(i));
   }

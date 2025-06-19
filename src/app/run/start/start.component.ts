@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
@@ -23,7 +23,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, NgStyle } from '@angular/common';
 import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.service';
 import { Title } from '@angular/platform-browser';
-// import { RunService } from '../../service/run.service';
 import { Subscription, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../_shared/service/page-title-service';
 import { ServerDate, compileTpl, deepMerge, getQuery, loadScript } from '../../_shared/utils';
@@ -32,22 +31,14 @@ import { SwPush } from '@angular/service-worker';
 import { PushService } from '../../_shared/service/push.service';
 import { first, take, tap } from 'rxjs/operators';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 import { RegisterComponent } from '../register/register.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { HttpClient } from '@angular/common/http';
-// import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
-// import * as echarts from 'echarts/types/dist/echarts';
 import { ToastService } from '../../_shared/service/toast-service';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { EntryService } from '../_service/entry.service';
 import { RunService } from '../_service/run.service';
-// import { EntryService } from '../../service/entry.service';
-// import { RxStompService } from '../../_shared/service/rx-stomp.service';
-// import { BrowserQRCodeReader } from '@zxing/library';
-// declare const qrcode: any;
-// declare const zdecoder: any;
 
 @Component({
     selector: 'app-start',
@@ -55,7 +46,7 @@ import { RunService } from '../_service/run.service';
     styleUrls: ['./start.component.scss'],
     imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe]
 })
-export class StartComponent implements OnInit {
+export class StartComponent implements OnInit, OnDestroy {
   appLoading: boolean;
   validPath: boolean;
   baseApi = baseApi;
@@ -115,7 +106,7 @@ export class StartComponent implements OnInit {
 
   accessToken: string = '';
 
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
   
   appUrl:string ='';
 
@@ -143,7 +134,6 @@ export class StartComponent implements OnInit {
             if (this.appId) {
               this.preurl = `/run/${this.appId}`;
               this.runService.$preurl.set(this.preurl);
-              // console.log("set preurl");
               this.getApp(this.appId);
 
 
@@ -198,14 +188,6 @@ export class StartComponent implements OnInit {
         }
       });
   }
-
-  saveUserDetail(user) {
-    this.runService.saveUserDetails(this.user.id, user)
-      .subscribe(user => {
-        this.user = user;
-      })
-  }
-
 
   pushSub: any;
   actualSub: any;
@@ -274,7 +256,7 @@ export class StartComponent implements OnInit {
   maintenance: boolean;
   getAppByPath(path) {
     this.appLoading = true;
-    this.runService.getAppByPath(path, { email: this.user.email })
+    this.runService.getRunAppByPath(path, { email: this.user.email })
       .subscribe({
         next: (res) => {
           if (res) {
@@ -292,7 +274,7 @@ export class StartComponent implements OnInit {
             }
             this.titleService.setTitle(this.app.title);
             if (this.app.once) {
-              this.runService.getScreen(this.app.once)
+              this.runService.getRunScreen(this.app.once)
                 .subscribe(screen => this.screen = screen);
             }
 
@@ -332,11 +314,10 @@ export class StartComponent implements OnInit {
   startPage:string='start';
   getApp(id) {
     this.appLoading = true;
-    this.runService.getApp(id, { email: this.user.email })
+    this.runService.getRunApp(id, { email: this.user.email })
       .subscribe({
         next: (res) => {
           this.app = res;
-          // console.log("loaded app")
           this.runService.$app.set(this.app);        
 
           this.appLoading = false;
@@ -351,7 +332,7 @@ export class StartComponent implements OnInit {
             this.navToggle = {};
           }
           if (this.app.once) {
-            this.runService.getScreen(this.app.once)
+            this.runService.getRunScreen(this.app.once)
               .subscribe(screen => this.screen = screen);
           }
           this.checkPush(this.app);
@@ -464,9 +445,15 @@ export class StartComponent implements OnInit {
 
   preGroup:any={}
   preItem:any={}
+
+  firstActiveSet:boolean=false;
   runPre(){
-    this.navis?.forEach(group=>{
+    this.navis?.forEach((group,index)=>{
       this.preGroup[group.id]=this.preCheck(group);
+      if(!this.firstActiveSet && this.preGroup[group.id]){
+        this.firstActiveSet = true;
+        this.navToggle[index] = true;
+      }
       group.items?.forEach(item=>{
         this.preItem[item.id]=this.preCheck(item);
       })
@@ -568,4 +555,7 @@ export class StartComponent implements OnInit {
     this.modalService.dismissAll('');
   }
 
+  ngOnDestroy() {
+    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
+  }
 }

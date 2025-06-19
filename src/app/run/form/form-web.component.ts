@@ -50,7 +50,7 @@ export class FormWebComponent implements OnInit, ComponentCanDeactivate  {
     location: PlatformLocation) {
   }
 
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
 
   ngOnInit() {
 

@@ -122,7 +122,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   private _filter = new BehaviorSubject<any>({});
 
   $param$: any = {}
-  liveSubscription: any[] = [];
+  liveSubscription: any = {};
   
   ngOnInit() {
     this.app = this.runService.$app();
@@ -190,7 +190,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.userUnauthorized = false;
 
-    this.runService.getScreen(screenId)
+    this.runService.getRunScreen(screenId)
       .subscribe(res => {
         this.screen = res;
         this.dataset = {};
@@ -918,7 +918,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   getIcon=(str)=>str?str.split(":"):['far','question-circle'];
 
   ngOnDestroy() {
-    this.liveSubscription.forEach(sub => sub.unsubscribe());
+    Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());
   }
 
 }

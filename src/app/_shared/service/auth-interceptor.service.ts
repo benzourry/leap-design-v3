@@ -31,7 +31,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
     if (!req.headers.get("clear")) {
       if (localStorage.getItem("auth")) {
 
-        var authStr = atobUTF(localStorage.getItem("auth"));
+        var authStr = atobUTF(localStorage.getItem("auth"),null);
         var header = JSON.parse(authStr).accessToken?
           `Bearer ${JSON.parse(authStr).accessToken}`:
           `ApiKey ${JSON.parse(authStr).apiKey}`;

@@ -64,12 +64,12 @@ export function compileTpl(templateText: string, data: any): string {
         //.replace(/\\n/g, "\n")
         .replace(/<!--(.+?)-->/g, '')
         .replace(/\{\{(.+?)\}\}/g, r$val)
-        .replace(/\[#(.+?)#\]/g, r$script)
+        .replace(/\[#(.+?)#\]/gm, r$script)
         // .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, '";if($1){\noutput+="')
-        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
+        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
         .replace(/<x-else\s*\/?\s*>/ig, '";}else{\noutput+="')
         // .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, '";}else if($1){\noutput+="')
-        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
+        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
         .replace(/<\/x-if>/ig, '";}\noutput+="')
         // .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
         .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
@@ -124,7 +124,12 @@ function r$foreach(m: string, p1: string): string {
 }
 
 function r$script(m: string, p1: string): string {
-  return `";${p1.replace(/&nbsp;/ig, '').replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r")}\noutput+="`;
+  return `";${p1.replace(/&nbsp;/ig, '')
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "\t")
+    .replace(/\\r/g, "\r")}\noutput+="`;
 }
 
 function r$val(m: string, p1: string): string {
@@ -165,6 +170,11 @@ function key(expr: string, wrapFn?: string): string {
   return `"+get(()=>${expr},"",${wrapFn || ''})+"`;
 }
 
+// function key(expr: string, wrapFn?: string): string {
+//   const safeExpr = safeAccess(expr);
+//   return `"+get(()=>${safeExpr},"",${wrapFn || ''})+"`;
+// }
+
 function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   try {
     const val = wrapFn ? wrapFn(fn()) : fn();
@@ -172,6 +182,13 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   } catch {
     return defaultVal;
   }
+}
+
+function safeAccess(expr: string): string {
+  // Ignore function calls, expressions with operators, or already chained expressions
+  if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.") || expr.includes("[")) return expr;
+  // Transform `a.b.c` -> `a?.b?.c`
+  return expr.split('.').filter(Boolean).join('?.');
 }
 
 export function mobileAndTabletCheck() {
@@ -245,37 +262,94 @@ export const resizeImageBlob = (settings: IResizeImageOptions) => {
   })
 };
 
-export function loadScript(src, callback, error) {
-  return new Promise<void>(function (resolve, reject) {
-    if (src.includes('.mjs')) {
-      import(/* @vite-ignore */ src)
-        .then((module) => {
-          callback && callback(module);
-          resolve();
-        })
-        .catch((err) => {
-          error && error(err);
-          reject(err);
-        })
-    } else {
-      const s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = src;
-      s.async = true;
-      s.onerror = function (err) {
-        error && error(err);
-        reject(err);
-      };
-      s.onload = function () {
-        callback && callback();
-        resolve();
-      };
-      const t = document.getElementsByTagName('script')[0];
-      t.parentElement.insertBefore(s, t);
+// export function loadScript(src, callback, error) {
+//   return new Promise<void>(function (resolve, reject) {
+//     if (src.includes('.mjs')) {
+//       import(/* @vite-ignore */ src)
+//         .then((module) => {
+//           callback && callback(module);
+//           resolve();
+//         })
+//         .catch((err) => {
+//           error && error(err);
+//           reject(err);
+//         })
+//     } else {
+//       const s = document.createElement('script');
+//       s.type = 'text/javascript';
+//       s.src = src;
+//       s.async = true;
+//       s.onerror = function (err) {
+//         error && error(err);
+//         reject(err);
+//       };
+//       s.onload = function () {
+//         callback && callback();
+//         resolve();
+//       };
+//       const t = document.getElementsByTagName('script')[0];
+//       t.parentElement.insertBefore(s, t);
+//     }
+//   });
+// }
+
+export async function loadScript(
+  src: string,
+  callback?: (mod?: any) => void,
+  error?: (err: any) => void
+): Promise<void> {
+  try {
+    // Prevent double-loading
+    if (document.querySelector(`script[src="${src}"]`)) {
+      callback?.();
+      return;
     }
-  });
+
+    if (src.endsWith('.mjs')) {
+      const mod = await import(/* @vite-ignore */ src);
+      callback?.(mod);
+    } else {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = (err) => reject(err);
+
+        const firstScript = document.getElementsByTagName('script')[0];
+        firstScript.parentNode?.insertBefore(script, firstScript);
+      });
+      callback?.();
+    }
+  } catch (err) {
+    error?.(err);
+    throw err;
+  }
 }
 
+export function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true;
+
+  if (a == null || b == null) return a === b;
+
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+
+  const aIsArray = Array.isArray(a);
+  const bIsArray = Array.isArray(b);
+  if (aIsArray !== bIsArray) return false;
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+
+  for (let i = 0; i < keysA.length; i++) {
+    const key = keysA[i];
+    if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+    if (!deepEqual(a[key], b[key])) return false;
+  }
+
+  return true;
+}
 
 // var httpClient = inject(HttpClient)
 // export function getServerDate() {
@@ -355,40 +429,267 @@ export const toSpaceCase = (string) => String(string).replace(/[^\w\s$_]+(.|$)/g
 export const toSnakeCase = (string) => string ? toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
 export const toHyphen = (string) => string ? toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
 
-export function btoaUTF(str) {
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-    return String.fromCharCode(parseInt(p1, 16))
-  }))
+// export function btoaUTF(str) {
+//   return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+//     return String.fromCharCode(parseInt(p1, 16))
+//   }))
+// }
+
+// export function btoaUTF(str, key) {
+//   let bytes = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p) =>
+//     String.fromCharCode(parseInt(p, 16))
+//   );
+
+//   if (key) {
+//     const k = key.charCodeAt(0);
+//     bytes = [...bytes].map(c => String.fromCharCode(c.charCodeAt(0) ^ k)).join('');
+//   }
+
+//   return btoa(bytes);
+// }
+
+export function btoaUTF(str: string, key?: string): string {
+  let bytes = new TextEncoder().encode(str); // Uint8Array
+
+  if (key) {
+    const k = key.charCodeAt(0);
+    bytes = bytes.map(b => b ^ k); // XOR with key
+  }
+
+  // Convert Uint8Array to binary string
+  const binary = String.fromCharCode(...bytes);
+
+  return btoa(binary);
 }
 
-export function atobUTF(str) {
-  return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
-    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-  }).join(''))
+// export function atobUTF(str) {
+//   if (!str) return null;
+//   return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+//     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+//   }).join(''))
+// }
+
+export function atobUTF(str, key) {
+  if (!str) return null;
+
+  // Step 1: Base64 decode
+  const decoded = atob(str);
+
+  // Step 2 (optional): XOR decode if key is provided
+  // const xorDecoded = key
+  //   ? Array.prototype.map.call(decoded, c => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(0))).join('')
+  //   : decoded;
+    const xorBytes = key
+    ? Uint8Array.from(decoded, c => c.charCodeAt(0) ^ key.charCodeAt(0))
+    : Uint8Array.from(decoded, c => c.charCodeAt(0));
+
+  // Step 3: Percent-decode UTF-8 bytes
+  return new TextDecoder().decode(xorBytes);
+  // return decodeURIComponent(
+  //   Array.prototype.map.call(xorDecoded, c =>
+  //     '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  //   ).join('')
+  // );
 }
 
-export const deepMerge = (t, s) => {
+// function xorDecode(encoded, keyChar) {
+//   const xorKey = keyChar.charCodeAt(0);
+//   const decoded = atob(encoded);
+//   let result = '';
+//   for (let i = 0; i < decoded.length; i++) {
+//     result += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey);
+//   }
+//   return result;
+// }
 
-  // cannot return new object. Need to check other usage that require var mutation
+// this has been found to also mutate the source
+// export const deepMerge = (t, s) => {
 
-  var source = Object.assign({}, s);
-  var target = Object.assign({}, t);
-  // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
-  if (source != null) {
-    for (const key of Object.keys(source)) {
-      if (source[key] instanceof Object) {
-        if (!target[key]) {
-          Object.assign(target, { [key]: {} });
+//   // cannot return new object. Need to check other usage that require var mutation
+
+//   var source = Object.assign({}, s);
+//   var target = Object.assign({}, t);
+//   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
+//   if (source != null) {
+//     for (const key of Object.keys(source)) {
+//       if (source[key] instanceof Object) {
+//         if (!target[key]) {
+//           Object.assign(target, { [key]: {} });
+//         }
+//         Object.assign(source[key], deepMerge(target[key], source[key]))
+//       }
+//     }
+//   }
+
+//   // Join `target` and modified `source`
+//   Object.assign(target || {}, source)
+//   return Object.assign(t,target);
+// }
+
+// export const deepMerge = (target, source) => {
+//   if (!source || typeof source !== 'object') return target;
+
+//   for (const key of Object.keys(source)) {
+//     const srcVal = source[key];
+//     const tgtVal = target[key];
+
+//     if (
+//       srcVal &&
+//       typeof srcVal === 'object' &&
+//       !Array.isArray(srcVal)
+//     ) {
+//       if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
+//         target[key] = {};
+//       }
+//       deepMerge(target[key], srcVal); // <- mutate target[key] recursively
+//     } else {
+//       target[key] = srcVal;
+//     }
+//   }
+
+//   return target;
+// };
+
+// export const deepMerge = (target, ...sources) => {
+//   for (const source of sources) {
+//     if (!source || typeof source !== 'object') continue;
+
+//     for (const key of Object.keys(source)) {
+//       const srcVal = source[key];
+//       const tgtVal = target[key];
+
+//       if (
+//         srcVal &&
+//         typeof srcVal === 'object' &&
+//         !Array.isArray(srcVal)
+//       ) {
+//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
+//           target[key] = {};
+//         }
+//         deepMerge(target[key], srcVal); // recursive mutation
+//       } else {
+//         target[key] = srcVal;
+//       }
+//     }
+//   }
+
+//   return target;
+// };
+
+// export const deepMerge = (target, ...sources) => {
+//   for (const source of sources) {
+//     if (!source || typeof source !== 'object') continue;
+
+//     for (const key of Object.keys(source)) {
+//       const srcVal = source[key];
+//       const tgtVal = target[key];
+
+//       if (Array.isArray(srcVal)) {
+//         if (Array.isArray(tgtVal)) {
+//           target[key] = [...new Set(tgtVal.concat(srcVal))]; // deduplicated merge
+//         } else {
+//           target[key] = [...new Set(srcVal)];
+//         }
+//       } else if (
+//         srcVal &&
+//         typeof srcVal === 'object'
+//       ) {
+//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
+//           target[key] = {};
+//         }
+//         deepMerge(target[key], srcVal); // recursive object merge
+//       } else {
+//         target[key] = srcVal;
+//       }
+//     }
+//   }
+
+//   return target;
+// };
+
+// export const deepMerge = (target, ...sources) => {
+//   for (const source of sources) {
+//     if (!source || typeof source !== 'object') continue;
+
+//     for (const key of Object.keys(source)) {
+//       const srcVal = source[key];
+//       const tgtVal = target[key];
+
+//       if (Array.isArray(srcVal)) {
+//         if (Array.isArray(tgtVal)) {
+//           // Merge array by index (for arrays of objects)
+//           const mergedArray = [];
+//           const maxLength = Math.max(tgtVal.length, srcVal.length);
+
+//           for (let i = 0; i < maxLength; i++) {
+//             const a = tgtVal[i];
+//             const b = srcVal[i];
+
+//             if (a && b && typeof a === 'object' && typeof b === 'object') {
+//               mergedArray[i] = deepMerge({}, a, b);
+//             } else {
+//               mergedArray[i] = b ?? a;
+//             }
+//           }
+
+//           target[key] = mergedArray;
+//         } else {
+//           target[key] = srcVal.slice();
+//         }
+
+//       } else if (
+//         srcVal &&
+//         typeof srcVal === 'object'
+//       ) {
+//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
+//           target[key] = {};
+//         }
+//         deepMerge(target[key], srcVal);
+//       } else {
+//         target[key] = srcVal;
+//       }
+//     }
+//   }
+
+//   return target;
+// };
+
+// Simpler version
+export const deepMerge = (target, ...sources) => {
+  for (const source of sources) {
+    if (!isObject(source)) continue;
+
+    for (const key in source) {
+      const src = source[key];
+      const tgt = target[key];
+
+      if (Array.isArray(src)) {
+        if (Array.isArray(tgt)) {
+          // Merge arrays
+          if (isPrimitiveArray(src) && isPrimitiveArray(tgt)) {
+            target[key] = [...new Set([...tgt, ...src])];
+          } else {
+            target[key] = src.map((val, i) =>
+              isObject(val) && isObject(tgt[i])
+                ? deepMerge({ ...tgt[i] }, val)
+                : val ?? tgt[i]
+            );
+          }
+        } else {
+          target[key] = src.slice();
         }
-        Object.assign(source[key], deepMerge(target[key], source[key]))
+      } else if (isObject(src)) {
+        target[key] = isObject(tgt) ? deepMerge(tgt, src) : deepMerge({}, src);
+      } else {
+        target[key] = src;
       }
     }
   }
+  return target;
+};
 
-  // Join `target` and modified `source`
-  Object.assign(target || {}, source)
-  return Object.assign(t,target);
-}
+const isObject = v => v && typeof v === 'object' && !Array.isArray(v);
+const isPrimitiveArray = arr => arr.every(v => typeof v !== 'object');
 
 function parseCSV(input) {
   const parts = [];
@@ -487,3 +788,60 @@ export function getFileExt(filename){
   var ext = re.exec(filename)[1];
   return ext?'.'+ext:'';  
 }
+
+// export async function encryptData(key: string, data: string): Promise<string> {
+//   try {
+//     const encoder = new TextEncoder();
+//     const keyBuffer = await crypto.subtle.importKey(
+//       'raw',
+//       encoder.encode(key),
+//       { name: 'AES-GCM' },
+//       true,
+//       ['encrypt', 'decrypt']
+//     );
+//     // Encryption logic
+//     const iv = crypto.getRandomValues(new Uint8Array(12));
+//     const encodedData = encoder.encode(data);
+//     const encryptedData = await crypto.subtle.encrypt(
+//       { name: 'AES-GCM', iv: iv },
+//       keyBuffer,
+//       encodedData
+//     );
+//     const resultArray = new Uint8Array(iv.length + new Uint8Array(encryptedData).length);
+//     resultArray.set(iv);
+//     resultArray.set(new Uint8Array(encryptedData), iv.length);
+//     return btoa(String.fromCharCode(...resultArray));
+//   } catch (error) {
+//     console.error('Encryption failed:', error);
+//     throw error; // Rethrow the error for the caller to handle
+//   }
+// }
+// export async function decryptData(key: string, encryptedData: string): Promise<string> {
+//   try {
+//     const encoder = new TextEncoder();
+//     const keyBuffer = await crypto.subtle.importKey(
+//       'raw',
+//       encoder.encode(key),
+//       { name: 'AES-GCM' },
+//       true,
+//       ['encrypt', 'decrypt']
+//     );
+//     // Decryption logic
+//     const encryptedArray = new Uint8Array(
+//       atob(encryptedData)
+//         .split('')
+//         .map((char) => char.charCodeAt(0))
+//     );
+//     const iv = encryptedArray.slice(0, 12);
+//     const ciphertext = encryptedArray.slice(12);
+//     const decryptedData = await crypto.subtle.decrypt(
+//       { name: 'AES-GCM', iv: iv },
+//       keyBuffer,
+//       ciphertext
+//     );
+//     return new TextDecoder().decode(decryptedData);
+//   } catch (error) {
+//     console.error('Decryption failed:', error);
+//     throw error; // Rethrow the error for the caller to handle
+//   }
+// }

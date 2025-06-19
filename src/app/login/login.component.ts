@@ -55,7 +55,6 @@ export class LoginComponent implements OnInit {
     window.localStorage.setItem('server', server);
     window.localStorage.setItem('redirect', this.redirect);
     location.href = `${OAUTH.AUTH_URI}/${server}?appId=-1&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`;
-    // location.href = `${OAUTH[server].AUTH_URI}?client_id=${OAUTH[server].CLIENT_ID}&response_type=token&scope=${OAUTH[server].SCOPE}&redirect_uri=${OAUTH.CALLBACK}`;
   }
 
   register = false;
@@ -71,13 +70,13 @@ export class LoginComponent implements OnInit {
             var auth = {
               accessToken: token
             };
-            window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth)));
+            window.localStorage.setItem("auth", btoaUTF(JSON.stringify(auth),null));
             fetch(OAUTH.USER_URI, { headers: { 'Authorization': 'Bearer ' + token } })
               .then(res => res.json())
               .then(json => {
                 // console.log(json);
                 if (!json.error) {
-                  window.localStorage.setItem("user", btoaUTF(JSON.stringify(json)));
+                  window.localStorage.setItem("user", btoaUTF(JSON.stringify(json),null));
                   window.location.href = window.localStorage.getItem("redirect") ? "/#" + window.localStorage.getItem("redirect") : OAUTH.FINAL_URI;
                 } else {
                   alert(json.error);

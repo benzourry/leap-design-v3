@@ -4,6 +4,7 @@ import { HttpClient, HttpEvent, HttpHeaders, HttpRequest } from '@angular/common
 import { Observable, first, lastValueFrom, map, tap } from 'rxjs';
 import { base, baseApi } from '../../_shared/constant.service';
 import { RxStompService } from '../../_shared/service/rx-stomp.service';
+import { atobUTF } from '../../_shared/utils';
 // import { RxStompService } from '../_shared/service/rx-stomp.service';
 
 @Injectable({
@@ -44,8 +45,13 @@ export class RunService {
 
   constructor(private http: HttpClient, private rxStompService: RxStompService) { }
 
-  getApp(appId: number, httpParam?: any) {
-    return this.http.get<any>(`${this.baseApi}/app/${appId}`, { params: httpParam })
+  getRunApp(appId: number, httpParam?: any) {
+    return this.http.get<any>(`${this.baseApi}/run/app/${appId}`, { params: httpParam })
+    .pipe(map(res => ({
+      ...res,
+      f: atobUTF(res._f, '@'),
+      x: this.safeParse(atobUTF(res._x, '@'))
+    })))
   }
   getNotification(appId:number,email:string){
     return this.http.get<any>(`${this.baseApi}/app/${appId}/notification?email=${email}`);
@@ -71,8 +77,13 @@ export class RunService {
   getNaviData(id: any,email: string) {
     return this.http.get<any>(`${this.baseApi}/app/${id}/navi-data?email=${email}`);
   }
-  getAppByPath(appPath: string, httpParam?: any) {
-    return this.http.get<any>(`${this.baseApi}/app/path/${appPath}`, { params: httpParam })
+  getRunAppByPath(appPath: string, httpParam?: any) {
+    return this.http.get<any>(`${this.baseApi}/run/app/path/${appPath}`, { params: httpParam })
+    .pipe(map(res => ({
+      ...res,
+      f: atobUTF(res._f, '@'),
+      x: this.safeParse(atobUTF(res._x, '@'))
+    })))
   }
   // getAppByKey(appPath: string, httpParam?: any) {
   //   return this.http.get<any>(`${this.baseApi}/app/key/${appPath}`, { params: httpParam })
@@ -80,23 +91,127 @@ export class RunService {
   checkPath(value: any) {
     return this.http.get<any>(`${this.baseApi}/app/check-by-key?appPath=${value}`,{headers:{}});
   }
-  getForm(id: number) {
-    return this.http.get<any>(`${this.baseApi}/form/` + id);
-  }
   getRunForm(id: number) {
-    return this.http.get<any>(`${this.baseApi}/form/run/` + id);
+    return this.http.get<any>(`${this.baseApi}/run/form/` + id)
+    .pipe(map(res => {
+
+      Object.entries(res.items).forEach(([key, item]: [string, any]) => {
+        item.f = atobUTF(item._f, '@');
+        item.placeholder = item._placeholder;
+        item.post = atobUTF(item._post, '@');
+        item.pre = atobUTF(item._pre, '@');
+      });
+
+      if (res.prev){
+        Object.entries(res.prev.items).forEach(([key, item]: [string, any]) => {
+          item.f = atobUTF(item._f, '@');
+          item.placeholder = item._placeholder;
+          item.post = atobUTF(item._post, '@');
+          item.pre = atobUTF(item._pre, '@');
+        });  
+
+        res.prev = {
+          ...res.prev,
+          items: res.prev.items,
+          sections: res.prev.sections.map((section: any) => ({  
+            ...section, 
+            pre: atobUTF(section._pre, '@')
+          })),
+          tabs: res.prev.tabs.map((tab: any) => ({  
+            ...tab,
+            pre: atobUTF(tab._pre, '@')
+          })),
+          tiers: res.prev.tiers.map((tier: any) => {
+
+            Object.entries(tier.actions).forEach(([key, item]: [string, any]) => {
+              item.pre = atobUTF(item._pre, '@');
+            });
+            return {
+              ...tier,
+              pre: atobUTF(tier._pre, '@'),
+              post: atobUTF(tier._post, '@')
+            }
+          }),
+          f: atobUTF(res.prev._f, '@'),
+          onSave: atobUTF(res.prev._onSave, '@'),
+          onSubmit: atobUTF(res.prev._onSubmit, '@'),
+          onView: atobUTF(res.prev._onView, '@')
+        }
+      }
+
+      return  {
+        ...res,
+        items: res.items,
+        sections: res.sections.map((section: any) => ({  
+          ...section, 
+          pre: atobUTF(section._pre, '@')
+        })),
+        tabs: res.tabs.map((tab: any) => ({  
+          ...tab,
+          pre: atobUTF(tab._pre, '@')
+        })),
+        tiers: res.tiers.map((tier: any) => {
+
+          Object.entries(tier.actions).forEach(([key, item]: [string, any]) => {
+            item.pre = atobUTF(item._pre, '@');
+          });
+          return {
+            ...tier,
+            pre: atobUTF(tier._pre, '@'),
+            post: atobUTF(tier._post, '@')
+          }
+        }),
+        f: atobUTF(res._f, '@'),
+        onSave: atobUTF(res._onSave, '@'),
+        onSubmit: atobUTF(res._onSubmit, '@'),
+        onView: atobUTF(res._onView, '@'),
+      }
+    }));
   }
-  getDashboard(id: any) {
-    return this.http.get<any>(`${this.baseApi}/dashboard/${id}`)
+  getRunDashboard(id: any) {
+    return this.http.get<any>(`${this.baseApi}/run/dashboard/${id}`)
   }
-  getDashboardBasic(id: any) {
-    return this.http.get<any>(`${this.baseApi}/dashboard/${id}/basic`)
+  
+  getRunDataset(id: number) {
+    return this.http.get<any>(`${this.baseApi}/run/dataset/${id}`)
+    .pipe(map(res => {
+
+      Object.entries(res.form.items).forEach(([key, item]: [string, any]) => {
+        item.f = atobUTF(item._f, '@');
+        item.placeholder = item._placeholder;
+        item.post = atobUTF(item._post, '@');
+        item.pre = atobUTF(item._pre, '@');
+      });
+
+      if (res.form?.prev){
+        Object.entries(res.form?.prev.items).forEach(([key, item]: [string, any]) => {
+          item.f = atobUTF(item._f, '@');
+          item.placeholder = item._placeholder;
+          item.post = atobUTF(item._post, '@');
+          item.pre = atobUTF(item._pre, '@');
+        });  
+      }
+
+      return {
+        ...res,
+        items: res.items.map((item: any) => ({  
+          ...item,
+          pre: atobUTF(item._pre, '@')
+        })),
+        actions: res.actions.map((action: any) => ({  
+          ...action,
+          f: atobUTF(action._f, '@'),
+          pre: atobUTF(action._pre, '@')
+        }))     
+      } 
+    }))
   }
-  getDataset(id: number) {
-    return this.http.get<any>(`${this.baseApi}/dataset/${id}`)
-  }
-  getScreen(id: number) {
-    return this.http.get<any>(`${this.baseApi}/screen/${id}`);
+  getRunScreen(id: number) {
+    return this.http.get<any>(`${this.baseApi}/run/screen/${id}`)
+    .pipe(map(res => ({
+      ...res, 
+      data: JSON.parse(atobUTF(res._data,'@'))
+    })))
   }
   getMailerList(params?: any) {
     return this.http.get<any>(`${this.baseApi}/mailer/pickable`, { params: params });
@@ -253,15 +368,17 @@ export class RunService {
   }
 
   // liveSubscription: any[] = [];
-  $live$ = (subs:any[], finalFn) =>({
+  $live$ = (subs:any, finalFn) =>({
     watch: (ch: any[], fn) => {
       ch.forEach(c => {
-        subs.push(this.rxStompService.watch('/' + c)
-          .pipe(
-            map((msg:any) => msg.body),
-            tap(()=>finalFn())
-          )
-          .subscribe(fn));
+        if (!subs[c]){
+          subs[c] = this.rxStompService.watch('/' + c)
+            .pipe(
+              map((msg:any) => msg.body),
+              tap(()=>finalFn())
+            )
+            .subscribe(fn);
+        }
       })
     },
     publish: (ch: any[], msg) => {
@@ -294,6 +411,16 @@ export class RunService {
 
   bucketServerInfo(){
     return this.http.get(`${this.baseApi}/bucket/info`);
+  }
+
+  
+  safeParse(str: string): any {
+    if (!str) return null;
+    try {
+      return JSON.parse(str);
+    } catch {
+      return null;
+    }
   }
 
 }

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectorRef, Component, OnChanges, OnInit, SimpleChanges, effect, forwardRef, input, model, output } from '@angular/core';
+import { ChangeDetectorRef, Component, OnChanges, OnDestroy, OnInit, SimpleChanges, effect, forwardRef, input, model, output } from '@angular/core';
 // import { EntryService } from '../../service/entry.service';
 import { UserService } from '../../_shared/service/user.service';
 // import { LookupService } from '../../service/lookup.service';
@@ -26,7 +26,7 @@ import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbTooltip, NgbDropdown, NgbD
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { PlatformLocation, Location, NgClass, KeyValuePipe, JsonPipe } from '@angular/common';
 import { ToastService } from '../../_shared/service/toast-service';
-import { ServerDate, br2nl, btoaUTF, compileTpl, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
+import { ServerDate, br2nl, btoaUTF, compileTpl, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
 // import { RunService } from '../../service/run.service';
 import { LogService } from '../../_shared/service/log.service';
@@ -58,7 +58,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 @Component({
     selector: 'app-list',
     templateUrl: './list.component.html',
-    styleUrls: ['./list.component.css'],
+    styleUrls: ['./list.component.scss'],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
         { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
     imports: [PageTitleComponent, NgbTooltip, FaIconComponent, FormsModule, NgbDropdown, NgbDropdownToggle,
@@ -67,7 +67,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
     SafePipe, KeyValuePipe]
 })
-export class ListComponent implements OnInit, OnChanges {
+export class ListComponent implements OnInit, OnChanges, OnDestroy {
 
   groupByPipe = new GroupByPipe();
 
@@ -213,16 +213,20 @@ export class ListComponent implements OnInit, OnChanges {
 
   // Untuk ngecek changes dari @Input
   ngOnChanges(changes: SimpleChanges): void {
-    if (JSON.stringify(changes.filters?.previousValue) != JSON.stringify(changes.filters?.currentValue)) {
-      // console.log("changes",changes.filters?.currentValue)
-      this._filter.next(changes.filters?.currentValue)
+    // if (JSON.stringify(changes.filters?.previousValue) != JSON.stringify(changes.filters?.currentValue)) {
+    //   // console.log("changes",changes.filters?.currentValue)
+    //   this._filter.next(changes.filters?.currentValue)
+    // }
+
+    if (!deepEqual(changes.filters?.previousValue, changes.filters?.currentValue)) {
+      this._filter.next(changes.filters?.currentValue);
     }
   }
 
   prevId: number;
 
   ngOnInit() {
-    console.log("ngoninit")
+    // console.log("ngoninit")
     this.app = this.runService.$app();
     // console.log("app",this.app)
     this.baseUrl = this.runService.$baseUrl();
@@ -322,7 +326,7 @@ export class ListComponent implements OnInit, OnChanges {
     this.loading = true;
     this.userUnauthorized = false;
     // console.log("--pre:loading data",id)
-    this.runService.getDataset(id)
+    this.runService.getRunDataset(id)
       .subscribe({
         next: res => {
           // console.log("--sub:loading data",id)
@@ -407,7 +411,7 @@ export class ListComponent implements OnInit, OnChanges {
     this.filtersEncoded = encodeURIComponent(JSON.stringify(filtersAll)); // utk export link
     this.searchTextEncoded = encodeURIComponent(this.searchText);
 
-    this.changeParam(pageNumber);
+    // this.changeParam(pageNumber);
 
     this.preCount = this.pageSize * (pageNumber - 1);
 
@@ -653,7 +657,7 @@ export class ListComponent implements OnInit, OnChanges {
   lookupDataObs:any={}
   _getLookupObs(code, param, cb?, err?):Observable<any>{
 
-      var cacheId =  'key_'+btoaUTF(this.lookupKey[code].ds + hashObject(param??{}));
+      var cacheId =  'key_'+btoaUTF(this.lookupKey[code].ds + hashObject(param??{}),null);
       // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
       // bleh consider cache observable instead of result.
       // tp bila pake observable.. request dipolah on subscribe();
@@ -899,7 +903,7 @@ export class ListComponent implements OnInit, OnChanges {
     this.cdr.detectChanges()
   }
 
-  liveSubscription:any[]=[];
+  liveSubscription:any={};
 
   loadScript = loadScript;
   
@@ -938,12 +942,17 @@ export class ListComponent implements OnInit, OnChanges {
               this._evalRun(entry.data, this.form['data'].onSubmit, false);
             } catch (e) { this.logService.log(`{form-${this.form.title}-onSubmit}-${e}`) }
           }
-          deepMerge(entry, res);
+          entry = deepMerge(entry, res);
           this.toastService.show("Entry submitted successfully", { classname: 'bg-success text-light' });
         }, error: err => {
           this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
         }
       })
   }
+
+  ngOnDestroy() {
+    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
+  }
+
 
 }

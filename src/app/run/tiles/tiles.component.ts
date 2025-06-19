@@ -21,24 +21,18 @@ import { ActivatedRoute, Params, Router, RouterLinkActive, RouterLink } from '@a
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgStyle, DatePipe } from '@angular/common';
-// import { domainRegex } from '../../_shared/constant.service';
-// import { RunService } from '../../service/run.service';
 import { ServerDate, compileTpl, loadScript } from '../../_shared/utils';
 import { LogService } from '../../_shared/service/log.service';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { base, baseApi } from '../../_shared/constant.service';
-// import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
 import { FilterPipe } from '../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 import { lastValueFrom, tap } from 'rxjs';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
-// declare const qrcode: any;
-// declare const zdecoder: any;
 
 @Component({
     selector: 'app-tiles',
@@ -113,61 +107,11 @@ export class TilesComponent implements OnInit {
         // need to rerun. Sometimes oninit trigger quite late. 
         this.runPre();
 
-
       });
-
-      // this.navis = this.runService.$navis.
-      // this.naviData = this.runService.$naviData.getValue();
 
   }
 
-  // getPath() {
-  //   return window.location.host.match(domainRegex)[1];
-  //   // return "https://research.ia.unimas.my/run".match(/(?:http:\/\/)?(?:([^.]+)\.)?ia\.unimas\.my/);
-  //   // return "https://ia.unimas.my/run".match(/(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\..{2,5})/i)[1];
-  // }
-
-  // getAppByPath(path) {
-  //   this.appLoading = true;
-  //   this.runService.getAppByPath(path)
-  //     .subscribe(res => {
-  //       this.app = res;
-  //       this.appLoading = false;
-  //       this.getNavis(res.id);
-  //       this.getNaviData(res.id);
-  //       this.getStart(res.id);
-  //     }, res => this.appLoading = false)
-  // }
-
-  // getApp(id) {
-  //   this.runService.getApp(id)
-  //     .subscribe(res => {
-  //       this.app = res;
-  //     })
-  // }
   getIcon=(str)=>str?str.split(":"):['far','file'];
-
-  // getNavis(id){
-  //   // this.navis = this.runService.$navis();
-  //   this.runService.getNavis(id, this.user.email)
-  //   .subscribe(res => {
-  //     this.navis = res;
-  //     this.runPre();
-  //     this.initScreen(this.app.f);
-  //   })
-  // }
-
-  // loadingNaviData = false;
-  // getNaviData(id){
-  //   // this.loadingNaviData = true;
-  //   // this.naviData = this.runService.$naviData();
-  //   this.runService.getNaviData(id, this.user.email)
-  //   .subscribe(res=>{
-  //     this.naviData = res;
-  //     this.runPre();
-  //     this.loadingNaviData = false;      
-  //   })
-  // }
 
   getStart(id) {
     if (id){
@@ -185,15 +129,6 @@ export class TilesComponent implements OnInit {
 
   compileTpl = compileTpl;
 
-  // initScreen(js) {
-  //   let res = undefined;
-  //   try {
-  //     res = this._eval(js);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
-  //   } catch (e) { this.logService.log(`{tiles-${this.app.title}-initNavi}-${e}`) }
-  //   this.runPre();
-  //   return res;
-  // }
-
   loadScript = loadScript;
 
   $toast$ = (content, opt) => this.toastService.show(content, opt);
@@ -203,12 +138,9 @@ export class TilesComponent implements OnInit {
   preCheck(f) {
     let res = undefined;
     try {
-      // if (!dataV) {
-      //   dataV = this.entry.data;
-      // }
       if (f.pre){
         let pre = f.pre.trim();
-        res = this._eval(pre);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+        res = this._eval(pre);
       }
     } catch (e) { this.logService.log(`{tiles-${f.code}-precheck}-${e}`) }
     return !f.pre || res;
@@ -217,7 +149,6 @@ export class TilesComponent implements OnInit {
   preGroup:any={}
   preItem:any={}
   runPre(){
-    // console.log(this.navis)
     this.navis?.forEach(group=>{
       this.preGroup[group.id]=this.preCheck(group);
       group.items?.forEach(item=>{
@@ -237,9 +168,6 @@ export class TilesComponent implements OnInit {
   _eval = (v) => new Function('$app$','$navi$', '$badge$', '$user$','$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$param$', 'ServerDate','$log$','$toast$','$base$','$baseUrl$','$baseApi$','dayjs','ServerDate','$token$', `return ${v}`)
   (this.app, this.naviData, this.badge, this.user, this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.$this$, this.loadScript, this.$param$, ServerDate, this.log, this.$toast$, this.base, this.baseUrl, this.baseApi, dayjs, ServerDate, this.accessToken);
   
-  // httpGet = this.runService.httpGet;
-  // httpPost = this.runService.httpPost;
-  // endpointGet = (code, params, callback, error) => this.runService.endpointGet(code, this.app?.id, params, callback, error)
   httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(()=>this.$digest$())));
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(()=>this.$digest$())));
   endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.app?.id, params, callback, error).pipe(tap(()=>this.$digest$())));

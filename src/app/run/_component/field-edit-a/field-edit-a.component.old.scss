@@ -7,6 +7,16 @@
   position:relative;
   margin-bottom:0;
 }
+
+.has-float-label.form-control,
+.has-float-label.btn,
+.has-float-label .ng-select-container, 
+.has-float-label .img-holder, 
+.has-float-label .map-target-div,
+.has-float-label .angular-editor-textarea,
+.has-float-label.form-check-input{
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
+}
 /* ### WHEN HAVE VALUE */
 .has-float-label label,
 .has-float-label>span.label-span, 

@@ -59,7 +59,7 @@ export class UserService {
   }
 
   setUser(user) {
-    window.localStorage.setItem("user", btoaUTF(JSON.stringify(user)));
+    window.localStorage.setItem("user", btoaUTF(JSON.stringify(user),null));
   }
 
   /**
@@ -84,7 +84,7 @@ export class UserService {
     let server = localStorage.getItem('server');
 
     if (localStorage.getItem("creator")) {
-      var userStr = atobUTF(localStorage.getItem("creator"));
+      var userStr = atobUTF(localStorage.getItem("creator"),null);
       // var access_token = this.getToken();
       this.user = of(JSON.parse(userStr));
       return this.user;
@@ -110,7 +110,7 @@ export class UserService {
           .pipe(
             tap({
               next: (res) => {
-                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(res)));
+                window.localStorage.setItem("creator", btoaUTF(JSON.stringify(res),null));
                 this.user = of(res);
                 // window.localStorage.removeItem("userexp");
               }, error: () => {
@@ -163,7 +163,7 @@ export class UserService {
     // const userexp = localStorage.getItem('userexp');
     
     if (user) {
-      const userStr = atobUTF(user);
+      const userStr = atobUTF(user,null);
       // const accessToken = this.getToken();
       this.user = of(JSON.parse(userStr));
       return this.user;
@@ -186,7 +186,7 @@ export class UserService {
         return this.http.get<any>(`${OAUTH.USER_URI}?${keyType}=${keyValue}`).pipe(
           tap({
             next: (res) => {
-              window.localStorage.setItem('user', btoaUTF(JSON.stringify(res)));
+              window.localStorage.setItem('user', btoaUTF(JSON.stringify(res),null));
               this.user = of(res);
               // window.localStorage.removeItem('userexp');
             },
@@ -207,7 +207,7 @@ export class UserService {
     const server = localStorage.getItem('server');
     const user = localStorage.getItem('user')??localStorage.getItem('creator');
     const debugAppId = +localStorage.getItem('debugAppId');
-    const userStr = atobUTF(user);
+    const userStr = atobUTF(user,null);
     let userObj = JSON.parse(userStr);
 
     return this.getUserDebug(userObj.email, debugAppId);
@@ -234,7 +234,7 @@ export class UserService {
         .pipe(
           tap({
             next: (res) => {
-              window.localStorage.setItem("user", btoaUTF(JSON.stringify(res)));
+              window.localStorage.setItem("user", btoaUTF(JSON.stringify(res),null));
               this.user = of(res);
               // window.localStorage.removeItem("userexp");
             }, error: () => {
@@ -247,20 +247,20 @@ export class UserService {
 
   getToken = () => {
     // #####TO-DO need to change to atob later when the time is ready;
-    var authStr = atobUTF(localStorage.getItem("auth"));
+    var authStr = atobUTF(localStorage.getItem("auth"),null);
     return JSON.parse(authStr).accessToken;
   };
 
   getAuth = () => {
     // #####TO-DO need to change to atob later when the time is ready;
     // if (!localStorage.getItem("auth")) this.router.navigate(['/login']);    
-    var authStr = atobUTF(localStorage.getItem("auth"));
+    var authStr = atobUTF(localStorage.getItem("auth"),null);
     return JSON.parse(authStr);
   };
 
   getActualUser = () => {
     var d_user = localStorage.getItem("creator");
-    return JSON.parse(atobUTF(d_user ? d_user : localStorage.getItem("user")));
+    return JSON.parse(atobUTF(d_user ? d_user : localStorage.getItem("user"),null));
   }
 
   public clearStorage(attr) {
