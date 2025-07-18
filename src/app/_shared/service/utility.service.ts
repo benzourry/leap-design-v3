@@ -12,7 +12,8 @@ import { map } from "rxjs/operators";
           fromEvent(window, 'offline').pipe(map(() => false)),//mock online
           fromEvent(window, 'online').pipe(map(() => true)),
           new Observable(sub => {
-            sub.next(true)//(navigator.onLine);
+            // sub.next(true)
+            sub.next(navigator.onLine);
             sub.complete();
           }));
         }

@@ -1,4 +1,4 @@
-import { Component, OnInit, input, model, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, input, model, ChangeDetectorRef, inject, signal } from '@angular/core';
 import { AppService } from '../../../service/app.service';
 import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
 import { baseApi, domainBase, OAUTH } from '../../constant.service';
@@ -14,34 +14,31 @@ import { PlatformService } from '../../../service/platform.service';
 import { ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-    selector: 'app-app-edit',
-    templateUrl: './app-edit.component.html',
-    styleUrls: ['./app-edit.component.scss'],
-    imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-app-edit',
+  templateUrl: './app-edit.component.html',
+  styleUrls: ['./app-edit.component.scss'],
+  imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppEditComponent implements OnInit {
 
-  constructor(private appService: AppService,private screenService: ScreenService, private platformService: PlatformService) { }
+  // Remove constructor entirely
+  private appService = inject(AppService);
+  private screenService = inject(ScreenService);
+  private platformService = inject(PlatformService);
+  private cdr = inject(ChangeDetectorRef);
 
-  // @Input() data: any;
+  constructor() { }
+
   data = model<any>();
-  // @Input() offline:boolean=false;
+  _data:any = {};
   offline = input<boolean>(false);
-  initialAppPath: string="";
-  // @Input() user: any;
+  initialAppPath: string = "";
   user = input<any>();
   baseApi: string = baseApi;
-
-  
-  // @Input()
   close = input<any>();
-
-  // @Input()
-  dismiss= input<any>();
-
-  otherAppList: any[] = [];
-
+  dismiss = input<any>();
+  otherAppList = signal<any[]>([]);
   checkLogin = (login) => OAUTH.SIGNIN_OPT.includes(login);
 
   themes: any[] = [
@@ -66,85 +63,76 @@ export class AppEditComponent implements OnInit {
     { name: "900Cyan", color: "#006064" }
   ]
 
-  file:any;
+  file: any;
 
-  isPathTaken = (path)=> ['io','create','design','core'].indexOf(path)>-1?of(true):this.appService.isPathTaken(path);
-  
-  appGroups: any[] = [];
-  cdr = inject(ChangeDetectorRef);
+  isPathTaken = (path) => ['io', 'create', 'design', 'core'].indexOf(path) > -1 ? of(true) : this.appService.isPathTaken(path);
+
+  appGroups = signal<any[]>([]);
+
   ngOnInit() {
-    // console.log("onInit")
-    this.initialAppPath = this.data().appPath;
+    this._data = {...this.data()};
+    this.initialAppPath = this._data.appPath;
     this.loadPages();
     this.loadScreen();
-    if (!this.data().x){
-      this.data.update(a=>{
-        a.x = {};
-        return a;
-      })
+    if (!this._data.x) {
+      this._data.x = {};
     }
     this.appService.getAppMyList({
       email: this.user().email,
       size: 999,
       sort: 'id,desc'
     }).subscribe(res => {
-        this.otherAppList = res.content;
-        this.cdr.detectChanges();
+      this.otherAppList.set(res.content);
     })
 
-    this.platformService.listAppGroup({size:9999, email:this.user().email})
-      .subscribe(res => { 
-        this.appGroups = res.content;
-        this.cdr.detectChanges();
+    this.platformService.listAppGroup({ size: 9999, email: this.user().email })
+      .subscribe(res => {
+        this.appGroups.set(res.content);
       })
   }
 
 
-  pages:any = [];
-  loadPages(){
-    if (!this.data().id) return;
-    this.appService.getPages(this.data().id)
-    .subscribe(res=>{
-      this.pages = res;
-      this.cdr.detectChanges();
-    });
+  pages = signal<any[]>([]);
+  loadPages() {
+    if (!this._data.id) return;
+    this.appService.getPages(this._data.id)
+      .subscribe(res => {
+        this.pages.set(res);
+      });
   }
-  screens:any = [];
-  loadScreen(){
-    if (!this.data().id) return;
-    this.screenService.getScreenList(this.data().id)
-    .subscribe(res=>{
-      this.screens = res;
-      this.cdr.detectChanges();
-    });
+  screens = signal<any>([]);
+  loadScreen() {
+    if (!this._data.id) return;
+    this.screenService.getScreenList(this._data.id)
+      .subscribe(res => {
+        this.screens.set(res);
+      });
   }
 
-  uploadLogo($event){
+  uploadLogo($event) {
     if ($event.target.files && $event.target.files.length) {
-      this.appService.uploadLogo($event.target.files[0],this.data().id)
+      this.appService.uploadLogo($event.target.files[0], this._data.id)
         .subscribe(res => {
-          this.data.update(app=>{
-            app.logo = res.fileUrl;
-            return app;
-          })
+          this._data.logo = res.fileUrl;
           this.cdr.detectChanges();
-          // this.data['logo'] = res.fileUrl;
         })
 
     }
   }
 
-  clearLogo(){
-    if (confirm("Are you sure you want to clear the app logo?")){
-      this.appService.clearLogo(this.data().id)
+  clearLogo() {
+    if (confirm("Are you sure you want to clear the app logo?")) {
+      this.appService.clearLogo(this._data.id)
         .subscribe(res => {
-          this.data.update(app=>{
-            app.logo = null;
-            return app;
-          })
+          this._data.logo = null;
           this.cdr.detectChanges();
-        })      
+        })
     }
+  }
+
+  done(data) {
+    this.data.set(data);
+    this.close()?.(data);
   }
 
   toHyphen = toHyphen; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';

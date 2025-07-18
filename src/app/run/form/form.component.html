@@ -73,7 +73,7 @@
                             border-radius:20px;">{{$index+1}}</div>
                           }
                           @if (tab.x?.icon){
-                            <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
+                            <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                           }
                           <h5 class="m-0">
                             {{tab.title}}
@@ -115,7 +115,7 @@
                           border-radius:20px;">{{$index+1}}</div>
                         }
                         @if (tab.x?.icon){
-                          <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
+                          <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                         }
                         {{tab.title}}
                       </a>
@@ -204,7 +204,7 @@
                             <div class="card-header p-3" [class.px-0]="e.x?.blankStyle">
                               <h6 class="card-title m-0">
                                 @if (e.icon) {
-                                  <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                                  <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                 }
                                 {{e.title}}
                                 @if (sForm.invalid) {
@@ -387,7 +387,7 @@
                                 </div>      
 
                                 @if (e.icon) {
-                                  <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                                  <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                 }
                                 {{e.title}}
                               </h6>

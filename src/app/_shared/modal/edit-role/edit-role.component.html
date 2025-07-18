@@ -4,7 +4,7 @@
 <div class="modal-body fix-gutter" #groupEditForm="ngForm" ngForm>
   <div class="form-group mb-3">
     <label class="form-label">Group Name</label>
-    <input type="text" class="form-control" [(ngModel)]="editGroupData().name" #name="ngModel"
+    <input type="text" class="form-control" [(ngModel)]="_editGroupData.name" #name="ngModel"
       name="name" required>
     @if (name?.invalid) {
       <small class="form-text has-warning">
@@ -16,7 +16,7 @@
   </div>
   <div class="form-group mb-3">
     <label class="form-label">Group Description</label>
-    <input type="text" class="form-control" [(ngModel)]="editGroupData().description"
+    <input type="text" class="form-control" [(ngModel)]="_editGroupData.description"
       #desc="ngModel" name="desc">
     @if (desc?.invalid) {
       <small class="form-text has-warning">
@@ -29,42 +29,42 @@
   <div class="form-group mb-3">
     <div class="form-check form-switch">
       <input type="checkbox" class="form-check-input" id="allowReg"
-        [(ngModel)]="editGroupData().allowReg" name="allowReg">
+        [(ngModel)]="_editGroupData.allowReg" name="allowReg">
       <label class="form-check-label" for="allowReg">Allow user register for the role</label>
     </div>
   </div>
-  @if (editGroupData().allowReg) {
+  @if (_editGroupData.allowReg) {
     <div class="form-group mb-3">
       <div class="form-check form-switch">
         <input type="checkbox" class="form-check-input" id="needApproval"
-          [(ngModel)]="editGroupData().needApproval" name="needApproval">
+          [(ngModel)]="_editGroupData.needApproval" name="needApproval">
         <label class="form-check-label" for="needApproval">Role registration require approval</label>
       </div>
     </div>
   }
   <div class="form-group form-check">
-    <input class="form-check-input" type="checkbox" [(ngModel)]="editGroupData().dataEnabled"
+    <input class="form-check-input" type="checkbox" [(ngModel)]="_editGroupData.dataEnabled"
       id="dataEnabled" name="dataEnabled">
     <label class="form-check-label" for="dataEnabled">Enable additional data field (accessible in .data
     column)</label>
   </div>
-  @if (editGroupData().dataEnabled) {
+  @if (_editGroupData.dataEnabled) {
     <div class="form-group mb-3">
       <label class="form-label">Additional Data fields (comma separated)
       *</label>
-      <textarea type="text" class="form-control" [(ngModel)]="editGroupData().dataFields"
+      <textarea type="text" class="form-control" [(ngModel)]="_editGroupData.dataFields"
       #dataFields="ngModel" name="dataFields"></textarea>
     </div>
   }
   <div class="form-group form-check">
-    <input class="form-check-input" type="checkbox" [(ngModel)]="editGroupData().tagEnabled"
+    <input class="form-check-input" type="checkbox" [(ngModel)]="_editGroupData.tagEnabled"
       id="tagEnabled" name="tagEnabled">
     <label class="form-check-label" for="tagEnabled">Enable user info tag</label>
   </div>
-  @if (editGroupData().tagEnabled) {
+  @if (_editGroupData.tagEnabled) {
     <div class="form-group mb-3">
       <label class="form-label">Tag Data Source</label>
-      <select class="form-select" name="tagDataSource" [(ngModel)]="editGroupData().tagDs">
+      <select class="form-select" name="tagDataSource" [(ngModel)]="_editGroupData.tagDs">
         <option [ngValue]="null" style="color:gray">No lookup specified</option>
         @for (item of lookupList(); track $index) {
           <option [value]="item.id">{{item.name}}</option>
@@ -75,7 +75,7 @@
   <div class="form-group mb-3">
     <label class="form-label">Access to edit available for</label>
     <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
-      placeholder="Anyone" [(ngModel)]="editGroupData().accessList"
+      placeholder="Anyone" [(ngModel)]="_editGroupData.accessList"
       name="accessList">
     </ng-select>
   </div>
@@ -84,7 +84,7 @@
 <div class="modal-footer justify-content-between">
   <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
   <button type="button" class="btn btn-round btn-primary" [disabled]="groupEditForm.invalid"
-    (click)="close()(editGroupData())">
+    (click)="done(_editGroupData)">
     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
     Save Group
   </button>

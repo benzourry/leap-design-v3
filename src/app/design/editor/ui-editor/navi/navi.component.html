@@ -61,7 +61,7 @@
                       [ngClass]="item.altClass">
                       <span class="element-item"
                         [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','user','start'].indexOf(item.type)==-1">
-                        <fa-icon class="float-start" size="1x" [icon]="getIcon(item.icon)"
+                        <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit"
                           [fixedWidth]="true">
                         </fa-icon>
                         <div style="margin-left:2rem">
@@ -173,7 +173,7 @@
                           @if (item.type=='form') {
                             <a class="s-icon"
                               [class.disabled]="naviDataItem?.inactive">
-                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
                               <div class="title">{{item.title}}</div>
@@ -196,7 +196,7 @@
                           @if (item.type=='form-single') {
                             <a class="s-icon"
                               [class.disabled]="naviDataItem?.inactive">
-                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
                               <div class="title">{{item.title}}</div>
@@ -220,7 +220,7 @@
                           @if (item.type=='view-single') {
                             <a class="s-icon"
                               [class.disabled]="naviDataItem?.inactive">
-                              <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
                               <div class="title">{{item.title}}</div>
@@ -244,7 +244,7 @@
                           @if (['dataset','dashboard','lookup','screen','external','internal','user','start'].indexOf(item.type)>-1) {
                             <ng-container>
                               <a class="s-icon">
-                                <fa-icon [icon]="getIcon(item.icon)" size="3x"
+                                <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true"></fa-icon>
                                 <div class="title">{{item.title}}</div>
                                 @if(!item.x?.hideDesc){
@@ -313,7 +313,7 @@
             <button type="button" class="btn bg-light text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;"
               title="{{item.title}}"
               cdkDrag>
-              <fa-icon class="float-start" size="1x" [icon]="getIcon(item.icon)" [fixedWidth]="true">
+              <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit" [fixedWidth]="true">
               </fa-icon>
               {{item.title}}
             </button>
@@ -573,7 +573,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Icon @if (editItemData.icon) {
             <fa-icon
-              [icon]="getIcon(editItemData.icon)"
+              [icon]="editItemData.icon|iconSplit"
             [fixedWidth]="true"></fa-icon>
           } *</a>
           <ng-template ngbNavContent>

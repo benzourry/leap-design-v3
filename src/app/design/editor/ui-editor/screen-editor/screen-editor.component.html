@@ -635,7 +635,7 @@
                                     <div class="list-group-item element" cdkDrag>
                                       <span  class="element-item">
                                         @if(item.icon){
-                                          <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                          <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
                                         {{item?.text}}
                                       </span>
@@ -729,7 +729,7 @@
                                     <div class="list-group-item element" cdkDrag>
                                       <span  class="element-item">
                                         @if(item.icon){
-                                          <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                          <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
                                         {{item?.title}} / {{item?.type}} / @if(item?.screenId){ {{item?.screenId}} }@else{ <span class="text-danger">Not Specified</span> }
                                       </span>
@@ -815,50 +815,6 @@
                                   name="enableDelete" id="enableDelete">
                                 <label class="form-check-label" for="enableDelete">Enable file delete</label>
                               </div>
-
-
-                              <!-- <div class="form-group mb-3">
-                                <label class="form-label">Notice</label>
-                                <textarea class="form-control" 
-                                  [(ngModel)]="curScreen.data.notice" rows="4"
-                                  name="notice" id="notice"></textarea>
-                              </div> -->
-
-
-
-                              
-                              <!-- <div class="form-group">
-                                <label class="form-label">Suggested prompt</label>
-                                <div class="list-group">
-                                  @for (item of curScreen.data?.suggestion; track $index) {
-                                    <div class="list-group-item element">
-                                      <span  class="element-item">
-                                        @if(item.icon){
-                                          <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
-                                        }
-                                        {{item?.text}}
-                                      </span>
-                                      <div class="element-edit nowrap"
-                                        style="position:absolute;top:2px;right:2px; padding:2px">
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1"
-                                          (click)="addChatSuggestion(addChatSuggestionTpl,item)">
-                                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                                        </button>
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary"
-                                          (click)="removeChatSuggestion($index)">
-                                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  }
-                                  <div class="list-group-item">
-                                    <a class="pointer d-block" (click)="addChatSuggestion(addChatSuggestionTpl,{}, true)">
-                                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                                      Add prompt suggestion
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>                             -->
                             </div>
                           }
                           @if (['mailbox'].indexOf(curScreen.type)>-1) {

@@ -38,7 +38,7 @@
                   <div class="chatbot-suggestion-item d-inline-block px-2 py-1 border rounded rounded-4 small text-primary border-primary bg-white me-auto my-1 pointer"
                     (click)="chatPrompt(screen().cogna, suggest.text)">
                     @if(suggest.icon){
-                      <fa-icon [icon]="getIcon(suggest.icon)" class="float-start" [fixedWidth]="true"></fa-icon>
+                      <fa-icon [icon]="suggest.icon|iconSplit:'far:question-circle'" class="float-start" [fixedWidth]="true"></fa-icon>
                     }
                     <div class="ms-4">{{suggest.text}}</div>
                   </div>

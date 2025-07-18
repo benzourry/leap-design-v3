@@ -28,6 +28,7 @@ import { baseApi, base } from '../../_shared/constant.service';
 import { LogService } from '../../_shared/service/log.service';
 import { RunService } from '../_service/run.service';
 import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
+import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 // import { deepMerge, ServerDate } from '../../_shared/utils';
 // import { first, lastValueFrom, tap } from 'rxjs';
 // import { EntryService } from '../_service/entry.service';
@@ -127,7 +128,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                   @if (!e.hideHeader) {
                     <div class="card-header p-3 light-015">
                       <h6 class="card-title m-0">@if (e.icon) {
-                        <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                        <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                       } {{e.title}}</h6>
                       @if (e.description) {
                         <div class="card-subtitle mt-1 small" [innerHtml]="e.description"></div>
@@ -216,7 +217,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                   @if (!e.hideHeader) {
                     <div class="card-header p-3 bordered light-015" >
                       <h6 class="card-title m-0">@if (e.icon) {
-                        <fa-icon [icon]="getIcon(e.icon)" [fixedWidth]="true"></fa-icon>
+                        <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                         } {{e.title}}
                         <span class="badge badge-pill bg-dark float-end">{{data() && data()[e.code]?.length}}</span>
                       </h6>
@@ -391,7 +392,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
       `.label-span { opacity: 0.7; font-size: 0.95em; margin-bottom: 0.3rem;}`
     ],
     imports: [NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,
-    NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
+    NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav, IconSplitPipe,
     NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
     NgStyle, NgClass, FaIconComponent, FieldViewComponent, forwardRef(() => ListComponent), ScreenComponent]
 })
@@ -739,7 +740,7 @@ export class FormViewComponent implements OnInit {
   // }
 
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
 
 }

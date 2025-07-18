@@ -4,7 +4,7 @@
 <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
   <div class="form-group mb-3">
     <label class="form-label">Mailer Name *</label>
-    <input type="text" class="form-control" [(ngModel)]="editMailerData().name" #name="ngModel"
+    <input type="text" class="form-control" [(ngModel)]="_editMailerData.name" #name="ngModel"
       name="name" required>
       @if (name?.invalid) {
         <small class="form-text has-warning">
@@ -16,7 +16,7 @@
     </div>
     <div class="form-group mb-3">
       <label class="form-label">Subject *</label>
-      <input type="text" class="form-control" [(ngModel)]="editMailerData().subject"
+      <input type="text" class="form-control" [(ngModel)]="_editMailerData.subject"
         #subject="ngModel" name="subject" required>
       @if (subject?.invalid) {
         <small class="form-text has-warning">
@@ -56,7 +56,7 @@
       <div class="mx-n2">
         <app-cm content="content" lang="html" #codeeditor #content="ngModel"
           name="content"
-          [extraAutoComplete]="extraAutoCompleteHtml" subType="mailer" [(ngModel)]="editMailerData().content"
+          [extraAutoComplete]="extraAutoCompleteHtml" subType="mailer" [(ngModel)]="_editMailerData.content"
           [linenumber]="true">
         </app-cm>
       </div>
@@ -73,16 +73,16 @@
       <div>
         <div class="btn-group btn-group-toggle">
           <input type="radio" class="btn-check" [value]="1" id="enabled1" name="enabled1" #enabled="ngModel"
-            [(ngModel)]="editMailerData().enabled" [required]="true">
+            [(ngModel)]="_editMailerData.enabled" [required]="true">
           <label for="enabled1" class="btn btn-sm btn-success">
-            <fa-icon [icon]="['far',editMailerData()?.enabled==1?'check-square':'square']"
+            <fa-icon [icon]="['far',_editMailerData?.enabled==1?'check-square':'square']"
             [fixedWidth]="true"></fa-icon>
             Enabled
           </label>
           <input type="radio" class="btn-check" [value]="0" id="enabled0" name="enabled0" #enabled="ngModel"
-            [(ngModel)]="editMailerData().enabled" [required]="true">
+            [(ngModel)]="_editMailerData.enabled" [required]="true">
           <label for="enabled0" class="btn btn-sm btn-danger">
-            <fa-icon [icon]="['far',editMailerData()?.enabled==1?'square':'check-square']"
+            <fa-icon [icon]="['far',_editMailerData?.enabled==1?'square':'check-square']"
             [fixedWidth]="true"></fa-icon>
             Disabled
           </label>
@@ -97,7 +97,7 @@
       </div>
     </div>
     <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="editMailerData().pickable" 
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.pickable" 
         id="pickable" name="pickable">
       <label class="form-check-label" for="pickable">
         Show this template in dataset mail blast options
@@ -105,7 +105,7 @@
       </label>
     </div>
     <div class="form-group form-check mb-3">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="editMailerData().log" 
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.log" 
         id="log" name="log">
       <label class="form-check-label" for="log">
         Keep mailing history
@@ -118,24 +118,24 @@
         <div style="display:inline-block; width:40px;">To:</div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().toUser" name="toUser" id="toUser">
+            [(ngModel)]="_editMailerData.toUser" name="toUser" id="toUser">
           <label for="toUser" class="form-check-label">User</label>
         </div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().toApprover" name="toApprover" id="toApprover">
+            [(ngModel)]="_editMailerData.toApprover" name="toApprover" id="toApprover">
           <label for="toApprover" class="form-check-label">Approver</label>
         </div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().toAdmin" name="toAdmin" id="toAdmin">
+            [(ngModel)]="_editMailerData.toAdmin" name="toAdmin" id="toAdmin">
           <label for="toAdmin" class="form-check-label">Admin</label>
         </div>
       </div>
     </div>
     <div class="form-group mb-3" style="margin-left:40px;">
       <label class="form-label">Extra To (comma-separated)</label>
-      <input type="text" class="form-control" [(ngModel)]="editMailerData().toExtra" 
+      <input type="text" class="form-control" [(ngModel)]="_editMailerData.toExtra" 
         placeholder="ie: razif@email.com,{{ '{'+'{$.extra_to}'+'}' }}" #toExtra="ngModel" name="toExtra">
     </div>
     <div class="form-group mb-3">
@@ -143,38 +143,38 @@
         <div style="display:inline-block; width:40px;">CC:</div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().ccUser" name="ccUser" id="ccUser">
+            [(ngModel)]="_editMailerData.ccUser" name="ccUser" id="ccUser">
           <label for="ccUser" class="form-check-label">User</label>
         </div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().ccApprover" name="ccApprover" id="ccApprover">
+            [(ngModel)]="_editMailerData.ccApprover" name="ccApprover" id="ccApprover">
           <label for="ccApprover" class="form-check-label">Approver</label>
         </div>
         <div class="form-check form-check-inline">
           <input type="checkbox" class="form-check-input"
-            [(ngModel)]="editMailerData().ccAdmin" name="ccAdmin" id="ccAdmin">
+            [(ngModel)]="_editMailerData.ccAdmin" name="ccAdmin" id="ccAdmin">
           <label for="ccAdmin" class="form-check-label">Admin</label>
         </div>
       </div>
     </div>
     <div class="form-group mb-3" style="margin-left:40px;">
       <label class="form-label">Extra CC (comma-separated)</label>
-      <input type="text" class="form-control" [(ngModel)]="editMailerData().ccExtra"
+      <input type="text" class="form-control" [(ngModel)]="_editMailerData.ccExtra"
         placeholder="ie: razif@email.com,{{ '{'+'{$.extra_cc}'+'}' }}" #ccExtra="ngModel" name="ccExtra">
     </div>
     <div class="form-group mb-3">
       <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="pushable" [(ngModel)]="editMailerData().pushable"
+        <input type="checkbox" class="form-check-input" id="pushable" [(ngModel)]="_editMailerData.pushable"
           name="pushable">
         <label class="form-check-label" for="pushable">Attempt to use Push Notification (if the recipient
         subscribed)</label>
       </div>
     </div>
-    @if (editMailerData().pushable) {
+    @if (_editMailerData.pushable) {
       <div class="form-group mb-3">
         <label class="form-label">URL to navigate when click on notification (optional)</label>
-        <input type="text" class="form-control" [(ngModel)]="editMailerData().pushUrl" 
+        <input type="text" class="form-control" [(ngModel)]="_editMailerData.pushUrl" 
           name="pushUrl" placeholder="ie: {{ '{'+'{$viewUri$}'+'}' }}">
       </div>
     }

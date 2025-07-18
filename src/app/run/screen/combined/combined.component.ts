@@ -10,6 +10,7 @@ import { DashboardComponent } from '../../dashboard/dashboard.component';
 import { LookupComponent } from '../../lookup/lookup.component';
 import { UserComponent } from '../../user/user.component';
 import { RunService } from '../../_service/run.service';
+import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
 
 @Component({
     selector: 'app-combined',
@@ -19,7 +20,7 @@ import { RunService } from '../../_service/run.service';
         NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
         FaIconComponent, forwardRef(() => ListComponent), forwardRef(() => DashboardComponent),
         forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => UserComponent),
-        forwardRef(() => LookupComponent)],
+        forwardRef(() => LookupComponent), IconSplitPipe],
     templateUrl: './combined.component.html',
     styleUrl: './combined.component.scss'
 })
@@ -43,6 +44,6 @@ export class CombinedComponent {
 
     activeTab:any = {};
 
-    getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+    // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
 }

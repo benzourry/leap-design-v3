@@ -47,6 +47,7 @@ import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 import { PageTitleService } from '../../_shared/service/page-title-service';
+import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 
 @Component({
   selector: 'app-form',
@@ -59,7 +60,7 @@ import { PageTitleService } from '../../_shared/service/page-title-service';
     NgTemplateOutlet, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, RouterLink, NgbNavContent, NgbNavOutlet,
     NgStyle, FaIconComponent, FieldViewComponent, FieldEditComponent,
     forwardRef(() => ListComponent), forwardRef(() => ScreenComponent),
-    DatePipe,
+    DatePipe, IconSplitPipe,
     NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,
     EditLookupEntryComponent]
 })
@@ -1622,7 +1623,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     return compileTpl(code, obj, this.scopeId())
   }
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
   // reason nya xmok swap b4 tok sbb nya linked by reference, perlu pake Object.assign()
   reorder(items, index, op) {

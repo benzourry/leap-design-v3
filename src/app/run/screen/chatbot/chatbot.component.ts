@@ -12,11 +12,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { baseApi } from '../../../_shared/constant.service';
 import { VoiceRecognitionService } from '../../_service/speech-recognition.service';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
+import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
 
 @Component({
   selector: 'app-chatbot',
   // changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, FaIconComponent, DatePipe, SafePipe],
+  imports: [FormsModule, FaIconComponent, DatePipe, SafePipe, IconSplitPipe],
   templateUrl: './chatbot.component.html',
   styleUrl: './chatbot.component.scss'
 })

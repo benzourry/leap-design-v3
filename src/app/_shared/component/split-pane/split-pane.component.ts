@@ -1,22 +1,20 @@
-import { Component, ElementRef, contentChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, contentChild } from '@angular/core';
 import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: '[split-pane]',
     templateUrl: './split-pane.component.html',
     styleUrls: ['./split-pane.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [CdkDrag]
 })
 export class SplitPaneComponent {
-
-//   @ContentChild("sidebar", { static: true }) sidebar: ElementRef;
 
   sidebar = contentChild<ElementRef>('sidebar')
 
   dragPosition = { x: 0, y: 0 };
   sidebarWidth: number = 240;
   sidebarResize($event, sidebarMenu) {
-      // console.log($event);
       let x = $event.event.clientX ?? $event.event.changedTouches[0].clientX;
       let half = ($event.event.view.innerWidth / 2) - 23;
       if (x - 46 >= half) {

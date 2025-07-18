@@ -14,6 +14,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 export class EditDashboardComponent {
 
   editDashboardData = model<any>({},{alias:'dashboard'});
+  _editDashboardData:any = {};
 
   accessList = input<any[]>([]);
 
@@ -22,11 +23,10 @@ export class EditDashboardComponent {
   dismiss = input<any>();
 
   ngOnInit() {
-    if (!this.editDashboardData().x){
-      this.editDashboardData.update(dashboard=>{
-        dashboard.x = {};
-        return dashboard;
-      });
+    this._editDashboardData = {...this.editDashboardData()};
+
+    if (!this._editDashboardData.x){
+      this._editDashboardData.x = {};
     }
   }
 
@@ -36,5 +36,9 @@ export class EditDashboardComponent {
 
   toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
 
+  done(data) {
+    this.editDashboardData.set(data);
+    this.close()?.(data);
+  }
 }
 

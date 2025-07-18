@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input, model, signal } from '@angular/core';
 import { ScreenService } from '../../../service/screen.service';
 import { FormsModule } from '@angular/forms';
 
@@ -23,21 +23,28 @@ export class CloneScreenComponent implements OnInit {
 
   appId = input.required<number>();
   
-  cloneScreenList:any[]=[];
+  cloneScreenList = signal<any[]>([]);
 
-  cloneScreenData = input<any>({},{alias:'data'});
+  cloneScreenData = model<any>({},{alias:'data'});
+
+  _cloneScreenData:any = {};
 
   cloneAppList = input<any[]>([],{alias:'appList'});
 
   ngOnInit() {
+    this._cloneScreenData = {...this.cloneScreenData()};
     this.loadCloneScreenList(this.appId())
   }
 
   loadCloneScreenList(appId) {
       this.screenService.getScreenList(appId,)
           .subscribe(res => {
-              this.cloneScreenList = res;
-              this.cdr.detectChanges();
+              this.cloneScreenList.set(res);
           })
+  }
+
+  done(data) {
+    this.cloneScreenData.set(data);
+    this.close()?.(data);
   }
 }

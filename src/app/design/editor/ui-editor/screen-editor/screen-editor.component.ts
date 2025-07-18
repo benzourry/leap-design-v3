@@ -33,6 +33,7 @@ import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { RunService } from '../../../../run/_service/run.service';
+import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 // import { NgLeafletComponent } from '../../../../_shared/component/ng-leaflet/ng-leaflet.component';
 // import { combineLatest } from 'rxjs';
 
@@ -44,7 +45,7 @@ import { RunService } from '../../../../run/_service/run.service';
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
         NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule,
-        CdkDropList, CdkDrag, CdkDragHandle,
+        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe,
         NgbNavOutlet, EditScreenComponent, KeyValuePipe]
 })
 export class ScreenEditorComponent implements OnInit {
@@ -632,8 +633,8 @@ defaultMapStyle:string = `height: 600px;`
     this.screenService.getScreen(id)
       .subscribe(res => {
         this.curScreen = res;
+        this.cdr.detectChanges(); // <--- Add here if needed
         
-
         if (!res.data) {
           res.data = {};
         }
@@ -651,7 +652,6 @@ defaultMapStyle:string = `height: 600px;`
           this.dataset = {};
           this.populateAutoComplete(); // since not call loadForm, has to be called manually
         }
-        this.cdr.detectChanges(); // <--- Add here if needed
       })
   }
 
@@ -937,7 +937,7 @@ defaultMapStyle:string = `height: 600px;`
     }
   }
 
-  getIcon=(str)=>str?str.split(":"):['far','question-circle'];
+  // getIcon=(str)=>str?str.split(":"):['far','question-circle'];
 
   removeChatSuggestion(index){
     if (confirm("Are you sure you want to remove this chat suggestion?")){

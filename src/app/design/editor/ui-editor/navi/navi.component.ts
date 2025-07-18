@@ -25,6 +25,7 @@ import { NgClass, DatePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role.component';
 import { LookupService } from '../../../../run/_service/lookup.service';
+import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 
 @Component({
     selector: 'app-navi',
@@ -35,7 +36,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
         '../../../../../assets/css/start.css'],
     imports: [CdkDropListGroup, FaIconComponent, NgClass, CdkDropList, CdkDrag, CdkDragHandle, FormsModule, NgSelectModule,
         NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, IconPickerComponent,
-        NgbNavOutlet, FilterPipe, DatePipe, EditRoleComponent]
+        NgbNavOutlet, FilterPipe, DatePipe, EditRoleComponent, IconSplitPipe]
 })
 export class NaviComponent implements OnInit {
   naviData: any = {};
@@ -348,7 +349,7 @@ export class NaviComponent implements OnInit {
     // this.saveNavi();
   }
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
   getLookupList(appId) {
     // let params = new HttpParams()

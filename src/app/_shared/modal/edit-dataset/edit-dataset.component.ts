@@ -34,6 +34,7 @@ export class EditDatasetComponent implements OnInit {
 
   // @Input("dataset")
   editDatasetData = model<any>({ items:[], filters:[], presetFilters:{}, next:{}, status:'', statusFilter:{} }, {alias:'dataset'});
+  _editDatasetData:any = {};
 
   app = input<any>({})
 
@@ -73,74 +74,46 @@ export class EditDatasetComponent implements OnInit {
 
   ngOnInit(): void {
 
+    this._editDatasetData = {...this.editDatasetData()};
+
     this.getFormList(this.app().id);
 
     // this._formList = this.formList();
 
-    if (!this.editDatasetData().x) {
-      // this.editDatasetData()['x'] = {};
-      this.editDatasetData.update(dataset=>{
-        dataset.x={}
-        return dataset;
-      });
+    if (!this._editDatasetData.x) {
+      this._editDatasetData.x = {};
     }
-    if (!this.editDatasetData()['presetFilters']) {
-      // this.editDatasetData()['presetFilters'] = {};
-      this.editDatasetData.update(dataset=>{
-        dataset.presetFilters = {};
-        return dataset;
-      });
+    if (!this._editDatasetData.presetFilters) {
+      this._editDatasetData.presetFilters = {};
     }
-    if (!this.editDatasetData().id) {
-      this.editDatasetData.update(dataset=>{
-        dataset.items = [];
-        dataset.filters = [];
-        dataset.presetFilters = {};
-        dataset.next = {};
-        dataset.status = "";
-        dataset.statusFilter = {};
-        return dataset;
-      })
+    if (!this._editDatasetData.id) {
+      this._editDatasetData.items = [];
+      this._editDatasetData.filters = [];
+      this._editDatasetData.presetFilters = {};
+      this._editDatasetData.next = {};
+      this._editDatasetData.status = "";
+      this._editDatasetData.statusFilter = {};
     }
 
-    // this.editDatasetData().appId = this.app().id;
-    this.editDatasetData.update(dataset => {
-      dataset.appId = this.app().id;
-      return dataset;
-    });
+    this._editDatasetData.appId = this.app().id;
 
-    if (this.editDatasetData().form && this.editDatasetData().form.id) {
-      this.getForm(this.editDatasetData().form?.id, this.editDatasetData())
+    if (this._editDatasetData.form && this._editDatasetData.form.id) {
+      this.getForm(this._editDatasetData.form?.id, this._editDatasetData)
         .subscribe(res => {
 
-          // if form/res is within formList
-          // if (!this.formList?.some(f => f.id == res.id)) {
-          //   // add res to formList???
-          //   this.formList?.push(res);
-          // }
-
           if (this.formHolder && this.formHolder['data']?.type == 'rest') {
-            this.editDatasetData.update(dataset=>{
-              dataset.type = 'all';
-              return dataset;
-            })
+            this._editDatasetData.type = 'all';
           }
 
           if (this.formHolder['data']?.id) {
             this.getLookupIdList(this.formHolder['data']?.id);
-            this.editDatasetData.update(dataset=>{
-              dataset.form = this.formHolder['data'];
-              return dataset;
-            })
+            this._editDatasetData.form = this.formHolder['data'];
             // this.editDatasetData().form = this.formHolder['data'];
             if (this.formHolder['prev']?.id) {
               this.getLookupIdList(this.formHolder['prev']?.id);
             }
           } else {
-            this.editDatasetData.update(dataset=>{
-              delete dataset.form;
-              return dataset;
-            })
+            delete this._editDatasetData.form;
             // delete this.editDatasetData().form
           }
           this.getGroupableField();
@@ -198,23 +171,23 @@ export class EditDatasetComponent implements OnInit {
     })
   }
 
+  checkGroupField = (code) => this._editDatasetData.x?.groupFields?.[code];
   
-  checkGroupField = (code) => this.editDatasetData().x?.groupFields?.[code];
   toggleGroupField = (code, title)=>{
-    if (!this.editDatasetData().x?.groupFields) this.editDatasetData().x.groupFields={};
-    if (this.editDatasetData().x?.groupFields?.[code]){
-      delete this.editDatasetData().x?.groupFields?.[code];
+    if (!this._editDatasetData.x?.groupFields) this._editDatasetData.x.groupFields={};
+    if (this._editDatasetData.x?.groupFields?.[code]){
+      delete this._editDatasetData.x?.groupFields?.[code];
     }else{
-      this.editDatasetData().x.groupFields[code]=title;
+      this._editDatasetData.x.groupFields[code]=title;
     }
   }
 
   checkAllGroupFields(){       
-    this.groupableFields.forEach(gf=>this.editDatasetData().x.groupFields[gf.fieldPath]=gf.itemLabel) 
+    this.groupableFields.forEach(gf=>this._editDatasetData.x.groupFields[gf.fieldPath]=gf.itemLabel) 
   }
 
   uncheckAllGroupFields(){
-    this.editDatasetData().x.groupFields = {}
+    this._editDatasetData.x.groupFields = {}
   }
 
   getPrefix = (fm, section) => {
@@ -514,9 +487,10 @@ export class EditDatasetComponent implements OnInit {
 
   exceptCurForm = (form) => this.formList.filter(f => form['data'] && f.id != form['data'].id);
 
-  onClose(rItem) {
-    rItem.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
-    this.close()(rItem);
+  done(data) {
+    data.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
+    this.editDatasetData.set(data);
+    this.close()?.(data);
   }
 
   lookupIds = [];

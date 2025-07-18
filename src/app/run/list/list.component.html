@@ -368,38 +368,38 @@
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style"
                                       (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'view',ac.action,_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='view-single') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style"
                                       (click)="runAction('/form/'+ac.next+'/'+ac.action,ac.inpop,inPopTpl,i.id,ac.next,'view',ac.action,_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-view') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="runAction('/form/'+form().prev?.id+'/view', ac.inpop, inPopTpl, i.prev?.$id, form().prev?.id, 'view','view',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='edit') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="runAction('/form/'+form().data?.id+'/edit', ac.inpop, inPopTpl, i.id, form().data.id, 'form', ac.action, _eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='edit-single') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="runAction('/form/'+ac.next+'/edit-single',ac.inpop,inPopTpl,i.id,ac.next,'form',ac.action,_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-edit') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="runAction('/form/'+form().prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form','edit',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='approve') {
@@ -414,42 +414,42 @@
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-screen') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+ac.next+'/prev', ac.inpop,inPopTpl,i.id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='facet') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+form().data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form().data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-facet') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+form().prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-prev') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+ac.next+'/prev',ac.inpop,inPopTpl,i.prev?.$id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='url') {
@@ -458,7 +458,7 @@
                                         [ngClass]="ac.style"
                                         [class.disabled]="offline()"
                                         (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev}),ac.label)">
-                                        <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                        <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                         {{ac.label}}
                                       </button>
                                     } @else {
@@ -466,7 +466,7 @@
                                         [ngClass]="ac.style"
                                         [href]="compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev})"
                                         target="_blank">
-                                        <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                        <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                         {{ac.label}}
                                       </a>
                                     }
@@ -474,21 +474,21 @@
                                     <button type="button"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       [class.disabled]="offline()" (click)="_evalRun(i,ac.f, false)">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='retract' && i.currentStatus!='drafted') {
                                     <button type="button" [class.disabled]="offline()"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="cancelEntry(i.id)">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='delete') {
                                     <button type="button" [class.disabled]="offline()"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="deleteEntry(i.id)">
-                                      <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }
@@ -507,74 +507,74 @@
                                         @if (ac.action=='view') {
                                           <button type="button" ngbDropdownItem
                                             (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'view',ac.action,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='view-single') {
                                           <button type="button" ngbDropdownItem
                                           (click)="runAction('/form/'+ac.next+'/'+ac.action,ac.inpop,inPopTpl,i.id,ac.next,'view',ac.action,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-view') {
                                           <button type="button" ngbDropdownItem
                                             (click)="runAction('/form/'+form().prev?.id+'/view',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'view','view',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='edit') {
                                           <button type="button" ngbDropdownItem
                                             (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'form',ac.action,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='edit-single') {
                                           <button type="button" ngbDropdownItem
                                             (click)="runAction('/form/'+ac.next+'/edit-single',ac.inpop,inPopTpl,i.id,ac.next,'form',ac.action,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-edit') {
                                           <button type="button" ngbDropdownItem
                                             (click)="runAction('/form/'+form().prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form','edit',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='approve') {
                                           <button type="button" [class.disabled]="offline()" ngbDropdownItem
                                             (click)="runAction('/form/'+form().data?.id+'/view',ac.inpop,inPopTpl,i.id,form().data.id,'approve','view',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='screen') {
                                           <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-screen') {
                                           <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev') {
                                           <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/form/'+ac.next+'/prev',ac.inpop,inPopTpl,i.id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='facet') {
                                           <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/form/'+form().data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form().data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-facet') {
                                           <button type="button" ngbDropdownItem
                                             [class.disabled]="offline()"
                                             (click)="runAction('/form/'+form().prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='url') {
@@ -582,14 +582,14 @@
                                             <button type="button" ngbDropdownItem
                                               [class.disabled]="offline()"
                                               (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev}),ac.label)">
-                                              <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                              <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                               {{ac.label}}
                                             </button>
                                           } @else {
                                             <a ngbDropdownItem
                                               [href]="compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev})"
                                               target="_blank">
-                                              <fa-icon [icon]="getIcon(ac.icon)"[fixedWidth]="true"></fa-icon>
+                                              <fa-icon [icon]="ac.icon|iconSplit"[fixedWidth]="true"></fa-icon>
                                               {{ac.label}}
                                             </a>
                                           }
@@ -597,19 +597,19 @@
                                           <button type="button" ngbDropdownItem
                                             [class.disabled]="offline()"
                                             (click)="_evalRun(i,ac.f, false)">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='retract' && i.currentStatus!='drafted') {
                                           <button type="button" [class.disabled]="offline()" ngbDropdownItem
                                             (click)="cancelEntry(i.id)">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='delete') {
                                           <button type="button" [class.disabled]="offline()" ngbDropdownItem
                                             (click)="deleteEntry(i.id)">
-                                            <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                                            <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }
@@ -642,19 +642,19 @@
               @if (ac.action=='delete') {
                 <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
                   (click)="bulkRemoveEntries()">
-                  <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
+                  <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                 {{ac.label}}</button>
               }@else if (ac.action=='function') {
                 <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
                   [ngClass]="ac.style" [class.disabled]="offline()" (click)="bulkEvalRun(ac.f)">
-                  <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true">
+                  <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true">
                   </fa-icon>
                   {{ac.label}}
                 </button>
               }@else if (ac.action=='retract') {
                 <button type="button" [class.disabled]="offline()" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
                   [ngClass]="ac.style" (click)="bulkCancelEntry()">
-                  <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true">
+                  <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true">
                   </fa-icon>
                   {{ac.label}}
                 </button>

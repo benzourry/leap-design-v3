@@ -39,13 +39,15 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { EntryService } from '../_service/entry.service';
 import { RunService } from '../_service/run.service';
+import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 
 @Component({
   selector: 'app-start',
   templateUrl: './start.component.html',
   styleUrls: ['./start.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe]
+  imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, 
+    NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe]
 })
 export class StartComponent implements OnInit, OnDestroy {
 
@@ -120,7 +122,7 @@ export class StartComponent implements OnInit, OnDestroy {
   preurl = signal<string>('');
   appId: number;
   subscription: Subscription;
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
   $param$: any = {};
   accessToken: string = '';
   pushSub: any;

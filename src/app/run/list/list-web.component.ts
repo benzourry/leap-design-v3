@@ -93,7 +93,7 @@ export class ListWebComponent implements OnInit {
   }
 
   dsChanged(event){
-    console.log("dsChanged",event);
+    // console.log("dsChanged",event);
   }
 
 }

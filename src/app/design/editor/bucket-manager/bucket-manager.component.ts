@@ -16,11 +16,11 @@ import { RunService } from '../../../run/_service/run.service';
 import { map } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-bucket-manager',
-    templateUrl: './bucket-manager.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-bucket-manager',
+  templateUrl: './bucket-manager.component.html',
+  styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
+  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BucketManagerComponent implements OnInit {
 
@@ -94,7 +94,7 @@ export class BucketManagerComponent implements OnInit {
             }
           })
 
-          this.bucketServerInfo();
+        this.bucketServerInfo();
       });
   }
 
@@ -111,7 +111,7 @@ export class BucketManagerComponent implements OnInit {
   pageNumber: number = 1;
   entryPageNumber: number = 1;
 
-  avLogList:any[]=[];
+  avLogList: any[] = [];
 
   // this.loadBucketList = loadBucketList;
   loadBucketList(pageNumber) {
@@ -143,7 +143,7 @@ export class BucketManagerComponent implements OnInit {
   editBucketData: any;
   editBucket(content, group, isNew) {
     this.editBucketData = group;
-    if (!this.editBucketData.x){
+    if (!this.editBucketData.x) {
       this.editBucketData.x = {}
     }
 
@@ -198,33 +198,33 @@ export class BucketManagerComponent implements OnInit {
       })
   }
 
-  loadAvLogList(bucketId){
+  loadAvLogList(bucketId) {
     this.runService.avLogList(bucketId)
-    .subscribe(res=>{
-      this.avLogList = res;
-      this.cdr.detectChanges();
-    })
+      .subscribe(res => {
+        this.avLogList = res;
+        this.cdr.detectChanges();
+      })
   }
 
   sStatus;
-  bySStatus(sStatus){
+  bySStatus(sStatus) {
     this.sStatus = sStatus;
-    let param:any = {
+    let param: any = {
       bucket: this.bucketId
     }
-    if (sStatus){
+    if (sStatus) {
       param.sStatus = sStatus;
     }
     this.getFileList(1, param)
   }
 
-  quarantine(eaId){
+  quarantine(eaId) {
     this.runService.quarantine(eaId)
-    .subscribe(res=>{
-      this.getFileList(1, {
-        bucket: this.bucketId
+      .subscribe(res => {
+        this.getFileList(1, {
+          bucket: this.bucketId
+        })
       })
-    })
   }
 
   params: any;
@@ -275,37 +275,37 @@ export class BucketManagerComponent implements OnInit {
       }, res => { });
   }
 
-  scanProgress:any={}
-  scanLoading:any={}
-  startScan(bucket){
-    this.scanLoading[bucket.id]=true;
+  scanProgress: any = {}
+  scanLoading: any = {}
+  startScan(bucket) {
+    this.scanLoading[bucket.id] = true;
     this.cdr.detectChanges();
     this.runService.scanBucket(bucket.id)
-    .pipe(
-      map(res => {    
-        if (res['type'] == 4) {
-          this.scanProgress[bucket.id] = { print: res['body'], success: true, out: {} };
-          this.scanLoading[bucket.id]=false;
-          this.loadAvLogList(bucket.id);
-          this.getFileList(1, {
-            bucket: this.bucketId
-          })
-          this.cdr.detectChanges();
-        } else {
-          this.scanProgress[bucket.id] = { print: res['partialText'], success: true, out: {} };
-          this.cdr.detectChanges();
-        }
-      })
-    )
-    .subscribe(res => {
-      // this.scanLoading[bucket.id]=false;
-      // this.loadAvLogList(bucket.id);
-    }, err => {
-      this.scanLoading[bucket.id]=false;
-      this.toastService.show("Bucket sccan failed", { classname: 'bg-danger text-light' });
-      this.scanProgress[bucket.id] = { message: JSON.stringify(err.error), success: false };
-      this.cdr.detectChanges();
-    });
+      .pipe(
+        map(res => {
+          if (res['type'] == 4) {
+            this.scanProgress[bucket.id] = { print: res['body'], success: true, out: {} };
+            this.scanLoading[bucket.id] = false;
+            this.loadAvLogList(bucket.id);
+            this.getFileList(1, {
+              bucket: this.bucketId
+            })
+            this.cdr.detectChanges();
+          } else {
+            this.scanProgress[bucket.id] = { print: res['partialText'], success: true, out: {} };
+            this.cdr.detectChanges();
+          }
+        })
+      )
+      .subscribe(res => {
+        // this.scanLoading[bucket.id]=false;
+        // this.loadAvLogList(bucket.id);
+      }, err => {
+        this.scanLoading[bucket.id] = false;
+        this.toastService.show("Bucket sccan failed", { classname: 'bg-danger text-light' });
+        this.scanProgress[bucket.id] = { message: JSON.stringify(err.error), success: false };
+        this.cdr.detectChanges();
+      });
   }
 
   getUrl(pre, path) {
@@ -318,30 +318,30 @@ export class BucketManagerComponent implements OnInit {
       this.importLoading = true;
       this.cdr.detectChanges();
       this.bucketService.uploadFile(this.bucket.id, this.app.id, $event.target.files[0], this.user.email)
-      .subscribe({
-        next:res=>{          
-          if (res.success){
-            // this.importExcelData = res;
+        .subscribe({
+          next: res => {
+            if (res.success) {
+              // this.importExcelData = res;
+              this.importLoading = false;
+              this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
+              this.getFileList(this.pageNumber, this.params);
+              this.cdr.detectChanges();
+            } else {
+              this.toastService.show(res.message, { classname: 'bg-danger text-light' });
+              this.cdr.detectChanges();
+            }
+          },
+          error: error => {
             this.importLoading = false;
-            this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
-            this.getFileList(this.pageNumber, this.params);
-            this.cdr.detectChanges();
-          }else{
-            this.toastService.show(res.message, { classname: 'bg-danger text-light' });
+            this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
             this.cdr.detectChanges();
           }
-        },
-        error:error=>{
-          this.importLoading = false;
-          this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
-        }
-      })
-        // .subscribe(res => {
-        // }, error => {
-        //   this.importLoading = false;
-        //   this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
-        // });
+        })
+      // .subscribe(res => {
+      // }, error => {
+      //   this.importLoading = false;
+      //   this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
+      // });
 
     }
 
@@ -438,13 +438,13 @@ export class BucketManagerComponent implements OnInit {
     }
   }
 
-  serverInfo:any={}
-  bucketServerInfo(){
+  serverInfo: any = {}
+  bucketServerInfo() {
     this.runService.bucketServerInfo()
-    .subscribe(res=>{
-      this.serverInfo = res;
-      this.cdr.detectChanges();
-    })
+      .subscribe(res => {
+        this.serverInfo = res;
+        this.cdr.detectChanges();
+      })
   }
 
   selectColor(number) {

@@ -275,11 +275,11 @@ export class FieldEditComponent extends ElementBase<any> {
     effect(() => {
       if (this.field()?.type == 'checkboxOption') {
         // … do the mutation without tracking it:    
-        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null && this.value.length>0) {
           if (this.value instanceof Array) {
             untracked(() => {
               queueMicrotask(() => {
-                  const newVal = this.value?.map(v=>this.lookupList().find(option => option?.code === this.value?.code) || this.value)
+                  const newVal = this.value?.map(v=>this.lookupList().find(option => option?.code === v?.code) || v)
                   this.value = newVal;
               });
             });

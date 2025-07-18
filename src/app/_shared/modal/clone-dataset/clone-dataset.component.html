@@ -8,19 +8,19 @@
     <div class="form">
       <div class="form-group mb-3">
         <label class="form-label">Select App</label>
-        <select class="form-select" name="appId" (change)="loadCloneDatasetList(cloneDatasetData().appId)"
-          [(ngModel)]="cloneDatasetData().appId">
+        <select class="form-select" name="appId" (change)="loadCloneDatasetList(_cloneDatasetData.appId)"
+          [(ngModel)]="_cloneDatasetData.appId">
           @for (app of cloneAppList(); track app.id) {
             <option [ngValue]="app.id">{{app.title}}</option>
           }
         </select>
       </div>
-      @if (cloneDatasetData().appId) {
+      @if (_cloneDatasetData.appId) {
         <div class="form-group mb-3">
           <label class="form-label">Select Dataset *</label>
-          <select class="form-select" name="datasetId" [(ngModel)]="cloneDatasetData().datasetId"
+          <select class="form-select" name="datasetId" [(ngModel)]="_cloneDatasetData.datasetId"
             required>
-            @for (dataset of cloneDatasetList; track dataset.id) {
+            @for (dataset of cloneDatasetList(); track dataset.id) {
               <option [ngValue]="dataset.id">{{dataset.title}} [{{dataset.id}}]
               </option>
             }
@@ -31,7 +31,7 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
-    <button type="button" class="btn btn-round btn-primary" (click)="close()(cloneDatasetData())"
+    <button type="button" class="btn btn-round btn-primary" (click)="done(_cloneDatasetData)"
       [disabled]="cloneDatasetForm.invalid">
       Start Duplicate Dataset
     </button>

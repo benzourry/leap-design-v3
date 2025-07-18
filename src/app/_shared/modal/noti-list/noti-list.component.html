@@ -7,7 +7,7 @@
             (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
     </div>
     <div class="p-2 pb-0 bg-light">
-        @for (notif of list; track $index) {
+        @for (notif of list(); track $index) {
         <div class="card card-clean mb-2 overflow-hidden">
             <div class="list-group list-group-flush">
                 <div class="list-group-item">
@@ -50,9 +50,9 @@
         <div class="p-3 fs-4 text-center">No email history</div>
         }
     </div>
-    @if (listTotal>listPageSize) {
+    @if (listTotal() > listPageSize) {
     <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
-        <ngb-pagination [collectionSize]="listTotal" [pageSize]="listPageSize" [(page)]="listPageNumber" [maxSize]="10"
+        <ngb-pagination [collectionSize]="listTotal()" [pageSize]="listPageSize" [(page)]="listPageNumber" [maxSize]="10"
             [rotate]="true" (pageChange)="loadNotiList(listPageNumber)" boundaryLinks="true" directionLinks="true">
             <ng-template ngbPaginationFirst>
                 <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              

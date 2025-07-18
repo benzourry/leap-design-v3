@@ -5,45 +5,38 @@
   <div class="modal-body">
     <div class="form-group mb-3">
       <label class="form-label">Title *</label>
-      <input type="text" class="form-control" [(ngModel)]="editScreenData().title" 
+      <input type="text" class="form-control" [(ngModel)]="_editScreenData.title" 
         name="title" required>
     </div>
     <div class="form-group mb-3">
       <label class="form-label">Description</label>
-      <textarea class="form-control" [(ngModel)]="editScreenData().description" 
+      <textarea class="form-control" [(ngModel)]="_editScreenData.description" 
       name="description"></textarea>
     </div>
     <div class="form-check form-switch mb-1">
       <input class="form-check-input" type="checkbox" id="canPrint"
-        [(ngModel)]="editScreenData().canPrint" name="canPrint">
+        [(ngModel)]="_editScreenData.canPrint" name="canPrint">
       <label class="form-check-label" for="canPrint">Show Print button</label>
     </div>
     <div class="form-check form-switch mb-1">
       <input class="form-check-input" type="checkbox" id="hideTitle"
-        [(ngModel)]="editScreenData().data.hideTitle" name="hideTitle">
+        [(ngModel)]="_editScreenData.data.hideTitle" name="hideTitle">
       <label class="form-check-label" for="hideTitle">Hide Screen Title</label>
     </div>
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="wide"
-        [(ngModel)]="editScreenData().wide" name="wide">
+        [(ngModel)]="_editScreenData.wide" name="wide">
       <label class="form-check-label" for="wide">Full width screen</label>
     </div>
-    <!-- <div class="form-group mb-3">
-      <label class="form-label">Access available for</label>
-      <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
-        placeholder="Anyone" [(ngModel)]="editScreenData().accessList" 
-        name="accessList">
-      </ng-select>
-    </div> -->
-    <div class="form-group mb-3" [class.disabled]="editScreenData().id">
+    <div class="form-group mb-3" [class.disabled]="_editScreenData.id">
       <label class="col-form-label">Screen Type *</label>
       <div class="row g-1">
         @for(type of screenTypeList; track $index){
           <div class="col-6 col-sm-4">
               <input type="radio" class="btn-check" id="type-{{type.code}}" name="{{type.code}}"
-                [(ngModel)]="editScreenData().type" [value]="type.code" required>
+                [(ngModel)]="_editScreenData.type" [value]="type.code" required>
               <label for="type-{{type.code}}" class="btn btn-outline-secondary border-2 text-start p-2 py-1 w-100 h-100" 
-                (click)="resetLinkedData(editScreenData)">
+                (click)="resetLinkedData(_editScreenData)">
                 <fa-icon [icon]="type.icon" size="2x" class="float-start mt-1"></fa-icon>
                 <div style="margin-left:40px;">
                   <strong>{{type.name}}</strong>
@@ -54,13 +47,11 @@
         }
       </div>
     </div>
-    @if (['qr','page'].indexOf(editScreenData().type)>-1) {
+    @if (['qr','page'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
         <label>Select Form *</label>
-        <!-- {{editScreenData().form|json}} -->
-        <!-- (change)="loadForm(editScreenData().form.id, editScreenData().form)" -->
         <select class="form-select" name="form" #cForm [compareWith]="compareByIdFn"
-          [(ngModel)]="editScreenData().form" [required]="editScreenData().type=='page'">
+          [(ngModel)]="_editScreenData.form" [required]="_editScreenData.type=='page'">
           <option value="undefined" disabled>Select form...</option>
           @for (form of formList(); track form.id) {
             <option [ngValue]="form">{{form.title}}</option>
@@ -68,12 +59,11 @@
         </select>
       </div>
     }
-    @if (['list','calendar','map'].indexOf(editScreenData().type)>-1) {
+    @if (['list','calendar','map'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
         <label>Select Dataset *</label>
-        <!-- (change)="loadDataset(editScreenData().dataset.id, editScreenData().dataset)" -->
         <select class="form-select" name="dataset" #cDataset
-          [compareWith]="compareByIdFn" [(ngModel)]="editScreenData().dataset" required>
+          [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.dataset" required>
           <option value="undefined" disabled>Select dataset...</option>
           @for (dataset of datasetList(); track dataset.id) {
             <option [ngValue]="dataset">{{dataset.title}}</option>
@@ -81,11 +71,11 @@
         </select>
       </div>
     }
-    @if (['chatbot'].indexOf(editScreenData().type)>-1) {
+    @if (['chatbot'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
         <label>Select Cogna *</label>
         <select class="form-select" name="cogna" #cCogna
-          [compareWith]="compareByIdFn" [(ngModel)]="editScreenData().cogna" required>
+          [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.cogna" required>
           <option value="undefined" disabled>Select cogna...</option>
           @for (cogna of cognaList(); track cogna.id) {
             <option [ngValue]="cogna">{{cogna.name}}</option>
@@ -93,11 +83,11 @@
         </select>
       </div>
     }
-    @if (['bucket'].indexOf(editScreenData().type)>-1) {
+    @if (['bucket'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
         <label>Select Bucket *</label>
         <select class="form-select" name="bucket" #cBucket
-          [compareWith]="compareByIdFn" [(ngModel)]="editScreenData().bucket" required>
+          [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.bucket" required>
           <option value="undefined" disabled>Select bucket...</option>
           @for (bucket of bucketList(); track bucket.id) {
             <option [ngValue]="bucket">{{bucket.name}}</option>
@@ -105,20 +95,20 @@
         </select>
       </div>
     }
-    @if (['list','map','calendar'].indexOf(editScreenData().type)>-1) {
+    @if (['list','map','calendar'].indexOf(_editScreenData.type)>-1) {
       <div class="form-check form-switch mb-1">
         <input class="form-check-input" type="checkbox" id="showAction"
-          [(ngModel)]="editScreenData().showAction" name="showAction">
+          [(ngModel)]="_editScreenData.showAction" name="showAction">
         <label class="form-check-label" for="showAction">Show dataset action (filter, export)</label>
       </div>
       <div class="form-check form-switch mb-1">
         <input class="form-check-input" type="checkbox" id="showSummary"
-          [(ngModel)]="editScreenData().data.showSummary" name="showSummary">
+          [(ngModel)]="_editScreenData.data.showSummary" name="showSummary">
         <label class="form-check-label" for="showSummary">Show dataset summary</label>
       </div>
       <div class="form-check form-switch mb-1">
         <input class="form-check-input" type="checkbox" id="paginate"
-          [(ngModel)]="editScreenData().data.paginate" 
+          [(ngModel)]="_editScreenData.data.paginate" 
           name="paginate">
         <label class="form-check-label" for="paginate">Paginate dataset</label>
       </div>
@@ -127,32 +117,31 @@
     <!-- NEW EASY ACCESS CONTROL -->
     <div class="form-group">
       <div class="form-check">
-        <input type="checkbox" class="form-check-input" [(ngModel)]="editScreenData().data.restrictAccess"
+        <input type="checkbox" class="form-check-input" [(ngModel)]="_editScreenData.data.restrictAccess"
           name="restrictAccess" id="restrictAccess">
         <label class="form-check-label" for="restrictAccess">Access restriction</label>
       </div>
     </div>
-    @if (editScreenData().data?.restrictAccess){
+    @if (_editScreenData.data?.restrictAccess){
       <div class="ms-4">
-        <!-- <div>Access Control</div> -->
         <div class="form-group mb-1">
           <label class="form-label">Allow access by group</label>
           <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
-            placeholder="Anyone" [(ngModel)]="editScreenData().accessList"
+            placeholder="Anyone" [(ngModel)]="_editScreenData.accessList"
             name="accessList">
           </ng-select>
         </div>
-        @if (editScreenData().type=='page'){
+        @if (_editScreenData.type=='page'){
           <div class="form-group">
             <div class="form-check">
-              <input type="checkbox" class="form-check-input" [(ngModel)]="editScreenData().data.accessByUser"
+              <input type="checkbox" class="form-check-input" [(ngModel)]="_editScreenData.data.accessByUser"
                 name="accessUserOnly" id="accessUserOnly">
               <label class="form-check-label" for="accessUserOnly">Allow data owner/user access</label>
             </div>
           </div>
           <div class="form-group">
             <div class="form-check">
-              <input type="checkbox" class="form-check-input" [(ngModel)]="editScreenData().data.accessByApprover"
+              <input type="checkbox" class="form-check-input" [(ngModel)]="_editScreenData.data.accessByApprover"
                 name="accessByApprover" id="accessByApprover">
               <label class="form-check-label" for="accessByApprover">Allow approver access</label>
             </div>
@@ -160,7 +149,7 @@
         }
         <div class="form-group">
             <label class="form-check-label" for="accessByCond">Allow access by condition</label>
-            <app-cm name="accessByCond" lang="javascript" [(ngModel)]="editScreenData().data.accessByCond"
+            <app-cm name="accessByCond" lang="javascript" [(ngModel)]="_editScreenData.data.accessByCond"
               [extraAutoComplete]="extraAutoCompleteJs()" placeholder="$user$.attributes.staff" subType="active" [linenumber]="true">
             </app-cm>
         </div>
@@ -171,7 +160,7 @@
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="editScreenForm.invalid"
-      (click)="close()(editScreenData())">
+      (click)="done(_editScreenData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save Screen
     </button>

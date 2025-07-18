@@ -227,7 +227,7 @@
                         [class.border-primary]="curAction==a.id">
                         <span class="input-group-text border-0 bg-white">
                           @if (a.icon) {
-                            <fa-icon [icon]="getIcon(a.icon)" [fixedWidth]="true">
+                            <fa-icon [icon]="a.icon|iconSplit" [fixedWidth]="true">
                             </fa-icon>
                           }
                           {{a.label}}
@@ -640,8 +640,6 @@
                         </label>
                       }
                     </div>
-                    <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.color"
-                    name="color">         -->
                   </div>
                 </div>
               </div>
@@ -659,7 +657,6 @@
                     <option value="screen">Open in Screen</option>
                     <option value="facet">Open in Facet</option>
                     <option value="prev">Next Form</option>
-                    <!-- <option value="prev">Add Sibling</option> -->
                     <option value="edit-single">Edit Single</option>
                     <option value="view-single">View Single</option>
                   </optgroup>
@@ -672,7 +669,6 @@
                       <option value="prev-prev">Next Form (Add Sibling)</option>
                     </optgroup>
                   }
-                  <!-- <option value="route">Open Internal URL</option> -->
                   <option value="url">Open External URL</option>
                   <option value="function">Run Function</option>
                 </select>
@@ -812,7 +808,7 @@
         </li>
         <li ngbNavItem>
           <a ngbNavLink>Icon @if (editActionData.icon) {
-            <fa-icon [icon]="getIcon(editActionData.icon)"
+            <fa-icon [icon]="editActionData.icon|iconSplit"
             [fixedWidth]="true"></fa-icon>
           } *</a>
           <ng-template ngbNavContent>

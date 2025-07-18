@@ -156,7 +156,7 @@ export class DashboardEditorComponent implements OnInit {
     this.groupService.getGroupList({ appId: this.app.id, size:999 })
       .subscribe(res => {
         this.accessList = res.content;
-        this.cdr.detectChanges(); // ✅ Add here if accessList is used in the template
+        this.cdr.detectChanges(); // ✅ Good: after async update
       });
   }
 
@@ -165,7 +165,7 @@ export class DashboardEditorComponent implements OnInit {
       appId: this.app.id
     }).subscribe(res => {
       this.formList = res.content;
-      this.cdr.detectChanges(); // ✅ Add here if formList is used in the template
+      this.cdr.detectChanges(); // ✅ Good: after async update
     })
   }
 
@@ -186,6 +186,7 @@ export class DashboardEditorComponent implements OnInit {
 
         this.statusFilterForm = this.convertStatusToDisplay(chart.statusFilter, holder);
 
+        this.cdr.detectChanges(); // ✅ Good: after async update
       });
   }
 
@@ -397,11 +398,11 @@ checkAllStatus(checked){
         .subscribe({next:(res)=>{
             this.getDashboard(this.curDashboard.id);
             this.toastService.show("Chart removed successfully", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges(); // ✅ Add here if curDashboard is used in the template
+            this.cdr.detectChanges(); // ✅ Good: after async update
 
         },error:(err)=>{
             this.toastService.show("Chart removal failed", { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges(); // ✅ Add here if needed
+            this.cdr.detectChanges(); // ✅ Good: after async update
         }})
       }, res => { });
   }
@@ -447,10 +448,10 @@ checkAllStatus(checked){
           this.getDashboardList(this.app.id);
           delete this.curDashboard;
           this.toastService.show("Dashboard removed successfully", { classname: 'bg-success text-light' });
-          this.cdr.detectChanges(); // ✅ Add here if curDashboard or dashboardList is used in the template
+          this.cdr.detectChanges(); // ✅ Good: after async update
         },error:(err)=>{
           this.toastService.show("Dashboard removal failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges(); // ✅ Add here if needed
+          this.cdr.detectChanges(); // ✅ Good: after async update
         }})
       }, res => { });
   }

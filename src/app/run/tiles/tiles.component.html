@@ -27,7 +27,7 @@
                           [skipLocationChange]="item.x?.slc"
                           [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!naviDataItem?.inactive) {
@@ -58,7 +58,7 @@
                           [skipLocationChange]="item.x?.slc"
                           [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!naviDataItem?.inactive) {
@@ -89,7 +89,7 @@
                           [skipLocationChange]="item.x?.slc"
                           [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -100,7 +100,7 @@
                       @if (item.type=='dataset') {
                         <a class="s-icon" routerLink="{{preurl()}}/dataset/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -115,7 +115,7 @@
                         <a class="s-icon" routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -127,7 +127,7 @@
                         <a class="s-icon" routerLink="{{preurl()}}/lookup/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -139,7 +139,7 @@
                         <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -151,7 +151,7 @@
                         <a class="s-icon disabled" routerLink="{{preurl()}}/start"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {
@@ -163,7 +163,7 @@
                         <a class="s-icon"
                           [href]="compileTpl(item.url,{$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
                           [target]="item.type=='external'?'_blank':''" routerLinkActive="active">
-                          <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
+                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                         </a>
@@ -172,7 +172,7 @@
                         <a class="s-icon" routerLink="{{preurl()}}/screen/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
-                          <fa-icon size="4x" [icon]="getIcon(item.icon)" [fixedWidth]="true">
+                          <fa-icon size="4x" [icon]="item.icon|iconSplit" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                           @if (!item.x?.hideDesc) {

@@ -11,7 +11,7 @@
                     border-radius:20px;">{{$index+1}}</div>
                 }
                 @if (tab.icon){
-                  <fa-icon [icon]="getIcon(tab.icon)" [fixedWidth]="true"></fa-icon>
+                  <fa-icon [icon]="tab.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                 }
                 <h5 class="m-0">
                   {{tab.title}}
@@ -44,7 +44,7 @@
                   border-radius:20px;">{{$index+1}}</div>
               }
               @if (tab.icon){
-                <fa-icon [icon]="getIcon(tab.icon)" [fixedWidth]="true"></fa-icon>
+                <fa-icon [icon]="tab.icon|iconSplit" [fixedWidth]="true"></fa-icon>
               }
               {{tab.title}}
             </a>

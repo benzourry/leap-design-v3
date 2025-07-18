@@ -1003,3 +1003,29 @@ export function createProxy (prop, fn?) {
     }
   });
 }
+
+// Deep getter for any object (works with signals)
+export function getModel(obj: any, path: string): any {
+  const keys = path.split('.');
+  let value = obj;
+  for (const key of keys) {
+    if (value == null) return '';
+    value = value[key];
+  }
+  return value ?? '';
+}
+
+// Deep setter for any object (immutable, works with signals)
+export function setModel(obj: any, path: string, newValue: any): any {
+  const keys = path.split('.');
+  // Clone the root object
+  let result = { ...obj };
+  let temp = result;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    temp[key] = { ...(temp[key] ?? {}) };
+    temp = temp[key];
+  }
+  temp[keys[keys.length - 1]] = newValue;
+  return result;
+}

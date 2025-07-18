@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input, signal } from '@angular/core';
 // import { RunService } from '../../../service/run.service';
 import { SafePipe } from '../../pipe/safe.pipe';
 import { FormsModule } from '@angular/forms';
@@ -15,15 +15,12 @@ import { RunService } from '../../../run/_service/run.service';
 })
 export class NotiListComponent implements OnInit  {
 
-  // @Input("appId")
   appId = input<number>();
-
-  // @Input("tplId")
   tplId = input<number>();
 
   listSearchText:string="";
-  list:any[]=[];
-  listTotal: number = 0;
+  list = signal<any[]>([]);
+  listTotal = signal<number>(0);
   listPageSize: number = 25;
   listPageNumber: number = 1;
 
@@ -50,9 +47,8 @@ export class NotiListComponent implements OnInit  {
     }
     this.runService.getNotificationByParams(this.appId(), param)
     .subscribe(res=>{
-      this.list = res.content;
-      this.listTotal = res.page?.totalElements;
-      this.cdr.detectChanges();
+      this.list.set(res.content);
+      this.listTotal.set(res.page?.totalElements);
     })
   }
 

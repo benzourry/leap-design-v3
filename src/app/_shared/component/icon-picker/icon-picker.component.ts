@@ -13,8 +13,6 @@ import { FilterPipe } from '../../pipe/filter.pipe';
 export class IconPickerComponent {
 
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
-
   icon: string = "";
 
   searchText:string="";

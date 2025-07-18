@@ -3,8 +3,8 @@
     <h4 class="modal-title">App Properties</h4>
     <div class="form-check form-switch d-inline-block ms-auto m-0">
       <input class="form-check-input" type="checkbox" role="switch"
-        [(ngModel)]="data().live" name="appXLive" id="appXLive">
-        <label class="form-check-label" for="appXLive">{{data().live?'Live':'Dev'}}</label>
+        [(ngModel)]="_data.live" name="appXLive" id="appXLive">
+        <label class="form-check-label" for="appXLive">{{_data.live?'Live':'Dev'}}</label>
     </div>
   </div>
   <div class="" [class.disabled]="offline()">
@@ -19,8 +19,8 @@
                   <input type="file" style="display:none" (change)="uploadLogo($event)" id="logo" [(ngModel)]="file"
                     name="logo" accept="image/**" />
                   <label class="mb-0 d-block" for="logo">
-                    @if (data().logo) {
-                      <img src="{{baseApi}}/app/logo/{{data().logo}}" alt="Image preview..."
+                    @if (_data.logo) {
+                      <img src="{{baseApi}}/app/logo/{{_data.logo}}" alt="Image preview..."
                         onError="this.src='assets/img/blank_product.png'" style="max-width:100%">
                       <button class="mt-2 btn btn-xs btn-light mx-auto" (click)="clearLogo()">Clear Logo</button>
                     }@else{
@@ -31,13 +31,13 @@
               </div>
               <div class="form-group mb-3">
                 <label class="col-form-label">App Title *</label>
-                <input type="text" class="form-control" [(ngModel)]="data().title"
-                  (ngModelChange)="data().id||data().appPath=toHyphen(data().title)" name="title"
+                <input type="text" class="form-control" [(ngModel)]="_data.title"
+                  (ngModelChange)="_data.id||_data.appPath=toHyphen(_data.title)" name="title"
                   placeholder="ie: My First App" required>
               </div>
               <div class="form-group mb-3">
                 <label class="col-form-label">Description</label>
-                <textarea class="form-control" [(ngModel)]="data().description" name="description"
+                <textarea class="form-control" [(ngModel)]="_data.description" name="description"
                 placeholder="Description of the app"></textarea>
               </div>
               <div class="form-group layout">
@@ -45,22 +45,22 @@
                 <div class="row">
                   <div class="col-6">
                     <div class="form-check">
-                      <input type="radio" class="form-check-input" id="sidemenu" name="layout" [(ngModel)]="data().layout"
+                      <input type="radio" class="form-check-input" id="sidemenu" name="layout" [(ngModel)]="_data.layout"
                         value="sidemenu" required>
                       <label for="sidemenu" class="form-check-label">Side Menu
                         <div class="ms-0 my-1">
-                          <img src="assets/img/side-menu.svg" [class.selected]="data().layout=='sidemenu'" width="80%">
+                          <img src="assets/img/side-menu.svg" [class.selected]="_data.layout=='sidemenu'" width="80%">
                         </div>
                       </label>
                     </div>
                   </div>
                   <div class="col-6">
                     <div class="form-check">
-                      <input type="radio" class="form-check-input" id="topnav" name="layout" [(ngModel)]="data().layout"
+                      <input type="radio" class="form-check-input" id="topnav" name="layout" [(ngModel)]="_data.layout"
                         value="topnav" required>
                       <label for="topnav" class="form-check-label">Top Nav
                         <div class="ms-0 my-1">
-                          <img src="assets/img/top-nav.svg" [class.selected]="data().layout=='topnav'" width="80%">
+                          <img src="assets/img/top-nav.svg" [class.selected]="_data.layout=='topnav'" width="80%">
                         </div>
                       </label>
                     </div>
@@ -73,9 +73,9 @@
                   <!-- {{data.theme}} -->
                   <div class="btn-group-toggle" role="group" name="appTheme">
                     @for (c of themes; track c) {
-                      <input type="radio" name="colorpicker" #formField="ngModel" [(ngModel)]="data().theme"
+                      <input type="radio" name="colorpicker" #formField="ngModel" [(ngModel)]="_data.theme"
                         [value]="c.color" class="btn-check" id="colorp_{{$index}}" autocomplete="off">
-                      <label class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="c.color==data().theme"
+                      <label class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="c.color==_data.theme"
                         [ngStyle]="{'background-color':c.color}" for="colorp_{{$index}}">
                         {{$index+1}}
                       </label>
@@ -87,7 +87,7 @@
                         <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                       </div>
                       <input type="color" id="themepicker" style="height:48px;width:48px;padding:0px;margin:-5px"
-                        [(ngModel)]="data().theme" name="themepicker">
+                        [(ngModel)]="_data.theme" name="themepicker">
                     </div>
                   </div>
                   
@@ -96,8 +96,8 @@
               <div class="form-group mb-3">
                 <label class="form-label">App Path</label>
                 <div class="input-group">
-                  <input type="text" class="form-control" [(ngModel)]="data().appPath"
-                    (ngModelChange)="data().appPath=toHyphen($event)"
+                  <input type="text" class="form-control" [(ngModel)]="_data.appPath"
+                    (ngModelChange)="_data.appPath=toHyphen($event)"
                     [ngModelOptions]="{updateOn: 'blur'}" #appPath="ngModel" name="appPath"
                     [uniqueAppPath]="initialAppPath" [uniqueAppPathFn]="isPathTaken" required>
                     <span class="input-group-text">.{{domainBase}}</span>
@@ -109,7 +109,7 @@
                   <small class="text-danger">
                     @if (appPath.errors?.uniqueAppPath) {
                       <span>
-                        App Path <strong>{{data().appPath}}</strong> is already taken.
+                        App Path <strong>{{_data.appPath}}</strong> is already taken.
                       </span>
                     }
                     @if (appPath.errors?.required) {
@@ -119,9 +119,9 @@
                     }
                   </small>
                 }
-                @if (appPath.valid && data().appPath && initialAppPath!=data().appPath) {
+                @if (appPath.valid && _data.appPath && initialAppPath!=_data.appPath) {
                   <small class="text-success">
-                    App Path <strong>{{data().appPath}}</strong> is available.
+                    App Path <strong>{{_data.appPath}}</strong> is available.
                   </small>
                 }
               </div>
@@ -131,7 +131,7 @@
                   @if (checkLogin('sarawakid')) {
                     <div class="col-4 mb-3 text-center">
                       <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useSarawakid" [(ngModel)]="data().useSarawakid"
+                        <input type="checkbox" class="form-check-input" id="useSarawakid" [(ngModel)]="_data.useSarawakid"
                           name="useSarawakid">
                         <label class="form-check-label" for="useSarawakid">
                           <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -143,7 +143,7 @@
                   @if (checkLogin('ssone')) {
                     <div class="col-4 mb-3 text-center">
                       <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useSsone" [(ngModel)]="data().useSsone"
+                        <input type="checkbox" class="form-check-input" id="useSsone" [(ngModel)]="_data.useSsone"
                           name="useSsone">
                         <label class="form-check-label" for="useSsone">
                           <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -155,7 +155,7 @@
                   @if (checkLogin('icatsid')) {
                     <div class="col-4 mb-3 text-center">
                       <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useIcatsid" [(ngModel)]="data().useIcatsid"
+                        <input type="checkbox" class="form-check-input" id="useIcatsid" [(ngModel)]="_data.useIcatsid"
                           name="useIcatsid">
                         <label class="form-check-label" for="useIcatsid">
                           <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -167,7 +167,7 @@
                   @if (checkLogin('unimasid')) {
                     <div class="col-4 mb-3">
                       <div class="form-check text-center">
-                        <input type="checkbox" class="form-check-input" id="useUnimasid" [(ngModel)]="data().useUnimasid"
+                        <input type="checkbox" class="form-check-input" id="useUnimasid" [(ngModel)]="_data.useUnimasid"
                           name="useUnimasid">
                         <label class="form-check-label" for="useUnimasid">
                           <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -179,7 +179,7 @@
                   @if (checkLogin('unimas')) {
                     <div class="col-4 mb-3">
                       <div class="form-check text-center">
-                        <input type="checkbox" class="form-check-input" id="useUnimas" [(ngModel)]="data().useUnimas"
+                        <input type="checkbox" class="form-check-input" id="useUnimas" [(ngModel)]="_data.useUnimas"
                           name="useUnimas">
                         <label class="form-check-label" for="useUnimas">
                           <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -190,7 +190,7 @@
                   }
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useGoogle" [(ngModel)]="data().useGoogle"
+                      <input type="checkbox" class="form-check-input" id="useGoogle" [(ngModel)]="_data.useGoogle"
                         name="useGoogle">
                       <label class="form-check-label" for="useGoogle">
                         <fa-icon [icon]="['fab','google']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -200,7 +200,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useAzuread" [(ngModel)]="data().useAzuread"
+                      <input type="checkbox" class="form-check-input" id="useAzuread" [(ngModel)]="_data.useAzuread"
                         name="useAzuread">
                       <label class="form-check-label" for="useAzuread">
                         <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -210,7 +210,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useFacebook" [(ngModel)]="data().useFacebook"
+                      <input type="checkbox" class="form-check-input" id="useFacebook" [(ngModel)]="_data.useFacebook"
                         name="useFacebook">
                       <label class="form-check-label" for="useFacebook">
                         <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -220,7 +220,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useTwitter" [(ngModel)]="data().useTwitter"
+                      <input type="checkbox" class="form-check-input" id="useTwitter" [(ngModel)]="_data.useTwitter"
                         name="useTwitter">
                       <label class="form-check-label" for="useTwitter">
                         <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -230,7 +230,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useGithub" [(ngModel)]="data().useGithub"
+                      <input type="checkbox" class="form-check-input" id="useGithub" [(ngModel)]="_data.useGithub"
                         name="useGithub">
                       <label class="form-check-label" for="useGithub">
                         <fa-icon [icon]="['fab','github']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -240,7 +240,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useLinkedin" [(ngModel)]="data().useLinkedin"
+                      <input type="checkbox" class="form-check-input" id="useLinkedin" [(ngModel)]="_data.useLinkedin"
                         name="useLinkedin">
                       <label class="form-check-label" for="useLinkedin">
                         <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -250,7 +250,7 @@
                   </div>
                   <div class="col-4 mb-3">
                     <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useEmail" [(ngModel)]="data().useEmail"
+                      <input type="checkbox" class="form-check-input" id="useEmail" [(ngModel)]="_data.useEmail"
                         name="useEmail">
                       <label class="form-check-label" for="useEmail">
                         <fa-icon [icon]="['far','envelope']" [fixedWidth]="true" size="2x"></fa-icon>
@@ -263,13 +263,13 @@
               <div class="form-group mb-3">
                 <label class="form-label">Use local user from other app</label>
                 <select class="form-select" name="userFromApp"
-                  [(ngModel)]="data().x.userFromApp">
+                  [(ngModel)]="_data.x.userFromApp">
                   <option [ngValue]="undefined" class="text-muted">Use own local user</option>
-                  @for (app of otherAppList; track app.id) {
+                  @for (app of otherAppList(); track app.id) {
                     <option [ngValue]="app.id">{{app.title}}</option>
                   }
                 </select>
-                @if(data().x.userFromApp){
+                @if(_data.x.userFromApp){
                   <!-- <div class="small text-muted mt-2">User groups from this app will be merged with groups from the above app</div> -->
                   <div class="small text-muted mt-2">Merge user's groups from this app with groups from the above app</div>
                 }
@@ -287,7 +287,7 @@
                   <div class="col mb-2">
                     <div class="form-check">
                       <input type="radio" class="form-check-input" id="status-local" name="status"
-                        [(ngModel)]="data().status" value="local" required>
+                        [(ngModel)]="_data.status" value="local" required>
                       <label for="status-local" class="form-check-label">Local
                         <div class="small">App is only accessible via URL</div>
                       </label>
@@ -296,7 +296,7 @@
                   <div class="col mb-2">
                     <div class="form-check">
                       <input type="radio" class="form-check-input" id="status-published" name="status"
-                        [(ngModel)]="data().status" value="published" required>
+                        [(ngModel)]="_data.status" value="published" required>
                       <label for="status-published" class="form-check-label">Published
                         <div class="small">App available in Marketplace</div>
                       </label>
@@ -305,7 +305,7 @@
                   <div class="col mb-2">
                     <div class="form-check">
                       <input type="radio" class="form-check-input" id="status-template" name="status"
-                        [(ngModel)]="data().status" value="template" required>
+                        [(ngModel)]="_data.status" value="template" required>
                       <label for="status-template" class="form-check-label">Template
                         <div class="small">App only available as template</div>
                       </label>
@@ -313,25 +313,25 @@
                   </div>
                 </div>
               </div>
-              @if (data().status=='published') {
+              @if (_data.status=='published') {
                 <div class="form-group mb-3">
                   <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="secret" [(ngModel)]="data().secret" name="secret">
+                    <input type="checkbox" class="form-check-input" id="secret" [(ngModel)]="_data.secret" name="secret">
                     <label class="form-check-label" for="secret">Protected? (Require activation to copy)</label>
                   </div>
                 </div>
               }
               <div class="form-group mb-3">
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="reg" [(ngModel)]="data().reg" name="reg">
+                  <input type="checkbox" class="form-check-input" id="reg" [(ngModel)]="_data.reg" name="reg">
                   <label class="form-check-label" for="reg">New user must register role before use</label>
-                  @if (data().reg) {
+                  @if (_data.reg) {
                     <div class="my-2">
                       <div class="btn-group btn-group-sm btn-group-toggle" role="group">
-                        <input type="radio" name="regType" [(ngModel)]="data().x.regType"
+                        <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
                           [required]="true" value="any" class="btn-check" id="regTypeAny">
                         <label class="btn btn-outline-secondary" for="regTypeAny"> Any role</label>
-                        <input type="radio" name="regType" [(ngModel)]="data().x.regType"
+                        <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
                           [required]="true" value="one" class="btn-check" id="regTypeOnly">
                         <label class="btn btn-outline-secondary" for="regTypeOnly"> Only one role</label>
                       </div>
@@ -339,69 +339,55 @@
                   }
                 </div>
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="noframe" [(ngModel)]="data().x.noframe" name="noframe">
+                  <input type="checkbox" class="form-check-input" id="noframe" [(ngModel)]="_data.x.noframe" name="noframe">
                   <label class="form-check-label" for="noframe">Frameless app (Hide app navigation)</label>
                 </div>
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="topgap" [(ngModel)]="data().x.topgap" name="topgap">
+                  <input type="checkbox" class="form-check-input" id="topgap" [(ngModel)]="_data.x.topgap" name="topgap">
                   <label class="form-check-label" for="topgap">Increase top gap (suitable for phone with punch hole camera)</label>
                 </div>
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="canPush" [(ngModel)]="data().canPush"
+                  <input type="checkbox" class="form-check-input" id="canPush" [(ngModel)]="_data.canPush"
                     name="canPush">
                   <label class="form-check-label" for="canPush">Enable Push Notification for this app</label>
                 </div>
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="devInData" [(ngModel)]="data().x.devInData"
+                  <input type="checkbox" class="form-check-input" id="devInData" [(ngModel)]="_data.x.devInData"
                     name="devInData">
                   <label class="form-check-label" for="devInData">Enable access to Live data in Dev mode (for troubleshooting)</label>
                 </div>
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">One-off Screen (display once after first login)</label>
-                <select class="form-select" name="once" [(ngModel)]="data().once">
+                <select class="form-select" name="once" [(ngModel)]="_data.once">
                   <option [ngValue]="undefined" class="text-muted">No term (skip)</option>
-                  @for (p of screens; track p.id) {
+                  @for (p of screens(); track p.id) {
                     <option [ngValue]="p.id">{{p.title}}</option>
                   }
                 </select>
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Privacy Policy URL (in login page)</label>
-                <input type="text" class="form-control" [(ngModel)]="data().x.privPol" #appDomain="ngModel"
+                <input type="text" class="form-control" [(ngModel)]="_data.x.privPol" #appDomain="ngModel"
                   name="privPol">
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Forward Domain (require forward setup)</label>
-                <input type="text" class="form-control" [(ngModel)]="data().appDomain" #appDomain="ngModel"
+                <input type="text" class="form-control" [(ngModel)]="_data.appDomain" #appDomain="ngModel"
                   name="appDomain">
               </div>
-              @if (data()?.id) {
+              @if (_data?.id) {
                 <div class="form-group mb-3">
                   <label class="form-label">Creator (email, comma separated)</label>
-                  <input type="text" class="form-control" [(ngModel)]="data().email" name="email">
+                  <input type="text" class="form-control" [(ngModel)]="_data.email" name="email">
                 </div>
               }
-              <!-- <div class="form-group mb-3">
-              <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="blockAnon" [(ngModel)]="data.blockAnon"
-                  name="blockAnon">
-                  <label class="form-check-label" for="blockAnon">Block user not in group</label>
-                </div>
-              </div> -->
-              <!-- <div class="form-group mb-3">
-              <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="shared" [(ngModel)]="data.shared"
-                  name="shared">
-                  <label class="form-check-label" for="shared">Share design? (Appear in others' App Designer)</label>
-                </div>
-              </div> -->
-              @if (data().id) {
+              @if (_data.id) {
                 <div class="form-group mb-3">
                   <label class="form-label">Default start page</label>
-                  <select class="form-select" name="startPage" [(ngModel)]="data().startPage">
+                  <select class="form-select" name="startPage" [(ngModel)]="_data.startPage">
                     <option [ngValue]="undefined">Tiles Home Page</option>
-                    @for (p of pages; track $index) {
+                    @for (p of pages(); track $index) {
                       <option [ngValue]="p.path">{{p.title}}</option>
                     }
                   </select>
@@ -411,10 +397,10 @@
                 <label class="form-label">Default Language</label>
                 <div>
                   <div class="btn-group-sm" role="group">
-                    <input type="radio" name="lang" [(ngModel)]="data().x.lang" value="ms" class="btn-check"
+                    <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="ms" class="btn-check"
                       id="langMs">
                     <label class="btn btn-outline-secondary me-1 mb-1" for="langMs">Bahasa Melayu</label>
-                    <input type="radio" name="lang" [(ngModel)]="data().x.lang" value="en" class="btn-check"
+                    <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="en" class="btn-check"
                       id="langEn">
                     <label class="btn btn-outline-secondary me-1 mb-1" for="langEn">English</label>
                   </div>
@@ -424,14 +410,14 @@
                 <label class="form-label">Custom Menu Style CSS</label>
                 <app-cm name="menuCss" lang="html"
                   placeholder="Add your css properties here"
-                  [(ngModel)]="data().x.menuCss" [linenumber]="true">
+                  [(ngModel)]="_data.x.menuCss" [linenumber]="true">
                 </app-cm>
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">App Welcome Text</label>
                 <app-cm name="welcomeText" lang="html"
                   placeholder="Support HTML tag"
-                  [(ngModel)]="data().x.welcomeText" [linenumber]="true">
+                  [(ngModel)]="_data.x.welcomeText" [linenumber]="true">
                 </app-cm>
               </div>
 
@@ -439,9 +425,9 @@
                 <label class="form-label">App Group</label>
                 <select class="form-select" name="appGroup"
                   [compareWith]="compareByIdFn" 
-                  [(ngModel)]="data().group">
+                  [(ngModel)]="_data.group">
                   <option [ngValue]="undefined" class="text-muted">Ungroup</option>
-                  @for (app of appGroups; track app.id) {
+                  @for (app of appGroups(); track app.id) {
                     <option [ngValue]="app">{{app.name}}</option>
                   }
                 </select>
@@ -456,7 +442,7 @@
   <div class="modal-footer border-0 justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline()" [disabled]="editItemForm.invalid"
-      (click)="close()(data())">
+      (click)="done(_data)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save App
     </button>

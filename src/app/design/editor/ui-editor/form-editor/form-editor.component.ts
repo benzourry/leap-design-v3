@@ -44,6 +44,7 @@ import { FieldEditComponent } from '../../../../run/_component/field-edit-b/fiel
 import { FieldViewComponent } from '../../../../run/_component/field-view.component';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
+import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 // declare var LeaderLine: any;
 // import { combineLatest } from 'rxjs';
 
@@ -60,7 +61,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
         EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
-        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, JsonPipe]
+        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe]
 })
 export class FormEditorComponent implements OnInit, AfterViewChecked {
 
@@ -766,7 +767,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(form => {
                 if (!form.x.extended) {
-                    console.log("delete extended", form.x.extended);
+                    // console.log("delete extended", form.x.extended);
                     delete form.x.extended;
                 }
                 this.formService.saveForm(form.appId ?? this.app.id, form)
@@ -1893,7 +1894,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     }
 
-    getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+    // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
     notEmptyObject = (obj: any) => obj && Object.keys(obj).length > 0;
 

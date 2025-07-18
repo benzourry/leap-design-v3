@@ -17,17 +17,10 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 })
 export class EditLookupEntryComponent {
 
-  
-  // @Input("lookup")
   lookup = input<any>({});
-
-  // @Input("lookupEntry")
   lookupEntry = model<any>({})
-  
-  // @Input()
+  _lookupEntry:any = {};
   close = input<any>();
-
-  // @Input()
   dismiss = input<any>();
 
   lookupEntryFields: any[];
@@ -43,25 +36,16 @@ export class EditLookupEntryComponent {
   constructor() { }
 
   ngOnInit() {
+    this._lookupEntry = {...this.lookupEntry()};
     if (this.lookup().dataEnabled) {
-      if (!this.lookupEntry().data) {
-        this.lookupEntry.update(le=>{
-          le.data = {};
-          return le;
-        })
-          // this.lookupEntry().data = {}
+      if (!this._lookupEntry.data) {
+        this._lookupEntry.data = {};
       }
       this.lookupEntryFields = this.fieldsAsList(this.lookup().dataFields);
-      this.lookupEntryFieldsOrphan = this.fieldsExistOrphan(this.lookupEntry().data);
-      this.cdr.detectChanges();
+      this.lookupEntryFieldsOrphan = this.fieldsExistOrphan(this._lookupEntry.data);
     }
-    // this.editLookupEntryData = lookupEntry;
   }
 
-
-
-  // editLookupEntryData: any;
-  // editLookupEntryDataFields: any[];
   lookupEntryFieldsOrphan: any;
 
   lookupListMap:any = {};
@@ -115,6 +99,11 @@ export class EditLookupEntryComponent {
   }
 
   compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
+
+  done(data) {
+    this.lookupEntry.set(data);
+    this.close()?.(data);
+  }
 
 
 }

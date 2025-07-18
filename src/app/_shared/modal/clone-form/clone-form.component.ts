@@ -1,50 +1,44 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, model, signal } from '@angular/core';
 import { FormService } from '../../../service/form.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-clone-form',
-    templateUrl: './clone-form.component.html',
-    styleUrls: ['./clone-form.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FormsModule]
+  selector: 'app-clone-form',
+  templateUrl: './clone-form.component.html',
+  styleUrls: ['./clone-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule]
 })
-export class CloneFormComponent implements OnInit  {
+export class CloneFormComponent implements OnInit {
 
   private formService = inject(FormService);
-  cdr = inject(ChangeDetectorRef);
 
-  constructor() {
-  }
+  constructor() {}
 
-//   @Input("dismiss")
   dismiss = input<any>();
-
-//   @Input("close")
   close = input<any>();
-
   appId = input.required<number>();
-  
-//   @Input("formList")
-//   cloneFormList: any[] = [];
-  cloneFormList:any[]=[];
+  cloneFormList = signal<any[]>([]);
+  cloneFormData = model<any>({}, { alias: 'data' });
+  _cloneFormData: any = {};
 
-//   @Input("data")
-  cloneFormData = input<any>({},{alias:'data'});
-
-//   @Input("appList")
-  cloneAppList = input<any[]>([],{alias:'appList'});
+  cloneAppList = input<any[]>([], { alias: 'appList' });
 
   ngOnInit() {
+    this._cloneFormData = {...this.cloneFormData()};
     this.loadCloneFormList(this.appId())
   }
 
   loadCloneFormList(appId) {
-      this.formService.getListBasic({ appId: appId, size: 999 })
-          .subscribe(res => {
-              this.cloneFormList = res.content;
-              this.cdr.detectChanges();
-          })
+    this.formService.getListBasic({ appId: appId, size: 999 })
+      .subscribe(res => {
+        this.cloneFormList.set(res.content);
+      })
+  }
+
+  done(data) {
+    this.cloneFormData.set(data);
+    this.close()?.(data);
   }
 
 }

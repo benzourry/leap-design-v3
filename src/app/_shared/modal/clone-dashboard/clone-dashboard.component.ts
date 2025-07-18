@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, model, signal } from '@angular/core';
 import { DashboardService } from '../../../service/dashboard.service';
 import { FormsModule } from '@angular/forms';
 
@@ -12,41 +12,37 @@ import { FormsModule } from '@angular/forms';
 export class CloneDashboardComponent implements OnInit {
 
   private dashboardService = inject(DashboardService);
-  cdr = inject(ChangeDetectorRef);
   
-  constructor() {
-  }
+  constructor() {}
 
-//   @Input("dismiss")
   dismiss = input<any>();
 
   appId = input.required<number>();
 
-//   @Input("close")
   close = input<any>();
   
-//   @Input("dashboardList")
-//   cloneDashboardList: any[] = [];
-  cloneDashboardList:any[]=[]
+  cloneDashboardData = model<any>({},{alias: 'data'});
+  _cloneDashboardData:any = {};
+
+  cloneAppList = input<any[]>([],{alias:'appList'});
+
+  cloneDashboardList = signal<any[]>([]);
 
   ngOnInit() {
+    this._cloneDashboardData = {...this.cloneDashboardData()};
     this.loadCloneDashboardList(this.appId())
   }
 
   loadCloneDashboardList(appId) {
       this.dashboardService.getDashboardList(appId,)
           .subscribe(res => {
-              this.cloneDashboardList = res;
-              this.cdr.detectChanges();
+              this.cloneDashboardList.set(res);
           })
   }
 
-//   @Input("data")
-//   cloneDashboardData: any;
-  cloneDashboardData = input<any>({},{alias: 'data'});
-
-//   @Input("appList")
-//   cloneAppList: any[] = [];
-  cloneAppList = input<any[]>([],{alias:'appList'});
+  done(data) {
+    this.cloneDashboardData.set(data);
+    this.close()?.(data);
+  }
 
 }

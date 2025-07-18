@@ -3,7 +3,6 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
-import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'app-edit-screen',
@@ -15,6 +14,7 @@ import { JsonPipe } from '@angular/common';
 export class EditScreenComponent implements OnInit {
 
   editScreenData = model<any>({}, { alias: 'screen' });
+  _editScreenData:any = {};
 
   datasetList = input<any[]>([])
 
@@ -100,20 +100,13 @@ export class EditScreenComponent implements OnInit {
   }]
 
   ngOnInit() {
-    // this.initialAppPath = this.data.appPath;
-    // this.loadPages();
-    // this.loadScreen();
-    if (!this.editScreenData().data) {
-      this.editScreenData.update(screen => {
-        screen.data = {};
-        return screen;
-      });
+    this._editScreenData = {...this.editScreenData()};
+
+    if (!this._editScreenData.data) {
+      this._editScreenData.data = {};
     }
   }
-
-
-
-
+  
   resetLinkedData(item) {
     item.update(i => {
       delete i.form;
@@ -126,6 +119,11 @@ export class EditScreenComponent implements OnInit {
 
   compareByIdFn(a, b): boolean {
     return a && b && a.id === b.id;
+  }
+
+  done(data) {
+    this.editScreenData.set(data);
+    this.close()?.(data);
   }
 
 }

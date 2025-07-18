@@ -31,13 +31,15 @@ import { FormsModule } from '@angular/forms';
 import { lastValueFrom, tap } from 'rxjs';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
+import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 
 @Component({
   selector: 'app-tiles',
   templateUrl: './tiles.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['../../../assets/css/start.css', './tiles.component.scss'],
-  imports: [PageTitleComponent, FormsModule, NgStyle, RouterLinkActive, RouterLink, FaIconComponent, FilterPipe, DatePipe]
+  imports: [PageTitleComponent, FormsModule, NgStyle, RouterLinkActive, 
+    RouterLink, FaIconComponent, FilterPipe, DatePipe, IconSplitPipe]
 })
 export class TilesComponent implements OnInit {
 
@@ -106,7 +108,7 @@ export class TilesComponent implements OnInit {
     this.runPre();
   }
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
   getStart(id) {
     if (id) {

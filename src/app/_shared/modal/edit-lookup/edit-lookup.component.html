@@ -4,7 +4,7 @@
   <div class="modal-body fix-gutter" #lookupEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
       <label class="form-label">Lookup Name *</label>
-      <input type="text" class="form-control" [(ngModel)]="lookup().name" 
+      <input type="text" class="form-control" [(ngModel)]="_lookup.name" 
         #name="ngModel"
         name="name" required>
       @if (name?.invalid) {
@@ -17,7 +17,7 @@
     </div>
     <div class="form-group mb-3">
       <label class="form-label">Lookup Description</label>
-      <textarea class="form-control" [(ngModel)]="lookup().description"
+      <textarea class="form-control" [(ngModel)]="_lookup.description"
       #description="ngModel" name="description"></textarea>
     </div>
     <div class="form-group mb-3">
@@ -25,19 +25,19 @@
         <div>
           <!-- <div class="btn-group btn-group-toggle" name="sourceType"> -->
             <input type="radio" class="btn-check" value="db" #sourceType="ngModel" name="sourceTypeDb"
-              id="sourceTypeDb" [(ngModel)]="lookup().sourceType" [required]="true">
+              id="sourceTypeDb" [(ngModel)]="_lookup.sourceType" [required]="true">
             <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeDb">
               Database
               <div><small>Key-in locally</small></div>
             </label>
             <input type="radio" class="btn-check" value="rest" #sourceType="ngModel" name="sourceTypeRest"
-              id="sourceTypeRest" [(ngModel)]="lookup().sourceType" [required]="true">
+              id="sourceTypeRest" [(ngModel)]="_lookup.sourceType" [required]="true">
             <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeRest">
               RESTFul
               <div><small>Load via endpoint</small></div>
             </label>
             <input type="radio" class="btn-check" value="proxy" #sourceType="ngModel" name="sourceTypeProxy"
-              id="sourceTypeProxy" [(ngModel)]="lookup().sourceType" 
+              id="sourceTypeProxy" [(ngModel)]="_lookup.sourceType" 
               [required]="true">
             <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeProxy">
               Proxy
@@ -55,25 +55,25 @@
     </div>
   
     <!-- <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().shared"
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.shared"
         id="shared" name="shared">
       <label class="form-check-label" for="shared">Shared (Can be used by others)</label>
     </div> -->
     <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().x.wide"
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.wide"
         id="wide" name="wide">
       <label class="form-check-label" for="wide">Full width table</label>
     </div>
     <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().x.autoResync"
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.autoResync"
         id="autoResync" name="autoResync">
       <label class="form-check-label" for="autoResync">Auto-sync lookup on add/update entry</label>
 
-      @if (lookup().x.autoResync){
+      @if (_lookup.x.autoResync){
         <div class="form-group mb-3">
           <label class="form-label">Select reference column</label>
-          <select class="form-select" name="refCol" [(ngModel)]="lookup().x.refCol">
-            @if (lookup().sourceType=='db'){
+          <select class="form-select" name="refCol" [(ngModel)]="_lookup.x.refCol">
+            @if (_lookup.sourceType=='db'){
               <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
             }
             <option value="code">Code</option>
@@ -86,29 +86,29 @@
       }
     </div>
     <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().x.extraDisabled"
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.extraDisabled"
         id="extraDisabled" name="extraDisabled">
       <label class="form-check-label" for="extraDisabled">Disable EXTRA field</label>
     </div>
-    @if (lookup()?.sourceType == 'db') {
+    @if (_lookup?.sourceType == 'db') {
       <div class="form-group form-check">
-        <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().x.codeHidden"
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.codeHidden"
             id="codeHidden" name="codeHidden">
         <label class="form-check-label" for="codeHidden">Hide CODE field (Note: NAME will be used as value for CODE)</label>
       </div>
     }
     <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="lookup().dataEnabled"
+      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.dataEnabled"
         id="dataEnabled" name="dataEnabled">
       <label class="form-check-label" for="dataEnabled">Enable additional data field (accessible in .data column)
         <small class="d-block">For lookup from RESTful endpoints, data column will contains all attributes of
         the source json. This might slow down the lookup query.</small>
       </label>
     </div>
-    @if (lookup()?.sourceType == 'proxy') {
+    @if (_lookup?.sourceType == 'proxy') {
       <div class="form-group mb-3">
         <label class="form-label">Proxy for (lookup ID)</label>
-        <input type="text" class="form-control" [(ngModel)]="lookup().proxyId"
+        <input type="text" class="form-control" [(ngModel)]="_lookup.proxyId"
           #endpoint="ngModel" name="proxyId" required>
         @if (endpoint?.invalid) {
           <small class="form-text has-warning">
@@ -121,46 +121,46 @@
     }
 
     <label class="form-label mt-2">Override column label</label>
-    @if (!lookup().x.codeHidden){
+    @if (!_lookup.x.codeHidden){
       <div class="input-group input-group-sm mb-2">
         <label class="input-group-text" for="codeLbl">Code</label>
         <input class="form-control" name="codeLbl" type="text"
-          placeholder="Code" [(ngModel)]="lookup().x.codeLbl">
+          placeholder="Code" [(ngModel)]="_lookup.x.codeLbl">
       </div>
     }
     <div class="input-group input-group-sm mb-2">
       <label class="input-group-text" for="nameLbl">Name</label>
       <input class="form-control" name="nameLbl" type="text"
-        placeholder="Name" [(ngModel)]="lookup().x.nameLbl">
+        placeholder="Name" [(ngModel)]="_lookup.x.nameLbl">
     </div>
-    @if(!lookup().x.extraDisabled){
+    @if(!_lookup.x.extraDisabled){
       <div class="input-group input-group-sm mb-2">
         <label class="input-group-text" for="extraLbl">Extra</label>
         <input class="form-control" name="extraLbl" type="text"
-          placeholder="Extra" [(ngModel)]="lookup().x.extraLbl">
+          placeholder="Extra" [(ngModel)]="_lookup.x.extraLbl">
       </div>
     }
 
-    @if (lookup()?.sourceType == 'db') {
+    @if (_lookup?.sourceType == 'db') {
       <div class="form-group mb-3">
         <label class="form-label">Access to edit available for</label>
         <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
-          placeholder="Anyone" [(ngModel)]="lookup().accessList"
+          placeholder="Anyone" [(ngModel)]="_lookup.accessList"
           name="accessList">
         </ng-select>
       </div>
     }
-    @if (lookup()?.sourceType == 'rest') {
+    @if (_lookup?.sourceType == 'rest') {
       <div class="form-group mb-3">
         <label class="form-label">Request Method Type</label>
         <div>
           <div class="btn-group btn-group-toggle" role="group">
             <input type="radio" name="method" #method="ngModel"
-              [(ngModel)]="lookup().method" [required]="true" value="GET"
+              [(ngModel)]="_lookup.method" [required]="true" value="GET"
               class="btn-check" id="methodGET">
             <label class="btn btn-outline-secondary" for="methodGET">GET</label>
             <input type="radio" name="method" #method="ngModel"
-              [(ngModel)]="lookup().method" [required]="true" value="POST"
+              [(ngModel)]="_lookup.method" [required]="true" value="POST"
               class="btn-check" id="methodPOST">
             <label class="btn btn-outline-secondary" for="methodPOST">POST</label>
           </div>
@@ -175,7 +175,7 @@
       </div>
       <div class="form-group mb-3">
         <label class="form-label">RESTful Endpoint *</label>
-        <input type="text" class="form-control" [(ngModel)]="lookup().endpoint"
+        <input type="text" class="form-control" [(ngModel)]="_lookup.endpoint"
           #endpoint="ngModel" name="endpoint" required>
         @if (endpoint?.invalid) {
           <small class="form-text has-warning">
@@ -190,11 +190,11 @@
         <div>
           <div class="btn-group btn-group-toggle">
             <input type="radio" class="btn-check" value="json" id="typeJson" name="typeJson"
-              #responseType="ngModel" [(ngModel)]="lookup().responseType"
+              #responseType="ngModel" [(ngModel)]="_lookup.responseType"
               [required]="true">
             <label class="btn btn-outline-secondary" for="typeJson"> JSON </label>
             <input type="radio" class="btn-check" value="jsonp" id="typeJsonP" name="typeJsonP"
-              #responseType="ngModel" [(ngModel)]="lookup().responseType" 
+              #responseType="ngModel" [(ngModel)]="_lookup.responseType" 
               [required]="true">
             <label class="btn btn-outline-secondary" for="typeJsonP"> JSONP </label>
           </div>
@@ -212,21 +212,21 @@
           <div class="form-group mb-3">
             <label class="form-label">Root</label>
             <input type="text" class="form-control" placeholder="ie: /content"
-              [(ngModel)]="lookup().jsonRoot" #jsonRoot="ngModel" name="jsonRoot">
+              [(ngModel)]="_lookup.jsonRoot" #jsonRoot="ngModel" name="jsonRoot">
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group mb-3">
             <label class="form-label">Extra (optional)</label>
             <input type="text" class="form-control" placeholder="ie: /alt"
-              [(ngModel)]="lookup().extraProp" #extra="ngModel" name="extraProp">
+              [(ngModel)]="_lookup.extraProp" #extra="ngModel" name="extraProp">
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group mb-3">
             <label class="form-label">Code *</label>
             <input type="text" class="form-control" placeholder="ie: /code"
-              [(ngModel)]="lookup().codeProp" #codeProp="ngModel" name="codeProp"
+              [(ngModel)]="_lookup.codeProp" #codeProp="ngModel" name="codeProp"
               required>
             @if (codeProp?.invalid) {
               <small class="form-text has-warning">
@@ -242,7 +242,7 @@
           <div class="form-group mb-3">
             <label class="form-label">Desc *</label>
             <input type="text" class="form-control" placeholder="ie: /description"
-              [(ngModel)]="lookup().descProp" #descProp="ngModel" name="descProp"
+              [(ngModel)]="_lookup.descProp" #descProp="ngModel" name="descProp"
               required>
             @if (descProp?.invalid) {
               <small class="form-text has-warning">
@@ -257,7 +257,7 @@
       </div>
       <div class="form-group mb-3">
         <label class="form-label">Http Headers</label>
-        <input type="text" class="form-control" [(ngModel)]="lookup().headers"
+        <input type="text" class="form-control" [(ngModel)]="_lookup.headers"
           #headers="ngModel" name="headers">
         <small class="form-text">
           <span class="help-block">
@@ -269,23 +269,23 @@
       <div class="form-group mb-3">
         <div class="form-check form-switch">
           <input type="checkbox" class="form-check-input" id="auth"
-            [(ngModel)]="lookup().auth" name="auth">
+            [(ngModel)]="_lookup.auth" name="auth">
           <label class="form-check-label" for="auth">Authenticate</label>
         </div>
       </div>
-      @if (lookup().auth) {
+      @if (_lookup.auth) {
         <div class="form-group mb-3">
           <label class="form-label">Authorization Flow Type *</label>
           <div>
             <div class="btn-group btn-group-toggle">
               <input type="radio" class="btn-check" value="authorization" id="authFlowAuth"
                 name="authFlowAuth" #authFlow="ngModel"
-                [(ngModel)]="lookup().authFlow" required>
+                [(ngModel)]="_lookup.authFlow" required>
               <label for="authFlowAuth" class="btn btn-outline-secondary"> Authorization
               </label>
               <input type="radio" class="btn-check" value="client_credential" id="authFlowCred"
                 name="authFlowCred" #authFlow="ngModel"
-                [(ngModel)]="lookup().authFlow" required>
+                [(ngModel)]="_lookup.authFlow" required>
               <label for="authFlowCred" class="btn btn-outline-secondary"> Client
                 Credential
               </label>
@@ -299,13 +299,13 @@
             </small>
           }
         </div>
-        @if (lookup().authFlow=='client_credential') {
+        @if (_lookup.authFlow=='client_credential') {
           <div class="row">
             <div class="col-sm-6">
               <div class="form-group mb-3">
                 <label class="form-label">Client ID *</label>
                 <input type="text" class="form-control"
-                  [(ngModel)]="lookup().clientId" name="clientId"
+                  [(ngModel)]="_lookup.clientId" name="clientId"
                   placeholder="ie: client00001" required>
               </div>
             </div>
@@ -313,7 +313,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Client Secret *</label>
                 <input type="text" class="form-control"
-                  [(ngModel)]="lookup().clientSecret" name="clientSecret"
+                  [(ngModel)]="_lookup.clientSecret" name="clientSecret"
                   placeholder="ie: 87897jhjd-9182731yye" required>
               </div>
             </div>
@@ -321,41 +321,41 @@
           <div class="form-group mb-3">
             <label class="form-label">Token Endpoint *</label>
             <input type="text" class="form-control" name="tokenEndpoint"
-              [(ngModel)]="lookup().tokenEndpoint"
+              [(ngModel)]="_lookup.tokenEndpoint"
               placeholder="ie: https://identity.unimas.my/oauth/token" required>
           </div>
         }
         <div class="form-group mb-3">
           <div class="form-check form-switch mt-1">
             <input type="checkbox" class="form-check-input"
-              (change)="lookup().tokenTo = $event.target.checked ? 'url': 'header'"
-              [checked]="lookup().tokenTo=='url'" name="tokenTo" id="tokenTo">
+              (change)="_lookup.tokenTo = $event.target.checked ? 'url': 'header'"
+              [checked]="_lookup.tokenTo=='url'" name="tokenTo" id="tokenTo">
             <label class="form-check-label" for="tokenTo">Add access token to URL (instead of
             Header)</label>
           </div>
         </div>
       }
     }
-    @if (lookup().dataEnabled) {
+    @if (_lookup.dataEnabled) {
       <div class="form-group mb-3">
-        @if (lookup().sourceType=='rest') {
+        @if (_lookup.sourceType=='rest') {
           <label class="form-label">Data fields to retain (comma separated,
             leave blank if
           retain all)</label>
         }
-        @if (lookup().sourceType=='db') {
+        @if (_lookup.sourceType=='db') {
           <label class="form-label">Additional Data fields (comma separated)
           *</label>
         }
-        <textarea type="text" class="form-control" [(ngModel)]="lookup().dataFields"
-        #endpoint="ngModel" name="dataFields" [required]="lookup().sourceType=='db'"></textarea>
+        <textarea type="text" class="form-control" [(ngModel)]="_lookup.dataFields"
+        #endpoint="ngModel" name="dataFields" [required]="_lookup.sourceType=='db'"></textarea>
       </div>
     }
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="lookupEditForm.invalid"
-      (click)="close()(lookup())">
+      (click)="done(_lookup)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save Lookup
     </button>

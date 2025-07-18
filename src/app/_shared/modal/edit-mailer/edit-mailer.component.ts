@@ -15,39 +15,21 @@ import { nl2br, br2nl } from '../../utils';
 })
 export class EditMailerComponent {
 
-//   @Input("editMailerData")
   editMailerData = model<any>();
+  _editMailerData:any = {};
 
-//   @Input("editHolderForm")
   editHolderForm:any = {};
 
-//   @Input("formList")
   formList = input<any>({})
 
-//   @Input("selectedForm")
   selectedForm = input<any>(null);
-//   selectedFormId = input<number>();
   selectedFormHint:any = null;
 
-  // hint;
-
-//   @Input("lookupList")
   lookupList = input<any>({});
 
-  // @Input("mailerEntry")
-  // mailerEntry:any={}
-  
-//   @Input()
   close = input<any>();
 
-//   @Input()
   dismiss = input<any>();
-
-  // mailerEntryFields: any[];
-
-  // isNumber = (val) => typeof val === 'number';
-
-  // deleteDataRow = (obj, key) => delete obj[key];
 
   cdr = inject(ChangeDetectorRef);
   private formService = inject(FormService);
@@ -55,34 +37,19 @@ export class EditMailerComponent {
   constructor() { }
 
   ngOnInit() {
+    this._editMailerData = {...this.editMailerData()};
     if (this.selectedForm()){
         this.selectedFormHint = this.selectedForm();
         this.loadForm(this.selectedForm().id);
     }
 
-    if(this.editMailerData()){
-        this.editMailerData.update(d=>{
-            d.content = this.br2nl(this.editMailerData().content);
-            return d;
-        })
-    //   this.editMailerData.content = this.br2nl(this.editMailerData.content);
+    if(this._editMailerData){
+        this._editMailerData.content = this.br2nl(this._editMailerData.content);
     }
 
-    // if (!this.mailer.x) {
-    //   this.mailer['x'] = {};
-    // }
-    // if (this.mailer.dataEnabled) {
-    //   if (!this.mailerEntry.data) {
-    //       this.mailerEntry.data = {}
-    //   }
-    //   this.mailerEntryFields = this.fieldsAsList(this.mailer.dataFields);
-    //   this.mailerEntryFieldsOrphan = this.fieldsExistOrphan(this.mailerEntry.data);
-    // }
-    // this.editMailerEntryData = mailerEntry;
+
   }
 
-  // hint: any = null;
-  // editHolderForm: any = {}
   loadForm(id) {
       this.formService.getForm(id)
           .subscribe(res => {
@@ -204,21 +171,15 @@ getItemText(pre,item){
   }
 
   onDismiss(){
-    this.editMailerData.update(d=>{
-        d.content = this.nl2br(this.editMailerData().content);
-        return d;
-    })
-    // this.editMailerData.content = this.nl2br(this.editMailerData.content);
+    this._editMailerData.content = this.nl2br(this._editMailerData.content);
+    this.editMailerData.set(this._editMailerData);
     this.dismiss()();
   }
 
   onClose(){
-    this.editMailerData.update(d=>{
-        d.content = this.nl2br(this.editMailerData().content);
-        return d;
-    })
-    // this.editMailerData.content = this.nl2br(this.editMailerData.content);
-    this.close()(this.editMailerData());
+    this._editMailerData.content = this.nl2br(this._editMailerData.content);
+    this.editMailerData.set(this._editMailerData);
+    this.close()?.(this._editMailerData);
   }
 
   nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;

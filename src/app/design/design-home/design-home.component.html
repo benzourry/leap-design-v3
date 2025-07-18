@@ -79,13 +79,13 @@
                       </button>
                       @if (item.email.indexOf(user()?.email) > -1) {
                         <div class="d-flex justify-content-between">
-                          <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline()" routerLink="/design/{{ item.id }}" title="Edit Template">
+                          <button type="button" class="btn btn-light btn-round me-1" [disabled]="offline()" routerLink="/design/{{item.id}}" title="Edit Template">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                           </button>
-                          <button type="button" class="btn btn-light btn-round me-1" (click)="editItem(appEditTpl, item, false)" title="Edit Properties">
+                          <button type="button" class="btn btn-light btn-round me-1" [disabled]="offline()" (click)="editItem(appEditTpl, item, false)" title="Edit Properties">
                             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                           </button>
-                          <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" (click)="removeItem(removeItemTpl, item)" title="Remove Template">
+                          <button type="button" class="btn btn-danger btn-round" [disabled]="offline()" (click)="removeItem(removeItemTpl, item)" title="Remove Template">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>

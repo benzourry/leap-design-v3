@@ -27,6 +27,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { RunService } from '../../../../run/_service/run.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -34,7 +35,10 @@ import { ChangeDetectorRef } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['../../../../../assets/css/element-action.css',
         './dataset-editor.component.scss'],
-    imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, KeyValuePipe]
+    imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
+        FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
+        NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, 
+        KeyValuePipe, IconSplitPipe]
 })
 export class DatasetEditorComponent implements OnInit {
 
@@ -433,7 +437,6 @@ export class DatasetEditorComponent implements OnInit {
             }, res => { });
     }
     removeDsItem(ds) {
-        // console.log(ds);
         if (confirm("Remove column \"" + ds.label + "\"?")) {
             this.datasetService.removeDatasetItem(ds.id, null)
                 .subscribe(data => {
@@ -696,7 +699,6 @@ export class DatasetEditorComponent implements OnInit {
                     .subscribe(res => {
                         this.getDataset(this.curDataset.id);
                         this.toastService.show("Dataset action saved successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
                     });
             }, dismiss => { })
     }
@@ -711,7 +713,5 @@ export class DatasetEditorComponent implements OnInit {
                 });
         }
     }
-
-    getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
 }

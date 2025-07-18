@@ -1,46 +1,25 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy } from '@angular/core';
 
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
-// import { keymap } from '@codemirror/view';
-// import { foldAll, unfoldAll, foldGutter } from '@codemirror/language'
 import { EditorView } from 'codemirror';
-import prettier from 'prettier';
-import prettierTs from 'prettier/parser-typescript';
-import prettierHtml from 'prettier/parser-html';
 import { CompletionContext, snippetCompletion } from "@codemirror/autocomplete";
-// import { ElementBase } from '../field-edit/element-base';
 import { rekaTheme } from './reka-theme';
 
 import { placeholder, EditorViewConfig, lineNumbers, highlightActiveLineGutter, 
   highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, 
   crosshairCursor, highlightActiveLine, keymap, KeyBinding } from '@codemirror/view';
-// export { EditorView } from '@codemirror/view';
 import { EditorState, Transaction } from '@codemirror/state';
-// import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
-//   HighlightStyle, Tag, syntaxHighlighting, defaultHighlightStyle, 
-//   bracketMatching, foldKeymap, 
-//   StreamLanguage} from '@codemirror/language';
   import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
-    HighlightStyle, syntaxHighlighting, defaultHighlightStyle, 
-    bracketMatching, foldKeymap, 
-    StreamLanguage} from '@codemirror/language';
-  // import { Tag } from '@codemirror/highlight';
+    syntaxHighlighting, defaultHighlightStyle, 
+    bracketMatching, foldKeymap} from '@codemirror/language';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { highlightSelectionMatches, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { ElementBase } from '../../../run/_component/element-base';
 import { Decoration, DecorationSet, ViewPlugin, ViewUpdate } from '@codemirror/view';
-
-
-// import { HighlightStyle, syntaxHighlighting, Tag } from '@codemirror/language';
-// import { htmlLanguage, LanguageSupport } from '@codemirror/lang-html';
-
-// import { ElementBase } from '../element-base';
-// import { ElementBase } from 'src/app/run/_component/field-edit/element-base';
-// import { lintKeymap, lintGutter, linter, Diagnostic } from '@codemirror/lint';
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -48,19 +27,10 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
   multi: true,
 };
 
-// 1. Define custom tags and highlight style
-// const xIfTag = Tag.define();
-// const xIfAttr = Tag.define();
-
-// const customHighlightStyle = HighlightStyle.define([
-//   { tag: xIfTag, color: "#4FC3F7", fontWeight: "bold" },      // Light blue for <x-if>
-//   { tag: xIfAttr, color: "#4FC3F7", fontStyle: "italic" },     // Light blue for x-if attribute
-// ]);
 
 // Place these outside the class so they're only compiled once
 const tagRegex = /<\/?x-(if|foreach|for|else-if|else|markdown)[^>]*>/ig;
 const attrRegex = /x-(if|foreach|for)="[^"]*"/g;
-// const variableRegex = /\{\{([^}]*)\}\}/g;
 const variableRegex = /(\{\{([^}]*)\}\})|(\[#([^#]*)#\])/g;
 const rekaKeywordRegex = /\$(this\$|conf\$|_|prev\$|user\$|param\$|\$|popup|go|action\$|base\$|baseUrl\$|baseApi\$|token\$)/g;
 
@@ -124,7 +94,6 @@ private getJsTokenClass(nodeName: string): string {
         
         // Parse JavaScript content for syntax highlighting
         try {
-          // console.log(jsContent);
           const jsState = EditorState.create({
             doc: jsContent,
             extensions: [javascript()]
@@ -190,9 +159,8 @@ private getJsTokenClass(nodeName: string): string {
     standalone: true,
 })
 export class NgCmComponent extends ElementBase<any> implements AfterViewInit, OnDestroy {
-  // @ViewChild(NgModel, { static: false }) model: NgModel;
-  model = viewChild(NgModel)
   
+  model = viewChild(NgModel)  
 
   valueChange = output<any>();
   options = input<any>(); //not used

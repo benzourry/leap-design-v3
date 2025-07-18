@@ -125,7 +125,7 @@
                               [ngClass]="tab.altClass">
                               <span class="element-item">
                                 @if (tab.x?.icon){
-                                  <fa-icon [icon]="getIcon(tab.x?.icon)" [fixedWidth]="true"></fa-icon>
+                                  <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                 }
                                 {{tab.title}}
                                 @if (tab.pre) {
@@ -210,7 +210,7 @@
                                       [style.opacity.%]="e.hideHeader?'30':'100'">
                                       <h6 class="m-0">
                                         @if (e.icon) {
-                                          <fa-icon [icon]="getIcon(e.icon)"
+                                          <fa-icon [icon]="e.icon|iconSplit"
                                           [fixedWidth]="true"></fa-icon>
                                         }
                                         {{e.title}}
@@ -1418,7 +1418,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Icon 
             @if (editSectionData.icon) {
-              <fa-icon [icon]="getIcon(editSectionData.icon)"
+              <fa-icon [icon]="editSectionData.icon|iconSplit"
                 [fixedWidth]="true">
               </fa-icon>
             }

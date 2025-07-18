@@ -1,16 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core';
 import { FormService } from '../../../service/form.service';
-// import { LookupService } from '../../../service/lookup.service';
 import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router, RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
 import { AppService } from '../../../service/app.service';
-// import { EntryService } from '../../../service/entry.service';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { PlatformLocation } from '@angular/common';
-// import { HttpParams } from '@angular/common/http';
 import { AppEditComponent } from '../../../_shared/modal/app-edit/app-edit.component';
 import { CommService } from '../../../_shared/service/comm.service';
 import { domainBase } from '../../../_shared/constant.service';
@@ -76,7 +73,6 @@ export class UiEditorComponent implements OnInit {
     private userService = inject(UserService);
     private route = inject(ActivatedRoute);
     private appService = inject(AppService);
-    // private entryService = inject(EntryService);
     private bucketService = inject(BucketService);
     private lambdaService = inject(LambdaService);
     private utilityService = inject(UtilityService);
@@ -89,6 +85,13 @@ export class UiEditorComponent implements OnInit {
     constructor() {
         this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+    }
+
+    otherAppList: any[] = [];
+
+    currentPath: string = "form";
+
+    ngOnInit() {
 
         this.commService.changeEmitted$.subscribe(data => {
             this.counts.update(c=>({...c, [data.key]: data.value}));
@@ -105,12 +108,6 @@ export class UiEditorComponent implements OnInit {
                 this.getDashboardList();
             }
         });
-    }
-    otherAppList: any[] = [];
-
-    currentPath: string = "form";
-
-    ngOnInit() {
 
         this.route.parent.url.subscribe(e => {
             this.currentPath = this.route.firstChild.routeConfig.path;

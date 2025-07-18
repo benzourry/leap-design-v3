@@ -32,12 +32,12 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 // import { SpeechRecognitionService } from '../../_shared/service/speech-recognition.service';
 
 @Component({
-    selector: 'app-design-home',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './design-home.component.html',
-    styleUrls: ['../../../assets/css/tile.css', './design-home.component.css'],
-    imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbPagination, 
-        NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent]
+  selector: 'app-design-home',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './design-home.component.html',
+  styleUrls: ['../../../assets/css/tile.css', './design-home.component.css'],
+  imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbPagination,
+    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent]
 })
 export class DesignHomeComponent {
 
@@ -50,14 +50,14 @@ export class DesignHomeComponent {
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
 
-  bgClassName: string = domainBase.replace(/\./g,'-');
+  bgClassName: string = domainBase.replace(/\./g, '-');
   offline = signal<boolean>(false);
 
   itemList = signal<any[]>([]);
   groupedItemList = computed(() => new GroupByPipe().transform(this.itemList(), 'group.name'));
   itemTotal = signal<number>(0);
   itemLoading = signal<boolean>(false);
-  
+
   tplList = signal<any[]>([]);
   tplTotal = signal<number>(0);
   tplLoading = signal<boolean>(false);
@@ -89,7 +89,7 @@ export class DesignHomeComponent {
     { name: "Orange", color: "#FF5722" },
     { name: "Indigo", color: "#3F51B5" },
   ]
-  
+
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
@@ -156,7 +156,7 @@ export class DesignHomeComponent {
     });
   }
 
-  editItem(tpl,data, isNew) {
+  editItem(tpl, data, isNew) {
     // this.initialAppPath = data.appPath;
     this.editItemData.set(data);
     if (data.id) {
@@ -165,14 +165,14 @@ export class DesignHomeComponent {
         .subscribe({
           next: app => {
             this.editItemData.set(app);
-            this._editApp(tpl,app, isNew);
+            this._editApp(tpl, app, isNew);
           }, error: err => {
 
           }
         })
     } else {
       // console.log("data no id");
-      this._editApp(tpl,data, isNew);
+      this._editApp(tpl, data, isNew);
     }
   }
 
@@ -198,7 +198,7 @@ export class DesignHomeComponent {
           },
         });
       },
-      () => {}
+      () => { }
     );
   }
 
@@ -232,7 +232,7 @@ export class DesignHomeComponent {
               },
             });
           },
-          () => {}
+          () => { }
         );
       },
       error: () => {
@@ -249,7 +249,7 @@ export class DesignHomeComponent {
       () => {
         // this.realRemoveItem(() => {}, data);
       },
-      () => {}
+      () => { }
     );
   }
 

@@ -8,19 +8,19 @@
     <div class="form">
       <div class="form-group mb-3">
         <label class="form-label">Select App</label>
-        <select class="form-select" name="appId" (change)="loadCloneDashboardList(cloneDashboardData().appId)"
-          [(ngModel)]="cloneDashboardData().appId">
+        <select class="form-select" name="appId" (change)="loadCloneDashboardList(_cloneDashboardData.appId)"
+          [(ngModel)]="_cloneDashboardData.appId">
           @for (app of cloneAppList(); track app.id) {
             <option [ngValue]="app.id">{{app.title}}</option>
           }
         </select>
       </div>
-      @if (cloneDashboardData().appId) {
+      @if (_cloneDashboardData.appId) {
         <div class="form-group mb-3">
           <label class="form-label">Select Dashboard *</label>
-          <select class="form-select" name="dashboardId" [(ngModel)]="cloneDashboardData().dashboardId"
+          <select class="form-select" name="dashboardId" [(ngModel)]="_cloneDashboardData.dashboardId"
             required>
-            @for (dashboard of cloneDashboardList; track dashboard.id) {
+            @for (dashboard of cloneDashboardList(); track dashboard.id) {
               <option [ngValue]="dashboard.id">{{dashboard.title}} [{{dashboard.id}}]
               </option>
             }
@@ -31,7 +31,7 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
-    <button type="button" class="btn btn-round btn-primary" (click)="close()(cloneDashboardData())"
+    <button type="button" class="btn btn-round btn-primary" (click)="done(_cloneDashboardData)"
       [disabled]="cloneDashboardForm.invalid">
       Start Duplicate Dashboard
     </button>
