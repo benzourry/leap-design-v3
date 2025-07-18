@@ -10,6 +10,25 @@
 @use "@fontsource/inter";
 
 /* You can add global styles to this file, and also import other style files */
+@media (pointer: fine) {
+  // body {
+  //   overflow: overlay;
+  // }
+  // ::-webkit-scrollbar {
+  //   width: 10px;
+  //   background: rgba(255,255,255,.3);
+  //   height: 10px;
+  // }
+  // ::-webkit-scrollbar-thumb {
+  //   background: rgba(0,0,0,.3);
+  //   border-radius: 10px;
+  // }
+  /* Firefox */
+  body, * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,.3) rgba(255,255,255,.3);
+  }
+}
 
 html,
 body {

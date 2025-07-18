@@ -25,7 +25,7 @@
     "@codemirror/lang-html": "^6.4.9",
     "@codemirror/lang-javascript": "^6.2.2",
     "@fontsource/inter": "^5.2.5",
-    "@fortawesome/angular-fontawesome": "^1.0.0",
+    "@fortawesome/angular-fontawesome": "^2.0.1",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
