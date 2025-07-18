@@ -1,9 +1,8 @@
 import { PlatformLocation, NgClass, DatePipe } from '@angular/common';
-import { Component, OnInit, effect, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, input, model, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Params } from '@fortawesome/fontawesome-svg-core';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
-// import { RunService } from '../../service/run.service';
 import { base } from '../../_shared/constant.service';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UserService } from '../../_shared/service/user.service';
@@ -14,70 +13,59 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 
 @Component({
     selector: 'app-user',
     templateUrl: './user.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./user.component.scss'],
     imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, NgbPagination, NgbPaginationFirst, 
       NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgSelectModule, AngularEditorModule, DatePipe]
 })
 export class UserComponent implements OnInit {
 
-  offline = false;
+  offline = signal<boolean>(false);
 
-  loading: boolean;
-  appUserTotal: number;  
-  numberOfElements: number;
-  entryPages:number;
-  appUserList: any;
-  totalItems: any;
+  loading = signal<boolean>(false);
+  appUserTotal = signal<number>(0);  
+  numberOfElements = signal<number>(0);
+  entryPages = signal<number>(0);
+  appUserList = signal<any[]>([]);
   lookup: any;
-  itemLoading: boolean;
 
-  // appId: number;
-  user: any;
+  user = computed<any>(() => this.runService.$user());
   pageSize = 45;
   currentPage = 1;
   itemsPerPage = 15;
-  // maxSize = 5;
-  // startAt = 0;
   searchText: string = "";
   base = base;
 
-  pageNumber: number = 1;
-  entryPageNumber: number = 1;
-  app: any;
-  // preurl: string = '';
-  baseUrl: string = '';
+  pageNumber = signal<number>(1);
+  app = computed<any>(() => this.runService.$app());
+  baseUrl = computed(()=>this.runService.$baseUrl());
   cs: number;
 
   groupId = model<number>();
-  hasGroupId:boolean;
+  hasGroupId = signal<boolean>(false);
   group:any;
 
-  // bucketId = input<number>();
   screen = input<any>();
   hideTitle = input<boolean>();
 
-  // appId:number;
+  private route = inject(ActivatedRoute)
+  private modalService = inject(NgbModal)
+  public runService = inject(RunService)
+  private location = inject(PlatformLocation)
+  private utilityService = inject(UtilityService)
+  private toastService = inject(ToastService)
 
-  constructor(private userService: UserService, private route: ActivatedRoute,
-    private modalService: NgbModal, public runService: RunService,
-    private location: PlatformLocation, private utilityService: UtilityService,
-    private toastService: ToastService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-
-    // effect(()=>{
-    //   this.app = this.runService.$app();
-    //   this.baseUrl = this.runService.$baseUrl();
-    // })
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
+    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
   }
 
   status: string[] = ['pending'];
-  groupList: any[];
+  groupList = signal<any[]>([]);
   groupMap: any = {};
   provider: any = {
     unimas: ['fas', 'university'],
@@ -143,64 +131,52 @@ export class UserComponent implements OnInit {
   ]
     ]
   };
+
   mailerList = [];
 
+  lookupEntryList: any[] = [];
+
   ngOnInit() {
-    this.app = this.runService.$app();
-    this.baseUrl = this.runService.$baseUrl();
-
-    this.userService.getUser()
-      .subscribe((user) => {
-        this.user = user;
-
-
-        if (this.groupId()) {
-          console.log("DA groupId()", this.groupId())
-          this.cs = this.groupId();
-          this.hasGroupId = true;
-          this.runService.getGroup(this.groupId())
-          .subscribe(res=>{
-            this.group = res;
-            this.getGroupList(this.group);
-          })
-        } else {
+    if (this.groupId()) {
+      console.log("DA groupId()", this.groupId())
+      this.cs = this.groupId();
+      this.hasGroupId.set(true);
+      this.runService.getGroup(this.groupId())
+      .subscribe(res=>{
+        this.group = res;
+        this.getGroupList(this.group);
+      })
+    } else {
+      this.route.params
+        .subscribe((params: Params) => {
           this.route.params
-            .subscribe((params: Params) => {
-              this.route.params
-              .subscribe((params: Params) => {
-                const groupId = params['groupId'];
-                if (groupId) {
-                  this.cs = groupId;
-                  this.hasGroupId = true;
-                  this.runService.getGroup(groupId)
-                  .subscribe(res=>{
-                    this.group = res;
-                    this.getGroupList(this.group);
-                  })
-                }else{
-                  this.runService.getGroupAllList({ appId: this.app?.id })
-                  .subscribe(res => {
-                    this.groupList = res;
-                    this.groupMap = this.groupList.reduce((map, obj) => { map[obj.id] = obj; return map }, {});
-                  })
-                  this.getPendingList();
-                  // this.getAppUserList(1, { status: ['pending'] });
-                  // this.cs = -1;
-                  // this.groupId.set(-1);
-                }
-    
-                this.runService.getMailerList({ appId: this.app?.id })
-                .subscribe(res => {
-                  this.mailerList = res.content;
-                })
-
+          .subscribe((params: Params) => {
+            const groupId = params['groupId'];
+            if (groupId) {
+              this.cs = groupId;
+              this.hasGroupId.set(true);
+              this.runService.getGroup(groupId)
+              .subscribe(res=>{
+                this.group = res;
+                this.getGroupList(this.group);
               })
-            });
-        }
+            }else{
+              this.runService.getGroupAllList({ appId: this.app()?.id })
+              .subscribe(res => {
+                this.groupList.set(res);
+                this.groupMap = res.reduce((map, obj) => { map[obj.id] = obj; return map }, {});
+              })
+              this.getPendingList();
+            }
 
-        
+            this.runService.getMailerList({ appId: this.app()?.id })
+            .subscribe(res => {
+              this.mailerList = res.content;
+            })
 
-      });
+          })
+        });
+    }
   }
 
   
@@ -214,7 +190,7 @@ export class UserComponent implements OnInit {
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
-        this.runService.blastUser(this.app?.id,Array.from(this.selectedUsers.keys()),res)
+        this.runService.blastUser(this.app()?.id,Array.from(this.selectedUsers.keys()),res)
         .subscribe({
           next: res=>{
             this.toastService.show(`Successfully blast mail to ${res.rows} user(s)`, { classname: 'bg-success text-light' });
@@ -228,35 +204,31 @@ export class UserComponent implements OnInit {
 
   getPendingList() {
     this.cs = -1;
-    // this.status = ['pending'];
     this.group = null;
     this.groupId.set(-1);
-    this.userUnauthorized = false;
+    this.userUnauthorized.set(false);
     this.getAppUserList(1, {
       status: ['pending']
     });
   }
 
-  userUnauthorized:boolean;
+  userUnauthorized = signal<boolean>(false);
   getGroupList(group) {
     this.group = group;
 
-
-    // let groupId = group.id;
     this.status = ['approved'];
     if (group == null) {
-      this.userUnauthorized = false;
-      // this.group = null;
+      this.userUnauthorized.set(false);
       this.groupId.set(null);
       this.cs = null;
       this.getAppUserList(1, {});
     } else {
-      let intercept = this.group?.accessList?.filter(v => Object.keys(this.user.groups).includes(v + ""));
+      let intercept = this.group?.accessList?.filter(v => Object.keys(this.user().groups).includes(v + ""));
       if (this.group?.accessList?.length > 0 && intercept.length == 0) {
         // && !this.app?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
-        this.userUnauthorized = true;
+        this.userUnauthorized.set(true);
       }else{
-        this.userUnauthorized = false;
+        this.userUnauthorized.set(false);
       }
       this.groupId.set(group.id);
       this.cs = group.id;
@@ -269,32 +241,32 @@ export class UserComponent implements OnInit {
 
   params: any;
 
-  editAppUserData: any;
+  editAppUserData = signal<any>({});
   editAppUserDataGroup: any[] = [];
   editAppUser(content, user, isNew) {
-    this.editAppUserData = user;
+    this.editAppUserData.set(user);
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         var payload = {
           email: data.email,
-          groups: this.hasGroupId?[this.group.id]:this.editAppUserData.group,
+          groups: this.hasGroupId()?[this.group.id]:this.editAppUserData().group,
           name: data.name,
           autoReg: true,
           tags: data.tags
         }
 
         if (data.bulkReg) {
-          this.runService.saveAppUserBulk(this.app.id, payload)
+          this.runService.saveAppUserBulk(this.app().id, payload)
             .subscribe(user => {
               this.toastService.show("Users successfully registered", { classname: 'bg-success text-light' });
-              this.getAppUserList(this.pageNumber, this.params);
+              this.getAppUserList(this.pageNumber(), this.params);
             })
         } else {
-          this.runService.saveAppUser(this.app.id, payload)
+          this.runService.saveAppUser(this.app().id, payload)
             .subscribe(user => {
               this.toastService.show("User successfully registered", { classname: 'bg-success text-light' });
-              this.getAppUserList(this.pageNumber, this.params);
+              this.getAppUserList(this.pageNumber(), this.params);
             })
         }
       }, res => { })
@@ -308,16 +280,14 @@ export class UserComponent implements OnInit {
       searchText: this.searchText,
       sort: ['sortOrder,asc','id,asc']
     })
-    this.pageNumber = pageNumber;
-    // this.lookupId = id;
+    this.pageNumber.set(pageNumber);
     this.params = params;
-    this.runService.getAppUserList(this.app?.id, params)
+    this.runService.getAppUserList(this.app()?.id, params)
       .subscribe(res => {
-        this.appUserList = res.content;
-        this.appUserTotal = res.page?.totalElements;        
-        this.numberOfElements = res.content?.length;
-        this.entryPages = res.page?.totalPages;
-        // this.getappUserList(this.entryPageNumber);
+        this.appUserList.set(res.content);
+        this.appUserTotal.set(res.page?.totalElements);        
+        this.numberOfElements.set(res.content?.length);
+        this.entryPages.set(res.page?.totalPages);
       })
 
   }
@@ -337,23 +307,10 @@ export class UserComponent implements OnInit {
     }
   }
 
-  approveAppUserData: any;
-  // approveAppUser(content, appUser) {
-  //   // console.log(appUser);
-  //   this.approveAppUserData = appUser;
-  //   history.pushState(null, null, window.location.href);
-  //   this.modalService.open(content, { backdrop: 'static' })
-  //     .result.then(data => {
-  //       this.runService.saveAppUserApproval(data.id, data.status, data)
-  //         .subscribe(res => {
-  //           this.toastService.show("User status changed", { classname: 'bg-success text-light' });
-  //           this.getAppUserList(this.pageNumber, this.params);
-  //         });
-  //     }, res => { })
-  // }
+  approveAppUserData = signal<any>(null);
 
   approveAppUser(content, appUser) {
-    this.approveAppUserData = appUser;
+    this.approveAppUserData.set(appUser);
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
@@ -373,29 +330,37 @@ export class UserComponent implements OnInit {
       }, res => { })
   }
 
-  removeAppUserData: any;
+  removeAppUserData = signal<any>(null);
   removeAppUser(content, obj) {
-    this.removeAppUserData = obj;
+    this.removeAppUserData.set(obj);
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
-        this.runService.removeAppUser(data.id, data.user?.id, this.user.email)
+        this.runService.removeAppUser(data.id, data.user?.id, this.user().email)
           .subscribe(res => {
             this.toastService.show("User successfully removed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
 
   reorderItem(index, op) {
-    this.reorder(this.appUserList, index, op);
+    this.appUserList.set(this.reorder(this.appUserList(),index,op))
+    setTimeout(() => {
+      this.appUserList.update((currentList) => {
+      const updatedList = [...currentList];
+      updatedList[index + op].altClass = 'swapEnd';
+      updatedList[index].altClass = 'swapEnd';
+      return updatedList;
+      });
+    }, 500);
     this.saveItemOrder();
   }
 
   saveItemOrder() {
-    var list = this.appUserList
+    var list = this.appUserList()
       .map((val, $index) => {
-        return { id: val.id, sortOrder: $index  + ((this.pageNumber-1) * this.pageSize) }
+        return { id: val.id, sortOrder: $index  + ((this.pageNumber()-1) * this.pageSize) }
       });
     return this.runService.saveUserOrder(list)
       .subscribe(res => {
@@ -419,10 +384,9 @@ export class UserComponent implements OnInit {
     items[index].sortOrder = tempSortOrder;
     items[index] = temp;
     // this.swapPositions(items,index,index+op);
-    setTimeout(() => {
-      items[index + op].altClass = 'swapEnd';
-      items[index].altClass = 'swapEnd';
-    }, 500);
+    
+
+    return items;
   }
 
   selectedUsers = new Map<number, any>();
@@ -430,12 +394,9 @@ export class UserComponent implements OnInit {
     return this.selectedUsers.has(i.user?.id);
   }
   toggleSelect(i) {
-    // console.log(i);
     if (this.selectedUsers.has(i.user?.id)) {
-      // console.log("ada")
       this.selectedUsers.delete(i.user?.id);
     } else {
-      // console.log("xda")
       this.selectedUsers.set(i.user?.id, i);
     }
   }
@@ -443,24 +404,24 @@ export class UserComponent implements OnInit {
   
   checkAllUsers(checked) {
     if (checked) {
-      this.appUserList
+      this.appUserList()
         .forEach(e => this.selectedUsers.set(e.user?.id, e));
     } else {
-      this.appUserList
+      this.appUserList()
         .forEach(e => this.selectedUsers.delete(e.user?.id));
     }
   }
 
-  editUserData: any;
+  editUserData = signal<any>(null);
   editUser(content, obj) {
-    this.editUserData = obj.user;
+    this.editUserData.set(obj.user);
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.runService.updateUser(data.id, data)
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
@@ -479,14 +440,13 @@ export class UserComponent implements OnInit {
   changeProvider(content) {
     this.selectedUsersArray =  Array.from(this.selectedUsers.values());
     this.changeProviderData = {};
-    // this.changeProviderData = obj.user;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.runService.bulkChangeProvider(data.provider, Array.from(this.selectedUsers.keys()))
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }

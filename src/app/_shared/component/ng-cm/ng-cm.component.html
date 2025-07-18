@@ -13,4 +13,7 @@
   @if (!skipCheck() && codeStatus) {
     <div class="text-white small p-1 bg-danger">{{codeStatus}}</div>
   }
+  @if (this.subType() == 'passive' && isAssignmentExpression()) {
+    <div class="text-white small p-1 bg-danger">Value assignment is not allowed here</div>
+  }
 </div>

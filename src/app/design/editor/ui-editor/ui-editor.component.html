@@ -14,7 +14,7 @@
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;"
                         routerLinkActive="active">
                         Forms
-                        <div class="badgeUi ms-auto">{{counts.form}}</div>
+                        <div class="badgeUi ms-auto">{{counts().form}}</div>
                     </button>
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody 
@@ -26,7 +26,7 @@
                                     routerLinkActive="active" [routerLink]="['/design',app?.id,'ui','form']"
                                     [queryParams]="{id:i?.id}" draggable="false"
                                     cdkDrag>
-                                    @if(counts.form>1){
+                                    @if(counts().form>1){
                                       <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
                                         cdkDragHandle>
                                         <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
@@ -53,10 +53,10 @@
                 </div>
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dataset" [collapsed]="currentPath!='dataset'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        Datasets <div class="badgeUi ms-auto">{{counts.dataset}}</div>
+                        Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
                     </button>
                     <div ngbAccordionCollapse>
-                      @if (counts.dataset>1){
+                      @if (counts().dataset>1){
                         <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
                           <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
                           <div class="ms-auto btn-group-xs small group-by-toggle">
@@ -74,9 +74,9 @@
                       }
                     <div ngbAccordionBody 
                       cdkDropList cdkDropListOrientation="vertical"
-                      (cdkDropListDropped)="reorderDataset($event, datasetList)">
+                      (cdkDropListDropped)="reorderDataset($event, datasetList())">
                       
-                      @for (dsKv of datasetList|filter:searchText|groupBy:datasetGroupBy; track $index) {
+                      @for (dsKv of datasetList()|filter:searchText|groupBy:datasetGroupBy; track $index) {
                         @if (datasetGroupBy){
                           <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
                         }
@@ -85,8 +85,8 @@
                             <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
                                 routerLinkActive="active" [routerLink]="['/design',app.id,'ui','dataset']"
                                 draggable="false"
-                                [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts.dataset==1">
-                                @if(!datasetGroupBy && counts.dataset>1){
+                                [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts().dataset==1">
+                                @if(!datasetGroupBy && counts().dataset>1){
                                   <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
                                     cdkDragHandle>
                                     <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
@@ -114,7 +114,7 @@
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dashboard" [collapsed]="currentPath!='dashboard'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
                         Dashboard
-                        <div class="badgeUi ms-auto">{{counts.dashboard}}</div>
+                        <div class="badgeUi ms-auto">{{counts().dashboard}}</div>
                     </button>
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody
@@ -125,7 +125,7 @@
                                 <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active"
                                     draggable="false"
                                     [routerLink]="['/design',app.id,'ui','dashboard']" [queryParams]="{id:i?.id}" cdkDrag>
-                                    @if(counts.dashboard>1){
+                                    @if(counts().dashboard>1){
                                       <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
                                         cdkDragHandle>
                                         <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
@@ -152,10 +152,10 @@
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-screen" [collapsed]="currentPath!='screen'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
                         Custom Screen
-                        <div class="badgeUi ms-auto">{{counts.screen}}</div>
+                        <div class="badgeUi ms-auto">{{counts().screen}}</div>
                     </button>
                     <div ngbAccordionCollapse>
-                      @if (counts.screen>1){
+                      @if (counts().screen>1){
                         <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
                           <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
                           <div class="ms-auto btn-group-xs small group-by-toggle">
@@ -183,8 +183,8 @@
                                 @if (i?.id){
                                   <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active"
                                     draggable="false"
-                                    [routerLink]="['/design',app.id,'ui','screen']" [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts.screen==1">
-                                    @if(!screenGroupBy && counts.screen>1){
+                                    [routerLink]="['/design',app.id,'ui','screen']" [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts().screen==1">
+                                    @if(!screenGroupBy && counts().screen>1){
                                       <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
                                         cdkDragHandle>
                                         <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
@@ -215,7 +215,7 @@
             </div>
             <a class="pointer element text-truncate" [routerLink]="['navi']" routerLinkActive="active">
                 Structure
-                @if (!counts.navi) {
+                @if (!counts().navi) {
                 <fa-icon style="opacity:.3" class="float-end me-1" [icon]="['fas','exclamation-triangle']"
                     [fixedWidth]="true"></fa-icon>
                 }
@@ -565,7 +565,7 @@
 <ng-template #editScreenTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
     <app-edit-screen [dismiss]="d" [close]="c" [screen]="editScreenData" [app]="app" [formList]="formList"
-        [datasetList]="datasetList" [cognaList]="cognaList" [bucketList]="bucketList" [accessList]="accessList"></app-edit-screen>
+        [datasetList]="datasetList()" [cognaList]="cognaList" [bucketList]="bucketList" [accessList]="accessList"></app-edit-screen>
   }@loading {
     <div class="text-center m-5">
       <div class="spinner-grow text-primary" role="status">

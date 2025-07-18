@@ -3,6 +3,7 @@ import { CreatorGuardService } from './_shared/service/auth-creator-guard.servic
 import { DevProfileComponent } from './devprofile/devprofile.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
+// import { TestComponent } from './run/_component/test/test.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -12,6 +13,7 @@ export const routes: Routes = [
         { path: '', redirectTo:'design', pathMatch:'full'},
         { path: 'devprofile', component: DevProfileComponent },
         { path: 'run',    loadChildren: () => import('./run/run.routes').then(m => m.RUN_ROUTES) },
+        // { path: 'test',    component: TestComponent },
         { path: 'repo',    loadChildren: () => import('./repo/repo.routes').then(m => m.REPO_ROUTES) },
         { path: 'admin',    loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES) },
         { path: 'design', loadChildren: () => import('./design/design.routes').then(m => m.DESIGN_ROUTES) },

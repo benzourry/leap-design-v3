@@ -1,44 +1,41 @@
-<div id="dashboard-{{dashboard?.id}}" class="viewport section-to-print">
+<div id="dashboard-{{dashboard()?.id}}" class="viewport section-to-print">
   @if (!asComp() && !hideTitle()) {
-    <page-title>
-      <h4 class="m-0" [innerHtml]="dashboard?.title">{{dashboard?.title}}</h4>
-      @if (dashboard?.description) {
-        <div class="mt-1" [innerHtml]="dashboard?.description">{{dashboard?.description}}</div>
-      }
-    </page-title>
+  <page-title>
+    <h4 class="m-0" [innerHtml]="dashboard()?.title">{{dashboard()?.title}}</h4>
+    @if (dashboard()?.description) {
+    <div class="mt-1" [innerHtml]="dashboard()?.description">{{dashboard()?.description}}</div>
+    }
+  </page-title>
   }
-  @if (dashboard && !userUnauthorized) {
-    @if (!hideTitle() && dashboard.x?.canPrint){
-      <div class="title text-center pb-4">
-        <button type="button" class="print-hide btn btn-info btn-round btn-sm" (click)="printReport()">
-          <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
-          </fa-icon> Print
-        </button>
-      </div>            
+  @if (dashboard() && !userUnauthorized()) {
+    @if (!hideTitle() && dashboard().x?.canPrint){
+    <div class="title text-center pb-4">
+      <button type="button" class="print-hide btn btn-info btn-round btn-sm" (click)="printReport()">
+        <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
+        </fa-icon> Print
+      </button>
+    </div>
     }
     <div class="p-2">
-      <div class="centered fix-gutter" [class.limit-width]="!dashboard?.wide">
+      <div class="centered fix-gutter" [class.limit-width]="!dashboard()?.wide">
         <div class="row m-p-4">
-          @for (chart of dashboard?.charts; track chart.id) {
-            @if ((!maxState || max==chart.id) && preCheck(chart, {})) {
-              <div [ngClass]="maxState?'col-sm-12':chart.size">
-                <app-chart [chart]="chart" [maxState]="maxState" (onEnterMaxState)="enterMaxState($event)" (onExitMaxState)="exitMaxState()"
-                  [$param$]="$param$" [$baseUrl$]="$baseUrl$" [app]="app" [user]="user"></app-chart>                
-              </div>
+          @for (chart of dashboard()?.charts; track chart.id) {
+            @if ((!maxState() || max()==chart.id) && preCheck(chart, {})) {
+            <div [ngClass]="maxState()?'col-sm-12':chart.size">
+              <app-chart [chart]="chart" [maxState]="maxState()" (onEnterMaxState)="enterMaxState($event)"
+                (onExitMaxState)="exitMaxState()" [param]="param()"></app-chart>
+            </div>
             }
           }
         </div>
       </div>
     </div>
   } @else {
-    @if (!loading) {
-      @if (userUnauthorized) {
-        <div class="detail text-muted">
-          <h3>{{app.x?.lang=='ms'?'Akses dashboard tidak dibenarkan':'Access to the dashboard is not allowed'}}</h3>
-          <!-- <p>{{app.x?.lang=='ms'?'Dashboard cuma boleh diakses oleh ':'Dashboard can only be accessed by '}}
-            <strong>{{dashboard?.access.name}}</strong>
-          </p> -->
-        </div>
+    @if (!loading()) {
+      @if (userUnauthorized()) {
+      <div class="detail text-muted">
+        <h3>{{app().x?.lang=='ms'?'Akses dashboard tidak dibenarkan':'Access to the dashboard is not allowed'}}</h3>
+      </div>
       }
     }
   }

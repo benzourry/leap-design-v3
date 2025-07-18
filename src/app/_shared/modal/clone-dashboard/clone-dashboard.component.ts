@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 import { DashboardService } from '../../../service/dashboard.service';
 import { FormsModule } from '@angular/forms';
 
@@ -6,11 +6,15 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-clone-dashboard',
     templateUrl: './clone-dashboard.component.html',
     styleUrls: ['./clone-dashboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule]
 })
 export class CloneDashboardComponent implements OnInit {
 
-  constructor(private dashboardService: DashboardService) {
+  private dashboardService = inject(DashboardService);
+  cdr = inject(ChangeDetectorRef);
+  
+  constructor() {
   }
 
 //   @Input("dismiss")
@@ -33,6 +37,7 @@ export class CloneDashboardComponent implements OnInit {
       this.dashboardService.getDashboardList(appId,)
           .subscribe(res => {
               this.cloneDashboardList = res;
+              this.cdr.detectChanges();
           })
   }
 

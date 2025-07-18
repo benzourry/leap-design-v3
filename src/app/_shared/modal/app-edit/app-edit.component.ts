@@ -1,4 +1,4 @@
-import { Component, OnInit, input, model } from '@angular/core';
+import { Component, OnInit, input, model, ChangeDetectorRef, inject } from '@angular/core';
 import { AppService } from '../../../service/app.service';
 import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
 import { baseApi, domainBase, OAUTH } from '../../constant.service';
@@ -11,12 +11,14 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlatformService } from '../../../service/platform.service';
+import { ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
     selector: 'app-app-edit',
     templateUrl: './app-edit.component.html',
     styleUrls: ['./app-edit.component.scss'],
-    imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet]
+    imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppEditComponent implements OnInit {
 
@@ -69,6 +71,7 @@ export class AppEditComponent implements OnInit {
   isPathTaken = (path)=> ['io','create','design','core'].indexOf(path)>-1?of(true):this.appService.isPathTaken(path);
   
   appGroups: any[] = [];
+  cdr = inject(ChangeDetectorRef);
   ngOnInit() {
     // console.log("onInit")
     this.initialAppPath = this.data().appPath;
@@ -86,11 +89,13 @@ export class AppEditComponent implements OnInit {
       sort: 'id,desc'
     }).subscribe(res => {
         this.otherAppList = res.content;
+        this.cdr.detectChanges();
     })
 
     this.platformService.listAppGroup({size:9999, email:this.user().email})
       .subscribe(res => { 
         this.appGroups = res.content;
+        this.cdr.detectChanges();
       })
   }
 
@@ -101,6 +106,7 @@ export class AppEditComponent implements OnInit {
     this.appService.getPages(this.data().id)
     .subscribe(res=>{
       this.pages = res;
+      this.cdr.detectChanges();
     });
   }
   screens:any = [];
@@ -109,6 +115,7 @@ export class AppEditComponent implements OnInit {
     this.screenService.getScreenList(this.data().id)
     .subscribe(res=>{
       this.screens = res;
+      this.cdr.detectChanges();
     });
   }
 
@@ -120,6 +127,7 @@ export class AppEditComponent implements OnInit {
             app.logo = res.fileUrl;
             return app;
           })
+          this.cdr.detectChanges();
           // this.data['logo'] = res.fileUrl;
         })
 
@@ -134,6 +142,7 @@ export class AppEditComponent implements OnInit {
             app.logo = null;
             return app;
           })
+          this.cdr.detectChanges();
         })      
     }
   }

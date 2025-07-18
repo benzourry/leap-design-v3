@@ -22,6 +22,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 // /* LEAP */
 export const baseApi = 'https://io.leap.my/api';   // prefer
 export const base = 'https://io.leap.my'; // prefer
+export const cognaBase = 'https://io.leap.my'; // prefer
 
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?leap\.my/;
 export const domainBase = "leap.my"; 

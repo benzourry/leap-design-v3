@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { BucketService } from '../../../service/bucket.service';
@@ -19,7 +19,8 @@ import { map } from 'rxjs/operators';
     selector: 'app-bucket-manager',
     templateUrl: './bucket-manager.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe]
+    imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BucketManagerComponent implements OnInit {
 
@@ -37,15 +38,21 @@ export class BucketManagerComponent implements OnInit {
   appId: number;
   rand: number;
   baseApi = baseApi;
-  constructor(private userService: UserService, private route: ActivatedRoute, private bucketService: BucketService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private runService: RunService,
-    private appService: AppService,
-    private toastService: ToastService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+
+  private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
+  private bucketService = inject(BucketService);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  private router = inject(Router);
+  private runService = inject(RunService);
+  private appService = inject(AppService);
+  private toastService = inject(ToastService);
+  private utilityService = inject(UtilityService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -53,6 +60,7 @@ export class BucketManagerComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.rand = Math.random();
 
@@ -60,6 +68,7 @@ export class BucketManagerComponent implements OnInit {
           // NOTE: I do not use switchMap here, but subscribe directly
           .subscribe((params: Params) => {
             this.appId = params['appId'];
+            this.cdr.detectChanges();
 
 
             if (this.appId) {
@@ -68,6 +77,7 @@ export class BucketManagerComponent implements OnInit {
               this.appService.getApp(this.appId, params)
                 .subscribe(res => {
                   this.app = res;
+                  this.cdr.detectChanges();
                 });
             }
 
@@ -121,8 +131,10 @@ export class BucketManagerComponent implements OnInit {
           this.bucketList = res.content;
           this.bucketTotal = res.page?.totalElements;
           this.itemLoading = false;
+          this.cdr.detectChanges();
         }, error: (err) => {
-          this.itemLoading = false
+          this.itemLoading = false;
+          this.cdr.detectChanges();
         }
       })
 
@@ -144,8 +156,10 @@ export class BucketManagerComponent implements OnInit {
             this.loadBucket(res.id);
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Bucket successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, res => {
             this.toastService.show("Bucket saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { })
   }
@@ -161,8 +175,10 @@ export class BucketManagerComponent implements OnInit {
             this.loadBucketList(1);
             delete this.bucket;
             this.toastService.show("Bucket successfully removed", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, res => {
             this.toastService.show("Bucket removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { });
   }
@@ -177,7 +193,8 @@ export class BucketManagerComponent implements OnInit {
         this.getFileList(1, {
           bucket: this.bucketId
         })
-        this.loadAvLogList(id);        
+        this.loadAvLogList(id);
+        this.cdr.detectChanges();
       })
   }
 
@@ -185,6 +202,7 @@ export class BucketManagerComponent implements OnInit {
     this.runService.avLogList(bucketId)
     .subscribe(res=>{
       this.avLogList = res;
+      this.cdr.detectChanges();
     })
   }
 
@@ -228,7 +246,7 @@ export class BucketManagerComponent implements OnInit {
       .subscribe(res => {
         this.bucketFileList = res.content;
         this.bucketFileTotal = res.page?.totalElements;
-        // this.getbucketFileList(this.entryPageNumber);
+        this.cdr.detectChanges();
       })
 
   }
@@ -243,6 +261,7 @@ export class BucketManagerComponent implements OnInit {
           .subscribe(res => {
             this.toastService.show("File successfully removed", { classname: 'bg-success text-light' });
             this.getFileList(this.pageNumber, this.params);
+            this.cdr.detectChanges();
           })
       }, res => { });
   }
@@ -260,6 +279,7 @@ export class BucketManagerComponent implements OnInit {
   scanLoading:any={}
   startScan(bucket){
     this.scanLoading[bucket.id]=true;
+    this.cdr.detectChanges();
     this.runService.scanBucket(bucket.id)
     .pipe(
       map(res => {    
@@ -270,8 +290,10 @@ export class BucketManagerComponent implements OnInit {
           this.getFileList(1, {
             bucket: this.bucketId
           })
+          this.cdr.detectChanges();
         } else {
           this.scanProgress[bucket.id] = { print: res['partialText'], success: true, out: {} };
+          this.cdr.detectChanges();
         }
       })
     )
@@ -282,6 +304,7 @@ export class BucketManagerComponent implements OnInit {
       this.scanLoading[bucket.id]=false;
       this.toastService.show("Bucket sccan failed", { classname: 'bg-danger text-light' });
       this.scanProgress[bucket.id] = { message: JSON.stringify(err.error), success: false };
+      this.cdr.detectChanges();
     });
   }
 
@@ -293,6 +316,7 @@ export class BucketManagerComponent implements OnInit {
   uploadFile($event) {
     if ($event.target.files && $event.target.files.length) {
       this.importLoading = true;
+      this.cdr.detectChanges();
       this.bucketService.uploadFile(this.bucket.id, this.app.id, $event.target.files[0], this.user.email)
       .subscribe({
         next:res=>{          
@@ -301,13 +325,16 @@ export class BucketManagerComponent implements OnInit {
             this.importLoading = false;
             this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
             this.getFileList(this.pageNumber, this.params);
+            this.cdr.detectChanges();
           }else{
             this.toastService.show(res.message, { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         },
         error:error=>{
           this.importLoading = false;
           this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       })
         // .subscribe(res => {
@@ -388,6 +415,7 @@ export class BucketManagerComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl)
           .result.then(res => { }, dis => { })
+        this.cdr.detectChanges();
       })
 
   }
@@ -404,6 +432,7 @@ export class BucketManagerComponent implements OnInit {
 
             this.toastService.show("Bucket successfully organized " + result + " ", { classname: 'bg-success text-light' });
             this.loadBucket(id);
+            this.cdr.detectChanges();
           }
         })
     }
@@ -412,7 +441,10 @@ export class BucketManagerComponent implements OnInit {
   serverInfo:any={}
   bucketServerInfo(){
     this.runService.bucketServerInfo()
-    .subscribe(res=>this.serverInfo = res)
+    .subscribe(res=>{
+      this.serverInfo = res;
+      this.cdr.detectChanges();
+    })
   }
 
   selectColor(number) {

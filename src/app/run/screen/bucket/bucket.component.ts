@@ -1,107 +1,99 @@
-import { DatePipe, DecimalPipe, NgClass, PlatformLocation } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { DatePipe, DecimalPipe, NgClass, NgStyle, PlatformLocation } from '@angular/common';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../../_shared/constant.service';
-// import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { ToastService } from '../../../_shared/service/toast-service';
-import { UserService } from '../../../_shared/service/user.service';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { ServerDate } from '../../../_shared/utils';
 import { RunService } from '../../_service/run.service';
 import { map } from 'rxjs/operators';
-// import { RunService } from '../../../service/run.service';
 
 @Component({
     selector: 'app-bucket',
     imports: [FormsModule, FaIconComponent, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, 
-      NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, 
+      NgbPaginationLast, NgbDropdown, NgStyle, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, 
       DecimalPipe, DatePipe],
     templateUrl: './bucket.component.html',
     styleUrl: './bucket.component.scss'
 })
 export class BucketComponent {
 
-  offline = false;
-  app: any;
+  offline = signal<boolean>(false);
+  app = computed(()=>this.runService.$app());
 
-  bucketTotal: any;
-  loading: boolean;
-  bucketList: any;
-  // groupEntryTotal: any;
-  // groupEntryList: any;
-  totalItems: any;
-  bucketId = input<number>();
+  loading = signal<boolean>(false);
+  bucketList = signal<any[]>([]);
+  bucketId:number;
   screen = input<any>();
   
-  bucket: any;
-  itemLoading: boolean;
+  bucket = signal<any>(null);
+  itemLoading = signal<boolean>(false);
   appId: number;
   rand: number;
   baseApi = baseApi;
-  constructor(private userService: UserService, private route: ActivatedRoute,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private runService: RunService,
-    private toastService: ToastService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+
+  private route = inject(ActivatedRoute)
+  private modalService = inject(NgbModal)
+  private location = inject(PlatformLocation)
+  private runService = inject(RunService)
+  private toastService = inject(ToastService)
+  private utilityService = inject(UtilityService)
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
+    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
   }
 
   ngOnInit() {
-    this.userService.getUser()
-      .subscribe((user) => {
-        this.user = user;
+    this.rand = Math.random();
 
-        this.rand = Math.random();
+    this.route.queryParams.subscribe(queryParam=>{
+      this.$param$ = queryParam;
+    })
 
-        this.route.queryParams.subscribe(queryParam=>{
-          this.$param$ = queryParam;
-        })
+    this.loadBucket(this.screen().bucket.id);
 
-        this.loadBucket(this.screen().bucket.id);
-
-        this.bucketServerInfo();
-        
-      });
+    this.bucketServerInfo();        
   }
 
-  user: any;
-  data = { 'list': [] };
+  user = computed(()=>this.runService.$user());
   pageSize = 45;
-  currentPage = 1;
-  itemsPerPage = 15;
-  maxSize = 5;
-  startAt = 0;
-  searchText: string = "";
 
-  pageNumber: number = 1;
-  entryPageNumber: number = 1;
+  pageNumber = signal<number>(1);
 
   avLogList:any[]=[];
 
 
   loadBucket(id) {
+    this.loading.set(true);
     this.bucketId = id;
     this.runService.getBucket(id)
-      .subscribe(bucket => {
-        this.bucket = bucket;
+    .subscribe({
+      next: bucket => {
+        this.bucket.set(bucket);
         this.getFileList(1, {
           bucket: this.bucketId
         })
         this.loadAvLogList(id);
-      })
+        this.loading.set(false);
+      },
+      error: error => {
+        this.loading.set(false);
+        this.toastService.show("Failed to load bucket", { classname: 'bg-danger text-light' });
+      }
+    });
   }
 
   params: any;
-  bucketFileTotal: any;
-  bucketFileList: any;
+  bucketFileTotal = signal<number>(0);
+  bucketFileList = signal<any[]>([]);
   searchTextFile: string = "";
   getFileList(pageNumber, params) {
+    this.itemLoading.set(true);
     Object.assign(params, {
       page: pageNumber - 1,
       size: this.pageSize,
@@ -110,22 +102,26 @@ export class BucketComponent {
     })
 
     if (this.screen().data?.bucketType=='user'){
-      params.email = this.user.email;
+      params.email = this.user().email;
     }
     if (this.screen().data?.bucketType=='custom'){
       params = Object.assign(params, this._pre({}, this.screen().data?.bucketParam))
     }
 
-    this.pageNumber = pageNumber;
-    // this.lookupId = id;
+    this.pageNumber.set(pageNumber);
     this.params = params;
-    this.runService.getFileList(this.bucket.id, params)
-      .subscribe(res => {
-        this.bucketFileList = res.content;
-        this.bucketFileTotal = res.page?.totalElements;
-        // this.getbucketFileList(this.entryPageNumber);
-      })
-
+    this.runService.getFileList(this.bucket().id, params)
+    .subscribe({
+      next:res => {
+        this.itemLoading.set(false);
+        this.bucketFileList.set(res.content);
+        this.bucketFileTotal.set(res.page?.totalElements);
+      },
+      error: error => {
+        this.itemLoading.set(false);
+        this.toastService.show("Failed to load bucket files", { classname: 'bg-danger text-light' });
+      }
+    })
   }
 
   removeBucketFileData: any;
@@ -134,10 +130,10 @@ export class BucketComponent {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
-        this.runService.removeBucketFile(data.id, this.user.email)
+        this.runService.removeBucketFile(data.id, this.user().email)
           .subscribe(res => {
             this.toastService.show("File successfully removed", { classname: 'bg-success text-light' });
-            this.getFileList(this.pageNumber, this.params);
+            this.getFileList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
@@ -146,31 +142,23 @@ export class BucketComponent {
     return this.baseApi + pre + encodeURIComponent(path);
   }
 
-  importLoading: boolean = false;
+  importLoading = signal<boolean>(false);
   uploadFile($event) {
     if ($event.target.files && $event.target.files.length) {
-      this.importLoading = true;
-      this.runService.uploadFile(this.bucket.id, this.app.id, $event.target.files[0], this.user.email)
+      this.importLoading.set(true);
+      this.runService.uploadFile(this.bucket().id, this.app().id, $event.target.files[0], this.user().email)
       .subscribe({
         next:res=>{          
-          // this.importExcelData = res;
-          this.importLoading = false;
+          this.importLoading.set(false);
           this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
-          this.getFileList(this.pageNumber, this.params);
+          this.getFileList(this.pageNumber(), this.params);
         },
         error:error=>{
-          this.importLoading = false;
+          this.importLoading.set(false);
           this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
         }
       })
-        // .subscribe(res => {
-        // }, error => {
-        //   this.importLoading = false;
-        //   this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
-        // });
-
     }
-
   }
 
   bucketZipMap: any = {};
@@ -200,9 +188,6 @@ export class BucketComponent {
 
   downloadZip(filename: string): void {
 
-    // const baseUrl = 'http://myserver/index.php/api';
-    // const token = 'my JWT';
-    // const headers = new HttpHeaders().set('authorization','Bearer '+token);
     this.runService.downloadZip(filename)
       .subscribe(response => {
         let dataType = response.type;
@@ -210,7 +195,6 @@ export class BucketComponent {
         binaryData.push(response);
         let downloadLink = document.createElement('a');
         downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, { type: dataType }));
-        // if (filename)
         downloadLink.setAttribute('download', filename);
         document.body.appendChild(downloadLink);
         downloadLink.click();
@@ -219,7 +203,7 @@ export class BucketComponent {
 
   bucketStatData: any = {}
   bucketStat(tpl) {
-    this.runService.bucketStat(this.bucket.id)
+    this.runService.bucketStat(this.bucket().id)
       .subscribe(res => {
         this.bucketStatData = res;
         history.pushState(null, null, window.location.href);
@@ -251,7 +235,7 @@ export class BucketComponent {
   $this$:any;
 
   _pre = (data, v) => new Function('$app$', '$user$', '$conf$', '$param$', '$baseApi$', 'dayjs', 'ServerDate', 
-  `return ${v}`)(this.app, this.user, this.runService?.appConfig, this.$param$, this.baseApi, dayjs, ServerDate);
+  `return ${v}`)(this.app(), this.user(), this.runService?.appConfig, this.$param$, this.baseApi, dayjs, ServerDate);
 
 
   selectColor(number) {
@@ -261,15 +245,9 @@ export class BucketComponent {
 
   
   openAvLogs(content, obj) {
-    // this.removeBucketFileData = obj;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
-        // this.bucketService.removeBucketFile(data.id, this.user.email)
-        //   .subscribe(res => {
-        //     this.toastService.show("File successfully removed", { classname: 'bg-success text-light' });
-        //     this.getFileList(this.pageNumber, this.params);
-        //   })
       }, res => { });
   }
 

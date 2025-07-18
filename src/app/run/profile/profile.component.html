@@ -2,33 +2,33 @@
   <page-title>
     <h4 class="m-0">Profile</h4>
   </page-title>
-  @if (user){
+  @if (user()){
     <div class="limit-width m-a pb-3 ps-2 pe-2" style="max-width:720px">
       <div class="text-center">
-        <img src="{{user?.imageUrl}}" class="rounded mb-2" onError="this.src='assets/img/avatar-big.png'"
+        <img src="{{user()?.imageUrl}}" class="rounded mb-2" onError="this.src='assets/img/avatar-big.png'"
           style="max-width:100px;">
       </div>
       <div class="card">
         <div class="list-group list-group-flush">
-          @if (app.x?.userFromApp) {
+          @if (app()?.x?.userFromApp) {
             <div class="list-group-item bg-light text-muted">
               <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"> </fa-icon> User profile is managed in other app
             </div>
           }
           <div class="list-group-item">
-            <div>{{user.name}}</div>
+            <div>{{user()?.name}}</div>
           </div>
           <div class="list-group-item">
             <div class="row">
-              <div class="col text-overflow">{{user.email}}</div>
-              <div class="col text-end"><fa-icon [icon]="provider[user.provider]" [fixedWidth]="true"> </fa-icon>
-                {{user.provider}}</div>
+              <div class="col text-overflow">{{user()?.email}}</div>
+              <div class="col text-end"><fa-icon [icon]="provider[user()?.provider]" [fixedWidth]="true"> </fa-icon>
+                {{user()?.provider}}</div>
             </div>
             <div></div>
           </div>
-          @if (hasProp(user.groups)) {
+          @if (hasProp(user()?.groups)) {
             <div class="list-group-item">
-              @for (g of user.groups|keyvalue; track $index; let last = $last) {
+              @for (g of user()?.groups|keyvalue; track $index; let last = $last) {
                 <span>{{g.value.name}}{{last?'':', '}}</span>
               }
             </div>
@@ -40,7 +40,7 @@
               </div>
             </a>
           </div>
-          @if (user.once!==null && app?.id) {
+          @if (user()?.once!==null && app()?.id) {
             <div class="list-group-item">
               <a class="pointer text-primary" style="text-decoration: none;" (click)="revokeTerm()">
                 <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon> Term(s) accepted (click to revoke)
@@ -49,30 +49,34 @@
               </a>
             </div>
           }
-          @if (user.provider == 'local') {
+          @if (user()?.provider == 'local') {
             <div class="list-group-item">
               <a class="pointer text-primary" (click)="changePwd(changePwdTpl)">
                 <fa-icon [icon]="['fas','edit']" [fixedWidth]="true"></fa-icon> Change password
               </a>
             </div>
           }
-          <a class="list-group-item bg-danger text-white" role="button" (click)="logout()">
-            <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> Logout
-          </a>
+          
         </div>
       </div>
-      @if (app?.id) {
+
+      <div class="mt-3">
+        <button class="btn btn-danger w-100" role="button" (click)="logout()">
+            <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> Logout
+        </button>
+      </div>
+      @if (app()?.id) {
         <div class="repo-title mt-3 text-center text-muted">
           Notifications
         </div>
-        @if (notifList.length==0) {
+        @if (notifList().length==0) {
           <h4 class="p-4 text-muted text-center">No notification at the moment</h4>
         }@else{
           <div class="card mt-2">
             <div class="list-group list-group-flush">
-              @for (n of notifList; track n.id) {
+              @for (n of notifList(); track n.id) {
                 <div class="list-group-item nobreak"
-                  [class.list-group-item-info]="!n.receipt?.[user.email]" [class.text-muted]="n.receipt?.[user.email]"
+                  [class.list-group-item-info]="!n.receipt?.[user()?.email]" [class.text-muted]="n.receipt?.[user()?.email]"
                   (click)="openNotif(notifTpl,n)">
                   <span class="">{{cleanText(n.content)}}</span>
                   <div class="small">{{n.timestamp|date}}</div>
@@ -82,14 +86,14 @@
           </div>
         }
       }
-      @if (pushSubs.length>0) {
+      @if (pushSubs().length>0) {
         <div class="repo-title mt-3 text-center text-muted">
           Push Notification Subscription
           <div class="small">Click to unsubscribe</div>
         </div>
         <div class="card mt-2">
           <div class="list-group list-group-flush">
-            @for (sub of pushSubs; track $index) {
+            @for (sub of pushSubs(); track $index) {
               <div class="list-group-item nobreak" [class.list-group-item-primary]="sub.endpoint == actualSub?.endpoint"
                 role="button" (click)="unsubscribeToNotifications(sub.endpoint)">
                 <span>{{sub.client.userAgent.family}} on {{sub.client.os.family}} {{sub.client.os.major}} (Device:
@@ -107,19 +111,18 @@
   <div class="list-group list-group-flush">
     <div class="list-group-item">
       <div class="label-span">From</div>
-      <div>{{notif.sender}}</div>
+      <div>{{notif().sender}}</div>
     </div>
     <div class="list-group-item">
       <div class="label-span">Timestamp</div>
-      <div>{{notif.timestamp|date:'medium'}}</div>
+      <div>{{notif().timestamp|date:'medium'}}</div>
     </div>
     <div class="list-group-item">
-      <span [innerHtml]="notif.content"></span>
+      <span [innerHtml]="notif().content"></span>
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-primary" (click)="c(notif)">
-      <!-- <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> -->
+    <button type="button" class="btn btn-round btn-primary" (click)="c(notif())">
       Close
     </button>
   </div>
@@ -170,7 +173,6 @@
     <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="changePwdForm.invalid"
       (click)="c(changePwdData)">
-      <!-- <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> -->
       Change Password
     </button>
   </div>

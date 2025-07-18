@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 // import { LookupService } from '../../../../service/lookup.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
@@ -28,33 +28,39 @@ import { EntryService } from '../../../../run/_service/entry.service';
 @Component({
     selector: 'app-dashboard-editor',
     templateUrl: './dashboard-editor.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./dashboard-editor.component.scss',
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
 })
 export class DashboardEditorComponent implements OnInit {
 
+  private formService = inject(FormService);
+  private lookupService = inject(LookupService);
+  private groupService = inject(GroupService);
+  private dashboardService = inject(DashboardService);
+  private modalService = inject(NgbModal);
+  private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
+  private appService = inject(AppService);
+  private entryService = inject(EntryService);
+  private utilityService = inject(UtilityService);
+  private toastService = inject(ToastService);
+  private commService = inject(CommService);
+  private location = inject(PlatformLocation);
+  private cdr = inject(ChangeDetectorRef);
 
-  constructor(private formService: FormService, private lookupService: LookupService,
-    private groupService: GroupService,
-    private dashboardService: DashboardService,
-    private modalService: NgbModal, private userService: UserService,
-    private route: ActivatedRoute, private appService: AppService,
-    private entryService: EntryService,
-    private utilityService: UtilityService,
-    private toastService: ToastService,
-    private commService: CommService,
-    private location: PlatformLocation) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-    commService.changeEmitted$.subscribe(data => {
+    this.commService.changeEmitted$.subscribe(data => {
       if (data.value == 'import') {
         this.getDashboardList(1);
       }
     });
+
   }
 
-  dashboardLoading: boolean;
   curDashboard: any;
   dashboardList: any[];
   formList: any[];
@@ -124,6 +130,7 @@ export class DashboardEditorComponent implements OnInit {
                 this.getDashboardList(appId);
                 this.getFormList();
                 this.getAccessList();
+                this.cdr.detectChanges(); // ✅ Good: after async update of app and lists
               });
           }
         });
@@ -134,6 +141,7 @@ export class DashboardEditorComponent implements OnInit {
           const id = params['id'];
           if (id) {
             this.getDashboard(id);
+            // No need to call cdr.detectChanges() here if getDashboard already does
           }
         })
     });
@@ -148,6 +156,7 @@ export class DashboardEditorComponent implements OnInit {
     this.groupService.getGroupList({ appId: this.app.id, size:999 })
       .subscribe(res => {
         this.accessList = res.content;
+        this.cdr.detectChanges(); // ✅ Add here if accessList is used in the template
       });
   }
 
@@ -156,6 +165,7 @@ export class DashboardEditorComponent implements OnInit {
       appId: this.app.id
     }).subscribe(res => {
       this.formList = res.content;
+      this.cdr.detectChanges(); // ✅ Add here if formList is used in the template
     })
   }
 
@@ -194,6 +204,7 @@ export class DashboardEditorComponent implements OnInit {
     this.dashboardService.getDashboard(dashboardId)
       .subscribe(res => {
         this.curDashboard = res;
+        this.cdr.detectChanges(); // ✅ Good: after async update
       })
   }
 
@@ -202,6 +213,7 @@ export class DashboardEditorComponent implements OnInit {
       .subscribe(res => {
         this.dashboardList = res;
         this.commService.emitChange({ key: 'dashboard', value: res.length });
+        this.cdr.detectChanges(); // ✅ Good: after async update
       })
   }
 
@@ -224,9 +236,7 @@ export class DashboardEditorComponent implements OnInit {
   editChartData: any;
   hasFocus: any = {};
 
-  // mapFm={'data':'$','prev':'$prev$','approval':'$$'}
   getPrefix = (fm, section) => {
-    // console.log("fm,section:"+fm+","+section.id+","+section.type)
     var mapFm = { 'data': '$', 'prev': '$prev$', 'approval': '$$' };
     var tier = this.getTierFromSection(section && section.id, this.editHolderForm[fm]);
     if (section && section.type == 'approval') {
@@ -387,9 +397,11 @@ checkAllStatus(checked){
         .subscribe({next:(res)=>{
             this.getDashboard(this.curDashboard.id);
             this.toastService.show("Chart removed successfully", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges(); // ✅ Add here if curDashboard is used in the template
 
         },error:(err)=>{
             this.toastService.show("Chart removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges(); // ✅ Add here if needed
         }})
       }, res => { });
   }
@@ -435,8 +447,10 @@ checkAllStatus(checked){
           this.getDashboardList(this.app.id);
           delete this.curDashboard;
           this.toastService.show("Dashboard removed successfully", { classname: 'bg-success text-light' });
+          this.cdr.detectChanges(); // ✅ Add here if curDashboard or dashboardList is used in the template
         },error:(err)=>{
           this.toastService.show("Dashboard removal failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges(); // ✅ Add here if needed
         }})
       }, res => { });
   }
@@ -476,6 +490,7 @@ checkAllStatus(checked){
     setTimeout(() => {
       items[index + op].altClass = 'swapEnd';
       items[index].altClass = 'swapEnd';
+      this.cdr.detectChanges(); // ✅ Good: after async update
     }, 500);
   }
 

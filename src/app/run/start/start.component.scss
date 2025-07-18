@@ -71,6 +71,10 @@ body {
   /* background: rgba(255,255,255,.05); */
 }
 
+.topgap .app-info{
+  padding-top: 3.8em !important;
+}
+
 .app-nav {
   color: #f8f9fa;
   background: #0747a6;
@@ -202,6 +206,14 @@ body {
     position: unset;
   }
   /* END */
+
+  .app-info{
+
+  }
+
+  .topgap .app-info{
+    padding-top: 1em !important;
+  }
 
   .sidemenu.wrapper {
     display: flex;

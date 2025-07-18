@@ -343,6 +343,10 @@
                   <label class="form-check-label" for="noframe">Frameless app (Hide app navigation)</label>
                 </div>
                 <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="topgap" [(ngModel)]="data().x.topgap" name="topgap">
+                  <label class="form-check-label" for="topgap">Increase top gap (suitable for phone with punch hole camera)</label>
+                </div>
+                <div class="form-check">
                   <input type="checkbox" class="form-check-input" id="canPush" [(ngModel)]="data().canPush"
                     name="canPush">
                   <label class="form-check-label" for="canPush">Enable Push Notification for this app</label>

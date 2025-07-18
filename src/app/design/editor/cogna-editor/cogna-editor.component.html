@@ -361,8 +361,8 @@
                   <div class="card-header p-2">
                     @if (cogna.sources?.length>0){
                       <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-auto float-end"
-                          title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading[cogna.id]">
-                          @if (ingestLoading[cogna.id]) {
+                          title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading()[cogna.id]">
+                          @if (ingestLoading()[cogna.id]) {
                             <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                           }@else {
                             <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
@@ -391,8 +391,8 @@
                             </button>
                           }
                           <button type="button" class="btn btn-round btn-sm btn-info" title="Ingest Source"
-                            (click)="ingestSrc(b)" [class.disabled]="ingestSrcLoading[b.id]">
-                            @if (ingestSrcLoading[b.id]) {
+                            (click)="ingestSrc(b)" [class.disabled]="ingestSrcLoading()[b.id]">
+                            @if (ingestSrcLoading()[b.id]) {
                               <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                             }@else {
                               <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
@@ -422,8 +422,8 @@
                           
                         </div>
                       </div>
-                      @if(ingestRes[b.id]){
-                        <div class="text-white p-1 small" [class.bg-success]="ingestRes[b.id]?.success" [class.bg-danger]="!ingestRes[b.id]?.success" >Doc: {{ingestRes[b.id]?.docCount}}</div>
+                      @if(ingestRes()[b.id]){
+                        <div class="text-white p-1 small" [class.bg-success]="ingestRes()[b.id]?.success" [class.bg-danger]="!ingestRes()[b.id]?.success" >Doc: {{ingestRes()[b.id]?.docCount}}</div>
                       }
                     }@empty {
                       <div class="text-black-50 p-3 text-center fs-4"> No sources specified</div>
@@ -434,9 +434,9 @@
                         Add Source
                       </a>
                     </div>
-                    @if(ingestSuccess[cogna.id]){
-                      <div class="list-group-item p-2 small text-white" [class.bg-success]="ingestSuccess[cogna.id]=='true'" [class.bg-danger]="ingestSuccess[cogna.id]=='false'"
-                      [innerHTML]="ingestMessage[cogna.id]">
+                    @if(ingestSuccess()[cogna.id]){
+                      <div class="list-group-item p-2 small text-white" [class.bg-success]="ingestSuccess()[cogna.id]=='true'" [class.bg-danger]="ingestSuccess()[cogna.id]=='false'"
+                      [innerHTML]="ingestMessage()[cogna.id]">
                       </div>                     
                     }
                   </div>
@@ -576,17 +576,17 @@
                         </div>
                       }
                     }
-                    @if (chatPromptLoading){
+                    @if (chatPromptLoading()){
                       <div class="text-center">
                         <div class="spinner-grow" role="status">
                           <span class="visually-hidden">Loading...</span>
                         </div>
                       </div>
                     }
-                    @if (streamTyping){
+                    @if (streamTyping()){
 
                       <div
-                        class="p-2 border-1 mb-3 rounded-2 shadow-sm cogna-resp response" [innerHtml]="streamResult">
+                        class="p-2 border-1 mb-3 rounded-2 shadow-sm cogna-resp response" [innerHtml]="streamResult()">
                       </div>
                     }
                   </div>
@@ -613,11 +613,11 @@
 
 
                       <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill px-3 py-1"  autocomplete="off" 
-                        (keyup.enter)="chatPrompt(cogna, chatPromptText)" autocapitalize="none" [(ngModel)]="chatPromptText"
+                        (keyup.enter)="chatPrompt(cogna, chatPromptText())" autocapitalize="none" [(ngModel)]="chatPromptText"
                         maxlength="2000"
                         placeholder="Ask me something...">  
-                      <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [disabled]="!(chatPromptText?.trim() || fileList.length>0)"
-                        (click)="chatPrompt(cogna, chatPromptText)">
+                      <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [disabled]="!(chatPromptText()?.trim() || fileList.length>0)"
+                        (click)="chatPrompt(cogna, chatPromptText())">
                         <fa-icon [icon]="['fas','paper-plane']"></fa-icon>
                       </button>
                     </div>
@@ -636,7 +636,7 @@
                     }
       
                     <div class="text-end text-muted px-3 py-1 small">
-                      {{chatPromptText?.length||0}}/2000
+                      {{chatPromptText()?.length||0}}/2000
                     </div>
 
                   </div>
@@ -647,7 +647,7 @@
                   <div class="card-header">
                     Testing/Preview
                   </div>
-                  <div class="card-body" [class.disabled]="extractLoading">
+                  <div class="card-body" [class.disabled]="extractLoading()">
                     <div class="form-group mb-3">
                       <label class="form-label">Extract from documents</label>
                       <label style="width:100%">
@@ -675,8 +675,8 @@
                     </div>
                   </div>
                   <div class="card-footer">
-                    <button type="button" (click)="startExtractData(cogna)" [disabled]="extractLoading || !(fileList.length>0||extractData.text)" class="btn btn-primary btn-round px-3">
-                      @if(extractLoading){
+                    <button type="button" (click)="startExtractData(cogna)" [disabled]="extractLoading() || !(fileList.length>0||extractData.text)" class="btn btn-primary btn-round px-3">
+                      @if(extractLoading()){
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden" role="status">Loading...</span>                        
                       }
@@ -689,13 +689,14 @@
                   <div class="card-header">Result</div>
                   <div class="card-body">
                     <div class="px-2 py-1 bg-white small limit-height">
-                      @if (!isEmptyObject(extractRes[cogna.id])) {
-                      <pre><code class="language-js">{{extractRes[cogna.id] | json}}</code></pre>
+                      @if (!isEmptyObject(extractRes()[cogna.id])) {
+                        <json-viewer [json]="extractRes()[cogna.id]"></json-viewer>
+                      <!-- <pre><code class="language-js">{{extractRes()[cogna.id] | json}}</code></pre> -->
                       }@else{
                         <div class="text-muted">No response</div>
                       }
-                      @if(extractError[cogna.id]){
-                        <div class="bg-error p-2">{{extractError[cogna.id]}}</div>
+                      @if(extractError()[cogna.id]){
+                        <div class="bg-error p-2">{{extractError()[cogna.id]}}</div>
                       }
                     </div>
                   </div>
@@ -2397,21 +2398,23 @@
 
   </div>
       <div class="list-group list-group-flush">
-        @for (item of searchDbList; track $index) {
+        @for (item of searchDbList(); track $index) {
           <div class="list-group-item">
             <div class="mb-2 fw-bold">Result Score: {{item.score}} </div>
             <div class="small" [innerHTML]="nl2br(imagify(linkify(item.text)))"></div>
             @if (!isEmptyObject(item.metadata)){
-              <table class="table table-bordered mt-3 table-sm small">
-                <tbody>
-                  @for(m of item.metadata|keyvalue; track $index){
-                    <tr>
-                      <td width="5%">{{m.key}}</td>
-                      <td>{{m.value}}</td>
-                    </tr>
-                  }    
-                </tbody>          
-              </table>
+              <div class="table-responsive">
+                <table class="table table-bordered mt-3 table-sm small">
+                  <tbody>
+                    @for(m of item.metadata|keyvalue; track $index){
+                      <tr>
+                        <td width="5%">{{m.key}}</td>
+                        <td>{{m.value}}</td>
+                      </tr>
+                    }    
+                  </tbody>          
+                </table>
+              </div>
 
 
               <!-- <div class="small" >{{item.metadata|json}}</div> -->

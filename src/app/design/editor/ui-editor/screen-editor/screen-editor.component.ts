@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
@@ -39,6 +39,7 @@ import { RunService } from '../../../../run/_service/run.service';
 @Component({
     selector: 'app-screen-editor',
     templateUrl: './screen-editor.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./screen-editor.component.scss', '../../../../../assets/css/tile.css',
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
@@ -48,20 +49,26 @@ import { RunService } from '../../../../run/_service/run.service';
 })
 export class ScreenEditorComponent implements OnInit {
 
-  constructor(private screenService: ScreenService,
-    private groupService: GroupService,
-    private entryService: EntryService,
-    private modalService: NgbModal, private userService: UserService,
-    private formService: FormService,
-    private datasetService: DatasetService,
-    private dashboardService: DashboardService,
-    private cognaService: CognaService,
-    private bucketService: BucketService,
-    private lookupService: LookupService,
-    private route: ActivatedRoute, private appService: AppService, private runService: RunService,
-    // private utilityService: UtilityService,
-    private commService: CommService,
-    private toastService: ToastService) { }
+  private screenService = inject(ScreenService);
+  private groupService = inject(GroupService);
+  private entryService = inject(EntryService);
+  private modalService = inject(NgbModal);
+  private userService = inject(UserService);
+  private formService = inject(FormService);
+  private datasetService = inject(DatasetService);
+  private dashboardService = inject(DashboardService);
+  private cognaService = inject(CognaService);
+  private bucketService = inject(BucketService);
+  private lookupService = inject(LookupService);
+  private route = inject(ActivatedRoute);
+  private appService = inject(AppService);
+  // private runService = inject(RunService);
+  // private utilityService = inject(UtilityService); // Uncomment if needed
+  private commService = inject(CommService);
+  private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() { }
 
   // @ViewChild('codeeditor') codeeditor;
   // codeeditor = viewChild('codeeditor')
@@ -70,7 +77,7 @@ export class ScreenEditorComponent implements OnInit {
   // // @ViewChild('codeeditorpost') codeeditorpost;
   // codeeditorpost = viewChild('codeeditorpost');
 
-  @ViewChild('contentForm') curScreenForm: NgForm;
+  readonly curScreenForm = viewChild<NgForm>('contentForm');
 
   curScreen: any;
 
@@ -84,7 +91,7 @@ export class ScreenEditorComponent implements OnInit {
   app: any;
   user: any;
 
-  $this$:any={};
+  $this$:any = {};
   base: string = base;
   baseApi: string = baseApi;
   baseUrl: string = '';
@@ -197,6 +204,7 @@ export class ScreenEditorComponent implements OnInit {
               this.getBucketList(appId);
               this.getLookupList(appId);
               this.getAccessList();
+              this.cdr.detectChanges(); // <--- Add here
             });
         }
       })
@@ -343,6 +351,7 @@ defaultMapStyle:string = `height: 600px;`
             this.getScreenData(res.id);
             this.getActionComponents(res.id);
             this.toastService.show("Screen saved successfully", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges(); // <--- Add here if needed
           });
       }, res => { });
   }
@@ -360,6 +369,7 @@ defaultMapStyle:string = `height: 600px;`
           .subscribe(res => {
             this.getScreenList(this.app.id);
             delete this.curScreen;
+            this.cdr.detectChanges(); // <--- Add here if needed
 
           }, (res) => {
           });
@@ -371,6 +381,7 @@ defaultMapStyle:string = `height: 600px;`
     this.groupService.getGroupList({ appId: this.app.id, size: 999 })
       .subscribe(res => {
         this.accessList = res.content;
+        this.cdr.detectChanges(); // <--- Add here if needed
 
       });
   }
@@ -381,6 +392,7 @@ defaultMapStyle:string = `height: 600px;`
     this.lookupService.getFullLookupList(params)
         .subscribe(res => {
             this.lookupList = res.content;
+            this.cdr.detectChanges(); // <--- Add here if needed
         })
 
 }
@@ -392,6 +404,7 @@ defaultMapStyle:string = `height: 600px;`
     this.getDatasetList(appId);
     this.getDashboardList(appId);
     this.getBucketList(appId);
+    this.cdr.detectChanges(); // <--- Add here if needed
   }
 
 
@@ -406,6 +419,7 @@ defaultMapStyle:string = `height: 600px;`
     this.formService.getListBasic(params)
       .subscribe(res => {
         this.formList = res.content;
+        this.cdr.detectChanges(); // <--- Add here if needed
 
       });
   }
@@ -414,12 +428,13 @@ defaultMapStyle:string = `height: 600px;`
     // this.formPageNo = pageNumber;
     // this.formLoading = true;
 
-    let params = new HttpParams()
-      .set("appId", appId)
+    // let params = new HttpParams()
+    //   .set("appId", appId)
 
-    this.bucketService.getBucketList(params)
+    this.bucketService.getBucketList({appId})
       .subscribe(res => {
         this.bucketList = res.content;
+        this.cdr.detectChanges(); // <--- Add here if needed
       });
   }
 
@@ -428,12 +443,13 @@ defaultMapStyle:string = `height: 600px;`
     // this.formPageNo = pageNumber;
     // this.formLoading = true;
 
-    let params = new HttpParams()
-      .set("appId", appId)
+    // let params = new HttpParams()
+    //   .set("appId", appId)
 
-    this.cognaService.getCognaList(params)
+    this.cognaService.getCognaList({appId})
       .subscribe(res => {
         this.cognaList = res.content;
+        this.cdr.detectChanges(); // <--- Add here if needed
 
       });
   }
@@ -452,6 +468,7 @@ defaultMapStyle:string = `height: 600px;`
         // this.sectionItems = this.getSectionItems(res,['list']);
         Object.assign(holder, res);
         this.populateAutoComplete();
+        this.cdr.detectChanges(); // <--- Add here if needed
       });
   }
 
@@ -466,6 +483,7 @@ defaultMapStyle:string = `height: 600px;`
         // this.sectionItems = this.getSectionItems(res,['list']);
         Object.assign(holder, res);
         this.populateAutoComplete();
+        this.cdr.detectChanges(); // <--- Add here if needed
       });
   }
 
@@ -478,6 +496,7 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         this.loadForm(res.form.id, this.form);
         Object.assign(holder, res);
+        this.cdr.detectChanges(); // <--- Add here if needed
       })
   }
 
@@ -485,6 +504,7 @@ defaultMapStyle:string = `height: 600px;`
     this.datasetService.getDatasetList(appId)
       .subscribe(res => {
         this.datasetList = res;
+        this.cdr.detectChanges(); // <--- Add here if needed
 
       })
   }
@@ -497,6 +517,7 @@ defaultMapStyle:string = `height: 600px;`
           this.extraAutoCompleteJs.push({ label: `(dashboardId:${i.id}) ${i.title}`, apply: i.id + "", detail: i.title });
           this.extraAutoCompleteHtml.push({ label: `(dashboardId:${i.id}) ${i.title}`, apply: i.id + "", detail: i.title });
         })
+        this.cdr.detectChanges(); // <--- Add here if needed
 
       })
   }
@@ -506,12 +527,14 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         if (res?.list){
           this.extraAutoCompleteJs.push(...res.list);
+          this.cdr.detectChanges(); // <--- Add here if needed
         }
       })
     this.formService.moreAutocompleteHtml()
       .subscribe(res => {
         if (res?.list){
           this.extraAutoCompleteHtml.push(...res.list);
+          this.cdr.detectChanges(); // <--- Add here if needed
         }
       })
   }
@@ -519,6 +542,7 @@ defaultMapStyle:string = `height: 600px;`
 
   extraAutoCompleteHtml: any[] = [];
   extraAutoCompleteJs: any[] = [];
+  
   populateAutoComplete() {
 
     this.extraAutoCompleteHtml = [];
@@ -593,8 +617,11 @@ defaultMapStyle:string = `height: 600px;`
       })
 
       this.moreAutocomplete();
+      this.cdr.detectChanges(); // <--- Add here if needed
 
     }
+
+    this.cdr.detectChanges();
 
   }
 
@@ -624,6 +651,7 @@ defaultMapStyle:string = `height: 600px;`
           this.dataset = {};
           this.populateAutoComplete(); // since not call loadForm, has to be called manually
         }
+        this.cdr.detectChanges(); // <--- Add here if needed
       })
   }
 
@@ -634,6 +662,7 @@ defaultMapStyle:string = `height: 600px;`
         this.screenList = res;
         this.screenLoading = false;
         this.commService.emitChange({ key: 'screen', value: res.length });
+        this.cdr.detectChanges(); // <--- Add here if needed
       })
   }
 
@@ -805,7 +834,7 @@ defaultMapStyle:string = `height: 600px;`
     if ($event.metaKey && charCode === 's') {
       // Action on Cmd + S
       $event.preventDefault();
-      this.saveScreen(this.curScreen, this.curScreenForm)
+      this.saveScreen(this.curScreen, this.curScreenForm())
     }
   }
 
@@ -814,7 +843,7 @@ defaultMapStyle:string = `height: 600px;`
     if ($event.ctrlKey && charCode === 's') {
       // Action on Ctrl + S
       $event.preventDefault();
-      this.saveScreen(this.curScreen, this.curScreenForm)
+      this.saveScreen(this.curScreen, this.curScreenForm())
       // alert("save");
     }
   }
@@ -879,6 +908,8 @@ defaultMapStyle:string = `height: 600px;`
     this.addCombineCompData = data;
     if (this.addCombineCompData?.appId){
       this.loadOtherAppList(this.addCombineCompData?.type,this.addCombineCompData?.appId);
+    }else{
+      this.addCombineCompData.appId = this.app.id;
     }
     // console.log(this.addCombineCompData);
     history.pushState(null, null, window.location.href);
@@ -932,7 +963,6 @@ defaultMapStyle:string = `height: 600px;`
     });
   }
 
-  
   getAsList = splitAsList;
 
   removeFromArray(array, item) {
@@ -946,7 +976,7 @@ defaultMapStyle:string = `height: 600px;`
             val.sortOrder = $index;
             return val;
         });
-    this.saveScreen(this.curScreen, this.curScreenForm);
+    this.saveScreen(this.curScreen, this.curScreenForm());
   }
 
   compareByIdFn(a, b): boolean {

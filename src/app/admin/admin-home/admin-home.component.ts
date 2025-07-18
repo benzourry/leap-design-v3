@@ -1,5 +1,5 @@
 import { JsonPipe, NgClass, PlatformLocation } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { domainBase } from '../../_shared/constant.service';
@@ -12,10 +12,11 @@ import { deepMerge } from '../../_shared/utils';
 
 @Component({
   selector: 'app-admin-home',
-  imports: [RouterLink, RouterLinkActive, NgClass, FaIconComponent, NgxEchartsDirective, FormsModule, JsonPipe],
+  imports: [RouterLink, RouterLinkActive, NgClass, FaIconComponent, NgxEchartsDirective, FormsModule],
   templateUrl: './admin-home.component.html',
   providers:[provideEcharts()],
-  styleUrl: './admin-home.component.scss'
+  styleUrl: './admin-home.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminHomeComponent {
 
@@ -23,12 +24,13 @@ export class AdminHomeComponent {
 
     user:any;
 
-    constructor(
-      // private modalService: NgbModal,
-      private location: PlatformLocation,
-      private toastService: ToastService,
-      private userService: UserService,
-      private platformService: PlatformService) {
+    private cdr = inject(ChangeDetectorRef);
+    // private location = inject(PlatformLocation);
+    // private toastService = inject(ToastService);
+    private userService = inject(UserService);
+    private platformService = inject(PlatformService);
+
+    constructor() {
   
       // location.onPopState(() => this.modalService.dismissAll(''));
     }
@@ -38,6 +40,7 @@ export class AdminHomeComponent {
       this.userService.getCreator()
         .subscribe((user) => {
           this.user = user;
+          this.cdr.detectChanges();
 
           this.loadPlatformStat();
   
@@ -109,7 +112,6 @@ export class AdminHomeComponent {
     this.platformService.stat()
       .subscribe((res) => {
         this.platformStat = res;
-
         this.updatedOn = res.updatedOn;
 
         // deepMerge(Object.assign({},data)) because deepMerge is mutable because it might used as mutable in user
@@ -139,6 +141,7 @@ export class AdminHomeComponent {
         })
        }});
 
+        this.cdr.detectChanges(); // <--- Add here after all chart options are set
       });
   }
 

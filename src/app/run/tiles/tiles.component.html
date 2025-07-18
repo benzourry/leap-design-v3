@@ -1,31 +1,31 @@
 <page-title>
-  <h4 class="m-0">{{app?.title}}</h4>
-  @if (app?.description) {
-    <div class="mt-1">{{app?.description}}</div>
+  <h4 class="m-0">{{app()?.title}}</h4>
+  @if (app()?.description) {
+    <div class="mt-1">{{app()?.description}}</div>
   }
 </page-title>
 <div class="single-content">
-  @if (app) {
+  @if (app()) {
     <div style="max-width:680px;margin:0 auto;overflow: hidden;">
-      @if (navis?.length>0) {
+      @if (navis()?.length>0) {
         <div class="pb-3 text-center">
           <input type="search" autocapitalize="none" class="rounded" placeholder="Filter list" [(ngModel)]="searchText">
         </div>
         <div class="d-flex flex-wrap flex-row align-content-center">
-          @for (group of navis|filter:searchText; track $index) {
-            @if (preGroup[group.id]) {
+          @for (group of navis()|filter:searchText; track $index) {
+            @if (preGroup()[group.id]) {
               <div class="s-icon-group">
                 <div class="s-icon-heading">
                   {{group.title}}
                 </div>
-                <div class="s-icon-wrap" [ngStyle]="{'color':app?.theme}">
+                <div class="s-icon-wrap" [ngStyle]="{'color':app()?.theme}">
                   @for (item of group.items|filter:searchText; track $index) {
-                    @let naviDataItem = naviData[item.type+'-'+item.screenId];
-                    @if ((naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) && preItem[item.id]) {
+                    @let naviDataItem = naviData()[item.type+'-'+item.screenId];
+                    @if ((naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) && preItem()[item.id]) {
                       @if (item.type=='form') {
-                        <a class="s-icon" routerLink="{{preurl}}/form/{{item.screenId}}/add"
+                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/add"
                           [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline || naviDataItem?.inactive"
+                          [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
                           </fa-icon>
@@ -54,9 +54,9 @@
                         </a>
                       }
                       @if (item.type=='form-single') {
-                        <a class="s-icon" routerLink="{{preurl}}/form/{{item.screenId}}/edit-single"
+                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
                           [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline || naviDataItem?.inactive"
+                          [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
                           </fa-icon>
@@ -85,9 +85,9 @@
                         </a>
                       }
                       @if (item.type=='view-single') {
-                        <a class="s-icon" routerLink="{{preurl}}/form/{{item.screenId}}/view"
+                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/view"
                           [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline || naviDataItem?.inactive"
+                          [class.disabled]="offline() || naviDataItem?.inactive"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
                           </fa-icon>
@@ -98,7 +98,7 @@
                         </a>
                       }
                       @if (item.type=='dataset') {
-                        <a class="s-icon" routerLink="{{preurl}}/dataset/{{item.screenId}}"
+                        <a class="s-icon" routerLink="{{preurl()}}/dataset/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
                           </fa-icon>
@@ -106,13 +106,13 @@
                           @if (!item.x?.hideDesc) {
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                         
                           }
-                          @if (badge && badge[item.screenId]) {
-                            <div class="badge">{{badge && badge[item.screenId]}}</div>
+                          @if (badge() && badge()[item.screenId]) {
+                            <div class="badge">{{badge() && badge()[item.screenId]}}</div>
                           }
                         </a>
                       }
                       @if (item.type=='dashboard') {
-                        <a class="s-icon" routerLink="{{preurl}}/dashboard/{{item.screenId}}"
+                        <a class="s-icon" routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
@@ -124,7 +124,7 @@
                         </a>
                       }
                       @if (item.type=='lookup') {
-                        <a class="s-icon" routerLink="{{preurl}}/lookup/{{item.screenId}}"
+                        <a class="s-icon" routerLink="{{preurl()}}/lookup/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
@@ -136,7 +136,7 @@
                         </a>
                       }
                       @if (item.type=='user') {
-                        <a class="s-icon" routerLink="{{preurl}}/user/{{item.screenId}}"
+                        <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
@@ -148,7 +148,7 @@
                         </a>
                       }
                       @if (item.type=='start') {
-                        <a class="s-icon disabled" routerLink="{{preurl}}/start"
+                        <a class="s-icon disabled" routerLink="{{preurl()}}/start"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
@@ -161,16 +161,15 @@
                       }
                       @if (item.type=='external'||item.type=='internal') {
                         <a class="s-icon"
-                          [href]="compileTpl(item.url,{$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})"
+                          [href]="compileTpl(item.url,{$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
                           [target]="item.type=='external'?'_blank':''" routerLinkActive="active">
                           <fa-icon [icon]="getIcon(item.icon)" size="4x" [fixedWidth]="true">
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
-                          <!-- <div class="sub" [innerHtml]="naviData[item.type+'-'+item.screenId]?.description"></div> -->
                         </a>
                       }
                       @if (item.type=='screen') {
-                        <a class="s-icon" routerLink="{{preurl}}/screen/{{item.screenId}}"
+                        <a class="s-icon" routerLink="{{preurl()}}/screen/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
                           <fa-icon size="4x" [icon]="getIcon(item.icon)" [fixedWidth]="true">
@@ -179,8 +178,8 @@
                           @if (!item.x?.hideDesc) {
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                           
                           }
-                          @if (badge && badge['screen_'+item.screenId]) {
-                            <div class="badge">{{badge && badge['screen_'+item.screenId]}}</div>
+                          @if (badge() && badge()['screen_'+item.screenId]) {
+                            <div class="badge">{{badge() && badge()['screen_'+item.screenId]}}</div>
                           }
                         </a>
                       }

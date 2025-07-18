@@ -1,13 +1,10 @@
-import { DatePipe, DecimalPipe, JsonPipe, NgStyle, PlatformLocation, SlicePipe } from '@angular/common';
-import { Component, computed, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { DecimalPipe, NgStyle, PlatformLocation, SlicePipe } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastService } from '../../_shared/service/toast-service';
 import { UserService } from '../../_shared/service/user.service';
 import { UtilityService } from '../../_shared/service/utility.service';
-import { RunService } from '../../run/_service/run.service';
 import { AppService } from '../../service/app.service';
-import { BucketService } from '../../service/bucket.service';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { base, baseApi, domainBase } from '../../_shared/constant.service';
@@ -16,22 +13,28 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-app-summary',
-  imports: [DecimalPipe, DatePipe, NgStyle, NgxEchartsDirective, JsonPipe, SlicePipe, FaIconComponent, RouterLink, RouterLinkActive, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DecimalPipe, NgStyle, NgxEchartsDirective, SlicePipe, FaIconComponent, RouterLink, FormsModule],
   templateUrl: './app-summary.component.html',
   providers:[provideEcharts()],
   styleUrl: './app-summary.component.scss'
 })
 export class AppSummaryComponent implements OnInit {
 
-  constructor(private userService: UserService, private route: ActivatedRoute, private bucketService: BucketService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private runService: RunService,
-    private appService: AppService,
-    private toastService: ToastService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+  private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
+  // private bucketService = inject(BucketService);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  // private router = inject(Router);
+  // private runService = inject(RunService);
+  private appService = inject(AppService);
+  // private toastService = inject(ToastService);
+  private utilityService = inject(UtilityService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -83,14 +86,19 @@ export class AppSummaryComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.route.data
-        .subscribe(v => this.platformView=v.platform);
+        .subscribe(v => {
+          this.platformView = v.platform;
+          this.cdr.detectChanges();
+        });
 
         this.route.parent.params
         // NOTE: I do not use switchMap here, but subscribe directly
         .subscribe((params: Params) => {
           this.appId = params['appId'];
+          this.cdr.detectChanges();
 
 
           if (this.appId) {
@@ -98,6 +106,7 @@ export class AppSummaryComponent implements OnInit {
 
             this.appService.getApp(this.appId).subscribe((app) => {
               this.app = app;
+              this.cdr.detectChanges();
             });
 
             this.appService.getSummary(this.appId).subscribe((data) => { 
@@ -127,6 +136,7 @@ export class AppSummaryComponent implements OnInit {
                 return kv;
               }) }});
 
+              this.cdr.detectChanges();
             });
           }
         });

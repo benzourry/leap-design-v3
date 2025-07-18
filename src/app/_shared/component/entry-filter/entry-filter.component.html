@@ -1,7 +1,6 @@
 <input type="text" class="w-100 form-control my-2" [(ngModel)]="filterField" name="filterField"
   placeholder="Type to filter fields">
 @for (fm of ['data','prev']; track fm) {
-  <!-- {{formHolder()|json}} -->
   @if (formHolder()[fm]) {
     <div class="form-group mb-3">
       <label class="form-label">Included Filters ({{formHolder()[fm].title}})</label>

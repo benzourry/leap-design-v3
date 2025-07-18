@@ -35,6 +35,7 @@ import { compileTpl, splitAsList } from '../../../_shared/utils';
 import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 import { ElementBase } from '../element-base';
 import { SpeechToTextComponent } from '../speech-to-text/speech-to-text.component';
+import { MorphHtmlDirective } from '../../../_shared/directive/morph-html.directive';
 
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
@@ -59,6 +60,7 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
     encapsulation: ViewEncapsulation.None,
     imports: [FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, AngularEditorModule,
         NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe,
+        MorphHtmlDirective,
         SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent]
 })
 

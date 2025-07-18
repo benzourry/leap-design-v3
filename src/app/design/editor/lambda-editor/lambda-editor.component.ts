@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
@@ -26,47 +26,58 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { LookupService } from '../../../run/_service/lookup.service';
+import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 
 @Component({
     selector: 'app-lambda-editor',
     templateUrl: './lambda-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './lambda-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, JsonPipe]
+    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, 
+      NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
+      NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, 
+      JsonViewerComponent,
+      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LambdaEditorComponent implements OnInit {
 
   offline = false;
   app: any;
 
-  lambdaTotal: any;
-  loading: boolean;
-  lambdaList: any;
-  lambdaEntryTotal: any;
-  lambdaEntryList: any;
+  lambdaTotal = signal<number>(0);
+  // loading: boolean;
+  lambdaList = signal<any[]>([]);
+  // lambdaEntryTotal = signal<number>(0);
+  // lambdaEntryList = signal<any[]>([]);
   // sharedList: any;
   // sharedTotal: any;
   // sharedLoading: any;
-  totalItems: any;
+  // totalItems: any;
   lambda: any;
-  itemLoading: boolean;
+  itemLoading = signal<boolean>(false);
   appId: number;
   baseApi = baseApi;
 
-  @ViewChild('codeeditorinit') codeeditorinit: NgCmComponent;
+  readonly codeeditorinit = viewChild<NgCmComponent>('codeeditorinit');
 
-  constructor(private userService: UserService, private route: ActivatedRoute, private lambdaService: LambdaService,
-    private datasetService: DatasetService,
-    private dashboardService: DashboardService,
-    private lookupService: LookupService,
-    private formService: FormService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private appService: AppService,
-    private toastService: ToastService,
-    private endpointService: EndpointService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+  private userService = inject(UserService)
+  private route = inject(ActivatedRoute)
+  private lambdaService = inject(LambdaService)
+  private datasetService = inject(DatasetService)
+  private dashboardService = inject(DashboardService)
+  private lookupService = inject(LookupService)
+  // private formService = inject(FormService)
+  private modalService = inject(NgbModal)
+  private location = inject(PlatformLocation)
+  private router = inject(Router)
+  private appService = inject(AppService)
+  private toastService = inject(ToastService)
+  private endpointService = inject(EndpointService)
+  private utilityService = inject(UtilityService)
+  cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -76,6 +87,7 @@ export class LambdaEditorComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.route.parent.params
           // NOTE: I do not use switchMap here, but subscribe directly
@@ -90,6 +102,7 @@ export class LambdaEditorComponent implements OnInit {
               this.appService.getApp(this.appId, params)
                 .subscribe(res => {
                   this.app = res;
+                  this.cdr.detectChanges();
                 });
             }
 
@@ -111,16 +124,11 @@ export class LambdaEditorComponent implements OnInit {
 
   user: any;
   lambdaId = '';
-  data = { 'list': [] };
   pageSize = 45;
-  currentPage = 1;
   itemsPerPage = 15;
-  maxSize = 5;
-  startAt = 0;
   searchText: string = "";
 
-  pageNumber: number = 1;
-  entryPageNumber: number = 1;
+  pageNumber = signal<number>(1);
 
   //   popShare(id) {
   //     let url = this.app.appPath ? this.app.appPath + '.' + domainBase : domainBase + "/#/run/" + id;
@@ -129,8 +137,8 @@ export class LambdaEditorComponent implements OnInit {
 
   // this.loadLambdaList = loadLambdaList;
   loadLambdaList(pageNumber) {
-    this.pageNumber = pageNumber;
-    this.itemLoading = true;
+    this.pageNumber.set(pageNumber);
+    this.itemLoading.set(true);
 
     let params = {
       searchText: this.searchText,
@@ -140,28 +148,11 @@ export class LambdaEditorComponent implements OnInit {
     }
     this.lambdaService.getLambdaList(params)
       .subscribe(res => {
-        this.lambdaList = res.content;
-        this.lambdaTotal = res.page?.totalElements;
-        this.itemLoading = false;
-      }, res => this.itemLoading = false)
+        this.lambdaList.set(res.content);
+        this.lambdaTotal.set(res.page?.totalElements);
+        this.itemLoading.set(false);
+      }, res => this.itemLoading.set(false))
   }
-
-  // loadSharedList(pageNumber) {
-  //   this.pageNumber = pageNumber;
-  //   this.sharedLoading = true;
-
-  //   let params = {
-  //     searchText: this.searchText,
-  //     page: pageNumber - 1,
-  //     size: this.itemsPerPage
-  //   }
-  //   this.lambdaService.getSharedLambdaList(params)
-  //     .subscribe(res => {
-  //       this.sharedList = res.content;
-  //       this.sharedTotal = res.page?.totalElements;
-  //       this.sharedLoading = false;
-  //     }, res => this.sharedLoading = false)
-  // }
 
   editCode: boolean;
   editLambdaData: any;
@@ -176,7 +167,7 @@ export class LambdaEditorComponent implements OnInit {
         data.content = this.nl2br(data.content);
         this.lambdaService.save(data.email, this.appId, data)
           .subscribe(res => {
-            this.loadLambdaList(this.pageNumber);
+            this.loadLambdaList(this.pageNumber());
             this.loadLambda(res.id);            
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
@@ -205,10 +196,10 @@ export class LambdaEditorComponent implements OnInit {
 
   initialCode: string = "";
 
-  params: string[];
+  // params: string[];
   domainBase = domainBase;
 
-  url: string = "";
+  // url: string = "";
   loadLambda(id) {
     this.lambdaId = id;
     // console.log(id);
@@ -221,6 +212,7 @@ export class LambdaEditorComponent implements OnInit {
         this.extraAutoComplete = [];
         this.populateAutoComplete();
         this.moreAutocomplete();
+        this.cdr.detectChanges();
         // this.url = 'https://' +
         //   (this.app.appPath ? `${this.app.appPath}.${domainBase}/#/web/${lambda.code}` : `${domainBase}/#/run/${id}/web/${lambda.code}`);
       }, error => {
@@ -377,7 +369,7 @@ export class LambdaEditorComponent implements OnInit {
   saveLambda(data) {
     this.lambdaService.save(data.email, this.appId, data)
       .subscribe(res => {
-        this.loadLambdaList(this.pageNumber);
+        this.loadLambdaList(this.pageNumber());
         this.loadLambda(res.id);
         this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
       }, err => {
@@ -398,24 +390,22 @@ export class LambdaEditorComponent implements OnInit {
     })
   }
 
-  resultLoading: any={};
-  runRes: any={};
+  resultLoading = signal<any>({});
+  runRes = signal<any>({});
   runLambda(lambda) {
-    this.resultLoading[lambda.id] = true;
+    this.resultLoading.update(rl=>({...rl,[lambda.id]:true}));
     this.lambdaService.save(this.user.email, this.appId, lambda)
       .subscribe(res => {
         this.showPrompt(lambda.data.f);
         this.lambdaService.runLambda(lambda.id, this.request)
           .subscribe(res => {
-            this.runRes[lambda.id] = res;
-            // this.loadLambdaList(this.pageNumber);
-            // this.loadLambda(res.id);
+            this.runRes.update(rr => ({...rr, [lambda.id]:res}));
             this.toastService.show("Script executed successfully", { classname: 'bg-success text-light' });
-            this.resultLoading[lambda.id] = false;
+            this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
           }, err => {
             this.toastService.show("Script execution failed", { classname: 'bg-danger text-light' });
-            this.runRes[lambda.id] = { message: JSON.stringify(err.error), success: false };
-            this.resultLoading[lambda.id] = false;
+            this.runRes.update(rr => ({...rr,[lambda.id]:{ message: JSON.stringify(err.error), success: false }}));
+            this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
           });
       });
   }
@@ -426,7 +416,7 @@ export class LambdaEditorComponent implements OnInit {
 
   // streamRes:any;
   streamLambda(lambda) {
-    this.resultLoading[lambda.id] = false;
+    this.resultLoading.update(rl =>({...rl, [lambda.id]:false}));
     this.lambdaService.save(this.user.email, this.appId, lambda)
       .subscribe(res => {
         this.showPrompt(lambda.data.f);
@@ -434,16 +424,16 @@ export class LambdaEditorComponent implements OnInit {
           .pipe(
             map(res => {    
               if (res['type'] == 4) {
-                this.runRes[lambda.id] = { print: res['body'], success: true, out: {} };
+                this.runRes.update(rr =>({...rr, [lambda.id]:{ print: res['body'], success: true, out: {} }}));
               } else {
-                this.runRes[lambda.id] = { print: res['partialText'], success: true, out: {} };
+                this.runRes.update(rr =>({...rr, [lambda.id]:{ print: res['partialText'], success: true, out: {} }}));
               }
             })
           )
           .subscribe(res => {
           }, err => {
             this.toastService.show("Script execution failed", { classname: 'bg-danger text-light' });
-            this.runRes[lambda.id] = { message: JSON.stringify(err.error), success: false };
+            this.runRes.update(rr => ({...rr, [lambda.id]:{ message: JSON.stringify(err.error), success: false }}));
           });
       });
   }
@@ -471,6 +461,7 @@ export class LambdaEditorComponent implements OnInit {
         this.datasetList.forEach(d => {
           this.bindingSrcs.push({ name: d.title, type: 'dataset', srcId: d.id })
         })
+        this.cdr.detectChanges();
       })
   }
 
@@ -481,6 +472,7 @@ export class LambdaEditorComponent implements OnInit {
         this.dashboardList.forEach(d => {
           this.bindingSrcs.push({ name: d.title, type: 'dashboard', srcId: d.id })
         })
+        this.cdr.detectChanges();
       })
   }
   keepMinute00 = (object) => {
@@ -509,6 +501,7 @@ export class LambdaEditorComponent implements OnInit {
         res.content.forEach(d => {
           this.bindingSrcs.push({ name: d.name, type: 'lookup', srcId: d.id })
         })
+        this.cdr.detectChanges();
       });
   }
 
@@ -566,7 +559,7 @@ export class LambdaEditorComponent implements OnInit {
   toHyphen = toHyphen; //(string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
 
 
-  itemExist = (f) => this.lambdaList.filter(e => e.code == f.code).length > 0 && !f.id;
+  itemExist = (f) => this.lambdaList().filter(e => e.code == f.code).length > 0 && !f.id;
 
   dayOfWeekList = [
     { name: "Sunday", value: 1 },

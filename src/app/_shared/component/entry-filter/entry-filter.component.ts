@@ -1,13 +1,13 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { splitAsList } from '../../utils';
 import { FilterPipe } from '../../pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
-// import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'app-entry-filter',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './entry-filter.component.html',
     styleUrls: ['./entry-filter.component.scss'],
     imports: [FormsModule, NgbInputDatepicker, FaIconComponent, FilterPipe]
@@ -16,35 +16,19 @@ export class EntryFilterComponent {
 
   filterField: string = "";
 
-  // @Input()
-  // presetFilters: any = {}
   presetFilters = model<any>({});
 
-
-  // @Input()
-  // filters: any = {}
   filters = model<any[]>([]);
 
-
-  // @Output() filtersChange = new EventEmitter<number>();
-  // filtersChange = output<number>();
-
-  // @Input()
-  // formHolder: any = {}
   formHolder = input<any>({})
 
-  // @Input()
-  // sectionItems: any = {};
   sectionItems = input<any>({});
 
   hasFocus: any = {};
 
-  // @Input()
-  // lookup:any = {}
   lookup = input<any>({})
 
   getPrefix = (fm, section) => {
-    // console.log("fm,section:"+fm+","+section.id+","+section.type)
     var mapFm = { 'data': '$', 'prev': '$prev$', 'approval': '$$' };
     var tier = this.getTierFromSection(section && section.id, this.formHolder()['data']);
     if (section && section.type == 'approval') {
@@ -73,29 +57,13 @@ export class EntryFilterComponent {
   getTierFromSection = (sectionId, form) => form && form.tiers.filter(t => t.section && t.section.id == sectionId)[0];
 
   toggleItem(f, root, formId, type, prefix) {
-    // console.log(list, f, root, formId, type, prefix);
     let size = this.filters().filter(i => i.code == f.code && i.root == root).length;
 
-    // let locFilter = [];
-    // console.log("size:"+size);
-    // console.log("root:"+ root);
     // Is currently selected
     if (size > 0) {
-      // console.log(parent[list].filter(i => i.code != f.code));
-      // locFilter = list.filter(i => !(i.code == f.code && i.root == root));
       this.filters.update(filters => filters.filter(i => !(i.code == f.code && i.root == root)));
     } else {
-    //   locFilter = this.filters().concat([{
-    //     code: f.code,
-    //     label: f.label,
-    //     sortOrder: list.length,
-    //     root: root,
-    //     type: type,
-    //     prefix: prefix,
-    //     formId: formId
-    //   }])
-    // }
-    this.filters.update(filters => [...filters, {
+      this.filters.update(filters => [...filters, {
         code: f.code,
         label: f.label,
         sortOrder: this.filters().length,
@@ -105,8 +73,6 @@ export class EntryFilterComponent {
         formId: formId
       }])
     }
-      // console.log(this.filters())
-    // this.filtersChange.emit(this.filters);
   }
 
   checkItem(f, root) {
@@ -118,6 +84,5 @@ export class EntryFilterComponent {
   }
 
   getAsList = splitAsList;
-
 
 }

@@ -194,7 +194,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             @if (result) {
               <div class="card mt-2 mb-2">
                 <!-- <div class="card-body"> -->
-                <div class="small mb-3 p-2 text-white bg-success d-flex">
+                <div class="small p-2 text-white bg-success d-flex">
                   <div>
                     Result
                   </div>
@@ -215,7 +215,10 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     <pre class="m-0"><code class="language-js">{{result | json}}</code></pre>
                   </div>
                 }@else{
-                  <app-obj-viewer class="small" [data]="result"></app-obj-viewer>
+                  <!-- <app-obj-viewer class="small" [data]="result"></app-obj-viewer> -->
+                  <div class="p-2">
+                    <json-viewer [json]="result"></json-viewer>
+                  </div>
                 }
 
               <!-- </div> -->

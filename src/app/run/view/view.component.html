@@ -1,17 +1,16 @@
-<!-- {{preurl}} -->
-<div id="view-{{form?.id}}" class="viewport section-to-print">
+<div id="view-{{form()?.id}}" class="viewport section-to-print">
   @if (!hideTitle()){
     <page-title class="p-3" [asComp]="asComp()" (closed)="closed.emit(true)">
-      @if (form?.x?.showEntryId){
+      @if (form()?.x?.showEntryId){
         <div class="id-label">{{entry?.id}}</div>
       }
-      <h4 class="m-0" [innerHtml]="form.title">{{form.title}}</h4>
-      @if (form.description) {
-        <div class="mt-1" [innerHtml]="form.description">{{form.description}}</div>
+      <h4 class="m-0" [innerHtml]="form().title">{{form().title}}</h4>
+      @if (form().description) {
+        <div class="mt-1" [innerHtml]="form().description">{{form().description}}</div>
       }
     </page-title>
   }
-  @if (loading) {
+  @if (loading()) {
     <div class="p-4 text-muted text-center">
       <div class="lds-ellipsis">
         <div></div>
@@ -21,19 +20,20 @@
       </div>
     </div>
   }@else{
-    @if (form && isAuthorized) {
+    @if (form() && isAuthorized()) {
       @if (entry?.id) {
         <form class="m-p-4" name="frmObj" novalidate onsubmit="return false;">
           @if (action()!='approve') {
             <!-- perlu exist prevEntry supaya dlm ngOnInit form-view, data nya x null -->
             <div class="form-wrapper">
-              @if (!prevLoading){   
-                @if (form?.prev && prevEntry && !form?.x?.hidePrev) {
+              @if (!prevLoading()){   
+                @if (form()?.prev && prevEntry && !form()?.x?.hidePrev) {
                   <div class="form-previous pb-3" style="border-bottom:solid 2px #ccc">
-                    <form-view [form]="form?.prev" [data]="prevEntry?.data"
-                      [user]="user" [$this$]="$this$" [$param$]="$param$" [$baseUrl$]="baseUrl" 
+                    <form-view [form]="form()?.prev" [entry]="prevEntry" [data]="prevEntry?.data"
+                      [evalContextFn]="getEvalContext"
+                      [$this$]="_this" [$param$]="param()"
                       [$action$]="action()"
-                      [$token$]="accessToken" [entry]="prevEntry" [$file$]="filesMap?.prev">
+                      [$file$]="filesMap?.prev">
                     </form-view>
                   </div>
                 }
@@ -47,23 +47,25 @@
                   </div>
                 </div>
               }
-              @if (form) {
+              @if (form()) {
                 <div class="form-current">
-                  <form-view [form]="form" [data]="entry?.data" [user]="user" [$this$]="$this$" [$param$]="$param$"
-                    [navIndex]="navIndex"
-                    [timestamp]="timestamp"
+                  <form-view [form]="form()" [entry]="entry" [data]="entry?.data" 
+                    [$this$]="_this" [$param$]="param()"
+                    [navIndex]="_navIndex()"
+                    [evalContextFn]="getEvalContext"
+                    [timestamp]="timestamp()"
                     [$action$]="action()"
-                    [$baseUrl$]="baseUrl" [$token$]="accessToken" [entry]="entry" [$file$]="filesMap?.data"></form-view>
+                    [$file$]="filesMap?.data"></form-view>
                 </div>
               }
             </div>
           }
           <div class="single-pane pt-0">
-            <div class="limit-width centered fix-gutter" [class.disabled]="offline"> 
+            <div class="limit-width centered fix-gutter" [class.disabled]="offline()"> 
               @if (action()!='approve') {
                 <div class="text-end">
-                  @if (trails.length>0 && !form?.x?.hideTrail) {
-                  <!-- @if (trails.length>0 && ((!form?.hideStatus) || (form?.admin && user.groups[form?.admin.id])) && !form?.x?.hideTrail) { -->
+                  @if (trails().length>0 && !form()?.x?.hideTrail) {
+                  <!-- @if (trails.length>0 && ((!form()?.hideStatus) || (form()?.admin && user.groups[form()?.admin.id])) && !form()?.x?.hideTrail) { -->
                     <button type="button" class="btn btn-round btn-light btn-sm print-hide"
                     (click)="viewTrail(viewTrailTpl)">View Trails</button>
                   }
@@ -71,12 +73,12 @@
               }
               @if (action()=='approve' && (entry?.currentStatus=='drafted' || entry?.currentEdit)) {
                 <div class="detail text-muted">
-                  <h3>{{app.x?.lang=='ms'?'Tiada tindakan diperlukan':'No action required'}}</h3>
+                  <h3>{{app().x?.lang=='ms'?'Tiada tindakan diperlukan':'No action required'}}</h3>
                 </div>
               }
               @if (entry?.currentStatus!='drafted') {
                 <div class="mt-3">
-                  @for (tier of form.tiers; track tier.id) {
+                  @for (tier of form().tiers; track tier.id) {
                     @if (preCheckStr(tier.pre)) {
                       <div class="ball" [class.current]="entry?.currentTier == tier.sortOrder">
                         <div
@@ -92,7 +94,7 @@
                               @if (!tier.alwaysApprove) {
                                 <div class="card-body">
                                   <div class="form-group">
-                                    <label class="f-label">{{app.x?.lang=='ms'?'Sila pilih *':'Please choose *'}}</label>
+                                    <label class="f-label">{{app().x?.lang=='ms'?'Sila pilih *':'Please choose *'}}</label>
                                     <div class="btn-group-toggle" style="flex-wrap: wrap">
                                       @for (o of tier.actions|keyvalue:sortOrder; track $index) {
                                         <input type="radio" class="btn-check" [value]="o.value.code"
@@ -110,34 +112,97 @@
                               }
                                 <!-- START NORMAL APPROVAL FORM -->
                                 @if (tier.section?.type=='approval') {
-                                  @if (tier.section && preCheckAppr(tier.section?.pre,appr[tier.id])) {
+                                  @if (tier.section && preCheckAppr(tier.section?.pre, appr[tier.id])) {
                                     <div class="card-body bg-light bg-opacity-50">
                                       <div class="row g-4"
                                         [init]="updateWatchList(tier.section,appr[tier.id])">
                                         @for (f of tier.section.items; track f.id) {
-                                          @let field = form?.items[f.code];
-                                          @if (preCheckAppr(field?.pre,appr[tier.id])) {
-                                            @let dynDefVal = _eval(entry?.data, appr[tier.id], field?.x?.dyn_default, form);
+                                          @let field = form()?.items[f.code];
+                                          @if (preCheckAppr(field?.pre, appr[tier.id])) {
+                                            @let dynDefVal = _eval(entry,entry?.data, appr[tier.id], field?.x?.dyn_default, form);
                                             @defer(prefetch on idle){
+
+                                              <!-- @let compileData = {
+                                                $app$: app(),
+                                                $_: entry,
+                                                $: entry?.data,
+                                                $$_: appr[tier.id],
+                                                $$: appr[tier.id]?.data,
+                                                $prev$: entry?.prev,
+                                                $user$: user(),
+                                                $conf$: appConfig,                                          
+                                                $action$: action(),                                          
+                                                $el$: form()?.items,
+                                                $form$: form(),
+                                                $this$: _this,                                          
+                                                $param$: param(),                                          
+                                                $base$: base,
+                                                $baseUrl$: baseUrl(),
+                                                $baseApi$: baseApi,        
+                                                $lookupList$: lookup,                                          
+                                                dayjs,
+                                                ServerDate,
+                                                $token$: accessToken(),
+                                                $file$: filesMap,
+                                                $activeIndex$: _navIndex(),
+                                              } -->
+
                                               <field-edit [ngClass]="field.size||'col-sm-12'" name="{{f.code}}"
+                                                [scopeId]="scopeId()"
                                                 [fileProgress]="uploadProgress[f.code+($index??'')]"
                                                 [class.mt-0]="field.subType=='clearfix'"
                                                 [hidden]="field.hidden"
                                                 [field]="field" [lookupList]="lookup[f.code]"
-                                                [selectGroupBy]="field?.x?.groupBy"
                                                 [(ngModel)]="appr[tier.id].data[f.code]"
                                                 (valueChange)="fieldChange($event,appr[tier.id],field, false)"
                                                 (valueSearch)="getLookupSearch($event,f.code,appr[tier.id],field.dataSourceInit)"
                                                 (fileValueChange)="onUpload($event,appr[tier.id].data,field, false)"
                                                 (fileValueClear)="onFileClear($event,appr[tier.id].data,field, false)"
                                                 (selectFocus)="getLookup(f.code,appr[tier.id],field.dataSourceInit)"
-                                                [data]="{$user$:user, $conf$:runService.appConfig,$:entry?.data,$_:entry,$$:appr[tier.id].data,$$_:appr[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$:filesMap}"
+                                                [data]="{
+                                                  $app$: app(),
+                                                  $_: entry,
+                                                  $: entry?.data,
+                                                  $$_: appr[tier.id],
+                                                  $$: appr[tier.id]?.data,
+                                                  $prev$: entry?.prev,
+                                                  $user$: user(),
+                                                  $conf$: appConfig,                                          
+                                                  $action$: action(),                                          
+                                                  $el$: form()?.items,
+                                                  $form$: form(),
+                                                  $this$: _this,                                          
+                                                  $param$: param(),                                          
+                                                  $base$: base,
+                                                  $baseUrl$: baseUrl(),
+                                                  $baseApi$: baseApi,        
+                                                  $lookupList$: lookup,                                          
+                                                  dayjs,
+                                                  ServerDate,
+                                                  $token$: accessToken(),
+                                                  $file$: filesMap,
+                                                  $activeIndex$: _navIndex(),
+                                                  timestamp:timestamp()
+                                                }"
                                                 [required]="field?.v?.required"
                                                 [maxlength]="field?.v?.maxlength"
                                                 [minlength]="field?.v?.minlength"
                                                 [pattern]="field?.v?.pattern"                                                
                                                 [defaultValue]="field.x?.use_dyn_default?dynDefVal:field?.x?.default">
                                               </field-edit>
+                                              
+                                              <!-- [data]="{$user$:user(), 
+                                                $conf$: appConfig,
+                                                $:entry?.data,
+                                                $_:entry,
+                                                $$:appr[tier.id].data,
+                                                $$_:appr[tier.id],
+                                                $base$:base,
+                                                $baseUrl$:baseUrl(),
+                                                $baseApi$:baseApi,
+                                                $this$:_this,
+                                                $param$:param(), 
+                                                $file$:filesMap}" -->
                                             }
                                           }
                                         }
@@ -149,7 +214,7 @@
                               @if (tier.canRemark) {
                                 <div class="card-body">
                                   <div class="form-group">
-                                    <label class="f-label">{{app.x?.lang=='ms'?'Komen':'Remark'}}</label>
+                                    <label class="f-label">{{app().x?.lang=='ms'?'Komen':'Remark'}}</label>
                                     <textarea class="form-control" [(ngModel)]="appr[tier.id].remark" name="remark"></textarea>
                                   </div>
                                 </div>
@@ -158,21 +223,27 @@
                                 @if (!appr[tier.id]?.id) {
                                   <button type="button" class="btn btn-round btn-primary"
                                     (click)="submitApproval(appr[tier.id])" [disabled]="approvalForm.invalid">
-                                    <!-- <i class="fa fa-send"></i> -->
                                     <fa-icon [icon]="['fas','paper-plane']" [fixedWidth]="true"></fa-icon>
-                                    {{app.x?.lang=='ms'?'Hantar':'Submit'}}
+                                    {{app().x?.lang=='ms'?'Hantar':'Submit'}}
                                   </button>
                                 }@else{
                                   <button type="button" class="btn btn-round btn-info"
                                     (click)="saveApproval(appr[tier.id], tier)" [disabled]="approvalForm.invalid">
                                     <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                                    {{app.x?.lang=='ms'?'Simpan Kelulusan':'Save Approval'}}
+                                    {{app().x?.lang=='ms'?'Simpan Kelulusan':'Save Approval'}}
                                   </button>
+                                  <!-- @if (entry?.approver[tier.id].includes(user.email)){
+                                    <button type="button" class="btn btn-round btn-danger ms-1"
+                                      (click)="removeApproval(tier)">
+                                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                      {{app.x?.lang=='ms'?'Padam Kelulusan':'Remove Approval'}}
+                                    </button>
+                                  } -->
                                 }
                                 @if (editTier[tier.id]) {
                                   <button type="button" class="btn btn-round btn-outline-secondary ms-1"
                                     (click)="cancelApproval(appr[tier.id],tier)">
-                                    {{app.x?.lang=='ms'?'Batal':'Cancel'}}
+                                    {{app().x?.lang=='ms'?'Batal':'Cancel'}}
                                   </button>
                                 }
 
@@ -180,7 +251,10 @@
                             </div>
                           } @else {
                             <div class="readonly">
-                              @if ((!form?.hideStatus) || (form?.admin && user.groups[form?.admin.id]) || entry?.approver[tier.id]?.indexOf(user.email)>-1) {
+                              @if ((!form()?.hideStatus) || (form()?.admin && user().groups[form()?.admin.id]) || entry?.approver[tier.id]?.indexOf(user().email)>-1) {
+                                <!-- ##INFO##
+                                appr[tier.id] is just an empty placeholder to hold approval form data (ngModel)
+                                To display actual approval data, we need to use entry?.approval[tier.id] -->
                                 @if (entry?.approval[tier.id]) {
                                   <div>
                                     <div class="tier-head">
@@ -188,7 +262,8 @@
                                         <fa-icon class="me-1" [icon]="['fas','question']"
                                         [fixedWidth]="true"></fa-icon>
                                       } @else {
-                                        @if (tier.actions[entry?.approval[tier.id].status] && ['submitted','resubmitted'].indexOf(entry?.approval[tier.id].status)==-1) {
+                                        @if (tier.actions[entry?.approval[tier.id].status] && 
+                                        ['submitted','resubmitted'].indexOf(entry?.approval[tier.id].status)==-1) {
                                           <fa-icon class="me-1"
                                             [icon]="['fas',tier.actions[entry?.approval[tier.id].status]?.icon]"
                                             [fixedWidth]="true">
@@ -225,20 +300,54 @@
                                     </div>
                                     <div class="row display-flex mt-4">
                                       @if (tier?.section?.type=='approval') {
-                                        @if (tier.section && preCheckAppr(tier.section?.pre,entry?.approval[tier.id])) {
+                                        @if (tier.section && preCheckAppr(tier.section?.pre, entry?.approval[tier.id])) {
                                           @for (f of tier?.section?.items; track f.id) {
-                                            @let field = form?.items[f.code];
-                                            @if (field && !field?.hidden && preCheckAppr(field?.pre,entry?.approval[tier.id])) {
-                                              <div [ngClass]="form?.items[f.code].size">
+                                            @let field = form()?.items[f.code];
+                                            @if (field && !field?.hidden && preCheckAppr(field?.pre, entry?.approval[tier.id])) {
+                                              <div [ngClass]="form()?.items[f.code].size">
                                                 <div class="form-group mb-3" [ngClass]="f.altClass">
                                                   @if (!field?.hideLabel) {
                                                     <label>{{field?.label}}</label>
                                                   }
+                                                  <!-- {{entry?.approval[tier.id]?.data|json}} -->
                                                   <p class="form-control-static">
-                                                    <field-view [field]="field"
+                                                    <field-view [field]="field" [scopeId]="scopeId()"
                                                       [value]="getVal(field,entry?.approval[tier.id])"
-                                                      [data]="{$user$:user, $conf$:runService.appConfig,$:entry?.approval[tier.id].data,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
+                                                      [data]="{
+                                                        $app$: app(),
+                                                        $_: entry,
+                                                        $: entry?.data,
+                                                        $$_: entry?.approval[tier.id],
+                                                        $$: entry?.approval[tier.id]?.data,
+                                                        $prev$: entry?.prev,
+                                                        $user$: user(),
+                                                        $conf$: appConfig,                                          
+                                                        $action$: action(),                                          
+                                                        $el$: form()?.items,
+                                                        $form$: form(),
+                                                        $this$: _this,                                          
+                                                        $param$: param(),                                          
+                                                        $base$: base,
+                                                        $baseUrl$: baseUrl(),
+                                                        $baseApi$: baseApi,        
+                                                        $lookupList$: lookup,                                          
+                                                        dayjs,
+                                                        ServerDate,
+                                                        $token$: accessToken(),
+                                                        $file$: filesMap,
+                                                        $activeIndex$: _navIndex(),
+                                                        timestamp:timestamp()
+                                                      }">
                                                     </field-view>
+                                                    
+                                                    <!-- [data]="{$user$:user(), $conf$:appConfig,
+                                                      $:entry?.data,$_:entry,
+                                                      $$:entry?.approval[tier.id].data,
+                                                      $$_:entry?.approval[tier.id],
+                                                      $prev$:entry?.prev,
+                                                        $base$:base,$baseUrl$:baseUrl(),
+                                                        $baseApi$:baseApi,$this$:_this,$param$:param(), 
+                                                        $file$: filesMap}" -->
                                                   </p>
                                                 </div>
                                               </div>
@@ -249,8 +358,8 @@
                                       <!-- @if (tier?.section?.type=='approval-list') {
                                         @for (child of entry?.approval[tier.id].list; track $index) {
                                           @for (f of tier?.section?.items; track f.id) {
-                                            @let field = form?.items[f.code];
-                                            @if (!field.hidden && preCheckStr(field?.pre,entry?.approval[tier.id])) {
+                                            @let field = form()?.items[f.code];
+                                            @if (!field.hidden && preCheckStr(field?.pre,entry?.approval[tier.id].data)) {
                                               <div [ngClass]="field.size">
                                                 <div class="form-group mb-3" [ngClass]="f.altClass">
                                                   @if (!field.hideLabel) {
@@ -259,7 +368,7 @@
                                                   <p class="form-control-static">
                                                     <field-view [field]="field"
                                                       [value]="getVal(field,entry?.approval[tier.id],child)"
-                                                      [data]="{$user$:user, $conf$:runService.appConfig,$:child,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$, $file$: filesMap}">
+                                                      [data]="{$user$:user(), $conf$:runService.appConfig,$:child,$_:entry?.approval[tier.id],$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:_this,$param$:$param$, $file$: filesMap}">
                                                     </field-view>
                                                   </p>
                                                 </div>
@@ -283,7 +392,7 @@
                                         </footer>
                                       }
                                       <div class="my-1">
-                                        @if (tier.type=='ASSIGN' && form?.admin && user.groups[form?.admin.id]) {
+                                        @if (tier.type=='ASSIGN' && form()?.admin && user().groups[form()?.admin.id]) {
                                           <button
                                             class="btn btn-round btn-info" (click)="assignApprover(editApprovalTpl,tier)">
                                             @if (entry?.approver[tier.id]) {
@@ -309,18 +418,18 @@
             @if (action()!='approve') {
               <!-- <div class="px-2 pb-2"> -->
                 <div class="limit-width centered print-hide">
-                  @if ((entry?.currentStatus=='drafted' || entry?.currentEdit) && form?.canEdit) {
-                    <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline"
-                      routerLink="{{preurl}}/form/{{form.id}}/edit" (click)="closed.emit()" [queryParams]="{entryId:entry?.id}">
+                  @if ((entry?.currentStatus=='drafted' || entry?.currentEdit) && form()?.canEdit) {
+                    <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline()"
+                      routerLink="{{preurl()}}/form/{{form().id}}/edit" (click)="closed.emit({})" [queryParams]="{entryId:entry?.id}">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                      Edit {{form.title}}
+                      Edit {{form().title}}
                     </button>
                   }
-                  @if (['submitted'].indexOf(entry?.currentStatus)>-1 && form?.canRetract && entry?.email == user.email) {
-                    <button type="button" class="btn btn-round btn-danger pull-right" [class.disabled]="offline"
+                  @if (['submitted'].indexOf(entry?.currentStatus)>-1 && form()?.canRetract && entry?.email == user().email) {
+                    <button type="button" class="btn btn-round btn-danger pull-right" [class.disabled]="offline()"
                       (click)="cancelEntry()">
                       <fa-icon [icon]="['fas','times']" [fixedWidth]="true"></fa-icon>
-                      {{app.x?.lang=='ms'?'Tarik semula':'Retract'}}
+                      {{app().x?.lang=='ms'?'Tarik semula':'Retract'}}
                     </button>
                   }
                   <div class="clearfix"></div>
@@ -331,27 +440,27 @@
         </form>
       }@else{
         <div class="p-3 align-center text-center text-muted">
-          <h5>{{app.x?.lang=='ms'?'Entri tidak wujud':'Entry doesn\'t exist'}}</h5>
+          <h5>{{app().x?.lang=='ms'?'Entri tidak wujud':'Entry doesn\'t exist'}}</h5>
           <p class="mt-3">
-            @if (form?.single) {
-              <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline"
-                routerLink="{{preurl}}/form/{{form.id}}/edit-single">
+            @if (form()?.single) {
+              <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline()"
+                routerLink="{{preurl()}}/form/{{form().id}}/edit-single">
                 <!-- To-Do: Perlu semak samada masih pake /edit or /edit-single -->
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{app.x?.lang=='ms'?'Kemaskini':'Update'}} {{form?.title}}
+                {{app().x?.lang=='ms'?'Kemaskini':'Update'}} {{form()?.title}}
               </button>
             }@else{
-              <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline"
-                routerLink="{{preurl}}/form/{{form.id}}/add">
+              <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline()"
+                routerLink="{{preurl()}}/form/{{form().id}}/add">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{app.x?.lang=='ms'?'Tambah Entri Baru':'Add New Entry'}}
+                {{app().x?.lang=='ms'?'Tambah Entri Baru':'Add New Entry'}}
               </button>
             }
           </p>
         </div>
       }
     }@else {
-      @if (!isAuthorized) {
+      @if (!isAuthorized()) {
         <div class="detail text-muted">
           <h3>{{unAuthorizedMsg}}</h3>
         </div>
@@ -385,7 +494,7 @@
     <h4 class="modal-title">Approval Trails</h4>
   </div>
   <div class="list-group list-group-flush">
-    @for (trail of trails; track trail.id) {
+    @for (trail of trails(); track trail.id) {
       <div class="list-group-item">
         <div class="small">{{trail.timestamp|date:'medium'}}</div>
         @if (trail.tier) {
@@ -405,45 +514,5 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
-  </div>
-</ng-template>
-<ng-template #editChildTpl let-c="close" let-d="dismiss">
-  <div #editChildForm="ngForm" ngForm>
-    <div class="modal-header">
-      <h4 class="modal-title">Edit {{editChildItems.section.title}}</h4>
-    </div>
-    <div class="modal-body fix-gutter">
-      <div class="row g-4 display-flex">
-        @for (f of editChildItems.section.items; track f.id) {
-          @if (!form?.items[f.code]) {
-            <div class="p-2 border rounded mb-3">Source Item Not Available</div>
-          }
-          @if (form?.items[f.code] && !form?.items[f.code].hidden && preCheckStr(form?.items[f.code]?.pre,editChildData)) {
-            @defer(prefetch on idle){
-              <field-edit [ngClass]="form?.items[f.code].size||'col-sm-12'" id="fn-{{f.id}}-child"
-                [fileProgress]="uploadProgress[f.code+($index??'')]"
-                [field]="form?.items[f.code]" name="fn-{{f.id}}" [lookupList]="lookup[f.code]"
-                [(ngModel)]="editChildData[f.code]"
-                (valueChange)="fieldChange($event,editChildData,form?.items[f.code],editChildItems.section)"
-                (valueSearch)="getLookupSearch($event,f.code,form.items[f.code].dataSourceInit, editChildData)"
-                (fileValueChange)="onUpload($event,editChildData, form?.items[f.code],false)"
-                (fileValueClear)="onFileClear($event,editChildData, form?.items[f.code],false)"
-                [required]="form?.items[f.code]?.v?.required" [maxlength]="form?.items[f.code]?.v?.maxlength"
-                (selectFocus)="getLookup(f.code,form?.items[f.code].dataSourceInit, editChildData)"
-                [data]="{$user$:user, $conf$:runService.appConfig,$:editChildData,$_:entry,$prev$:entry?.prev,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi, $this$:$this$, $param$:$param$, $file$:filesMap}" [minlength]="form?.items[f.code]?.v?.minlength"
-                [pattern]="form?.items[f.code]?.v?.pattern"></field-edit>
-            }
-          }
-        }
-      </div>
-    </div>
-    <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
-      <button type="button" class="btn btn-round btn-primary" [disabled]="editChildForm.invalid"
-        (click)="c(editChildData)">
-        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-        Save {{editChildItems.section.title}}
-      </button>
-    </div>
   </div>
 </ng-template>

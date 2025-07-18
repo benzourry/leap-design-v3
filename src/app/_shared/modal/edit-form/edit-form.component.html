@@ -208,6 +208,15 @@
                 <label class="form-check-label" for="validateSave">Validate Save</label>
               </div>
               <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().x.skipValidate"
+                  name="skipValidate" id="skipValidate">
+                <label class="form-check-label" for="skipValidate">Disable server-side entry validation 
+                  @if (editFormData().x?.skipValidate){
+                    <sup class="text-danger blink_me"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon></sup>
+                  }
+                </label>
+              </div>
+              <div class="form-check form-switch mt-1">
                 <input type="checkbox" class="form-check-input" [(ngModel)]="editFormData().canSave"
                   name="canSave" id="canSave">
                 <label class="form-check-label" for="canSave">Can Save</label>

@@ -17,8 +17,8 @@
       </button>
       @if (!maxState()) {
         <button type="button" class="btn btn-outline-secondary border-0 btn-round ms-1"
-          (click)="flipped=!flipped">
-          @if (!flipped) {
+          (click)="flipped.set(!flipped())">
+          @if (!flipped()) {
             <fa-icon [icon]="['fas','list']" [fixedWidth]="true"></fa-icon>
           }@else{
             <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true">
@@ -35,18 +35,18 @@
       }
     </div>
   </div>
-  @if (chartDataset) {
-    <div  [ngClass]="maxState()?'':'flip-card'" [class.flipped]="flipped">
+  @if (chartDataset()) {
+    <div  [ngClass]="maxState()?'':'flip-card'" [class.flipped]="flipped()">
       <div class="fc-inner" [ngStyle]="{'height':maxState()?'auto':(chart().height+'px'||'450px')}">
-        <div class="fc-front" [class.print-hide]="flipped && !maxState()">
-          @if (chartOption) {
+        <div class="fc-front" [class.print-hide]="flipped() && !maxState()">
+          @if (chartOption()) {
             <!-- {{chartOption|json}} -->
             <div class="demo-chart" [ngStyle]="{'height.px':(chart().height||450)}" echarts
-            [options]="chartOption"></div>
+            [options]="chartOption()"></div>
           }
         </div>
-        <div class="fc-back justify-content-center overflow-auto" [class.print-hide]="!flipped && !maxState()">
-          @if (!chartDataset?.series) {
+        <div class="fc-back justify-content-center overflow-auto" [class.print-hide]="!flipped() && !maxState()">
+          @if (!chartDataset()?.series) {
             <table id="chart_{{chart().id}}" class="table table-striped table-flush position-relative" >
               <thead>
                 <tr>
@@ -58,19 +58,19 @@
                 </tr>
               </thead>
               <tbody>
-                @for (d of chartDataset?.data; track $index) {
+                @for (d of chartDataset()?.data; track $index) {
                   <tr>
                     <td>{{d.name}}</td>
                     <td>{{d.value}}</td>
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>{{((d.value/chartDataset?._a)*100).toFixed(2)}}</td>
+                      <td>{{((d.value/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
                   </tr>
                 }
                 @if (chart().showAgg) {
                   <tr>
                     <td class="bg-dark text-white">Total</td>
-                    <td class="bg-dark text-white">{{chartDataset?._a}}</td>
+                    <td class="bg-dark text-white">{{chartDataset()?._a}}</td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td>100.00</td>
                     }
@@ -82,12 +82,12 @@
             <table id="chart_{{chart().id}}" class="table table-striped table-flush position-relative">
               <thead>
                 <tr>
-                  @for (header of chartDataset?.data[0]; track $index) {
+                  @for (header of chartDataset()?.data[0]; track $index) {
                     <th class="border-top-0 position-sticky sticky-top"
                     >{{header}}</th>
                   }
-                  @if (chartDataset?._arow) {
-                    <th class="bg-dark text-white position-sticky sticky-top">{{chartDataset?._arow[0]}}</th>
+                  @if (chartDataset()?._arow) {
+                    <th class="bg-dark text-white position-sticky sticky-top">{{chartDataset()?._arow[0]}}</th>
                   }
                   @if (chart().showAgg && chart().x?.percentage) {
                     <th class="position-sticky sticky-top">%</th>
@@ -95,25 +95,25 @@
                 </tr>
               </thead>
               <tbody>
-                @for (d of chartDataset?.data|slice:1; track $index; let $idx = $index) {
+                @for (d of chartDataset()?.data|slice:1; track $index; let $idx = $index) {
                   <tr>
                     @for (dv of d; track $index) {
                       <td>{{dv}}</td>
                     }
                     @if (chart().showAgg) {
-                      <td class="bg-dark text-white">{{chartDataset?._arow[$idx+1]}}</td>
+                      <td class="bg-dark text-white">{{chartDataset()?._arow[$idx+1]}}</td>
                     }
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>{{((chartDataset?._arow[$idx+1]/chartDataset?._a)*100).toFixed(2)}}</td>
+                      <td>{{((chartDataset()?._arow[$idx+1]/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
                   </tr>
                 }
                 @if (chart().showAgg) {
                   <tr>
-                    @for (dv of chartDataset?._acol; track $index; let $idx = $index) {
-                      <td class="bg-dark text-white">{{chartDataset?._acol[$idx]}}</td>
+                    @for (dv of chartDataset()?._acol; track $index; let $idx = $index) {
+                      <td class="bg-dark text-white">{{chartDataset()?._acol[$idx]}}</td>
                     }
-                    <td><strong>{{chartDataset?._a}}</strong></td>
+                    <td><strong>{{chartDataset()?._a}}</strong></td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td>100.00</td>
                     }
@@ -139,7 +139,7 @@
   <div class="modal-body">
     @defer(prefetch on idle){
       <app-user-entry-filter [formHolder]="form" [presetFilters]="chart().presetFilters"
-        [filtersConfig]="chart()?.filters" [(filtersData)]="filtersData"
+        [filtersConfig]="chart()?.filters" [(filtersData)]="filtersData" [scopeId]="scopeId()"
         [lookup]="lookup"></app-user-entry-filter>
     }@loading {
       <div class="text-center m-5">

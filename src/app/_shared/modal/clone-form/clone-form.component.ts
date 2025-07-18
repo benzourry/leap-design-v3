@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 import { FormService } from '../../../service/form.service';
 import { FormsModule } from '@angular/forms';
 
@@ -6,12 +6,15 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-clone-form',
     templateUrl: './clone-form.component.html',
     styleUrls: ['./clone-form.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule]
 })
 export class CloneFormComponent implements OnInit  {
 
+  private formService = inject(FormService);
+  cdr = inject(ChangeDetectorRef);
 
-  constructor(private formService: FormService) {
+  constructor() {
   }
 
 //   @Input("dismiss")
@@ -40,6 +43,7 @@ export class CloneFormComponent implements OnInit  {
       this.formService.getListBasic({ appId: appId, size: 999 })
           .subscribe(res => {
               this.cloneFormList = res.content;
+              this.cdr.detectChanges();
           })
   }
 

@@ -168,7 +168,7 @@ export class NgLeafletComponent implements OnInit, AfterViewInit {
           latitude: 1.553110,
           longitude: 110.345032
         };
-        console.log("no value no curr pos")
+        // console.log("no value no curr pos")
         this.value.set(v);
         this.createMarker();
         this.centerMapNew();

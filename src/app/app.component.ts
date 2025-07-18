@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, effect, untracked } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter, map } from 'rxjs';
 import { LogService } from './_shared/service/log.service';
@@ -34,22 +34,26 @@ import { ToastsContainer } from './run/_component/toasts-container.component';
     imports: [RouterOutlet, ToastsContainer, FaIconComponent]
 })
 export class AppComponent {
+
+  private swUpdate = inject(SwUpdate)
+  private utilityService = inject(UtilityService)
+  private logService = inject(LogService)
+
   title = 'app';
 
-  updateAvailable: boolean = false;
-  updateInfo:any ={}
+  updateAvailable = signal<boolean>(false);
+  updateInfo = signal<any>({});
 
   // onlineEvent: Observable<Event>;
   // offlineEvent: Observable<Event>;
   // subscriptions: Subscription[] = [];
 
-  showConsole:boolean=false;
-  logs=new Set();
-  offline = false;
+  showConsole = signal<boolean>(false);
+  logs= signal<Set<string>>(new Set());
+  offline = signal<boolean>(false);
 
-  constructor(private swUpdate: SwUpdate, private utilityService: UtilityService,
-    private logService: LogService) {
-      const updatesAvailable = swUpdate.versionUpdates.pipe(
+  constructor() {
+      const updatesAvailable = this.swUpdate.versionUpdates.pipe(
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         map(evt => ({
           type: 'UPDATE_AVAILABLE',
@@ -57,33 +61,27 @@ export class AppComponent {
           available: evt.latestVersion,
         })));
         updatesAvailable.subscribe(evt=>{
-          this.updateAvailable = true;
-          this.updateInfo = evt;
+          this.updateAvailable.set(true);
+          this.updateInfo.set(evt);
         })
-    // this.swUpdate.versionUpdates.subscribe(evt => {
-    //   this.updateAvailable = true;
-    // });
-    // ngbConfig.animation = false;
-    this.utilityService.testOnline$().subscribe(v => this.offline = !v)
+        
+    this.utilityService.testOnline$().subscribe(v => this.offline.set(!v))
 
-    // effect(() => {
-    //   let l = this.logService.logEmitted$();
-    //   untracked(()=>{
-    //     if (this.logs && l?.length>1){
-    //       this.logs?.add(l)
-    //     }      
-    //   });
-    // }, { allowSignalWrites: true })
-
-    this.logService.logEmitted$.subscribe(l => this.logs?.add(l));
-    // this.subscribeToNotifications();
+    effect(()=>{
+      const log = this.logService.logEmitted$();
+      if (log){
+        this.logs.update(prev => {
+          const next = new Set(prev);
+          next.add(log);
+          return next;
+        });
+      }
+    })
   }
 
-  // subscribeToNotifications() {
-
-
-  // }
-
+  clearLogs(){
+    this.logs.set(new Set());
+  }
 
   reload() {
     window.location.reload();

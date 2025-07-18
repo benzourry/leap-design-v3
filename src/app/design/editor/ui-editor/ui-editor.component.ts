@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core';
 import { FormService } from '../../../service/form.service';
 // import { LookupService } from '../../../service/lookup.service';
 import { MailerService } from '../../../service/mailer.service';
@@ -41,6 +41,7 @@ import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/
 
 @Component({
     selector: 'app-ui-editor',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './ui-editor.component.html',
     styleUrls: ['./ui-editor.component.scss', '../../../../assets/css/side-menu.css',
         '../../../../assets/css/element-action.css'],
@@ -57,36 +58,40 @@ export class UiEditorComponent implements OnInit {
     path: string = "";
     offline: boolean = false;
     designPane: boolean = false;
-    counts: any = {};
+    counts = signal<any>({});
     searchText: string = "";
 
     helpLink = "https://unimas-my.sharepoint.com/:w:/g/personal/blmrazif_unimas_my/EcX9YxrT4o5NtXnyF-j2dQgBR0rw7rgL8ab7sw3i9SgdyA?e=msJJtB";
 
 
-
-    constructor(private formService: FormService,
-        private datasetService: DatasetService,
-        private dashboardService: DashboardService,
-        private screenService: ScreenService,
-        private cognaService: CognaService,
-        private lookupService: LookupService,
-        private mailerService: MailerService,
-        private groupService: GroupService,
-        private modalService: NgbModal, private userService: UserService,
-        private route: ActivatedRoute, private appService: AppService,
-        private entryService: EntryService,
-        private bucketService: BucketService,
-        private lambdaService: LambdaService,
-        private utilityService: UtilityService,
-        private toastService: ToastService,
-        private commService: CommService,
-        private router: Router,
-        private location: PlatformLocation) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+    private formService = inject(FormService);
+    private datasetService = inject(DatasetService);
+    private dashboardService = inject(DashboardService);
+    private screenService = inject(ScreenService);
+    private cognaService = inject(CognaService);
+    private lookupService = inject(LookupService);
+    private mailerService = inject(MailerService);
+    private groupService = inject(GroupService);
+    private modalService = inject(NgbModal);
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private appService = inject(AppService);
+    // private entryService = inject(EntryService);
+    private bucketService = inject(BucketService);
+    private lambdaService = inject(LambdaService);
+    private utilityService = inject(UtilityService);
+    private toastService = inject(ToastService);
+    private commService = inject(CommService);
+    private router = inject(Router);
+    private location = inject(PlatformLocation);
+    private cdr = inject(ChangeDetectorRef);
+    
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
 
-        commService.changeEmitted$.subscribe(data => {
-            this.counts[data.key] = data.value;
+        this.commService.changeEmitted$.subscribe(data => {
+            this.counts.update(c=>({...c, [data.key]: data.value}));
             if (data.key == 'form') {
                 this.getFormList();
             }
@@ -114,6 +119,7 @@ export class UiEditorComponent implements OnInit {
         this.userService.getCreator().subscribe((user) => {
 
             this.user = user;
+            this.cdr.detectChanges();
 
             this.route.parent.parent.params
                 // NOTE: I do not use switchMap here, but subscribe directly
@@ -131,7 +137,6 @@ export class UiEditorComponent implements OnInit {
                                 this.appService.searchInApp.clear();
                                 this.app = res;
                                 this.getCounts(res.id);
-                                // this.getCopyRequestList();
 
                                 this.getFormList();
                                 this.getDatasetList();
@@ -144,6 +149,7 @@ export class UiEditorComponent implements OnInit {
                                 this.getLookupList(res.id);
                                 this.getBucketList(res.id);
                                 this.getLambdaList(res.id);
+                                this.cdr.detectChanges();
                             });
                     }
 
@@ -156,6 +162,7 @@ export class UiEditorComponent implements OnInit {
                 sort: 'id,desc'
             }).subscribe(res => {
                 this.otherAppList = res.content;
+                this.cdr.detectChanges();
             })
 
         });
@@ -169,7 +176,6 @@ export class UiEditorComponent implements OnInit {
     formList: any[] = [];
     formTotal: number = 0;
     getFormList() {
-        // this.formPageNo = pageNumber;
         this.formLoading = true;
 
         let params = {
@@ -186,21 +192,28 @@ export class UiEditorComponent implements OnInit {
                 this.formTotal = res.page?.totalElements;
                 this.formLoading = false;
                 // this.commService.emitChange({ key: 'form', value: this.formTotal });
-                this.counts['form'] = res.page?.totalElements;
+                // this.counts['form'] = res.page?.totalElements;
+                this.counts.update(c=>({...c, form: res.page?.totalElements}));
                 this.formList.forEach(f => this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } }));
-            }, res => this.formLoading = false);
+                this.cdr.detectChanges();
+            }, res => {
+                this.formLoading = false;
+                this.cdr.detectChanges();
+            });
 
     }
 
-    datasetList: any[] = [];
+    datasetList = signal<any[]>([]);
     datasetGroupBy: string = null;
     getDatasetList() {
         this.datasetService.getDatasetList(this.app.id)
             .subscribe(res => {
-                this.datasetList = res;
+                this.datasetList.set(res);
                 // this.commService.emitChange({ key: 'dataset', value: res.length });
-                this.counts['dataset'] = res.length;
-                this.datasetList.forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
+                // this.counts['dataset'] = res.length;
+                this.counts.update(c=>({...c, dataset: res.length}));
+                this.datasetList().forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -214,8 +227,10 @@ export class UiEditorComponent implements OnInit {
                 this.screenList = res;
                 this.screenLoading = false;
                 // this.commService.emitChange({ key: 'screen', value: res.length });   
-                this.counts['screen'] = res.length;
+                // this.counts['screen'] = res.length;
+                this.counts.update(c=>({...c, screen: res.length}));
                 this.screenList.forEach(f => this.appService.searchInApp.set('screen' + f.id, { icon: ['fas', 'file'], name: 'Screen: ' + f.title, route: ['ui', 'screen'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
 
             })
     }
@@ -226,8 +241,10 @@ export class UiEditorComponent implements OnInit {
             .subscribe(res => {
                 this.dashboardList = res;
                 // this.commService.emitChange({ key: 'dashboard', value: res.length });
-                this.counts['dashboard'] = res.length;
+                // this.counts['dashboard'] = res.length;
+                this.counts.update(c=>({...c, dashboard: res.length}));
                 this.dashboardList.forEach(f => this.appService.searchInApp.set('dashboard' + f.id, { icon: ['fas', 'tachometer-alt'], name: 'Dashboard: ' + f.title, route: ['ui', 'dashboard'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
 
             })
     }
@@ -238,8 +255,10 @@ export class UiEditorComponent implements OnInit {
             .subscribe(res => {
                 this.accessList = res.content;
                 // this.commService.emitChange({ key: 'access', value: res.length });
-                this.counts['access'] = res.page?.totalElements;
+                // this.counts['access'] = res.page?.totalElements;
+                this.counts.update(c=>({...c, access: res.page?.totalElements}));
                 this.accessList.forEach(f => this.appService.searchInApp.set('access' + f.id, { icon: ['fas', 'users-cog'], name: 'Access Group: ' + f.name, route: ['user'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -251,6 +270,7 @@ export class UiEditorComponent implements OnInit {
                 // this.commService.emitChange({ key: 'access', value: res.length });
                 // this.counts[]
                 this.mailerList.forEach(f => this.appService.searchInApp.set('mailer' + f.id, { icon: ['fas', 'mail-bulk'], name: 'Mailer: ' + f.name, route: ['mailer'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -259,8 +279,10 @@ export class UiEditorComponent implements OnInit {
         this.lookupService.getLookupList({ appId: appId, size: 9999 })
             .subscribe(res => {
                 this.lookupList = res.content;
-                this.counts['lookup'] = res.page?.totalElements;
+                // this.counts['lookup'] = res.page?.totalElements;
+                this.counts.update(c=>({...c, lookup: res.page?.totalElements}));
                 this.lookupList.forEach(f => this.appService.searchInApp.set('lookup' + f.id, { icon: ['far', 'caret-square-down'], name: 'Lookup: ' + f.name, route: ['lookup'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -270,6 +292,7 @@ export class UiEditorComponent implements OnInit {
             .subscribe(res => {
                 this.bucketList = res.content;
                 this.bucketList.forEach(f => this.appService.searchInApp.set('bucket' + f.id, { icon: ['fas', 'box'], name: 'Bucket: ' + f.name, route: ['bucket'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -279,6 +302,7 @@ export class UiEditorComponent implements OnInit {
             .subscribe(res => {
                 this.lambdaList = res.content;
                 this.lambdaList.forEach(f => this.appService.searchInApp.set('lambda' + f.id, { icon: ['fas', 'rocket'], name: 'Lambda: ' + f.name, route: ['lambda'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -288,6 +312,7 @@ export class UiEditorComponent implements OnInit {
             .subscribe(res => {
                 this.cognaList = res.content;
                 this.cognaList.forEach(f => this.appService.searchInApp.set('cogna' + f.id, { icon: ['fas', 'robot'], name: 'Cogna: ' + f.name, route: ['cogna'], opt: { queryParams: { id: f.id } } }));
+                this.cdr.detectChanges();
             })
     }
 
@@ -317,7 +342,8 @@ export class UiEditorComponent implements OnInit {
     getCounts(appId) {
         this.appService.getCount(appId)
             .subscribe(res => {
-                this.counts = res;
+                this.counts.set(res);
+                this.cdr.detectChanges();
             })
     }
 
@@ -355,6 +381,7 @@ export class UiEditorComponent implements OnInit {
                         .subscribe(res => {
                             this.app = res;
                             // this.getCopyRequestList();
+                            this.cdr.detectChanges();
                         });
                     this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
                 }, error => {
@@ -408,6 +435,7 @@ export class UiEditorComponent implements OnInit {
                         this.getLookupList(this.app.id);
                         this.getBucketList(this.app.id);
                         this.getLambdaList(this.app.id);
+                        this.cdr.detectChanges();
 
 
                         this.toastService.show("Metadata successfully imported", { classname: 'bg-success text-light' });
@@ -480,7 +508,8 @@ export class UiEditorComponent implements OnInit {
                 this.formService.saveForm(this.app.id, res)
                     .subscribe(res => {
                         this.getFormList();
-                        this.router.navigate(['form'], { relativeTo: this.route, queryParams: { id: res.id } })
+                        this.router.navigate(['form'], { relativeTo: this.route, queryParams: { id: res.id } });
+                        this.cdr.detectChanges();
                     })
             }, dismiss => { })
     }
@@ -523,7 +552,8 @@ export class UiEditorComponent implements OnInit {
                 this.datasetService.saveDataset(this.app.id, res)
                     .subscribe(res => {
                         this.getDatasetList();
-                        this.router.navigate(['dataset'], { relativeTo: this.route, queryParams: { id: res.id } })
+                        this.router.navigate(['dataset'], { relativeTo: this.route, queryParams: { id: res.id } });
+                        this.cdr.detectChanges();
                     })
             }, dismiss => { })
     }
@@ -583,7 +613,8 @@ export class UiEditorComponent implements OnInit {
                 this.dashboardService.saveDashboard(this.app.id, res)
                     .subscribe(res => {
                         this.getDashboardList();
-                        this.router.navigate(['dashboard'], { relativeTo: this.route, queryParams: { id: res.id } })
+                        this.router.navigate(['dashboard'], { relativeTo: this.route, queryParams: { id: res.id } });
+                        this.cdr.detectChanges();
                     })
             }, dismiss => { })
     }
@@ -602,7 +633,8 @@ export class UiEditorComponent implements OnInit {
                 this.screenService.saveScreen(this.app.id, res)
                     .subscribe(res => {
                         this.getScreenList();
-                        this.router.navigate(['screen'], { relativeTo: this.route, queryParams: { id: res.id } })
+                        this.router.navigate(['screen'], { relativeTo: this.route, queryParams: { id: res.id } });
+                        this.cdr.detectChanges();
                     })
             }, dismiss => { })
     }
@@ -673,6 +705,7 @@ export class UiEditorComponent implements OnInit {
     reorderDataset(event: CdkDragDrop<number[]>, parent){
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         let datasetList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
+        this.datasetList.set(datasetList);
         this.datasetService.saveDatasetOrder(datasetList)
         .subscribe();
     }

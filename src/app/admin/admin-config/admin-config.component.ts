@@ -1,5 +1,5 @@
 import { NgClass, PlatformLocation } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { base, baseApi, domainBase } from '../../_shared/constant.service';
@@ -15,7 +15,8 @@ import { splitAsList } from '../../_shared/utils';
   selector: 'app-admin-config',
   imports: [RouterLink, RouterLinkActive, NgClass, FaIconComponent, FormsModule, NgbNavModule, FilterPipe],
   templateUrl: './admin-config.component.html',
-  styleUrl: './admin-config.component.scss'
+  styleUrl: './admin-config.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminConfigComponent implements OnInit {
 
@@ -36,14 +37,15 @@ export class AdminConfigComponent implements OnInit {
   appGroups: any[] = [];
   appGroupsFilter: string = "";
 
-  constructor(
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private toastService: ToastService,
-    private userService: UserService,
-    private platformService: PlatformService) {
+  private cdr = inject(ChangeDetectorRef);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  private toastService = inject(ToastService);
+  private userService = inject(UserService);
+  private platformService = inject(PlatformService);
 
-    location.onPopState(() => this.modalService.dismissAll(''));
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
   }
 
   ngOnInit(): void {
@@ -51,6 +53,7 @@ export class AdminConfigComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.loadPlatformProps();
         this.loadAppProps();
@@ -77,6 +80,7 @@ export class AdminConfigComponent implements OnInit {
     this.platformService.valueByGroup('platform')
       .subscribe((res) => {
         this.platformProps = res;
+        this.cdr.detectChanges();
       });
   }
 
@@ -84,6 +88,7 @@ export class AdminConfigComponent implements OnInit {
     this.platformService.valueByGroup('app.prop')
       .subscribe((res) => {
         this.appProps = res;
+        this.cdr.detectChanges();
       });
   }
 
@@ -91,6 +96,7 @@ export class AdminConfigComponent implements OnInit {
     this.platformService.listAppGroup({size:9999})
       .subscribe((res) => {
         this.appGroups = res.content;
+        this.cdr.detectChanges();
       });
   }
 
@@ -108,9 +114,11 @@ export class AdminConfigComponent implements OnInit {
             this.toastService.show("Property successfully saved", { classname: 'bg-success text-light' });
             this.loadAppProps();
             this.loadPlatformProps();
+            this.cdr.detectChanges();
           }, error: (err) => {
             this.modalService.dismissAll();
             this.toastService.show("Property saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
       }, res => { })
@@ -124,8 +132,10 @@ export class AdminConfigComponent implements OnInit {
           this.toastService.show("Property successfully deleted", { classname: 'bg-success text-light' });
           this.loadAppProps();
           this.loadPlatformProps();
+          this.cdr.detectChanges();
         }, error: (err) => {
           this.toastService.show("Property deleting failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       })
     }
@@ -145,9 +155,11 @@ export class AdminConfigComponent implements OnInit {
             this.modalService.dismissAll();
             this.toastService.show("App Group successfully saved", { classname: 'bg-success text-light' });
             this.loadAppGroups();
+            this.cdr.detectChanges();
           }, error: (err) => {
             this.modalService.dismissAll();
             this.toastService.show("App Group saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
       }, res => { })
@@ -160,8 +172,10 @@ export class AdminConfigComponent implements OnInit {
         next: (res) => {
           this.toastService.show("App Group successfully deleted", { classname: 'bg-success text-light' });
           this.loadAppGroups();
+          this.cdr.detectChanges();
         }, error: (err) => {
           this.toastService.show("App Group deleting failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       })
     }

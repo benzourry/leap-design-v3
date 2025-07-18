@@ -23,6 +23,8 @@ export class RunService {
 
   appConfig:any = {};
 
+  appConf = signal<any>({});
+
   $app = signal<any>({})
   // $appId = signal<number>(-1)
 
@@ -34,7 +36,7 @@ export class RunService {
 
   $preurl = signal<string>('');
 
-  $user = signal<any>({});
+  $user = signal<any>(null);
 
   $startTimestamp=signal<number>(0);
 
@@ -264,6 +266,9 @@ export class RunService {
   removeAcc(id: number, email: any) {
     return this.http.post<any>(`${this.baseApi}/app/${id}/remove-acc?email=${email}`,{})
   }
+  removeApproval(entryId:number, tierId:number){
+    return this.http.post<any>(`${this.baseApi}/entry/${entryId}/remove-approval`,{tierId:tierId});
+  }
   saveUserOrder(list: any) {
     return this.http.post<any>(`${this.baseApi}/app-user/save-order`, list);
   }
@@ -372,7 +377,7 @@ export class RunService {
     watch: (ch: any[], fn) => {
       ch.forEach(c => {
         if (!subs[c]){
-          subs[c] = this.rxStompService.watch('/' + c)
+          subs[c] = this.rxStompService.watch('/app-'+ this.$app().id + '-' + c)
             .pipe(
               map((msg:any) => msg.body),
               tap(()=>finalFn())
@@ -384,7 +389,7 @@ export class RunService {
     publish: (ch: any[], msg) => {
       ch.forEach(c => {
         this.rxStompService.publish({
-          destination: '/' + c,
+          destination: '/app-'+ this.$app().id + '-' + c,
           body: msg,
           skipContentLengthHeader: true
         })

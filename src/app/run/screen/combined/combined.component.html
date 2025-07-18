@@ -59,7 +59,6 @@
 }
 
   <ng-template #compRender let-compType="compType" let-sId="sId">
-    <!-- SID: {{sId}} -->
     <div class="mt-2">
 
     @if (['add','edit-single'].indexOf(compType)>-1) {
@@ -97,8 +96,7 @@
         }
       }@else if (['dataset'].indexOf(compType)>-1) {
         @defer(prefetch on idle){
-          <!-- {{sId}} -->
-          <app-list [hideTitle]="true" [datasetId]="sId">
+          <app-list [hideTitle]="true" [datasetId]="sId" [param]="param()">
           </app-list>
         }@loading {
           <div class="text-center m-5">

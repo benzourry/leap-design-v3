@@ -1,43 +1,35 @@
-import { Component, OnInit, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, input, model } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
+import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'app-edit-screen',
     templateUrl: './edit-screen.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./edit-screen.component.scss'],
     imports: [FormsModule, FaIconComponent, NgCmComponent, NgSelectModule]
 })
 export class EditScreenComponent implements OnInit {
 
-  // @Input("screen")
   editScreenData = model<any>({}, { alias: 'screen' });
 
-  // @Input()
   datasetList = input<any[]>([])
 
-  // @Input()
   formList = input<any[]>([])
 
-  // @Input()
   cognaList = input<any[]>([])
 
-  // @Input()
   bucketList = input<any[]>([])
 
-  // @Input()
   accessList = input<any[]>([])
 
-  // @Input()
-  // screenList = input<any[]>([])
   extraAutoCompleteJs = input<any[]>([]);
 
-  // @Input()
   close = input<any>();
 
-  // @Input()
   dismiss = input<any>();
 
   screenTypeList = [{
@@ -133,7 +125,7 @@ export class EditScreenComponent implements OnInit {
   }
 
   compareByIdFn(a, b): boolean {
-    return (a && a.id) === (b && b.id);
+    return a && b && a.id === b.id;
   }
 
 }

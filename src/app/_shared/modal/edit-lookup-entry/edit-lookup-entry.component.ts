@@ -1,5 +1,5 @@
 import { KeyValuePipe } from '@angular/common';
-import { Component, input, model } from '@angular/core';
+import { Component, input, model, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
@@ -12,7 +12,8 @@ import { NgSelectComponent } from '@ng-select/ng-select';
     selector: 'app-edit-lookup-entry',
     imports: [FormsModule, FaIconComponent, KeyValuePipe, NgbInputDatepicker, NgSelectComponent],
     templateUrl: './edit-lookup-entry.component.html',
-    styleUrl: './edit-lookup-entry.component.scss'
+    styleUrl: './edit-lookup-entry.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditLookupEntryComponent {
 
@@ -35,7 +36,11 @@ export class EditLookupEntryComponent {
 
   deleteDataRow = (obj, key) => delete obj[key];
 
-  constructor(private lookupService: LookupService, private toastService: ToastService) { }
+  private lookupService = inject(LookupService)
+  private toastService = inject(ToastService)
+  cdr = inject(ChangeDetectorRef);
+
+  constructor() { }
 
   ngOnInit() {
     if (this.lookup().dataEnabled) {
@@ -48,6 +53,7 @@ export class EditLookupEntryComponent {
       }
       this.lookupEntryFields = this.fieldsAsList(this.lookup().dataFields);
       this.lookupEntryFieldsOrphan = this.fieldsExistOrphan(this.lookupEntry().data);
+      this.cdr.detectChanges();
     }
     // this.editLookupEntryData = lookupEntry;
   }
@@ -72,6 +78,7 @@ export class EditLookupEntryComponent {
           this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
             next: (res) => {            
                 this.lookupListMap[lookupId] = res.content;
+                this.cdr.detectChanges();
             }, error: (error) => {}
           })
         }
@@ -101,6 +108,7 @@ export class EditLookupEntryComponent {
                 next: (res) => {
                     data[key]= res.fileUrl;
                     this.toastService.show("File uploaded", { classname: 'bg-success text-light' });
+                    this.cdr.detectChanges();
                 }, error: (error) => {}
             })
     }

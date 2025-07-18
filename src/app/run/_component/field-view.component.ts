@@ -15,24 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input } from '@angular/core';
 import { baseApi } from '../../_shared/constant.service';
-// import { LogService } from '../service/log.service';
-// import { UserService } from '../service/user.service';
-// import { compileTpl, nl2br } from '../utils';
-// import { SecurePipe } from '../pipe/secure.pipe';
-// import { SafePipe } from '../pipe/safe.pipe';
 import { NgStyle, AsyncPipe, DatePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgLeafletComponent } from './ng-leaflet/ng-leaflet.component';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
 import { SecurePipe } from '../../_shared/pipe/secure.pipe';
 import { LogService } from '../../_shared/service/log.service';
-import { UserService } from '../../_shared/service/user.service';
 import { compileTpl, nl2br } from '../../_shared/utils';
+import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
 
 @Component({
     selector: 'field-view',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
 @if (value()===undefined || value()===null) {
   <span>
@@ -53,7 +49,7 @@ import { compileTpl, nl2br } from '../../_shared/utils';
       <span>
         @if (field()?.subType=='html') {
           <!-- <span [innerHtml]="compileTpl(field()?.placeholder,data())|safe:'html'"></span> -->
-          <span [innerHtml]="compiledTpl()|safe:'html'"></span>
+          <span [morphHtml]="compiledTpl()|safe:'html'"></span>
         }
         @if (field()?.subType=='clearfix') {
           <div class="clearfix"></div>
@@ -63,7 +59,7 @@ import { compileTpl, nl2br } from '../../_shared/utils';
     @if (['checkbox'].indexOf(field()?.type)>-1) {
       <span>
         <fa-icon [icon]="['far','square']"></fa-icon>
-        &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder||field()?.label,data())|safe:'html'"> {{field()?.placeholder}}</span>
+        &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder||field()?.label,data())|safe:'html'"> {{field()?.placeholder}}</span>
         <!-- &nbsp;<span [innerHtml]="compiledTpl()|safe:'html'"> {{field()?.placeholder}}</span> -->
       </span>
     }
@@ -72,14 +68,14 @@ import { compileTpl, nl2br } from '../../_shared/utils';
   @if (['static'].indexOf(field()?.type)>-1) {
     <span>
       @if (field()?.subType=='htmlSave') {
-        <span [innerHtml]="value()|safe:'html'"></span>
+        <span [morphHtml]="updatedValue()|safe:'html'"></span>
       }
     </span>
   }
   @if (['text','simpleOption','speech'].indexOf(field()?.type)>-1) {
     <div>
       <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore?'unset':'236px')}" >
-        <div  [innerHtml]="nl2br(value())" [class.pb-5]="isReadMore" ></div>
+        <div [morphHtml]="nl2br(value())" [class.pb-5]="isReadMore" ></div>
         <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore?'calc(100% - 35px)':'205px'}" >
           <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore=!isReadMore">
             {{isReadMore?'Less...':'More...'}}
@@ -244,7 +240,7 @@ import { compileTpl, nl2br } from '../../_shared/utils';
       <span>
         @if (field()?.subType=='html') {
           <!-- <span [innerHtml]="compileTpl(field()?.placeholder,data())|safe:'html'"></span> -->
-          <span [innerHtml]="compiledTpl()|safe:'html'"></span>
+          <span [morphHtml]="compiledTpl()|safe:'html'"></span>
         }
         @if (field()?.subType=='clearfix') {
           <div class="clearfix"></div>
@@ -320,18 +316,20 @@ import { compileTpl, nl2br } from '../../_shared/utils';
     }
   
   `],
-    imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, SafePipe, SecurePipe, NgLeafletComponent]
+    imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, SecurePipe, NgLeafletComponent]
 })
 export class FieldViewComponent implements OnInit {
 
-  constructor(private logService: LogService, private userService: UserService) { }
+  private logService = inject(LogService)
 
-  // @Input() value: any;
+  constructor() { }
+
   value = input<any>();
-  // @Input() field: any;
   field = input<any>();
-  // @Input() data: any;
   data = input<any>();
+
+  scopeId = input<any>();
+
 
   timestamp = input<number>();
 
@@ -345,7 +343,22 @@ export class FieldViewComponent implements OnInit {
   //   return this.compileTpl(this.field()?.placeholder ?? this.field()?.label,this.data())
   // })
 
-  compiledTpl = () => this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
+  compiledTpl = () => {
+    this.timestamp();
+    const compiled = this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
+    // console.log(this.field().code,"compiled",compiled, this.data)
+    return compiled;
+  }
+
+  updatedValue = computed(()=>{
+    const compiled = this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
+    if (this.value()!=compiled){
+      return compiled;
+    }else{
+      return this.value();
+    }
+    
+  })
 
   ngOnInit() {
     // console.log(this.value);
@@ -359,7 +372,7 @@ export class FieldViewComponent implements OnInit {
   compileTpl=(html, data)=>{
     var f = "";
     try {
-      f = compileTpl(html, data);
+      f = compileTpl(html, data, this.scopeId());
     } catch (e) {
       this.logService.log(`{fieldview-${this.field().code}-compiletpl}-${e}`)
     }

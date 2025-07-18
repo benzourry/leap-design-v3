@@ -1,14 +1,19 @@
-import { Injectable, TemplateRef } from '@angular/core';
+import { Injectable, TemplateRef, signal, computed } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  toasts: any[] = [];
+  private toastsSignal = signal<{ textOrTpl: string | TemplateRef<any>; [key: string]: any }[]>([]);
 
-  show(textOrTpl: string | TemplateRef<any>, options: any = {}) {
-    this.toasts.push({ textOrTpl, ...options });
+  // Expose toasts as a computed signal for derived state
+  toasts = computed(() => this.toastsSignal());
+
+  show(textOrTpl: string | TemplateRef<any>, options: Record<string, any> = {}): void {
+    const currentToasts = this.toastsSignal();
+    this.toastsSignal.set([...currentToasts, { textOrTpl, ...options }]);
   }
 
-  remove(toast) {
-    this.toasts = this.toasts.filter(t => t !== toast);
+  remove(toast: { textOrTpl: string | TemplateRef<any>; [key: string]: any }): void {
+    const currentToasts = this.toastsSignal();
+    this.toastsSignal.set(currentToasts.filter(t => t !== toast));
   }
 }

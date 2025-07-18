@@ -26,7 +26,7 @@
         [(ngModel)]="searchText">
     </div>
     <div class="group-list">
-      @if (itemLoading) {
+      @if (itemLoading()) {
         <div class="p-3 text-center">
           <div class="lds-ellipsis white">
             <div></div>
@@ -37,7 +37,7 @@
         </div>
       } @else {
         <div class="mb-3">
-          @for (a of lambdaList | filter:searchText; track a.id) {
+          @for (a of lambdaList() | filter:searchText; track a.id) {
             <a class="pointer element" [routerLink]="['/design',appId,'lambda']" [queryParams]="{id:a?.id}"
               [class.active]="a.id==lambdaId"
               routerLinkActive="active">
@@ -55,10 +55,10 @@
             Create Lambda
           </a>
           <div class="p-2 pagination-rounded">
-            @if (lambdaTotal>itemsPerPage) {
-              <ngb-pagination [collectionSize]="lambdaTotal"
+            @if (lambdaTotal()>itemsPerPage) {
+              <ngb-pagination [collectionSize]="lambdaTotal()"
                 [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
-                (pageChange)="loadLambdaList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                (pageChange)="loadLambdaList(pageNumber())" [boundaryLinks]="false" [directionLinks]="false">
                 <ng-template ngbPaginationFirst>
                   <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
                 </ng-template>
@@ -264,11 +264,11 @@
             </div>
           </form>
           
-          @if (runRes[lambda.id]) {
-            <div [class.opacity-50]="resultLoading[lambda.id]" class="border border-light">
-              @if (runRes[lambda.id]?.print) {
+          @if (runRes()[lambda.id]) {
+            <div [class.opacity-50]="resultLoading()[lambda.id]" class="border border-light">
+              @if (runRes()[lambda.id]?.print) {
                 <div class="bg-secondary text-white px-2 py-1 small d-flex"
-                  [class.bg-danger]="runRes[lambda.id]?.print.indexOf('!err')>-1">
+                  [class.bg-danger]="runRes()[lambda.id]?.print.indexOf('!err')>-1">
                   Console
                   <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
                     <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText"
@@ -282,17 +282,17 @@
                     <label class="btn btn-light" for="consoleTypePdf"> PDF </label>
                   </div>
                 </div>
-                @if (runRes[lambda.id]) {
+                @if (runRes()[lambda.id]) {
                   <div style="position: relative;">
                     @if (consoleType=='text') {
                       <div class="px-2 py-1 bg-white limit-height code-container">
                         <div>
-                          <pre class="my-0">{{runRes[lambda.id].print}}</pre>
+                          <pre class="my-0">{{runRes()[lambda.id].print}}</pre>
                         </div>
                       </div>
                     }
                     @if (consoleType=='html') {
-                      <div class="px-2 py-1" [innerHtml]="runRes[lambda.id].print">
+                      <div class="px-2 py-1" [innerHtml]="runRes()[lambda.id].print">
                       </div>
                     }
                     @if (consoleType=='pdf') {
@@ -303,20 +303,21 @@
                   </div>
                 }
               }
-              @if (runRes[lambda.id] && !isEmptyObject(runRes[lambda.id].out)) {
+              @if (runRes()[lambda.id] && !isEmptyObject(runRes()[lambda.id].out)) {
                 <div class="px-2 py-1 bg-success text-white small">
                   <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                  This function returns output: <span>{{'{ '}}{{keyList(runRes[lambda.id]?.out)}}{{' }'}}</span>
+                  This function returns output: <span>{{'{ '}}{{keyList(runRes()[lambda.id]?.out)}}{{' }'}}</span>
                 </div>
                 <div class="px-2 py-1 bg-white small limit-height">
-                  <pre><code class="language-js">{{runRes[lambda.id].out | json}}</code></pre>
+                  <json-viewer [json]="runRes()[lambda.id]?.out"></json-viewer>
+                  <!-- <pre><code class="language-js">{{runRes[lambda.id].out | json}}</code></pre> -->
                 </div>
               }
-              @if (runRes[lambda.id] && !runRes[lambda.id]?.success) {
+              @if (runRes()[lambda.id] && !runRes()[lambda.id]?.success) {
                 <div class="px-2 py-1 bg-danger text-white">
-                  <div>{{runRes[lambda.id]?.message}}</div>
-                  @if (runRes[lambda.id]?.line||runRes[lambda.id]?.col) {
-                    <div>Line: {{runRes[lambda.id]?.line}}, Col: {{runRes[lambda.id]?.col}}</div>
+                  <div>{{runRes()[lambda.id]?.message}}</div>
+                  @if (runRes()[lambda.id]?.line||runRes()[lambda.id]?.col) {
+                    <div>Line: {{runRes()[lambda.id]?.line}}, Col: {{runRes()[lambda.id]?.col}}</div>
                   }
                 </div>
               }

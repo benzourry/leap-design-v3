@@ -1,0 +1,103 @@
+/* General styles for :host */
+:host {
+    padding: 1rem;
+    display: block;
+    background: rgba(245, 245, 245, 0.5);
+    backdrop-filter: blur(5px);
+    min-height: 60px;
+    transition: all 0.5s ease;
+    width: 100%;
+    z-index: 4;
+    overflow: hidden; /* Clears contents */
+    zoom: 1; /* Fixes IE6 float bugs */
+    position: sticky;
+    top: 0;
+}
+
+/* Title text styles */
+:host .title-text {
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 35px;
+}
+
+:host .title-text * {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Navigation icon styles */
+:host .nav-icon {
+    position: absolute;
+    margin: 2px 14px 5px 5px;
+    width: 20px;
+}
+
+:host .nav-icon:after,
+:host .nav-icon:before,
+:host .nav-icon div {
+    background-color: #333;
+    border-radius: 2px;
+    content: '';
+    display: block;
+    height: 2px;
+    margin: 4px 0;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Active state for nav-icon */
+.active :host .nav-icon:before {
+    transform: translateY(6px) rotate(135deg);
+}
+
+.active :host .nav-icon:after {
+    transform: translateY(-6px) rotate(-135deg);
+}
+
+.active :host .nav-icon div {
+    transform: scale(0);
+}
+
+/* Navigation close button styles */
+:host .nav-close {
+    position: absolute;
+    font-size: 1.3em;
+    cursor: pointer;
+}
+
+.nav-close {
+    float: right;
+}
+
+/* Conditional styles for noframe and nomod classes */
+.noframe :host .nav-icon,
+.nomod :host .nav-icon {
+    display: none;
+}
+
+.noframe :host .title-text,
+.nomod :host .title-text {
+    margin-left: 0;
+}
+
+/* Top gap adjustment */
+.topgap :host {
+    padding-top: 3.8em;
+}
+
+/* Responsive styles for larger screens */
+@media (min-width: 640px) {
+    :host .nav-icon {
+        display: none;
+    }
+
+    :host {
+        padding: 1rem !important;
+    }
+
+    :host .title-text {
+        margin-left: 0;
+        text-align: center;
+    }
+}

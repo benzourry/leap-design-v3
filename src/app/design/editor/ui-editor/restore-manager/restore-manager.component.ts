@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from '../../../../service/app.service';
@@ -10,14 +10,21 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
     selector: 'app-restore-manager',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './restore-manager.component.html',
     styleUrls: ['./restore-manager.component.scss'],
     imports: [FaIconComponent, FormsModule, DatePipe]
 })
 export class RestoreManagerComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute, private userService: UserService,private modalService: NgbModal, private appService: AppService,
-    private toastService: ToastService) { }
+  private route = inject(ActivatedRoute);
+  private userService = inject(UserService);
+  private modalService = inject(NgbModal);
+  private appService = inject(AppService);
+  private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() { }
 
   user:any;
   appId:number;
@@ -29,8 +36,10 @@ export class RestoreManagerComponent implements OnInit {
         .subscribe((params: Params) => {
           this.appId = params['appId'];
           this.getRestorePointList();
+          this.cdr.detectChanges();
         });
-    })
+    this.cdr.detectChanges();
+    });
   }
 
   loading:boolean;
@@ -41,16 +50,19 @@ export class RestoreManagerComponent implements OnInit {
     this.modalService.open(content)
       .result.then(res => {
         this.loading=true;
+        this.cdr.detectChanges();
         this.appService.createRestorePoint(this.appId,this.editRestorePointData, this.user.email)
         .subscribe({
           next:(res)=>{
             this.getRestorePointList();
             this.toastService.show("Restore Point successfully created", { classname: 'bg-success text-light' });
             this.loading=false;
+            this.cdr.detectChanges();
           },
           error:(err)=>{
             this.toastService.show("Restore Point creation failed", { classname: 'bg-danger text-light' });
             this.loading=false;
+            this.cdr.detectChanges();
           }
         })
       }, err => {
@@ -106,6 +118,7 @@ export class RestoreManagerComponent implements OnInit {
     this.appService.getRestorePointList(this.appId, this.user.email)
     .subscribe(res=>{
       this.restorePointList = res.content;
+      this.cdr.detectChanges();
     })
   }
 

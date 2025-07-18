@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal } from '@angular/core';
 // import { VoiceRecognitionService } from '../../../_shared/service/speech-recognition.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { VoiceRecognitionService } from '../../_service/speech-recognition.service';
@@ -7,38 +7,49 @@ import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem } from
 
 @Component({
     selector: 'app-speech-to-text',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FaIconComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem],
     templateUrl: './speech-to-text.component.html',
     styleUrl: './speech-to-text.component.scss'
 })
 export class SpeechToTextComponent {
-    public isUserSpeaking: boolean = false;
+    public isUserSpeaking = signal<boolean>(false);
 
     field = input<any>();
 
-    constructor(
-      private voiceRecognition: VoiceRecognitionService
-    ) {
+    voiceRecognition = inject(VoiceRecognitionService)
+
+    constructor() {
+
+      effect(()=>{
+        if (this.defaultLang()){
+          this.lang.set(this.defaultLang());
+        } 
+      })
+
+      effect(()=>{
+        this.valueText.set(this.value());  
+      })
     }
 
     // speechText:string = "";
 
     model=model<string>('');
-    lang:string='en-US';
+    lang= signal<string>('en-US');
     defaultLang = input<string>();
 
     value=input<string>('');
     valueChange=output<string>();
-    valueText:string = '';
+    valueText = signal<string>('');
 
     extractLoading = input<boolean>();
 
 
     ngOnInit(): void {
-      if (this.defaultLang()){
-        this.lang = this.defaultLang();
-      } 
-      this.valueText = this.value();     
+      // if (this.defaultLang()){
+      //   this.lang.set(this.defaultLang());
+      // } 
+      // this.valueText.set(this.value());     
       // init after setting value n lang
       this.initVoiceInput();
     }
@@ -48,7 +59,7 @@ export class SpeechToTextComponent {
    */
     stopRecording() {
       this.voiceRecognition.stop();
-      this.isUserSpeaking = false;
+      this.isUserSpeaking.set(false);
     }
   
     /**
@@ -56,7 +67,7 @@ export class SpeechToTextComponent {
      */
     initVoiceInput() {
       // Subscription for initializing and this will call when user stopped speaking.
-      this.voiceRecognition.init(this.valueText, this.lang).subscribe(() => {
+      this.voiceRecognition.init(this.valueText(), this.lang()).subscribe(() => {
         // User has stopped recording
         // Do whatever when mic finished listening
       });
@@ -68,7 +79,7 @@ export class SpeechToTextComponent {
           this.stopRecording();  
         }
         // this.speechText = input;
-        this.valueText = input;
+        this.valueText.set(input);
         this.valueChange.emit(input);
         // this.model.set(input);
         // this.searchForm.controls.searchText.setValue(input);
@@ -76,15 +87,15 @@ export class SpeechToTextComponent {
     }
 
     setLang(lang){
-      this.lang=lang;
-      this.voiceRecognition.updateLang(lang);
+      this.lang.set(lang);
+      this.voiceRecognition.updateLang(lang());
     }
   
     /**
      * @description Function to enable voice input.
      */
     startRecording() {
-      this.isUserSpeaking = true;
+      this.isUserSpeaking.set(true);
       this.voiceRecognition.start();
       // this.speechText = "";
       // this.searchForm.controls.searchText.reset();

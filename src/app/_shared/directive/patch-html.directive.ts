@@ -11,7 +11,7 @@ import {
   import morphdom from 'morphdom';
   
   @Directive({
-    selector: '[htmlPatch]',
+    selector: '[patchHtml]',
     standalone: true,
   })
   export class HtmlPatchDirective {
@@ -23,7 +23,7 @@ import {
     private modeSignal = signal<'inner' | 'outer'>('inner');
   
     @Input({ required: true })
-    set htmlPatch(value: string | SafeHtml) {
+    set patchHtml(value: string | SafeHtml) {
       const html = this.unwrapSafeHtml(value);
       this.htmlSignal.set(html);
     }

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, computed, effect, inject, viewChild } from '@angular/core';
 import { FormService } from '../../service/form.service';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 // import { HttpParams } from '@angular/common/http';
@@ -43,6 +43,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
     selector: 'app-editor',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './editor.component.html',
     styleUrls: ['../../../assets/css/side-menu.css',
         '../../../assets/css/element-action.css',
@@ -72,30 +73,21 @@ export class EditorComponent implements OnInit {
     // helpLink = "https://1drv.ms/w/s!AotEjBTyvtX0gq4hcN7-3mgHX5fC1g?e=cj1T8F";
     // helpLink = "https://unimas-my.sharepoint.com/:w:/g/personal/blmrazif_unimas_my/EcX9YxrT4o5NtXnyF-j2dQgBR0rw7rgL8ab7sw3i9SgdyA?e=msJJtB";
 
+    private modalService = inject(NgbModal);
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private appService = inject(AppService);
+    private router = inject(Router);
+    private utilityService = inject(UtilityService);
+    private toastService = inject(ToastService);
+    private location = inject(PlatformLocation);
+    private titleService = inject(Title);
+    private cdref = inject(ChangeDetectorRef);
+    public loadingService = inject(LoadingService);
 
-
-    constructor(
-        private modalService: NgbModal, private userService: UserService,
-        private route: ActivatedRoute, private appService: AppService,
-        private router: Router,
-        private utilityService: UtilityService,
-        private toastService: ToastService,
-        location: PlatformLocation, private titleService: Title,
-        private cdref: ChangeDetectorRef,
-        public loadingService: LoadingService) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-
-        // effect(() => {
-        //     // setTimeout(()=>{
-        //         // this.loading = this.loadingSignal();
-        //         this.loading = this.loadingService.isLoadingSignal();
-        //         // cdref.detectChanges();
-        //     // })       
-        // })  
-
-        
-        // loadingService.isLoading$.subscribe(r=>this.loading=r);
     }
 
     public model: any;
@@ -147,27 +139,17 @@ export class EditorComponent implements OnInit {
 
     ngOnInit() {
 
-        // this.loading = true;
-        // this.loadingNew.set(true);
-
-        // this.loadingService.isLoading$.subscribe(e=>this.loading=e)
-
-        // Check if d_user exist. If exist, replace user
-        // if (localStorage.getItem("d_user")) {
-        //     localStorage.setItem("user", localStorage.getItem("d_user"));
-        //     localStorage.removeItem("d_user");
-        // }
-        //////
-
         this.userService.getCreator().subscribe((user) => {
 
             this.user = user;
+            this.cdref.detectChanges();
 
             this.route.params
                 // NOTE: I do not use switchMap here, but subscribe directly
                 .subscribe((params: Params) => {
 
                     this.appId = params['appId'];
+                    this.cdref.detectChanges();
                     if (this.appId) {
                         let params = {
                             email: user.email
@@ -180,9 +162,11 @@ export class EditorComponent implements OnInit {
                                     this.authorized = res.email.includes(user.email) || res.group?.manager?.includes(user.email);
                                     this.titleService.setTitle("Design - " + this.app.title);
                                     this.getCopyRequestList();
+                                    this.cdref.detectChanges();
                                     // this.loading = false;
                                     // this.loadingNew.set(false);
                                 }, error: () => {
+                                    this.cdref.detectChanges();
                                     // this.loading = false;
                                     // this.loadingNew.set(false);
                                 }
@@ -239,6 +223,7 @@ export class EditorComponent implements OnInit {
         this.appService.getCopyRequestList(this.app.id)
             .subscribe(res => {
                 this.copyRequestList = res.content;
+                this.cdref.detectChanges();
             })
     }
 
@@ -251,6 +236,7 @@ export class EditorComponent implements OnInit {
         this.appService.activateCp(id, action)
             .subscribe(() => {
                 this.getCopyRequestList();
+                this.cdref.detectChanges();
             })
     }
 
@@ -272,8 +258,10 @@ export class EditorComponent implements OnInit {
                 .subscribe({
                     next: () => {
                         this.router.navigate(['run', this.app.id]);
+                        this.cdref.detectChanges();
                     }, error: () => {
                         alert("User " + runas + " not found in this app");
+                        this.cdref.detectChanges();
                     }
                 })
         }
@@ -317,40 +305,17 @@ export class EditorComponent implements OnInit {
                                 .subscribe(res => {
                                     this.app = res;
                                     this.getCopyRequestList();
+                                    this.cdref.detectChanges();
                                 });
                             this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
                         },
                         error: error => {
                             this.toastService.show("App properties saving failed: " + error.error.message, { classname: 'bg-danger text-light' });
+                            this.cdref.detectChanges();
                         }
                     });
             }, () => { })
 
-        // const modalRef = this.modalService.open(AppEditComponent, { backdrop: 'static' })
-        // modalRef.componentInstance.user = this.user;
-        // modalRef.componentInstance.offline = this.offline;
-        // modalRef.componentInstance.data = data;
-
-        // modalRef.result.then(rItem => {
-        //     // console.log(rItem);
-        //     this.appService.save(rItem, this.user.email)
-        //         .subscribe({
-        //             next: res => {
-        //                 let params = {
-        //                     email: this.user.email
-        //                 }
-        //                 this.appService.getApp(res.id, params)
-        //                     .subscribe(res => {
-        //                         this.app = res;
-        //                         this.getCopyRequestList();
-        //                     });
-        //                 this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
-        //             },
-        //             error: error => {
-        //                 this.toastService.show("App properties saving failed: " + error.error.message, { classname: 'bg-danger text-light' });
-        //             }
-        //         });
-        // }, res => { });
     }
 
 }

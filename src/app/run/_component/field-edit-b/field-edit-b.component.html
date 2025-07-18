@@ -77,7 +77,7 @@
 
 <ng-template #text>
   @if (field().subType=='input') {
-    <input class="form-control smyds" [attr.list]="'datalist-'+field().id+'-'+id()" [class.is-invalid]="formField?.touched && formField?.invalid"
+    <input class="form-control smyds" [attr.list]="'datalist-'+field().id+'-'+id()" [class.is-invalid]="model()?.touched && model()?.invalid"
       type="text" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
       [maxlength]="field()?.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="field()?.v?.mask"
       [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'" [pattern]="field()?.v?.pattern"
@@ -90,39 +90,39 @@
         }
       </datalist>
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   }
   @if (field().subType=='textarea') {
-    <textarea class="form-control smyds" [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+    <textarea class="form-control smyds" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
       [ngxMask]="field()?.v?.mask" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
       [maxlength]="field()?.v?.maxlength" [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'"
       [pattern]="field()?.v?.pattern" [rows]="field()?.v?.rows||3" [required]="field()?.v?.required"
       (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="field().readOnly"></textarea>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   }
   @if (field().subType=='richtext') {
-    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="field().readOnly" for="f-{{field().id}}-{{id()}}">
+    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="field().readOnly">
       <!-- @defer(prefetch on idle){ -->
         <angular-editor class="clean" [config]="editorConfig"
-          [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+          [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
           name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
           [required]="field()?.v?.required"
           [placeholder]="field().placeholder||'&nbsp;'">
         </angular-editor>
       <!-- } -->
     </div>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 
   }
 </ng-template>
 
 <ng-template #color>
-  <input class="form-control form-control-color smyds" [class.is-invalid]="formField?.touched && formField?.invalid"
+  <input class="form-control form-control-color smyds" [class.is-invalid]="model()?.touched && model()?.invalid"
     type="color" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
     autocomplete="off" [ngxMask]="field()?.v?.mask"
     [placeholder]="field().placeholder||'&nbsp;'"
     [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="field().readOnly" />
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #number>
@@ -132,7 +132,7 @@
     }
     <div class="d-flex">
 
-      <input class="form-range my-2 smyds" type="range" [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+      <input class="form-range my-2 smyds" type="range" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
         name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [placeholder]="field().placeholder||'&nbsp;'"
         [min]="field()?.v?.min" [max]="field()?.v?.max"
         [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)"
@@ -144,12 +144,12 @@
       </div>
     </div>
   } @else{
-    <input class="form-control smyds" type="number" [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+    <input class="form-control smyds" type="number" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
       name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [placeholder]="field().placeholder||'&nbsp;'"
       [min]="field()?.v?.min" [max]="field()?.v?.max" [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)"
       [readonly]="field().readOnly" />
   
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   }
 </ng-template>
 
@@ -158,11 +158,11 @@
     @if (['date','date-inline','datetime','datetime-inline'].indexOf(field().subType)>-1) {
       <div class="col" [class.col-auto]="field().subType?.indexOf('inline')>-1">
         @if (field().subType?.indexOf('inline')>-1) {
-          @if (formField?.touched && formField?.invalid) {
+          @if (model()?.touched && model()?.invalid) {
             <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
           }
           <div>
-            <ngb-datepicker class="smyds" [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+            <ngb-datepicker class="smyds" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
               name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [required]="field()?.v?.required"
               [minDate]="field()?.v?.minDate" [maxDate]="field()?.v?.maxDate" (ngModelChange)="valueChanged($event)"
               [disabled]="field().readOnly">
@@ -170,7 +170,7 @@
           </div>
         } @else {
           <div class="input-group">
-            <input class="form-control smyds" type="text" [class.is-invalid]="formField?.touched && formField?.invalid" id="f-{{field().id}}-{{id()}}"
+            <input class="form-control smyds" type="text" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
               name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
               [placeholder]="field().placeholder||'&nbsp;'" [required]="field()?.v?.required"
               [minDate]="toNgbDateStruct(field()?.v?.minDate)" [maxDate]="toNgbDateStruct(field()?.v?.maxDate)"
@@ -194,11 +194,11 @@
     }
   </div>
   <!-- Tok still x berfungsi. Xpat refer ke formField since #formField dalam @if -->
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #checkbox>
-    @if (formField?.touched && formField?.invalid) {
+    @if (model()?.touched && model()?.invalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
   <div [class.disabled]="field().readOnly">
@@ -223,11 +223,11 @@
         }
     </div>
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #checkboxOption>
-  @if (formField?.invalid) { 
+  @if (model()?.invalid) { 
     <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
   }
   <div [class.disabled]="field().readOnly">
@@ -277,16 +277,16 @@
     }
     <input type="hidden" id="f-{{field().id}}-{{id()}}-hid" name="f-{{field().id}}-{{id()}}-hid" [ngModel]="value"
       #formField="ngModel" [required]="value && field()?.v?.required">
-    @if (formField?.invalid) {
+    @if (model()?.invalid) {
       <small class="val-text form-text text-danger">
         <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>
-        @if (formField.errors.required) {
+        @if (model().errors.required) {
           <span>{{field().label}} is required</span>
         }
       </small>
     }
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #modelPicker>
@@ -324,13 +324,13 @@
         }
       }
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #select>
   <div [class.modelPicker]="value && field()?.placeholder">
-    <ng-select [items]="lookupList()" class="smyds" [class.is-invalid]="formField?.touched && formField?.invalid" #formField="ngModel"
+    <ng-select [items]="lookupList()" class="smyds" [class.is-invalid]="model()?.touched && model()?.invalid" #formField="ngModel"
       id="f-{{field().id}}-{{id()}}" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)"
       name="f-{{field().id}}-{{id()}}" [virtualScroll]="true" [required]="field()?.v?.required"        
       [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
@@ -382,21 +382,25 @@
     <!-- <div class="card card-body p-3" *ngIf="value && field()?.placeholder"
     [innerHtml]="compileTpl(field().placeholder,{'a':value})|safe:'html'">
   </div> -->
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #radio>
-    @if (formField?.touched && field()?.v?.required && !value) {
+    @if (model()?.touched && field()?.v?.required && !value) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
   <div>
     @if (field()?.subType=='btn') {
       <div>
         <div role="group">
+          <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
           @for (i of lookupList(); track $index) {
+            <!-- <input type="radio" name="f-{{field().id}}-{{id()}}" #formField [value]="i"
+              [checked]="value.code === i.code" (change)=" value = i;valueChanged(i);" [required]="field()?.v?.required"
+              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off" /> -->
             <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-              (ngModelChange)="valueChanged($event)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
+              (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
               id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
             <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}"
               [class.active]="value?.code === i?.code">
@@ -411,11 +415,15 @@
       </div>
     } @else {
       <div>
+        <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
         @for (c of lookupList(); track $index; let isLast = $last) {
           <div class="form-check mt-1" [class.form-check-inline]="field().x?.inline" [class.disabled]="field().readOnly">
-            <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
+            <!-- <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
               [checked]="value?.code === c?.code" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
-              (change)=" value = c;valueChanged($event);" />
+              (change)=" value = c;valueChanged(c);" /> -->
+            <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
+              [(ngModel)]="value" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+              (ngModelChange)="value = c;valueChanged(c);" />
             <label class="form-check-label d-block" for="f-{{field().id}}-{{id()}}-{{c?.code}}">
               @if (field()?.placeholder) {
                 <div [innerHtml]="compileTpl(field().placeholder,{'$':c})|safe:'html'"></div>
@@ -440,20 +448,21 @@
       </div>
     }
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #simpleOption>
   @if (field().subType=='btn') {
-      @if (formField?.touched && formField?.invalid) {
+      @if (model()?.touched && model()?.invalid) {
         <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
       }
     <div>
       <div [class.disabled]="field().readOnly">
         <div role="group">
-          @for (i of getAsList(field()?.options); track $index) {
+          <!-- UTK SIMPLE OPTION, XDA MASALAH UTK GUNA [(NGMODEL)] SEBAB SELECTED WITH VALUE -->
+          @for (i of simpleList(); track $index) {
             <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-              (ngModelChange)="valueChanged($event)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
+              (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
               id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
             <label class="btn btn-outline-secondary smyds me-1 mb-1 light toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
           }
@@ -468,16 +477,19 @@
   }
   @if (field().subType=='radio') {
     <!-- <div class="mt-n2"> -->
-      @if (formField?.touched && field()?.v?.required && !value) {
+      @if (model()?.touched && field()?.v?.required && !value) {
         <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
       }
-      <!-- <input type="radio" [hidden]="true" class="form-check-input" #formField [value]="null" id="f-{{field().id}}-{{id()}}-init" name="f-{{field().id}}-{{id()}}"/> -->
       <div>
-        @for (i of getAsList(field()?.options); track $index) {
+        <!-- UTK SIMPLE VALUE, BOLEH GUNA [(NGMODEL)] SBB DPT SET CHECKED VALUE ON INIT (NO NEED COMPARISON OBJ PROPS) -->
+        @for (i of simpleList(); track $index) {
           <div class="form-check mt-1" [class.disabled]="field().readOnly" [class.form-check-inline]="field().x?.inline" >
             <input type="radio" class="form-check-input smyds" #formField [value]="i" id="f-{{field().id}}-{{id()}}-{{$index}}"
+              [(ngModel)]="value" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+              (ngModelChange)="valueChanged(i);" />
+            <!-- <input type="radio" class="form-check-input smyds" #formField [value]="i" id="f-{{field().id}}-{{id()}}-{{$index}}"
               [checked]="value === i" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
-              (change)=" value = i;valueChanged($event);" />
+              (change)="value = i;valueChanged(i);" /> -->
             <label class="form-check-label d-block" for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
           </div>
         }
@@ -490,7 +502,7 @@
     <!-- </div> -->
   }
   @if (field().subType=='select') {
-    <ng-select [items]="list" #formField="ngModel" class="smyds" id="f-{{field().id}}-{{id()}}" [(ngModel)]="value"
+    <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" id="f-{{field().id}}-{{id()}}" [(ngModel)]="value"
       [loading]="loading()"
       [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
       [virtualScroll]="true" (change)="valueChanged($event)" (focus)="selectFocused($event)"
@@ -503,26 +515,27 @@
       </div>
     }
   }
-  <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
 </ng-template>
 
 <ng-template #scaleTpl>
-    @if (formField?.touched && formField?.invalid) {
+    @if (model()?.touched && model()?.invalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
   <div>
     <div [class.disabled]="field().readOnly">
       <div class="btn-group-toggle mb-n1" role="group">
-        @for (i of scales; track $index) {
+        <!-- UTK SIMPLE VALUE, BOLEH GUNA [(NGMODEL)] SBB DPT SET CHECKED VALUE ON INIT (NO NEED COMPARISON OBJ PROPS) -->
+        @for (i of scales(); track $index) {
           <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-            (ngModelChange)="valueChanged($event)" [required]="field()?.v?.required" [value]="i" class="btn-check"
+            (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check"
             id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
           <label class="btn btn-round btn-outline-secondary light width-38 me-1 mb-1 toggle-opt smyds"
           for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
         }
       </div>
     </div>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   </div>
 </ng-template>
 
@@ -546,12 +559,12 @@
             <div style="height:5px;background:green;" [style.width.%]="fileProgress()"></div>
           </div>
         }
-        <input type="file" [hidden]="true" [class.is-invalid]="formField?.touched && formField?.invalid" #native #formField="ngModel" #fileInput
+        <input type="file" [hidden]="true" [class.is-invalid]="model()?.touched && model()?.invalid" #native #formField="ngModel" #fileInput
           (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" id="f-{{field().id}}-{{id()}}"
           [(ngModel)]="file[field().code]" [multiple]="field().subType == 'othermulti'" name="f-{{field().id}}-{{id()}}"
           [accept]="field().v.accept" [required]="!value && field()?.v?.required" />
         @if (!value) {
-          <div class="form-control nobreak smyds" [class.is-invalid]="formField?.touched && formField?.invalid">
+          <div class="form-control nobreak smyds" [class.is-invalid]="model()?.touched && model()?.invalid">
             <!-- <div class="pt-1"> -->
               <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon>
               {{field().placeholder||'Browse'}}
@@ -591,13 +604,11 @@
           }        
         </div>
       </label>
-      <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+      <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
     </div>
   }
   @if (['image','imagemulti'].indexOf(field().subType)>-1) {
-    <!-- Touched:{{formField?.touched}}, Invalid:{{formField?.invalid}};
-    Required:{{!value  && field()?.v?.required}} -->
-    @if (formField?.touched && formField?.invalid) {
+    @if (model()?.touched && model()?.invalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
     <div [class.disabled]="field().readOnly">
@@ -659,7 +670,7 @@
           }
         }
       </label>
-      <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+      <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
     </div>
   }
 </ng-template>
@@ -686,8 +697,11 @@
 
 <ng-template #static>
   @if (['html','htmlSave'].indexOf(field().subType)>-1) {
-    <!-- <div class="mb-1" [innerHtml]="preCompile()|safe:'html'"></div> [afterInit]="postRender('f-'+field().id+'-'+id()+'-value')" -->
-    <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" [innerHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div>
+    <!-- <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" [innerHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div> -->
+    <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" 
+      morphType="inner"
+      [morphHtml]="compiledData()|safe:'html'"></div>
+      <!-- [morphHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div> -->
   }
   @if (field().subType=='clearfix') {
     <div class="clearfix clfx"></div>
@@ -739,7 +753,7 @@
       }@else{
         <div class="form-control smyds" style="background: white">{{value}}</div>
       }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
   </div>
 </ng-template>
 

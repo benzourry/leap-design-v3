@@ -1,25 +1,30 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { map, withLatestFrom } from 'rxjs';
 import { base } from '../../_shared/constant.service';
-// import { RunService } from '../../service/run.service';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
 import { RunService } from '../_service/run.service';
+import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
 
 @Component({
     selector: 'app-web',
     templateUrl: './web.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./web.component.scss'],
-    imports: [SafePipe]
+    imports: [SafePipe, MorphHtmlDirective]
 })
 export class WebComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private titleService: Title, public runService: RunService) {
+  private route = inject(ActivatedRoute)
+  private http = inject(HttpClient)
+  private titleService = inject(Title)
+  public runService = inject(RunService)
+  constructor() {
 
   }
-  html: string = "";
+  html = signal<string>("");
   path = input<string>('', { alias: 'path' });
   ngOnInit(): void {
 
@@ -30,10 +35,10 @@ export class WebComponent implements OnInit {
         .pipe(
           map(res => {
             if (res['type'] == 4) {
-              this.html = res['body'];
+              this.html.set(res['body']);
             } else {
               if (res['partialText']) {
-                this.html = res['partialText'];
+                this.html.set(res['partialText']);
               }
             }
           })
@@ -61,22 +66,18 @@ export class WebComponent implements OnInit {
       .pipe(
         map(res => {
           if (res['type']==4){
-            this.html = res['body'];
+            this.html.set(res['body']);
           }else{
             if (res['partialText']){
-              this.html = res['partialText'];
+              this.html.set(res['partialText']);
             }            
           }              
         })
       )
       .subscribe({
         next:res=>{
-          // if (!res){
-            // this.html = res['body'];
-          // }
         },
         error:err=>{
-
         }
       })
     })

@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 import { DatasetService } from '../../../service/dataset.service';
 import { FormsModule } from '@angular/forms';
 
@@ -6,11 +6,15 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-clone-dataset',
     templateUrl: './clone-dataset.component.html',
     styleUrls: ['./clone-dataset.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule]
 })
 export class CloneDatasetComponent implements OnInit {
 
-  constructor(private datasetService: DatasetService) {
+  private datasetService = inject(DatasetService);
+  cdr = inject(ChangeDetectorRef);
+
+  constructor() {
   }
 
 //   @Input("dismiss")
@@ -33,6 +37,7 @@ export class CloneDatasetComponent implements OnInit {
       this.datasetService.getDatasetList(appId,)
           .subscribe(res => {
               this.cloneDatasetList = res;
+              this.cdr.detectChanges();
           })
   }
 

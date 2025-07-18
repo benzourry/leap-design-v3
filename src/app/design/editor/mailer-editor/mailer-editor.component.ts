@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { MailerService } from '../../../service/mailer.service';
@@ -26,9 +26,24 @@ import { EditDatasetComponent } from '../../../_shared/modal/edit-dataset/edit-d
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
         NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent,
-        NotiListComponent]
+        NotiListComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MailerEditorComponent implements OnInit {
+
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private mailerService = inject(MailerService);
+    private schedService = inject(SchedService);
+    private modalService = inject(NgbModal);
+    private location = inject(PlatformLocation);
+    private router = inject(Router);
+    private appService = inject(AppService);
+    private formService = inject(FormService);
+    private datasetService = inject(DatasetService);
+    private toastService = inject(ToastService);
+    private utilityService = inject(UtilityService);
+    private cdr = inject(ChangeDetectorRef);
 
     offline = false;
     app: any;
@@ -43,17 +58,9 @@ export class MailerEditorComponent implements OnInit {
     mailer: any;
     itemLoading: boolean;
     appId: number;
-    constructor(private userService: UserService, private route: ActivatedRoute, private mailerService: MailerService,
-        private schedService: SchedService,
-        private modalService: NgbModal,
-        private location: PlatformLocation,
-        private router: Router,
-        private appService: AppService,
-        private formService: FormService,
-        private datasetService: DatasetService,
-        private toastService: ToastService,
-        private utilityService: UtilityService) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+    
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
     }
 
@@ -61,6 +68,7 @@ export class MailerEditorComponent implements OnInit {
         this.userService.getCreator()
             .subscribe((user) => {
                 this.user = user;
+                this.cdr.detectChanges();
 
 
                 // this.populateAutoComplete();
@@ -79,6 +87,7 @@ export class MailerEditorComponent implements OnInit {
                             this.appService.getApp(this.appId, params)
                                 .subscribe(res => {
                                     this.app = res;
+                                    this.cdr.detectChanges();
                                 });
                             this.getFormList(this.appId);
                         }
@@ -130,7 +139,11 @@ export class MailerEditorComponent implements OnInit {
                 this.mailerList = res.content;
                 this.mailerTotal = res.page?.totalElements;
                 this.itemLoading = false;
-            }, res => this.itemLoading = false)
+                this.cdr.detectChanges();
+            }, res => {
+                this.itemLoading = false;
+                this.cdr.detectChanges();
+            })
     }
 
     // this.loadMailerList = loadMailerList;
@@ -144,6 +157,7 @@ export class MailerEditorComponent implements OnInit {
         this.mailerService.getMailerList(params)
             .subscribe(res => {
                 this.allMailerList = res.content;
+                this.cdr.detectChanges();
             }, res => { })
     }
 
@@ -163,8 +177,10 @@ export class MailerEditorComponent implements OnInit {
                         this.loadMailer(res.id);
                         this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { })
     }
@@ -175,6 +191,7 @@ export class MailerEditorComponent implements OnInit {
             this.editMailer(content, mailer, false)
             // this.mailer = mailer;
             // this.viewType = 'mailer';
+            this.cdr.detectChanges();
         })
     }
 
@@ -189,8 +206,10 @@ export class MailerEditorComponent implements OnInit {
                         this.loadMailerList(1);
                         delete this.mailer;
                         this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Template removal failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { });
     }
@@ -202,6 +221,7 @@ export class MailerEditorComponent implements OnInit {
             .subscribe(mailer => {
                 this.mailer = mailer;
                 this.viewType = 'mailer';
+                this.cdr.detectChanges();
             })
 
     }
@@ -225,7 +245,11 @@ export class MailerEditorComponent implements OnInit {
                 this.schedList = res;
                 // this.maiTotal = res.page?.totalElements;
                 this.schedLoading = false;
-            }, res => this.schedLoading = false)
+                this.cdr.detectChanges();
+            }, res => {
+                this.schedLoading = false;
+                this.cdr.detectChanges();
+            })
     }
 
 
@@ -262,6 +286,7 @@ export class MailerEditorComponent implements OnInit {
             .subscribe(sched => {
                 this.sched = sched;
                 this.viewType = 'sched';
+                this.cdr.detectChanges();
             })
     }
 
@@ -285,8 +310,10 @@ export class MailerEditorComponent implements OnInit {
                         this.loadSchedList(this.pageNumber);
                         this.loadSched(res.id);
                         this.toastService.show("Schedule successfully saved", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Schedule saving failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { })
     }
@@ -315,8 +342,10 @@ export class MailerEditorComponent implements OnInit {
                         this.loadSchedList(1);
                         delete this.sched;
                         this.toastService.show("Schedule successfully removed", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Schedule removal failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { });
     }
@@ -347,6 +376,7 @@ export class MailerEditorComponent implements OnInit {
                         this.datasetService.saveDataset(this.app.id, data)
                             .subscribe(res => {
                                 this.toastService.show("Dataset successfully saved");
+                                this.cdr.detectChanges();
                             })
                     }, res => { })
 
@@ -376,6 +406,7 @@ export class MailerEditorComponent implements OnInit {
         this.formService.getListBasic(params)
             .subscribe(res => {
                 this.formList = res.content;
+                this.cdr.detectChanges();
             });
     }
 
@@ -384,6 +415,7 @@ export class MailerEditorComponent implements OnInit {
         this.datasetService.getDatasetList(this.appId)
             .subscribe(res => {
                 this.datasetList = res;
+                this.cdr.detectChanges();
             })
     }
 

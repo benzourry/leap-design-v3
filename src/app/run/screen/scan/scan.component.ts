@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ChangeDetectorRef, OnDestroy, viewChild, output, input, effect } from '@angular/core';
+import { Component, OnInit, ElementRef, ChangeDetectorRef, OnDestroy, viewChild, output, input, effect, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -7,31 +7,20 @@ import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'app-scan',
+    // changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './scan.component.html',
     styleUrls: ['./scan.component.css'],
     imports: [NgClass, FormsModule, FaIconComponent]
 })
 export class ScanComponent implements OnInit, OnDestroy {
-  errorMsg: any;
+  errorMsg = signal<string>('');
 
   constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef) {
     this.captures = [];
-
-    // effect(()=>{
-    //   this.pause = this.isPause();
-    //   if (!this.pause){
-    //     console.log("play...")
-    //     this.video()?.nativeElement.play();
-    //   }
-    // })
   }
 
-  // @ViewChild('video', { static: true })
-  // public video: ElementRef;
   public video = viewChild<ElementRef>('video')
 
-  // @ViewChild('canvas', { static: true })
-  // public canvas: ElementRef;
   public canvas = viewChild<ElementRef>('canvas');
 
   public captures: Array<any>;
@@ -40,40 +29,36 @@ export class ScanComponent implements OnInit, OnDestroy {
   token: string;
   user: any;
   error: boolean;
-  // start:boolean;
   altClass: string;
-  loading: boolean;
+  loading = signal<boolean>(false);
   codeReader = new BrowserMultiFormatReader();
   file: any;
 
-
-  // @Output() valueChange = new EventEmitter();
   valueChange = output<any>();
 
   track: MediaStreamTrack;
   stream: any;
-  scError:string;
-  pause:boolean=false;
+  scError = signal<string>(null);
+  pause = signal<boolean>(false);
 
-  torchSupport: boolean;
+  torchSupport = signal<boolean>(false);
 
 
-  camSupport: boolean = false;
+  camSupport = signal<boolean>(false);
 
-  // isPause = input<boolean>();
 
   resume(){
     this.video()?.nativeElement.play();
   }
 
   ngOnInit() {
-    this.scError = null;
-    this.loading = true;
+    this.scError.set(null);
+    this.loading.set(true);
     //Test browser support
     const SUPPORTS_MEDIA_DEVICES = 'mediaDevices' in navigator;
 
     if (SUPPORTS_MEDIA_DEVICES) {
-      this.camSupport = true;
+      this.camSupport.set(true);
       //Get the environment camera (usually the second one)
       navigator.mediaDevices.enumerateDevices().then(devices => {
 
@@ -82,7 +67,7 @@ export class ScanComponent implements OnInit, OnDestroy {
         
         if (cameras.length === 0) {
           console.log("xda camera");
-          this.camSupport = false;
+          this.camSupport.set(false);
           throw 'No camera found on this device.';
         }
         const camera = cameras[cameras.length - 1];
@@ -103,12 +88,12 @@ export class ScanComponent implements OnInit, OnDestroy {
             const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
               // todo: check if camera has a torch
               const cap = this.track.getCapabilities();
-              this.torchSupport = cap.torch;
+              this.torchSupport.set(cap.torch);
               // console.log(cap);
               // this.track = track;
             });
           }catch(e){            
-            this.torchSupport = false;
+            this.torchSupport.set(false);
           }
 
           // // const input = document.querySelector('#focusRange');
@@ -119,14 +104,14 @@ export class ScanComponent implements OnInit, OnDestroy {
 
           // this.video.nativeElement.src = window.URL.createObjectURL(stream);
           this.video().nativeElement.srcObject = stream;
-          this.loading = false;
+          this.loading.set(false);
           // this.video.nativeElement.play();
 
           this.codeReader
             // .decodeOnceFromStream(stream)
             .decodeFromStream(stream,this.video().nativeElement, (result, error, controls) => {
               if (result){
-                this.pause = true;
+                this.pause.set(true);
                 this.video()?.nativeElement.pause();
                 this.valueChange.emit(result);
                 // console.log(result);
@@ -139,37 +124,28 @@ export class ScanComponent implements OnInit, OnDestroy {
               // returned from the method.
             })
 
-            // .decodeFromInputVideoDevice(undefined, 'video')
-            // .then(result => {
-            //   this.pause = true;
-            //   this.video()?.nativeElement.pause();
-            //   this.valueChange.emit(result);
-            // })
-            // .catch(err => console.error(err));
-
-
         }, error => {
-          this.scError = error.message;
-          this.camSupport = false;
-          this.loading = false;
+          this.scError.set(error.message);
+          this.camSupport.set(false);
+          this.loading.set(false);
         });
       }, error =>{
-        this.scError = error.message;
-        this.camSupport = false;
-        this.loading = false;
+        this.scError.set(error.message);
+        this.camSupport.set(false);
+        this.loading.set(false);
       });
 
     }
   }
 
   ngOnDestroy() {
-    if (this.camSupport&& this.torchSupport) {
+    if (this.camSupport() && this.torchSupport()) {
       this.switchTorch(false);
     }
     this.track.stop();
   }
 
-  isTorch: boolean;
+  isTorch = signal<boolean>(false);
   switchTorch(value) {
     this.track.applyConstraints({
       advanced: [{ torch: value }]

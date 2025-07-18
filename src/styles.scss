@@ -1,16 +1,15 @@
 /* Importing Bootstrap SCSS file. */
-@use 'bootstrap/scss/bootstrap';
+@use "bootstrap/scss/bootstrap" with (
+  $enable-negative-margins: true
+);
 
-@use 'assets/css/print.css';
-//@import "@fullcalendar/common/main.css";
-//@import "@fullcalendar/daygrid/main.css";
-//@import "@fullcalendar/timegrid/main.css";
+@use "assets/css/print.css";
+
 @use "leaflet/dist/leaflet.css";
 
-@use '@fontsource/inter';
+@use "@fontsource/inter";
 
 /* You can add global styles to this file, and also import other style files */
-$enable-negative-margins:true !default;
 
 html,
 body {
@@ -56,6 +55,7 @@ body {
 }
 .bg-reka.ia-unimas-my,
 .bg-reka.ireka-my,
+.bg-reka.dev-ireka-my,
 .bg-reka.aa-unimas-my{
   background-color: #0747a6;
 }

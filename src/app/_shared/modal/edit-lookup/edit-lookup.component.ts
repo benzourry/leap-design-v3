@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 // import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
@@ -8,9 +8,12 @@ import { NgSelectModule } from '@ng-select/ng-select';
     selector: 'app-edit-lookup',
     imports: [FormsModule, FaIconComponent, NgSelectModule],
     templateUrl: './edit-lookup.component.html',
-    styleUrl: './edit-lookup.component.scss'
+    styleUrl: './edit-lookup.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditLookupComponent {
+
+  cdr = inject(ChangeDetectorRef);
 
   lookup = model<any>({})
 
@@ -27,7 +30,8 @@ export class EditLookupComponent {
       this.lookup.update(l=>{
         l.x = {};
         return l;
-      })
+      });
+      this.cdr.detectChanges();
     }
     // if (this.lookup.dataEnabled) {
     //   if (!this.lookupEntry.data) {

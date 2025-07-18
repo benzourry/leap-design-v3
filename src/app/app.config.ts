@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection, isDevMode, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, isDevMode, importProvidersFrom, provideZonelessChangeDetection, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -11,7 +11,9 @@ import { LoadingInterceptor } from './_shared/service/loading-interceptor.servic
 export const appConfig: ApplicationConfig = {
   providers: [
         importProvidersFrom(SharedModule),
-        provideZoneChangeDetection({ eventCoalescing: true }), 
+        // provideZoneChangeDetection({ eventCoalescing: true }), 
+        provideZonelessChangeDetection(),
+        provideBrowserGlobalErrorListeners(),
         provideRouter(routes, withHashLocation()), 
         provideHttpClient(withInterceptorsFromDi()), 
         {

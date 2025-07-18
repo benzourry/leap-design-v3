@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, effect } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, effect, inject } from '@angular/core';
 import { UserService } from '../_shared/service/user.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../_shared/service/toast-service';
@@ -36,6 +36,7 @@ import { domainBase } from '../_shared/constant.service';
 @Component({
     selector: 'app-devprofile',
     templateUrl: './devprofile.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./devprofile.component.css'],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, PageTitleComponent, FormsModule, DatePipe]
 })
@@ -56,11 +57,17 @@ export class DevProfileComponent implements OnInit {
     linkedin: ['fab', 'linkedin'],
     local: ['far', 'envelope']
   }
-  constructor(private userService: UserService,
-    private runService: RunService, private swPush: SwPush, private pushService: PushService,
-    private modalService: NgbModal, private toastService: ToastService,
-    private route: ActivatedRoute
-  ) { 
+
+  private userService = inject(UserService);
+    private runService = inject(RunService);
+    private swPush = inject(SwPush);
+    private pushService = inject(PushService);
+    private modalService = inject(NgbModal);
+    private toastService = inject(ToastService);
+    private route = inject(ActivatedRoute);
+    private cdr = inject(ChangeDetectorRef);
+
+  constructor() { 
     effect(()=>{
       this.app = this.runService.$app();
     })
@@ -73,6 +80,7 @@ export class DevProfileComponent implements OnInit {
     this.userService.getCreator()
       .subscribe(user => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.route.url.pipe(
           withLatestFrom(this.route.parent.params, this.route.params)
@@ -83,6 +91,7 @@ export class DevProfileComponent implements OnInit {
           if (appId) {
             this.loadNotif(appId, this.user.email);
           }
+          this.cdr.detectChanges();
         });
         this.loadSubscription();
       });
@@ -91,6 +100,7 @@ export class DevProfileComponent implements OnInit {
       .pipe(take(1))
       .subscribe(sub => {
         this.actualSub = sub;
+        this.cdr.detectChanges();
       })
   }
 
@@ -104,9 +114,11 @@ export class DevProfileComponent implements OnInit {
           .subscribe({
             next: (res2) => {
               this.loadNotif(this.appId, this.user.email);
+              this.cdr.detectChanges();
             },
             error: (err) => {
               this.toastService.show(err.error.message, { classname: 'bg-danger text-light' });
+              this.cdr.detectChanges();
             }
           });
       }, res => { });
@@ -117,6 +129,7 @@ export class DevProfileComponent implements OnInit {
     this.runService.getNotification(appId, email)
       .subscribe(res => {
         this.notifList = res.content;
+        this.cdr.detectChanges();
       })
   }
 
@@ -127,6 +140,7 @@ export class DevProfileComponent implements OnInit {
       .subscribe(user => {
         this.user = user;
         this.userService.setUser(user);
+        this.cdr.detectChanges();
         this.logout();
       })
   }
@@ -135,6 +149,7 @@ export class DevProfileComponent implements OnInit {
     this.runService.removeAcc(-1, this.user.email)
       .subscribe(user => {
         this.toastService.show("Your account has been successfully removed", { classname: 'bg-success text-light' });
+        this.cdr.detectChanges();
         this.logout();
       })
   }
@@ -144,6 +159,7 @@ export class DevProfileComponent implements OnInit {
     this.pushService.getSubscription(this.user.id)
       .subscribe(subs => {
         this.pushSubs = subs;
+        this.cdr.detectChanges();
       })
   }
 
@@ -151,7 +167,8 @@ export class DevProfileComponent implements OnInit {
 
     this.pushService.unsubscribePush(endpoint)
       .subscribe(res => {
-        this.loadSubscription()
+        this.loadSubscription();
+        this.cdr.detectChanges();
 
         this.swPush.subscription
           .pipe(take(1))
@@ -180,9 +197,11 @@ export class DevProfileComponent implements OnInit {
           .subscribe({
             next: (res) => {
               this.toastService.show(res.message, { classname: 'bg-success text-light' });
+              this.cdr.detectChanges();
             },
             error: (err) => {
               this.toastService.show(err.error.message, { classname: 'bg-danger text-light' });
+              this.cdr.detectChanges();
             }
           })
       }, res => { });

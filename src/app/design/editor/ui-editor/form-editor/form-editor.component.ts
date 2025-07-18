@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, effect, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbDateAdapter, NgbTimeAdapter, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, NgbInputDatepicker, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -52,8 +52,9 @@ import { LookupService } from '../../../../run/_service/lookup.service';
     templateUrl: './form-editor.component.html',
     styleUrls: ['../../../../../assets/css/element-action.css',
         './form-editor.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
-        { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
+    { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
     imports: [CdkDropListGroup, FaIconComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
         FormsModule, RouterLink, NgClass, NgStyle, CdkDropList, CdkDrag, FieldViewComponent, FieldEditComponent, CdkDragHandle,
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
@@ -181,7 +182,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         ],
         number: [
             { name: 'Number Input', code: 'number' },
-            { name: 'Range Slider', code: 'range'}
+            { name: 'Range Slider', code: 'range' }
         ],
         file: [
             { name: 'Image File (Single)', code: 'image' },
@@ -216,8 +217,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         ]
     }
 
-    newForm: any = { nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true, 
-    x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } }
+    newForm: any = {
+        nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true,
+        x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true }
+    }
 
     palettes: any[] = [];
     showSuper: boolean = true;
@@ -256,9 +259,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     superItems = [];
-    buildSuper(){
-        console.log("superForm",this.superForm)
-        this.superItems = Object.values(this.superForm?.items).map((i: any)=>{
+    buildSuper() {
+        console.log("superForm", this.superForm)
+        this.superItems = Object.values(this.superForm?.items).map((i: any) => {
             delete i.id;
             i.x.extended = true;
             return {
@@ -284,34 +287,47 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     // @ViewChild('editFormTpl') editFormTpl;
     editFormTpl = viewChild('editFormTpl');
 
-    constructor(private formService: FormService,
-        private lookupService: LookupService,
-        private mailerService: MailerService,
-        private router: Router,
-        private modalService: NgbModal, private userService: UserService,
-        private route: ActivatedRoute, private appService: AppService,
-        private entryService: EntryService,
-        private utilityService: UtilityService,
-        private groupService: GroupService,
-        private bucketService: BucketService,
-        private cognaService: CognaService,
-        private endpointService: EndpointService,
-        private toastService: ToastService,
-        private datasetService: DatasetService,
-        private screenService: ScreenService,
-        private commService: CommService,
-        private cdr: ChangeDetectorRef,
-        private location: PlatformLocation) {
-        location.onPopState(() => this.modalService.dismissAll(''));
-        this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-        commService.changeEmitted$.subscribe(data => {
-            if (data.value == 'import') {
-                this.getFormList(1);
-            }
-            if (data.value == 'form-add') {
-                this.editForm(this.editFormTpl(), {}, true);
-            }
-        });
+
+    // Core services
+    private formService = inject(FormService);
+    private lookupService = inject(LookupService);
+    private mailerService = inject(MailerService);
+
+    // Navigation services
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private location = inject(PlatformLocation);
+
+    // UI services
+    private modalService = inject(NgbModal);
+    private toastService = inject(ToastService);
+    private cdr = inject(ChangeDetectorRef);
+
+    // Business services
+    private userService = inject(UserService);
+    private appService = inject(AppService);
+    private entryService = inject(EntryService);
+    private utilityService = inject(UtilityService);
+    private groupService = inject(GroupService);
+    private bucketService = inject(BucketService);
+    private cognaService = inject(CognaService);
+    private endpointService = inject(EndpointService);
+    private datasetService = inject(DatasetService);
+    private screenService = inject(ScreenService);
+    private commService = inject(CommService);
+
+    constructor() {
+
+
+        // effect(() => {
+        //     let data = commService.changeEmitted();
+        //     if (data?.value == 'import') {
+        //         this.getFormList(1);
+        //     }
+        //     if (data?.value == 'form-add') {
+        //         this.editForm(this.editFormTpl(), {}, true);
+        //     }
+        // });
     }
 
     ngAfterViewChecked() {
@@ -322,9 +338,20 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     otherAppList: any[] = [];
     ngOnInit() {
 
-        this.userService.getCreator().subscribe((user) => {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
+        this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+        this.commService.changeEmitted$.subscribe(data => {
+            if (data.value == 'import') {
+                this.getFormList(1);
+            }
+            if (data.value == 'form-add') {
+                this.editForm(this.editFormTpl(), {}, true);
+            }
+        });
 
+        this.userService.getCreator().subscribe((user) => {
             this.user = user;
+            this.cdr.detectChanges(); // <--- Add here if user is used in template
 
             this.route.parent.parent.parent.params.subscribe(params => {
                 const appId = params['appId'];
@@ -345,6 +372,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getDatasetList(this.app.id);
                             this.getScreenList(this.app.id);
                             this.getEndpointList();
+                            this.cdr.detectChanges(); // <--- Add here
                         });
                 }
             })
@@ -400,6 +428,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.groupService.getGroupList({ appId: this.app.id, size: 999 })
             .subscribe(res => {
                 this.accessList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
                 this.accessList.forEach(i => {
                     this.accessMap[i.id] = i;
                     // this.extraAutoCompleteJs.push({ label: `(groupId:${i.id}) ${i.name}`, apply: i.id + "", detail: i.name });
@@ -414,6 +443,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.endpointService.getEndpointList(params)
             .subscribe(res => {
                 this.endpointList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -422,6 +452,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.lookupService.getFullLookupList(params)
             .subscribe(res => {
                 this.lookupList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             })
 
     }
@@ -431,6 +462,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.mailerService.getMailerList(params)
             .subscribe(res => {
                 this.mailerList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             })
 
     }
@@ -439,6 +471,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.datasetService.getDatasetList(appId)
             .subscribe(res => {
                 this.datasetList = res;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -446,6 +479,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.screenService.getScreenList(appId)
             .subscribe(res => {
                 this.screenList = res;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -472,19 +506,20 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.datasetService.getDataset(id)
             .subscribe(res => {
                 this.dataset = res;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
-    codeList:any={};
+    codeList: any = {};
 
-    itemExist = (f) => (!f.id && this.codeList[f.code]) || (f.id && f.id!=this.codeList[f.code]?.id && this.codeList[f.code]);
+    itemExist = (f) => (!f.id && this.codeList[f.code]) || (f.id && f.id != this.codeList[f.code]?.id && this.codeList[f.code]);
 
-    populateCodeList(){
+    populateCodeList() {
         this.codeList = {};
-        this.curForm.sections.filter(s=>s.type=='list')
-            .forEach(s=>this.codeList[s.code]={id:s.id, text:'section: '+s?.title});
+        this.curForm.sections.filter(s => s.type == 'list')
+            .forEach(s => this.codeList[s.code] = { id: s.id, text: 'section: ' + s?.title });
         Object.keys(this.curForm.items)
-            .forEach(key=>this.codeList[key]={id:this.curForm.items[key].id, text:'field: '+this.curForm.items[key]?.label});
+            .forEach(key => this.codeList[key] = { id: this.curForm.items[key].id, text: 'field: ' + this.curForm.items[key]?.label });
     }
 
     getSectionItems(form, types: any[]) {
@@ -499,15 +534,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     moreAutocomplete() {
         this.formService.moreAutocompleteJs()
             .subscribe(res => {
-                if (res?.list){
+                if (res?.list) {
                     this.extraAutoCompleteJs.push(...res.list);
-                }                
+                }
+                this.cdr.detectChanges(); // <--- Add here        
             })
         this.formService.moreAutocompleteHtml()
             .subscribe(res => {
-                if (res?.list){
+                if (res?.list) {
                     this.extraAutoCompleteHtml.push(...res.list);
-                }                
+                }
+                this.cdr.detectChanges(); // <--- Add here        
             })
     }
 
@@ -528,24 +565,29 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.formTotal = res.page?.totalElements;
                 this.formLoading = false;
                 this.commService.emitChange({ key: 'form', value: this.formTotal });
-            }, res => this.formLoading = false);
+                this.cdr.detectChanges(); // <--- Add here
+            }, res => {
+                this.formLoading = false;
+                this.cdr.detectChanges(); // <--- Add here
+            });
     }
 
 
     getHiddenList = (list) => list.filter(i => i.hidden == true);
 
-    superForm:any = null; // form that is being extended
+    superForm: any = null; // form that is being extended
 
     getFormData(id) {
         delete this.superForm
         delete this.formError;
+        this.superItems = [];
         this.curFormId = id;
         this.formService.getForm(id)
             .subscribe(res => {
                 this.curForm = res;
                 this.curForm.sections
-                .map(s=>s.parentObj=this.getTab(s.parent))
-                .sort((a,b)=>a.parentObj?.sortOrder-b.parentObj?.sortOrder);
+                    .map(s => s.parentObj = this.getTab(s.parent))
+                    .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
 
                 // console.log("sections=",this.curForm.sections)
                 this.getLookupIdList(this.curForm.id);
@@ -561,15 +603,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     this.highlightSubmit();
                     // this.highlightLine({id:-1}, {id:-1, color:'rgb(0, 123, 255)', action:'goTier', nextTier:res.tiers[0].id});// {
                 }
-                if (res?.x?.extended){
+                if (res?.x?.extended) {
                     this.formService.getForm(res?.x?.extended)
                         .subscribe(r1 => {
                             this.superForm = r1;
                             this.buildSuper();
+                            this.cdr.detectChanges();
                         }
-                    );
+                        );
                 }
                 this.loadTrails(this.curForm.id, 1);
+                this.cdr.detectChanges();
                 // }
             }, err => {
                 // console.log(err);
@@ -603,20 +647,22 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         type: key.type
                     };
                     // if (!this.lookup[key.code]) {
-                        this.getLookup(key.code, key.dataSourceInit ? this.parseJson(key.dataSourceInit) : null);
+                    this.getLookup(key.code, key.dataSourceInit ? this.parseJson(key.dataSourceInit) : null);
                     // }
 
-                    if (key.type != 'modelPicker'){
+                    if (key.type != 'modelPicker') {
                         this.lookupService.getLookup(key.dataSource)
-                        .subscribe({
-                            next: res=>{
-                                this.lookupMap[key.dataSource]= res;
-                            },
-                            error: err=>{}
-                        })                        
+                            .subscribe({
+                                next: res => {
+                                    this.lookupMap[key.dataSource] = res;
+                                    this.cdr.detectChanges(); // <--- Add here
+                                },
+                                error: err => { }
+                            })
                     }
 
                 });
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -649,7 +695,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     //     }
     //     return pre +'.'+ item.code + pipe;
     // }
-    
+
 
     getLookup = (code, params?: any) => {
         this._getLookup(code, params);
@@ -662,6 +708,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 .subscribe({
                     next: res => {
                         this.lookup[code] = res;
+                        this.cdr.detectChanges(); // <--- Add here
                     }, error: err => {
                     }
                 })
@@ -672,7 +719,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     _getLookupObs(code, param, cb?, err?): Observable<any> {
 
-        var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}),null);
+        var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
         // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
         // bleh consider cache observable instead of result.
         // tp bila pake observable.. request dipolah on subscribe();
@@ -694,7 +741,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
                 .pipe(
                     tap({ next: cb, error: err }), first(),
-                    map((res:any) => res.content), share()
+                    map((res: any) => res.content), share()
                 )
         }
         return this.lookupDataObs[cacheId];
@@ -718,7 +765,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(form => {
-                this.formService.saveForm(form.appId??this.app.id, form)
+                if (!form.x.extended) {
+                    console.log("delete extended", form.x.extended);
+                    delete form.x.extended;
+                }
+                this.formService.saveForm(form.appId ?? this.app.id, form)
                     .subscribe({
                         next: (res) => {
                             this.getFormList(this.formPageNo);
@@ -730,6 +781,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.toastService.show("Form saving failed", { classname: 'bg-danger text-light' });
                         }
                     })
+                this.cdr.detectChanges(); // <--- Add here
             }, res => { });
 
 
@@ -752,15 +804,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    unlinkPrevForm(formId){
+    unlinkPrevForm(formId) {
         if (confirm('Are you sure you want to unlink previous form')) {
             this.formService.unlinkPrevForm(formId)
-            .subscribe(res=>{
-                this.getFormData(formId);
-                this.toastService.show("Previous form successfully unlinked", { classname: 'bg-success text-light' });
-            }, res => {
-                this.toastService.show("Previous form unlink failed", { classname: 'bg-danger text-light' });
-            })
+                .subscribe(res => {
+                    this.getFormData(formId);
+                    this.toastService.show("Previous form successfully unlinked", { classname: 'bg-success text-light' });
+                }, res => {
+                    this.toastService.show("Previous form unlink failed", { classname: 'bg-danger text-light' });
+                })
         }
     }
 
@@ -775,6 +827,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.getFormList(1);
                         delete this.curForm;
                         this.toastService.show("Form removed successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     }, res => {
                         this.toastService.show("Form removal failed", { classname: 'bg-danger text-light' });
                     });
@@ -795,7 +848,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
         this.editItemData = data;
 
-        if (!this.editItemData.x.appId){      
+        if (!this.editItemData.x.appId) {
             this.editItemData.x.appId = this.app.id;
         }
 
@@ -832,11 +885,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 this.getLookupIdList(this.curForm.id);
                                 this.saveItemOrder(section);
                                 this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
+                                this.cdr.detectChanges(); // <--- Add here
                             }, error: (e) => {
                                 this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
                             }
                         })
                 })
+                this.cdr.detectChanges(); // <--- Add here
 
             }, res => { });
     }
@@ -912,7 +967,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
                 }
             });
-
+            this.cdr.detectChanges();
         })
     }
     selectColor(number) {
@@ -982,21 +1037,25 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 .subscribe(res => {
                                     this.curForm = res;
                                     this.reorderAllTier();
+                                    this.cdr.detectChanges();
                                 }, err => {
                                     this.formError = err.error;
                                 })
                             this.toastService.show("Tier saved successfully", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         },
                         error: (err) => {
                             this.toastService.show("Tier saving failed", { classname: 'bg-danger text-light' });
                         }
                     })
+                this.cdr.detectChanges();
             }, dismiss => {
                 /// ????
                 if (this.editTierData.orgMapParamStr) {
                     this.editTierData.orgMapParam = JSON.parse(this.editTierData.orgMapParamStr);
                 }
             });
+        this.cdr.detectChanges();
     }
 
     editTierActionData: any;
@@ -1011,12 +1070,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getFormData(this.curForm.id);
                             this.reorderAllTier();
                             this.toastService.show("Tier action saved successfully", { classname: 'bg-success text-light' });
-                            // if (this.showProcessLine) {
-                            //     this.drawTierLines();
-                            // }
+                            this.cdr.detectChanges(); // <--- Add here
                         }, error: (error) => {
                             this.toastService.show("Tier action saving failed", { classname: 'bg-danger text-light' });
-
                         }
                     })
             }, res => { });
@@ -1056,15 +1112,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     removeTierAction(ta) {
         if (confirm('Are you sure you want to remove this action:' + ta.label)) {
             this.formService.removeTierAction(ta.id)
-            .subscribe({
-                next: (res) => {
-                    this.getFormData(this.curForm.id);
-                    this.toastService.show("Tier action removed successfully", { classname: 'bg-success text-light' });
+                .subscribe({
+                    next: (res) => {
+                        this.getFormData(this.curForm.id);
+                        this.toastService.show("Tier action removed successfully", { classname: 'bg-success text-light' });
 
-                }, error: (error) => {
-                    this.toastService.show("Tier action removal failed", { classname: 'bg-danger text-light' });
-                }
-            })
+                    }, error: (error) => {
+                        this.toastService.show("Tier action removal failed", { classname: 'bg-danger text-light' });
+                    }
+                })
         }
     }
 
@@ -1081,6 +1137,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 .subscribe(res => {
                                     this.curForm = res;
                                     this.reorderAllTier();
+                                    this.cdr.detectChanges(); // <--- Add here
                                 }, err => {
                                     this.formError = err.error;
                                 })
@@ -1121,6 +1178,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         return this.formService.saveTierOrder(list)
             .subscribe((res) => {
                 this.drawTierLines();
+                this.cdr.detectChanges();
                 return res;
             });
     }
@@ -1139,6 +1197,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         return this.formService.saveTierActionOrder(this.curForm.tiers[tierIndex].id, list)
             .subscribe((res) => {
                 this.curForm.tiers[tierIndex].actions = res;
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -1180,20 +1239,19 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     reorderItem(section, index, op) {
-        // console.log(section.items);
         this.reorder(section.items, index, op);
         this.saveItemOrder(section);
     }
 
     getTab = (id) => {
         // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
-        if (id=="-1"){
-            return {id:-1,sortOrder:-1,title:"(HEAD)"}
-        }else if (id=="-999"){
-            return {id:-999,sortOrder:999,title:"(BOTTOM)"}
-        }else{
+        if (id == "-1") {
+            return { id: -1, sortOrder: -1, title: "(HEAD)" }
+        } else if (id == "-999") {
+            return { id: -999, sortOrder: 999, title: "(BOTTOM)" }
+        } else {
             return this.curForm.tabs.filter(e => e.id == id)[0]
-        }        
+        }
     };
 
 
@@ -1204,6 +1262,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             });
         return this.formService.saveItemOrder(list)
             .subscribe(res => {
+                this.cdr.detectChanges(); // <--- Add here
                 return res;
             });
     }
@@ -1223,21 +1282,21 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 item['code'] = item.subType + '_' + rnd;
             }
 
-            if (!item.x?.extended){
+            if (!item.x?.extended) {
                 this.editItem(this.editItemTpl(), parent, Object.assign({}, item), event.currentIndex - 1, true);
-            }else{
-                if (!this.curForm.items[item.code]){
+            } else {
+                if (!this.curForm.items[item.code]) {
                     this.formService.saveItem(this.curForm.id, parent.id, item, event.currentIndex - 1)
-                    .subscribe({
-                        next: (e) => {
-                            this.getFormData(this.curForm.id);
-                            this.getLookupIdList(this.curForm.id);
-                            this.saveItemOrder(parent);
-                            this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
-                        }, error: (e) => {
-                            this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
-                        }
-                    })
+                        .subscribe({
+                            next: (e) => {
+                                this.getFormData(this.curForm.id);
+                                this.getLookupIdList(this.curForm.id);
+                                this.saveItemOrder(parent);
+                                this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
+                            }, error: (e) => {
+                                this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
+                            }
+                        })
                 }
             }
 
@@ -1253,7 +1312,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.formService.moveItem(this.curForm.id, event.container.data[event.currentIndex].id, parent.id, event.currentIndex)
                     .subscribe(res => {
-                        // console.log("moved");
+                        this.cdr.detectChanges(); // <--- Add here
                     });
 
             }
@@ -1264,6 +1323,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.formService.getTabList(this.curForm.id, pageNumber)
             .subscribe(res => {
                 this.curForm.tabs = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -1291,49 +1351,49 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    checkSectionField = (code)=>this.editSectionData.x?.tableFields?.includes(code);
-    toggleSectionField = (code)=>{
-        if (!this.editSectionData.x?.tableFields) this.editSectionData.x.tableFields=[];
-        if (this.editSectionData.x?.tableFields.includes(code)){
-            this.editSectionData.x.tableFields = this.editSectionData.x?.tableFields.filter(e=>e!=code);
-        }else{
+    checkSectionField = (code) => this.editSectionData.x?.tableFields?.includes(code);
+    toggleSectionField = (code) => {
+        if (!this.editSectionData.x?.tableFields) this.editSectionData.x.tableFields = [];
+        if (this.editSectionData.x?.tableFields.includes(code)) {
+            this.editSectionData.x.tableFields = this.editSectionData.x?.tableFields.filter(e => e != code);
+        } else {
             this.editSectionData.x?.tableFields.push(code);
         }
     }
 
-    checkAllSectionFields(){        
-        if (this.editSectionData.x?.tableFields){
-            this.editSectionData.x.tableFields=[]
+    checkAllSectionFields() {
+        if (this.editSectionData.x?.tableFields) {
+            this.editSectionData.x.tableFields = []
         }
-        this.editSectionData.x.tableFields = this.editSectionData.items.filter(i=>i.subType!='clearfix').map(i=>i.code);
+        this.editSectionData.x.tableFields = this.editSectionData.items.filter(i => i.subType != 'clearfix').map(i => i.code);
     }
 
-    uncheckAllSectionFields(){
-        if (this.editSectionData.x?.tableFields){
-            this.editSectionData.x.tableFields=[]
+    uncheckAllSectionFields() {
+        if (this.editSectionData.x?.tableFields) {
+            this.editSectionData.x.tableFields = []
         }
     }
 
-    ensureTableStyleCleared(){
-        if (this.editSectionData.inline){
+    ensureTableStyleCleared() {
+        if (this.editSectionData.inline) {
             delete this.editSectionData.x.tableStyle;
-            this.editSectionData.x.tableFields=[]
+            this.editSectionData.x.tableFields = []
         }
     }
 
-    clearSortable(){
-        if (!this.editSectionData.x?.sortable){
+    clearSortable() {
+        if (!this.editSectionData.x?.sortable) {
             delete this.editSectionData.x?.defSort;
             delete this.editSectionData.x?.defSortDir;
             delete this.editSectionData.x?.userSort;
         }
     }
 
-    defaultMapLat:any = {}
-    prepareMapCoordinate(){
-        if (this.editItemData.type=='map' && !this.editItemData.x?.useCurrent){
-            this.editItemData.x.default = this.editItemData.subType=='multiple'?[this.defaultMapLat]:this.defaultMapLat;
-        }else{
+    defaultMapLat: any = {}
+    prepareMapCoordinate() {
+        if (this.editItemData.type == 'map' && !this.editItemData.x?.useCurrent) {
+            this.editItemData.x.default = this.editItemData.subType == 'multiple' ? [this.defaultMapLat] : this.defaultMapLat;
+        } else {
             delete this.editItemData.x.default;
         }
     }
@@ -1344,13 +1404,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .result.then(res => { }, err => { });
     }
 
-    backendEfSave(item, force){
-        this.formService.saveItemOnly(this.curForm.id,item)
+    backendEfSave(item, force) {
+        this.formService.saveItemOnly(this.curForm.id, item)
             .subscribe({
                 next: (e) => {
                     this.backendEf(item, force);
                 }, error: (e) => {
                     this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
+                    this.cdr.detectChanges(); // <--- Add here
                 }
             })
 
@@ -1373,6 +1434,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.toastService.show("Backend EF evaluated successfully " + result + " ", { classname: 'bg-success text-light' });
                 this.efLoading[item.code] = false;
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -1406,11 +1468,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                             this.toastService.show("Approver updated successfully " + result + " ", { classname: 'bg-success text-light' });
                             this.apfLoading[tier.id] = false;
+                            this.cdr.detectChanges(); // <--- Add here
                         })
+                    this.cdr.detectChanges(); // <--- Add here
 
                 }, error: (error) => {
                     this.toastService.show("Tier saving failed", { classname: 'bg-danger text-light' });
-
+                    this.cdr.detectChanges(); // <--- Add here
                 }
             })
     }
@@ -1423,10 +1487,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     next: (res) => {
                         this.efLoading["all"] = false;
                         this.toastService.show("Tier approver reconstructed successfully ", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     },
                     error: (error) => {
                         this.efLoading["all"] = false;
                         this.toastService.show("Tier approver reconstruction failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     }
                 })
         }
@@ -1446,7 +1512,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                         }, error: (err) => {
                             this.toastService.show("Section removal failed", { classname: 'bg-danger text-light' });
-
                         }
                     })
             }, res => { });
@@ -1472,7 +1537,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     editTabData: any;
     editTab(content, data) {
         if (!data.x) {
-            data['x'] = {facet: {}};
+            data['x'] = { facet: {} };
         }
         if (!data.x.facet) {
             data.x.facet = {};
@@ -1558,6 +1623,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         setTimeout(() => {
             items[index + op].altClass = 'swapEnd';
             items[index].altClass = 'swapEnd';
+            this.cdr.detectChanges(); // <--- Add here
         }, 500);
     }
 
@@ -1709,78 +1775,74 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     formRelatedComps: any = {};
     moveFormToApp(content) {
         this.formService.getRelatedComps(this.curFormId)
-        .subscribe(res => {
-            this.formRelatedComps = res;        
-            history.pushState(null, null, window.location.href);
-            this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-                this.moveFormToAppData.datasetIds = this.formRelatedComps.dataset.filter(e=>e.isChecked).map(e=>e.id);
-                this.moveFormToAppData.screenIds = this.formRelatedComps.screen.filter(e=>e.isChecked).map(e=>e.id);
-                // console.log(this.moveFormToAppData);
-                this.formService.moveToApp(this.curFormId, this.moveFormToAppData)
-                .subscribe(data=>{   
-                    this.commService.emitChange({ key: 'form', value: 0 });
-                    this.commService.emitChange({ key: 'dataset', value: 0 });
-                    this.commService.emitChange({ key: 'screen', value: 0 });
-                    this.toastService.show("Form moved successfully", { classname: 'bg-success text-light' });
-                });
+            .subscribe(res => {
+                this.formRelatedComps = res;
+                history.pushState(null, null, window.location.href);
+                this.modalService.open(content, { backdrop: 'static' })
+                    .result.then(data => {
+                        this.moveFormToAppData.datasetIds = this.formRelatedComps.dataset.filter(e => e.isChecked).map(e => e.id);
+                        this.moveFormToAppData.screenIds = this.formRelatedComps.screen.filter(e => e.isChecked).map(e => e.id);
+                        // console.log(this.moveFormToAppData);
+                        this.formService.moveToApp(this.curFormId, this.moveFormToAppData)
+                            .subscribe(data => {
+                                this.commService.emitChange({ key: 'form', value: 0 });
+                                this.commService.emitChange({ key: 'dataset', value: 0 });
+                                this.commService.emitChange({ key: 'screen', value: 0 });
+                                this.toastService.show("Form moved successfully", { classname: 'bg-success text-light' });
+                                this.cdr.detectChanges(); // <--- Add here
+                            });
+                        this.cdr.detectChanges(); // <--- Add here
 
-            }, res => { })
-        
-        
-        });
+                    }, res => { })
+
+
+            });
     }
 
-    formJsonSchema:any;
+    formJsonSchema: any;
     viewJsonSchema(content) {
         // this.importExcelData = null;
         this.cognaService.getFormatter(this.curFormId)
-        .subscribe({
-            next:res=>{
+            .subscribe({
+                next: res => {
 
 
-                let schema = {
-                    "$schema": "https://json-schema.org/draft/2020-12/schema",
-                    "$id": this.baseApi+'/cogna/get-formatter/'+this.curFormId,
-                    "title": this.curForm?.title,
-                    "description": this.curForm?.description,
-                    "type": "object",
-                    "properties": {
-                      "id": {"type": "integer", "description":"System generated unique ID"},
-                      "data": {
+                    let schema = {
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "$id": this.baseApi + '/cogna/get-formatter/' + this.curFormId,
+                        "title": this.curForm?.title,
+                        "description": this.curForm?.description,
                         "type": "object",
-                        "properties": {...{
-                            "$id": {"type": "integer", "description":"System generated unique ID"},
-                            "$code": {"type": "string", "description":"Generated code using code formatter"},
-                            "$counter": {"type": "integer", "description": "Form auto-counter"}
-                          },...JSON.parse(res.schema)} 
-                      },
-                      "email": {
-                        "type": "string"
-                      }
+                        "properties": {
+                            "id": { "type": "integer", "description": "System generated unique ID" },
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    ...{
+                                        "$id": { "type": "integer", "description": "System generated unique ID" },
+                                        "$code": { "type": "string", "description": "Generated code using code formatter" },
+                                        "$counter": { "type": "integer", "description": "Form auto-counter" }
+                                    }, ...JSON.parse(res.schema)
+                                }
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        }
                     }
+
+                    this.formJsonSchema = schema;
+                    this.cdr.detectChanges(); // <--- Add here
+
+                    history.pushState(null, null, window.location.href);
+                    this.modalService.open(content, { backdrop: 'static' })
+                        .result.then(data => {
+                        }, res => { })
+                },
+                error: err => {
+                    alert("Failed to get the JSON Schema")
                 }
-
-                // let schema = {
-                //     "$schema": "https://json-schema.org/draft/2020-12/schema",
-                //     "$id": this.baseApi+'/cogna/get-formatter/'+this.curFormId,
-                //     "title": this.curForm?.title,
-                //     "description": this.curForm?.description,
-                //     "type": "object",
-                //     "properties": JSON.parse(res.schema)
-                // }
-                
-                this.formJsonSchema = schema;
-
-                history.pushState(null, null, window.location.href);
-                this.modalService.open(content, { backdrop: 'static' })
-                .result.then(data => {
-                }, res => { })
-            },
-            error:err=>{
-                alert("Failed to get the JSON Schema")
-            }
-        })
+            })
     }
 
     createField: boolean;
@@ -1800,6 +1862,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.getFormData(this.curFormId);
                         this.commService.emitChange({ key: 'form', value: "import" });
                         this.toastService.show("Excel successfully imported", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
 
                     }, error: (error) => {
                         this.importExcelData = {
@@ -1807,7 +1870,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             message: error.message
                         }
                         this.importLoading = false;
-
+                        this.cdr.detectChanges(); // <--- Add here
                     }
                 })
         }
@@ -1821,6 +1884,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .subscribe({
                         next: res => {
                             this.toastService.show("Entry removed: " + res.rows + ", Attachment removed: " + res.files, { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges(); // <--- Add here
                         }, error: err => {
                             this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
                         }
@@ -1856,8 +1920,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.datasetService.saveDataset(this.app.id, data)
                             .subscribe(res => {
                                 this.toastService.show("Dataset successfully saved");
+                                this.cdr.detectChanges(); // <--- Add here
                             })
                     }, res => { })
+                this.cdr.detectChanges(); // <--- Add here
 
             })
     }
@@ -1966,9 +2032,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .subscribe({ next: res => this.toastService.show("RDB view successfully created/updated") })
     }
 
-    futureLookupId:number;
-    editLookupData:any = {};
-    editLookup(content, item){
+    futureLookupId: number;
+    editLookupData: any = {};
+    editLookup(content, item) {
         this.editLookupData = item;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1982,6 +2048,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.lookupMap[res.id] = res;
                             this.editItemData.dataSource = res.id;
                             this.toastService.show("Lookup successfully saved", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges(); // <--- Add here
                         }, error: (err) => {
                             this.toastService.show("Lookup saving failed", { classname: 'bg-danger text-light' });
                         }
@@ -1989,59 +2056,60 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { })
     }
 
-    editLookupItem:any={};
-    editLookupEntryData:any={};
-    editLookupEntry(content,field, dsId,data){
+    editLookupItem: any = {};
+    editLookupEntryData: any = {};
+    editLookupEntry(content, field, dsId, data) {
         this.lookupService.getLookup(dsId)
-        .subscribe(lookup=>{
-            this.editLookupItem = lookup;
-            this.editLookupEntryData = {enabled:1};
-            history.pushState(null, null, window.location.href);
-            this.modalService.open(content, { backdrop: 'static' })
-                .result.then(data => {
-                    if (lookup.x?.codeHidden){
-                        data.code = data.name
-                    }
-                    this.lookupService.saveEntry(lookup.id, data)
-                    .subscribe({
-                        next: (res) => {
-                            this.getLookup(field.code, field.dataSourceInit ? this.parseJson(field.dataSourceInit) : null);
-                            this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
-                        }, error: (err) => {
-                            this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });
+            .subscribe(lookup => {
+                this.editLookupItem = lookup;
+                this.editLookupEntryData = { enabled: 1 };
+                history.pushState(null, null, window.location.href);
+                this.modalService.open(content, { backdrop: 'static' })
+                    .result.then(data => {
+                        if (lookup.x?.codeHidden) {
+                            data.code = data.name
                         }
-                    })
-                }, res => { })           
+                        this.lookupService.saveEntry(lookup.id, data)
+                            .subscribe({
+                                next: (res) => {
+                                    this.getLookup(field.code, field.dataSourceInit ? this.parseJson(field.dataSourceInit) : null);
+                                    this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
+                                }, error: (err) => {
+                                    this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });
+                                }
+                            })
+                    }, res => { })
 
-        })
+            })
     }
 
     editGroupData: any;
     editGroup(content, group, obj, prop, multi) {
-      this.editGroupData = group;
-      history.pushState(null, null, window.location.href);
-      this.modalService.open(content, { backdrop: 'static' })
-        .result.then(data => {
-          this.groupService.save(this.app.id, data)
-            .subscribe(res => {
-                this.getAccessList();
-                if (multi){
-                    if (!obj[prop]){
-                        obj[prop]=[];
-                    }
-                    obj[prop] = obj[prop].concat(res.id);
-                }else{
-                    obj[prop] = res.id;
-                }
-              this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
-            }, res => {
-              this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
-            });
-        }, res => { })
+        this.editGroupData = group;
+        history.pushState(null, null, window.location.href);
+        this.modalService.open(content, { backdrop: 'static' })
+            .result.then(data => {
+                this.groupService.save(this.app.id, data)
+                    .subscribe(res => {
+                        this.getAccessList();
+                        if (multi) {
+                            if (!obj[prop]) {
+                                obj[prop] = [];
+                            }
+                            obj[prop] = obj[prop].concat(res.id);
+                        } else {
+                            obj[prop] = res.id;
+                        }
+                        this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
+                    }, res => {
+                        this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
+                    });
+            }, res => { })
     }
 
     editMailerData: any;
-    editMailer=(content, mailer, obj, prop)=>{
+    editMailer = (content, mailer, obj, prop) => {
         // console.log(mailer);
         // mailer.content = this.br2nl(mailer.content);
         if (!mailer.content) mailer.content = '';
@@ -2055,16 +2123,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.getMailerList();
                         // this.loadMailer(res.id);
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
-                        if (!obj[prop]){
-                            obj[prop]=[];
+                        if (!obj[prop]) {
+                            obj[prop] = [];
                         }
                         obj[prop] = obj[prop].concat(res.id);
+                        this.cdr.detectChanges(); // <--- Add here
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
                     });
             }, res => { })
     }
 
-    compareByCodeFn = (a, b):boolean => (a && a.code) === (b && b.code);
+    compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, input, model } from '@angular/core';
+import { Component, OnInit, input, model, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, first, map, share, tap } from 'rxjs';
 // import { EntryService } from '../../../service/entry.service';
 import { FormService } from '../../../service/form.service';
@@ -20,11 +20,17 @@ import { GroupByPipe } from '../../pipe/group-by.pipe';
     selector: 'app-edit-dataset',
     templateUrl: './edit-dataset.component.html',
     styleUrls: ['./edit-dataset.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
         FaIconComponent, NgSelectModule, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe,
         FilterPipe, GroupByPipe]
 })
 export class EditDatasetComponent implements OnInit {
+
+  cdr = inject(ChangeDetectorRef);
+  private formService = inject(FormService);
+  private lookupService = inject(LookupService);
+  private entryService = inject(EntryService);
 
   // @Input("dataset")
   editDatasetData = model<any>({ items:[], filters:[], presetFilters:{}, next:{}, status:'', statusFilter:{} }, {alias:'dataset'});
@@ -60,11 +66,9 @@ export class EditDatasetComponent implements OnInit {
     .ds-item {}
     .ds-status {}
     .ds-action {}
-  </style>`;
+  </style>`; 
 
-  constructor(private formService: FormService,
-    private lookupService: LookupService,
-    private entryService: EntryService) {
+  constructor() {
   }
 
   ngOnInit(): void {
@@ -351,7 +355,7 @@ export class EditDatasetComponent implements OnInit {
     this.formService.getListBasic(params)
       .subscribe(res => {
         this.formList = res.content;
-
+        this.cdr.detectChanges();
       });
   }
 
@@ -393,8 +397,10 @@ export class EditDatasetComponent implements OnInit {
             this.statusFilterForm = this.convertStatusToDisplay(ds.statusFilter, this.formHolder);
 
             this.formLoading = false;
+            this.cdr.detectChanges();
           }, error: err => {
             this.formLoading = false;
+            this.cdr.detectChanges();
           }
         })
       )
@@ -528,6 +534,7 @@ export class EditDatasetComponent implements OnInit {
           };
           this._getLookup(key.code, key.dataSourceInit ? this.parseJson(key.dataSourceInit) : null);
         });
+        this.cdr.detectChanges();
       });
   }
 
@@ -543,7 +550,9 @@ export class EditDatasetComponent implements OnInit {
       .subscribe({
         next:res=>{
           this.lookup[code] = res;
+          this.cdr.detectChanges();
         }, error:err=>{
+          this.cdr.detectChanges();
         }
       })
     }

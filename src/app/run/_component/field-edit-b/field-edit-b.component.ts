@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, forwardRef, ViewChild, Optional, Inject, ChangeDetectorRef, output, input, computed, AfterViewInit, effect, viewChild } from '@angular/core';
+import { Component, OnInit, forwardRef, ViewChild, Optional, Inject, ChangeDetectorRef, output, input, computed, AfterViewInit, effect, viewChild, ChangeDetectionStrategy, untracked, Signal } from '@angular/core';
 import { baseApi } from '../../../_shared/constant.service';
 import { NG_VALUE_ACCESSOR, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NgModel, FormsModule } from '@angular/forms';
 import { NgbDateAdapter, NgbTimeAdapter, NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
@@ -41,10 +41,11 @@ import { SecurePipe } from '../../../_shared/pipe/secure.pipe';
 import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
 import { LogService } from '../../../_shared/service/log.service';
 import { NgbUnixTimestampTimeAdapter } from '../../../_shared/service/time-adapter';
-import { compileTpl, splitAsList } from '../../../_shared/utils';
+import { compileTpl, deepEqual, splitAsList } from '../../../_shared/utils';
 import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 import { ElementBase } from '../element-base';
 import { SpeechToTextComponent } from '../speech-to-text/speech-to-text.component';
+import { MorphHtmlDirective } from '../../../_shared/directive/morph-html.directive';
 // import { ElementBase } from '../../../_shared/component/element-base';
 // import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 // declare const qrcode: any;
@@ -65,38 +66,42 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
 // }
 
 @Component({
-    selector: 'field-edit',
-    templateUrl: './field-edit-b.component.html',
-    styleUrls: ['./field-edit-b.component.scss'],
-    providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
-        { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter },
-        CUSTOMINPUT_VALUE_ACCESSOR],
-    encapsulation: ViewEncapsulation.None,
-    imports: [FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, AngularEditorModule,
-        NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe,
-        SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent]
+  selector: 'field-edit',
+  templateUrl: './field-edit-b.component.html',
+  styleUrls: ['./field-edit-b.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush, // mcm ok
+  providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
+  { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter },
+    CUSTOMINPUT_VALUE_ACCESSOR],
+  encapsulation: ViewEncapsulation.None,
+  imports: [FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, AngularEditorModule,
+    NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe, MorphHtmlDirective,
+    SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent]
 })
 
-export class FieldEditComponent extends ElementBase<any> implements OnInit, AfterViewInit {
+export class FieldEditComponent extends ElementBase<any> {
 
 
   field = input<any>();
-  user= input<any>();
+  user = input<any>();
   data = input<any>();
-  loading=input<boolean>();
-  extractLoading=input<boolean>();
-  itemList= input<any>();
+  loading = input<boolean>();
+  scopeId = input<string>();
+  extractLoading = input<boolean>();
+  itemList = input<any>();
   always = input<boolean>(false);
   id = input<string>("");
   fileProgress = input<number>();
   imgclsVal = input<boolean>(false);
-  
+
   file: any = {}
-  scaleTo = { scaleTo10 : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-              scaleTo5 : [1, 2, 3, 4, 5]}
+  scaleTo = {
+    scaleTo10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    scaleTo5: [1, 2, 3, 4, 5]
+  }
   baseApi: string = baseApi;
   codeReader = new BrowserQRCodeReader();
-  
+
   lookupList = input<any>();
   hideAddAction = input<boolean>();
 
@@ -112,12 +117,10 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   defaultValue = input<any>();
 
   readonly model = viewChild<NgModel>('formField');
-  formField = viewChild<NgModel>('formField');
+  // formField = viewChild<NgModel>('formField');
 
   public identifier = `form-text-${identifier++}`;
-  hasFocus:boolean=false;
-
-  scales:number[]=[1, 2, 3, 4, 5];
+  hasFocus: boolean = false;
 
   editorConfig: AngularEditorConfig = {
     editable: true,
@@ -177,7 +180,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     sanitize: false,
     toolbarPosition: 'bottom',
     toolbarHiddenButtons: [
-      [
+      // [
         // 'undo',
         // 'redo',
         // 'bold',
@@ -196,7 +199,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
         // 'insertOrderedList',
         // 'heading',
         // 'fontName'
-      ],
+      // ],
       [
         // 'fontSize',
         // 'textColor',
@@ -213,6 +216,8 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     ]
   };
 
+  _defaultValue: any = {};
+
   constructor(
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
     @Optional() @Inject(NG_ASYNC_VALIDATORS) asyncValidators: Array<any>,
@@ -221,79 +226,104 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   ) {
     super(validators, asyncValidators);
 
-    // effect(()=>{
-    //   if (this.field().x?.use_now && !this.value){
-    //     let now = Date.now();
-    //     this.value = now;
-    //     this.valueChanged(now)
-    //   }
-    // })
+    effect(() => {
+      // track only the signals that must trigger the effect
+      const useDef = this.field().x?.use_default;
+      const defaultValComputed = this.defaultValueComputed();
+      const defaultValue = this.defaultValue()
+      // only if a real change happened …
+      if (useDef && !this.value && defaultValue && !deepEqual(defaultValComputed, this._defaultValue)) {
+        // … do the mutation without tracking it:          
+        untracked(() => {
+          this._defaultValue = defaultValComputed;
+          // Defer event emission to avoid change detection issues
+          queueMicrotask(() => {
+            this.value = defaultValComputed;
+            this.writeValue(defaultValComputed); // must be inside this, otherwise it will not work
+            this.valueChanged(defaultValComputed); // not needed
+          });
+        });
+      }
+    });
 
-    // effect(()=>{
-    //   console.log("*****")
-    //   this.preCompile = this.compileTpl(this.field().placeholder,this.data(),this.field().subType=='htmlSave')
-    // })
-    // this.txtQueryChanged
-    //   .pipe(debounceTime(1000), distinctUntilChanged())
-    //   .subscribe(model => {
-    //       // this.value = model;
-    //       this.valueChange.emit(model);
-    //       // api call
-    //   });
-
-    // !!!! Why this is not used instead of ngAfterViewInit??!!! Need to monitor... 
-    effect(()=>{
-      if (this.field().x?.use_default && this.defaultValue()){
-        this.value = this.defaultValueComputed();
-        // console.log('defaultv',this.defaultValue())
-        // console.log('defaultvalue',this.defaultValueComputed())
-        // this.value = this.value??this.defaultValue();
-        // this.value = this.checkDefValue();
-        // console.log("defval",this.field().code, this.defaultValueComputed());
-
-        // tok caused infinite run
-        // this.valueChanged(this.value);   
+    effect(() => {
+      if (this.field()?.type == 'radio') {
+        // … do the mutation without tracking it:    
+        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+          untracked(() => {
+            queueMicrotask(() => {
+              this.value = this.lookupList().find(option => option.code === this.value.code) || this.value;
+            });
+          });
+        }
       }
     })
+
+    effect(() => {
+      if (this.field()?.type == 'modelPicker') {
+        // … do the mutation without tracking it:    
+        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+          untracked(() => {
+            queueMicrotask(() => {
+              this.value = this.lookupList().find(option => option.id === this.value.id) || this.value;
+            });
+          });
+        }
+      }
+    })
+
+    effect(() => {
+      if (this.field()?.type == 'checkboxOption') {
+        // … do the mutation without tracking it:    
+        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+          if (this.value instanceof Array) {
+            untracked(() => {
+              queueMicrotask(() => {
+                  const newVal = this.value?.map(v=>this.lookupList().find(option => option?.code === this.value?.code) || this.value)
+                  this.value = newVal;
+              });
+            });
+          }
+        }
+      }
+    })
+
+    effect(() => {
+      if (this.field().x?.inlineImg) {
+        this.editorConfig.toolbarHiddenButtons[1].splice(this.editorConfig.toolbarHiddenButtons[1].indexOf('insertImage'), 1);
+      }
+    })
+
   }
- 
-  defaultValueComputed = computed(()=>this.value??this.defaultValue())
 
-  ngAfterViewInit(): void {
-    // USING effect() above so no need to use setTimeout!!!
-    if (this.field().x?.use_default){
-      setTimeout(()=>{
-        this.value = this.defaultValueComputed();
-        this.valueChanged(this.value);
-      })
-    }
-  }
+  compiledData = computed(() => this.compileTpl(this.field().placeholder, this.data(), this.field().subType == 'htmlSave'))
 
+  defaultValueComputed = computed(() => (this.value ?? this.defaultValue()))
 
-  ngOnInit(): void {
-    this.list = this.getAsList(this.field().options);
-    this.scales = this.createRange(this.field());
-    if (this.field().x?.inlineImg){
-      this.editorConfig.toolbarHiddenButtons[1].splice(this.editorConfig.toolbarHiddenButtons[1].indexOf('insertImage'),1);
-    }
-    
-  }
+  scales: Signal<number[]> = computed(() => this.createRange(this.field()));
 
-  selectGroupBy = (item) => this.field()?this.compileTpl(this.field()?.x?.groupBy,{'$':item}):undefined;
+  // ngOnInit(): void {
+  //   // this.list = this.getAsList(this.field().options);    
+  //   if (this.field().x?.inlineImg) {
+  //     this.editorConfig.toolbarHiddenButtons[1].splice(this.editorConfig.toolbarHiddenButtons[1].indexOf('insertImage'), 1);
+  //   }
+  // }
 
-  createRange = (f:any) => {
-    if (f.type=='scaleTo5'){
+  selectGroupBy = (item) => this.field() ? this.compileTpl(this.field()?.x?.groupBy, { '$': item }) : undefined;
+
+  createRange = (f: any) => {
+    if (f.type == 'scaleTo5') {
       return [1, 2, 3, 4, 5];
-    }else if (f.type=='scaleTo10'){
+    } else if (f.type == 'scaleTo10') {
       return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    }else{
+    } else {
       return Array.from({ length: f.v?.max - f.v?.min + 1 }, (_, i) => f.v?.min + i)
     }
   }
 
   toNgbDateStruct = (timestamp) => {
     var date = new Date(timestamp);
-    return timestamp?{ day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear()}:null;
+    return timestamp ? { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() } : null;
   }
 
   fileclick(input) {
@@ -303,8 +333,8 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   clear(native?) {
     this.fileValueClear.emit(this.value);
     this.value = undefined;
-    if (native){
-      native.value=null;
+    if (native) {
+      native.value = null;
     }
     // this.model().control.updateValueAndValidity();
     this.model().control.reset();
@@ -314,31 +344,36 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   }
 
   compareFn = (val1: any, val2: any) => val1 && val1.code == val2.code;
-  valueBlured(event){
+  valueBlured(event) {
     this.valueBlur.emit(event);
   }
 
-  valueChanged(event) {
+  private previousEmitted: any;
+
+  valueChanged(next: any) {
     // console.log(event)
     // console.log("event",event);
     // perlu x tok???
-    if (this.field()?.subType=='time'){
-      let d = new Date(this.value);
-      let h = new Date(800000000000);
-      d.setDate(h.getDate());
-      d.setMonth(h.getMonth());
-      d.setFullYear(h.getFullYear());
-      // console.log("since mid",d.getTime());
-      this.value = d.getTime();
-      // console.log(d);
-    }
+    // console.log("valueChanged---", next)
+    if (!deepEqual(next, this.previousEmitted)) {
+      this.previousEmitted = next;
 
-    this.valueChange.emit(event);
+      if (this.field()?.subType == 'time') {
+        let d = new Date(this.value);
+        let h = new Date(800000000000);
+        d.setDate(h.getDate());
+        d.setMonth(h.getMonth());
+        d.setFullYear(h.getFullYear());
+        this.value = d.getTime();
+      }
+
+      this.valueChange.emit(next);
+    }
   }
 
   checkValueChanged(event) {
-    this.value = event?true:undefined;
-    this.valueChange.emit(this.value); 
+    this.value = event ? true : undefined;
+    this.valueChange.emit(this.value);
     //   this.onChangeCallback(event); 
   }
 
@@ -349,37 +384,37 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
 
   selectFocused(event) {
     this.selectFocus.emit(event);
-    this.hasFocus = true;  
-    if (this.field() && this.field().type=='simpleOption'){
-      this.list = this.getAsList(this.field().options);
-    }
+    this.hasFocus = true;
+    // if (this.field() && this.field().type == 'simpleOption') {
+    //   this.list = this.getAsList(this.field().options);
+    // }
   }
 
-  list = []
+  simpleList = computed(() => this.getAsList(this.field().options))
 
   fileValueChanged($event) {
     var fileList = [];
     var fileError = [];
-    if (this.value && $event.target.files.length!=0){ 
+    if (this.value && $event.target.files.length != 0) {
       this.fileValueClear.emit(this.value);
     }
 
-    if ($event.target.files.length>0){      
+    if ($event.target.files.length > 0) {
       var i = 0;
-      [...$event.target.files].forEach(f=>{
-        if (this.field().v?.max && f.size>this.field().v?.max*1024*1024){
+      [...$event.target.files].forEach(f => {
+        if (this.field().v?.max && f.size > this.field().v?.max * 1024 * 1024) {
           fileError.push(f);
           i++; // if size nok ok, then increment
-        }else{
+        } else {
           fileList.push(f); // if size ok, masok list
         }
       });
 
-      if (i>0){
-        this.model().control.setErrors({'maxsize':true, files:fileError.map(f=>`${f.name} (${(f.size/(1024*1024)).toFixed(2)}MB)`).join(", ")});
+      if (i > 0) {
+        this.model().control.setErrors({ 'maxsize': true, files: fileError.map(f => `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)}MB)`).join(", ") });
         this.model().control.markAsTouched();
-        this.value=null;
-      }    
+        this.value = null;
+      }
     }
 
     this.fileValueChange.emit(fileList);
@@ -388,11 +423,11 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   isArray = (value) => Array.isArray(value)
 
   checkValue(c) {
-    if (!this.value){ // if value is null, directly return false
+    if (!this.value) { // if value is null, directly return false
       return false;
     }
 
-    if (!this.isArray(this.value)){ // if not array, convert to array
+    if (!this.isArray(this.value)) { // if not array, convert to array
       this.value = [this.value];
     }
 
@@ -446,7 +481,7 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
     var f = "";
     // console.log(a);
     try {
-      f = compileTpl(a, b);
+      f = compileTpl(a, b, this.scopeId());
     } catch (e) {
       this.logService.log(`{field-${this.field().code}-compiletpl}-${e}`)
     }
@@ -463,11 +498,11 @@ export class FieldEditComponent extends ElementBase<any> implements OnInit, Afte
   getAsList = splitAsList;
 
 
-  triggerAddAction=(addValue)=>{ // using lambda supaya this <- refer to class
+  triggerAddAction = (addValue) => { // using lambda supaya this <- refer to class
     this.addAction.emit(addValue);
   }
 
-  lookupSearchFn=(term: string, item: any)=>{
+  lookupSearchFn = (term: string, item: any) => {
     term = term.toLocaleLowerCase();
     return JSON.stringify(Object.values(item)).toLocaleLowerCase().includes(term);
   }

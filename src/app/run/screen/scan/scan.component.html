@@ -1,16 +1,15 @@
-<div id="app" [class.d-none]="loading">
-  <!-- <input type="range" id="focusRange" style="width:100%" [min]="fmin" [max]="fmax" [step]="fstep" [(ngModel)]="fvalue" (change)="changeFocus()" /> -->
+<div id="app" [class.d-none]="loading()">
   <div class="cont">
     <div class="position-relative cont">
-      <video #video id="video" class="no-ev" width="100%" [class.d-none]="!camSupport" autoplay playsinline></video>
-      @if (camSupport) {
+      <video #video id="video" class="no-ev" width="100%" [class.d-none]="!camSupport()" autoplay playsinline></video>
+      @if (camSupport()) {
         <div [ngClass]="altClass" class="position-absolute">
           @if (error) {
             <div style="color: #f00">
-              Invalid QR Code ({{errorMsg}})
+              Invalid QR Code ({{errorMsg()}})
             </div>
           }
-          @if (!pause) {
+          @if (!pause()) {
             <div class="d-flex justify-content-center align-items-center scanner-box">
               <div class="custom-scanner"></div>
               <div>
@@ -22,19 +21,19 @@
       }
       <ng-content></ng-content>
     </div>
-    @if (camSupport) {
+    @if (camSupport()) {
       <div class="form-check form-switch form-group mt-2">
-        <input type="checkbox" class="form-check-input" [disabled]="!torchSupport" [(ngModel)]="isTorch" name="isTorchOn"
-          id="isTorchOn" (change)="switchTorch(isTorch)">
-        <label class="form-check-label" for="isTorchOn">Turn On Flash @if (!torchSupport) {
+        <input type="checkbox" class="form-check-input" [disabled]="!torchSupport()" [(ngModel)]="isTorch" name="isTorchOn"
+          id="isTorchOn" (change)="switchTorch(isTorch())">
+        <label class="form-check-label" for="isTorchOn">Turn On Flash @if (!torchSupport()) {
           <span>(No flash found)</span>
         }</label>
       </div>
     }
-    @if (scError) {
-      <div class="text-danger p-3 m-1">{{scError}}</div>
+    @if (scError()) {
+      <div class="text-danger p-3 m-1">{{scError()}}</div>
     }
-    @if (!camSupport) {
+    @if (!camSupport()) {
       <label class="bg-white p-3" for="qr-input-screen" style="display: block;margin-bottom: unset">
         <input type="file" [hidden]="true" id="qr-input-screen" (change)="qrValueChanged($event)" [(ngModel)]="file"
           name="screen" accept="image/*" capture />
@@ -45,7 +44,7 @@
   </div>
   <canvas #canvas id="canvas" style="display:none"></canvas>
 </div>
-@if (loading) {
+@if (loading()) {
   <div class="p-4 text-muted text-center">
     <div class="lds-ellipsis">
       <div></div>

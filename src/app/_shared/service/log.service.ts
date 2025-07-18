@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -9,12 +9,16 @@ export class LogService {
   constructor() { }
   
 
-  private emitLogSource = new Subject<any>();
+  // private emitLogSource = new Subject<any>();
+  // private emitLogSource = signal<any>(null);
 
-  logEmitted$ = this.emitLogSource.asObservable();
+  // logEmitted$ = this.emitLogSource.asObservable();
+  logEmitted$ = signal<any>(null);
 
   log(any) {
-    this.emitLogSource.next(any);
+    queueMicrotask(() => {
+    this.logEmitted$.set(any);
+    });
   }
 
 

@@ -76,3 +76,73 @@
  }
 // ::ng-deep .
 // .cm-disabled{ pointer-events: none !important; opacity: 0.5;}
+
+::ng-deep {
+    .cm-tag-x-if,.cm-tag-x-else-if,.cm-tag-x-else,.cm-tag-x-foreach,.cm-tag-x-for{
+        // background-color: #e2c3ff61 !important;
+        font-weight: 500;
+        padding: 0px 4px;
+        border-radius: 4px;
+        font-style: italic;
+    }
+    .cm-attr-x-if,.cm-attr-x-foreach,.cm-attr-x-for{
+        // background-color: #91dcff61 !important;
+        font-weight: 500;
+        padding: 0px 4px;
+        border-radius: 4px;
+        font-style: italic;
+    }
+    .cm-var-x{
+        background-color: #91dcff61 !important;
+        padding: 0px 4px;
+        border-radius: 4px;
+    }
+    .cm-reka-key,.cm-reka-key *{
+        color:purple !important;
+        font-weight: bold !important;
+        font-style: normal !important;
+    }
+    .cm-tag-x-markdown{
+        // background-color: #97ffb361 !important;
+        font-weight: bold;
+        padding: 0px 4px;
+        border-radius: 4px;
+        font-style: italic;
+    }
+    // Add to your SCSS file
+    .cm-js-expression {
+        background-color: rgba(79, 195, 247, 0.1);
+        border-radius: 2px;
+    }
+    
+    .cm-js-expression .cm-variable {
+        color: #346698;
+    }
+    
+    .cm-js-expression .cm-string {
+        color: #00850f;
+    }
+    
+    .cm-js-expression .cm-number {
+        color: #0073e6;
+    }
+    
+    .cm-js-expression .cm-keyword,
+    .cm-js-expression .cm-default.let,
+    .cm-js-expression .cm-default.var,
+    .cm-js-expression .cm-default.return,
+    .cm-js-expression .cm-default.try,
+    .cm-js-expression .cm-default.catch,
+    .cm-js-expression .cm-default.function,
+    .cm-js-expression .cm-default.const,
+    .cm-js-expression .cm-default.if,
+    .cm-js-expression .cm-default.else,
+    .cm-js-expression .cm-default.for,
+    .cm-js-expression .cm-default.foreach,
+    .cm-js-expression .cm-default.while
+     {
+        color: #002aff;
+        // font-weight: bold;
+    }
+}
+  

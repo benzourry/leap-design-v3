@@ -22,6 +22,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 // // /* IA UNIMAS */
 export const baseApi = 'https://rekapi.unimas.my/ia/api';   // prefer
 export const base = 'https://rekapi.unimas.my/ia'; // prefer
+export const cognaBase = 'https://rekapi.unimas.my/ia'; // prefer
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?ia\.unimas\.my/; //to read the path from url
 export const domainBase = "ia.unimas.my"; // compare url with this to know should it load by path or domain
 export const OAUTH = {

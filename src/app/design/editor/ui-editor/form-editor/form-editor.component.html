@@ -73,6 +73,15 @@
                       }
                     </div>
                   </div>
+                  <div>
+                    @if (curForm?.x?.skipValidate){
+                      <div class="text-danger p-2 small">
+                        <strong>Caution</strong>: Server-side validation is disabled. To enable, change the setting in Edit Form &gt; Options
+                        &gt;
+                        Uncheck 'Disable server-side entry...'
+                      </div>
+                    }
+                  </div>
                   <div class="p-2">
                     @if (curForm.prev) {
                       <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
@@ -1329,7 +1338,7 @@
                   </div>
                 }
               }
-              @if (['tabs','accordions','pills'].indexOf(curForm.nav)>-1) {
+              @if (['tabs','accordions','pills','underline'].indexOf(curForm.nav)>-1) {
                 <div class="form-group mt-3 mb-3">
                   <label class="form-label">Parent (Tab/Accordion)</label>
                   <select class="form-select" name="parent"
@@ -1490,7 +1499,7 @@
                       <span class="input-group-text">
                         {{f}}
                       </span>
-                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                      <select class="form-select form-select-sm" name="facet-{{f}}"
                         [(ngModel)]="editTabData.x.facet[f]">
                         <option class="text-muted" [ngValue]="undefined">Select view mode</option>
                         @for (g of facetTabMode; track $index) {

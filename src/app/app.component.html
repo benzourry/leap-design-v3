@@ -1,9 +1,9 @@
-@if (updateAvailable) {
+@if (updateAvailable()) {
   <div class="print-hide" style="background:red;padding:1em; color: white; font-size: .9em" (click)="reload()">
-    Update available! Click this message to update ({{this.updateInfo.current?.hash}} &rsaquo; {{this.updateInfo.available?.hash}})
+    Update available! Click this message to update ({{this.updateInfo().current?.hash}} &rsaquo; {{this.updateInfo().available?.hash}})
   </div>
 }
-@if (offline) {
+@if (offline()) {
   <div class="print-hide" style="background:red;padding:1em; color: white; font-size: .9em">
     You are currently offline. Data might be outdated and some of the feature will be disabled.
   </div>
@@ -13,28 +13,28 @@
   <app-toasts aria-live="polite" aria-atomic="true"></app-toasts>
 }
 <!--FOR DEVELOPEMT, CUSTOM LOG SERVICE-->
-@if (showConsole) {
+@if (showConsole()) {
   <div class="card card-sm card-clean m-2"  style="position:fixed; bottom:0; right:0; max-width:500px;z-index:9002">
     <div class="card-header p-2 px-2 bg-danger text-white pointer">Console
-      <button type="button" class="btn btn-danger btn-xs border-0 float-end"  (click)="showConsole=!showConsole">
+      <button type="button" class="btn btn-danger btn-xs border-0 float-end"  (click)="showConsole.set(!showConsole())">
           <fa-icon [icon]="['fas','compress']" [fixedWidth]="true"></fa-icon>
       </button>
-      <button type="button" class="btn btn-danger btn-xs border-0 float-end" (click)="logs.clear()">
+      <button type="button" class="btn btn-danger btn-xs border-0 float-end" (click)="clearLogs()">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
       </button>
     </div>
-    @if (showConsole) {
+    @if (showConsole()) {
       <div class="card-body p-2" style="max-height:400px;overflow: auto; font-size: .8em;">
-        @for (log of logs; track $index; let $i = $index) {
+        @for (log of logs(); track $index; let $i = $index) {
           <div>{{$i}}:{{log}}</div>
         }
       </div>
     }
   </div>
 }
-@if (!showConsole) {
+@if (!showConsole()) {
   <button type="button" class="btn btn-danger btn-round btn-sm border-0 m-2" title="Show console" style="position:fixed; bottom:0; right:0;z-index:9002"
-    (click)="showConsole=!showConsole" [disabled]="logs.size==0">
+    (click)="showConsole.set(!showConsole())" [disabled]="logs().size==0">
     <fa-icon [icon]="['fas','expand']" [fixedWidth]="true"></fa-icon>
   </button>
 }

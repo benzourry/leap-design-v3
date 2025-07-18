@@ -13,10 +13,10 @@
 <div class="custom-file" [class.disabled]="field().readOnly">
     <label class="has-float-label" [class.extracting]="extractLoading()">
         <!-- <input type="file" /> -->
-        @if (!valueText) {
-            <div class="form-control nobreak cursor-pointer extracting" (click)="isUserSpeaking?stopRecording():startRecording()" [class.is-invalid]="formField?.invalid">
+        @if (!valueText()) {
+            <div class="form-control nobreak cursor-pointer extracting" (click)="isUserSpeaking()?stopRecording():startRecording()" [class.is-invalid]="formField?.invalid">
                 <div class="">
-                    @if(isUserSpeaking){
+                    @if(isUserSpeaking()){
                         <fa-icon [icon]="['fas','square']" [fixedWidth]="true"></fa-icon>
                         <span class="blink_me"> Listening...</span>
                     }@else {
@@ -31,7 +31,7 @@
                 <div ngbDropdown class="d-inline-block">
                     <div type="button" class="p-0 me-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Choose language" id="chooseLang"
                       ngbDropdownToggle>
-                      <strong>{{lang}}</strong>
+                      <strong>{{lang()}}</strong>
                     </div>
                     <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
                         @for(l of ['en-US','ms-MY','zh-CN']; track $index){
@@ -46,11 +46,11 @@
         }@else{
             <div class="form-control" style="background: white;padding-right:30px;height:auto;">
                 <div class="">
-                    {{valueText}}
+                    {{valueText()}}
                 </div>
             </div>
             <div style="position:absolute; top:5px; right:5px;">
-                @if(!isUserSpeaking){
+                @if(!isUserSpeaking()){
                     <button class="btn btn-sm" type="button" title="Start recording" (click)="startRecording()">
                         <fa-icon class="text-danger" [icon]="['fas','circle']"></fa-icon>
                     </button>

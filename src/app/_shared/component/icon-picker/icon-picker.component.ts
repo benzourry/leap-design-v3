@@ -1,10 +1,11 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FilterPipe } from '../../pipe/filter.pipe';
 
 @Component({
     selector: 'app-icon-picker',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './icon-picker.component.html',
     styleUrls: ['./icon-picker.component.scss'],
     imports: [FaIconComponent, FormsModule, FilterPipe]
@@ -139,23 +140,12 @@ export class IconPickerComponent {
     { key: "far:clock", value: ["far", "clock"]},
   ];
 
-
-  // @Input()
-  // model: string;
   model= model<string>();
 
-  // @Input()
-  // showNone: boolean;
   showNone=input<boolean>();
-
-  // Output prop name must be Input prop name + 'Change'
-  // Use in your component to write an updated value back out to the parent
-  // @Output()
-  // modelChange = new EventEmitter<string>();
 
   public change(model){
     this.model.set(model);
-    // this.modelChange.emit(model);
   }
 
 }

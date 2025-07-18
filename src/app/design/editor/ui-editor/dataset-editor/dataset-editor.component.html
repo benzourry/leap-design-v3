@@ -115,7 +115,13 @@
                               <div style="font-size: 12px;">
                                 {{cleanText(form[field.root]?.title)}}
                               </div>
-                              <span>{{field.label}}</span>
+                              <div>{{field.label}}</div>
+                              @if (field.pre) {
+                                <div class="mt-2"
+                                  class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
+                                  style="font-weight: bold;font-size:0.6em"
+                                [title]="field.pre">PRE</div>
+                              }
                             </div>
                             <div class="element-edit text-info position-absolute around-0">
                               <div class="d-flex flex-column">
@@ -294,6 +300,7 @@
               @if (qFilter) {
                 <div>
                   <h6>Filters Condition Structure</h6>
+                  @if (isArray(qFilter)){
                   <div class="my-2 ms-2">
                     <div class="cond-badge" style="float:left">
                       <div
@@ -346,6 +353,9 @@
                       }
                     }
                   </ng-template>
+                }@else {
+                  <span class="text-danger">Invalid query filter</span>
+                }
                 </div>
               }
               @if (!isEmptyObject(curDataset?.presetFilters)) {
@@ -483,6 +493,14 @@
                     Public Endpoint not available. To enable, change the setting in Edit Dataset &gt; Options
                     &gt;
                     Public endpoint
+                  </div>
+                }
+
+                @if (curDataset?.x?.skipMask){
+                  <div class="text-danger mt-2 blink_me">
+                    Column masking is disabled and could expose sensitive data. To enable, change in Edit Dataset &gt; Options
+                    &gt;
+                    Uncheck 'Disable field mask...'
                   </div>
                 }
               </div>

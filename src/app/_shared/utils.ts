@@ -41,10 +41,19 @@ const multiReplace = (text: string, map: Record<string, string>): string => {
 const tag2sym = { table: 'table_', tr: 'tr_', td: 'td_', th: 'th_', tbody: 'tbody_', thead: 'thead_', src:'src_' };
 const sym2tag = { table_: 'table', tr_: 'tr', td_: 'td', th_: 'th', tbody_: 'tbody', thead_: 'thead', src_:'src' };
 
-export function compileTpl(templateText: string, data: any): string {
+export function compileTpl(templateText: string, data: any, scopeId: string): string {
   if (!templateText) return "";
   const tplHash = hashCode(templateText);
   let code = tplCache[tplHash];
+
+  // Put variables in global if there is onclick handler
+  // ** New experimental
+  const hasClick = templateText.includes('onclick="');
+  if (hasClick) {
+    (window as any)[`_data_${scopeId}`] = data.$;
+    (window as any)[`_entry_${scopeId}`] = data.$_;
+    (window as any)[`_prev_${scopeId}`] = data.$prev$;
+  }
 
   if (!code) {
     let fullTpl = multiReplace(templateText, tag2sym);
@@ -53,15 +62,41 @@ export function compileTpl(templateText: string, data: any): string {
     ['x-foreach', 'x-for', 'x-if'].forEach(attr => {
       doc.querySelectorAll(`[${attr}]`).forEach(e => {
         const val = e.getAttribute(attr);
+        // ① clone the node so we can edit it without touching doc
+        const clone = e.cloneNode(true) as HTMLElement;
+        // ② remove the triggering attribute from the *inner* element
+        clone.removeAttribute(attr);
+
         fullTpl = fullTpl.replace(e.outerHTML,
-          `<!--##--${attr} $="${val}"!--##-->${e.outerHTML}<!--##--/${attr}!--##-->`);
+          `<!--##--${attr} $="${val}"!--##-->${clone.outerHTML}<!--##--/${attr}!--##-->`);
       });
     });
+
     templateText = multiReplace(fullTpl.replace(/!--##--/gi, ""), sym2tag);
+
+    // using with() to prevent data leaked to the global scope. However, popobj must resides in
+    // global to enable onclick handler (only work globally) to work.
     code = (
-      "Object.assign(this, data);var output=" +
+      "return (()=>{" +      
+      "with(data){" +
+      // "Object.assign(this, data);" + 
+      "var output=" +
       JSON.stringify(templateText)
         //.replace(/\\n/g, "\n")
+        .replace(/\$conf\$/g, `_conf`)
+        .replace(/\$this\$/g, `_this_${scopeId}`)
+        .replace(/\$popup/g, `_popup_${scopeId}`)
+
+        // experimental replace onclick with regex
+        .replace(/onclick=\\\"(.+?)\\\"/g,(match, onclickCode) => {
+            const globalOnclick = onclickCode
+              .replace(/\$_\./g, `_entry_${scopeId}?.`)
+              .replace(/\$prev\$\./g, `_prev_${scopeId}?.`)
+              .replace(/\$\./g, `_data_${scopeId}?.`);            
+            return `onclick=\\\"${globalOnclick}\\\"`; // need to have \\\ to escape the "
+          }
+        )
+
         .replace(/<!--(.+?)-->/g, '')
         .replace(/\{\{(.+?)\}\}/g, r$val)
         .replace(/\[#(.+?)#\]/gm, r$script)
@@ -77,25 +112,26 @@ export function compileTpl(templateText: string, data: any): string {
         .replace(/<x-foreach\s*\$\=\\\"(.+?)\\\"\s*>/ig, r$foreach)
         .replace(/<\/x-foreach>/ig, '";})\noutput+="')
         // .replace(/<\?(.+?)\?>/g, '";$1\noutput+="')
-        .replace(/<\?(.+?)\?>/g, r$script)
-      + ";return output;"
+        // .replace(/<\?(.+?)\?>/g, r$script)
+      + ";return output;}"
+      + "})()"
     )//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
     tplCache[tplHash] = code;
   }
 
-  // console.log(">>>>>>>",code);
-
   if (templateText && data) {
     data.dayjs = dayjs;
+
+    const fn = new Function("data", "get", "formatNumber", code);
+
     let result = "";
     try {
-      result = new Function("data", "get", "formatNumber", code)(data, get, formatNumber);
+      result = fn.call(this, data, get, formatNumber);
       result = result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
     } catch (err) {
       throw err;
     }
     return result;
-
   }
   return templateText;
 }
@@ -106,13 +142,95 @@ function r$markdown(match: string, p1: string): string {
          .replace('<blockquote>', '<blockquote class="blockquote">');
 }
 
+
+
+
+// const tplCache: Record<string, Function> = {};
+// export function compileTpl(templateText: string, data: any): string {
+//   if (!templateText) return "";
+//   const tplHash = hashCode(templateText);
+//   let compiledFn  = tplCache[tplHash]; 
+
+//   if (!compiledFn) {
+//     let fullTpl = multiReplace(templateText, tag2sym);
+//     const doc = document.createElement("x-template");
+//     doc.innerHTML = fullTpl;
+//     ['x-foreach', 'x-for', 'x-if'].forEach(attr => {
+//       doc.querySelectorAll(`[${attr}]`).forEach(e => {
+//         const val = e.getAttribute(attr);
+//         fullTpl = fullTpl.replace(e.outerHTML,
+//           `<!--##--${attr} $="${val}"!--##-->${e.outerHTML}<!--##--/${attr}!--##-->`);
+//       });
+//     });
+//     templateText = multiReplace(fullTpl.replace(/!--##--/gi, ""), sym2tag);
+
+//     const body = (
+//       JSON.stringify(templateText)
+//         //.replace(/\\n/g, "\n")
+//         .replace(/<!--(.+?)-->/g, '')
+//         .replace(/\{\{(.+?)\}\}/g, r$val)
+//         .replace(/\[#(.+?)#\]/gm, r$script)
+//         // .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, '";if($1){\noutput+="')
+//         .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+//         .replace(/<x-else\s*\/?\s*>/ig, '";}else{\noutput+="')
+//         // .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, '";}else if($1){\noutput+="')
+//         .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+//         .replace(/<\/x-if>/ig, '";}\noutput+="')
+//         // .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
+//         .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
+//         .replace(/<\/x-for>/ig, '";}\noutput+="')
+//         .replace(/<x-foreach\s*\$\=\\\"(.+?)\\\"\s*>/ig, r$foreach)
+//         .replace(/<\/x-foreach>/ig, '";})\noutput+="')
+//         // .replace(/<\?(.+?)\?>/g, '";$1\noutput+="')
+//         // .replace(/<\?(.+?)\?>/g, r$script)
+//     )
+
+//     const functionCode = `
+//       const outputFn = (ctx) => {
+//         with (ctx) {  
+//           let output = ${body};
+//           return output;
+//         }
+//       };
+//       return outputFn(ctx);
+//     `;
+    
+//     compiledFn = new Function("ctx", "get", "formatNumber", functionCode);
+//     tplCache[tplHash] = compiledFn;
+//   }
+
+//   // console.log(">>>>>>>",code);
+
+//   if (templateText && data) {
+//     console.log("data", data)
+//     data.dayjs = dayjs;
+//     // var context = data;
+//     // Object.freeze(context); 
+//     let result = "";
+//     try {
+//       result = compiledFn(data, get, formatNumber);
+//       result = result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
+//     } catch (err) {
+//       throw err;
+//     }
+//     return result;
+
+//   }
+//   return templateText;
+// }
+
 async function createMermaidSvg(id: string, text: string): Promise<string> {
+  // console.log("Rendered Mermaid:", id);
   if (await mermaid.parse(text, { suppressErrors: true })) {
     const elem = document.createElement("div");
     document.body.appendChild(elem);
     elem.id = `${id}_svg`;
     const { svg } = await mermaid.render(elem.id, text);
     return svg;
+    // const elem = document.createElement('div');
+    // elem.id = `${id}_svg`;
+    // const { svg } = await mermaid.render(elem.id, text, undefined, elem);
+    // return svg;
   }
   console.error("Mermaid syntax error");
   return `<div class="text-danger">Invalid <strong>Mermaid</strong> syntax</div>`;
@@ -262,70 +380,70 @@ export const resizeImageBlob = (settings: IResizeImageOptions) => {
   })
 };
 
-// export function loadScript(src, callback, error) {
-//   return new Promise<void>(function (resolve, reject) {
-//     if (src.includes('.mjs')) {
-//       import(/* @vite-ignore */ src)
-//         .then((module) => {
-//           callback && callback(module);
-//           resolve();
-//         })
-//         .catch((err) => {
-//           error && error(err);
-//           reject(err);
-//         })
-//     } else {
-//       const s = document.createElement('script');
-//       s.type = 'text/javascript';
-//       s.src = src;
-//       s.async = true;
-//       s.onerror = function (err) {
-//         error && error(err);
-//         reject(err);
-//       };
-//       s.onload = function () {
-//         callback && callback();
-//         resolve();
-//       };
-//       const t = document.getElementsByTagName('script')[0];
-//       t.parentElement.insertBefore(s, t);
-//     }
-//   });
-// }
-
-export async function loadScript(
-  src: string,
-  callback?: (mod?: any) => void,
-  error?: (err: any) => void
-): Promise<void> {
-  try {
-    // Prevent double-loading
-    if (document.querySelector(`script[src="${src}"]`)) {
-      callback?.();
-      return;
-    }
-
-    if (src.endsWith('.mjs')) {
-      const mod = await import(/* @vite-ignore */ src);
-      callback?.(mod);
+export function loadScript(src, callback, error) {
+  return new Promise<void>(function (resolve, reject) {
+    if (src.includes('.mjs')) {
+      import(/* @vite-ignore */ src)
+        .then((module) => {
+          callback && callback(module);
+          resolve();
+        })
+        .catch((err) => {
+          error && error(err);
+          reject(err);
+        })
     } else {
-      await new Promise<void>((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = (err) => reject(err);
-
-        const firstScript = document.getElementsByTagName('script')[0];
-        firstScript.parentNode?.insertBefore(script, firstScript);
-      });
-      callback?.();
+      const s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = src;
+      s.async = true;
+      s.onerror = function (err) {
+        error && error(err);
+        reject(err);
+      };
+      s.onload = function () {
+        callback && callback();
+        resolve();
+      };
+      const t = document.getElementsByTagName('script')[0];
+      t.parentElement.insertBefore(s, t);
     }
-  } catch (err) {
-    error?.(err);
-    throw err;
-  }
+  });
 }
+
+// export async function loadScript(
+//   src: string,
+//   callback?: (mod?: any) => void,
+//   error?: (err: any) => void
+// ): Promise<void> {
+//   try {
+//     // Prevent double-loading
+//     if (document.querySelector(`script[src="${src}"]`)) {
+//       callback?.();
+//       return;
+//     }
+
+//     if (src.endsWith('.mjs')) {
+//       const mod = await import(/* @vite-ignore */ src);
+//       callback?.(mod);
+//     } else {
+//       await new Promise<void>((resolve, reject) => {
+//         const script = document.createElement('script');
+//         script.src = src;
+//         script.async = true;
+//         script.onload = () => resolve();
+//         script.onerror = (err) => reject(err);
+
+//         const firstScript = document.getElementsByTagName('script')[0];
+//         firstScript.parentNode?.insertBefore(script, firstScript);
+//       });
+//       callback?.();
+//     }
+//   } catch (err) {
+//     error?.(err);
+//     throw err;
+//   }
+// }
 
 export function deepEqual(a: any, b: any): boolean {
   if (a === b) return true;
@@ -845,3 +963,43 @@ export function getFileExt(filename){
 //     throw error; // Rethrow the error for the caller to handle
 //   }
 // }
+
+export function convertQueryParams(queryParams: Record<string, string>): Record<string, unknown> {
+  const convertedParams: Record<string, unknown> = {};
+
+  for (const key in queryParams) {
+    const value = queryParams[key];
+
+    if (!isNaN(Number(value))) {
+      // Convert numeric strings to numbers
+      convertedParams[key] = Number(value);
+    } else if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
+      // Convert 'true'/'false' strings to booleans
+      convertedParams[key] = value.toLowerCase() === 'true';
+    } else {
+      // Keep the value as a string for other cases
+      convertedParams[key] = value;
+    }
+  }
+
+  return convertedParams;
+}
+
+export function createProxy (prop, fn?) {
+  return new Proxy(prop, {
+    set(target, prop, value) {
+      setTimeout(() =>  fn?.(prop, value), 0);
+      target[prop as keyof typeof target] = value;
+      return true;
+    },
+    get(target, prop, receiver) {
+      const orig = target[prop as keyof typeof target];
+      if (typeof orig === 'function') {
+        return function (...args: unknown[]) {
+          return orig.apply(this, args);
+        };
+      }
+      return orig;
+    }
+  });
+}

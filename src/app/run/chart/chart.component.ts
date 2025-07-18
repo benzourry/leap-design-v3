@@ -1,23 +1,12 @@
-import { Component, OnInit, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { NgbDateAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 // import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
-// import { EntryService } from '../../service/entry.service';
-// import { LookupService } from '../../service/lookup.service';
-// import { RunService } from '../../service/run.service';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { ServerDate, deepMerge, tblToExcel } from '../../_shared/utils';
 // import { UserEntryFilterComponent } from '../../_shared/component/user-entry-filter/user-entry-filter.component';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
-// import * as echarts from 'echarts/core';
-// import { BarChart, LineChart, PieChart, GaugeChart } from 'echarts/charts';
-// import {
-//   TooltipComponent,
-//   TransformComponent
-// } from 'echarts/components';
-// import { LabelLayout, UniversalTransition } from 'echarts/features';
-// import { CanvasRenderer } from 'echarts/renderers';
 import { JsonPipe, NgClass, NgStyle, SlicePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-entry-filter.component';
@@ -25,22 +14,11 @@ import { EntryService } from '../_service/entry.service';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 
-// echarts.use([
-//   BarChart,
-//   LineChart,
-//   PieChart,
-//   GaugeChart,
-//   TooltipComponent,
-//   TransformComponent,
-//   LabelLayout,
-//   UniversalTransition,
-//   CanvasRenderer
-// ]);
-
 
 @Component({
     selector: 'app-chart',
     templateUrl: './chart.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./chart.component.scss', '../../../assets/css/flip.css'],
     providers: [
         { provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
@@ -51,36 +29,29 @@ import { RunService } from '../_service/run.service';
 })
 export class ChartComponent implements OnInit {
 
-  filters = input<any>({})
+
+  private entryService = inject(EntryService);
+  private lookupService = inject(LookupService);
+  private runService = inject(RunService);
+  private modalService = inject(NgbModal);
+
 
   chart = input<any>();
-
   maxState = input<any>();
-
-  onEnterMaxState = output<number>()
-
-  onExitMaxState = output<boolean>()
-
-  chartOption: any = {};
-
-  chartDataset: any;
-
-  flipped: boolean;
-
-  app = input<any>();
-
-  user = input<any>();
-
-  $param$ = input<any>({});
-
-  $baseUrl$ = input<string>();
-
-  form: any = {};
-  // form = input.required<any>({});
+  onEnterMaxState = output<number>();
+  onExitMaxState = output<boolean>();
+  chartOption = signal<any>({});
+  chartDataset = signal<any>(null);
+  flipped = signal<boolean>(false);
+  app = computed<any>(() => this.runService.$app());
+  user = computed<any>(() => this.runService.$user());
+  param = input<any>({});
+  baseUrl = computed<any>(() => this.runService.$baseUrl());
+  form = signal<any>({});  
+  _this = {};
 
   base: string = base;
   baseApi: string = baseApi;
-
 
   typeMapping = {
     pie: "pie",
@@ -95,41 +66,42 @@ export class ChartComponent implements OnInit {
     radar: "radar"
   }
 
-  constructor(private entryService: EntryService, public runService: RunService,
-    private lookupService: LookupService,
-    private modalService: NgbModal) {
-  }
+  constructor() {}
 
   ngOnInit() {
     if (this.chart().formId) {
       this.runService.getRunForm(this.chart().formId)
-        .subscribe(res => {
-          this.form['data'] = res;
-          this.form['prev'] = res.prev;
-          // this.getLookupList();
-          if (res.prev) {
-          } else {
-            this.form['prev'] = null;
-          }
-          this.getLookupInFilter();
-        })
+        .subscribe({
+          next: (res) => {
+            this.form.set({
+              data: res,
+              prev: res.prev || null
+            });
+            this.getLookupInFilter();
+          },
+          error: (err) => {
+            console.error(`Error fetching form data: ${err}`);
+          },
+      })
     }
     this.loadChartData();
   }
 
-
   loadChartData() {
-    this.entryService.getChartData(this.chart().id, { filters: JSON.stringify(this.filtersData), email: this.user().email })
+    const params = { filters: JSON.stringify(this.filtersData), email: this.user()?.email };
+    
+    this.entryService.getChartData(this.chart().id, params)
       .subscribe(res => {
-        this.chartDataset = res;
-        let rv = this.chartDataset.data;
+        this.chartDataset.set(res);
+        let rv = res.data;
         if (this.chart().f) {
           try {
-            rv = this._eval(this.chart(), this.chartDataset.data, this.chart().f);
+            rv = this._eval(this.chart(), res.data, this.chart().f);
           } catch (e) { console.log(`{chart-${this.chart().title}-transformFn}-${e}`) }
-          this.chartDataset.data = rv;
+          // this.chartDataset.data = rv;
+          this.chartDataset.set({...res, data: rv});
         }
-        this.plotChart(this.chart(), this.chartDataset)
+        this.plotChart(this.chart(), this.chartDataset())
       })
   }
 
@@ -142,8 +114,8 @@ export class ChartComponent implements OnInit {
 
   plotChart(c, cd) {
     // this.chartDataset[c.id] = cd;
-    this.flipped = (c.x && c.x.flipped);
-    this.chartOption = {
+    this.flipped.set(c.x && c.x.flipped);
+    let ecOption:any = {
       tooltip: c.x && c.x.tooltip ? { trigger: 'axis', showContent: true, axisPointer: { type: 'shadow' } } : {},
       legend: {
         type: 'scroll',
@@ -157,26 +129,13 @@ export class ChartComponent implements OnInit {
       series: [
         {
           type: this.typeMapping[c.type],
-          // avoidLabelOverlap: false,
-          label: {
-            // position: 'inside',
-            // alignTo: 'none',
-            bleedMargin: 0,
-            // normal: { http://localhost:4200/#/run/1115/form/3092/edit?entryId=169507
-              show: true
-            // }
-          },
-          // labelLine: {
-          //   normal: {
-          //     show: true
-          //   }
-          // }
+          label: { bleedMargin: 0, show: true }
         }
       ]
     };
     if (['line', 'bar', 'area'].indexOf(c.type) > -1) {
-      this.chartOption.xAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
-      this.chartOption.yAxis = {};
+      ecOption.xAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
+      ecOption.yAxis = {};
 
       if (c.series) {
         var series = []
@@ -195,12 +154,12 @@ export class ChartComponent implements OnInit {
             }
           })
         }
-        this.chartOption.series = series;
+        ecOption.series = series;
       }
     }
     if (['hline', 'hbar'].indexOf(c.type) > -1) {
-      this.chartOption.xAxis = {};
-      this.chartOption.yAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
+      ecOption.xAxis = {};
+      ecOption.yAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
 
       if (c.series) {
         var series = [];
@@ -219,52 +178,44 @@ export class ChartComponent implements OnInit {
             }
           })
         }
-        this.chartOption.series = series;
+        ecOption.series = series;
       }
     }
-    // if (c.type == 'pie') {
-    //   this.chartOption[c.id].series[0].label = {
-    //     position: 'inner',
-    //     formatter: function (params) {
-    //       return params.value + '%\n'
-    //     }
-
-    //   }
-    // }
+    
     if (c.type == 'rose') {
-      this.chartOption.series[0].radius = [20, 110];
-      this.chartOption.series[0].roseType = 'radius';
-      this.chartOption.series[0].label.formatter = function(params){
+      ecOption.series[0].radius = [20, 110];
+      ecOption.series[0].roseType = 'radius';
+      ecOption.series[0].label.formatter = function(params){
           return `${params.value.name}: ${params.value.value} (${params.percent}%)`
       };
     }
     if (['pie', 'gauge'].includes(c.type)) {
-      this.chartOption.series[0].label.formatter = function(params){
+      ecOption.series[0].label.formatter = function(params){
         return `${params.value.name}: ${params.value.value} (${params.percent}%)`
       };
     }
     if (c.type == 'doughnut') {
-      this.chartOption.series[0].radius = ['50%', '70%'];
+      ecOption.series[0].radius = ['50%', '70%'];
     }
 
     if (c.type == 'area') {
       // var series = []
       for (var i = 1; i < cd.data[0].length; i++) {
-        this.chartOption.series[i - 1].areaStyle = {};
+        ecOption.series[i - 1].areaStyle = {};
         // series.push({ type: this.typeMapping[c.type], label: { normal: { show: true, position: 'top' } } })
       }
-      // this.chartOption[c.id].series = series;
-      // this.chartOption[c.id].series[0].areaStyle = {};
+      // this.ecOption[c.id].series = series;
+      // this.ecOption[c.id].series[0].areaStyle = {};
     }
     if (c.type == 'gauge') {
-      this.chartOption.series[0].data = this.chartOption.dataset.source;
-      this.chartOption.series[0].title = { show: false };
-      // this.chartOption[c.id].series[0].max = 280;
+      ecOption.series[0].data = ecOption.dataset.source;
+      ecOption.series[0].title = { show: false };
+      // this.ecOption[c.id].series[0].max = 280;
     }
     if (c.type == 'radar') {
 
-      this.chartOption.series[0].title = { show: false };
-      this.chartOption.series[0].areaStyle = {opacity:0.3};
+      ecOption.series[0].title = { show: false };
+      ecOption.series[0].areaStyle = {opacity:0.3};
 
       // radar require special data format/structure
       // create data:[] for radar, refer https://echarts.apache.org/examples/en/editor.html?c=radar
@@ -308,15 +259,17 @@ export class ChartComponent implements OnInit {
         rdata.push(obj);
       }
 
-      this.chartOption.radar = { indicator: indicator.map(i=>{i.max=overallMax;return i}) };
-      this.chartOption.series[0].data = rdata;
+      ecOption.radar = { indicator: indicator.map(i=>{i.max=overallMax;return i}) };
+      ecOption.series[0].data = rdata;
     }
     if (c.x && c.x.stacked) {
 
     }
 
     if (c.x?.ecOpt) {
-      this.chartOption = deepMerge(this.chartOption, this._eval(c, cd.data, c.x?.ecOpt));
+      this.chartOption.set(deepMerge(ecOption, this._eval(c, cd.data, c.x?.ecOpt)));
+    } else {
+      this.chartOption.set(ecOption);
     }
   }
 
@@ -327,7 +280,6 @@ export class ChartComponent implements OnInit {
 
   filtersData: any = {};
   filtersCond: string = "AND";
-  // statusFilterForm:any={}; 
   editFilterItems: any;
   editFilter(content, data) {
     this.filtersData = Object.assign({}, data);
@@ -342,9 +294,8 @@ export class ChartComponent implements OnInit {
 
   checkFilter = () => Object.keys(this.filtersData).length === 0 && this.filtersData.constructor === Object
 
-  $this$ = {};
   _eval = (chart, dataset, v) => new Function('$app$', '$chart$', '$dataset$', '$eachValue$', '$eachName$', '$user$', '$conf$', '$this$', '$param$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', `return ${v}`)
-    (this.app(), chart, dataset, (fn) => this.eachValue(chart, dataset, fn), (fn) => this.eachName(chart, dataset, fn), this.user(), this.runService?.appConfig, this.$this$, this.$param$(), this.base, this.$baseUrl$(), this.baseApi, dayjs, ServerDate);
+    (this.app(), chart, dataset, (fn) => this.eachValue(chart, dataset, fn), (fn) => this.eachName(chart, dataset, fn), this.user(), this.runService?.appConfig, this._this, this.param(), this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate);
 
   eachValue = ($chart$, $dataset$, fn) => { // $eachValue$($chart$,$dataset$, function(res){})
     if ($chart$.series) {
@@ -357,7 +308,6 @@ export class ChartComponent implements OnInit {
       return $dataset$.map(val => { val.value = fn(val.value); return val; })
     }
   }
-
   eachName = ($chart$, $dataset$, fn) => {
     if ($chart$.series) {
       $dataset$[0].map(e => fn(e));
@@ -366,7 +316,6 @@ export class ChartComponent implements OnInit {
       return $dataset$.map(val => { val.name = fn(val.name); return val; })
     }
   }
-
 
   lookupIds: any;
   lookupKey = {};
@@ -392,11 +341,10 @@ export class ChartComponent implements OnInit {
   }
 
   getLookup = (code, dsInit?: any) => {
-
     var param = null;
     if (code) {
       if (this.lookupKey[code].type == 'modelPicker') {
-        param = { email: this.user().email }
+        param = { email: this.user()?.email }
         this.entryService.getListByDatasetData(this.lookupKey[code].ds, dsInit || param)
           .subscribe(res => {
             this.lookup[code] = res;

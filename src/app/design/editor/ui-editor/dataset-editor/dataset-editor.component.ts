@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 // import { LookupService } from '../../../../service/lookup.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -26,36 +26,51 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { RunService } from '../../../../run/_service/run.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
     selector: 'app-dataset-editor',
     templateUrl: './dataset-editor.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['../../../../../assets/css/element-action.css',
         './dataset-editor.component.scss'],
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, KeyValuePipe]
 })
 export class DatasetEditorComponent implements OnInit {
-    constructor(private formService: FormService,
-        private datasetService: DatasetService,
-        private lookupService: LookupService,
-        private mailerService: MailerService,
-        private modalService: NgbModal, private userService: UserService,
-        private route: ActivatedRoute, private appService: AppService,
-        private entryService: EntryService,
-        private utilityService: UtilityService,
-        private groupService: GroupService,
-        private toastService: ToastService,
-        private commService: CommService,
-        private screenService: ScreenService,
-        private runService: RunService,
-        private location: PlatformLocation) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+
+    private formService = inject(FormService);
+    private datasetService = inject(DatasetService);
+    private lookupService = inject(LookupService);
+    private mailerService = inject(MailerService);
+    private modalService = inject(NgbModal);
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private appService = inject(AppService);
+    private entryService = inject(EntryService);
+    private utilityService = inject(UtilityService);
+    private groupService = inject(GroupService);
+    private toastService = inject(ToastService);
+    private commService = inject(CommService);
+    private screenService = inject(ScreenService);
+    private runService = inject(RunService);
+    private location = inject(PlatformLocation);
+    private cdr = inject(ChangeDetectorRef);
+    
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-        commService.changeEmitted$.subscribe(data => {
+        this.commService.changeEmitted$.subscribe(data => {
             if (data.value == 'import') {
                 this.getDatasetList(1);
             }
         });
+
+        // effect(() => {
+        //     let data = commService.changeEmitted();
+        //     if (data?.value == 'import') {
+        //         this.getDatasetList(1);
+        //     }
+        // })
     }
 
     // curModel: any;
@@ -76,6 +91,8 @@ export class DatasetEditorComponent implements OnInit {
     filterField: string = "";
 
     btnColors = ['btn-secondary', 'btn-light', 'btn-primary', 'btn-success', 'btn-danger'];
+
+    isArray = Array.isArray;
 
     ngOnInit() {
 
@@ -100,6 +117,7 @@ export class DatasetEditorComponent implements OnInit {
                                 this.getLookupList();
                                 this.getAccessList();
                                 this.getScreenList(appId);
+                                this.cdr.detectChanges(); // <--- Add here
                             });
                     }
 
@@ -137,30 +155,31 @@ export class DatasetEditorComponent implements OnInit {
         this.dsError = null;
         this.curDatasetId = datasetId;
         this.datasetLoading = true;
-        // this.loadData = true;
         this.datasetService.getDataset(datasetId)
-            .subscribe({
-                next: (res) => {
-                    this.form = {};
-                    this.curDataset = res;
-                    this.editDatasetData = res;
-                    this.datasetLoading = false;
-                    if (this.curDataset.form) {
-                        this.loadForm(this.curDataset.form.id, this.form, res);
-                        // this.getLookupIdList(this.curDataset.form.id);
-                        // this.loadData = false;
-                    }
-                    if (this.curDataset?.x?.qFilter){
-                        this.qFilter = JSON.parse(this.curDataset?.x?.qFilter);
-                    }else{
-                        delete this.qFilter;
-                    }
-                },
-                error: (err) => {
-                    this.datasetLoading = false;
-                    this.dsError = err.error;
+        .subscribe({
+            next: (res) => {
+                this.form = {};
+                this.curDataset = res;
+                this.editDatasetData = res;
+                this.datasetLoading = false;
+                if (this.curDataset.form) {
+                    this.loadForm(this.curDataset.form.id, this.form, res);
+                    // this.getLookupIdList(this.curDataset.form.id);
+                    // this.loadData = false;
                 }
-            })
+                if (this.curDataset?.x?.qFilter){
+                    this.qFilter = JSON.parse(this.curDataset?.x?.qFilter);
+                }else{
+                    delete this.qFilter;
+                }
+                this.cdr.detectChanges(); // <--- Add here
+            },
+            error: (err) => {
+                this.datasetLoading = false;
+                this.dsError = err.error;
+                this.cdr.detectChanges(); // <--- Add here
+            }
+        })
     }
 
 
@@ -169,6 +188,7 @@ export class DatasetEditorComponent implements OnInit {
             .subscribe(res => {
                 this.datasetList = res;
                 this.commService.emitChange({ key: 'dataset', value: res.length });
+                this.cdr.detectChanges(); // <--- Add here
             })
     }
 
@@ -178,6 +198,7 @@ export class DatasetEditorComponent implements OnInit {
             .subscribe(res => {
                 this.screenList = res;
                 // this.commService.emitChange({key:'screen',value:res.length});
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -189,6 +210,7 @@ export class DatasetEditorComponent implements OnInit {
         this.lookupService.getLookupList(params)
             .subscribe(res => {
                 this.lookupList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             })
 
     }
@@ -214,8 +236,10 @@ export class DatasetEditorComponent implements OnInit {
 
                 }
                 this.formLoading = false;
+                this.cdr.detectChanges(); // <--- Add here
             }, err => {
                 this.formLoading = false;
+                this.cdr.detectChanges(); // <--- Add here
             });
 
 
@@ -268,6 +292,7 @@ export class DatasetEditorComponent implements OnInit {
             this.extraAutoCompleteJs.push({ c: 1, type: 'text', label: `(formId:${i.id}) ${i.title}`, apply: "" + i.id + "", detail: i.title });
             this.extraAutoCompleteJs.push({ c: 2, type: 'function', label: `(http-form:${i.id}) ${i.title}`, apply: `$http$(\"${baseApi}/entry/by-params?formId=${i.id}&key=\"+value, res=>{\n\t$this$.entry_${i.id} = res;\n\t#{//more codes}\n})`, detail: i.title });
         });
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     getLoopCodeJs = (section) => "$." + section.code + ".forEach(i=>{\n" + this.getItemsJs(section) + "\n\t${//More codes}\n})";
@@ -293,6 +318,7 @@ export class DatasetEditorComponent implements OnInit {
                 this.accessList = res.content;
                 this.accessListMap={};
                 this.accessList.forEach(a=>this.accessListMap[a.id]=a);
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -301,6 +327,7 @@ export class DatasetEditorComponent implements OnInit {
             this.datasetService.clearData(this.curDatasetId, this.user.email)
                 .subscribe(res => {
                     this.toastService.show("Entry removed: " + res.rows, { classname: 'bg-success text-light' });
+                    this.cdr.detectChanges(); // <--- Add here
                 })
         }
     }
@@ -315,9 +342,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Label saved successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     },
                     error: (err) => {
                         this.toastService.show("Label saving failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     }
                 })
         }
@@ -330,18 +359,20 @@ export class DatasetEditorComponent implements OnInit {
         } else {
             field.label = newLabel;
             this.saveDataset();
+            this.cdr.detectChanges(); // <--- Add here
         }
     }
 
 
     getFormList(appId) {
-        let params = { appId: appId }
+        // let params = { appId: appId }
         // new HttpParams()
         //     .set("appId", this.app.id)
 
-        this.formService.getListBasic(params)
+        this.formService.getListBasic({appId})
             .subscribe(res => {
                 this.formList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -373,6 +404,7 @@ export class DatasetEditorComponent implements OnInit {
                         this.getDataset(res.id);
                         // this.getFormData(this.curForm.id);
                         this.toastService.show("Dataset saved successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     });
             }, res => { });
         // })
@@ -391,9 +423,11 @@ export class DatasetEditorComponent implements OnInit {
                             this.getDatasetList(this.app.id);
                             delete this.curDataset;
                             this.toastService.show("Dataset removed successfully", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges(); // <--- Add here
                         },
                         error: (err) => {
                             this.toastService.show("Dataset removal failed", { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges(); // <--- Add here
                         }
                     })
             }, res => { });
@@ -404,6 +438,7 @@ export class DatasetEditorComponent implements OnInit {
             this.datasetService.removeDatasetItem(ds.id, null)
                 .subscribe(data => {
                     this.getDataset(this.curDataset.id);
+                    this.cdr.detectChanges(); // <--- Add here
                 })
         }
     }
@@ -418,6 +453,7 @@ export class DatasetEditorComponent implements OnInit {
     dropField(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent.items, event.previousIndex, event.currentIndex);
         this.saveDsOrder(parent);
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     curAction:number;
@@ -430,6 +466,7 @@ export class DatasetEditorComponent implements OnInit {
             return val;
         });
         this.saveDataset();
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     dropFilter(event: CdkDragDrop<number[]>, parent) {
@@ -440,6 +477,7 @@ export class DatasetEditorComponent implements OnInit {
                 return val;
             });
         this.saveDataset();
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     dropSubs(event: CdkDragDrop<number[]>, parent) {
@@ -450,6 +488,7 @@ export class DatasetEditorComponent implements OnInit {
                 return val;
             });
         this.saveDataset();
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     removeSub(sub,field, $index){
@@ -459,9 +498,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Sub field removal successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     },
                     error: (err) => {
                         this.toastService.show("Sub field removal failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     }
                 })
         }
@@ -510,11 +551,13 @@ export class DatasetEditorComponent implements OnInit {
     removeFilter($index) {
         this.curDataset.filters.splice($index, 1);
         this.saveDataset();
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     removePreset(key) {
         delete this.curDataset.presetFilters[key];
         this.saveDataset();
+        this.cdr.detectChanges(); // <--- Add here
     }
 
     resyncDataset(dsId){
@@ -522,6 +565,7 @@ export class DatasetEditorComponent implements OnInit {
             this.runService.resyncDataset(this.curDatasetId)
             .subscribe(res=>{
                 this.toastService.show("Dataset successfully resynchronized", { classname: 'bg-success text-light' });
+                this.cdr.detectChanges(); // <--- Add here
             })            
         }
     }
@@ -534,6 +578,7 @@ export class DatasetEditorComponent implements OnInit {
                     this.getDataset(this.curDatasetId);
                 }
                 this.toastService.show("Dataset saved successfully", { classname: 'bg-success text-light' });
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 
@@ -568,6 +613,7 @@ export class DatasetEditorComponent implements OnInit {
         if (value) {
             this.curDataset.presetFilters[c.key] = value;
             this.saveDataset();
+            this.cdr.detectChanges(); // <--- Add here
         }
     }
 
@@ -579,6 +625,7 @@ export class DatasetEditorComponent implements OnInit {
                 delete this.curDataset.presetFilters[c.key]
             }
             this.saveDataset();
+            this.cdr.detectChanges(); // <--- Add here
         }
 
     }
@@ -592,6 +639,7 @@ export class DatasetEditorComponent implements OnInit {
                 this.curDataset.inpop = arr.join(",")
             }
             this.saveDataset();
+            this.cdr.detectChanges(); // <--- Add here
         }
     }
     removeNextAction(f) {
@@ -603,6 +651,7 @@ export class DatasetEditorComponent implements OnInit {
                 this.curDataset.inpop = arr.join(",")
             }
             this.saveDataset();
+            this.cdr.detectChanges(); // <--- Add here
         }
     }
 
@@ -625,9 +674,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Dataset item saved successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     },
                     error: (err) => {
                         this.toastService.show("Dataset item saving failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     }
                 })
 
@@ -645,6 +696,7 @@ export class DatasetEditorComponent implements OnInit {
                     .subscribe(res => {
                         this.getDataset(this.curDataset.id);
                         this.toastService.show("Dataset action saved successfully", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges(); // <--- Add here
                     });
             }, dismiss => { })
     }
@@ -655,6 +707,7 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe(res => {
                     this.getDataset(this.curDataset.id);
                     this.toastService.show("Dataset action removed successfully", { classname: 'bg-success text-light' });
+                    this.cdr.detectChanges(); // <--- Add here
                 });
         }
     }

@@ -1,4 +1,6 @@
-page-title{display:none}
-::ng-deep page-title{display:none}
-::ng-deep html{height: unset;}
-::ng-deep body{height: unset;}
+// Perpindahan style dari assets/page-title.css ke /page-title.scss n 
+// instead of pake page-title, nya pake :host menyebabkan style ya diapply dengan kuat (termasuk display:block)
+page-title{display:none !important}
+::ng-deep page-title{display:none!important}
+::ng-deep html{height: unset!important;}
+::ng-deep body{height: unset!important;}

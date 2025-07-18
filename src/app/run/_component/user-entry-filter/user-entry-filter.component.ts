@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 // import { compileTpl, splitAsList } from '../../utils';
 // import { SafePipe } from '../../pipe/safe.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -10,48 +10,26 @@ import { splitAsList, compileTpl } from '../../../_shared/utils';
 @Component({
     selector: 'app-user-entry-filter',
     templateUrl: './user-entry-filter.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./user-entry-filter.component.scss'],
     imports: [FormsModule, NgbInputDatepicker, NgbTimepicker, NgSelectModule, SafePipe]
 })
 export class UserEntryFilterComponent {
 
-  // @Input()
-  // filtersConfig:any=[];
+
   filtersConfig = input<any[]>([]);
 
-
-  // @Input()
-  // presetFilters:any={};
   presetFilters = model<any>({});
 
-  // @Input()
-  // formHolder:any={};
   formHolder = input<any>({});
 
-  // @Input()
-  // filtersData:any={};
   filtersData = model<any>({});
 
-  // @Output()
-  // filtersDataChange = new EventEmitter<string>();
+  scopeId = input<string>();
 
-  // @Output()
-  // mockDataChange = new EventEmitter<any>();
-  
-  // @Input()
-  // lookup:any = {}
   lookup = input<any>({})
 
   getAsList = splitAsList;
-
-
-  // public change(model){
-  //   // this.filtersDataChange.emit(model);
-  //   this.filtersData.set(model)
-
-
-  //   // this.mockDataChange.emit(altObj);
-  // }
 
   lookupSearchFn=(term: string, item: any)=>{
     term = term.toLocaleLowerCase();
@@ -60,18 +38,10 @@ export class UserEntryFilterComponent {
 
   compileTpl(a, b, keep?) {
     var f = "";
-    // console.log(a);
     try {
-      f = compileTpl(a, b);
+      f = compileTpl(a, b, this.scopeId());
     } catch (e) {
     }
-    // this.valueChange.emit(f);
-    // if (keep) {
-    //   // TO-DO!!! tok nyuruh form jd dirty jak2
-    //   this.value = f;
-    //   // this.formField?.control?.markAsPristine();
-    // }
-    // console.log(f);
     return f;
   }
 }

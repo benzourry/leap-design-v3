@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, input, model } from '@angular/core';
+import { Component, OnInit, computed, input, model, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -14,9 +14,12 @@ import { EditMailerComponent } from '../edit-mailer/edit-mailer.component';
     styleUrls: ['./edit-form.component.scss'],
     imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgSelectModule,
         FaIconComponent, NgbInputDatepicker, NgbTimepicker, NgCmComponent, NgbNavOutlet,
-        EditMailerComponent]
+        EditMailerComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditFormComponent implements OnInit {
+
+  cdr = inject(ChangeDetectorRef);
 
   // @Input("formList")
   formList = input<any[]>([])
@@ -89,8 +92,10 @@ export class EditFormComponent implements OnInit {
                           obj[prop]=[];
                       }
                       obj[prop] = obj[prop].concat(res.id);
+                      this.cdr.detectChanges();
                   }, res => {
                       this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
+                      this.cdr.detectChanges();
                   });
           }, res => { })
   }
@@ -100,6 +105,7 @@ export class EditFormComponent implements OnInit {
     this.mailerService.getMailerList(params)
         .subscribe(res => {
             this.mailerList = res.content;
+            this.cdr.detectChanges();
         })
   }
 

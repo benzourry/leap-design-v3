@@ -15,10 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, effect, forwardRef, input } from '@angular/core';
-// import { base, baseApi } from '../constant.service';
-// import { RunService } from '../../service/run.service';
-// import { LogService } from '../service/log.service';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, forwardRef, input, model, signal } from '@angular/core';
 import { ScreenComponent } from '../../run/screen/screen.component';
 import { ListComponent } from '../../run/list/list.component';
 import { FieldViewComponent } from './field-view.component';
@@ -31,20 +28,24 @@ import { baseApi, base } from '../../_shared/constant.service';
 import { LogService } from '../../_shared/service/log.service';
 import { RunService } from '../_service/run.service';
 import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
+// import { deepMerge, ServerDate } from '../../_shared/utils';
+// import { first, lastValueFrom, tap } from 'rxjs';
+// import { EntryService } from '../_service/entry.service';
+// import { ToastService } from '../../_shared/service/toast-service';
 
 @Component({
     selector: 'form-view',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-<!--<ng-container [ngSwitch]="form.nav">-->
 @if (form().nav == 'accordions') {
   @if (sectionMap[-1]?.length>0){
     @let tabPre = {id:-1,sortOrder:-1,title:"(head)"};
     <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tabPre}"></ng-container>
   }
   <div ngbAccordion class="pb-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
-    @for (tab of formTab; track tab.id) {
+    @for (tab of formTab(); track tab.id) {
       <div class="acc-card" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index != navIndex()"
-        [disabled]="!disabledTabs[tab.id]"
+        [disabled]="!disabledTabs()[tab.id]"
         #accitem="ngbAccordionItem">
         <div ngbAccordionHeader>
           <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
@@ -84,9 +85,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
       [class.limit-width]="!form()?.x?.wide"
       class="nav-{{form().nav}} justify-content-center  d-print-none centered">
-      @for (tab of formTab; track tab.id) {
+      @for (tab of formTab(); track tab.id) {
         <li [ngbNavItem]="'view' + $index"
-         [disabled]="!disabledTabs[tab.id]">
+         [disabled]="!disabledTabs()[tab.id]">
           <a ngbNavLink>
             @if (form().showIndex) {
               <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
@@ -118,7 +119,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
     <div class="fix-gutter centered" [class.limit-width]="!form()?.x?.wide">
       <div class="row" [ngStyle]="{'justify-content':form()?.align}">
         @for (e of this.sectionMap[tab?.id]; track e.id) {
-          @if (preSection[e.id] && !(e.x?.facet?.['view']=='none')) {
+          @if (preSection()[e.id] && !(e.x?.facet?.['view']=='none')) {
             @if (e.type=='section') {
               <div [ngClass]="e.size||'col-sm-12'"
                 [hidden]="e.hidden || (e.x?.facet?.['view']=='hidden')">
@@ -137,7 +138,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                     <div class="row g-4"  [ngStyle]="{'justify-content':e.align}">
                       @for (f of e.items; track f.id) {
                         @let field = form()?.items[f.code];
-                        @if (field && preItem[f.code]  && !((field?.x?.facet?.['view']||e.x?.facet?.['view'])=='none')) {
+                        @if (field && preItem()[f.code]  && !((field?.x?.facet?.['view']||e.x?.facet?.['view'])=='none')) {
                           <div [ngClass]="field?.size"
                             [class.mt-0]="field?.subType=='clearfix'"
                             [hidden]="field?.hidden || (field?.x?.facet?.['view']||e.x?.facet?.['view'])=='hidden'"
@@ -151,7 +152,11 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                   <p class="form-control-static mb-0">
                                     @if (data()) {
                                       <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,data())"
-                                       [data]="{$user$:user(),$conf$:runService?.appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,$baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}"></field-view>
+                                      [scopeId]="scopeId()"
+                                      [data]="evalContextFn()(entry(),data(), {}, form())"></field-view>
+                                      <!-- [data]="{$user$:user(),$conf$:appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,
+                                        $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
+                                        $param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}" -->
                                     }
                                   </p>
                                 </div>
@@ -159,7 +164,11 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                 <div>
                                   @if (data()) {
                                     <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,data())"
-                                     [data]="{$user$:user(),$conf$:runService?.appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,$baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}"></field-view>
+                                    [scopeId]="scopeId()"
+                                    [data]="evalContextFn()(entry(),data(), {}, form())"></field-view>
+                                    <!-- [data]="{$user$:user(),$conf$:appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,
+                                      $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
+                                      $param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}" -->
                                   }
                                 </div>
                               }
@@ -167,11 +176,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                               <div class="form-group" [ngClass]="field?.altClass">
                                 @if (field?.type=='dataset') {
                                   @defer(prefetch on idle){
-                                    <!-- {{preCompFilter[f.code]|json}} -->
                                     <app-list [asComp]="true" (changed)="dsChanged($event,f.code)"
                                       [datasetId]="field?.dataSource"
-                                      [$param$]="preCompFilter[f.code]"
-                                      [filters]="preCompFilter[f.code]"></app-list>
+                                      [param]="preCompFilter()[f.code]"></app-list>
                                   }@loading {
                                     <div class="text-center m-5">
                                       <div class="spinner-grow text-primary" role="status">
@@ -182,8 +189,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                 } @else if (field?.type=='screen') {
                                   @defer(prefetch on idle){
                                     <app-screen [asComp]="true" [screenId]="field.dataSource"
-                                      [filters]="preCompFilter[f.code]"                                      
-                                      [param]="preCompFilter[f.code]"></app-screen>
+                                      [param]="preCompFilter()[f.code]"></app-screen>
                                   }@loading {
                                     <div class="text-center m-5">
                                       <div class="spinner-grow text-primary" role="status">
@@ -192,19 +198,6 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                     </div>
                                   }
                                 }
-                                 <!-- @else if (form().items[f.code]?.type=='map') {
-                                  @defer(prefetch on idle){
-                                    <app-ng-leaflet [readOnly]="true" [value]="getVal(form().items[f.code],data())"
-                                      [useCurrentPos]="false" [multiple]="form().items[f.code]?.subType=='multiple'">
-                                    </app-ng-leaflet>
-                                  }@loading {
-                                    <div class="text-center m-5">
-                                      <div class="spinner-grow text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                      </div>
-                                    </div>
-                                  }
-                                } -->
                               </div>
                             }
                           </div>
@@ -239,8 +232,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                           <thead>
                             <tr>
                               @for (f of e.x?.tableFields; track $index) {
-                                @if (form().items[f] && form().items[f].subType!='clearfix'){
-                                  <th>{{form().items[f].label}}</th>
+                                @let field = form()?.items[f];
+                                @if (field && field.subType!='clearfix'){
+                                  <th>{{field.label}}</th>
                                 }
                               }
                             </tr>
@@ -275,13 +269,30 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                 <!-- @for (child of data()[e.code]; track $index; let $index_child = $index) { -->
                               @if(!hideGroup[e.code+listKv?.key]){
                                 @for (child of listKv.value; track $index; let $index_c = $index) {
-                                  @let $index_child = $index_g +'-'+ $index_c;
+                                  <!-- @let $index_child = $index_g +'-'+ $index_c; -->
                                   <tr>
-                                    @for (f of e.x?.tableFields; track $index; let $index_f = $index) {
-                                      @if (form().items[f] && form().items[f].subType!='clearfix'){
+                                    @for (f of e.x?.tableFields; track $index; let $index_f = $index) {                                      
+                                      @let field = form()?.items[f];
+                                      @if (field && field.subType!='clearfix'){
                                         <td>
-                                          <field-view [field]="form().items[f]" [value]="child[f]">
-                                          </field-view>
+                                          <!-- <field-view [field]="form().items[f]" [value]="child[f]" [scopeId]="scopeId()">
+                                          </field-view> -->
+                                          <!-- <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)"
+                                            [scopeId]="scopeId()"
+                                            [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,
+                                              $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
+                                              $param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}"></field-view> -->
+                                        
+                                            @if (field.type!='static') {
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()"></field-view>
+                                            }
+                                            @if (field.type=='static') {
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()" 
+                                                [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
+                                                <!-- [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,
+                                                $baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(),
+                                                $file$:$file$(), $index: child.$index}"></field-view> -->
+                                            }                                      
                                         </td>
                                       }
                                     }
@@ -324,7 +335,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                 <div class="row g-4">
                                   @for (f of e.items; track f.id) {
                                     @let field = form()?.items[f.code];
-                                    @if (field && preItem[e.code][$index_child][f.code]  && !((field?.x?.facet?.['view']||e.x?.facet?.['view'])=='none')) {
+                                    @if (field && preItem()[e.code][$index_child][f.code]  && !((field?.x?.facet?.['view']||e.x?.facet?.['view'])=='none')) {
                                       <div [ngClass]="field?.size"
                                         [class.mt-0]="field?.subType=='clearfix'"
                                         [hidden]="field?.hidden || (field?.x?.facet?.['view']||e.x?.facet?.['view'])=='hidden'"
@@ -335,7 +346,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                               <label class="label-span form-label">{{field?.label}}</label>
                                             }
                                             <p class="form-control-static mb-0">
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]"></field-view>
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"></field-view>
                                             </p>
                                           </div>
                                         }
@@ -343,7 +354,9 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
                                           @if (field?.subType!='clearfix' && !field?.hideLabel) {
                                             <label class="label-span form-label">{{field?.label}}</label>
                                           }
-                                          <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [data]="{$user$:user(),$conf$:runService?.appConfig,$:child,$_:entry(),$prev$:entry()?.prev,$baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}"></field-view>
+                                          <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" 
+                                            [data]="evalContextFn()(entry(),child, {}, this.form())"></field-view>
+                                          <!-- [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,$baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$(), $index: child.$index}"></field-view> -->
                                         }
                                       </div>
                                     }
@@ -386,35 +399,46 @@ export class FormViewComponent implements OnInit {
 
   constructor(private runService: RunService, private logService: LogService) {
     effect(()=>{
-      // console.log(this.data());
       this.filterTabs();
       this.filterItems();
       this.timestamp(); // utk force update if ada update
     })
+
+    effect(()=>{
+      if (this.data()){
+        this.filterItems();
+        // console.log("data", this.data());
+      }
+    })
+    
    }
 
   timestamp = input<number>();
-  // @Input() form: any;
   form = input<any>();
-  // @Input() data: any;
   data = input<any>();
-  // @Input() entry: any;
-  entry = input<any>();
-  // @Input() user: any;
-  user = input<any>();
-  // @Input() $this$: any;
-  $this$ = input<any>();
+  entry = model<any>();
+  user = computed<any>(() => this.runService.$user());
+  $this$ = model<any>();
+  // _this = signal<any>({}); // for internal use only, not to be used in template
   navIndex = input<number>(0);
-  // @Input() $baseUrl$: any;
-  $baseUrl$ = input<any>();
-  // @Input() $param$: any;
-  $param$ = input<any>();
-  // @Input() $token$: any;
-  $token$ = input<any>();
-  // @Input() $file$: any;
-  $file$ = input<any>();
+  // $baseUrl$ = computed(()=>this.runService.$baseUrl());
+  // $param$ = input<any>(); // no need, get in evalContextFn
+  // $token$ = input<any>(); // no need, get in evalContextFn
+  // $file$ = input<any>(); // no need, get in evalContextFn
+  // http = inject(HttpClient);
+  // cdr = inject(ChangeDetectorRef);
+  evalContextFn = input<any>(); //function to get eval context passed from parent
+  
+  // private entryService = inject(EntryService);
+  // private toastService = inject(ToastService);
+
+  
+  // approved = output<any>()
+  // closed = output<any>();
+  // submitted = output<any>();
 
   $action$ = input<string>();
+ 
 
   defaultParam: string = "{'$prev$.$id':$.$id}";
 
@@ -428,9 +452,26 @@ export class FormViewComponent implements OnInit {
 
   hideGroup:any={}
 
+  appConfig: any = this.runService.appConfig;
+
+  // scopeId = computed<string>(() => "form_"+this.form()?.id+'_'+this.$action$());
+  scopeId = computed<string>(() => {
+    const action = this.$action$() || '';
+    const sanitizedAction = action
+      .replace(/[^a-zA-Z0-9_]/g, '_')  // Replace non-alphanumeric with underscore
+      .replace(/^[0-9]/, '_$&')        // Prefix numbers with underscore
+      .replace(/_+/g, '_')             // Replace multiple underscores with single
+      .replace(/^_|_$/g, '');          // Remove leading/trailing underscores
+    
+    return `form_${this.form()?.id}_${sanitizedAction}`;
+  });
+
+
   dsChanged(ev, fieldCode) {
-    // console.log("ds-Changed: formview")
-    this.$this$()[fieldCode] = ev;
+    /** WEIRD? NO, JUST STUPID */
+    // Penyebab $this$ pande ilang mn bukak view bukan dari modal!! weird!!!
+    // this.$this$()[fieldCode] = ev;
+    this.$this$.update(curr=>({...curr,[fieldCode]: ev}));
     this.fieldChange(ev, this.entry()?.data, this.form().items[fieldCode], false)
   }
 
@@ -445,17 +486,17 @@ export class FormViewComponent implements OnInit {
   // appConst:any;
   ngOnInit() {
     // NEED TO REALLY CHECK EITHER DATA INPUT IS REQUIRED SINCE WE HAVE ENTRY HERE
-    // console.log("entry", this.entry);
-    // console.log("data", this.data);
-    // this.form.tabs?.forEach(t=>console.log(t.pre,this.preCheck(t)));
     this.filterTabs();
     this.filterItems();
+
+    this.appConfig = this.runService.appConfig;
+
   }
 
-  disabledTabs = {};
-  formTab: any[] = [{}]
+  formTab = computed(()=>this.form().nav != 'simple' ? this.form().tabs?.filter(tab => this.preCheckStr(tab.pre)) : [{}])
+  disabledTabs = signal<any>({});
   filterTabs(){
-    this.formTab = this.form().nav != 'simple' ? this.form().tabs?.filter(tab => this.preCheckStr(tab.pre)) : [{}]
+    // this.formTab = this.form().nav != 'simple' ? this.form().tabs?.filter(tab => this.preCheckStr(tab.pre)) : [{}]
 
     // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
     if (this.form().nav != 'simple'){
@@ -463,25 +504,26 @@ export class FormViewComponent implements OnInit {
       this.sectionMap[-999] = this.filterSection(this.form().sections, ['section', 'list'], -999)
     }
 
-    this.formTab
+    let disabledTabs = {};
+    this.formTab()
       .forEach(tab => {
         this.sectionMap[tab?.id] = this.filterSection(this.form().sections, ['section', 'list', 'dataset'], tab?.id);
-        this.disabledTabs[tab?.id] = this.preCheckStr(tab.x?.enableCond, false)
+        disabledTabs[tab?.id] = this.preCheckStr(tab.x?.enableCond, false)
       });
 
+    this.disabledTabs.set(disabledTabs);
   }
 
-  getPathForGrouping(code){
+  getPathForGrouping(code: string): string {
     let fieldPath = code;
-    if(code){
-      // let split = rootDotCode.split(".");
-      let field = this.form().items[code];
-      if (['select', 'radio'].indexOf(field?.type)>-1){
+    const field = this.form().items[code];
+    if (field) {
+      if (['select', 'radio'].includes(field.type)) {
         fieldPath += '.name';
-      }else if (['modelPicker'].indexOf(field?.type)>-1){
-        fieldPath += '.' + field?.bindLabel;
-      }else if (['date'].indexOf(field?.type)>-1){
-        fieldPath += '|date:'+(field.format??'yyyy-MM-dd');
+      } else if (field.type === 'modelPicker') {
+        fieldPath += `.${field.bindLabel}`;
+      } else if (field.type === 'date') {
+        fieldPath += `|date:${field.format || 'yyyy-MM-dd'}`;
       }
     }
     return fieldPath;
@@ -492,29 +534,32 @@ export class FormViewComponent implements OnInit {
 
   groupedChildList:any = {}
   
-  preItem: any = {}
-  preSection: any = {}
-  preCompFilter: any = {}
+  preItem = signal<any>({})
+  preSection = signal<any>({})
+  preCompFilter = signal<any>({})
   filterItems() {
+    let preItem = {};
+    let preSection = {};
+    let preCompFilter = {};
     // only evaluate visible tabs
-    [{id:-1},...this.formTab,{id:-999}].forEach(tab => {
+    [{id:-1},...this.formTab(),{id:-999}].forEach(tab => {
       this.sectionMap[tab.id]?.forEach(s => {
-        this.preSection[s.id] = this.preCheckStr(s.pre);
-        if (this.preSection[s.id]) {
+        preSection[s.id] = this.preCheckStr(s.pre);
+        if (preSection[s.id]) {
           // only evaluate items pre when section is available. If not, no need.
           if (s.type != 'list') {
             // normal field is quite straightforward
             s.items.forEach(i => {
-              this.preItem[i.code] = this.preCheckStr(this.form().items[i.code].pre)
+              preItem[i.code] = this.preCheckStr(this.form().items[i.code].pre)
               if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
                 try{
-                  this.preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                  preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
                 }catch(e){}
               }
             })
           } else {
             // for child section it is quite tricky. Need to evaluate for each child of section data.
-            this.preItem[s.code] = [];
+            preItem[s.code] = [];
             // console.log("scode",s.code,this.entry().data[s.code]);
 
             if (this.entry().data && Array.isArray(this.entry().data[s.code])){
@@ -527,35 +572,25 @@ export class FormViewComponent implements OnInit {
                   child.$index = idx++; // re-assign index
                   var index = index_g+'-'+index_c; 
 
-                  this.preItem[s.code][index] = {}
+                  preItem[s.code][index] = {}
                   s.items.forEach(i => {
-                    this.preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
+                    preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
                     if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
                       try{
-                        this.preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                        preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
                       }catch(e){}
                     }
                   })
                 })
               })
-
-
-              // this.entry().data[s.code]?.forEach((child, index) => {
-              //   this.preItem[s.code][index] = {}
-              //   s.items.forEach(i => {
-              //     this.preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
-              //     if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
-              //       try{
-              //         this.preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
-              //       }catch(e){}
-              //     }
-              //   })
-              // })
             }
           }
         }
       })
     })
+    this.preItem.set(preItem);
+    this.preSection.set(preSection);
+    this.preCompFilter.set(preCompFilter);
   }
 
   getVal(field, data) {
@@ -581,8 +616,128 @@ export class FormViewComponent implements OnInit {
     return !code || res;
   }
 
-  _eval = (data, v) => new Function('$_', '$', '$prev$', '$user$', '$conf$', '$param$', '$this$', '$base$', '$baseUrl$', '$baseApi$', '$token$', '$action$', '$file$', `return ${v}`)
-    (this.entry(), data, this.entry() && this.entry().prev, this.user(), this.runService?.appConfig, this.$param$(), this.$this$(), this.base, this.$baseUrl$(), this.baseApi, this.$token$(), this.$action$(), this.$file$());
+
+  // // _eval = (data, v) => new Function('$_', '$', '$prev$', '$user$', '$conf$', '$param$', '$this$', '$base$', '$baseUrl$', '$baseApi$', '$token$', '$action$', '$file$', `return ${v}`)
+  // //   (this.entry(), data, this.entry() && this.entry().prev, this.user(), this.runService?.appConfig, this.$param$(), this.$this$(), this.base, this.$baseUrl$(), this.baseApi, this.$token$(), this.$action$(), this.$file$());
+  // liveSubscription: any = {};
+
+  // $digest$ = () => {
+  //   this.cdr.detectChanges()
+  // }
+
+  // ServerDate = ServerDate;
+
+  // // _eval = (data:any, v:string) => new Function('$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$','$endpoint$', '$el$', '$form$', '$this$', '$param$', '$toast$', '$update$', '$token$', '$action$', '$file$',                      '$base$', '$baseUrl$', '$baseApi$', 'ServerDate', '$live$', '$token$', '$merge$','$web$',
+  // //   `return ${v}`)(this.entry(), data, this.entry()?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.form()?.items||this.form()?.items, this.form()||this.form(), this.$this$(), this.$param$(), this.$toast$, this.updateField, this.$token$(), this.$action$(), this.$file$(), this.base, this.$baseUrl$(), this.baseApi, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.$token$(), deepMerge, this.http);
+  
+
+  _eval = (data:any, v:string) => { 
+    const bindings = this.evalContextFn()(this.entry(),data, {}, this.form());
+    bindings.$ = data;
+    bindings.$this$ = this.$this$();
+    bindings.$conf$ = this.appConfig; // only binding that allow write
+    const argNames  = Object.keys(bindings);
+    const argValues = Object.values(bindings);
+    return new Function(...argNames,
+    `return ${v}`)(...argValues);
+  }
+    
+    
+  // $toast$ = (content, opt) => this.toastService.show(content, opt);
+
+  // // httpGet = this.runService.httpGet;
+  // // httpPost = this.runService.httpPost;
+  // // endpointGet = (code, params, callback, error) => this.runService.endpointGet(code, this.form().appId, params, callback, error)
+  // // must run digest/filterItems to ensure rerun pre..
+  // httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(()=>this.$digest$())));
+  // httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(()=>this.$digest$())));
+  // endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.form().appId, params, callback, error).pipe(tap(()=>this.$digest$())))
+  
+  // uploadFile = (obj, callback, error)=> lastValueFrom(this.entryService.uploadAttachmentOnce(obj.file, obj.itemId, obj.bucketId, this.app()?.id, obj.file.name)
+  //   .pipe( tap({ next: callback, error: error }), first() ));
+
+
+
+  // loadScript = loadScript;
+
+  // $digest$ = () => {
+  //   this.cdr.detectChanges()
+  //   this.timestamp.set(Date.now()); // setting new value for timestamp will force effect in field-view
+  // }
+
+  // readonly navOutlet = viewChild<NgbNav | NgbAccordionDirective>('nav');
+  // setActive = (index) => {
+  //   this._navIndex.set(index);
+  //   const navOutlet = this.navOutlet();
+  //   if (navOutlet instanceof NgbNav) {
+  //     navOutlet.select('view' + index);
+  //   } else if (navOutlet instanceof NgbAccordionDirective) {
+  //     navOutlet.expand('view' + index);
+  //   }
+  // }
+
+  // updateField = (entryId, value, callback, error) => {
+  //   console.log("## UPDATE FIELD", entryId, value);
+  //   return lastValueFrom(this.entryService.updateField(entryId, value, this.form().appId)
+  //     .pipe(
+  //       tap({ next: callback, error: error }),
+  //       tap({
+  //         next: (res: any) => {
+  //           if (res?.id == this.entry()?.id) {
+  //             this.entry.set(deepMerge(this.entry(), res));
+  //           }
+  //           if (callback) {
+  //             callback();
+  //           }
+  //         }, error: error
+  //       }),
+  //       first()
+  //     ));
+  // }
+  // _save = (entry,form) => {
+  //   let userKey = this.user().email;
+  //   if (form?.x?.userKey) {
+  //     userKey = this.compileTpl(form?.x?.userKey, 
+  //       { $: entry?.data, $_: entry, $prev$: entry?.prev })
+  //   }
+  //   return this.entryService.save(form.id, entry, entry?.prev?.id, userKey)
+  //     .pipe(
+  //       tap({
+  //         next: (e) => {
+  //           entry = deepMerge(entry,e);
+  //           // this.linkFiles(e);
+  //           // this.entryForm.form().markAsPristine();
+  //         }
+  //       }), first()
+  //     )
+  // }
+
+  // submit = (resubmit: boolean, entry, form) => {
+  //   this.entryService.submit(entry.id, this.user().email, resubmit)
+  //     .subscribe({
+  //       next: res => {
+  //         if (form.onSubmit) {
+  //           try {
+  //             this._eval(entry, entry.data, form.onSubmit, form);
+  //           } catch (e) { this.logService.log(`{form-${form.title}-onSubmit}-${e}`) }
+  //         }
+  //         this.toastService.show("Entry submitted successfully", { classname: 'bg-success text-light' });
+  //         if (this.asComp()) {
+  //           this.submitted.emit(res);
+  //         }
+  //         this.entry.set(deepMerge(entry, res));
+  //         this.$digest$();
+  //       }, error: err => {
+  //         this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
+  //       }
+  //     })
+  // }
+
+  // compileTpl = (code, additionalData) => {
+  //   let obj = Object.assign( additionalData, { $user$: this.user(), $: this.entry()?.data, $_: this.entry(), $prev$: this.entry()?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi, $this$: this._this, $param$: this.param() })
+  //   return compileTpl(code, obj, this.scopeId())
+  // }
+
 
   getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 

@@ -15,7 +15,6 @@
 
       @if(screen()?.data?.notice){
         <div class="chat-prompt-notice small text-muted text-center pb-3 mx-auto" style="max-width:450px">
-          <!-- <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>&nbsp; -->
           <span [innerHTML]="imagify(linkify(screen().data?.notice))"></span>
         </div>                  
       }
@@ -49,10 +48,10 @@
           </div>
         }
 
-        @for (p of chatResponseList; track $index) {
+        @for (p of chatResponseList(); track $index) {
           <div class="mb-4 chatbot-bubble chatbot-bubble-{{p.type}}" >
             @if(p.text){
-              <div class="p-3 px-3" [innerHtml]="targetBlank(p.text)"></div>
+              <div class="p-3 px-3" [innerHtml]="targetBlank(p.text)|safe:'html'"></div>
             }
             @if (p.type=='response'){
               <div class="chatbot-bubble-meta p-2 px-3 d-flex bg-light">
@@ -66,9 +65,6 @@
           </div>
           @if (p.files?.length>0){
             <div class="chatbot-bubble-prompt-files mb-4 list-group">
-              <!-- @for(file of p.files; track $index){
-                <img class="img-thumbnail" [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file" style="max-width:200px">
-              } -->
               @for(f of p.files; track $index){
                 @if (f.isImage){
                   <div class="list-group-item p-2">
@@ -82,7 +78,7 @@
           }
         }
 
-        @if (chatPromptLoading){
+        @if (chatPromptLoading()){
           <div class="text-center">
             <div class="spinner-grow" style="background: var(--appbg);" role="status">
               <span class="visually-hidden">Loading...</span>
@@ -90,18 +86,18 @@
           </div>
         }
 
-        @if (streamTyping){
+        @if (streamTyping()){
           <div class="mb-4 chatbot-bubble chatbot-bubble-response" >
-            <div class="p-3 px-3" [innerHtml]="streamResult"></div>
+            <div class="p-3 px-3" [innerHtml]="streamResult()|safe:'html'"></div>
           </div>
         }
       </div>
 
-      @if(chatResponseList.length>0 && !chatPromptLoading && !streamTyping){
+      @if(chatResponseList().length>0 && !chatPromptLoading() && !streamTyping()){
         <div class="text-center">
           <button type="button" id="clear-chat-btn" class="btn btn-sm px-1 rounded-pill btn-outline-danger ms-auto print-hide"
                 title="Clear chat memory" (click)="clearCognaMemory(screen().cogna)"
-                [class.disabled]="offline">
+                [class.disabled]="offline()">
             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon><span class="text"> Clear Chat</span>
           </button>
         </div>
@@ -116,28 +112,16 @@
         <label
           class="rounded-pill me-2 cursor-pointer d-flex align-items-center justify-content-center" 
           style="width:48px; cursor: pointer;">
-          <!-- <input type="file" [hidden]="true" (change)="uploadPromptImage($event)" name="file"  accept="image/*" />
-          @if(uploadPromptImg){
-            <img [src]="uploadPromptImg" width="100%">
-          }@else {
-            <fa-icon [icon]="['fas','image']"></fa-icon>
-          } -->
           <input type="file" [hidden]="true" (change)="onUpload($event)" name="file"  />
-          <!-- @if(fileList.length>0){
-            @for(file of fileList; track $index){
-              <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file" width="100%">
-            }                        
-          }@else { -->
-            <fa-icon [icon]="['fas','upload']"></fa-icon>
-          <!-- } -->
+          <fa-icon [icon]="['fas','upload']"></fa-icon>
         </label>
       }
       <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill p-1"  autocomplete="off" 
-        (keyup.enter)="chatPrompt(screen().cogna, chatPromptText)"  autocapitalize="none" [(ngModel)]="chatPromptText"
+        (keyup.enter)="chatPrompt(screen().cogna, chatPromptText())"  autocapitalize="none" [(ngModel)]="chatPromptText"
         maxlength="2000"
-        [placeholder]="isListening?app().x?.lang=='ms'?'Saya mendengar...':'I\'m listening...':(app().x?.lang=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
+        [placeholder]="isListening()?app().x?.lang=='ms'?'Saya mendengar...':'I\'m listening...':(app().x?.lang=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
         placeholder="Ask me something...">  
-      @if (isListening){
+      @if (isListening()){
         <button type="button" class="btn bg-transparent border-0 blink_me" style="height:38px; min-width:38px"
           (click)="stopListen()">
           <fa-icon [icon]="['fas','square']"></fa-icon>
@@ -149,14 +133,14 @@
         </button>          
       }
 
-      <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [class.disabled]="!chatPromptText?.trim()" [disabled]="!(chatPromptText?.trim() || fileList.length>0)"
-        (click)="chatPrompt(screen().cogna, chatPromptText)">
+      <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [class.disabled]="!chatPromptText()?.trim()" [disabled]="!(chatPromptText()?.trim() || fileList().length>0)"
+        (click)="chatPrompt(screen().cogna, chatPromptText())">
         <fa-icon [icon]="['fas','paper-plane']"></fa-icon>
       </button>
     </div>
-    @if(fileList.length>0){
+    @if(fileList().length>0){
       <div class="small list-group list-group-flush mb-3" style="border-top:solid 1px #ccc; border-bottom: solid 1px #ccc">
-        @for(f of fileList; track $index){
+        @for(f of fileList(); track $index){
           @if (f.isImage){
             <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end" (click)="removeFile($index)">&times;</button>
               <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f.path" style="max-width:200px"> 
@@ -168,13 +152,7 @@
       </div>
     }
     <div class="text-end text-muted px-3 py-1 small">
-      {{chatPromptText?.length||0}}/2000
+      {{chatPromptText()?.length||0}}/2000
     </div>
-
-    <!-- <div id="txt_q_input" class="p-2">
-      <input type="text" class="border-0 w-100 rounded-pill px-3 py-1"
-        placeholder="Ask something..."
-        (keyup.enter)="chatPrompt(screen().cogna, chatPromptText)" [(ngModel)]="chatPromptText">
-    </div> -->
   </div>
 </div>

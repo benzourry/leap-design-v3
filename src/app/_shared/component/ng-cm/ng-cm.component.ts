@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy } from '@angular/core';
 
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
@@ -14,14 +14,30 @@ import { CompletionContext, snippetCompletion } from "@codemirror/autocomplete";
 // import { ElementBase } from '../field-edit/element-base';
 import { rekaTheme } from './reka-theme';
 
-import { placeholder, EditorViewConfig, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, KeyBinding } from '@codemirror/view';
+import { placeholder, EditorViewConfig, lineNumbers, highlightActiveLineGutter, 
+  highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, 
+  crosshairCursor, highlightActiveLine, keymap, KeyBinding } from '@codemirror/view';
 // export { EditorView } from '@codemirror/view';
 import { EditorState, Transaction } from '@codemirror/state';
-import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldKeymap } from '@codemirror/language';
+// import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
+//   HighlightStyle, Tag, syntaxHighlighting, defaultHighlightStyle, 
+//   bracketMatching, foldKeymap, 
+//   StreamLanguage} from '@codemirror/language';
+  import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
+    HighlightStyle, syntaxHighlighting, defaultHighlightStyle, 
+    bracketMatching, foldKeymap, 
+    StreamLanguage} from '@codemirror/language';
+  // import { Tag } from '@codemirror/highlight';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { highlightSelectionMatches, searchKeymap, openSearchPanel } from '@codemirror/search';
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { ElementBase } from '../../../run/_component/element-base';
+import { Decoration, DecorationSet, ViewPlugin, ViewUpdate } from '@codemirror/view';
+
+
+// import { HighlightStyle, syntaxHighlighting, Tag } from '@codemirror/language';
+// import { htmlLanguage, LanguageSupport } from '@codemirror/lang-html';
+
 // import { ElementBase } from '../element-base';
 // import { ElementBase } from 'src/app/run/_component/field-edit/element-base';
 // import { lintKeymap, lintGutter, linter, Diagnostic } from '@codemirror/lint';
@@ -32,6 +48,140 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
   multi: true,
 };
 
+// 1. Define custom tags and highlight style
+// const xIfTag = Tag.define();
+// const xIfAttr = Tag.define();
+
+// const customHighlightStyle = HighlightStyle.define([
+//   { tag: xIfTag, color: "#4FC3F7", fontWeight: "bold" },      // Light blue for <x-if>
+//   { tag: xIfAttr, color: "#4FC3F7", fontStyle: "italic" },     // Light blue for x-if attribute
+// ]);
+
+// Place these outside the class so they're only compiled once
+const tagRegex = /<\/?x-(if|foreach|for|else-if|else|markdown)[^>]*>/ig;
+const attrRegex = /x-(if|foreach|for)="[^"]*"/g;
+// const variableRegex = /\{\{([^}]*)\}\}/g;
+const variableRegex = /(\{\{([^}]*)\}\})|(\[#([^#]*)#\])/g;
+const rekaKeywordRegex = /\$(this\$|conf\$|_|prev\$|user\$|param\$|\$|popup|go|action\$|base\$|baseUrl\$|baseApi\$|token\$)/g;
+
+const customXIfHighlight = ViewPlugin.fromClass(class {
+  decorations: DecorationSet;
+
+  constructor(view: EditorView) {
+    this.decorations = this.buildDecorations(view);
+  }
+
+  update(update: ViewUpdate) {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.buildDecorations(update.view);
+    }
+  }
+
+  // Add this helper method:
+private getJsTokenClass(nodeName: string): string {
+  const tokenMap = {
+    'VariableName': 'cm-variable',
+    'PropertyName': 'cm-property', 
+    'String': 'cm-string',
+    'Number': 'cm-number',
+    'Keyword': 'cm-keyword',
+    'Operator': 'cm-operator',
+    'Punctuation': 'cm-punctuation',
+    'FunctionName': 'cm-function'
+  };
+  return tokenMap[nodeName] || 'cm-default';
+}
+
+  buildDecorations(view: EditorView) {
+    const decorations = [];
+    // Only process visible ranges for performance
+    for (const { from, to } of view.visibleRanges) {
+      const text = view.state.doc.sliceString(from, to);
+
+      // Tag highlighting
+      tagRegex.lastIndex = 0;
+      let match;
+      while ((match = tagRegex.exec(text)) !== null) {
+        decorations.push(Decoration.mark({
+          class: "cm-tag-x-" + match[1]
+        }).range(from + match.index, from + match.index + match[0].length));
+      }
+      // Value highlighting
+      // Replace the variableRegex section in buildDecorations:
+      variableRegex.lastIndex = 0;
+      while ((match = variableRegex.exec(text)) !== null) {
+        let fullMatch, jsContent;
+  
+        if (match[1]) {
+          // {{...}} format
+          fullMatch = match[1];
+          jsContent = match[2];
+        } else if (match[3]) {
+          // [#...#] format  
+          fullMatch = match[3];
+          jsContent = match[4];
+        }
+        
+        // Parse JavaScript content for syntax highlighting
+        try {
+          // console.log(jsContent);
+          const jsState = EditorState.create({
+            doc: jsContent,
+            extensions: [javascript()]
+          });
+          
+          const tree = syntaxTree(jsState);
+          tree.iterate({
+            enter: (node) => {
+              if (node.from < node.to) { // <-- Only decorate non-empty ranges
+                const className = this.getJsTokenClass(node.name);
+                decorations.push(Decoration.mark({
+                  class: className + " " + node.name
+                }).range(
+                  from + match.index + 2 + node.from,
+                  from + match.index + 2 + node.to
+                ));
+              }
+            }
+          });
+
+          // Add the root cm-js-expression class for the entire {{...}} block
+          decorations.push(Decoration.mark({
+            class: "cm-js-expression"
+          }).range(from + match.index, from + match.index + fullMatch.length));
+
+        } catch (e) {
+          // Fallback to simple highlighting
+          decorations.push(Decoration.mark({
+            class: "cm-js-expression"
+          }).range(from + match.index, from + match.index + fullMatch.length));
+        }
+      }
+
+          // $this$ highlighting - Add this section
+    rekaKeywordRegex.lastIndex = 0;
+    while ((match = rekaKeywordRegex.exec(text)) !== null) {
+      decorations.push(Decoration.mark({
+        class: "cm-reka-key"
+      }).range(from + match.index, from + match.index + match[0].length));
+    }
+
+      // Attribute highlighting
+      attrRegex.lastIndex = 0;
+      while ((match = attrRegex.exec(text)) !== null) {
+        decorations.push(Decoration.mark({
+          class: "cm-attr-x-" + match[1]
+        }).range(from + match.index, from + match.index + match[0].length));
+      }
+    }
+    return Decoration.set(decorations, true);
+  }
+}, {
+  decorations: v => v.decorations
+});
+
+
+
 @Component({
     selector: 'app-cm',
     templateUrl: './ng-cm.component.html',
@@ -39,34 +189,22 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
     providers: [CUSTOMINPUT_VALUE_ACCESSOR],
     standalone: true,
 })
-export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
+export class NgCmComponent extends ElementBase<any> implements AfterViewInit, OnDestroy {
   // @ViewChild(NgModel, { static: false }) model: NgModel;
   model = viewChild(NgModel)
   
 
-  // @Output() valueChange = new EventEmitter();
   valueChange = output<any>();
-  // @Input() options: any;
   options = input<any>(); //not used
-  // @Input() lang: string;
   lang = input<string>();
-  // @Input() editorStyle: any;
   editorStyle = input<any>(); // not used
-  // @Input() linenumber: boolean;
   linenumber = input<boolean>();
-  // @Input() readOnly: boolean;
   readOnly = input<boolean>();
-  // @Input() lambda: boolean;
   lambda = input<boolean>();
-  // @Input() hideControl: boolean;
   hideControl = input<boolean>();
-  // @Input() placeholder: string;
   placeholder = input<string>();
-  // @Input() extraAutoComplete: any[] = [];
   extraAutoComplete = input<any[]>([]);
-  // @Input() subType: string;
   subType = input<string>();
-  // @Input() skipCheck: boolean;
   skipCheck = input<boolean>();
   // @Input() extraLint: Function = (node) => [
   //   { cond: node.name == "RegExp", severity: "warning", message: "Regular expressions are Forbidden" },
@@ -74,7 +212,6 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
   // ]
 
 
-  // @ViewChild('codemirrorhost') codemirrorhost: ElementRef;
   codemirrorhost = viewChild<ElementRef>('codemirrorhost'); 
 
   config: EditorViewConfig;
@@ -142,9 +279,20 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
     super(validators, asyncValidators);
   }
 
-  override writeValue(value) {
-    this.editor?.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: value }, annotations: Transaction.addToHistory.of(false) })
-    this.value = value;
+  // override writeValue(value) {
+  //   this.editor?.dispatch({ 
+  //     changes: { from: 0, to: this.editor.state.doc.length, insert: value }, 
+  //     annotations: Transaction.addToHistory.of(false) 
+  //   })
+  //   this.value = value;
+  // }
+  override writeValue(value: string): void {
+    const safeValue = value ?? '';
+    this.editor?.dispatch({
+      changes: { from: 0, to: this.editor.state.doc.length, insert: safeValue },
+      annotations: Transaction.addToHistory.of(false)
+    });
+    this.value = safeValue;
   }
 
 
@@ -161,7 +309,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
     })
 
     let langPack = {
-      "html": [html()],
+      "html": [html(),customXIfHighlight],
       "javascript": [javascript()],
       "json": [javascript()],
       "lambda": [javascript()]
@@ -216,14 +364,19 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
     this.checkCode(event);
   }
 
-  formatCode() {
-    prettier.format(this.value, {
-      parser: this.lang() == 'html' ? "html" : "typescript",
-      plugins: [this.lang() == 'html' ? prettierHtml : prettierTs],
-    }).then(text=>{
-      this.editor?.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: text } })
+  async formatCode() {
+    const prettier = await import('prettier/standalone');
+    const parser = this.lang() === 'html' ? 'html' : 'typescript';
+    const plugin = this.lang() === 'html' ? await import('prettier/parser-html') : await import('prettier/parser-typescript');
+  
+    const formatted = await prettier.format(this.value, {
+      parser,
+      plugins: [plugin],
     });
-    // to: this.editor.state.doc.length, 
+  
+    this.editor?.dispatch({
+      changes: { from: 0, to: this.editor.state.doc.length, insert: formatted }
+    });
   }
 
   dontComplete = [
@@ -328,9 +481,6 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
     }
   }
   myLambdaCompletions = (context: CompletionContext) => {
-    // const { state, pos } = context;
-    // let around = syntaxTree(state).resolveInner(pos),
-    //   tree = around.resolve(pos, -1);
 
     const Identifier = /^[\w$\xa1-\uffff][\w$\d\xa1-\uffff]*$/
 
@@ -424,7 +574,8 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
         to: range.to,
         insert: text
       },
-      selection: { anchor: range.from + 1 }
+      selection: { anchor: range.from + text.length }
+      // selection: { anchor: range.from + 1 }
     })
   }
 
@@ -438,6 +589,65 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
         this.codeStatus =  "ERR: "+ e;
     }
   };
+
+  isExpression(): boolean {
+    try {
+      const state = EditorState.create({
+        doc: this.value,
+        extensions: [javascript()]
+      });
+  
+      const tree = syntaxTree(state);
+      const cursor = tree.cursor();
+  
+      if (!cursor.firstChild()) return false;
+  
+      const topNode = `${cursor.name}`; // ← Cast to general string
+
+      console.log(topNode);
+  
+      if (topNode === "ExpressionStatement") {
+        if (cursor.firstChild()) {
+          const innerNode = `${cursor.name}`; // ← Also cast here
+          console.log(innerNode);
+          return innerNode !== "AssignmentExpression"; // ✅ No TS error
+        }
+      }
+  
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  isAssignmentExpression(): boolean {
+    try {
+      const state = EditorState.create({
+        doc: this.value,
+        extensions: [javascript()]
+      });
+  
+      const tree = syntaxTree(state);
+      const cursor = tree.cursor();
+  
+      // Go into top-level Program → Statement
+      if (!cursor.firstChild()) return false;
+  
+      const first = String(cursor.name);
+  
+      // If it's an ExpressionStatement like `a = b`
+      if (first === "ExpressionStatement") {
+        if (cursor.firstChild()) {
+          const inner = String(cursor.name);
+          return inner === "AssignmentExpression";
+        }
+      }
+  
+      return false;
+    } catch {
+      return false;
+    }
+  }
 
   isValidJs(code){
     try{
@@ -466,6 +676,10 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit {
     //   //var error = doc.documentElement.querySelector('parsererror').innerText;
     //   throw "Error";    
     // }
+  }
+
+  ngOnDestroy(): void {
+    this.editor?.destroy();
   }
 
 

@@ -13,7 +13,7 @@
     }
   </div>
   <div class="form-group mb-4">
-    @for (group of groupList; track group.id) {
+    @for (group of groupList(); track group.id) {
       <div class="form-check form-switch mt-1 mb-2">
         <input type="checkbox" class="form-check-input" name="role-{{group.id}}" [checked]="checkValue(group.id)"
           (change)="toggleValue(group.id, app().x?.regType);" id="role-{{group.id}}">
@@ -28,10 +28,6 @@
     }
   </div>
 </div>
-@if (once) {
-  <p class="text-center py-2 my-1">{{app().x?.lang=='ms'?'Sila baca':'Please read the following'}}</p>
-  <div class="d-flex flex-column wrapper-in mb-3"></div>
-}
 <button type="button" class="btn btn-outline-secondary btn-round px-3 float-start"
   (click)="logout({})">{{app().x?.lang=='ms'?'Batal':'Cancel'}}</button>
 <button type="button" class="btn btn-primary btn-round px-3 float-end"

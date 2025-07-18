@@ -15,13 +15,13 @@ export const RUN_ROUTES: Routes = [
     {
       path: ':appId', component: StartComponent,
       children: [
-        { path: 'form/:formId/view', loadComponent: () => import('./view/view.component').then(mod => mod.ViewComponent) },
-        { path: 'form/:formId/view-single', loadComponent: () => import('./view/view.component').then(mod => mod.ViewComponent) },// Normally, used /view above. But buildGo use /view-single
-        { path: 'form/:formId/:action', loadComponent: () => import('./form/form.component').then(mod => mod.FormComponent), canDeactivate: [CanDeactivateGuard] },
-        { path: 'dataset/:datasetId', loadComponent: () => import('./list/list.component').then(mod => mod.ListComponent) },
-        { path: 'dataset/:datasetId/:page', loadComponent: () => import('./list/list.component').then(mod => mod.ListComponent) },
-        { path: 'dashboard/:dashboardId', loadComponent: () => import('./dashboard/dashboard.component').then(mod => mod.DashboardComponent) },
-        { path: 'screen/:screenId', loadComponent: () => import('./screen/screen.component').then(mod => mod.ScreenComponent) },
+        { path: 'form/:formId/view', loadComponent: () => import('./view/view-web.component').then(mod => mod.ViewWebComponent) },
+        { path: 'form/:formId/view-single', loadComponent: () => import('./view/view-web.component').then(mod => mod.ViewWebComponent) },// Normally, used /view above. But buildGo use /view-single
+        { path: 'form/:formId/:action', loadComponent: () => import('./form/form-web.component').then(mod => mod.FormWebComponent), canDeactivate: [CanDeactivateGuard] },
+        { path: 'dataset/:datasetId', loadComponent: () => import('./list/list-web.component').then(mod => mod.ListWebComponent) },
+        { path: 'dataset/:datasetId/:page', loadComponent: () => import('./list/list-web.component').then(mod => mod.ListWebComponent) },
+        { path: 'dashboard/:dashboardId', loadComponent: () => import('./dashboard/dashboard-web.component').then(mod => mod.DashboardWebComponent) },
+        { path: 'screen/:screenId', loadComponent: () => import('./screen/screen-web.component').then(mod => mod.ScreenWebComponent) },
         { path: 'lookup/:lookupId', loadComponent: () => import('./lookup/lookup.component').then(mod => mod.LookupComponent) },
         { path: 'user', loadComponent: () => import('./user/user.component').then(mod => mod.UserComponent) },
         { path: 'user/:groupId', loadComponent: () => import('./user/user.component').then(mod => mod.UserComponent) },
@@ -48,13 +48,13 @@ export const RUN_ROUTES: Routes = [
       path: ':appId/embed', component: HeadlessComponent,
       children: [
         { path: '', component: TilesComponent },
-        { path: 'form/:formId/view', loadComponent: () => import('./view/view.component').then(mod => mod.ViewComponent) },
-        { path: 'form/:formId/view-single', loadComponent: () => import('./view/view.component').then(mod => mod.ViewComponent) },// Normally, used /view above. But buildGo use /view-single
-        { path: 'form/:formId/:action', loadComponent: () => import('./form/form.component').then(mod => mod.FormComponent), canDeactivate: [CanDeactivateGuard] },
-        { path: 'dataset/:datasetId', loadComponent: () => import('./list/list.component').then(mod => mod.ListComponent) },
-        { path: 'dataset/:datasetId/:page', loadComponent: () => import('./list/list.component').then(mod => mod.ListComponent) },
-        { path: 'dashboard/:dashboardId', loadComponent: () => import('./dashboard/dashboard.component').then(mod => mod.DashboardComponent) },
-        { path: 'screen/:screenId', loadComponent: () => import('./screen/screen.component').then(mod => mod.ScreenComponent) },
+        { path: 'form/:formId/view', loadComponent: () => import('./view/view-web.component').then(mod => mod.ViewWebComponent) },
+        { path: 'form/:formId/view-single', loadComponent: () => import('./view/view-web.component').then(mod => mod.ViewWebComponent) },// Normally, used /view above. But buildGo use /view-single
+        { path: 'form/:formId/:action', loadComponent: () => import('./form/form-web.component').then(mod => mod.FormWebComponent), canDeactivate: [CanDeactivateGuard] },
+        { path: 'dataset/:datasetId', loadComponent: () => import('./list/list-web.component').then(mod => mod.ListWebComponent) },
+        { path: 'dataset/:datasetId/:page', loadComponent: () => import('./list/list-web.component').then(mod => mod.ListWebComponent) },
+        { path: 'dashboard/:dashboardId', loadComponent: () => import('./dashboard/dashboard-web.component').then(mod => mod.DashboardWebComponent) },
+        { path: 'screen/:screenId', loadComponent: () => import('./screen/screen-web.component').then(mod => mod.ScreenWebComponent) },
         { path: 'lookup/:lookupId', loadComponent: () => import('./lookup/lookup.component').then(mod => mod.LookupComponent) },
         { path: 'user', loadComponent: () => import('./user/user.component').then(mod => mod.UserComponent) },
         { path: 'user/:groupId', loadComponent: () => import('./user/user.component').then(mod => mod.UserComponent) },

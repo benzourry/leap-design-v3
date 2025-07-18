@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { EndpointService } from '../../../service/endpoint.service';
@@ -13,13 +13,16 @@ import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
-import { ObjViewerComponent } from '../../../_shared/component/obj-viewer/obj-viewer.component';
+import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
     selector: 'app-endpoint-editor',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './endpoint-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './endpoint-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, JsonPipe, ObjViewerComponent]
+    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, 
+        NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, JsonPipe, JsonViewerComponent]
 })
 export class EndpointEditorComponent implements OnInit {
 
@@ -39,14 +42,20 @@ export class EndpointEditorComponent implements OnInit {
     itemLoading: boolean;
     appId: number;
     resultType:string = 'text';
-    constructor(private userService: UserService, private route: ActivatedRoute, private endpointService: EndpointService,
-        private modalService: NgbModal,
-        private location: PlatformLocation,
-        private router: Router,
-        private appService: AppService,
-        private toastService: ToastService,
-        private utilityService: UtilityService) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private endpointService = inject(EndpointService);
+    private modalService = inject(NgbModal);
+    private location = inject(PlatformLocation);
+    private router = inject(Router);
+    private appService = inject(AppService);
+    private toastService = inject(ToastService);
+    private utilityService = inject(UtilityService);
+    private cdr = inject(ChangeDetectorRef);
+
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
     }
 
@@ -54,6 +63,7 @@ export class EndpointEditorComponent implements OnInit {
         this.userService.getCreator()
             .subscribe((user) => {
                 this.user = user;
+                this.cdr.detectChanges();
 
                 this.route.parent.params
                     // NOTE: I do not use switchMap here, but subscribe directly
@@ -71,6 +81,7 @@ export class EndpointEditorComponent implements OnInit {
                             this.appService.getApp(this.appId, params)
                                 .subscribe(res => {
                                     this.app = res;
+                                    this.cdr.detectChanges();
                                 });
                         }
 
@@ -119,7 +130,11 @@ export class EndpointEditorComponent implements OnInit {
                 this.endpointList = res.content;
                 this.endpointTotal = res.page?.totalElements;
                 this.itemLoading = false;
-            }, res => this.itemLoading = false)
+                this.cdr.detectChanges();
+            }, res => {
+                this.itemLoading = false;
+                this.cdr.detectChanges();
+            })
     }
 
     // loadSharedList(pageNumber) {
@@ -155,8 +170,10 @@ export class EndpointEditorComponent implements OnInit {
                         this.loadEndpoint(res.id);
                         this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { })
     }
@@ -172,8 +189,10 @@ export class EndpointEditorComponent implements OnInit {
                         this.loadEndpointList(1);
                         delete this.endpoint;
                         this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, res => {
                         this.toastService.show("Template removal failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     });
             }, res => { });
     }
@@ -189,6 +208,7 @@ export class EndpointEditorComponent implements OnInit {
                 g?.forEach(element => {
                     this.params.push(element.replace(/([{}\s]+)/ig, ''));
                 });
+                this.cdr.detectChanges();
             })
 
     }
@@ -216,9 +236,11 @@ export class EndpointEditorComponent implements OnInit {
         .subscribe({
             next:(res)=>{
                 this.result = res;
+                this.cdr.detectChanges();
             },
             error: (error)=>{
                 this.error = error;
+                this.cdr.detectChanges();
             }
 
         })

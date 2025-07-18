@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { OAUTH } from '../_shared/constant.service';
 import { UserService } from '../_shared/service/user.service';
@@ -29,12 +29,17 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FaIconComponent, NgClass, FormsModule]
 })
 export class LoginComponent implements OnInit {
 
+  private route = inject(ActivatedRoute)
+  private userService = inject(UserService)
+  private cdr = inject(ChangeDetectorRef);
+
   redirect: string = '';
-  constructor(private route: ActivatedRoute, private userService: UserService) { }
+  constructor() { }
 
   cred: any = {};
 
@@ -48,7 +53,10 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Get the query params
     this.route.queryParams
-      .subscribe(params => this.redirect = params['redirect'] || '/design');
+      .subscribe(params => {
+        this.redirect = params['redirect'] || '/design';
+        this.cdr.detectChanges();
+      });
   }
 
   login(server) {
@@ -81,16 +89,19 @@ export class LoginComponent implements OnInit {
                 } else {
                   alert(json.error);
                   this.error = json.error;
+                  this.cdr.detectChanges();
                 }
               });
 
           } else {
             this.error = { message: "Problem authenticating" };
             alert("Problem authenticating");
+            this.cdr.detectChanges();
           }
         },
         error: (err) => {
           this.error = err.error;
+          this.cdr.detectChanges();
         }
       })
 
@@ -102,9 +113,11 @@ export class LoginComponent implements OnInit {
         next: (res) => {
           this.message = res.message;
           this.error = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.error = err.error;
+          this.cdr.detectChanges();
         }
       })
   }
@@ -117,9 +130,11 @@ export class LoginComponent implements OnInit {
           this.message = res.message;
           this.register = false;
           this.error = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.error = err.error;
+          this.cdr.detectChanges();
         }
       })
   }

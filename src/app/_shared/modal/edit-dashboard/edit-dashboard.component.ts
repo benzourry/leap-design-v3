@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { toSnakeCase, toSpaceCase } from '../../utils';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     selector: 'app-edit-dashboard',
     templateUrl: './edit-dashboard.component.html',
     styleUrls: ['./edit-dashboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, FaIconComponent, NgSelectModule]
 })
 export class EditDashboardComponent {

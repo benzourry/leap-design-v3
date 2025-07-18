@@ -1,4 +1,4 @@
-<div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
+<div class="position-sticky sticky-top bg-reka" [class]="bgClassName">
   <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
       <img src="assets/icons/logo-w.svg" width="38">
@@ -7,7 +7,7 @@
       <div class="d-flex">
         <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
         <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
-        @if (user?.manager){
+        @if (user()?.manager){
           <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
         }
         <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
@@ -35,7 +35,7 @@
       </div>
       <div class="tile-wrap tile-center touch-overfow">
         <div class="tile border-2 shadow-none border border-primary text-primary" style="text-overflow: ellipsis; height:100px;"
-          [class.disabled]="offline" onclick="">
+          [class.disabled]="offline()" onclick="">
           <div class="tile-mid" style="padding:10px;padding-left:30px;">
             <div class="tile-content">
               <h6 class="list-group-item-heading">Blank</h6>
@@ -52,51 +52,40 @@
           </div>
         </div>
 
-        @if (!tplLoading){
-          @if (tplTotal==0){
+        @if (!tplLoading()) {
+          @if (tplTotal() === 0) {
             <div class="p-2 text-muted text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
               No other template available
             </div>
-
-          }@else {
-            @for (item of tplList | filter:searchText; track item.id) {
-              <div class="tile"
-                style="text-overflow: ellipsis; height:100px" [class.disabled]="offline"
-                onclick="">
-                <div class="notch"
-                  style="width:20px; color:white; text-align: center; border-radius:0;top:0; bottom:0; height:unset; background-color: darkgray">
+          } @else {
+            @for (item of tplList(); track item.id) {
+              <div class="tile" style="text-overflow: ellipsis; height:100px" [class.disabled]="offline()" (click)="editItem(appEditTpl, item, false)">
+                <div class="notch" [style.background-color]="'darkgray'" style="width:20px; color:white; text-align: center; border-radius:0;top:0; bottom:0; height:unset;">
                   <fa-icon [icon]="['fas','plus']"></fa-icon>
                   <div class="vertical-text" style="font-weight:bold;font-size:12px;position:absolute; bottom:-10px;">
-                  TEMPLATE</div>
+                    TEMPLATE
+                  </div>
                 </div>
-                <div class="tile-image"
-                [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
+                <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
                 <div class="tile-mid" style="padding:10px;padding-left:30px;">
                   <div class="tile-content">
-                    <h6 class="list-group-item-heading">{{item.title}}
-                    </h6>
-                    <p class="desc">{{item.description}}</p>
+                    <h6 class="list-group-item-heading">{{ item.title }}</h6>
+                    <p class="desc">{{ item.description }}</p>
                   </div>
                   <div class="tile-action">
                     <div class="p-1">
                       <button type="button" class="btn btn-primary btn-round mb-2 stack" (click)="cloneItem(appEditTpl, item, true)">
                         <fa-icon class="icon" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Create
                       </button>
-                      @if (item.email.indexOf(user.email)>-1) {
+                      @if (item.email.indexOf(user()?.email) > -1) {
                         <div class="d-flex justify-content-between">
-                          <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline"
-                            title="Edit Template"
-                            routerLink="/design/{{item.id}}">
+                          <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline()" routerLink="/design/{{ item.id }}" title="Edit Template">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                           </button>
-                          <button type="button" class="btn btn-light btn-round me-1"
-                            title="Edit Properties"
-                            (click)="editItem(appEditTpl,item, false)">
+                          <button type="button" class="btn btn-light btn-round me-1" (click)="editItem(appEditTpl, item, false)" title="Edit Properties">
                             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                           </button>
-                          <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline"
-                            title="Remove Template"
-                            (click)="removeItem(removeItemTpl,item)">
+                          <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" (click)="removeItem(removeItemTpl, item)" title="Remove Template">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>
@@ -107,7 +96,7 @@
               </div>
             }
           }
-        }@else {
+        } @else {
           <div class="text-muted text-center d-flex" style="width: 160px;margin: 8px;">
             <div class="lds-ellipsis">
               <div></div>
@@ -118,12 +107,19 @@
           </div>
         }
       </div>
-      @if (tplTotal>pageSizeTpl) {
+      @if (tplTotal() > pageSizeTpl()) {
         <div class="d-flex justify-content-center p-3 pagination-rounded">
-          <ngb-pagination [collectionSize]="tplTotal" [pageSize]="pageSizeTpl" [(page)]="pageNumberTpl" [maxSize]="4"
-            [rotate]="true" (pageChange)="getTplList(pageNumberTpl)" [boundaryLinks]="true" [directionLinks]="false">
+          <ngb-pagination 
+            [collectionSize]="tplTotal()" 
+            [pageSize]="pageSizeTpl()" 
+            [(page)]="pageNumberTpl" 
+            [maxSize]="4" 
+            [rotate]="true" 
+            (pageChange)="getTplList(pageNumberTpl)" 
+            [boundaryLinks]="true" 
+            [directionLinks]="false">
             <ng-template ngbPaginationFirst>
-              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
             </ng-template>
             <ng-template ngbPaginationPrevious>
               <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -131,7 +127,7 @@
             <ng-template ngbPaginationNext>
               <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
             </ng-template>
-            <ng-template ngbPaginationLast>              
+            <ng-template ngbPaginationLast>
               <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
             </ng-template>
           </ngb-pagination>
@@ -143,92 +139,88 @@
         <div>
           <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> My App Collection
         </div>
-
+    
         <div class="ms-auto btn-group-xs small group-by-toggle">
           <input class="btn-check" type="radio" value="all" id="dsgb-ungroup"
-            name="dsgb-ungroup" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+            name="dsgb-ungroup" [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
           <label for="dsgb-ungroup" class="btn ms-2">All</label>
           <input class="btn-check" type="radio" value="true" id="dsgb-form"
-            name="dsgb-form" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+            name="dsgb-form" [checked]="appStatusFilter() === 'true'" (change)="appStatusFilter.set('true'); getItemList(1)">
           <label for="dsgb-form" class="btn">Live</label>
           <input class="btn-check" type="radio" value="false" id="dsgb-type"
-            name="dsgb-type" [(ngModel)]="appStatusFilter" (ngModelChange)="getItemList(1)">
+            name="dsgb-type" [checked]="appStatusFilter() === 'false'" (change)="appStatusFilter.set('false'); getItemList(1)">
           <label for="dsgb-type" class="btn">Dev</label>
         </div>
       </div>
-      @if (!itemLoading){
-        @if(itemTotal==0){
+    
+      @if (!itemLoading()) {
+        @if (itemTotal() === 0) {
           <div class="p-4 text-muted text-center">
             <h1>:(</h1>
             <h4>No application available</h4>
-          </div>  
-        }@else {
+          </div>
+        } @else {
           <div class="px-2">
             <div class="py-1 small m-a" [class.limit-width]="!dataset?.wide">
-              <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter==null}" (click)="groupFilter=null">
+              <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+                [class.bg-info-subtle]="groupFilter() === null" 
+                [class.text-primary]="groupFilter() === null" 
+                [class.border-primary]="groupFilter() === null" 
+                (click)="groupFilter.set(null)">
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
               </button>
-              @for(gf of groupedItemList; track $index){
-                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"  [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter==gf.key}" (click)="groupFilter=gf.key">
-                  @if (gf?.key=='undefined'){
+              @for (gf of groupedItemList(); track $index) {
+                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                  [class.bg-info-subtle]="groupFilter() === gf.key" 
+                  [class.text-primary]="groupFilter() === gf.key" 
+                  [class.border-primary]="groupFilter() === gf.key" 
+                  (click)="groupFilter.set(gf.key)">
+                  @if (gf?.key === 'undefined') {
                     <span class="text-muted fst-italic"> Ungrouped</span>
-                  }@else {
-                    {{gf?.key}}
+                  } @else {
+                    {{ gf?.key }}
                   }
                 </button>
               }
             </div>
           </div>
-
+    
           <div class="d-flex flex-wrap flex-row align-content-center">
-
-            @for (dsKv of groupedItemList | filter:searchText ; track $index) {
-
-              @if( !groupFilter || groupFilter==dsKv.key){
-
+            @for (dsKv of groupedItemList(); track $index) {
+              @if (!groupFilter() || groupFilter() === dsKv.key) {
                 <div style="flex-grow: 1;">
-                  <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="hideGroupItems[dsKv.key]=!hideGroupItems[dsKv.key]">
-                    @if (dsKv.key!='undefined'){
-                      <span class="">{{dsKv.key}}</span>
-                    }@else {
+                  <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
+                    @if (dsKv.key !== 'undefined') {
+                      <span>{{ dsKv.key }}</span>
+                    } @else {
                       <span class="fst-italic text-muted">Ungrouped</span>
-                    }                  
+                    }
                   </div>
-                
-                  @if (!hideGroupItems[dsKv.key]){
+    
+                  @if (!hideGroupItems()[dsKv.key]) {
                     <div class="tile-wrap tile-center">
                       @for (item of dsKv.value; track $index) {
-                        <div class="tile"
-                          style="text-overflow: ellipsis" onclick="">
-                          <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
-                          <div class="tile-image"
-                            [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}">
-                          </div>
+                        <div class="tile" style="text-overflow: ellipsis">
+                          <div class="notch" [style.background-color]="item.theme"></div>
+                          <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
                           <div class="tile-mid">
                             <div class="tile-content">
-                              <h6 class="list-group-item-heading">{{item.title}}</h6>
-                              <p class="desc">{{item.description}}</p>
+                              <h6 class="list-group-item-heading">{{ item.title }}</h6>
+                              <p class="desc">{{ item.description }}</p>
                             </div>
                             <div class="tile-action">
                               <div class="p-1">
-                                <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline"
-                                  routerLink="/design/{{item.id}}">
+                                <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()" routerLink="/design/{{ item.id }}">
                                   <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
                                 </button>
                                 <div class="d-flex justify-content-between">
-                                  <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline"
-                                    title="Copy App"
-                                    (click)="cloneItem(appEditTpl,item, true)">
+                                  <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
                                     <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
                                   </button>
-                                  <button type="button" class="btn btn-light btn-round me-1"
-                                    title="Edit Properties"
-                                    (click)="editItem(appEditTpl,item, false)">
+                                  <button type="button" class="btn btn-light btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   </button>
-                                  <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline"
-                                    title="Remove App"
-                                    (click)="removeItem(removeItemTpl,item)">
+                                  <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" title="Remove App" (click)="removeItem(removeItemTpl, item)">
                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                   </button>
                                 </div>
@@ -239,16 +231,15 @@
                             <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
                           }
                         </div>
-                      }  
+                      }
                     </div>
                   }
                 </div>
               }
             }
-
           </div>
         }
-      }@else {
+      } @else {
         <div class="p-4 text-muted text-center">
           <div class="lds-ellipsis">
             <div></div>
@@ -258,13 +249,12 @@
           </div>
         </div>
       }
-
-      @if (itemTotal>pageSize) {
+    
+      @if (itemTotal() > pageSize()) {
         <div class="d-flex justify-content-center p-3 pagination-rounded">
-          <ngb-pagination [collectionSize]="itemTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="4"
-            [rotate]="true" (pageChange)="getItemList(pageNumber)" [boundaryLinks]="true" [directionLinks]="false">
+          <ngb-pagination [collectionSize]="itemTotal()" [pageSize]="pageSize()" [(page)]="pageNumber" [maxSize]="4" [rotate]="true" (pageChange)="getItemList(pageNumber())" [boundaryLinks]="true" [directionLinks]="false">
             <ng-template ngbPaginationFirst>
-              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
             </ng-template>
             <ng-template ngbPaginationPrevious>
               <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -272,13 +262,13 @@
             <ng-template ngbPaginationNext>
               <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
             </ng-template>
-            <ng-template ngbPaginationLast>              
+            <ng-template ngbPaginationLast>
               <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
             </ng-template>
           </ngb-pagination>
         </div>
       }
-    </div>   
+    </div>
   </div>
 </div>
 
@@ -295,25 +285,25 @@
         <div class="form-group row">
           <label class="col-form-label col-md-3">App Title</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.title}}">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().title}}">
             <!-- <p class="form-control-static">{{removeItemData.title}}</p> -->
           </div>
         </div>
         <div class="form-group row">
           <label class="col-form-label col-md-3">Description</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData.description}}">
+            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().description}}">
             <!-- <p class="form-control-static">{{removeItemData.description}}</p> -->
           </div>
         </div>
-        @if(removing){
+        @if(removing()){
           <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Removing
         }
       </div>
     </div>
     <div class="modal-footer border-0 justify-content-between">
       <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
-      <button type="button" class="btn btn-round btn-primary" [class.disabled]="removing" [disabled]="removing" (click)="realRemoveItem(c,removeItemData)">
+      <button type="button" class="btn btn-round btn-primary" [class.disabled]="removing()" [disabled]="removing()" (click)="realRemoveItem(c,removeItemData())">
         <i class="icon-minus-sign-alt"></i> Remove App
       </button>
     </div>
@@ -322,7 +312,7 @@
 
 <ng-template #appEditTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
-    <app-app-edit [(data)]="editItemData" [offline]="offline" [user]="user"
+    <app-app-edit [(data)]="editItemData" [offline]="offline()" [user]="user()"
     [dismiss]="d" [close]="c"></app-app-edit>
   }@loading {
     <div class="text-center m-5">

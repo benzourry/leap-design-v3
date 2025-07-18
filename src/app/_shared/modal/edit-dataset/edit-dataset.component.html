@@ -93,75 +93,84 @@
                 <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAll('items',editDatasetData())">None</button>
               </div>
               @for (fm of ['data','prev']; track fm) {
-                @if (formHolder[fm]) {
-                  <div class="form-group mb-3">
-                    <label class="form-label">Included Fields
-                    ({{formHolder[fm]?.title}})</label>
-                    @for (s of sectionItems[fm]; track $index) {
-                      @if (s.section.type!='list') {
-                        @for (f of s.items|filter:filterField; track $index) {
-                          @if (formHolder[fm]?.items[f.code]) {
-                            <div class="form-check"
-                              [hidden]="formHolder[fm]?.items[f.code].type=='static' && formHolder[fm]?.items[f.code].subType=='clear'">
-                              @if (s.section.type!='approval') {
-                                <input type="checkbox" class="form-check-input"
-                                  id="{{f.code}}-{{fm}}" value="{{f.code}}-data"
-                                  (click)="toggleItem(editDatasetData(),'items',formHolder[fm]?.items[f.code],fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
-                                  [checked]="checkItem(editDatasetData().items,formHolder[fm]?.items[f.code],fm)">
-                                  <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                                  class="text-muted">{{s.section.title}} - </span>
-                                {{formHolder[fm]?.items[f.code].label}}</label>
-                              } @else {
-                                @if (s.tier) {
-                                  <input type="checkbox" class="form-check-input"
-                                    id="{{f.code}}-{{s.tier?.id}}" value="{{f.code}}-data"
-                                    (click)="toggleItem(editDatasetData(),'items',formHolder[fm]?.items[f.code],s.tier?.id,formHolder[fm].id,s.section?.type,getPrefix(fm,s.section))"
-                                    [checked]="checkItem(editDatasetData().items,formHolder[fm]?.items[f.code],s.tier?.id)"
-                                    [hidden]="formHolder[fm]?.items[f.code].type=='static'">
-                                    <label class="form-check-label"
-                                      for="{{f.code}}-{{s.tier?.id}}"><span
-                                    class="text-muted">{{s.section.title}} - </span>
-                                    {{formHolder[fm]?.items[f.code].label}}
-                                  ^</label>
-                                }
-                              }
-                            </div>
-                          }
-                        }
-                      }@else {
-                        <div class="form-check">
-                          <!-- Treat section as item -->
-                          <input type="checkbox" class="form-check-input"
-                              id="{{s.section.code}}-{{fm}}" value="{{s.section.code}}-data"
-                              (click)="toggleItem(editDatasetData(),'items',s.section,fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
-                              [checked]="checkItem(editDatasetData().items,s.section,fm)">
-                          <label class="form-check-label" for="{{s.section.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                              class="text-muted">
-                              <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true"></fa-icon>                              
-                              {{s.section.title}}</span></label>
-
-                          @if (checkItem(editDatasetData().items,s.section,fm)){
-                            <div>
-                              @for (f of s.items|filter:filterField; track $index) {
-                                @if (formHolder[fm]?.items[f.code]) {
-                                  <div class="form-check"
-                                    [hidden]="formHolder[fm]?.items[f.code].type=='static' && formHolder[fm]?.items[f.code].subType=='clear'">
-                                      <input type="checkbox" class="form-check-input"
-                                        id="{{f.code}}-{{fm}}" value="{{f.code}}-data"
-                                        (click)="toggleChildItem(editDatasetData().items, s.section.code,formHolder[fm]?.items[f.code])"
-                                        [checked]="checkChildItem(editDatasetData().items, s.section.code,formHolder[fm]?.items[f.code])">
-                                        <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                                        class="text-muted">{{s.section.title}} - </span>
-                                      {{formHolder[fm]?.items[f.code].label}}</label>
-                                  </div>
-                                }
-                              }
-                            </div>
-                          }
-                        </div>
-                      }
-                    }
+                @if (formLoading) {
+                  <div class="form-group mb-3 text-center clear-both p-4">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading fields information...</span>
+                    </div>
+                    <div class="text-muted">Loading fields information...</div>
                   </div>
+                } @else {
+                  @if (formHolder[fm]) {
+                    <div class="form-group mb-3">
+                      <label class="form-label">Included Fields
+                      ({{formHolder[fm]?.title}})</label>
+                      @for (s of sectionItems[fm]; track $index) {
+                        @if (s.section.type!='list') {
+                          @for (f of s.items|filter:filterField; track $index) {
+                            @if (formHolder[fm]?.items[f.code]) {
+                              <div class="form-check"
+                                [hidden]="formHolder[fm]?.items[f.code].type=='static' && formHolder[fm]?.items[f.code].subType=='clear'">
+                                @if (s.section.type!='approval') {
+                                  <input type="checkbox" class="form-check-input"
+                                    id="{{f.code}}-{{fm}}" value="{{f.code}}-data"
+                                    (click)="toggleItem(editDatasetData(),'items',formHolder[fm]?.items[f.code],fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
+                                    [checked]="checkItem(editDatasetData().items,formHolder[fm]?.items[f.code],fm)">
+                                    <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
+                                    class="text-muted">{{s.section.title}} - </span>
+                                  {{formHolder[fm]?.items[f.code].label}}</label>
+                                } @else {
+                                  @if (s.tier) {
+                                    <input type="checkbox" class="form-check-input"
+                                      id="{{f.code}}-{{s.tier?.id}}" value="{{f.code}}-data"
+                                      (click)="toggleItem(editDatasetData(),'items',formHolder[fm]?.items[f.code],s.tier?.id,formHolder[fm].id,s.section?.type,getPrefix(fm,s.section))"
+                                      [checked]="checkItem(editDatasetData().items,formHolder[fm]?.items[f.code],s.tier?.id)"
+                                      [hidden]="formHolder[fm]?.items[f.code].type=='static'">
+                                      <label class="form-check-label"
+                                        for="{{f.code}}-{{s.tier?.id}}"><span
+                                      class="text-muted">{{s.section.title}} - </span>
+                                      {{formHolder[fm]?.items[f.code].label}}
+                                    ^</label>
+                                  }
+                                }
+                              </div>
+                            }
+                          }
+                        }@else {
+                          <div class="form-check">
+                            <!-- Treat section as item -->
+                            <input type="checkbox" class="form-check-input"
+                                id="{{s.section.code}}-{{fm}}" value="{{s.section.code}}-data"
+                                (click)="toggleItem(editDatasetData(),'items',s.section,fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
+                                [checked]="checkItem(editDatasetData().items,s.section,fm)">
+                            <label class="form-check-label" for="{{s.section.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
+                                class="text-muted">
+                                <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true"></fa-icon>                              
+                                {{s.section.title}}</span></label>
+
+                            @if (checkItem(editDatasetData().items,s.section,fm)){
+                              <div>
+                                @for (f of s.items|filter:filterField; track $index) {
+                                  @if (formHolder[fm]?.items[f.code]) {
+                                    <div class="form-check"
+                                      [hidden]="formHolder[fm]?.items[f.code].type=='static' && formHolder[fm]?.items[f.code].subType=='clear'">
+                                        <input type="checkbox" class="form-check-input"
+                                          id="{{f.code}}-{{fm}}" value="{{f.code}}-data"
+                                          (click)="toggleChildItem(editDatasetData().items, s.section.code,formHolder[fm]?.items[f.code])"
+                                          [checked]="checkChildItem(editDatasetData().items, s.section.code,formHolder[fm]?.items[f.code])">
+                                          <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
+                                          class="text-muted">{{s.section.title}} - </span>
+                                        {{formHolder[fm]?.items[f.code].label}}</label>
+                                    </div>
+                                  }
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      }
+                    </div>
+                  }
                 }
               }
               @if (formHolder['data']) {
@@ -321,6 +330,15 @@
                   <label class="form-check-label" for="autoResync">Auto-resync dataset on add/update entry</label>
                 </div> -->
 
+                <div class="form-check form-switch mt-1">
+                  <input class="form-check-input" type="checkbox" id="skipMask"
+                    [(ngModel)]="editDatasetData().x.skipMask" name="skipMask">
+                  <label class="form-check-label" for="skipMask">Disable field mask - include all fields in response 
+                    @if (editDatasetData().x?.skipMask){
+                      <sup class="text-danger blink_me"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon></sup>
+                    }
+                  </label>
+                </div>
                 <div class="form-check form-switch mt-1">
                   <input class="form-check-input" type="checkbox" id="canGroup"
                     [(ngModel)]="editDatasetData().x.canGroup" name="canGroup">

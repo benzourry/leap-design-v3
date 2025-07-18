@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 // import { RunService } from '../../../service/run.service';
 import { SafePipe } from '../../pipe/safe.pipe';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +10,8 @@ import { RunService } from '../../../run/_service/run.service';
     selector: 'app-noti-list',
     imports: [SafePipe, FormsModule, NgbPagination, DatePipe, NgStyle],
     templateUrl: './noti-list.component.html',
-    styleUrl: './noti-list.component.scss'
+    styleUrl: './noti-list.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotiListComponent implements OnInit  {
 
@@ -28,7 +29,10 @@ export class NotiListComponent implements OnInit  {
 
   isReadMore:any = {}
 
-  constructor(private runService: RunService) { }
+  cdr = inject(ChangeDetectorRef);
+  private runService = inject(RunService)
+
+  constructor() { }
 
   ngOnInit() {
     this.loadNotiList(1)
@@ -48,6 +52,7 @@ export class NotiListComponent implements OnInit  {
     .subscribe(res=>{
       this.list = res.content;
       this.listTotal = res.page?.totalElements;
+      this.cdr.detectChanges();
     })
   }
 

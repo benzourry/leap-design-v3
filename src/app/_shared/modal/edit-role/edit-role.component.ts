@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -7,7 +7,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
     selector: 'app-edit-role',
     imports: [FormsModule, FaIconComponent, NgSelectModule],
     templateUrl: './edit-role.component.html',
-    styleUrl: './edit-role.component.scss'
+    styleUrl: './edit-role.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditRoleComponent {
 

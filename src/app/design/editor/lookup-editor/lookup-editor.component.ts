@@ -1,24 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
-// import { LookupService } from '../../../service/lookup.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
-// import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { GroupService } from '../../../service/group.service';
 import { baseApi, base } from '../../../_shared/constant.service';
-// import { RunService } from '../../../service/run.service';
 import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { EditLookupComponent } from '../../../_shared/modal/edit-lookup/edit-lookup.component';
-import { EditLookupEntryComponent } from '../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
+import { EditLookupEntryComponent } from '../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
 
 @Component({
     selector: 'app-lookup-editor',
@@ -26,15 +23,25 @@ import { RunService } from '../../../run/_service/run.service';
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css',
         './lookup-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
-        NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent]
+        NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LookupEditorComponent implements OnInit {
 
-    // onlineEvent: Observable<Event>;
-    // offlineEvent: Observable<Event>;
-    // subscriptions: Subscription[] = [];
-    offline = false;
+    private userService = inject(UserService);
+    private route = inject(ActivatedRoute);
+    private lookupService = inject(LookupService);
+    private modalService = inject(NgbModal);
+    private groupService = inject(GroupService);
+    private appService = inject(AppService);
+    private runService = inject(RunService);
+    private toastService = inject(ToastService);
+    private router = inject(Router);
+    private location = inject(PlatformLocation);
+    private utilityService = inject(UtilityService);
+    private cdr = inject(ChangeDetectorRef);
 
+    offline = false;
     app: any;
     lookupTotal: any;
     loading: boolean;
@@ -49,12 +56,8 @@ export class LookupEditorComponent implements OnInit {
     baseApi = baseApi;
     base = base;
 
-    constructor(private userService: UserService, private route: ActivatedRoute, private lookupService: LookupService,
-        private modalService: NgbModal, private groupService: GroupService, private appService: AppService,
-        private runService: RunService, private toastService: ToastService,
-        private router: Router,
-        private location: PlatformLocation, private utilityService: UtilityService) {
-        location.onPopState(() => this.modalService.dismissAll(''));
+    constructor() {
+        this.location.onPopState(() => this.modalService.dismissAll(''));
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
     }
 
@@ -62,7 +65,7 @@ export class LookupEditorComponent implements OnInit {
         this.userService.getCreator()
             .subscribe((user) => {
                 this.user = user;
-
+                this.cdr.detectChanges();
 
 
                 this.route.parent.params
@@ -76,6 +79,7 @@ export class LookupEditorComponent implements OnInit {
                                 .subscribe(res => {
                                     this.app = res;
                                     this.getAccessList();
+                                    this.cdr.detectChanges();
                                 });
                         }
                         this.loadLookupList(1);
@@ -111,6 +115,7 @@ export class LookupEditorComponent implements OnInit {
         this.groupService.getGroupList({ appId: this.app.id, size: 999 })
             .subscribe(res => {
                 this.accessList = res.content;
+                this.cdr.detectChanges();
             });
     }
 
@@ -131,8 +136,10 @@ export class LookupEditorComponent implements OnInit {
                     this.lookupList = res.content;
                     this.lookupTotal = res.page?.totalElements;
                     this.itemLoading = false;
+                    this.cdr.detectChanges();
                 }, error: (err) => {
-                    this.itemLoading = false
+                    this.itemLoading = false;
+                    this.cdr.detectChanges();
                 }
             })
     }
@@ -150,8 +157,10 @@ export class LookupEditorComponent implements OnInit {
                             this.loadLookup(res.id);
                             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                             this.toastService.show("Lookup successfully saved", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         }, error: (err) => {
                             this.toastService.show("Lookup saving failed", { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges();
                         }
                     })
             }, res => { })
@@ -169,8 +178,10 @@ export class LookupEditorComponent implements OnInit {
                             this.loadLookupList(1);
                             delete this.lookup;
                             this.toastService.show("Lookup successfully removed", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         }, error: (err) => {
                             this.toastService.show("Lookup removal failed", { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges();
                         }
                     })
             }, res => { });
@@ -199,8 +210,10 @@ export class LookupEditorComponent implements OnInit {
                                 Object.assign(lookupEntry, res);
                             }
                             this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         }, error: (err) => {
                             this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges();
                         }
                     })
             }, res => { })
@@ -258,8 +271,10 @@ export class LookupEditorComponent implements OnInit {
                         next: res => {
                             this.loadLookup(this.lookupId);
                             this.toastService.show("Entry successfully removed", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         }, error: err => {
                             this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges();
                         }
                     })
             }, res => { });
@@ -272,8 +287,10 @@ export class LookupEditorComponent implements OnInit {
                     next: res => {
                         this.loadLookup(this.lookupId);
                         this.toastService.show("Lookup entry cleared", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, error: err => {
                         this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
+                        this.cdr.detectChanges();
                     }
                 });
         }
@@ -310,6 +327,7 @@ export class LookupEditorComponent implements OnInit {
                 if (lookup.sourceType == 'db') {
                     this.getLookupEntryList(this.entryPageNumber);
                 }
+                this.cdr.detectChanges();
             })
 
     }
@@ -347,6 +365,7 @@ export class LookupEditorComponent implements OnInit {
                 this.lookupEntryTotal = response.page?.totalElements;
                 this.lookupEntryList = response.content;
                 this.hasLoadList = true;
+                this.cdr.detectChanges();
             });
     }
 
@@ -373,12 +392,14 @@ export class LookupEditorComponent implements OnInit {
                         this.importLoading = false;
                         this.loadLookup(this.lookup.id);
                         this.toastService.show("Excel successfully imported", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, error: (error) => {
                         this.importExcelData = {
                             success: false,
                             message: error.message
                         }
                         this.importLoading = false;
+                        this.cdr.detectChanges();
                     }
                 })
         }
@@ -432,9 +453,11 @@ export class LookupEditorComponent implements OnInit {
                     .subscribe({
                         next: (res) => {
                             this.toastService.show("Lookup successfully sync", { classname: 'bg-success text-light' });
+                            this.cdr.detectChanges();
                         },
                         error: (err) => {
                             this.toastService.show("Lookup sync failed.\n "+ err.error?.message, { classname: 'bg-danger text-light' });
+                            this.cdr.detectChanges();
                         }
                     })
             }).catch(err => { });
@@ -459,6 +482,7 @@ export class LookupEditorComponent implements OnInit {
         setTimeout(() => {
             items[index + op].altClass = 'swapEnd';
             items[index].altClass = 'swapEnd';
+            this.cdr.detectChanges();
         }, 500);
     }
 

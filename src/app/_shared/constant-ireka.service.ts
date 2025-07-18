@@ -22,6 +22,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 /* IREKA UNIMAS */
 export const baseApi = 'https://io.ireka.my/api';   // prefer
 export const base = 'https://io.ireka.my'; // prefer 
+export const cognaBase = 'https://io.ireka.my'; // prefer 
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?ireka\.my/;
 export const domainBase = "ireka.my";
 export const OAUTH = {

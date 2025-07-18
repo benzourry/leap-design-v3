@@ -55,8 +55,7 @@
       </div>
     </div>
     @if (['qr','page'].indexOf(editScreenData().type)>-1) {
-      <div class="form-group mb-3"
-        [class.disabled]="editScreenData().id && editScreenData().form">
+      <div class="form-group mb-3">
         <label>Select Form *</label>
         <!-- {{editScreenData().form|json}} -->
         <!-- (change)="loadForm(editScreenData().form.id, editScreenData().form)" -->
@@ -70,8 +69,7 @@
       </div>
     }
     @if (['list','calendar','map'].indexOf(editScreenData().type)>-1) {
-      <div class="form-group mb-3"
-        [class.disabled]="editScreenData().id && editScreenData().dataset">
+      <div class="form-group mb-3">
         <label>Select Dataset *</label>
         <!-- (change)="loadDataset(editScreenData().dataset.id, editScreenData().dataset)" -->
         <select class="form-select" name="dataset" #cDataset
@@ -84,8 +82,7 @@
       </div>
     }
     @if (['chatbot'].indexOf(editScreenData().type)>-1) {
-      <div class="form-group mb-3"
-        [class.disabled]="editScreenData().id && editScreenData().cogna">
+      <div class="form-group mb-3">
         <label>Select Cogna *</label>
         <select class="form-select" name="cogna" #cCogna
           [compareWith]="compareByIdFn" [(ngModel)]="editScreenData().cogna" required>
@@ -97,8 +94,7 @@
       </div>
     }
     @if (['bucket'].indexOf(editScreenData().type)>-1) {
-      <div class="form-group mb-3"
-        [class.disabled]="editScreenData().id && editScreenData().bucket">
+      <div class="form-group mb-3">
         <label>Select Bucket *</label>
         <select class="form-select" name="bucket" #cBucket
           [compareWith]="compareByIdFn" [(ngModel)]="editScreenData().bucket" required>

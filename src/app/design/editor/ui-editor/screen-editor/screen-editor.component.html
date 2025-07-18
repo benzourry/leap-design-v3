@@ -1452,9 +1452,9 @@
                   <label for="type-form" class="form-check-label">Add</label>
                 </div>
                 <div class="form-check">
-                  <input type="radio" class="form-check-input" id="type-form-single" name="type"
-                    [(ngModel)]="addCombineCompData.type" value="form-single" required>
-                  <label for="type-form-single" class="form-check-label">Form Single</label>
+                  <input type="radio" class="form-check-input" id="type-edit-single" name="type"
+                    [(ngModel)]="addCombineCompData.type" value="edit-single" required>
+                  <label for="type-edit-single" class="form-check-label">Form Single</label>
                 </div>
                 <div class="form-check">
                   <input type="radio" class="form-check-input" id="type-view-single" name="type"
@@ -1504,7 +1504,7 @@
               </div>
             </div>
 
-            @if (['form','form-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(addCombineCompData.type)>-1) {
+            @if (['form','edit-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(addCombineCompData.type)>-1) {
               <div class="form-group mb-3">
                 <label class="form-label">Select App</label>
                 <select class="form-select" name="appId"
@@ -1518,7 +1518,7 @@
             }
       
       
-            @if (['add','form-single','view-single'].indexOf(addCombineCompData.type)>-1) {
+            @if (['add','edit-single','view-single'].indexOf(addCombineCompData.type)>-1) {
               <div class="form-group mb-3"
                 >
                 <label class="form-label">Select Form *</label>

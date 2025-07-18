@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { GroupService } from '../../../service/group.service';
@@ -23,6 +23,7 @@ import { RunService } from '../../../run/_service/run.service';
 
 @Component({
     selector: 'app-group-editor',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './group-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './group-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, JsonPipe, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgClass, NgbInputDatepicker, NgSelectModule, AngularEditorModule, FilterPipe, DatePipe, KeyValuePipe,
@@ -33,26 +34,32 @@ export class GroupEditorComponent implements OnInit {
   offline = false;
   app: any;
 
-  groupTotal: any;
-  loading: boolean;
-  groupList: any;
-  groupEntryTotal: any;
-  groupEntryList: any;
-  totalItems: any;
+  groupTotal = signal<number>(0);
+  loading = signal<boolean>(false);
+  groupList = signal<any[]>([]);
+  // groupEntryTotal: any;
+  // groupEntryList: any;
+  // totalItems: any;
   group: any;
-  itemLoading: boolean;
+  itemLoading = signal<boolean>(false);
   appId: number;
   ei: any = {} // hold show/hide extra attributes in list
-  constructor(private userService: UserService, private route: ActivatedRoute, private groupService: GroupService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private runService: RunService,
-    private appService: AppService,
-    private toastService: ToastService,
-    private lookupService: LookupService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+
+  private cdr = inject(ChangeDetectorRef);
+  private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
+  private groupService = inject(GroupService);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  private router = inject(Router);
+  private runService = inject(RunService);
+  private appService = inject(AppService);
+  private toastService = inject(ToastService);
+  private lookupService = inject(LookupService);
+  private utilityService = inject(UtilityService);
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -98,6 +105,7 @@ export class GroupEditorComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges(); // <--- Add here if 'user' is used in the template
 
         this.route.parent.params
           // NOTE: I do not use switchMap here, but subscribe directly
@@ -111,6 +119,7 @@ export class GroupEditorComponent implements OnInit {
               this.appService.getApp(this.appId, params)
                 .subscribe(res => {
                   this.app = res;
+                  this.cdr.detectChanges(); // <--- Add here if 'app' is used in the template
                 });
             }
 
@@ -120,6 +129,7 @@ export class GroupEditorComponent implements OnInit {
             this.runService.getMailerList({ appId: this.appId })
               .subscribe(res => {
                 this.mailerList = res.content;
+                this.cdr.detectChanges(); // <--- Add here if 'mailerList' is used in the template
               })
           });
 
@@ -160,7 +170,7 @@ export class GroupEditorComponent implements OnInit {
 
   user: any;
   groupId = '';
-  data = { 'list': [] };
+  // data = { 'list': [] };
   pageSize = 15;
   // currentPage = 1;
   // itemsPerPage = 15;
@@ -171,7 +181,7 @@ export class GroupEditorComponent implements OnInit {
   isObject =(value) => typeof value === 'object';
   isArray = (value) => Array.isArray(value);
 
-  pageNumber: number = 1;
+  pageNumber = signal<number>(1);
   // entryPageNumber: number = 1;
 
   provider: any = {
@@ -204,8 +214,8 @@ export class GroupEditorComponent implements OnInit {
 
   // this.loadGroupList = loadGroupList;
   loadGroupList(pageNumber) {
-    this.pageNumber = pageNumber;
-    this.itemLoading = true;
+    this.pageNumber.set(pageNumber);
+    this.itemLoading.set(true);
 
     let params = {
       searchText: this.searchText,
@@ -213,20 +223,15 @@ export class GroupEditorComponent implements OnInit {
       page: pageNumber - 1,
       size: this.pageSize
     }
-    // new HttpParams()
-    //   .append("searchText", this.searchText)
-    //   .append("appId", this.appId.toString())
-    //   .append("page", (pageNumber - 1).toString())
-    //   .append("size", this.itemsPerPage.toString());
 
     this.groupService.getGroupList(params)
       .subscribe({
         next: (res) => {
-          this.groupList = res.content;
-          this.groupTotal = res.page?.totalElements;
-          this.itemLoading = false;
+          this.groupList.set(res.content);
+          this.groupTotal.set(res.page?.totalElements);
+          this.itemLoading.set(false);
         }, error: (err) => {
-          this.itemLoading = false
+          this.itemLoading.set(false);
         }
       })
   }
@@ -239,7 +244,7 @@ export class GroupEditorComponent implements OnInit {
       .result.then(data => {
         this.groupService.save(this.appId, data)
           .subscribe(res => {
-            this.loadGroupList(this.pageNumber);
+            this.loadGroupList(this.pageNumber());
             this.loadGroup(res.id);
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
@@ -259,6 +264,7 @@ export class GroupEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadGroupList(1);
             delete this.group;
+            this.cdr.detectChanges(); // <--- Add here if 'group' is used in the template
             this.toastService.show("Group successfully removed", { classname: 'bg-success text-light' });
           }, res => {
             this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
@@ -277,6 +283,7 @@ export class GroupEditorComponent implements OnInit {
       this.groupService.getGroup(id)
         .subscribe(group => {
           this.group = group;
+          this.cdr.detectChanges(); // <--- Add here if 'group' is used in the template
           this.getAppUserList(1, {
             group: this.groupId
           })
@@ -309,38 +316,38 @@ export class GroupEditorComponent implements OnInit {
           this.runService.saveAppUserBulk(this.app.id, payload)
             .subscribe(user => {
               this.toastService.show("Users successfully registered", { classname: 'bg-success text-light' });
-              this.getAppUserList(this.pageNumber, this.params);
+              this.getAppUserList(this.pageNumber(), this.params);
             })
         } else {
           this.runService.saveAppUser(this.app.id, payload)
             .subscribe(user => {
               this.toastService.show("User successfully registered", { classname: 'bg-success text-light' });
-              this.getAppUserList(this.pageNumber, this.params);
+              this.getAppUserList(this.pageNumber(), this.params);
             })
         }
 
       }, res => { })
   }
 
-  fieldsExistOrphan = (data) => {
-    var hhh = Object.assign({}, data);
-    this.editAppUserDataFields.forEach(el => {
-      delete hhh[el.key];
-    });
-    return hhh;
-  }
+  // fieldsExistOrphan = (data) => {
+  //   var hhh = Object.assign({}, data);
+  //   this.editAppUserDataFields.forEach(el => {
+  //     delete hhh[el.key];
+  //   });
+  //   return hhh;
+  // }
 
   deleteDataRow = (obj, key) => delete obj[key];
 
 
   params: any;
-  appUserTotal: any;
+  appUserTotal = signal<number>(0);
   appUserPageSize = 45;
   appUserPageNumber: number = 1;
-  appUserList: any;
+  appUserList = signal<any[]>([]);
   searchTextUsr: string = "";
-  numberOfElements: number=0;
-  entryPages:number=0;
+  numberOfElements = signal<number>(0);
+  entryPages = signal<number>(0);
   getAppUserList(pageNumber, params) {
     Object.assign(params, {
       page: pageNumber - 1,
@@ -353,10 +360,10 @@ export class GroupEditorComponent implements OnInit {
     this.params = params;
     this.runService.getAppUserList(this.appId, params)
       .subscribe(res => {
-        this.appUserList = res.content;
-        this.appUserTotal = res.page?.totalElements;
-        this.numberOfElements = res.content?.length;
-        this.entryPages = res.page?.totalPages;
+        this.appUserList.set(res.content);
+        this.appUserTotal.set(res.page?.totalElements);
+        this.numberOfElements.set(res.content?.length);
+        this.entryPages.set(res.page?.totalPages);
         // this.getappUserList(this.entryPageNumber);
       })
 
@@ -404,7 +411,7 @@ export class GroupEditorComponent implements OnInit {
         this.runService.removeAppUser(data.id, data.user?.id, this.user?.email)
           .subscribe(res => {
             this.toastService.show("User successfully removed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
@@ -413,12 +420,21 @@ export class GroupEditorComponent implements OnInit {
 
 
   reorderItem(index, op) {
-    this.reorder(this.appUserList, index, op);
+    this.appUserList.set(this.reorder(this.appUserList(), index, op));
+    // this.reorder(this.appUserList, index, op);
+    setTimeout(() => {
+      this.appUserList.update((currentList) => {
+      const updatedList = [...currentList];
+      updatedList[index + op].altClass = 'swapEnd';
+      updatedList[index].altClass = 'swapEnd';
+      return updatedList;
+      });
+    }, 500);
     this.saveItemOrder();
   }
 
   saveItemOrder() {
-    var list = this.appUserList
+    var list = this.appUserList()
       .map((val, $index) => {
         return { id: val.id, sortOrder: $index + ((this.appUserPageNumber - 1) * this.appUserPageSize) }
       });
@@ -444,19 +460,22 @@ export class GroupEditorComponent implements OnInit {
     items[index].sortOrder = tempSortOrder;
     items[index] = temp;
     // this.swapPositions(items,index,index+op);
-    setTimeout(() => {
-      items[index + op].altClass = 'swapEnd';
-      items[index].altClass = 'swapEnd';
-    }, 500);
+    // setTimeout(() => {
+    //   items[index + op].altClass = 'swapEnd';
+    //   items[index].altClass = 'swapEnd';
+    //   this.cdr.detectChanges();
+    // }, 500);
+    return items;
   }
 
   lookupList: any[] = [];
   lookupEntryList: any[] = [];
   getLookupList(appId) {
-    let params = { appId: appId }
-    this.lookupService.getFullLookupList(params)
+    // let params = { appId: appId }
+    this.lookupService.getFullLookupList({appId})
       .subscribe(res => {
         this.lookupList = res.content;
+        this.cdr.detectChanges(); // <--- Add here if 'lookupList' is used in the template
       })
 
   }
@@ -467,7 +486,7 @@ export class GroupEditorComponent implements OnInit {
                 // this.loading = false;
                 // this.lookupEntryTotal = response.page?.totalElements;
                 this.lookupEntryList = response.content;
-                // this.hasLoadList = true;
+                this.cdr.detectChanges(); // <--- Add here if 'lookupEntryList' is used in the template
             });
   }
 
@@ -489,10 +508,10 @@ export class GroupEditorComponent implements OnInit {
   
   checkAllUsers(checked) {
     if (checked) {
-      this.appUserList
+      this.appUserList()
         .forEach(e => this.selectedUsers.set(e.user?.id, e));
     } else {
-      this.appUserList
+      this.appUserList()
         .forEach(e => this.selectedUsers.delete(e.user?.id));
     }
   }
@@ -506,7 +525,7 @@ export class GroupEditorComponent implements OnInit {
         this.runService.updateUser(data.id, data)
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
@@ -533,7 +552,7 @@ export class GroupEditorComponent implements OnInit {
         this.runService.bulkChangeProvider(data.provider, Array.from(this.selectedUsers.keys()))
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
-            this.getAppUserList(this.pageNumber, this.params);
+            this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }

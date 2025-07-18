@@ -860,8 +860,10 @@
         }
       </label>
     }
-    <!-- <div class="mb-1" [innerHtml]="preCompile()|safe:'html'"></div> [afterInit]="postRender('f-'+field().id+'-'+id()+'-value')" -->
-    <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" [innerHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div>
+    <!-- <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" [innerHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div> -->
+    <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" 
+      morphType="inner"
+      [morphHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div>  
   }
   @if (field().subType=='clearfix') {
     <div class="clearfix clfx"></div>

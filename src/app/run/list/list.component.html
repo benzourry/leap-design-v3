@@ -1,271 +1,237 @@
-<div id="dataset-{{dataset?.id}}" class="viewport section-to-print">
-<div>
-  <!-- datasetid: {{dataset?.id}} -->
-  @if (!asComp() && !hideTitle()) {
-    <page-title>
-      <h4 class="m-0" [innerHtml]="compileTpl(dataset?.title,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.title}}</h4>
-      @if (dataset?.description) {
-        <div class="mt-1" [innerHtml]="compileTpl(dataset?.description,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'">{{dataset?.description}}</div>
-      }
-    </page-title>
-  }
-
-  @if (dataset && !userUnauthorized) {
-    @if (dataset.x?.pre){
-      <!-- <div [outerHTML]="dataset.x?.pre|safe:'html'"></div> -->
-      <div [outerHTML]="compileTpl(dataset.x?.pre,{$user$:user, $conf$:runService.appConfig,$:{},$_:{},$prev$:{},$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})|safe:'html'"></div>
+<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print">
+  <div>
+    @if (!asComp() && !hideTitle()) {
+      <page-title>
+        <h4 class="m-0" [innerHtml]="compileTpl(dataset()?.title,{})|safe:'html'">{{dataset()?.title}}</h4>
+        @if (dataset()?.description) {
+          <div class="mt-1" [innerHtml]="compileTpl(dataset()?.description,{})|safe:'html'">{{dataset()?.description}}</div>
+        }
+      </page-title>
     }
-    <div [class.px-2]="!asComp()" class="print-hide">
-      <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
-        [class.input-group-sm]="asComp()" [class.limit-width]="!dataset?.wide">
-        @if (dataset?.x?.canAdd && preCheck({}, dataset?.x?.addPre, false)) {
-          @if (!(form?.data?.prev && !prevId)) {
 
-            <!-- FormID:{{form['data']?.id}}, prev:{{form.data.prev?'prev':'add'}}, prevId:{{prevId}}, form.data.prev:{{form.data.prev}} -->
-            <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
-              (click)="runAction('/form/'+form['data']?.id+'/'+(form.data.prev?'prev':'add'),dataset?.x?.inpopAdd, inPopTpl,prevId,form?.data?.id,'form',form.data.prev?'prev':'add', $param$())">
-              <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-              {{dataset?.x?.addLabel}}
-            </button>
-
-            <!-- @if (dataset?.x?.inpopAdd) {
+    @if (dataset() && !userUnauthorized()) {
+      @if (dataset().x?.pre){
+        <div [outerHTML]="compileTpl(dataset().x?.pre,{})|safe:'html'"></div>
+      }
+      <div [class.px-2]="!asComp()" class="print-hide">
+        <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
+          [class.input-group-sm]="asComp()" [class.limit-width]="!dataset()?.wide">
+          @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
+            @if (!(form()?.data?.prev && !prevId)) {
               <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
-                (click)="inPop(inPopTpl,prevId,form?.data?.id,'form',form.data.prev?'prev':'add', $param$())">
+                (click)="runAction('/form/'+form()['data']?.id+'/'+(form().data.prev?'prev':'add'),dataset()?.x?.inpopAdd, inPopTpl,prevId,form()?.data?.id,'form',form().data.prev?'prev':'add', _param)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{dataset?.x?.addLabel}}
+                {{dataset()?.x?.addLabel}}
               </button>
-            } @else {
-              <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
-                routerLink="{{preurl}}/form/{{form['data']?.id}}/{{form.data.prev?'prev':'add'}}"
-                [queryParams]="deepMerge({entryId:prevId}, $param$())">
-                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{dataset?.x?.addLabel}}
-              </button>
-            } -->
-          }
-        }
-        @if (!dataset?.x?.hideSearch) {
-          <input type="search" autocapitalize="none"
-            class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
-            placeholder="{{app.x?.lang=='ms'?'Tapis senarai':'Filter list'}}" [(ngModel)]="searchText"
-            (keyup.enter)="getEntryList(1)">
-        }
-        @if (dataset?.filters && dataset?.filters.length>0) {
-          <button type="button" class="btn border border-2 position-relative"
-            [class.blue]="!checkFilter()" (click)="editFilter(editFilterTpl,filtersData,true)">
-            <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
-            @if(!checkFilter()){
-              <div class="position-absolute bg-danger px-1 text-white"
-              style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div>
             }
-          </button>
-        }
-        @if (dataset?.canBlast) {
-          <button type="button" class="btn border border-2" (click)="blastEmail(blastTpl,blastData)">
-            <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
-          </button>
-        }
-        @if (dataset?.x?.canResync) {
-          <button type="button" class="btn border border-2" title="Resync Dataset" [class.disabled]="offline"
-            (click)="resyncDataset(curDataset?.id)">
-            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-          </button>
-        }
-        @if (dataset?.exportXls||dataset?.exportCsv||dataset?.exportPdf) {
-          <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-2" title="Export dataset" id="dropdownExport"
-              ngbDropdownToggle>
-              <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
+          }
+          @if (!dataset()?.x?.hideSearch) {
+            <input type="search" autocapitalize="none"
+              class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
+              [placeholder]="app().x?.lang=='ms'?'Tapis senarai':'Filter list'" [(ngModel)]="searchText"
+              (keyup.enter)="getEntryList(1)">
+          }
+          @if (dataset()?.filters && dataset()?.filters.length>0) {
+            <button type="button" class="btn border border-2 position-relative"
+              [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl,filtersData())">
+              <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
+              @if(!filterIsEmpty()){
+                <div class="position-absolute bg-danger px-1 text-white"
+                style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div>
+              }
             </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownExport">
-              @if (dataset?.exportXls) {
-                <a title="Export to Excel" ngbDropdownItem target="blank"
-                  href="{{base}}/report/export/{{dataset?.id}}/xlsx?email={{user?.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
-                  <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
-                  Export to Excel
-                </a>
-              }
-              @if (dataset?.exportCsv) {
-                <a title="Export to CSV" ngbDropdownItem target="blank"
-                  href="{{base}}/report/export/{{dataset?.id}}/csv?email={{user?.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
-                  <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
-                  Export to CSV
-                </a>
-              }
-              @if (dataset?.exportPdf) {
-                <a title="Export to PDF" ngbDropdownItem target="blank"
-                  href="{{base}}/report/export/{{dataset?.id}}/pdf?email={{user?.email}}&filters={{filtersEncoded}}&searchText={{searchTextEncoded}}">
-                  <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
-                  Export to PDF
-                </a>
-              }
+          }
+          @if (dataset()?.canBlast) {
+            <button type="button" class="btn border border-2" (click)="blastEmail(blastTpl,blastData())">
+              <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
+            </button>
+          }
+          @if (dataset()?.x?.canResync) {
+            <button type="button" class="btn border border-2" title="Resync Dataset" [class.disabled]="offline()"
+              (click)="resyncDataset(dataset()?.id)">
+              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+            </button>
+          }
+          @if (dataset()?.exportXls||dataset()?.exportCsv||dataset()?.exportPdf) {
+            <div ngbDropdown class="d-inline-block">
+              <button type="button" class="btn border border-2" title="Export dataset" id="dropdownExport"
+                ngbDropdownToggle>
+                <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdownMenu aria-labelledby="dropdownExport">
+                @if (dataset()?.exportXls) {
+                  <a title="Export to Excel" ngbDropdownItem target="blank"
+                    href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
+                    Export to Excel
+                  </a>
+                }
+                @if (dataset()?.exportCsv) {
+                  <a title="Export to CSV" ngbDropdownItem target="blank"
+                    href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
+                    Export to CSV
+                  </a>
+                }
+                @if (dataset()?.exportPdf) {
+                  <a title="Export to PDF" ngbDropdownItem target="blank"
+                    href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
+                    Export to PDF
+                  </a>
+                }
+              </div>
             </div>
-          </div>
-        }
-        @if (entryTotal>25) {
-          <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-2" title="Pagination size" id="dropdownPage"
-              [disabled]="entryTotal<=25"
-              ngbDropdownToggle>
-              <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize}}
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownPage">
-              <button type="button" title="25 items per page" (click)="pageSize=25;getEntryList(1)" ngbDropdownItem>
-                25
+          }
+          @if (entryTotal()>25) {
+            <div ngbDropdown class="d-inline-block">
+              <button type="button" class="btn border border-2" title="Pagination size" id="dropdownPage"
+                [disabled]="entryTotal()<=25"
+                ngbDropdownToggle>
+                <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
               </button>
-              <button type="button" title="50 items per page" (click)="pageSize=50;getEntryList(1)" ngbDropdownItem>
-                50
-              </button>
-              <button type="button" title="100 items per page" (click)="pageSize=100;getEntryList(1)" ngbDropdownItem>
-                100
-              </button>
-              <button type="button" title="500 items per page" (click)="pageSize=500;getEntryList(1)" ngbDropdownItem>
-                500
-              </button>
-            </div>
-          </div>
-        }
-        @if (dataset?.x?.tblcard && !asComp()) {
-          <div ngbDropdown class="d-inline-block ms-auto d-sm-none">
-            <button type="button" class="btn border border-2" title="Sort by" id="dropdownSort"
-              ngbDropdownToggle>
-              <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
-              <strong>{{sortFieldName}}</strong>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownSort">
-              @for (item of dataset?.items; track item.id) {
-                <button type="button" class="pointer" [class.text-primary]="sortField==item.id"
-                  ngbDropdownItem
-                  (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
-                  {{item.label}}&nbsp;
-                  @if (sortField==item.id && sortDir[item.id]!=null) {
-                    <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
-                  }
+              <div ngbDropdownMenu aria-labelledby="dropdownPage">
+                <button type="button" title="25 items per page" (click)="pageSize.set(25);getEntryList(1)" ngbDropdownItem>
+                  25
                 </button>
-              }
-            </div>
-          </div>
-        }
-        @if (dataset?.x?.canGroup) {
-          <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-2" title="Group by" id="dropdownGroup"
-              ngbDropdownToggle>
-              <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
-              {{dataset?.x?.groupFieldName}}
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownGroup">
-              <!-- @if(form['data']?.tiers?.length>0){
-                <button type="button" class="pointer fst-italic" [class.text-primary]="groupFieldCode==-2"
-                  ngbDropdownItem
-                  (click)="groupByField(-2,'Status','currentStatus')">
-                  Entry Status (Current)
+                <button type="button" title="50 items per page" (click)="pageSize.set(50);getEntryList(1)" ngbDropdownItem>
+                  50
                 </button>
-              } -->
-              <button type="button" class="pointer fst-italic"
-                ngbDropdownItem
-                (click)="groupByField(null,null,null)">
-                Ungroup
+                <button type="button" title="100 items per page" (click)="pageSize.set(100);getEntryList(1)" ngbDropdownItem>
+                  100
+                </button>
+                <button type="button" title="500 items per page" (click)="pageSize.set(500);getEntryList(1)" ngbDropdownItem>
+                  500
+                </button>
+              </div>
+            </div>
+          }
+          @if (dataset()?.x?.tblcard && !asComp()) {
+            <div ngbDropdown class="d-inline-block ms-auto d-sm-none">
+              <button type="button" class="btn border border-2" title="Sort by" id="dropdownSort"
+                ngbDropdownToggle>
+                <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
+                <strong>{{sortFieldName()}}</strong>
               </button>
-              @for (gf of dataset?.x?.groupFields|keyvalue; track $index){
-                <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key)>-1" [class.text-primary]="groupFieldId==$index"
+              <div ngbDropdownMenu aria-labelledby="dropdownSort">
+                @for (item of dataset()?.items; track item.id) {
+                  <button type="button" class="pointer" [class.text-primary]="sortField==item.id"
                     ngbDropdownItem
-                    (click)="groupByField($index,gf.value,gf.key)">
-                    {{gf.value}}
-                  </button>
-              }
-              <!-- @for (item of dataset?.items; track item.id) {
-                @if (!(item.type=='list'||['static'].indexOf(form[item.root]?.items[item.code].type)>-1)){
-                  <button type="button" class="pointer" [class.text-primary]="groupFieldId==item.id"
-                    ngbDropdownItem
-                    (click)="groupByField(item.id,item.label,item.root+'.'+item.code+(['select', 'radio'].indexOf(form[item.root]?.items[item.code].type)>-1?'.name':''))">
-                    {{item.label}}
+                    (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                    {{item.label}}&nbsp;
+                    @if (sortField==item.id && sortDir[item.id]!=null) {
+                      <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
+                    }
                   </button>
                 }
-              } -->
+              </div>
             </div>
-          </div>
-        }
-      </div>
-    </div>
-    @if (dataset?.x?.showSummary) {
-      <div class="px-2 pb-2">
-        <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
-          <div class="row">
-            <div class="col d-flex align-items-center">
-              <strong>Summary</strong>
+          }
+          @if (dataset()?.x?.canGroup) {
+            <div ngbDropdown class="d-inline-block">
+              <button type="button" class="btn border border-2" title="Group by" id="dropdownGroup"
+                ngbDropdownToggle>
+                <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
+                {{dataset()?.x?.groupFieldName}}
+              </button>
+              <div ngbDropdownMenu aria-labelledby="dropdownGroup">
+                <button type="button" class="pointer fst-italic"
+                  ngbDropdownItem
+                  (click)="groupByField(null,null,null)">
+                  Ungroup
+                </button>
+                @for (gf of dataset()?.x?.groupFields|keyvalue; track $index){
+                  <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'')>-1"
+                    [class.text-primary]="groupFieldCode()==gf.key"
+                      ngbDropdownItem
+                      (click)="groupByField($index,gf.value,gf.key+'')">
+                      {{gf.value}}
+                    </button>
+                }
+              </div>
             </div>
-            <div class="col">Total:
-              <div class="d-sm-inline">{{entryTotal}}</div>
-            </div>
-            <div class="col">Shown:
-              <div class="d-sm-inline">{{numberOfElements}}</div>
-            </div>
-            <div class="col">Pages:
-              <div class="d-sm-inline">{{entryPages}}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-    @if (dataset?.x?.showGroupFilter && groupFieldCode && !itemLoading){
-      <div class="px-2">
-        <div class="pb-1 small m-a" [class.limit-width]="!dataset?.wide">
-          <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter==null}" (click)="groupFilter=null">
-            <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
-          </button>
-          @for(gf of groupedEntryList; track $index){
-            <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"  [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter==gf.key}" (click)="groupFilter=gf.key">
-              @if (gf?.key=='undefined'){
-                <span class="text-muted fst-italic"> Data not available</span>
-              }@else {
-                {{gf?.key}}
-              }
-            </button>
           }
         </div>
       </div>
+      @if (dataset()?.x?.showSummary) {
+        <div class="px-2 pb-2">
+          <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+            <div class="row">
+              <div class="col d-flex align-items-center">
+                <strong>Summary</strong>
+              </div>
+              <div class="col">Total:
+                <div class="d-sm-inline">{{entryTotal()}}</div>
+              </div>
+              <div class="col">Shown:
+                <div class="d-sm-inline">{{numberOfElements()}}</div>
+              </div>
+              <div class="col">Pages:
+                <div class="d-sm-inline">{{entryPages()}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @if (dataset()?.x?.showGroupFilter && groupFieldCode() && !itemLoading()){
+        <div class="px-2">
+          <div class="pb-1 small m-a" [class.limit-width]="!dataset()?.wide">
+            <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter()==null}" (click)="groupFilter.set(null)">
+              <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
+            </button>
+            @for(gf of groupedEntryList(); track $index){
+              <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"  [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter()==gf.key}" (click)="groupFilter.set(gf.key)">
+                @if (gf?.key=='undefined'){
+                  <span class="text-muted fst-italic"> Data not available</span>
+                }@else {
+                  {{gf?.key}}
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
     }
-  }
-</div>
-  @if (dataset && !userUnauthorized) {
-    <div class="centered position-relative outer-wrapper" [class.limit-width]="!dataset?.wide">
-      @if (itemLoading) {
+  </div>
+  @if (dataset() && !userUnauthorized()) {
+    <div class="centered position-relative outer-wrapper" [class.limit-width]="!dataset()?.wide">
+      @if (itemLoading()) {
         <div class="header-colors"></div>
       }
 
-      <div [class.disabled]="itemLoading">
+      <div [class.disabled]="itemLoading()">
         <!-- Reason No Table-Responsive on wide table: scroll bar horizontal and vertical both displayed
           without further scroll to bottom -->
         <!-- table-responsive penyebab xpat sticky header -->
         <!-- Cannot ind a way to have table-responsive + sticky header
           the problem is with overflow:auto = https://stackoverflow.com/questions/55483466/responsive-bootstrap-table-with-sticky-header -->
-        <div [class.table-responsive]="!dataset?.wide || asComp()"
-          [ngClass]="{'px-2 p-sm-0': dataset?.x?.tblcard && !asComp()}" style="width:100%">
-          @if (entryList?.length>0) {
+        <div [class.table-responsive]="!dataset()?.wide || asComp()"
+          [ngClass]="{'px-2 p-sm-0': dataset()?.x?.tblcard && !asComp()}" style="width:100%">
+          @if (entryList()?.length>0) {
             <table class="table table-print ds-table mb-0 bg-white"
-              [class.has-both]="dataset?.x?.bulkAction && dataset?.showAction"
-              [ngClass]="{'tblcard':dataset?.x?.tblcard && !asComp()}">
+              [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
+              [ngClass]="{'tblcard':dataset()?.x?.tblcard && !asComp()}">
               <thead class="bg-light list-tmid ds-thead">
                 <tr>
-                  @if (dataset?.x?.bulkAction) {
+                  @if (dataset()?.x?.bulkAction) {
                     <th class="ds-check" style="width: 1%">
                       <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
                         [(ngModel)]="checkAllInput"
                         (click)="checkAllEntry(checkAll.checked)">
                     </th>
                   }
-                  @if (dataset?.showIndex) {
+                  @if (dataset()?.showIndex) {
                     <th class="ds-index" style="width: 1%">#</th>
                   }
-                  @for (item of dataset?.items; track item.id) {
+                  @for (item of dataset()?.items; track item.id) {
                     @if (preCheck({}, item.pre, false)) {
                       @if (item.type=='list'){
                         <th class="ds-item {{item.code}}">
                           <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-black-50"></fa-icon>&nbsp;{{item.label}}
                         </th>
                       }@else{
-                        <th class="pointer ds-item" [class.text-primary]="sortField==item.id"
-                          (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                        <th class="pointer ds-item" [class.text-primary]="sortField()==item.id"
+                          (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
                           {{item.label}}&nbsp;
                           @if (sortField==item.id && sortDir[item.id]!=null) {
                             <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
@@ -274,20 +240,20 @@
                       }
                     }
                   }
-                  @if (dataset?.showStatus) {
+                  @if (dataset()?.showStatus) {
                     <th class="text-center ds-status">Status</th>
                   }
-                  @if (dataset?.showAction) {
+                  @if (dataset()?.showAction) {
                     <th class="print-hide text-end" style="width: 5%">
-                      {{app.x?.lang=='ms'?'Tindakan':'Action'}}
+                      {{app().x?.lang=='ms'?'Tindakan':'Action'}}
                     </th>
                   }
                 </tr>
               </thead>
-              @for(listKv of groupedEntryList; track $index){
-                @if( !groupFilter || groupFilter==listKv.key){
+              @for(listKv of groupedEntryList(); track $index){
+                @if( !groupFilter() || groupFilter()==listKv.key){
                 <tbody class="list-tmid ds-tbody">
-                  @if(groupFieldCode){
+                  @if(groupFieldCode()){
                     <tr class="ds-group-header">
                       <td [attr.colspan]="totalColumn" style="padding:0">
 
@@ -314,19 +280,19 @@
                   @if(!hideGroup[listKv?.key]){
                     @for (i of listKv?.value; track i.id; let eIdx = $index) {
                       <tr [ngClass]="i.currentStatus" class="ds-row" [class.selected-row]="checkSelect(i)" [ngClass]="rowClass[i.id]">
-                        @if (dataset?.x?.bulkAction) {
+                        @if (dataset()?.x?.bulkAction) {
                           <td class="ds-check">
                             <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)"
                               [checked]="checkSelect(i)">
                           </td>
                         }
-                        @if (dataset?.showIndex) {
+                        @if (dataset()?.showIndex) {
                           <td data-label="#"
                             class="bg-secondary text-white ds-index">
-                            {{preCount+eIdx+1}}
+                            {{preCount()+eIdx+1}}
                           </td>
                         }
-                        @for (item of dataset.items; track item.id) {
+                        @for (item of dataset().items; track item.id) {
                           @if (preCheck(i, item.pre, false)) {
                             <td class="ds-item code-{{item.code}}" [class.td-list]="item.type=='list'"
                               [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
@@ -345,12 +311,12 @@
                                         @for (ch of i[item.root][item.code]; track $index){                                      
                                           <tr>
                                             @for (fq of item.subs; track $index){
-                                              @let chField = form[item.root]?.items[fq.code];
+                                              @let chField = form()[item.root]?.items[fq.code];
                                               <td class="bg-transparent">
                                                 @if(ch[fq.code]){
-                                                  <field-view [field]="chField"
+                                                  <field-view [field]="chField" [scopeId]="scopeId()"
                                                     [value]="getVal(chField, i, ch)"
-                                                    [data]="{$:ch,$_:i,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:$this$,$param$:$param$(),$user$:user, $conf$:runService.appConfig}">
+                                                    [data]="{$:ch,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                                   </field-view>
                                                 }
                                               </td>
@@ -363,25 +329,25 @@
                                     <div class="p-2" style="color:#aaa">Data not available</div>
                                   }
                                 }@else {
-                                  <field-view [field]="form[item.root]?.items[item.code]"
-                                    [value]="getVal(form[item.root]?.items[item.code], i, i[item.root])"
-                                    [data]="{$:i[item.root],$_:i,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:$this$,$param$:$param$(),$user$:user, $conf$:runService.appConfig}">
+                                  <field-view [field]="form()[item.root]?.items[item.code]" [scopeId]="scopeId()"
+                                    [value]="getVal(form()[item.root]?.items[item.code], i, i[item.root])"
+                                    [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                   </field-view>
                                 }
                               } @else {
-                                <field-view [field]="form['data']?.items[item.code]"
-                                  [value]="getVal(form['data']?.items[item.code], i.approval[item.root], i.approval[item.root]?.data)">
+                                <field-view [field]="form().data?.items[item.code]" [scopeId]="scopeId()"
+                                  [value]="getVal(form().data?.items[item.code], i.approval[item.root], i.approval[item.root]?.data)">
                                 </field-view>
                               }
                               <div class="clearfix"></div>
                             </td>
                           }
                         }
-                        @if (dataset?.showStatus) {
-                          @let tiers=form['data']?.tiers;
+                        @if (dataset()?.showStatus) {
+                          @let tiers=form().data?.tiers;
                           <!-- {{tier[i.currentTier]?.actions|json}}###{{i.currentTier}} -->
                           <td class="text-center ds-status">
-                            <step-wizard [tiers]="tiers" [user]="user" [entry]="i"
+                            <step-wizard [tiers]="tiers" [user]="user()" [entry]="i"
                               [approval]="i?.approval" type="mini">
                             </step-wizard>
                             <div class="mt-1 small" style="text-transform: capitalize;">
@@ -393,7 +359,7 @@
                             </div>
                           </td>
                         }
-                        @if (dataset?.showAction) {
+                        @if (dataset()?.showAction) {
                           <td class="p-1 print-hide text-end ds-action">
                             <div class="d-flex flex-row justify-content-end">
                               @for (ac of actionsInline; track ac.id) {
@@ -401,7 +367,7 @@
                                   @if (ac.action=='view') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style"
-                                      (click)="runAction('/form/'+form.data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form.data.id,'view',ac.action,_eval(i.data, i, ac.params))">
+                                      (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'view',ac.action,_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
@@ -414,13 +380,13 @@
                                     </button>
                                   }@else if (ac.action=='prev-view') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
-                                      (click)="runAction('/form/'+form.prev?.id+'/view', ac.inpop, inPopTpl, i.prev?.$id, form.prev?.id, 'view','view',_eval(i.data, i, ac.params))">
+                                      (click)="runAction('/form/'+form().prev?.id+'/view', ac.inpop, inPopTpl, i.prev?.$id, form().prev?.id, 'view','view',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='edit') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
-                                      (click)="runAction('/form/'+form.data?.id+'/edit', ac.inpop, inPopTpl, i.id, form.data.id, 'form', ac.action, _eval(i.data, i, ac.params))">
+                                      (click)="runAction('/form/'+form().data?.id+'/edit', ac.inpop, inPopTpl, i.id, form().data.id, 'form', ac.action, _eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
@@ -432,56 +398,56 @@
                                     </button>
                                   }@else if (ac.action=='prev-edit') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
-                                      (click)="runAction('/form/'+form.prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form.prev?.id,'form','edit',_eval(i.data, i, ac.params))">
+                                      (click)="runAction('/form/'+form().prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form','edit',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='approve') {
-                                    <button type="button" [class.disabled]="offline"
+                                    <button type="button" [class.disabled]="offline()"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style"
-                                      (click)="runAction('/form/'+form.data?.id+'/view',ac.inpop,inPopTpl,i.id,form.data.id,'approve','view',_eval(i.data, i, ac.params))">
+                                      (click)="runAction('/form/'+form().data?.id+'/view',ac.inpop,inPopTpl,i.id,form().data.id,'approve','view',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='screen') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-screen') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+ac.next+'/prev', ac.inpop,inPopTpl,i.id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='facet') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
-                                      (click)="runAction('/form/'+form.data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form.data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
+                                      (click)="runAction('/form/'+form().data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form().data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-facet') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
-                                      (click)="runAction('/form/'+form.prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form.prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
+                                      (click)="runAction('/form/'+form().prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='prev-prev') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
-                                      [ngClass]="ac.style" [class.disabled]="offline"
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
                                       (click)="runAction('/form/'+ac.next+'/prev',ac.inpop,inPopTpl,i.prev?.$id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
@@ -490,15 +456,15 @@
                                     @if (ac.inpop) {
                                       <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                         [ngClass]="ac.style"
-                                        [class.disabled]="offline"
-                                        (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$user$:user, $conf$:runService.appConfig,$:i.data,$_:i,$prev$:i?.prev,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken}),ac.label)">
+                                        [class.disabled]="offline()"
+                                        (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev}),ac.label)">
                                         <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                         {{ac.label}}
                                       </button>
                                     } @else {
                                       <a class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                         [ngClass]="ac.style"
-                                        [href]="compileTpl(ac.url,{$user$:user, $conf$:runService.appConfig,$:i.data,$_:i,$prev$:i?.prev,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})"
+                                        [href]="compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev})"
                                         target="_blank">
                                         <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                         {{ac.label}}
@@ -507,19 +473,19 @@
                                   }@else if (ac.action=='function') {
                                     <button type="button"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
-                                      [class.disabled]="offline" (click)="_evalRun(i,ac.f, false)">
+                                      [class.disabled]="offline()" (click)="_evalRun(i,ac.f, false)">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='retract' && i.currentStatus!='drafted') {
-                                    <button type="button" [class.disabled]="offline"
+                                    <button type="button" [class.disabled]="offline()"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="cancelEntry(i.id)">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
                                   }@else if (ac.action=='delete') {
-                                    <button type="button" [class.disabled]="offline"
+                                    <button type="button" [class.disabled]="offline()"
                                       class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
                                       (click)="deleteEntry(i.id)">
                                       <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
@@ -540,7 +506,7 @@
                                       @if (preCheck(i, ac.pre, false)) {
                                         @if (ac.action=='view') {
                                           <button type="button" ngbDropdownItem
-                                            (click)="runAction('/form/'+form.data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form.data.id,'view',ac.action,_eval(i.data, i, ac.params))">
+                                            (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'view',ac.action,_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
@@ -552,13 +518,13 @@
                                           </button>
                                         }@else if (ac.action=='prev-view') {
                                           <button type="button" ngbDropdownItem
-                                            (click)="runAction('/form/'+form.prev?.id+'/view',ac.inpop,inPopTpl,i.prev?.$id,form.prev?.id,'view','view',_eval(i.data, i, ac.params))">
+                                            (click)="runAction('/form/'+form().prev?.id+'/view',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'view','view',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='edit') {
                                           <button type="button" ngbDropdownItem
-                                            (click)="runAction('/form/'+form.data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form.data.id,'form',ac.action,_eval(i.data, i, ac.params))">
+                                            (click)="runAction('/form/'+form().data?.id+'/'+ac.action,ac.inpop,inPopTpl,i.id,form().data.id,'form',ac.action,_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
@@ -570,58 +536,58 @@
                                           </button>
                                         }@else if (ac.action=='prev-edit') {
                                           <button type="button" ngbDropdownItem
-                                            (click)="runAction('/form/'+form.prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form.prev?.id,'form','edit',_eval(i.data, i, ac.params))">
+                                            (click)="runAction('/form/'+form().prev?.id+'/edit',ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form','edit',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='approve') {
-                                          <button type="button" [class.disabled]="offline" ngbDropdownItem
-                                            (click)="runAction('/form/'+form.data?.id+'/view',ac.inpop,inPopTpl,i.id,form.data.id,'approve','view',_eval(i.data, i, ac.params))">
+                                          <button type="button" [class.disabled]="offline()" ngbDropdownItem
+                                            (click)="runAction('/form/'+form().data?.id+'/view',ac.inpop,inPopTpl,i.id,form().data.id,'approve','view',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='screen') {
-                                          <button type="button" ngbDropdownItem [class.disabled]="offline"
+                                          <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-screen') {
-                                          <button type="button" ngbDropdownItem [class.disabled]="offline"
+                                          <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/screen/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,ac.next,'screen','screen',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev') {
-                                          <button type="button" ngbDropdownItem [class.disabled]="offline"
+                                          <button type="button" ngbDropdownItem [class.disabled]="offline()"
                                             (click)="runAction('/form/'+ac.next+'/prev',ac.inpop,inPopTpl,i.id,ac.next,'form','prev',_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='facet') {
-                                          <button type="button" ngbDropdownItem [class.disabled]="offline"
-                                            (click)="runAction('/form/'+form.data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form.data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
+                                          <button type="button" ngbDropdownItem [class.disabled]="offline()"
+                                            (click)="runAction('/form/'+form().data?.id+'/'+ac.next,ac.inpop,inPopTpl,i.id,form().data?.id,'form',ac.next,_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='prev-facet') {
                                           <button type="button" ngbDropdownItem
-                                            [class.disabled]="offline"
-                                            (click)="runAction('/form/'+form.prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form.prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
+                                            [class.disabled]="offline()"
+                                            (click)="runAction('/form/'+form().prev?.id+'/'+ac.next,ac.inpop,inPopTpl,i.prev?.$id,form().prev?.id,'form',ac.next,_eval(i.data, i, ac.params))">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='url') {
                                           @if (ac.inpop) {
                                             <button type="button" ngbDropdownItem
-                                              [class.disabled]="offline"
-                                              (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$user$:user, $conf$:runService.appConfig,$:i.data,$_:i,$prev$:i?.prev,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken}),ac.label)">
+                                              [class.disabled]="offline()"
+                                              (click)="openUrl(openUrlTpl,compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev}),ac.label)">
                                               <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                               {{ac.label}}
                                             </button>
                                           } @else {
                                             <a ngbDropdownItem
-                                              [href]="compileTpl(ac.url,{$user$:user, $conf$:runService.appConfig,$:i.data,$_:i,$prev$:i?.prev,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$this$:$this$,$param$:$param$(),$token$:accessToken})"
+                                              [href]="compileTpl(ac.url,{$:i.data,$_:i,$prev$:i?.prev})"
                                               target="_blank">
                                               <fa-icon [icon]="getIcon(ac.icon)"[fixedWidth]="true"></fa-icon>
                                               {{ac.label}}
@@ -629,19 +595,19 @@
                                           }
                                         }@else if (ac.action=='function') {
                                           <button type="button" ngbDropdownItem
-                                            [class.disabled]="offline"
+                                            [class.disabled]="offline()"
                                             (click)="_evalRun(i,ac.f, false)">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='retract' && i.currentStatus!='drafted') {
-                                          <button type="button" [class.disabled]="offline" ngbDropdownItem
+                                          <button type="button" [class.disabled]="offline()" ngbDropdownItem
                                             (click)="cancelEntry(i.id)">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
                                           </button>
                                         }@else if (ac.action=='delete') {
-                                          <button type="button" [class.disabled]="offline" ngbDropdownItem
+                                          <button type="button" [class.disabled]="offline()" ngbDropdownItem
                                             (click)="deleteEntry(i.id)">
                                             <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true"></fa-icon>
                                             {{ac.label}}
@@ -664,15 +630,15 @@
             </table>
           }
         </div>
-        @if (dataset.x?.bulkAction && entryList?.length>0 && selectedEntries.size>0) {
+        @if (dataset().x?.bulkAction && entryList()?.length>0 && selectedEntries().size>0) {
           <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
             &#8627; With Selected
-            @if (dataset?.canBlast) {
+            @if (dataset()?.canBlast) {
               <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
-                (click)="bulkEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
+                (click)="bulkEmail(blastTpl,blastData())"><fa-icon [icon]="['far','envelope']"
               [fixedWidth]="true"></fa-icon> Send Email</button>
             }
-            @for (ac of dataset.actions; track ac.id) {
+            @for (ac of dataset().actions; track ac.id) {
               @if (ac.action=='delete') {
                 <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
                   (click)="bulkRemoveEntries()">
@@ -680,13 +646,13 @@
                 {{ac.label}}</button>
               }@else if (ac.action=='function') {
                 <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
-                  [ngClass]="ac.style" [class.disabled]="offline" (click)="bulkEvalRun(ac.f)">
+                  [ngClass]="ac.style" [class.disabled]="offline()" (click)="bulkEvalRun(ac.f)">
                   <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true">
                   </fa-icon>
                   {{ac.label}}
                 </button>
               }@else if (ac.action=='retract') {
-                <button type="button" [class.disabled]="offline" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
+                <button type="button" [class.disabled]="offline()" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
                   [ngClass]="ac.style" (click)="bulkCancelEntry()">
                   <fa-icon [icon]="getIcon(ac.icon)" [fixedWidth]="true">
                   </fa-icon>
@@ -696,19 +662,19 @@
             }
           </div>
         }
-        @if (entryList?.length==0) {
+        @if (entryList()?.length==0) {
           <div class="detail">
-            <h3>{{app.x?.lang=='ms'?'Tiada rekod':'No record'}}</h3>
-            <p>{{app.x?.lang=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}
+            <h3>{{app().x?.lang=='ms'?'Tiada rekod':'No record'}}</h3>
+            <p>{{app().x?.lang=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}
             </p>
           </div>
         }
       </div>
-      @if (entryTotal>pageSize) {
+      @if (entryTotal()>pageSize()) {
         <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
-          <ngb-pagination [collectionSize]="entryTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
-            [rotate]="true" (pageChange)="getEntryList(pageNumber,sort)" boundaryLinks="true"
-            directionLinks="true">
+          <ngb-pagination [collectionSize]="entryTotal()" [pageSize]="pageSize()" [(page)]="pageNumber" [maxSize]="10"
+            [rotate]="true" (pageChange)="getEntryList(pageNumber(),sort())" [boundaryLinks]="true"
+            [directionLinks]="true">
             <ng-template ngbPaginationFirst>
               <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
             </ng-template>
@@ -726,10 +692,10 @@
       }
     </div>
   } @else {
-    @if (!loading) {
-      @if (userUnauthorized) {
+    @if (!loading() ) {
+      @if (userUnauthorized()) {
         <div class="detail text-muted">
-          <h3>{{app.x?.lang=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
+          <h3>{{app().x?.lang=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
         </div>
       }
     }
@@ -738,12 +704,12 @@
 
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{app.x?.lang=='ms'?'Tapis':'Filter'}} {{dataset?.title}}</h4>
+    <h4 class="modal-title">{{app().x?.lang=='ms'?'Tapis':'Filter'}} {{dataset()?.title}}</h4>
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){
-      <app-user-entry-filter [formHolder]="form" [presetFilters]="dataset.presetFilters"
-      [filtersConfig]="dataset?.filters" [filtersData]="filtersData" [lookup]="lookup"></app-user-entry-filter>
+      <app-user-entry-filter [formHolder]="form()" [presetFilters]="dataset().presetFilters" [scopeId]="scopeId()"
+      [filtersConfig]="dataset()?.filters" [(filtersData)]="filtersData" [lookup]="lookup"></app-user-entry-filter>
     }@loading {
       <div class="text-center m-5">
         <div class="spinner-grow text-primary" role="status">
@@ -765,15 +731,15 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary"
-    (click)="d()">{{app.x?.lang=='ms'?'Tutup':'Close'}}</button>
+    (click)="d()">{{app().x?.lang=='ms'?'Tutup':'Close'}}</button>
     <div>
       <button type="button" class="btn btn-round btn-secondary me-1" (click)="c({})">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
         Reset
       </button>
-      <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData)">
+      <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData())">
         <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-        {{app.x?.lang=='ms'?'Tapis':'Filter'}}
+        {{app().x?.lang=='ms'?'Tapis':'Filter'}}
       </button>
     </div>
   </div>
@@ -785,16 +751,16 @@
   </div>
   <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
     <p>
-      Email will be sent to field <strong>{{form['data']?.items[dataset.blastTo].label}}</strong> in
-      <strong>{{blastData.bulk? selectedEntries.size: entryTotal}}</strong> record(s)
+      Email will be sent to field <strong>{{form().data?.items[dataset().blastTo].label}}</strong> in
+      <strong>{{blastData().bulk? selectedEntries().size: entryTotal()}}</strong> record(s)
     </p>
-    @if (mailerList.length>0) {
+    @if (mailerList().length>0) {
       <div class="form-group mb-3">
         <label class="form-label">Select From Template</label>
-        <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData.template)"
-          [ngModel]="blastData && blastData.template" (ngModelChange)="blastData && (blastData.template = $event)">
+        <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData().template)"
+          [(ngModel)]="blastData().template">
           <option value="" disabled>Select mailer...</option>
-          @for (mailer of mailerList; track mailer.id) {
+          @for (mailer of mailerList(); track mailer.id) {
             <option [ngValue]="mailer">{{mailer.name}}</option>
           }
         </select>
@@ -802,7 +768,7 @@
     }
     <div class="form-group mb-3">
       <label class="form-label">Subject</label>
-      <input type="text" class="form-control" [ngModel]="blastData && blastData.subject" (ngModelChange)="blastData && (blastData.subject = $event)" #subject="ngModel"
+      <input type="text" class="form-control" [(ngModel)]="blastData().subject" #subject="ngModel"
         name="subject" required>
       @if (subject?.invalid) {
         <small class="form-text has-warning">
@@ -812,21 +778,21 @@
         </small>
       }
     </div>
-    @if (showHint) {
+    @if (showHint()) {
       <div>
-        @if (form?.data) {
-          @for (k of form?.data?.items|keyvalue; track $index) {
-            @if (form?.data?.items[k.key].type!='static') {
+        @if (form()?.data) {
+          @for (k of form()?.data?.items|keyvalue; track $index) {
+            @if ($any(k.value)?.type!='static') {
               <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
-              (click)="insertTextAtCursor('$.'+k.key)">{{k.value.label}}</button>
+              (click)="insertTextAtCursor('$.'+k.key)">{{$any(k.value).label}}</button>
             }
           }
         }
-        @if (form?.prev) {
-          @for (k of form?.prev?.items|keyvalue; track $index) {
-            @if (form?.prev?.items[k.key].type!='static') {
+        @if (form()?.prev) {
+          @for (k of form()?.prev?.items|keyvalue; track $index) {
+            @if ($any(k.value)?.type!='static') {
               <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
-              (click)="insertTextAtCursor('$prev$.'+k.key)">{{k.value.label}}</button>
+              (click)="insertTextAtCursor('$prev$.'+k.key)">{{$any(k.value).label}}</button>
             }
           }
         }
@@ -840,13 +806,13 @@
       </div>
       <div class="mx-n2">
         <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content"
-          #formField="ngModel" [ngModel]="blastData && blastData.content" (ngModelChange)="blastData && (blastData.content = $event)">
+          #formField="ngModel" [(ngModel)]="blastData().content">
         </angular-editor>
       </div>
     </div>
     <div class="form-group mb-3">
       <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="pushable" [(ngModel)]="blastData.pushable"
+        <input type="checkbox" class="form-check-input" id="pushable" [(ngModel)]="blastData().pushable"
           name="pushable">
         <label class="form-check-label" for="pushable">Attempt to use Push Notification (if the recipient
         subscribed)</label>
@@ -856,7 +822,7 @@
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="mailerEditForm.invalid"
-      (click)="c(blastData)">
+      (click)="c(blastData())">
       <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
       Blast Email
     </button>
@@ -864,13 +830,15 @@
 </ng-template>
 <ng-template #inPopTpl let-c="close" let-d="dismiss">
   <div style="margin-bottom:-68px; background: whitesmoke;">
-    @if (['form'].indexOf(inPopType)>-1) {
-      <!-- {{inPopParams|json}} -->
+    @if (['form'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
-        <app-form (saved)="getEntryList(pageNumber,sort);d()" (submitted)="getEntryList(pageNumber,sort);d()"
-          [$param$]="inPopParams"
-          (closed)="d()" [formId]="inPopFormId" [entryId]="inPopEntryId"
-          [asComp]="true" [action]="inPopFacet" ></app-form>
+        <app-form 
+          (saved)="getEntryList(pageNumber(),sort());d()" 
+          (submitted)="getEntryList(pageNumber(),sort());d()"
+          (updated)="getEntryList(pageNumber(),sort())"
+          [param]="inPopParams()"
+          (closed)="d()" [formId]="inPopFormId()" [entryId]="inPopEntryId()"
+          [asComp]="true" [action]="inPopFacet()" (formLoaded)="formLoaded($event)" ></app-form>
       }@loading {
         <div class="text-center m-5">
           <div class="spinner-grow text-primary" role="status">
@@ -878,11 +846,12 @@
           </div>
         </div>
       } 
-    }@else if (['view','approve'].indexOf(inPopType)>-1) {
+    }@else if (['view','approve'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
-        <app-view (approved)="getEntryList(pageNumber,sort);d()" (closed)="d()"
-          [formId]="inPopFormId" [entryId]="inPopEntryId"
-          asComp="true" [action]="inPopType" [facet]="inPopFacet"></app-view>
+        <app-view (approved)="getEntryList(pageNumber(),sort());d()" (closed)="d()"
+          [formId]="inPopFormId()" [entryId]="inPopEntryId()"
+          [asComp]="true" [action]="inPopType()"
+          (formLoaded)="formLoaded($event)"></app-view>
       }@loading {
         <div class="text-center m-5">
           <div class="spinner-grow text-primary" role="status">
@@ -890,10 +859,11 @@
           </div>
         </div>
       }
-    }@else if (['screen'].indexOf(inPopType)>-1) {
+    }@else if (['screen'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
-        <app-screen (closed)="d()" [screenId]="inPopFormId"
-        [entryId]="inPopEntryId" asComp="true" [action]="inPopType"></app-screen>
+        <app-screen (closed)="d()" [screenId]="inPopFormId()"
+        [entryId]="inPopEntryId()" [asComp]="true"
+        (screenLoaded)="screenLoaded($event)"></app-screen>
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
         </div>      
@@ -909,10 +879,10 @@
 </ng-template>
 <ng-template #openUrlTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{actionTitle}}</h4>
+    <h4 class="modal-title">{{actionTitle()}}</h4>
   </div>
   <div style="background: whitesmoke;overflow-x: auto;height:100%">
-    <iframe [src]="actionUrl|safe:'resourceUrl'" title="actionTitle" style="width:100%; height:100%;"></iframe>
+    <iframe [src]="actionUrl()|safe:'resourceUrl'" title="actionTitle" style="width:100%; height:100%;"></iframe>
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>

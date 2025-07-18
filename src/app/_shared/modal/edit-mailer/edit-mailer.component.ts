@@ -1,5 +1,5 @@
 import { KeyValuePipe } from '@angular/common';
-import { Component, input, model } from '@angular/core';
+import { Component, input, model, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormService } from '../../../service/form.service';
@@ -10,7 +10,8 @@ import { nl2br, br2nl } from '../../utils';
     selector: 'app-edit-mailer',
     imports: [FormsModule, FaIconComponent, KeyValuePipe, NgCmComponent],
     templateUrl: './edit-mailer.component.html',
-    styleUrl: './edit-mailer.component.scss'
+    styleUrl: './edit-mailer.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditMailerComponent {
 
@@ -48,7 +49,10 @@ export class EditMailerComponent {
 
   // deleteDataRow = (obj, key) => delete obj[key];
 
-  constructor(private formService: FormService,) { }
+  cdr = inject(ChangeDetectorRef);
+  private formService = inject(FormService);
+
+  constructor() { }
 
   ngOnInit() {
     if (this.selectedForm()){
@@ -87,6 +91,7 @@ export class EditMailerComponent {
               this.editHolderForm['prev'] = res.prev;
 
               this.populateAutoComplete();
+              this.cdr.detectChanges();
 
           });
   }
@@ -171,7 +176,7 @@ getItemText(pre,item){
       this.extraAutoCompleteHtml.push({ label: '$editUri$', type: "text", apply: "{{$editUri$}}", detail: 'URL to edit entry' });
       this.extraAutoCompleteHtml.push({ label: '$uiUri$', type: "text", apply: "{{$uiUri$}}", detail: 'Base URL for UI/frontend up to .../#' });
 
-
+      this.cdr.detectChanges();
   }
 
   getLoopCode = (section) => "{{$." + section.code + ":{i|" + "\n\t" + this.getItems(section) + "\n}}}"

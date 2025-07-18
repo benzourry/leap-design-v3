@@ -1,4 +1,4 @@
-@if (appLoading) {
+@if (appLoading()) {
   <div class="p-5 text-center">
     <div class="lds-ellipsis">
       <div></div>
@@ -8,11 +8,11 @@
     </div>
   </div>
 }@else{
-  @if (app?.reg && user?.status!='approved') {
-    @if (!user.status) {
+  @if (app()?.reg && user()?.status!='approved') {
+    @if (!user().status) {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper p-4" style="height:100%;">
         @defer(prefetch on idle){
-          <app-register [app]="app" [user]="user" (cancel)="logout()" (done)="saveAppUser($event)"></app-register>
+          <app-register [app]="app()" [user]="user()" (cancel)="logout()" (done)="saveAppUser($event)"></app-register>
         }@loading {
           <div class="text-center m-5">
             <div class="spinner-grow text-primary" role="status">
@@ -22,58 +22,58 @@
         }
       </div>
     }
-    @if (user?.status=='pending') {
+    @if (user()?.status=='pending') {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
         <div class="p-3 text-muted">
-          <h4>{{app.x?.lang=='ms'?'Permohonan akses masih menunggu kelulusan':'Your access request still pending'}}</h4>
+          <h4>{{app().x?.lang=='ms'?'Permohonan akses masih menunggu kelulusan':'Your access request still pending'}}</h4>
         </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app.x?.lang=='ms'?'Log keluar':'Logout'}}</button>
+        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
       </div>
     }
-    @if (user?.status=='rejected') {
+    @if (user()?.status=='rejected') {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
         <div class="p-3 text-muted">
-          <h4>{{app.x?.lang=='ms'?'Permohonan akses anda telah ditolak':'Your access request has been rejected'}}</h4>
+          <h4>{{app().x?.lang=='ms'?'Permohonan akses anda telah ditolak':'Your access request has been rejected'}}</h4>
         </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app.x?.lang=='ms'?'Log keluar':'Logout'}}</button>
+        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
       </div>
     }
   }@else {
-    @if(user?.status=='rejected'){
+    @if(user()?.status=='rejected'){
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
         <div class="p-3 text-muted">
-          <h4>{{app.x?.lang=='ms'?'Akses anda telah dihentikan':'Your access has been blocked'}}</h4>
+          <h4>{{app().x?.lang=='ms'?'Akses anda telah dihentikan':'Your access has been blocked'}}</h4>
         </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app.x?.lang=='ms'?'Log keluar':'Logout'}}</button>
+        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
       </div>
     }@else {
-      @if (!maintenance) {
-        @if (app?.once && !user?.once && screen?.id) {
-          @if (screen) {
+      @if (!maintenance()) {
+        @if (app()?.once && !user()?.once && screen()?.id) {
+          @if (screen()) {
             <div class="nomod">
               <div class="single-pane section-to-print" style="padding-bottom: 5em;">
-                <div class="centered fix-gutter" [class.limit-width]="!screen?.wide">
-                  @if (screen?.data?.pretext) {
+                <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
+                  @if (screen()?.data?.pretext) {
                     <div
-                      [innerHtml]="compileTpl(screen?.data?.pretext, {$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
+                      [innerHtml]="compileTpl(screen()?.data?.pretext, {$param$:param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
                     </div>
                   }
-                  <div [ngClass]="screen?.data?.parentclass"
-                    [innerHtml]="compileTpl(screen?.data?.content, {$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
+                  <div [class]="screen()?.data?.parentclass"
+                    [innerHtml]="compileTpl(screen()?.data?.content, {$param$:param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
                   </div>
-                  @if (screen?.data?.posttext) {
+                  @if (screen()?.data?.posttext) {
                     <div
-                      [innerHtml]="compileTpl(screen?.data?.posttext, {$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
+                      [innerHtml]="compileTpl(screen()?.data?.posttext, {$param$:param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi})|safe:'html'">
                     </div>
                   }
                 </div>
               </div>
               <div class="text-center fixed-bottom p-3"
                 style="z-index:12;background:linear-gradient(rgba(245,245,245, 0),rgba(245,245,245, .8),rgba(245,245,245, 1));">
-                <button type="button" class="btn btn-primary btn-round px-3" (click)="onceDone()">{{app.x?.lang=='ms'?"Ya, saya terima":"Yes, I accept"}}</button>
+                <button type="button" class="btn btn-primary btn-round px-3" (click)="onceDone()">{{app().x?.lang=='ms'?"Ya, saya terima":"Yes, I accept"}}</button>
               </div>
             </div>
           }

@@ -22,6 +22,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 // /* KBORNEO */
 export const baseApi = 'https://io.kborneo.my/api';   // prefer
 export const base = 'https://io.kborneo.my'; // prefer
+export const cognaBase = 'https://io.kborneo.my'; // prefer
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?kborneo\.my/;
 export const domainBase = "kborneo.my"; 
 export const OAUTH = {

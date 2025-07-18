@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { UserService } from '../../../../_shared/service/user.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -29,6 +29,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
 @Component({
     selector: 'app-navi',
     templateUrl: './navi.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./navi.component.scss',
         '../../../../../assets/css/element-action.css',
         '../../../../../assets/css/start.css'],
@@ -41,26 +42,38 @@ export class NaviComponent implements OnInit {
   navis: any = [];
   paletteFilter: string = "";
 
-  constructor(private route: ActivatedRoute, private userService: UserService,
-    private mailerService: MailerService,
-    private modalService: NgbModal,
-    private lookupService: LookupService,
-    private appService: AppService,
-    private toastService: ToastService,
-    private formService: FormService,
-    private groupService: GroupService,
-    private datasetService: DatasetService,
-    private screenService: ScreenService,
-    private commService: CommService,
-    private utilityService: UtilityService,
-    private dashboardService: DashboardService) {
+  private route = inject(ActivatedRoute);
+  private userService = inject(UserService);
+  private mailerService = inject(MailerService);
+  private modalService = inject(NgbModal);
+  private lookupService = inject(LookupService);
+  private appService = inject(AppService);
+  private toastService = inject(ToastService);
+  private formService = inject(FormService);
+  private groupService = inject(GroupService);
+  private datasetService = inject(DatasetService);
+  private screenService = inject(ScreenService);
+  private commService = inject(CommService);
+  private utilityService = inject(UtilityService);
+  private dashboardService = inject(DashboardService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-    commService.changeEmitted$.subscribe(data => {
+    this.commService.changeEmitted$.subscribe(data => {
       if (data.value == 'import') {
         this.getNavisAll(this.appId);
         this.getNaviData(this.appId);
       }
     });
+
+    // effect(() => {  
+    //   let data = commService.changeEmitted();
+    //   if (data?.value == 'import') {
+    //     this.getNavisAll(this.appId);
+    //     this.getNaviData(this.appId);
+    //   }
+    // })
   }
 
   user: any;
@@ -97,6 +110,7 @@ export class NaviComponent implements OnInit {
               this.loadPaletteList(this.appId);
               this.getNavisAll(this.appId);
               this.getNaviData(this.appId);
+              this.cdr.detectChanges(); // <--- Add here
             })
         });
 
@@ -106,6 +120,7 @@ export class NaviComponent implements OnInit {
         sort: 'id,desc'
       }).subscribe(res => {
         this.otherAppList = res.content;
+        this.cdr.detectChanges(); // <--- Add here
       })
 
       // this.getMailerList();
@@ -153,6 +168,7 @@ export class NaviComponent implements OnInit {
             this.palettes.push(obj3);
           }
         })
+        this.cdr.detectChanges(); // <--- Add here
       });
   }
 
@@ -183,6 +199,7 @@ export class NaviComponent implements OnInit {
           screenId: undefined,
           icon: 'fas:users-cog'
         });
+        this.cdr.detectChanges(); // <--- Add here
       });
   }
 
@@ -205,6 +222,7 @@ export class NaviComponent implements OnInit {
           }
           this.palettes.push(obj);
         });
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -221,7 +239,7 @@ export class NaviComponent implements OnInit {
           }
           this.palettes.push(obj);
         });
-
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -246,6 +264,7 @@ export class NaviComponent implements OnInit {
           }
           this.palettes.push(obj);
         });
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -255,6 +274,7 @@ export class NaviComponent implements OnInit {
         this.navis = res;
         this.commService.emitChange({ key: 'navi', value: this.navis.length > 0 });
         //this.initNavi();
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -262,6 +282,7 @@ export class NaviComponent implements OnInit {
     this.appService.getNaviData(id, this.viewAs)
       .subscribe(res => {
         this.naviData = res;
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -280,9 +301,11 @@ export class NaviComponent implements OnInit {
 
     array[a].altClass = 'swapStart';
     array[b].altClass = 'swapStart';
+    this.cdr.detectChanges(); // <--- Add here if UI doesn't update
     setTimeout(() => {
       delete array[a].altClass;
       delete array[b].altClass;
+      this.cdr.detectChanges(); // <--- Add here if UI doesn't update after timeout
     }, 500);
   };
 
@@ -299,7 +322,7 @@ export class NaviComponent implements OnInit {
             this.getNaviData(this.appId);
             this.getNavisAll(this.appId);
             this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
-
+            this.cdr.detectChanges(); // <--- Add here
           }, error: (err) => {
             this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
 
@@ -328,9 +351,9 @@ export class NaviComponent implements OnInit {
   getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
   getLookupList(appId) {
-    let params = new HttpParams()
-      .set("appId", appId);
-    this.lookupService.getFullLookupList(params)
+    // let params = new HttpParams()
+    //   .set("appId", appId);
+    this.lookupService.getFullLookupList({appId})
       .subscribe(res => {
         this.lookupList = res.content;
         this.lookupList.forEach(f => {
@@ -342,6 +365,7 @@ export class NaviComponent implements OnInit {
           }
           this.palettes.push(obj);
         });
+        this.cdr.detectChanges(); // <--- Add here
       })
   }
 
@@ -357,6 +381,7 @@ export class NaviComponent implements OnInit {
             next: (res) => {
               this.getNavisAll(this.appId);
               this.toastService.show("Group saved successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // <--- Add here
             }, error: (err) => {
               this.toastService.show("Group saving failed", { classname: 'bg-danger text-light' });
             }
@@ -376,6 +401,7 @@ export class NaviComponent implements OnInit {
           .subscribe(res => {
             this.getNavisAll(this.appId);
             this.toastService.show("Navi setting saved successfully", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges(); // <--- Add here
           }, err => {
             this.toastService.show("Navi setting saving failed", { classname: 'bg-danger text-light' });
           })
@@ -395,6 +421,7 @@ export class NaviComponent implements OnInit {
             next: (res) => {
               this.getNavisAll(this.appId);
               this.toastService.show("Group removed successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // <--- Add here
             }, error: (err) => {
               this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
             }
@@ -413,6 +440,7 @@ export class NaviComponent implements OnInit {
             next: (res) => {
               this.getNavisAll(this.appId);
               this.toastService.show("Item removed successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // <--- Add here
             }, error: (err) => {
               this.toastService.show("Item removal failed", { classname: 'bg-danger text-light' });
             }
@@ -444,12 +472,13 @@ export class NaviComponent implements OnInit {
               this.getNaviData(this.appId);
               this.getNavisAll(this.appId);
               this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // <--- Add here
             }, error: (err) => {
               this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
             }
           })
       },
-        err => { });
+        err => { this.cdr.detectChanges(); });
   }
 
   loadOtherAppList(type, appId) {
@@ -540,7 +569,7 @@ export class NaviComponent implements OnInit {
           }, res => {
             this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
           });
-      }, res => { })
+      }, res => { this.cdr.detectChanges(); })
   }
 
 

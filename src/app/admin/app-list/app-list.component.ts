@@ -1,5 +1,5 @@
-import { DatePipe, NgClass, NgStyle, PlatformLocation } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { DatePipe, NgClass, NgStyle, PlatformLocation} from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject  } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../_shared/service/toast-service';
@@ -18,11 +18,12 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 @Component({
   selector: 'app-app-list',
   imports: [FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination,RouterLink, RouterLinkActive,
-    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, DatePipe,
+    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, 
     AppEditComponent
   ],
   templateUrl: './app-list.component.html',
-  styleUrl: './app-list.component.scss'
+  styleUrl: './app-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppListComponent implements OnInit {
   offline: boolean;
@@ -36,39 +37,44 @@ export class AppListComponent implements OnInit {
 
   bgClassName: string = domainBase.replace(/\./g,'-');
 
-  constructor(private userService: UserService, private route: ActivatedRoute, private bucketService: BucketService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private runService: RunService,
-    private appService: AppService,
-    private toastService: ToastService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-  }
+
+  private userService = inject(UserService);
+  // private route = inject(ActivatedRoute);
+  // private bucketService = inject(BucketService);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  private router = inject(Router);
+  // private runService = inject(RunService);
+  private appService = inject(AppService);
+  private toastService = inject(ToastService);
+  private utilityService = inject(UtilityService);
+  private cdr = inject(ChangeDetectorRef);
 
   searchText: string = "";
   appId: any;
   itemList: any[]=[];
   itemTotal: number = 0;
-  ngOnInit(): void {
-    this.userService.getCreator()
-      .subscribe((user) => {
-        this.user = user;
-        
-              this.getItemList(0);
-
-      });
-  }
-
-
   itemLoading: boolean = false;
   pageSize: number = 24;
   pageNumber: number = 1;
 
   numberOfElements: number = 0;
   entryPages: number = 0;
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
+    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+  }
+
+  ngOnInit(): void {
+    this.userService.getCreator()
+      .subscribe((user) => {
+        this.user = user;
+        this.cdr.detectChanges();
+
+        this.getItemList(0);
+      });
+  }
 
   getItemList(pageNumber) {
     this.itemLoading = true;
@@ -91,8 +97,10 @@ export class AppListComponent implements OnInit {
           this.itemLoading = false;          
           this.numberOfElements = res.content?.length;
           this.entryPages = res.page?.totalPages;
+          this.cdr.detectChanges();
         }, error: err => {
           this.itemLoading = false;
+          this.cdr.detectChanges();
         }
       });
   }
@@ -122,17 +130,10 @@ export class AppListComponent implements OnInit {
     }
   }
 
-  // editAppData:any;
   _editApp(tpl,app, isNew) {
-
-
-    
-    // this.editAppData = app;
-
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
     .result.then(rItem => {
-      // console.log(rItem);
       this.appService.save(rItem, this.user.email)
         .subscribe({
           next: res => {
@@ -141,8 +142,10 @@ export class AppListComponent implements OnInit {
               this.router.navigate([`design/${res.id}`]);
             }
             this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, error: err => {
             this.toastService.show("App properties saved failure<br/>"+err.error?.message, { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
     }, res => { });
@@ -151,8 +154,6 @@ export class AppListComponent implements OnInit {
 
 
   cloneItem(tpl,data, isNew) {
-    // var items = {};
-    // this.initialAppPath = data.appPath;
     this.appService.getApp(data.id)
       .subscribe({
         next: app => {
@@ -175,14 +176,17 @@ export class AppListComponent implements OnInit {
                     this.router.navigate([`design/${res.id}`]);
                   }
                   this.toastService.show("App cloned successfully", { classname: 'bg-success text-light' });
+                  this.cdr.detectChanges();
                 }, error: err => {
                   this.toastService.show("App cloned failure", { classname: 'bg-danger text-light' });
+                  this.cdr.detectChanges();
                 }
               });
           }, res => { });
       
         }, error: err => {
           this.toastService.show("App cloned failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       });
   }
@@ -199,12 +203,15 @@ export class AppListComponent implements OnInit {
               next: res => {
                 this.getItemList(this.pageNumber);
                 this.toastService.show("App removed successfully", { classname: 'bg-success text-light' });
+                this.cdr.detectChanges();
               }, error: err => {
                 this.toastService.show("App removal failed", { classname: 'bg-danger text-light' });
+                this.cdr.detectChanges();
               }
             });
         } else {
           this.toastService.show("Invalid removal confirmation key", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       }, res => { });
   }
@@ -214,9 +221,5 @@ export class AppListComponent implements OnInit {
     let note = app?.live?'':'* Please note that this app is currently in DEV mode';
     let url = app.appPath ? app.appPath + separator + domainBase : domainBase + "/#/run/" + app.id;
     return 'https://'+url;
-}
-
-
-
-
+  }
 }

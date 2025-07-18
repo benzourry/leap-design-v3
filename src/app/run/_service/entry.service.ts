@@ -91,9 +91,9 @@ export class EntryService {
     return this.http.post<any>(`${this.baseApi}/entry/${id}/retract?email=${email}`,{})
   }
  
-  removeApproval(id: number, tierId: number){
+  removeApproval(entryId: number, tierId: number){
     // console.log(id);
-    return this.http.post<any>(`${this.baseApi}/entry/${id}/remove-approval?tierId=${tierId}`,{});
+    return this.http.post<any>(`${this.baseApi}/entry/${entryId}/remove-approval?tierId=${tierId}`,{});
   }
   deleteAttachment(fileUrl?: string){
     // let f = new FormData();

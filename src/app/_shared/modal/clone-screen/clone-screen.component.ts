@@ -1,4 +1,4 @@
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, input } from '@angular/core';
 import { ScreenService } from '../../../service/screen.service';
 import { FormsModule } from '@angular/forms';
 
@@ -6,11 +6,15 @@ import { FormsModule } from '@angular/forms';
     selector: 'app-clone-screen',
     templateUrl: './clone-screen.component.html',
     styleUrls: ['./clone-screen.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule]
 })
 export class CloneScreenComponent implements OnInit {
 
-  constructor(private screenService: ScreenService) {
+  private screenService = inject(ScreenService);
+  cdr = inject(ChangeDetectorRef);
+
+  constructor() {
   }
 
   dismiss = input<any>();
@@ -33,6 +37,7 @@ export class CloneScreenComponent implements OnInit {
       this.screenService.getScreenList(appId,)
           .subscribe(res => {
               this.cloneScreenList = res;
+              this.cdr.detectChanges();
           })
   }
 }

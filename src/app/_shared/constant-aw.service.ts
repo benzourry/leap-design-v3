@@ -22,6 +22,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 // /* AppWizard */
 export const baseApi = 'https://io.aw.sarawakskills.edu.my/api';   // prefer
 export const base = 'https://io.aw.sarawakskills.edu.my'; // prefer
+export const cognaBase = 'https://io.aw.sarawakskills.edu.my'; // prefer
 
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?aw\.sarawakskills\.edu\.my/;
 export const domainBase = "aw.sarawakskills.edu.my"; 

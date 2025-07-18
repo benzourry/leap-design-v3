@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../_shared/service/toast-service';
-// import { RunService } from '../../service/run.service';
-import { ActivatedRoute } from '@angular/router';
-// import { domainRegex } from '../_shared/constant.service';
 import { SwPush } from '@angular/service-worker';
 import { PushService } from '../../_shared/service/push.service';
 import { take } from 'rxjs/operators';
@@ -30,7 +27,6 @@ import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
-// import { PageTitleComponent } from '../../_shared/component/page-title.component';
 
 @Component({
     selector: 'app-profile',
@@ -40,7 +36,7 @@ import { RunService } from '../_service/run.service';
 })
 export class ProfileComponent implements OnInit {
 
-  user: any;
+  
   provider: any = {
     unimas: ['fas', 'university'],
     unimasid: ['fas', 'university'],
@@ -55,24 +51,33 @@ export class ProfileComponent implements OnInit {
     local: ['far', 'envelope'],
     undetermine: ['fas', 'question']
   }
-  constructor(private userService: UserService,
-    public runService: RunService, private swPush: SwPush, private pushService: PushService,
-    private modalService: NgbModal, private toastService: ToastService,
-    private route: ActivatedRoute
-  ) { }
 
-  // appId: number;
-  app: any;
+  private userService = inject(UserService)
+  public runService = inject(RunService)
+  private swPush = inject(SwPush)
+  private pushService = inject(PushService)
+  private modalService = inject(NgbModal)
+  private toastService = inject(ToastService)
+
+  constructor() { 
+    effect(() => {
+      if (this.app()?.id && this.user()?.email) {
+      this.loadNotif(this.app()?.id, this.user()?.email);
+      this.loadSubscription();
+      }
+    });
+  }
+
   actualSub: any;
-  ngOnInit() {
-    this.app = this.runService.$app();
 
-    this.userService.getUser()
-      .subscribe(user => {
-        this.user = user;
-        this.loadNotif(this.app?.id, this.user.email);
-        this.loadSubscription();
-      });
+  user = computed<any>(() => this.runService.$user());
+  app = computed<any>(() => this.runService.$app());
+
+  ngOnInit() {
+    if (this.app()?.id && this.user()?.email) {
+      this.loadNotif(this.app()?.id, this.user()?.email);
+      this.loadSubscription();
+      }
 
     this.swPush.subscription
       .pipe(take(1))
@@ -81,16 +86,16 @@ export class ProfileComponent implements OnInit {
       })
   }
 
-  notif: any;
+  notif = signal<any>(null);
   openNotif(tpl, data) {
-    this.notif = data;
+    this.notif.set(data);
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
       .result.then(res => {
-        this.runService.markNotification(res.id, this.user.email)
+        this.runService.markNotification(res.id, this.user().email)
           .subscribe({
             next: (res2) => {
-              this.loadNotif(this.app?.id, this.user.email);
+              this.loadNotif(this.app()?.id, this.user().email);
             },
             error: (err) => {
               this.toastService.show(err.error.message, { classname: 'bg-danger text-light' });
@@ -99,38 +104,38 @@ export class ProfileComponent implements OnInit {
       }, res => { });
   }
 
-  notifList: any = [];
+  notifList = signal<any>([]);
   loadNotif(appId, email) {
     this.runService.getNotification(appId, email)
       .subscribe(res => {
-        this.notifList = res.content;
+        this.notifList.set(res.content);
       })
   }
 
   hasProp = (obj) => Object.keys(obj).length > 0;
 
   revokeTerm() {
-    this.runService.onceDone(this.app?.id, this.user.email, false)
+    this.runService.onceDone(this.app()?.id, this.user().email, false)
       .subscribe(user => {
-        this.user = user;
         this.userService.setUser(user);
+        this.runService.$user.set(user);
         this.logout();
       })
   }
 
   removeAcc() {
-    this.runService.removeAcc(-1, this.user.email)
+    this.runService.removeAcc(-1, this.user().email)
       .subscribe(user => {
         this.toastService.show("Your account has been successfully removed", { classname: 'bg-success text-light' });
         this.logout();
       })
   }
 
-  pushSubs: any = [];
+  pushSubs = signal<any>([]);
   loadSubscription() {
-    this.pushService.getSubscription(this.user.id)
+    this.pushService.getSubscription(this.user().id)
       .subscribe(subs => {
-        this.pushSubs = subs;
+        this.pushSubs.set(subs);
       })
   }
 
@@ -158,7 +163,7 @@ export class ProfileComponent implements OnInit {
 
   changePwdData: any = {};
   changePwd(content) {
-    this.changePwdData = { email: this.user.email, appId: this.app?.id || -1 };
+    this.changePwdData = { email: this.user().email, appId: this.app()?.id || -1 };
 
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -175,16 +180,12 @@ export class ProfileComponent implements OnInit {
       }, res => { });
   }
 
-  // getPath() {
-  //   return window.location.host.match(domainRegex)[1];
-  // }
   logout() {
-    var provider = this.user.provider;
+    var provider = this.user().provider;
     this.userService.logout();
     if (provider == 'unimas') {
       location.href = "https://identity.unimas.my/logout?redirect_uri=" + location.href;
     }
-
   }
 
   cleanText = (str) => str.replace(/<\/?[^>]+(>|$)/g, " ");

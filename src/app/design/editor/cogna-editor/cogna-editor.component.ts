@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { CognaService } from '../../../service/cogna.service';
@@ -9,11 +9,9 @@ import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { DatasetService } from '../../../service/dataset.service';
-import { DashboardService } from '../../../service/dashboard.service';
 import { FormService } from '../../../service/form.service';
 import { base, baseApi, domainBase } from '../../../_shared/constant.service';
 // import { LookupService } from '../../../service/lookup.service';
-import { EndpointService } from '../../../service/endpoint.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { map } from 'rxjs';
 import { BucketService } from '../../../service/bucket.service';
@@ -31,6 +29,7 @@ import { RunService } from '../../../run/_service/run.service';
 import { marked} from 'marked';
 import mermaid from "mermaid";
 import { LambdaService } from '../../../service/lambda.service';
+import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 
 mermaid.initialize({startOnLoad:false})
 // import { RunService } from '../../../service/run.service';
@@ -54,9 +53,13 @@ marked.use({
 
 @Component({
     selector: 'app-cogna-editor',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './cogna-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe]
+    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
+      NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, 
+      NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, 
+      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent]
 })
 export class CognaEditorComponent implements OnInit {
 
@@ -185,22 +188,27 @@ export class CognaEditorComponent implements OnInit {
 
   // @ViewChild('codeeditorinit') codeeditorinit: NgCmComponent;
 
-  constructor(private userService: UserService, private route: ActivatedRoute, private cognaService: CognaService,
-    private datasetService: DatasetService,
-    private lambdaService: LambdaService,
-    private bucketService: BucketService,
-    private dashboardService: DashboardService,
-    private lookupService: LookupService,
-    private formService: FormService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private appService: AppService,
-    private toastService: ToastService,
-    private endpointService: EndpointService,
-    private runService: RunService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+  private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
+  private cognaService = inject(CognaService);
+  private datasetService = inject(DatasetService)
+  private lambdaService = inject(LambdaService)
+  private bucketService= inject(BucketService)
+  // private dashboardService = inject(DashboardService)
+  private lookupService = inject(LookupService)
+  private formService = inject(FormService)
+  private modalService = inject(NgbModal)
+  private location = inject(PlatformLocation)
+  private router = inject(Router)
+  private appService = inject(AppService)
+  private toastService = inject(ToastService)
+  // private endpointService = inject(EndpointService)
+  private runService = inject(RunService)
+  private utilityService = inject(UtilityService)
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -212,6 +220,7 @@ export class CognaEditorComponent implements OnInit {
     this.userService.getCreator()
       .subscribe((user) => {
         this.user = user;
+        this.cdr.detectChanges();
 
         this.rand = Math.random();
 
@@ -246,6 +255,7 @@ export class CognaEditorComponent implements OnInit {
           // NOTE: I do not use switchMap here, but subscribe directly
           .subscribe((params: Params) => {
             this.appId = params['appId'];
+            this.cdr.detectChanges();
 
 
             if (this.appId) {
@@ -255,12 +265,14 @@ export class CognaEditorComponent implements OnInit {
               this.appService.getApp(this.appId, params)
                 .subscribe(res => {
                   this.app = res;
+                  this.cdr.detectChanges();
                 });
                 this.getFormList(this.appId);
 
                 this.lookupService.getLookupList({appId:this.appId})
                 .subscribe(res=>{
                   this.lookupList = res.content;
+                  this.cdr.detectChanges();
                 })
             }
 
@@ -276,6 +288,7 @@ export class CognaEditorComponent implements OnInit {
             sort: 'id,desc'
         }).subscribe(res => {
             this.otherAppList = res.content;
+            this.cdr.detectChanges();
         })
 
 
@@ -326,7 +339,11 @@ export class CognaEditorComponent implements OnInit {
         this.cognaList = res.content;
         this.cognaTotal = res.page?.totalElements;
         this.itemLoading = false;
-      }, res => this.itemLoading = false)
+        this.cdr.detectChanges();
+      }, res => {
+        this.itemLoading = false;
+        this.cdr.detectChanges();
+      })
   }
 
   formList: any[];
@@ -338,6 +355,7 @@ export class CognaEditorComponent implements OnInit {
       this.formService.getListBasic(params)
           .subscribe(res => {
               this.formList = res.content;
+              this.cdr.detectChanges();
           });
   }
 
@@ -415,8 +433,10 @@ export class CognaEditorComponent implements OnInit {
             this.loadCogna(res.id);
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Cogna successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { })
   }
@@ -470,8 +490,10 @@ export class CognaEditorComponent implements OnInit {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(this.cognaId);
             this.toastService.show("Cogna source successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna source saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { })
   }
@@ -508,8 +530,10 @@ export class CognaEditorComponent implements OnInit {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(this.cognaId);
             this.toastService.show("Cogna tool successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna tool saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { })
   }
@@ -564,8 +588,10 @@ export class CognaEditorComponent implements OnInit {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(this.cognaId);
             this.toastService.show("Cogna MCP server successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna MCP server saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { })
   }
@@ -615,9 +641,11 @@ export class CognaEditorComponent implements OnInit {
           next: res => {
             this.toastService.show("Cogna source successfully removed", { classname: 'bg-success text-light' });
             this.loadCogna(this.cognaId);
+            this.cdr.detectChanges();
           },
           error: err => {
             this.toastService.show("Cogna source removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
     }
@@ -630,9 +658,11 @@ export class CognaEditorComponent implements OnInit {
           next: res => {
             this.toastService.show("Cogna tool successfully removed", { classname: 'bg-success text-light' });
             this.loadCogna(this.cognaId);
+            this.cdr.detectChanges();
           },
           error: err => {
             this.toastService.show("Cogna tool removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
     }
@@ -645,9 +675,11 @@ export class CognaEditorComponent implements OnInit {
           next: res => {
             this.toastService.show("Cogna MCP server successfully removed", { classname: 'bg-success text-light' });
             this.loadCogna(this.cognaId);
+            this.cdr.detectChanges();
           },
           error: err => {
             this.toastService.show("Cogna MCP server removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         })
     }
@@ -665,8 +697,10 @@ export class CognaEditorComponent implements OnInit {
             this.loadCognaList(1);
             delete this.cogna;
             this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Template removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           });
       }, res => { });
   }
@@ -681,13 +715,16 @@ export class CognaEditorComponent implements OnInit {
       .subscribe({
         next: res => {
           this.toastService.show("Memory successfully cleared ", { classname: 'bg-success text-light' });
+          this.cdr.detectChanges();
         },
         error: err => {
           this.toastService.show("Memory cannot be cleared ", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       });
     sessionStorage.removeItem("cogna-" + cogna.id);
     this.chatResponseList = [];
+    this.cdr.detectChanges();
   }
 
   clearUserMemory(cogna) {
@@ -695,13 +732,16 @@ export class CognaEditorComponent implements OnInit {
       .subscribe({
         next: res => {
           this.toastService.show("Memory successfully cleared ", { classname: 'bg-success text-light' });
+          this.cdr.detectChanges();
         },
         error: err => {
           this.toastService.show("Memory cannot be cleared ", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       });
     sessionStorage.removeItem("cogna-" + cogna.id);
     this.chatResponseList = [];
+    this.cdr.detectChanges();
   }
 
   dbMap = {
@@ -719,11 +759,13 @@ export class CognaEditorComponent implements OnInit {
             this.clearDbLoading = false;
             this.toastService.show("Vector database collection successfully cleared ", { classname: 'bg-success text-light' });
             this.loadCogna(cogna.id);
-            this.ingestRes={}
+            this.ingestRes.set({});
+            this.cdr.detectChanges();
           },
           error: err => {
             this.clearDbLoading = false;
             this.toastService.show("Vector database collection cannot be cleared ", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
           }
         });
     }
@@ -761,6 +803,7 @@ export class CognaEditorComponent implements OnInit {
           this.lookupService.getEntryList(this.cogna.data?.txtclsLookupId,{})
           .subscribe(res=>{
             this.lookupEntries = res.content;
+            this.cdr.detectChanges();
           })
         }
 
@@ -773,10 +816,11 @@ export class CognaEditorComponent implements OnInit {
 
         setTimeout(()=>{
           mermaid.run({querySelector:'.mermaid'})
+          this.cdr.detectChanges();
         })  
-
       }, error => {
         // console.log(error);
+        this.cdr.detectChanges();
       })
 
       if (localStorage.getItem("imggen-"+id)){
@@ -785,6 +829,7 @@ export class CognaEditorComponent implements OnInit {
           this.imgGenText = this.imgGenRes?.text;
         }catch(e){}
       }
+      this.cdr.detectChanges();
 
 
   }
@@ -793,35 +838,35 @@ export class CognaEditorComponent implements OnInit {
   imgclsLen:number=0;
   imgclsCat:string[]=[]
 
-  ingestSrcLoading: any = {};
+  ingestSrcLoading = signal<any>({});
   ingestSrc(cognaSrc) {
     this.ingestSrcLoading[cognaSrc.id] = true;
     this.cognaService.ingestSrc(cognaSrc.id, {})
       .subscribe({
         next: res => {
           this.loadCogna(this.cogna.id);
-          this.ingestRes[cognaSrc.id] = res;
+          this.ingestRes.set({...this.ingestRes(), [cognaSrc.id]: res});
           this.toastService.show("Documents successfully ingested<br/>Doc counts: " + res.docCount, { classname: 'bg-success text-light' });
-          this.ingestMessage[this.cogna.id] = "Documents successfully ingested<br/>Doc counts: " + res.docCount;
-          this.ingestSuccess[this.cogna.id] = 'true';
-          this.ingestSrcLoading[cognaSrc.id] = false;
+          this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents successfully ingested<br/>Doc counts: " + res.docCount});
+          this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'true'});
+          this.ingestSrcLoading.set({...this.ingestSrcLoading(), [cognaSrc.id]: false});
         },
         error: err => {
           this.toastService.show("Documents ingestion failure: " + err.error.message, { classname: 'bg-danger text-light' });
-          this.ingestMessage[this.cogna.id] = "Documents ingestion failure: " + err.error.message;
-          this.ingestSuccess[this.cogna.id] = 'false';
-          this.ingestSrcLoading[cognaSrc.id] = false;
+          this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents ingestion failure: " + err.error.message});
+          this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'false'});
+          this.ingestSrcLoading.set({...this.ingestSrcLoading(), [cognaSrc.id]: false});
         }
       })
   }
 
-  ingestRes:any={}
+  ingestRes = signal<any>({});
   // ingestSuccess: string;
-  ingestSuccess: any={};
+  ingestSuccess = signal<any>({});
   // ingestMessage: string;
-  ingestMessage: any={};
+  ingestMessage = signal<any>({});
   // ingestLoading: boolean = false;
-  ingestLoading: any={};
+  ingestLoading = signal<any>({});
   ingest(cogna) {
     this.ingestLoading[cogna.id] = true;
     this.cognaService.ingest(cogna.id, {})
@@ -829,17 +874,17 @@ export class CognaEditorComponent implements OnInit {
         next: res => {
           var total = Object.values(res).reduce(((sum,i:any)=>sum+i.docCount),0);
           this.loadCogna(cogna.id);
-          this.ingestRes = res;
+          this.ingestRes.set(res);
           this.toastService.show("Documents successfully ingested<br/>Doc counts: " + total, { classname: 'bg-success text-light' });
-          this.ingestMessage[cogna.id] = "Documents successfully ingested<br/>Doc counts: " + total;
-          this.ingestSuccess[cogna.id] = 'true';
-          this.ingestLoading[cogna.id] = false;
+          this.ingestMessage.set({...this.ingestMessage(), [cogna.id]: "Documents successfully ingested<br/>Doc counts: " + total});
+          this.ingestSuccess.set({...this.ingestSuccess(), [cogna.id]: 'true'});
+          this.ingestLoading.set({...this.ingestLoading(), [cogna.id]: false});
         },
         error: err => {
           this.toastService.show("Documents ingestion failure: " + err.error.message, { classname: 'bg-danger text-light' });
-          this.ingestMessage[cogna.id] = "Documents ingestion failure: " + err.error.message;
-          this.ingestSuccess[cogna.id] = 'false';
-          this.ingestLoading[cogna.id] = false;
+          this.ingestMessage.set({...this.ingestMessage(), [cogna.id]: "Documents ingestion failure: " + err.error.message});
+          this.ingestSuccess.set({...this.ingestSuccess(), [cogna.id]: 'false'});
+          this.ingestLoading.set({...this.ingestLoading(), [cogna.id]: false});
         }
       })
   }
@@ -849,9 +894,11 @@ export class CognaEditorComponent implements OnInit {
       .subscribe({
         next: res => {
           this.toastService.show("Cogna successfully re-initialized", { classname: 'bg-success text-light' });
+          this.cdr.detectChanges();
         },
         error: err => {
           this.toastService.show("Cogna re-initialization failed<br/>Message: " + err.error.message, { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       })
   }
@@ -869,8 +916,10 @@ export class CognaEditorComponent implements OnInit {
         this.loadCognaList(this.pageNumber);
         this.loadCogna(res.id);
         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
+        this.cdr.detectChanges();
       }, err => {
         this.toastService.show("Template saving failed: " + err.error.message, { classname: 'bg-danger text-light' });
+        this.cdr.detectChanges();
       });
   }
 
@@ -890,53 +939,22 @@ export class CognaEditorComponent implements OnInit {
     return this.cogna?.code ? base + '/~/' + this.cogna.code + '/pdf' : baseApi + '/cogna/' + this.cogna?.id + '/pdf'
   }
 
-
-
-  // streamRes:any;
-  // streamTyping:boolean=false;
-  // streamResult: string = "";
-  // streamPrompt(cogna, promptText) {
-  //   this.promptLoading = true;
-  //   this.runService.streamCognaPrompt(cogna.id, promptText)
-  //     .pipe(
-  //       map(res => {
-  //         console.log(res);
-  //         if (res['type'] == 4) {
-  //           this.promptLoading = false;
-  //           this.streamResult = res['body'];
-  //           this.streamTyping = false;
-  //           this.responseList.push({ type: 'response', text: nl2br(res['body']) });
-  //           sessionStorage.setItem("cogna-" + cogna.id, JSON.stringify(this.responseList));          
-  //         } else {
-  //           this.promptLoading = false;
-  //           this.streamResult = res['partialText'];
-  //           this.streamTyping = true;
-  //         }
-  //       })
-  //     )
-  //     .subscribe(res => {
-  //     }, err => {
-  //       this.toastService.show("Cogna response failed", { classname: 'bg-danger text-light' });
-  //       // this.runRes = { message: JSON.stringify(err.error), success: false };
-  //     });
-  // }
-
   searchDbData:any={}
   openSearchDb(tpl, cogna){
-    this.searchDbList = [];
-    this.searchDbData = {search:this.lastChatPromptText, maxResult: cogna.embedMaxResult, minScore: cogna.embedMinScore};
+    this.searchDbList.set([]);
+    this.searchDbData = {search:this.lastChatPromptText(), maxResult: cogna.embedMaxResult, minScore: cogna.embedMinScore};
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static', size:'lg' })
       .result.then(data => {
       }, res => { });
   }
 
-  searchDbList:any[]=[];
+  searchDbList = signal<any[]>([]);
   searchDb(cognaId,searchDbData){
     this.cognaService.searchDb(cognaId,searchDbData)
     .subscribe({
       next:res=>{
-        this.searchDbList = res;
+        this.searchDbList.set(res);
       },
       error:err=>{
 
@@ -989,18 +1007,19 @@ export class CognaEditorComponent implements OnInit {
   }
   
   chatResponseList: any[] = [];
-  lastChatPromptText: string="";
-  chatPromptText: string="";
-  chatPromptLoading:boolean = false;
-  streamTyping:boolean=false;
-  streamResult: string = "";
+  lastChatPromptText = signal<string>("");
+  chatPromptText = signal<string>("");
+  chatPromptLoading = signal<boolean>(false);
+  streamTyping = signal<boolean>(false);
+  streamResult = signal<string>("");
   chatPrompt(cogna, prompt){
     if (prompt?.trim() || this.fileList.length>0){
       this.scrollBottom();
       this.chatResponseList.push({type:'prompt', text:prompt, files: this.fileList,timestamp:Date.now()})
-      this.chatPromptLoading = true;
+      this.chatPromptLoading.set(true);
       sessionStorage.setItem("cogna-"+cogna.id,JSON.stringify(this.chatResponseList))
-      this.lastChatPromptText = this.chatPromptText;
+      this.lastChatPromptText.set(this.chatPromptText());
+      this.cdr.detectChanges();
 
       if (cogna.streamSupport){
         this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList.map(f=>f.path), this.user?.email)
@@ -1008,22 +1027,23 @@ export class CognaEditorComponent implements OnInit {
           map(res => {
             // console.log(res);
             if (res['type'] == 4) {
-              this.chatPromptLoading = false;
-              this.streamResult = marked.parse(res['body'])+"";
-              this.streamTyping = false;
-              this.chatResponseList.push({type:'response', text:marked.parse(this.streamResult), timestamp:Date.now()})
+              this.chatPromptLoading.set(false);
+              this.streamResult.set(marked.parse(res['body'])+"");
+              this.streamTyping.set(false);
+              this.chatResponseList.push({type:'response', text:marked.parse(this.streamResult()), timestamp:Date.now()})
               sessionStorage.setItem("cogna-"+cogna.id,JSON.stringify(this.chatResponseList));
               this.scrollBottom();        
 
               // perlu pake tok utk pastikan element dh wujud dlm html sebelum run mermaid
               setTimeout(()=>{
                 mermaid.run({querySelector:'.mermaid'})
+                this.cdr.detectChanges();
               })  
             } else {
-              this.streamResult = marked.parse(res['partialText']??"")+"";
-              if (this.streamResult?.length>0){
-                this.chatPromptLoading = false;
-                this.streamTyping = true;                
+              this.streamResult.set(marked.parse(res['partialText']??"")+"");
+              if (this.streamResult()?.length>0){
+                this.chatPromptLoading.set(false);
+                this.streamTyping.set(true);                
               }
               this.scrollBottom();  
             }
@@ -1031,9 +1051,10 @@ export class CognaEditorComponent implements OnInit {
         )
         .subscribe(res => {
         }, err => {
-          this.chatPromptLoading=false;
+          this.chatPromptLoading.set(false);
           this.chatResponseList.push({type:'system', text:'Error loading response: '+err.message,timestamp:Date.now()})
           this.toastService.show("Cogna response failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         });
 
       }else{
@@ -1041,41 +1062,43 @@ export class CognaEditorComponent implements OnInit {
         this.runService.cognaPrompt(cogna.id, prompt,this.fileList.map(f=>f.path), this.user?.email)
         .subscribe({
           next:res=>{
-            this.chatPromptLoading=false;
+            this.chatPromptLoading.set(false);
             this.chatResponseList.push({type:'response', text:marked.parse(res?.result??''), timestamp:Date.now()})
             sessionStorage.setItem("cogna-"+cogna.id,JSON.stringify(this.chatResponseList));
             this.scrollBottom();        
             // this.toastService.show("Prompt success", { classname: 'bg-success text-light' });
             this.fileList=[];
+            this.cdr.detectChanges();
           },
           error:err=>{
-            this.chatPromptLoading=false;
+            this.chatPromptLoading.set(false);
             this.chatResponseList.push({type:'system', text:'Error loading response: '+err.error.message,timestamp:Date.now()})
             this.toastService.show("Prompt failure: "+err.error.message, { classname: 'bg-danger text-light' });
           }
         });
       }
-      this.chatPromptText="";      
+      this.chatPromptText.set("");      
       this.fileList = []; 
+      this.cdr.detectChanges();
     }
   }
 
-  extractRes:any={};
-  extractLoading:boolean;
-  extractError:any={};
+  extractRes = signal<any>({});
+  extractLoading = signal<boolean>(false);
+  extractError = signal<any>({});
   startExtractData(cogna){
-    this.extractLoading = true;
-    this.extractError[cogna.id]=null;
-    this.extractRes[cogna.id] = {};
+    this.extractLoading.set(true);
+    this.extractError.set({...this.extractError(), [cogna.id]: null});
+    this.extractRes.set({...this.extractRes(), [cogna.id]: {}});
     this.runService.cognaExtract(cogna.id,this.extractData.text, this.fileList, true, this.user.email)
     .subscribe({
       next:res=>{
-        this.extractLoading=false;
-        this.extractRes[cogna.id] = res;
+        this.extractLoading.set(false);
+        this.extractRes.set({...this.extractRes(), [cogna.id]: res});
       },
       error:err=>{
-        this.extractLoading=false;
-        this.extractError[cogna.id]=err.error.message;
+        this.extractLoading.set(false);
+        this.extractError.set({...this.extractError(), [cogna.id]: err.error.message});
       }
     })
   }
@@ -1092,10 +1115,12 @@ export class CognaEditorComponent implements OnInit {
       next:res=>{
         this.imgclsLoading=false;
         this.imgclsRes[cogna.id] = res;
+        this.cdr.detectChanges();
       },
       error:err=>{
         this.imgclsLoading=false;
         this.imgclsError[cogna.id]=err.error.message;
+        this.cdr.detectChanges();
       }
     })
   }
@@ -1115,11 +1140,13 @@ export class CognaEditorComponent implements OnInit {
         this.classifyLoading=false;
         this.classifyRes[cogna.id] = res;
         this.classifyIsOk = true;
+        this.cdr.detectChanges();
       },
       error:err=>{
         this.classifyIsOk=false;
         this.classifyLoading=false;
         this.classifyError[cogna.id]=err.error.message;
+        this.cdr.detectChanges();
       }
     })
   }
@@ -1138,10 +1165,12 @@ export class CognaEditorComponent implements OnInit {
         this.imgGenLoading=false;
         this.imgGenRes[cogna.id] = res;
         localStorage.setItem("imggen-"+cogna.id,JSON.stringify(this.imgGenRes));
+        this.cdr.detectChanges();
       },
       error:err=>{
         this.imgGenLoading=false;
         this.imgGenError[cogna.id]=err.error.message;
+        this.cdr.detectChanges();
       }
     })
   }
@@ -1154,6 +1183,7 @@ export class CognaEditorComponent implements OnInit {
         left: 0,
         behavior: "smooth",
       })
+      this.cdr.detectChanges();
     },0)
   }
 
@@ -1181,6 +1211,7 @@ export class CognaEditorComponent implements OnInit {
         this.datasetList.forEach(d => {
           this.bindingSrcs.push({ name: d.title, type: 'dataset', srcId: d.id })
         })
+        this.cdr.detectChanges();
       })
   }
 
@@ -1191,6 +1222,7 @@ export class CognaEditorComponent implements OnInit {
         this.bucketList.forEach(d => {
           this.bindingSrcs.push({ name: d.name, type: 'bucket', srcId: d.id })
         })
+        this.cdr.detectChanges();
       })
   }
 
@@ -1198,6 +1230,7 @@ export class CognaEditorComponent implements OnInit {
     this.lambdaService.getLambdaList({ appId: appId })
       .subscribe(res => {
         this.lambdaList = res.content;
+        this.cdr.detectChanges();
       })
   }
 
@@ -1333,15 +1366,16 @@ export class CognaEditorComponent implements OnInit {
                   if (res.type === HttpEventType.UploadProgress) {
                     progressSize = res.loaded;
                     this.uploadProgress[file.name] = Math.round(100 * progressSize / totalSize);
+                    this.cdr.detectChanges();
                   } else if (res instanceof HttpResponse) {
                     list.push(res.body.fileUrl);
                     this.filesMap[res.body.fileUrl] = res.body;
                     this.fileList.push({path:res.body.filePath,mime: file.type, isImage: true});
                     $event.target.value='';
-                    // console.log("$event",$event)
+                    this.cdr.detectChanges();
                   }
                 }, error: err => {
-                  console.error(err);
+                  this.cdr.detectChanges();
                 }
               })
           }).catch(function (err) {
@@ -1354,15 +1388,17 @@ export class CognaEditorComponent implements OnInit {
                   if (res.type === HttpEventType.UploadProgress) {
                     progressSize = res.loaded;
                     this.uploadProgress[file.name] = Math.round(100 * progressSize / totalSize);
+                    this.cdr.detectChanges();
                   } else if (res instanceof HttpResponse) {
                     list.push(res.body.fileUrl);
                     this.filesMap[res.body.fileUrl] = res.body;
                     this.fileList.push({path:res.body.filePath, mime: file.type, isImage: false});
                     $event.target.value='';
-                    // console.log("$event",$event)
+                    this.cdr.detectChanges();
                   }
                 }, error: err => {
                   console.error(err);
+                  this.cdr.detectChanges();
                 }
               })
         }
@@ -1404,14 +1440,17 @@ export class CognaEditorComponent implements OnInit {
                 if (res.type === HttpEventType.UploadProgress) {
                   progressSize = res.loaded;
                   this.uploadProgress[file.name] = Math.round(100 * progressSize / totalSize);
+                  this.cdr.detectChanges();
                 } else if (res instanceof HttpResponse) {
                   list.push(res.body.filePath);
                   this.filesMap[res.body.filePath] = res.body;
                   this.fileList.push(res.body.filePath);
                   $event.target.value='';
+                  this.cdr.detectChanges();
                 }
               }, error: err => {
                 console.error(err);
+                this.cdr.detectChanges();
               }
             })
         // }).catch(function (err) {

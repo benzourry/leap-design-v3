@@ -15,13 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'step-wizard',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `@if (tiers()?.length>0) {
   <div class="wizardstep" [ngClass]="type()">
     @for (tier of tiers(); track tier.id) {
