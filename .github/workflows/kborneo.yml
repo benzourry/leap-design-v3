@@ -57,4 +57,4 @@ jobs:
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
             chmod -R 755 /var/www/vhosts/kborneo.my/httpdocs/design
-            chown -R leap:psacln /var/www/vhosts/kborneo.my/httpdocs/design
+            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/httpdocs/design
