@@ -48,8 +48,9 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
 
   // Put variables in global if there is onclick handler
   // ** New experimental
-  const hasClick = templateText.includes('onclick="');
-  if (hasClick) {
+  const hasEvent = /on\w+="/.test(templateText);
+  // const hasClick = templateText.includes('onclick="');
+  if (hasEvent) {
     (window as any)[`_data_${scopeId}`] = data.$;
     (window as any)[`_entry_${scopeId}`] = data.$_;
     (window as any)[`_prev_${scopeId}`] = data.$prev$;

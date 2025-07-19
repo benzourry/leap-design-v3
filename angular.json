@@ -44,7 +44,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_leap",
+                "input": "./src/assets/icons_reka",
                 "output": "./assets/icons/"
               }
             ],
@@ -56,7 +56,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-leap.service.ts"
+                "with": "./src/app/_shared/constant-devireka.service.ts"
               }
             ]
           },
@@ -75,7 +75,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_leap.json"
+              "serviceWorker": "ngsw-config_devireka.json"
             },
             "development": {
               "optimization": false,
