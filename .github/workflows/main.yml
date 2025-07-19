@@ -6,7 +6,7 @@ on:
       targets:
         description: 'Comma-separated list of targets (e.g., kborneo,leap,aa)'
         required: true
-        default: 'kborneo,leap'
+        default: 'leap'
 
 jobs:
   prepare-matrix:
@@ -25,7 +25,7 @@ jobs:
     needs: prepare-matrix
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{fromJson(needs.prepare-matrix.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout code
@@ -42,14 +42,34 @@ jobs:
       - name: Rename angular config file
         run: cp angular-${{ matrix.target }}.json angular.json
 
+      - name: Set env variables for server
+        id: set-env
+        run: |
+          if [ "${{ matrix.target }}" = "kborneo" ]; then
+            echo "HOST=${{ secrets.SFTP_HOST_KBORNEO }}" >> $GITHUB_ENV
+            echo "USER=${{ secrets.SFTP_USER_KBORNEO }}" >> $GITHUB_ENV
+            echo "PASS=${{ secrets.SFTP_PASS_KBORNEO }}" >> $GITHUB_ENV
+          elif [ "${{ matrix.target }}" = "leap" ]; then
+            echo "HOST=${{ secrets.SFTP_HOST_LEAP }}" >> $GITHUB_ENV
+            echo "USER=${{ secrets.SFTP_USER_LEAP }}" >> $GITHUB_ENV
+            echo "PASS=${{ secrets.SFTP_PASS_LEAP }}" >> $GITHUB_ENV
+          elif [ "${{ matrix.target }}" = "aa" ]; then
+            echo "HOST=${{ secrets.SFTP_HOST_AA }}" >> $GITHUB_ENV
+            echo "USER=${{ secrets.SFTP_USER_AA }}" >> $GITHUB_ENV
+            echo "PASS=${{ secrets.SFTP_PASS_AA }}" >> $GITHUB_ENV
+          else
+            echo "Unknown target: ${{ matrix.target }}"
+            exit 1
+          fi
+
       - name: Build Angular app
         run: npx ng build --configuration production
 
-      - name: Upload to server via SFTP
+      - name: Upload via SFTP
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets['SFTP_HOST_' + matrix.target | upper ] }}
-          username: ${{ secrets['SFTP_USER_' + matrix.target | upper ] }}
-          password: ${{ secrets['SFTP_PASS_' + matrix.target | upper ] }}
+          host: ${{ env.HOST }}
+          username: ${{ env.USER }}
+          password: ${{ env.PASS }}
           source: dist/
-          target: /httpdocs/${{ matrix.target }}/
+          target: /var/www/vhosts/${{ matrix.target }}.my/httpdocs/
