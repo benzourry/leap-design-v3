@@ -126,6 +126,7 @@ export class EditDatasetComponent implements OnInit {
     )
   }
 
+  filterField:string = '';
 
   groupableFields:any[]=[];
   getGroupableField(){
