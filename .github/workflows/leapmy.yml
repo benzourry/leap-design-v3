@@ -52,4 +52,4 @@ jobs:
           password: ${{ secrets.SFTP_PASS_LEAP }}
           script: |
             chmod -R 755 /var/www/vhosts/leap.my/httpdocs/design
-            chown -R psaadm:psacln /var/www/vhosts/leap.my/httpdocs/design
+            chown -R leap:psacln /var/www/vhosts/leap.my/httpdocs/design
