@@ -18,8 +18,10 @@ jobs:
         id: set-matrix
         run: |
           TARGETS="${{ github.event.inputs.targets }}"
-          JSON_ARRAY=$(echo "$TARGETS" | jq -R 'split(",")')
-          echo "matrix={\"target\":$JSON_ARRAY}" >> $GITHUB_OUTPUT
+          # Convert comma-separated list to JSON array
+          JSON_ARRAY=$(echo "$TARGETS" | awk -v RS=, '{ gsub(/^[ \t]+|[ \t]+$/, "", $0); print "\"" $0 "\"" }' | paste -sd, -)
+          JSON_MATRIX="{\"target\":[${JSON_ARRAY}]}"
+          echo "matrix=$JSON_MATRIX" >> $GITHUB_OUTPUT
 
   build-and-deploy:
     needs: prepare-matrix
