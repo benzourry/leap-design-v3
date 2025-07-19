@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/icons/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js",
+          "/fontawesome-webfont*"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "ia-design-api-ui",
+      "urls": [
+        "https://rekapi.unimas.my/ia/api/app/**",
+        "https://rekapi.unimas.my/ia/api/form/**",
+        "https://rekapi.unimas.my/ia/api/dataset/**",
+        "https://rekapi.unimas.my/ia/api/screen/**",
+        "https://rekapi.unimas.my/ia/api/dashboard/**",
+        "https://rekapi.unimas.my/ia/api/group/**",
+        "https://rekapi.unimas.my/ia/api/mailer/**",
+        "https://rekapi.unimas.my/ia/user/me"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "10s",
+        "maxSize": 100,
+        "maxAge": "7d"
+      }
+    }
+  ]
+}
