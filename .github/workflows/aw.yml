@@ -1,0 +1,60 @@
+name: Deploy to AW Server
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies (legacy peer deps)
+        run: npm ci --legacy-peer-deps
+
+      - name: Use leap angular config
+        run: cp angular-aw.json angular.json
+
+      - name: Build Angular app
+        run: npx ng build --configuration production
+
+      - name: Clean remote directory (optional)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_AW }}
+          username: ${{ secrets.SFTP_USER_AW }}
+          password: ${{ secrets.SFTP_PASS_AW }}
+          script: |
+            rm -rf /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design/*
+
+      - name: Upload to KBORNEO server via SFTP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_AW }}
+          username: ${{ secrets.SFTP_USER_AW }}
+          password: ${{ secrets.SFTP_PASS_AW }}
+          source: dist/design/browser/*
+          target: /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design/
+          strip_components: 3
+
+      - name: Set file permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_AW }}
+          username: ${{ secrets.SFTP_USER_AW }}
+          password: ${{ secrets.SFTP_PASS_AW }}
+          script: |
+            chmod -R 755 /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design
+            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design
