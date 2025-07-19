@@ -42,3 +42,14 @@ jobs:
           password: ${{ secrets.SFTP_PASS_LEAP }}
           source: dist/design/browser/*
           target: /var/www/vhosts/leap.my/httpdocs/design/
+          strip_components: 3
+
+      - name: Set file permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_LEAP }}
+          username: ${{ secrets.SFTP_USER_LEAP }}
+          password: ${{ secrets.SFTP_PASS_LEAP }}
+          script: |
+            chmod -R 755 /var/www/vhosts/leap.my/httpdocs/design
+            chown -R psaadm:psacln /var/www/vhosts/leap.my/httpdocs/design
