@@ -32,4 +32,4 @@ jobs:
           username: ${{ secrets.SFTP_USER_LEAP }}
           password: ${{ secrets.SFTP_PASS_LEAP }}
           source: dist/
-          target: /var/www/vhosts/leap.com/httpdocs/
+          target: /var/www/vhosts/leap.my/httpdocs/
