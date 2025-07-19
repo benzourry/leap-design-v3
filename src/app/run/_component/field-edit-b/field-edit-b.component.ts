@@ -181,24 +181,24 @@ export class FieldEditComponent extends ElementBase<any> {
     toolbarPosition: 'bottom',
     toolbarHiddenButtons: [
       // [
-        // 'undo',
-        // 'redo',
-        // 'bold',
-        // 'italic',
-        // 'underline',
-        // 'strikeThrough',
-        // 'subscript',
-        // 'superscript',
-        // 'justifyLeft',
-        // 'justifyCenter',
-        // 'justifyRight',
-        // 'justifyFull',
-        // 'indent',
-        // 'outdent',
-        // 'insertUnorderedList',
-        // 'insertOrderedList',
-        // 'heading',
-        // 'fontName'
+      // 'undo',
+      // 'redo',
+      // 'bold',
+      // 'italic',
+      // 'underline',
+      // 'strikeThrough',
+      // 'subscript',
+      // 'superscript',
+      // 'justifyLeft',
+      // 'justifyCenter',
+      // 'justifyRight',
+      // 'justifyFull',
+      // 'indent',
+      // 'outdent',
+      // 'insertUnorderedList',
+      // 'insertOrderedList',
+      // 'heading',
+      // 'fontName'
       // ],
       [
         // 'fontSize',
@@ -249,7 +249,7 @@ export class FieldEditComponent extends ElementBase<any> {
     effect(() => {
       if (this.field()?.type == 'radio') {
         // … do the mutation without tracking it:    
-        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
           untracked(() => {
             queueMicrotask(() => {
               this.value = this.lookupList().find(option => option.code === this.value.code) || this.value;
@@ -262,10 +262,14 @@ export class FieldEditComponent extends ElementBase<any> {
     effect(() => {
       if (this.field()?.type == 'modelPicker') {
         // … do the mutation without tracking it:    
-        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null) {
+        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
           untracked(() => {
             queueMicrotask(() => {
-              this.value = this.lookupList().find(option => option.id === this.value.id) || this.value;
+              if (this.field().subType == 'multiple') {
+                this.value = this.value.map(v => this.lookupList().find(option => option?.$id === v?.$id) || v);
+              } else {
+                this.value = this.lookupList().find(option => option?.$id === this.value?.$id) || this.value;
+              }
             });
           });
         }
@@ -275,12 +279,12 @@ export class FieldEditComponent extends ElementBase<any> {
     effect(() => {
       if (this.field()?.type == 'checkboxOption') {
         // … do the mutation without tracking it:    
-        if (this.lookupList()!=null && this.lookupList().length>0 && this.value!=null && this.value.length>0) {
+        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null && this.value.length > 0) {
           if (this.value instanceof Array) {
             untracked(() => {
               queueMicrotask(() => {
-                  const newVal = this.value?.map(v=>this.lookupList().find(option => option?.code === v?.code) || v)
-                  this.value = newVal;
+                const newVal = this.value?.map(v => this.lookupList().find(option => option?.code === v?.code) || v)
+                this.value = newVal;
               });
             });
           }
