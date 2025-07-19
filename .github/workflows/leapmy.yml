@@ -33,5 +33,5 @@ jobs:
           password: ${{ secrets.SFTP_PASS_LEAP }}
           script: |
             rm -rf /var/www/vhosts/leap.my/httpdocs/design/*
-          source: "dist/design/browser/*"
+          source: dist/design/browser/*
           target: /var/www/vhosts/leap.my/httpdocs/design/
