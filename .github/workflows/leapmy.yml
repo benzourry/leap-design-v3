@@ -31,5 +31,7 @@ jobs:
           host: ${{ secrets.SFTP_HOST_LEAP }}
           username: ${{ secrets.SFTP_USER_LEAP }}
           password: ${{ secrets.SFTP_PASS_LEAP }}
-          source: dist/design/browser/*
-          target: /var/www/vhosts/leap.my/httpdocs/design
+          script: |
+            rm -rf /var/www/vhosts/leap.my/httpdocs/design/*
+          source: "dist/design/browser/*"
+          target: /var/www/vhosts/leap.my/httpdocs/design/
