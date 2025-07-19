@@ -52,4 +52,4 @@ jobs:
           username: ${{ secrets['SFTP_USER_' + matrix.target | upper ] }}
           password: ${{ secrets['SFTP_PASS_' + matrix.target | upper ] }}
           source: dist/
-          target: ${{ matrix.target }}/
+          target: /httpdocs/${{ matrix.target }}/
