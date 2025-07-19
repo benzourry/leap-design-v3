@@ -33,9 +33,9 @@ jobs:
       - name: Clean remote directory (optional)
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SFTP_HOST_LEAP }}
-          username: ${{ secrets.SFTP_USER_LEAP }}
-          password: ${{ secrets.SFTP_PASS_LEAP }}
+          host: ${{ secrets.SFTP_HOST_KBORNEO }}
+          username: ${{ secrets.SFTP_USER_KBORNEO }}
+          password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
             rm -rf /var/www/vhosts/kborneo.my/httpdocs/design/*
 
