@@ -107,14 +107,11 @@ export class EditScreenComponent implements OnInit {
     }
   }
   
-  resetLinkedData(item) {
-    item.update(i => {
-      delete i.form;
-      delete i.dataset;
-      delete i.bucket;
-      delete i.cogna;
-      return i;
-    });
+  resetLinkedData(item:any) {
+    delete item.form;
+    delete item.dataset;
+    delete item.bucket;
+    delete item.cogna;
   }
 
   compareByIdFn(a, b): boolean {
