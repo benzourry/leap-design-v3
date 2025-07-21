@@ -307,7 +307,7 @@ export class GroupEditorComponent implements OnInit {
       .result.then(data => {
         var payload = {
           email: data.email,
-          groups: this.editAppUserData.group,
+          groups: this.editAppUserData?.group,
           name: data.name,
           autoReg: true,
           tags: data.tags
