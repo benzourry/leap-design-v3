@@ -24,7 +24,7 @@
       @if (_cloneFormData.appId) {
         <div class="form-group mb-3">
           <label class="form-label">Select Form *</label>
-          <select class="form-select" name="formId" [(ngModel)]="cloneFormData.formId"
+          <select class="form-select" name="formId" [(ngModel)]="_cloneFormData.formId"
             required>
             @for (form of cloneFormList(); track form.id) {
               <option [ngValue]="form.id">{{form.title}} [{{form.id}}]

@@ -20,19 +20,19 @@ import { RxStompConfig } from "@stomp/rx-stomp";
 var full = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
 
 // /* IA UNIMAS */
-export const baseApi = 'https://rekapi.unimas.my/ia/api';   // prefer
-export const base = 'https://rekapi.unimas.my/ia'; // prefer
-export const cognaBase = 'https://rekapi.unimas.my/ia'; // prefer
+export const baseApi = 'https://io.dev.ireka.my/api';   // prefer
+export const base = 'https://io.dev.ireka.my'; // prefer
+export const cognaBase = 'https://io.dev.ireka.my'; // prefer
 export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?dev\.ireka\.my/;
 export const domainBase = "dev.ireka.my";
 export const OAUTH = {
-    AUTH_URI: "https://rekapi.unimas.my/ia/oauth2/authorize",
-    LOGOUT_URI: "https://rekapi.unimas.my/ia/logout",
-    USER_URI: "https://rekapi.unimas.my/ia/user/me",
-    USER_URI_DEBUG: "https://rekapi.unimas.my/ia/user/debug-me", 
+    AUTH_URI: "https://io.dev.ireka.my/oauth2/authorize",
+    LOGOUT_URI: "https://io.dev.ireka.my/logout",
+    USER_URI: "https://io.dev.ireka.my/user/me",
+    USER_URI_DEBUG: "https://io.dev.ireka.my/user/debug-me", 
     CALLBACK: full + "/#/", // + "/assets/o-callback.html",
     FINAL_URI: full + "/#/",
-    TOKEN_GET: "https://rekapi.unimas.my/ia/token/get",
+    TOKEN_GET: "https://io.dev.ireka.my/token/get",
     PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0guMI71FGGK2CC0siIw?e=E0o5H5",
     SIGNIN_OPT: ['unimas','unimasid'],
     COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
