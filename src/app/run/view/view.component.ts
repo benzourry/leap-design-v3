@@ -25,7 +25,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { first, map, share, tap } from 'rxjs/operators';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, hashObject, loadScript, resizeImage } from '../../_shared/utils';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { KeyValue, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
@@ -77,7 +77,6 @@ export class ViewComponent implements OnInit, OnDestroy {
   entryId = input<number>();
   _entryId:number;
 
-  entryParam: any;
   formId = input<number>();
   _formId:number;
   asComp = input<boolean>();
@@ -87,6 +86,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   submitted = output<any>();
   isEmpty = inputObject => inputObject && Object.keys(inputObject).length === 0;
   param = input<any>({});
+  _param:any = {};
   app = computed<any>(() => this.runService.$app());
   baseUrl = computed<string>(() => this.runService.$baseUrl());
   preurl = computed<string>(()=>this.runService.$preurl());
@@ -133,8 +133,9 @@ export class ViewComponent implements OnInit, OnDestroy {
 
       const key = `${this._formId}|${this._entryId}|${this.user()?.email}`;
 
-      if (this._formId && this.user() && this.prevSignalKey != key){
+      if (this._formId && this.user() && (this.prevSignalKey != key || !deepEqual(this._param, this.param()))){ // kadang2 without entryId and use param instead
         this.prevSignalKey = key;
+        this._param = this.param();
         this.getForm(this._formId, this._entryId);
       }
 
@@ -729,12 +730,12 @@ export class ViewComponent implements OnInit, OnDestroy {
 
       if (this.form().single) {
         var f = this._eval({},{},{}, this.form().singleQ, this.form());
-        var params = deepMerge(f, this.entryParam);
+        var params = deepMerge(f, this._param);
         return this.entryService.getFirstEntryByParam(params, form.id)
       } else {
 
-        if (!this.isEmpty(this.entryParam)) {
-          return this.entryService.getFirstEntryByParam(this.entryParam, form.id)
+        if (!this.isEmpty(this._param)) {
+          return this.entryService.getFirstEntryByParam(this._param, form.id)
         } else {
             return of({});
         }
