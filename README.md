@@ -11,7 +11,7 @@ LEAP-DESIGN V3.2 is an Angular-based frontend framework designed for the **LEAP 
 - **REST API Integration**: Connect to backend services effortlessly.
 - **Multi-Platform Support**: Works across different browsers and devices.
 
-# LEAP App Builder
+# About LEAP App Builder
 
 **LEAP App Builder** is a web-based application development platform designed to streamline the creation of modern web apps. It is powered by three core components:
 
