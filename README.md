@@ -11,6 +11,27 @@ LEAP-DESIGN V3.2 is an Angular-based frontend framework designed for the **LEAP 
 - **REST API Integration**: Connect to backend services effortlessly.
 - **Multi-Platform Support**: Works across different browsers and devices.
 
+# LEAP App Builder
+
+**LEAP App Builder** is a web-based application development platform designed to streamline the creation of modern web apps. It is powered by three core components:
+
+- **LEAP-IO** – The backend engine that powers data processing and API services  
+- **LEAP-DESIGN** – A no-code editor for designing app logic and UI  
+- **LEAP-RUN** – The runtime engine that executes and renders the app in real time
+
+LEAP App Builder adopts a **building block** and **metadata-driven** approach, allowing apps to be constructed from reusable components. By leveraging a technology-agnostic metadata format, applications built with LEAP remain compatible and up-to-date with the evolving LEAP runtime — without requiring manual intervention from developers.
+
+## Available Instances
+
+As of now, there are **six active instances** of the LEAP App Builder platform:
+
+1. **LEAPMY** – Public and community instance  
+2. **IA** – Privately managed by UNIMAS  
+3. **AA** – Privately managed by UNIMAS  
+4. **IREKA** – Commercial installation by UNIMAS  
+5. **AppWizard** – Privately managed by Sarawak Skills  
+6. **KBORNEO** – Privately managed by ICATS University College
+
 ## Prerequisites
 Before running the project, ensure you have the following installed:
 
@@ -58,7 +79,7 @@ We welcome contributions! To get started:
 This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
-For inquiries or support, reach out via [your-email@example.com](mailto:your-email@example.com) or open an issue in the repository.
+For inquiries or support, reach out via [benzourry@gmail.com](mailto:benzourry@gmail.com) or open an issue in the repository.
 
 ---
 
