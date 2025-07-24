@@ -1,0 +1,57 @@
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build_angular_aa:
+  stage: build
+  tags:
+    - reka-design
+  script:
+    - npm ci --legacy-peer-deps
+    - cp angular-aa.json angular.json
+    - npx ng build --configuration production --output-path=dist/aa
+  artifacts:
+    paths:
+      - dist/aa/
+
+deploy_to_server_aa:
+  stage: deploy
+  tags:
+    - reka-design
+  only:
+    refs:
+      - main
+  before_script:
+    - apt-get update && apt-get install -y rsync openssh-client
+    - echo "=== Setting up SSH agent ==="
+    - eval $(ssh-agent -s)
+
+    - echo "=== Adding SSH private key ==="
+    - echo "$SFTP_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+    - echo "=== Verifying loaded key ==="
+    - ssh-add -l || (echo "❌ No key loaded. Check \$SFTP_PRIVATE_KEY" && exit 1)
+
+    - echo "=== Creating SSH config ==="
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host remote\n\tStrictHostKeyChecking no\n\tHostName $SFTP_HOST_AA\n\tUser $SFTP_USER_AA\n" > ~/.ssh/config
+    - cat ~/.ssh/config
+
+  script:
+    - echo "=== Testing SSH connection ==="
+    - ssh -v remote "echo ✅ SSH connected successfully" || (echo "❌ SSH connection failed" && exit 1)
+
+    - echo "=== Cleaning target directory ==="
+    - ssh remote "rm -rf /var/www/html/design/*"
+
+    - echo "=== Deploying files via rsync ==="
+    - rsync -avz --delete dist/aa/browser/ remote:/var/www/html/design/
+
+    - echo "=== Setting permissions ==="
+    - ssh remote "chmod -R 755 /var/www/html/design"
+    - ssh remote "chown -R blmrazif:blmrazif /var/www/html/design"
