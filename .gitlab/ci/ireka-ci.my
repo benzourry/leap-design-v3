@@ -1,0 +1,41 @@
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build_angular_ireka:
+  stage: build
+  tags:
+    - reka-design
+  script:
+    - npm ci --legacy-peer-deps
+    - cp angular-ireka.json angular.json
+    - npx ng build --configuration production --output-path=dist/ireka
+  artifacts:
+    paths:
+      - dist/ireka/
+
+deploy_to_server_ireka:
+  stage: deploy
+  tags:
+    - reka-design
+  only:
+    refs:
+      - main
+  before_script:
+    - apt-get update && apt-get install -y rsync openssh-client
+    - echo "Setting up SSH agent"
+    - eval $(ssh-agent -s)
+    - echo "$SFTP_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host remote\n\tStrictHostKeyChecking no\n\tHostName $SFTP_HOST_IREKA\n\tUser $SFTP_USER_IREKA\n" > ~/.ssh/config
+
+  script:
+    - ssh remote "rm -rf /var/www/html/design/*"
+    - rsync -avz --delete dist/ireka/browser/ remote:/var/www/html/design/
+    - ssh remote "chmod -R 755 /var/www/html/design"
+    - ssh remote "chown -R blmrazif:blmrazif /var/www/html/design"
