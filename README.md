@@ -1,6 +1,6 @@
-# LEAP-DESIGN V3.2
+# LEAP-DESIGN v3.2
 
-LEAP-DESIGN V3.2 is an Angular-based frontend framework designed for the **LEAP App Builder**, a powerful no-code tool that enables users to create applications with minimal effort. This project provides a user-friendly and highly customizable interface to streamline the app development process.
+LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP App Builder**, a powerful no-code tool that enables users to create applications with minimal effort. This project provides a user-friendly and highly customizable interface to streamline the app development process.
 
 ## Features
 - **Modern UI**: Built with Angular for a responsive and dynamic user experience.
