@@ -49,7 +49,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_KBORNEO }}
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
-            rm -rf /var/www/vhosts/kborneo.my/httpdocs/design/*
+            rm -rf /var/www/vhosts/kborneo.my/design/*
 
       - name: Upload app files and checksum
         uses: appleboy/scp-action@master
@@ -67,5 +67,5 @@ jobs:
           username: ${{ secrets.SFTP_USER_KBORNEO }}
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
-            chmod -R 755 /var/www/vhosts/kborneo.my/httpdocs/design
-            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/httpdocs/design
+            chmod -R 755 /var/www/vhosts/kborneo.my/design
+            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/design
