@@ -52,8 +52,7 @@
                             </span>
                           }
                         </a>
-                      }
-                      @if (item.type=='form-single') {
+                      }@else if (item.type=='form-single') {
                         <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
                           [skipLocationChange]="item.x?.slc"
                           [class.disabled]="offline() || naviDataItem?.inactive"
@@ -83,8 +82,7 @@
                             </span>
                           }
                         </a>
-                      }
-                      @if (item.type=='view-single') {
+                      }@else if (item.type=='view-single') {
                         <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/view"
                           [skipLocationChange]="item.x?.slc"
                           [class.disabled]="offline() || naviDataItem?.inactive"
@@ -96,8 +94,7 @@
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                       
                           }
                         </a>
-                      }
-                      @if (item.type=='dataset') {
+                      }@else if (item.type=='dataset') {
                         <a class="s-icon" routerLink="{{preurl()}}/dataset/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc">
                           <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
@@ -110,8 +107,7 @@
                             <div class="badge">{{badge() && badge()[item.screenId]}}</div>
                           }
                         </a>
-                      }
-                      @if (item.type=='dashboard') {
+                      }@else if (item.type=='dashboard') {
                         <a class="s-icon" routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
@@ -122,8 +118,7 @@
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                          
                           }
                         </a>
-                      }
-                      @if (item.type=='lookup') {
+                      }@else if (item.type=='lookup') {
                         <a class="s-icon" routerLink="{{preurl()}}/lookup/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
@@ -134,8 +129,7 @@
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                          
                           }
                         </a>
-                      }
-                      @if (item.type=='user') {
+                      }@else if (item.type=='user') {
                         <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
@@ -146,8 +140,7 @@
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                            
                           }
                         </a>
-                      }
-                      @if (item.type=='start') {
+                      }@else if (item.type=='start') {
                         <a class="s-icon disabled" routerLink="{{preurl()}}/start"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
@@ -158,8 +151,7 @@
                             <div class="sub" [innerHtml]="naviDataItem?.description"></div>                           
                           }
                         </a>
-                      }
-                      @if (item.type=='external'||item.type=='internal') {
+                      }@else if (item.type=='external'||item.type=='internal') {
                         <a class="s-icon"
                           [href]="compileTpl(item.url,{$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
                           [target]="item.type=='external'?'_blank':''" routerLinkActive="active">
@@ -167,8 +159,7 @@
                           </fa-icon>
                           <div class="title">{{item.title}}</div>
                         </a>
-                      }
-                      @if (item.type=='screen') {
+                      }@else if (item.type=='screen') {
                         <a class="s-icon" routerLink="{{preurl()}}/screen/{{item.screenId}}"
                           [skipLocationChange]="item.x?.slc"
                           routerLinkActive="active">
