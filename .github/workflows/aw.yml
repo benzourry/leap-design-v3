@@ -8,6 +8,8 @@ on:
       - '.github/workflows/**'
       - '.gitlab/ci/**'
       - 'README.md'
+      - 'angular-*.json'
+      - 'ngsw-config_*.json'
   workflow_dispatch:
 
 jobs:
