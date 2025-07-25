@@ -2,14 +2,101 @@
 
 LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP App Builder**, a powerful no-code tool that enables users to create applications with minimal effort. This project provides a user-friendly and highly customizable interface to streamline the app development process.
 
-## Features
-- **Modern UI**: Built with Angular for a responsive and dynamic user experience.
-- **Drag-and-Drop Functionality**: Seamlessly integrate components without writing code.
-- **Component Library**: Pre-built UI components for rapid development.
-- **Customization**: Supports themes and styling adjustments.
-- **Performance Optimized**: Efficient rendering and state management.
-- **REST API Integration**: Connect to backend services effortlessly.
-- **Multi-Platform Support**: Works across different browsers and devices.
+# Features
+
+<img width="1189" height="434" alt="image" src="https://github.com/user-attachments/assets/c5aff9dc-c0d8-4c75-9402-6976d23c3106" />
+
+## 🎨 Designer Tools
+
+### **Custom Form Builder**
+- Supports a wide variety of input types with flexible configurations (validation, Cogna AI integration).
+- Includes top-level containers (Tabs, Accordions), child sections, and customizable form facets.
+- Form lifecycle management (on init, on save, on submit, on view).
+- Conditional field logic (pre-requisite and post-action support).
+- Macro-like "evaluated fields" for dynamic field values.
+
+### **Custom Process Flow**
+- Dynamic tier support (e.g., HOD, immediate supervisor).
+- Unlimited approval tiers.
+- Custom approval form designer.
+
+### **Dataset Builder**
+- Intuitive dataset design interface.
+- Custom filters and dataset actions.
+- Auto-generated RESTful endpoints.
+- Built-in features like grouping, sorting, and pagination.
+
+### **Dashboard Builder**
+- Easy-to-use chart creation for various chart types.
+- Basic data aggregation support.
+- Auto-creation of RESTful endpoints for statistics.
+
+### **Custom Screen Builder**
+- Prebuilt screen types (QR Scanner, Prompt, Entry Page/List, Static Page, Calendar, Chatbot, Bucket, Map, Mailbox, Combined View).
+- Integrated code editor with form/dataset binding.
+- Event handling via `$go`, `$popup`, and built-in functions.
+
+### **App Structure Editor**
+- Drag-and-drop navigation and layout editor.
+- Easy-to-manage access control settings.
+
+### **Lookup Manager**
+- Import/export lookup data using Excel files.
+- Integration with 3rd-party RESTful endpoints.
+
+### **Mailer Manager**
+- Centralized mail template management for workflow and notification actions.
+- Notification history tracking.
+- Mail scheduling capabilities.
+
+### **Endpoint Manager**
+- Manage inbound endpoints for integration with external RESTful APIs.
+- Built-in support for OAuth2-secured endpoints.
+
+### **Role Manager**
+- Role-based access control (RBAC) for application users.
+- Roles are reusable across forms, processes, and screens.
+
+---
+
+## 🗂️ LEAP Bucket
+- Simplified file upload management for your app.
+- Built-in usage insights (file type, size, upload field tracking).
+- Export all files as a ZIP archive.
+- Integrated antivirus scanning with logging.
+- Accessible via custom screens or RESTful endpoints.
+
+---
+
+## 🧠 LEAP Cogna (AI Integration)
+- Built-in tools for seamless AI/LLM integration.
+- Supports cloud AI providers: OpenAI, Hugging Face, DeepSeek.
+- Local inference support: Ollama, LocalAI.
+- ONNX model support (e.g., YOLO, ResNet, MobileNet).
+- Vector DB integration: Chroma DB, Milvus, or built-in storage.
+- Custom RAG builder for document Q&A and knowledge integration.
+- AI agent builder with tool-based interactions.
+- Customize and fine-tune inference parameters.
+- Leverage your own bucket files and datasets for RAG pipelines.
+- Integration with 3rd-party MCP servers.
+
+---
+
+## ⚙️ LEAP Lambda (Function-as-a-Service)
+- Lightweight serverless environment for building custom logic.
+- Language support: JavaScript, Groovy/Java, Python.
+- Bind directly to form entries, datasets, or lookups.
+- Rich set of built-in utility functions.
+- Expose as RESTful service for integration.
+
+---
+
+## 🔧 App Management
+- Application summary dashboard with usage insights.
+- Create and restore from app restore points (snapshots).
+- API key support for non-OAuth2/OIDC integrations.
+
+
 
 # About LEAP App Builder
 
