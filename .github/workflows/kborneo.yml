@@ -27,7 +27,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Use leap angular config
-        run: cp angular-aw.json angular.json
+        run: cp angular-kborneo.json angular.json
 
       - name: Build Angular app
         run: npx ng build --configuration production
@@ -59,4 +59,4 @@ jobs:
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
             chmod -R 755 /var/www/vhosts/kborneo.my/design
-            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/kborneo.my/design
+            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/design
