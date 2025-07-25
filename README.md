@@ -57,7 +57,6 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 - Role-based access control (RBAC) for application users.
 - Roles are reusable across forms, processes, and screens.
 
----
 
 ## 🗂️ LEAP Bucket
 - Simplified file upload management for your app.
@@ -66,7 +65,6 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 - Integrated antivirus scanning with logging.
 - Accessible via custom screens or RESTful endpoints.
 
----
 
 ## 🧠 LEAP Cogna (AI Integration)
 - Built-in tools for seamless AI/LLM integration.
@@ -80,7 +78,6 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 - Leverage your own bucket files and datasets for RAG pipelines.
 - Integration with 3rd-party MCP servers.
 
----
 
 ## ⚙️ LEAP Lambda (Function-as-a-Service)
 - Lightweight serverless environment for building custom logic.
@@ -89,14 +86,13 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 - Rich set of built-in utility functions.
 - Expose as RESTful service for integration.
 
----
 
 ## 🔧 App Management
 - Application summary dashboard with usage insights.
 - Create and restore from app restore points (snapshots).
 - API key support for non-OAuth2/OIDC integrations.
 
-
+---
 
 # About LEAP App Builder
 
@@ -109,7 +105,7 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 LEAP App Builder adopts a **building block** and **metadata-driven** approach, allowing apps to be constructed from reusable components. By leveraging a technology-agnostic metadata format, applications built with LEAP remain compatible and up-to-date with the evolving LEAP runtime — without requiring manual intervention from developers.
 
 ## Available Instances
-<img width="240" height="356" alt="LEAP-based Platform" src="https://github.com/user-attachments/assets/9069bf7e-a24e-45d2-b16e-e780baab4f65" />
+<img width="240" alt="LEAP-based Platform" src="https://github.com/user-attachments/assets/9069bf7e-a24e-45d2-b16e-e780baab4f65" />
 
 As of now, there are **six active instances** of the LEAP App Builder platform:
 
