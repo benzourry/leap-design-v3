@@ -56,7 +56,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-devireka.service.ts"
+                "with": "./src/app/_shared/constant-ireka.service.ts"
               }
             ]
           },
@@ -75,7 +75,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_devireka.json"
+              "serviceWorker": "ngsw-config_ireka.json"
             },
             "development": {
               "optimization": false,

@@ -12,12 +12,14 @@
     margin: 0 2px;
 }
 
-.element:hover .element-edit {
+.element:hover .element-edit,
+.element:active .element-edit {
     /* opacity: 1; */
     display:block;
 }
 
-.element.no-pointer:hover::after {
+.element.no-pointer:hover::after,
+.element.no-pointer:active::after {
     content: '';
     position: absolute;
     background: rgba(255, 255, 255, .1);

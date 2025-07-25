@@ -43,11 +43,11 @@
     overflow: hidden;
     height:100%;
 }
-.tile:hover{
+.tile:hover,.tile:active{
     box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
     /*overflow: hidden;*/
 }
-.tile:hover .tile-content{
+.tile:hover .tile-content,.tile:active .tile-content{
     filter:blur(4px);
 }
 .tile .tile-content .desc{
@@ -77,7 +77,7 @@
     overflow:hidden;
 }
 
-.tile:hover .tile-action{
+.tile:hover .tile-action,.tile:active .tile-action{
     top:0px;
     bottom:0px;left:0px; right:0px;
     opacity:1;

@@ -113,7 +113,8 @@ body {
 // .app-user:focus{
 //   outline: 0;
 // }
-.app-user:hover{
+.app-user:hover,
+.app-user:active{
   background:rgba(255,255,255,.2);  
 }
 .edit-mode{
@@ -265,7 +266,8 @@ body {
     top: 0px; 
     width:36px;
   }
-  .topnav .app-user:hover{
+  .topnav .app-user:hover,
+  .topnav .app-user:active{
     width: 260px;
   }
 

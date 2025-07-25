@@ -7,11 +7,13 @@
     margin: 0 2px;
 }
 
-.element:hover .element-edit {
+.element:hover .element-edit,
+.element:active .element-edit {
     opacity: 1;
 }
 
-.element:hover::after {
+.element:hover::after,
+.element:active::after {
     content: '';
     position: absolute;
     background: rgba(255, 255, 255, .3);
@@ -25,7 +27,8 @@
     pointer-events: none !important;
 }
 
-.element:hover .element-item {
+.element:hover .element-item,
+.element:active .element-item {
     filter: blur(2px);
 }
 

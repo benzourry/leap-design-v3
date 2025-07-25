@@ -15,7 +15,8 @@
 .dd-move{
     display:none;
 }
-.element:hover .dd-move{
+.element:hover .dd-move,
+.element:active .dd-move{
     display:block;
 }
 

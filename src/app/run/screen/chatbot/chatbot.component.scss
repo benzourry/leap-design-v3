@@ -105,11 +105,13 @@
     display: none;
 }
 
-#clear-chat-btn:hover {
+#clear-chat-btn:hover,
+#clear-chat-btn:active {
     width: 8em;
 }
 
-#clear-chat-btn:hover .text {
+#clear-chat-btn:hover .text,
+#clear-chat-btn:active .text {
     display: inline;
 }
 

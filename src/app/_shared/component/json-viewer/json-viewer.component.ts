@@ -105,7 +105,8 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
       border: none;
       color: #666;
     }
-    .format-toggle:hover {
+    .format-toggle:hover,
+    .format-toggle:active {
       color: black;
     }
   `]
