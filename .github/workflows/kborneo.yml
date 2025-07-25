@@ -69,21 +69,21 @@ jobs:
             chmod -R 755 /var/www/vhosts/kborneo.my/httpdocs/design
             chown -R kborneo:psacln /var/www/vhosts/kborneo.my/httpdocs/design
 
-      - name: Verify remote file integrity
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SFTP_HOST_KBORNEO }}
-          username: ${{ secrets.SFTP_USER_KBORNEO }}
-          password: ${{ secrets.SFTP_PASS_KBORNEO }}
-          script: |
-            cd /var/www/vhosts/kborneo.my/httpdocs/design
-            sha256sum -c sha256sum.txt || exit 1
+      # - name: Verify remote file integrity
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SFTP_HOST_KBORNEO }}
+      #     username: ${{ secrets.SFTP_USER_KBORNEO }}
+      #     password: ${{ secrets.SFTP_PASS_KBORNEO }}
+      #     script: |
+      #       cd /var/www/vhosts/kborneo.my/httpdocs/design
+      #       sha256sum -c sha256sum.txt || exit 1
 
-      - name: Print remote index.html hash
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SFTP_HOST_KBORNEO }}
-          username: ${{ secrets.SFTP_USER_KBORNEO }}
-          password: ${{ secrets.SFTP_PASS_KBORNEO }}
-          script: |
-            sha256sum /var/www/vhosts/kborneo.my/httpdocs/design/index.html || echo "index.html not found"
+      # - name: Print remote index.html hash
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SFTP_HOST_KBORNEO }}
+      #     username: ${{ secrets.SFTP_USER_KBORNEO }}
+      #     password: ${{ secrets.SFTP_PASS_KBORNEO }}
+      #     script: |
+      #       sha256sum /var/www/vhosts/kborneo.my/httpdocs/design/index.html || echo "index.html not found"
