@@ -1,7 +1,7 @@
 <div class="position-sticky sticky-top bg-reka" [class]="bgClassName">
   <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
-      <img src="assets/icons/logo-w.svg" width="38">
+      <img src="assets/icons/logo-w.svg" alt="Logo" title="Logo" width="38">
     </div>
     <div class="home-top-r pe-2">
       <div class="d-flex">
@@ -20,9 +20,6 @@
 
 <div class="wrapper">
   <div class="limit-width repo centered">
-    <!-- <div class="repo-title text-center p-3 pt-0">
-    <h4>App Designer</h4>
-  </div> -->
     <div class="repo-tool text-center mt-3">
       <div class="tool-container" style="max-width:480px;margin:auto">
         <input type="search" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
@@ -161,7 +158,7 @@
           </div>
         } @else {
           <div class="px-2">
-            <div class="py-1 small m-a" [class.limit-width]="!dataset?.wide">
+            <div class="py-1 small m-a limit-width">
               <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
                 [class.bg-info-subtle]="groupFilter() === null" 
                 [class.text-primary]="groupFilter() === null" 
@@ -286,14 +283,12 @@
           <label class="col-form-label col-md-3">App Title</label>
           <div class="col-md-6">
             <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().title}}">
-            <!-- <p class="form-control-static">{{removeItemData.title}}</p> -->
           </div>
         </div>
         <div class="form-group row">
           <label class="col-form-label col-md-3">Description</label>
           <div class="col-md-6">
             <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().description}}">
-            <!-- <p class="form-control-static">{{removeItemData.description}}</p> -->
           </div>
         </div>
         @if(removing()){
