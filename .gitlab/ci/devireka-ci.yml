@@ -1,0 +1,42 @@
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build_angular_devireka:
+  stage: build
+  tags:
+    - reka-design
+  script:
+    - npm ci --legacy-peer-deps
+    - cp angular-devireka.json angular.json
+    - npx ng build --configuration production --output-path=dist/devireka
+  artifacts:
+    paths:
+      - dist/devireka/
+
+deploy_to_server_devireka:
+  stage: deploy
+  tags:
+    - reka-design
+  only:
+    refs:
+      - main
+  before_script:
+    - apt-get update && apt-get install -y rsync openssh-client
+    - echo "Setting up SSH agent"
+    - eval $(ssh-agent -s)
+    - echo "$SFTP_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host remote\n\tStrictHostKeyChecking no\n\tHostName $SFTP_HOST_DEVIREKA\n\tUser $SFTP_USER_DEVIREKA\n" > ~/.ssh/config
+
+  script:
+    - ssh remote "rm -rf /var/www/html/dev/design/*"
+    - rsync -avz --delete dist/devireka/browser/ remote:/var/www/html/dev/design/
+    - ssh remote "chmod -R 755 /var/www/html/dev/design"
+    - ssh remote "chown -R blmrazif:blmrazif /var/www/html/dev/design"
+
