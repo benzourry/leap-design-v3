@@ -44,10 +44,6 @@ export class AppComponent {
   updateAvailable = signal<boolean>(false);
   updateInfo = signal<any>({});
 
-  // onlineEvent: Observable<Event>;
-  // offlineEvent: Observable<Event>;
-  // subscriptions: Subscription[] = [];
-
   showConsole = signal<boolean>(false);
   logs= signal<Set<string>>(new Set());
   offline = signal<boolean>(false);
