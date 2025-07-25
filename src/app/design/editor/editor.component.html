@@ -92,8 +92,6 @@
   @defer(prefetch on idle){
     <app-app-edit [(data)]="editAppData" [offline]="offline" [user]="user"
     [dismiss]="d" [close]="c"></app-app-edit>
-    <!-- <app-edit-screen [dismiss]="d" [close]="c" [screen]="editScreenData" [app]="app" [formList]="formList"
-        [datasetList]="datasetList" [cognaList]="cognaList" [screenList]="screenList" [accessList]="accessList"></app-edit-screen> -->
   }@loading {
     <div class="text-center m-5">
       <div class="spinner-grow text-primary" role="status">
