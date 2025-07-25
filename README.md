@@ -109,7 +109,7 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 LEAP App Builder adopts a **building block** and **metadata-driven** approach, allowing apps to be constructed from reusable components. By leveraging a technology-agnostic metadata format, applications built with LEAP remain compatible and up-to-date with the evolving LEAP runtime — without requiring manual intervention from developers.
 
 ## Available Instances
-<img width="240" height="356" alt="LEAP-based Platform" src="https://github.com/user-attachments/assets/9069bf7e-a24e-45d2-b16e-e780baab4f65" />
+<img width="240" alt="LEAP-based Platform" src="https://github.com/user-attachments/assets/9069bf7e-a24e-45d2-b16e-e780baab4f65" />
 
 As of now, there are **six active instances** of the LEAP App Builder platform:
 
