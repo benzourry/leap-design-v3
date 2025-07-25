@@ -4,7 +4,7 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 
 # Features
 
-<img width="1189" height="434" alt="image" src="https://github.com/user-attachments/assets/c5aff9dc-c0d8-4c75-9402-6976d23c3106" />
+<img width="840" height="434" alt="image" src="https://github.com/user-attachments/assets/c5aff9dc-c0d8-4c75-9402-6976d23c3106" />
 
 ## 🎨 Designer Tools
 
