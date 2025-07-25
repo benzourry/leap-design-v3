@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_AW }}
           password: ${{ secrets.SFTP_PASS_AW }}
           script: |
-            rm -rf /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design/*
+            rm -rf /var/www/vhosts/aw.sarawakskills.edu.my/design/*
 
       - name: Upload to KBORNEO server via SFTP
         uses: appleboy/scp-action@master
@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_AW }}
           password: ${{ secrets.SFTP_PASS_AW }}
           source: dist/design/browser/*
-          target: /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design/
+          target: /var/www/vhosts/aw.sarawakskills.edu.my/design/
           strip_components: 3
 
       - name: Set file permissions
@@ -58,5 +58,5 @@ jobs:
           username: ${{ secrets.SFTP_USER_AW }}
           password: ${{ secrets.SFTP_PASS_AW }}
           script: |
-            chmod -R 755 /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design
-            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/aw.sarawakskills.edu.my/httpdocs/design
+            chmod -R 755 /var/www/vhosts/aw.sarawakskills.edu.my/design
+            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/aw.sarawakskills.edu.my/design

@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_KBORNEO }}
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
-            rm -rf /var/www/vhosts/kborneo.my/httpdocs/design/*
+            rm -rf /var/www/vhosts/kborneo.my/design/*
 
       - name: Upload to KBORNEO server via SFTP
         uses: appleboy/scp-action@master
@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_KBORNEO }}
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           source: dist/design/browser/*
-          target: /var/www/vhosts/kborneo.my/httpdocs/design/
+          target: /var/www/vhosts/kborneo.my/design/
           strip_components: 3
 
       - name: Set file permissions
@@ -58,5 +58,5 @@ jobs:
           username: ${{ secrets.SFTP_USER_KBORNEO }}
           password: ${{ secrets.SFTP_PASS_KBORNEO }}
           script: |
-            chmod -R 755 /var/www/vhosts/kborneo.my/httpdocs/design
-            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/httpdocs/design
+            chmod -R 755 /var/www/vhosts/kborneo.my/design
+            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/design
