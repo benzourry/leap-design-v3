@@ -32,7 +32,15 @@ jobs:
       - name: Build Angular app
         run: npx ng build --configuration production
 
-      - name: Clean remote directory (optional)
+      - name: List build output
+        run: ls -lah dist/design/browser
+
+      - name: Generate SHA256 checksum file
+        run: |
+          cd dist/design/browser
+          find . -type f -exec sha256sum {} \; > sha256sum.txt
+
+      - name: Clean remote directory
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST_KBORNEO }}
@@ -41,7 +49,7 @@ jobs:
           script: |
             rm -rf /var/www/vhosts/kborneo.my/httpdocs/design/*
 
-      - name: Upload to KBORNEO server via SFTP
+      - name: Upload app files and checksum
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_HOST_KBORNEO }}
@@ -60,3 +68,22 @@ jobs:
           script: |
             chmod -R 755 /var/www/vhosts/kborneo.my/httpdocs/design
             chown -R kborneo:psacln /var/www/vhosts/kborneo.my/httpdocs/design
+
+      - name: Verify remote file integrity
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_KBORNEO }}
+          username: ${{ secrets.SFTP_USER_KBORNEO }}
+          password: ${{ secrets.SFTP_PASS_KBORNEO }}
+          script: |
+            cd /var/www/vhosts/kborneo.my/httpdocs/design
+            sha256sum -c sha256sum.txt || exit 1
+
+      - name: Print remote index.html hash
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_KBORNEO }}
+          username: ${{ secrets.SFTP_USER_KBORNEO }}
+          password: ${{ secrets.SFTP_PASS_KBORNEO }}
+          script: |
+            sha256sum /var/www/vhosts/kborneo.my/httpdocs/design/index.html || echo "index.html not found"
