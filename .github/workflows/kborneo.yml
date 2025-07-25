@@ -27,45 +27,36 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Use leap angular config
-        run: cp angular-kborneo.json angular.json
+        run: cp angular-aw.json angular.json
 
       - name: Build Angular app
         run: npx ng build --configuration production
 
-      - name: List build output
-        run: |
-          echo "Built files:"
-          find dist/design/browser -type f
-
-      - name: Generate SHA256 checksum file
-        run: |
-          cd dist/design/browser
-          find . -type f -exec sha256sum {} \; > sha256sum.txt
-
-      - name: Clean remote directory
+      - name: Clean remote directory (optional)
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SFTP_HOST_KBORNEO }}
-          username: ${{ secrets.SFTP_USER_KBORNEO }}
-          password: ${{ secrets.SFTP_PASS_KBORNEO }}
+          host: ${{ secrets.SFTP_HOST_KBORNEOMY }}
+          username: ${{ secrets.SFTP_USER_KBORNEOMY }}
+          password: ${{ secrets.SFTP_PASS_KBORNEOMY }}
           script: |
             rm -rf /var/www/vhosts/kborneo.my/design/*
 
-      - name: Upload app files and checksum
+      - name: Upload to KBORNEO server via SFTP
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SFTP_HOST_KBORNEO }}
-          username: ${{ secrets.SFTP_USER_KBORNEO }}
-          password: ${{ secrets.SFTP_PASS_KBORNEO }}
-          source: "dist/design/browser"
-          target: /var/www/vhosts/kborneo.my/httpdocs/design
+          host: ${{ secrets.SFTP_HOST_KBORNEOMY }}
+          username: ${{ secrets.SFTP_USER_KBORNEOMY }}
+          password: ${{ secrets.SFTP_PASS_KBORNEOMY }}
+          source: dist/design/browser/*
+          target: /var/www/vhosts/kborneo.my/design/
+          strip_components: 3
 
       - name: Set file permissions
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SFTP_HOST_KBORNEO }}
-          username: ${{ secrets.SFTP_USER_KBORNEO }}
-          password: ${{ secrets.SFTP_PASS_KBORNEO }}
+          host: ${{ secrets.SFTP_HOST_KBORNEOMY }}
+          username: ${{ secrets.SFTP_USER_KBORNEOMY }}
+          password: ${{ secrets.SFTP_PASS_KBORNEOMY }}
           script: |
             chmod -R 755 /var/www/vhosts/kborneo.my/design
-            chown -R kborneo:psacln /var/www/vhosts/kborneo.my/design
+            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/kborneo.my/design
