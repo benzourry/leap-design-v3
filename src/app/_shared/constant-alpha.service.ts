@@ -19,27 +19,27 @@ import { RxStompConfig } from "@stomp/rx-stomp";
 
 var full = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
 
-// /* AppWizard */
-export const baseApi = 'https://io.aw.sarawakskills.edu.my/api';   // prefer
-export const base = 'https://io.aw.sarawakskills.edu.my'; // prefer
-export const cognaBase = 'https://io.aw.sarawakskills.edu.my'; // prefer
-
-export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?aw\.sarawakskills\.edu\.my/;
-export const domainBase = "aw.sarawakskills.edu.my"; 
+// /* KBORNEO */
+export const baseApi = 'https://io.alpha.moh.gov.my/api';   // prefer
+export const base = 'https://io.alpha.moh.gov.my'; // prefer
+export const cognaBase = 'https://io.alpha.moh.gov.my'; // prefer
+export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?alpha\.moh\.gov\.my/;
+export const domainBase = "alpha.moh.gov.my"; 
 export const OAUTH = {
-        AUTH_URI : "https://io.aw.sarawakskills.edu.my/oauth2/authorize",
-        LOGOUT_URI : "https://io.aw.sarawakskills.edu.my/logout",
-        USER_URI : "https://io.aw.sarawakskills.edu.my/user/me",
-        USER_URI_DEBUG : "https://io.aw.sarawakskills.edu.my/user/debug-me",
+        AUTH_URI : "https://io.alpha.moh.gov.my/oauth2/authorize",
+        LOGOUT_URI : "https://io.alpha.moh.gov.my/logout",
+        USER_URI : "https://io.alpha.moh.gov.my/user/me",
+        USER_URI_DEBUG : "https://io.alpha.moh.gov.my/user/debug-me",
         CALLBACK : full + "/#/" ,
         FINAL_URI: full + "/#/",
-        TOKEN_GET: "https://io.aw.sarawakskills.edu.my/token/get",
+        TOKEN_GET: "https://io.alpha.moh.gov.my/token/get",
         PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fj9Ry8MLD1iskng?e=9SZVb2",
-        SIGNIN_OPT:['ssone','google','azuread','facebook','github','linkedin','twitter','local'],
+        SIGNIN_OPT:['google','mydigitalid'],
         COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
 }
 
 export const myRxStompConfig: RxStompConfig = {
+    // brokerURL: 'wss://io.alpha.moh.gov.my/ping/ws',
     brokerURL: 'wss://io.ireka.my/ping/ws',
     heartbeatIncoming: 0, // Typical value 0 - disabled
     heartbeatOutgoing: 20000, // Typical value 20000 - every 20 seconds

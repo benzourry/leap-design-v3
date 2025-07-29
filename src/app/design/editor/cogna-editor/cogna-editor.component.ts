@@ -10,7 +10,7 @@ import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { DatasetService } from '../../../service/dataset.service';
 import { FormService } from '../../../service/form.service';
-import { base, baseApi, domainBase } from '../../../_shared/constant.service';
+import { base, baseApi, domainBase, OAUTH } from '../../../_shared/constant.service';
 // import { LookupService } from '../../../service/lookup.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { map } from 'rxjs';
@@ -185,6 +185,8 @@ export class CognaEditorComponent implements OnInit {
     'dall-e-2':['256x256','512x512','1024x1024'],
     'dall-e-3':['1024x1024','1792x1024','1024x1792']
   }
+
+  allowedVectorStoreType = OAUTH.COGNA_VECTOR_DB;
 
   // @ViewChild('codeeditorinit') codeeditorinit: NgCmComponent;
 

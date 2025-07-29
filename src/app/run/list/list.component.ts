@@ -790,6 +790,7 @@ export class ListComponent implements OnInit, OnDestroy {
       ));
   }
 
+  // REASON we use entry instead of entry.id is because we need to deepMerge it later with the response
   submit = (entry, resubmit: boolean) => {
     this.entryService.submit(entry.id, this.user().email, resubmit)
       .subscribe({

@@ -51,7 +51,7 @@
             </a>
           }
           <a class="pointer element"
-            (click)="editCogna(editCognaTpl,{type:'txtgen', embedModelType:'minilm', embedModelName:'', embedModelApiKey:'', chunkLength:100, chunkOverlap:10, embedMaxResult:5, inferModelType:'openai', inferModelName:'gpt-3.5-turbo', inferModelApiKey:'demo', temperature:0.0, maxChatMemory:5, vectorStoreType:'inmemory', systemMessage:defaultSysMsg, data:{}}, true)"
+            (click)="editCogna(editCognaTpl,{type:'txtgen', embedModelType:'minilm', embedModelName:'', embedModelApiKey:'', chunkLength:100, chunkOverlap:10, embedMaxResult:5, inferModelType:'openai', inferModelName:'gpt-4o-mini', inferModelApiKey:'demo', temperature:0.0, maxChatMemory:5, vectorStoreType:'inmemory', systemMessage:defaultSysMsg, data:{}}, true)"
             [class.disabled]="offline">
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
             Create Cogna
@@ -1682,21 +1682,23 @@
                   <div name="lang" class="text-dark">
                     <input type="radio" class="btn-check" id="db_milvus" name="milvus" value="milvus"
                       #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType" (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
-                      [disabled]="editCognaData.type=='txtcls'">
+                      [disabled]="!allowedVectorStoreType.includes('milvus')">
                       <label for="db_milvus" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
                         <img [src]="dbMap['milvus'].logo" height="30">
                         <br/>
                         Milvus
                     </label>
                     <input type="radio" class="btn-check" id="db_chromadb" name="chromadb" value="chromadb"
-                      #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType" (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true">
+                      #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType" (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
+                      [disabled]="!allowedVectorStoreType.includes('inmemory')">
                       <label for="db_chromadb" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
                         <img [src]="dbMap['chromadb'].logo" height="30">
                         <br/>
                         ChromaDB
                     </label>
                     <input type="radio" class="btn-check" id="db_inmemory" name="inmemory" value="inmemory"
-                      #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType" (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true">
+                      #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType" (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
+                      [disabled]="!allowedVectorStoreType.includes('chromadb')">
                       <label for="db_inmemory" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
                         <img [src]="dbMap['inmemory'].logo" height="30">
                         <br/>

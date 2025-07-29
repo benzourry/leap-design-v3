@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { UserService } from '../../_shared/service/user.service';
 import { AppService } from '../../service/app.service';
@@ -35,6 +35,7 @@ import { ToastService } from '../../_shared/service/toast-service';
     selector: 'app-run-home',
     templateUrl: './repo-home.component.html',
     styleUrls: ['../../../assets/css/tile.css', './repo-home.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [RouterLink, RouterLinkActive, AppEditComponent, FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe]
 })
 export class RepoHomeComponent implements OnInit, OnDestroy {
@@ -57,13 +58,18 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
   topTotal: any;
   bgClassName: string = domainBase.replace(/\./g,'-');
 
-  constructor(private http: HttpClient, private userService: UserService, private appService: AppService,
-    private modalService: NgbModal,
-    private location: PlatformLocation,
-    private router: Router,
-    private toastService: ToastService,
-    private utilityService: UtilityService) {
-    location.onPopState(() => this.modalService.dismissAll(''));
+  private http = inject(HttpClient);
+  private userService = inject(UserService);
+  private appService = inject(AppService);
+  private modalService = inject(NgbModal);
+  private location = inject(PlatformLocation);
+  private router = inject(Router);
+  private toastService = inject(ToastService);
+  private utilityService = inject(UtilityService);
+  private cdr = inject(ChangeDetectorRef);
+  
+  constructor() {
+    this.location.onPopState(() => this.modalService.dismissAll(''));
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 
@@ -73,6 +79,7 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
         this.user = user;
         this.getItemList(1);
         this.getTopList();
+        this.cdr.detectChanges();
       });
   }
 
@@ -88,6 +95,7 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
     this.appService.checkActivate(data.id, this.user.email)
       .subscribe(ca => {
         this.activationStatus[data.id] = ca.result;
+        this.cdr.detectChanges();
       })
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(result => {
@@ -102,6 +110,7 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
     this.appService.requestCopy(this.buyItemData.id, this.user.email)
       .subscribe(res => {
         this.activationStatus[this.buyItemData.id] = "pending";
+        this.cdr.detectChanges();
       })
   }
 
@@ -130,14 +139,17 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
                     this.router.navigate([`design/${res.id}`]);
                   }
                   this.toastService.show("App cloned successfully", { classname: 'bg-success text-light' });
+                  this.cdr.detectChanges();
                 }, error: err => {
                   this.toastService.show("App cloned failure", { classname: 'bg-danger text-light' });
+                  this.cdr.detectChanges();
                 }
               });
           }, res => { });
       
         }, error: err => {
           this.toastService.show("App cloned failed", { classname: 'bg-danger text-light' });
+          this.cdr.detectChanges();
         }
       });
   }
@@ -153,9 +165,11 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
         this.itemList = res.content;
         this.itemTotal = res.page?.totalElements;
         this.itemLoading = false;
+        this.cdr.detectChanges();
       },
       error:err=>{
         this.itemLoading = false;
+        this.cdr.detectChanges();
       }
     })
   }
@@ -168,7 +182,11 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
         this.topList = res.content;
         this.topTotal = res.page?.totalElements;
         this.topLoading = false;
-      }, res => { this.topLoading = false; })
+        this.cdr.detectChanges();
+      }, res => { 
+        this.topLoading = false;
+        this.cdr.detectChanges(); 
+      })
   }
 
 

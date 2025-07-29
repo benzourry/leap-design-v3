@@ -43,7 +43,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_leap",
+                "input": "./src/assets/icons_reka",
                 "output": "./assets/icons/"
               }
             ],
@@ -55,7 +55,7 @@
             "fileReplacements": [
               {
                 "replace": "./src/app/_shared/constant.service.ts",
-                "with": "./src/app/_shared/constant-kborneo.service.ts"
+                "with": "./src/app/_shared/constant-alpha.service.ts"
               }
             ]
           },
@@ -74,7 +74,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_kborneo.json"
+              "serviceWorker": "ngsw-config_alpha.json"
             },
             "development": {
               "optimization": false,
@@ -103,8 +103,6 @@
           "builder": "@angular/build:karma",
           "options": {
             "polyfills": [
-              // "zone.js",
-              // "zone.js/testing",
               "@angular/localize/init"
             ],
             "tsConfig": "tsconfig.spec.json",

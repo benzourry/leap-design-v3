@@ -784,6 +784,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // this.entry.set(res);
           this.saving.set(false);
           this.submitting.set(true);
+          this.cdr.detectChanges();
           this.entryService.submit(res.id, this.user().email, resubmit)
             .subscribe({
               next: res => {
