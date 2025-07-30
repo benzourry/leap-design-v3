@@ -243,8 +243,12 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           });
 
           // this.entry.update(c => ({ ...c, currentStatus: 'drafted', data: {} })); // reset entry 
-          this.entry.currentStatus = 'drafted'; // reset entry 
-          this.entry.data = {}; // reset entry 
+          this.entry = {
+            currentStatus: 'drafted',
+            data:{}
+          }
+          // this.entry.currentStatus = 'drafted'; // reset entry 
+          // this.entry.data = {}; // reset entry 
           this.onInit = () => this.initForm(form.f, this.entry.data, form);
           this.onView = () => this.initForm(form.onView, this.entry.data, form);
           this.onSave = () => this.initForm(form.onSave, this.entry.data, form);
@@ -802,6 +806,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                     this.router.navigate([this.preurl(), "form", this.form().id, "view"], { queryParams: { entryId: res.id } });
                   }
                 }
+                this.cdr.detectChanges();
               }, error: err => {
                 this.submitting.set(false);
                 this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
@@ -815,16 +820,16 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
 
   getDataSingle(form) {
-    // console.log("getDataSingle", form);
     this.entryService.getFirstEntryByParam(this._eval({}, form.singleQ, form), form.id)
       .subscribe({
         next: res => {
           // this.entry.set(res); //
-          Object.assign(this.entry, res);
-          // this.entry = res; //Object.assign(this.entry, res);
+          // Object.assign(this.entry, res); // why object assign?
+          this.entry = res; //Object.assign(this.entry, res);
           this.evalAll(this.entry.data);
           this.initForm(form.f, this.entry.data, form);
           this.loading.set(false);
+          this.cdr.detectChanges();
         }, error: err => {
           // consider getPrevData() but need to add support for prevParam;
           if (form.prev) {
@@ -1016,6 +1021,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // this.entry.set(res);
           this.entry = res;
           this.saving.set(false);
+          this.cdr.detectChanges();
           if (this.form().onSave) {
             try {
               this._eval(this.entry.data, this.form().onSave, this.form());
@@ -1061,6 +1067,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.linkFiles(e);
             // this.$digest$(); // this prevent ask navigate to be displayed!! NOT-WORKING. Actual reason for dirty is html keep-value
             this.entryForm().form.markAsPristine();
+            this.cdr.detectChanges();
           }
         }), first()
       )
@@ -1299,7 +1306,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .result.then(res => {
         /** Ada evaluated field main masok dlm child sebab evalAll(data) kt fieldChange */
         if (res) {
-          Object.assign(data, res);
+          Object.assign(data, res); // why Object.assign? Adakah sebab mok mutate data?
         }
         if (isNew) {
           if (!this.entry.data[section.code]) {

@@ -379,15 +379,32 @@ export class LambdaEditorComponent implements OnInit {
 
   consoleType = 'text';
   request: any = {}
+  // showPrompt(script) {
+  //   this.request = {};
+  //   const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
+  //   const arrayParam = [...script.matchAll(/_param\.(.+?)\s*/ig)];
+  //   [...array, ...arrayParam].forEach(e => {
+  //     if (!this.request[e[1]]) {
+  //       this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
+  //     }
+  //   })
+  // }
   showPrompt(script) {
     this.request = {};
+  
     const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
-    const arrayParam = [...script.matchAll(/_param\.(.+?)\s*/ig)];
-    [...array, ...arrayParam].forEach(e => {
-      if (!this.request[e[1]]) {
-        this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
+    const arrayParam = [...script.matchAll(/_param\.(\w+)/ig)];
+  
+    const matches = [...array, ...arrayParam];
+  
+    for (const match of matches) {
+      if (!match || !match[1]) continue; // skip if malformed
+  
+      const paramName = match[1].trim();
+      if (!this.request[paramName]) {
+        this.request[paramName] = prompt(`Enter value for parameter '${paramName}'`);
       }
-    })
+    }
   }
 
   resultLoading = signal<any>({});

@@ -114,6 +114,7 @@ export class AuthGuardService {
       } else if (error) {
         let split = error.split('|');
         window.localStorage.setItem("error", split[0]);
+        let appId = split[2] || localStorage.getItem("appId");
         //  `${OAUTH.AUTH_URI}/${server}?appId=-1&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`
         if (split.length>1){
           window.localStorage.setItem("nextUrl", `${OAUTH.AUTH_URI}/${split[1]}?appId=-1&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`);
