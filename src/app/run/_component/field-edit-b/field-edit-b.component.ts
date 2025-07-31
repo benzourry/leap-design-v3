@@ -226,25 +226,27 @@ export class FieldEditComponent extends ElementBase<any> {
   ) {
     super(validators, asyncValidators);
 
-    effect(() => {
-      // track only the signals that must trigger the effect
-      const useDef = this.field().x?.use_default;
-      const defaultValComputed = this.defaultValueComputed();
-      const defaultValue = this.defaultValue()
-      // only if a real change happened …
-      if (useDef && !this.value && defaultValue && !deepEqual(defaultValComputed, this._defaultValue)) {
-        // … do the mutation without tracking it:          
-        untracked(() => {
-          this._defaultValue = defaultValComputed;
-          // Defer event emission to avoid change detection issues
-          queueMicrotask(() => {
-            this.value = defaultValComputed;
-            this.writeValue(defaultValComputed); // must be inside this, otherwise it will not work
-            this.valueChanged(defaultValComputed); // not needed
-          });
-        });
-      }
-    });
+    // USE override writeValue() isntead of this
+    // defaultValue logic will check when writeValue
+    // effect(() => {
+    //   // track only the signals that must trigger the effect
+    //   const useDef = this.field().x?.use_default;
+    //   const defaultValComputed = this.defaultValueComputed();
+    //   const defaultValue = this.defaultValue()
+    //   // only if a real change happened …
+    //   if (useDef && !this.value && defaultValue && !deepEqual(defaultValComputed, this._defaultValue)) {
+    //     // … do the mutation without tracking it:          
+    //     untracked(() => {
+    //       this._defaultValue = defaultValComputed;
+    //       // Defer event emission to avoid change detection issues
+    //       queueMicrotask(() => {
+    //         this.value = defaultValComputed;
+    //         this.writeValue(defaultValComputed); // must be inside this, otherwise it will not work
+    //         this.valueChanged(defaultValComputed); // not needed
+    //       });
+    //     });
+    //   }
+    // });
 
     effect(() => {
       if (this.field()?.type == 'radio') {
@@ -302,7 +304,7 @@ export class FieldEditComponent extends ElementBase<any> {
 
   compiledData = computed(() => this.compileTpl(this.field().placeholder, this.data(), this.field().subType == 'htmlSave'))
 
-  defaultValueComputed = computed(() => (this.value ?? this.defaultValue()))
+  // defaultValueComputed = computed(() => (this.value ?? this.defaultValue()))
 
   scales: Signal<number[]> = computed(() => this.createRange(this.field()));
 
@@ -512,6 +514,22 @@ export class FieldEditComponent extends ElementBase<any> {
   }
 
   encodeURIComponent = encodeURIComponent;
+
+  // use this instead of effect to set default value
+  override writeValue(value: any): void {
+  // console.log(value);
+    if (value === undefined || value === null) {
+      // Only set default if no value is provided
+      const useDef = this.field().x?.use_default;
+      const defaultValue = this.defaultValue();
+      if (useDef && defaultValue !== undefined && defaultValue !== null) {
+        super.writeValue(defaultValue);
+        return;
+      }
+    }
+    // Otherwise, set the provided value
+    super.writeValue(value);
+  }
 
 }
 
