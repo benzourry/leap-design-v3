@@ -1626,8 +1626,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     let obj = Object.assign(additionalData, { 
       $user$: this.user(), $: this.entry?.data, $_: this.entry, 
       $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi, 
-      $this$: this._this, $param$: this._param, $ngForm$: this.entryForm() })
-      // console.log("scopeId", this.scopeId())
+      $this$: this._this, $param$: this._param, $ngForm$: this.entryForm() 
+    });
     return compileTpl(code, obj, this.scopeId())
   }
 
