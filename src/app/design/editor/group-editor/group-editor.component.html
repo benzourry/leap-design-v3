@@ -154,7 +154,7 @@
                 </div>
               }@else {
                 <div class="table-responsive mt-2">
-                  @if (appUserList()?.length) {
+                  @if (appUserList()?.length>0) {
                     <div class="px-2 pb-2">
                       <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
                         <div class="row">
@@ -353,7 +353,7 @@
                   }
                 </div>
               }
-              @if (appUserList().length == 0 && !loading) {
+              @if (appUserList().length == 0 && !loading()) {
                 <div class="details">
                   <h3>No data</h3>
                   <p> There is no user assigned to this group.

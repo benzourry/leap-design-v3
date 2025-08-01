@@ -91,9 +91,10 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
         // experimental replace event handler with regex
         .replace(/on\w+=\\\"(.+?)\\\"/g, (match, handlerCode) => {
           const globalHandler = handlerCode
-            .replace(/\$_\./g, `_entry_${scopeId}?.`)
-            .replace(/\$prev\$\./g, `_prev_${scopeId}?.`)
-            .replace(/\$\./g, `_data_${scopeId}?.`);
+            .replace(/\$_\./g, `_entry_${scopeId}.`)
+            .replace(/\$prev\$\./g, `_prev_${scopeId}.`)
+            .replace(/(?<!\$\w*)\$\./g, `_data_${scopeId}.`)
+            // .replace(/\$\./g, `_data_${scopeId}?.`);
           // Reconstruct the attribute name (e.g., onclick, onchange)
           const attrName = match.match(/(on\w+)=/)?.[1] ?? 'onunknown';
           return `${attrName}=\\\"${globalHandler}\\\"`;

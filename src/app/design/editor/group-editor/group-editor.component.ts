@@ -348,7 +348,9 @@ export class GroupEditorComponent implements OnInit {
   searchTextUsr: string = "";
   numberOfElements = signal<number>(0);
   entryPages = signal<number>(0);
+  // loading = signal<boolean>(false);
   getAppUserList(pageNumber, params) {
+    this.loading.set(true);
     Object.assign(params, {
       page: pageNumber - 1,
       size: this.appUserPageSize,
@@ -364,6 +366,7 @@ export class GroupEditorComponent implements OnInit {
         this.appUserTotal.set(res.page?.totalElements);
         this.numberOfElements.set(res.content?.length);
         this.entryPages.set(res.page?.totalPages);
+        this.loading.set(false);
         // this.getappUserList(this.entryPageNumber);
       })
 

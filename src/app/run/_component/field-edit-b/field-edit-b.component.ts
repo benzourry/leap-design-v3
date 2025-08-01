@@ -516,6 +516,7 @@ export class FieldEditComponent extends ElementBase<any> {
   encodeURIComponent = encodeURIComponent;
 
   // use this instead of effect to set default value
+  // using effect, the issue is when actual value arrived late, the value will be set with default value
   override writeValue(value: any): void {
   // console.log(value);
     if (value === undefined || value === null) {
@@ -523,8 +524,16 @@ export class FieldEditComponent extends ElementBase<any> {
       const useDef = this.field().x?.use_default;
       const defaultValue = this.defaultValue();
       if (useDef && defaultValue !== undefined && defaultValue !== null) {
-        super.writeValue(defaultValue);
-        return;
+        // queueMicroTask run before setTimeout
+        // seems to work for now
+        queueMicrotask(() => {
+          if (this.value === undefined || this.value === null){
+            this.value = defaultValue;
+            super.writeValue(defaultValue); // must be inside this, otherwise it will not work
+            this.valueChanged(defaultValue); // not needed
+            return;
+          }
+        });
       }
     }
     // Otherwise, set the provided value
