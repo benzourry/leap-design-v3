@@ -51,6 +51,7 @@ constant-lbas.service.ts
 constant-leap.service.ts
 constant-localhost.service.ts
 
+angular.json
 angular-aa.json
 angular-aw.json
 angular-ia.json
