@@ -527,6 +527,7 @@ export class FieldEditComponent extends ElementBase<any> {
         // queueMicroTask run before setTimeout
         // seems to work for now
         queueMicrotask(() => {
+          // just before set the value, recheck if the value still null
           if (this.value === undefined || this.value === null){
             this.value = defaultValue;
             super.writeValue(defaultValue); // must be inside this, otherwise it will not work

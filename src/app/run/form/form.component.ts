@@ -277,7 +277,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             // this.formInactive.set((form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now()))
             this.initForm(form.f, this.entry.data, form);
           } else if (form.x?.facet?.includes(action)) {
-            this.getData(entryId, form);
+            if (entryId || !this.isEmpty(this._param || {})) {
+              this.getData(entryId, form);
+            }else{
+              this.initForm(form.f, this.entry.data, form);
+            }
             // this.initForm(this.form().f); //comment after change initform receive data parameter
           } else {
             this.invalidFacet.set(true);
