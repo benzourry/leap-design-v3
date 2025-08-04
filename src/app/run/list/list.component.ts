@@ -119,6 +119,7 @@ export class ListComponent implements OnInit, OnDestroy {
   preurl: string = '';
   baseUrl: string = '';
   _param: any = {};
+  _startTimestamp: number = 0;
   app = computed(() => this.runService.$app());
   accessToken: string = '';
   scopeId = computed<string>(() => "list_"+this.datasetId());
@@ -187,8 +188,12 @@ export class ListComponent implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      if (!deepEqual(this._param, this.param())) {
-        this._param = this.param();
+      const startTimestamp = this.runService.$startTimestamp();
+      const param = this.param();
+      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
+        this._param = param;
+        this._startTimestamp = startTimestamp;
+        // console.log("param changed or timestamp changed")
         // console.log("param changed", this._param);
         if (this._param['$prev$.$id']) {
           this.prevId = this._param['$prev$.$id'];
@@ -290,6 +295,25 @@ export class ListComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  // Computed signal for processed preset filters
+  // readonly processedPresetFilters = computed<Record<string, string>>(() => {
+  //   const dataset = this.dataset();
+  //   const scopeId = this.scopeId();
+  //   if (!dataset?.presetFilters) return {};
+
+  //   return Object.keys(dataset.presetFilters)
+  //     .filter(k => String(dataset.presetFilters[k]).includes('$conf$'))
+  //     .reduce((acc, k) => {
+  //       acc[k] = compileTpl(dataset.presetFilters[k] ?? '', {}, scopeId);
+  //       return acc;
+  //     }, {} as Record<string, string>);
+  // });
+
+  readonly hasConfPresetFilters = computed(() =>{
+    const dataset = this.dataset();
+    return dataset?.presetFilters && Object.keys(dataset.presetFilters).some(k => String(dataset.presetFilters[k]).includes('$conf$'));
+  });
+
   getEntryList(pageNumber, sort?) {
     if (this.dataset()){
       this.sort.set(sort);
@@ -315,6 +339,9 @@ export class ListComponent implements OnInit, OnDestroy {
             params[k] = compileTpl(this.dataset().presetFilters[k] ?? '', {}, this.scopeId())
           })
       }
+      // const presetFilters = this.processedPresetFilters();
+      // Object.assign(params, presetFilters);
+
 
       params = Object.assign(params, this._pre({}, this.dataset().x?.initParam, false));
 

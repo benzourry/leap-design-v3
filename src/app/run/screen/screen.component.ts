@@ -91,6 +91,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   _screenId: number;
   entryId = input<number>();
   _entryId: number; // use private variable to store entryId
+  _startTimestamp: number = 0;
   asComp = input<boolean>();
   hideTitle = input<boolean>(false);
   param = input<any>();
@@ -125,8 +126,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
     effect(() => {
       if (this.user()) {
-        if (!deepEqual(this._param, this.param())) {
+        const startTimestamp = this.runService.$startTimestamp();
+        const param =  this.param()
+        if (!deepEqual(this._param,param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
           this._param = this.param();
+          this._startTimestamp = startTimestamp;
           if (this.screen()?.dataset) {
             this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
           }
@@ -698,6 +702,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
   onSavedInit() {
     this.loadDatasetEntry(this.dataset(), this.pageNumber(), this.sort());
   }
+
+  readonly hasConfPresetFilters = computed(() =>{
+    const dataset = this.dataset();
+    return dataset?.presetFilters && Object.keys(dataset.presetFilters).some(k => String(dataset.presetFilters[k]).includes('$conf$'));
+  });
+
 
 
   prevId: number;

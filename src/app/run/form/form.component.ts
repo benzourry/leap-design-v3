@@ -1468,7 +1468,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, false, list);
               },
               error: err => {
-                console.log(err)
+                // console.log(err)
+                this.uploadProgress.update(curr => ({...curr, [f.code + (index ?? '') + (index_child ?? '')]: 0}));
                 this.toastService.show("File upload failed: " + err.statusText, { classname: 'bg-danger text-light' });
               }
             })

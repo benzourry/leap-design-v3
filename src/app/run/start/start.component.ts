@@ -151,7 +151,8 @@ export class StartComponent implements OnInit, OnDestroy {
 
     this.accessToken = this.userService.getToken();
 
-    this.appConfig = this.runService.appConfig;
+    // might also consider using proxy and $digest$ for any changes
+    this.appConfig = this.runService.appConfig; 
 
     Object.defineProperty(window, '_conf', {
       get: () => this.appConfig,
@@ -512,8 +513,8 @@ export class StartComponent implements OnInit, OnDestroy {
   // _eval = (v) => new Function('$app$', '$navi$', '$navis$', '$badge$', '$user$', '$conf$', '$this$','$loadjs$', '$param$','$http$', '$post$', '$endpoint$', 'ServerDate', '$base$', '$baseUrl$','$baseApi$', '$token$', `return ${v}`)
   //   (this.app, this.naviData, this.navis, this.badge, this.user, this.runService?.appConfig, this._this, this.loadScript, this.$param$, this.httpGet, this.httpPost, this.endpointGet, ServerDate, this.base, this.baseUrl, this.baseApi, this.accessToken);
 
-  _eval = (v) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$pop', '$q$', '$showNav$',
-    `return ${v}`)(this.app(), {}, {}, {}, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$digest$, this.$param$, this.log, this.updateField, this.updateLookup, this.$toast$, this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate, null, this.runService?.$live$(this.liveSubscription(), this.$digest$), this.accessToken, deepMerge, this.http, null, null, this.$q, this.openNav);
+  _eval = (v) => new Function('setTimeout','setInterval','$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$pop', '$q$', '$showNav$',
+    `return ${v}`)(this._setTimeout, this._setInterval, this.app(), {}, {}, {}, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$digest$, this.$param$, this.log, this.updateField, this.updateLookup, this.$toast$, this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate, null, this.runService?.$live$(this.liveSubscription(), this.$digest$), this.accessToken, deepMerge, this.http, null, null, this.$q, this.openNav);
 
 
   compileTpl(html, data) {
@@ -586,6 +587,24 @@ export class StartComponent implements OnInit, OnDestroy {
       ));
   }
 
+  timeoutList: any[] = [];
+  _setTimeout = (functionRef, delay, ...param) => {
+    let timeoutId = setTimeout(() => {
+      functionRef();
+      this.$digest$();
+    }, delay, ...param)
+    this.timeoutList.push(timeoutId);
+  }
+
+  intervalList: any[] = [];
+  _setInterval = (functionRef, delay, ...param) => {
+    let intervalId = setInterval(() => {
+      functionRef();
+      this.$digest$();
+    }, delay, ...param)
+    this.intervalList.push(intervalId);
+  }
+
 
   showEdit = computed(() => {
     const email = this.userService.getActualUser().email;
@@ -598,5 +617,7 @@ export class StartComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     Object.keys(this.liveSubscription()).forEach(key => this.liveSubscription()[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
+    this.intervalList.forEach(i => clearInterval(i));
+    this.timeoutList.forEach(i => clearTimeout(i));
   }
 }
