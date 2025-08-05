@@ -55,7 +55,7 @@ sync_from_github:
     - cp github-source/README.md . || true
 
     # Commit and push changes
-    - git add src angular*.json ngsw-config*.json package.json README.md
+    - git add src angular*.json ngsw-config*.json package.json package-lock.json README.md
     - |
       if git diff --cached --quiet; then
         echo "No changes to commit. Skipping next stages."
