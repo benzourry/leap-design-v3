@@ -78,9 +78,14 @@ export class AuthGuardService {
                 }
                 subject.next(true);
               } else {
-                window.localStorage.setItem("error", JSON.stringify(f.error));
+                let split = f.message?.split('|');
+                if (split.length>1){
+                  provider = split[1];
+                  appId = split[2]
+                }
+                window.localStorage.setItem("error", split[0]??f.error);
                 window.localStorage.setItem("redirect", state.url);
-                window.localStorage.setItem("nextUrl", `${OAUTH.AUTH_URI}/${provider}?appId=${appId}&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`);
+                window.localStorage.setItem("nextUrl", `${OAUTH.AUTH_URI}/${provider}?appId=${appId??''}&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`);
                 window.location.href = "/assets/error.html";
 
                 // window.location.href = `/assets/token.html?accessToken=${accessToken}&provider=${provider}&noframe=${noframe}`;
@@ -95,9 +100,15 @@ export class AuthGuardService {
           .then(d=>{
             d.json().then(f=>{
               if (f.error) {
-                window.localStorage.setItem("error", JSON.stringify(f.error));
+                let split = f.message?.split('|');
+                if (split.length>1){
+                  provider = split[1];
+                  appId = split[2]
+                }
+                window.localStorage.setItem("error", split[0]??f.error);
+                // window.localStorage.setItem("error", JSON.stringify(f.error));
                 window.localStorage.setItem("redirect", state.url);
-                window.localStorage.setItem("nextUrl", `${OAUTH.AUTH_URI}/${provider}?appId=${appId}&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`);
+                window.localStorage.setItem("nextUrl", `${OAUTH.AUTH_URI}/${provider}?appId=${appId??''}&redirect_uri=${encodeURIComponent(OAUTH.CALLBACK)}`);
                 window.location.href = "/assets/error.html";
                 subject.next(false);
 

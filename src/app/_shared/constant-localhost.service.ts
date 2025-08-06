@@ -23,7 +23,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 export const baseApi = 'http://10.28.114.194:8882/api';   // prefer
 export const base = 'http://10.28.114.194:8882'; // prefer
 export const cognaBase = 'http://10.28.114.194:8882'; // prefer
-export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?leap\.my/;
+export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?ireka\.my/;
 export const domainBase = "ireka.my"; 
 export const OAUTH = {
     AUTH_URI : "http://10.28.114.194:8882/oauth2/authorize",

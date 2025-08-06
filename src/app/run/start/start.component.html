@@ -167,28 +167,28 @@
                                     }
                                     @if (item.type=='form-single') {
                                       <!-- @if (naviDataItem?.access?.users?.indexOf(user.email)>-1) { -->
-                                        <a routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
-                                          [skipLocationChange]="item.x?.slc"
-                                          (click)="hideSb()"
-                                          [class.disabled]="offline() || naviDataItem?.inactive"
-                                          routerLinkActive="active">
-                                          <fa-icon [icon]="item.icon|iconSplit"
-                                          [fixedWidth]="true"></fa-icon>
-                                          <div class="menu-text">{{item.title}}</div>
-                                        </a>
+                                      <a routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
+                                        [skipLocationChange]="item.x?.slc"
+                                        (click)="hideSb()"
+                                        [class.disabled]="offline() || naviDataItem?.inactive"
+                                        routerLinkActive="active">
+                                        <fa-icon [icon]="item.icon|iconSplit"
+                                        [fixedWidth]="true"></fa-icon>
+                                        <div class="menu-text">{{item.title}}</div>
+                                      </a>
                                       <!-- } -->
                                     }
                                     @if (item.type=='view-single') {
                                       <!-- @if (naviDataItem?.access?.users?.indexOf(user.email)>-1) { -->
-                                        <a routerLink="{{preurl()}}/form/{{item.screenId}}/view"
-                                          [skipLocationChange]="item.x?.slc"
-                                          (click)="hideSb()"
-                                          [class.disabled]="offline() || naviDataItem?.inactive"
-                                          routerLinkActive="active">
-                                          <fa-icon [icon]="item.icon|iconSplit"
-                                          [fixedWidth]="true"></fa-icon>
-                                          <div class="menu-text">{{item.title}}</div>
-                                        </a>
+                                      <a routerLink="{{preurl()}}/form/{{item.screenId}}/view"
+                                        [skipLocationChange]="item.x?.slc"
+                                        (click)="hideSb()"
+                                        [class.disabled]="offline() || naviDataItem?.inactive"
+                                        routerLinkActive="active">
+                                        <fa-icon [icon]="item.icon|iconSplit"
+                                        [fixedWidth]="true"></fa-icon>
+                                        <div class="menu-text">{{item.title}}</div>
+                                      </a>
                                       <!-- } -->
                                     }
                                     @if (item.type=='dataset') {
@@ -279,6 +279,5 @@
         This app is under maintenance
       }
     }
-
   }
 }

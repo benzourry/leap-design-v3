@@ -190,11 +190,10 @@ export class ListComponent implements OnInit, OnDestroy {
     effect(() => {
       const startTimestamp = this.runService.$startTimestamp();
       const param = this.param();
-      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
+      if (!deepEqual(this._param, param) || 
+          (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
         this._param = param;
         this._startTimestamp = startTimestamp;
-        // console.log("param changed or timestamp changed")
-        // console.log("param changed", this._param);
         if (this._param['$prev$.$id']) {
           this.prevId = this._param['$prev$.$id'];
         }
