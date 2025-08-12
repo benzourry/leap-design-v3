@@ -81,6 +81,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   user = computed<any>(() => this.runService.$user());
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   appConfig: any = this.runService.appConfig;
   form = signal<any>({});
   lookupIds: any;
@@ -801,7 +802,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                     this._eval(this.entry.data, this.form().onSubmit, this.form());
                   } catch (e) { this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`) }
                 }
-                this.toastService.show("Entry submitted successfully", { classname: 'bg-success text-light' });
+                this.toastService.show(this.lang()=='ms'?"Entry berjaya dihantar":"Entry submitted successfully", { classname: 'bg-success text-light' });
                 this.submitting.set(false);
                 if (this.asComp()) {
                   this.submitted.emit(res);
@@ -813,7 +814,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.cdr.detectChanges();
               }, error: err => {
                 this.submitting.set(false);
-                this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
+                this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dihantar":"Entry submission failed", { classname: 'bg-danger text-light' });
               }
             })
         }, error: err => {
@@ -1032,7 +1033,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             } catch (e) { this.logService.log(`{form-${this.form().title}-onSave}-${e}`) }
           }
           // this.router.navigate(["run", this.form().app.id, "form", this.form().id, "view", this.entry.id]);
-          this.toastService.show("Entry saved successfully", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Entry berjaya disimpan":"Entry saved successfully", { classname: 'bg-success text-light' });
 
           if (!(this.form().x && this.form().x.saveAndStay)) {
             if (this.asComp()) {
@@ -1056,7 +1057,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
 
     if (form?.prev && !this.prevId()) {
-      return throwError(() => new Error("Previous entry is required"));
+      return throwError(() => new Error(this.lang()=='ms'?"Entri sebelumnya diperlukan":"Previous entry is required"));
     }
 
     return this.entryService.save(form.id, this.entry, this.prevId(), userKey)
@@ -1327,7 +1328,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   removeChild(section, $index) {
     if (section.confirmable) {
-      if (confirm("Are you sure you want to remove this data?")) {
+      if (confirm(this.lang()=='ms'?"Anda pasti untuk menghapus data ini?":"Are you sure you want to remove this data?")) {
         this.entry.data[section.code].splice($index, 1);
         this.entryForm().form.markAsDirty();
       }
@@ -1395,7 +1396,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   next: res => {
                     this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, true, list);
                   }, error: err => {
-                    this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                    this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                     console.error(err);
                   }
                 })
@@ -1419,7 +1420,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 next: res => {
                   this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, false, list);
                 }, error: err => {
-                  this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
               })
           }).catch(function (err) {
@@ -1446,7 +1447,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, true, list);
                 },
                 error: err => {
-                  this.toastService.show("File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
               })
           }
@@ -1470,7 +1471,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               error: err => {
                 // console.log(err)
                 this.uploadProgress.update(curr => ({...curr, [f.code + (index ?? '') + (index_child ?? '')]: 0}));
-                this.toastService.show("File upload failed: " + err.statusText, { classname: 'bg-danger text-light' });
+                this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.statusText, { classname: 'bg-danger text-light' });
               }
             })
         }
@@ -1548,9 +1549,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                     }
                     entryData[field.code]?.push(res);
                   }
-                  this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
+                  this.toastService.show(this.lang()=='ms'?"Entri berjaya disimpan":"Entry successfully saved", { classname: 'bg-success text-light' });
                 }, error: (err) => {
-                  this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya disimpan":"Entry saving failed", { classname: 'bg-danger text-light' });
                 }
               })
           }, res => { })

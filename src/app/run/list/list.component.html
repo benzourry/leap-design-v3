@@ -29,7 +29,7 @@
           @if (!dataset()?.x?.hideSearch) {
             <input type="search" autocapitalize="none"
               class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
-              [placeholder]="app().x?.lang=='ms'?'Tapis senarai':'Filter list'" [(ngModel)]="searchText"
+              [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [(ngModel)]="searchText"
               (keyup.enter)="getEntryList(1)">
           }
           @if (dataset()?.filters && dataset()?.filters.length>0) {
@@ -246,7 +246,7 @@
                   }
                   @if (dataset()?.showAction) {
                     <th class="print-hide text-end" style="width: 5%">
-                      {{app().x?.lang=='ms'?'Tindakan':'Action'}}
+                      {{lang()=='ms'?'Tindakan':'Action'}}
                     </th>
                   }
                 </tr>
@@ -665,8 +665,8 @@
         }
         @if (entryList()?.length==0) {
           <div class="detail">
-            <h3>{{app().x?.lang=='ms'?'Tiada rekod':'No record'}}</h3>
-            <p>{{app().x?.lang=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}
+            <h3>{{lang()=='ms'?'Tiada rekod':'No record'}}</h3>
+            <p>{{lang()=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}
             </p>
           </div>
         }
@@ -696,7 +696,7 @@
     @if (!loading() ) {
       @if (userUnauthorized()) {
         <div class="detail text-muted">
-          <h3>{{app().x?.lang=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
+          <h3>{{lang()=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
         </div>
       }
     }
@@ -705,7 +705,7 @@
 
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{app().x?.lang=='ms'?'Tapis':'Filter'}} {{dataset()?.title}}</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} {{dataset()?.title}}</h4>
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){
@@ -732,7 +732,7 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary"
-    (click)="d()">{{app().x?.lang=='ms'?'Tutup':'Close'}}</button>
+    (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     <div>
       <button type="button" class="btn btn-round btn-secondary me-1" (click)="c({})">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
@@ -740,7 +740,7 @@
       </button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData())">
         <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-        {{app().x?.lang=='ms'?'Tapis':'Filter'}}
+        {{lang()=='ms'?'Tapis':'Filter'}}
       </button>
     </div>
   </div>

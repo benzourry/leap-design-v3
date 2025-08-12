@@ -121,6 +121,7 @@ export class ListComponent implements OnInit, OnDestroy {
   _param: any = {};
   _startTimestamp: number = 0;
   app = computed(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   accessToken: string = '';
   scopeId = computed<string>(() => "list_"+this.datasetId());
 
@@ -419,9 +420,9 @@ export class ListComponent implements OnInit, OnDestroy {
                           <tr><td>Total Sent</td><td>: ${res.totalSent}</td></tr>
                           <tr><td>Success</td><td>: ${res.success ? 'Yes' : 'No'}</td></tr>
                         </table>`;
-          this.toastService.show("Blast successful <br/>" + result, { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Blast berjaya":"Blast successful <br/>" + result, { classname: 'bg-success text-light' });
         }, error: err => {
-          this.toastService.show("Email blast failed: " + err.error.message, { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Blast tidak berjaya":"Email blast failed: " + err.error.message, { classname: 'bg-danger text-light' });
         }
       })
   }
@@ -445,9 +446,9 @@ export class ListComponent implements OnInit, OnDestroy {
           next: res => {
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
             this.getEntryList(this.pageNumber());
-            this.toastService.show("Entry removed successfully", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entry berjaya dibuang":"Entry removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dibuang":"Entry removal failed", { classname: 'bg-danger text-light' });
           }
         })
     }
@@ -503,7 +504,7 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   cancelEntry(id) {
-    if (confirm("Cancel this entry submission?")) {
+    if (confirm(this.lang()=='ms'?"Batalkan penghantaran entri ini?":"Cancel this entry submission?")) {
       this.entryService.cancel(id, this.user().email)
         .subscribe(res => {
           this.getEntryList(this.pageNumber());
@@ -696,7 +697,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   checkAllInput = signal<boolean>(false);
   bulkRemoveEntries() {
-    if (confirm("Remove all " + this.selectedEntries().size + " entries?")) {
+    if (confirm(this.lang()=='ms'?"Anda pasti untuk membuang semua entri ini?":"Remove all " + this.selectedEntries().size + " entries?")) {
       this.entryService.bulkDelete(Array.from(this.selectedEntries().keys()), this.user().email)
         .subscribe({
           next: res => {
@@ -705,9 +706,9 @@ export class ListComponent implements OnInit, OnDestroy {
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
             // this.pageNumber = (this.numberOfElements == 1 && !this.first) ? this.pageNumber - 1 : this.pageNumber;
             this.getEntryList(this.pageNumber());
-            this.toastService.show("Entries removed successfully", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entry berjaya dibuang":"Entries removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show("Entries removal failed", { classname: 'bg-danger text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dibuang":"Entries removal failed", { classname: 'bg-danger text-light' });
             this.selectedEntries().clear();
             this.checkAllInput.set(false);
           }
@@ -730,10 +731,10 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   resyncDataset(dsId) {
-    if (confirm("Are you sure you want to resynchronize data using this dataset?")) {
+    if (confirm(this.lang()=='ms'?"Anda pasti untuk menyelaraskan data menggunakan dataset ini?":"Are you sure you want to resynchronize data using this dataset?")) {
       this.runService.resyncDataset(this.dataset()?.id)
         .subscribe(res => {
-          this.toastService.show("Dataset successfully resynchronized", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Dataset berhasil diselaraskan":"Dataset successfully resynchronized", { classname: 'bg-success text-light' });
         })
     }
   }
@@ -745,7 +746,7 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   bulkCancelEntry() {
-    if (confirm("Cancel selected entry submission?")) {
+    if (confirm(this.lang()=='ms'?"Batalkan semua entri?":"Cancel selected entry submission?")) {
       const list: Observable<any>[] = [];
       this.selectedEntries().forEach(e => {
         if (e.currentStatus != 'drafted') {
@@ -753,12 +754,12 @@ export class ListComponent implements OnInit, OnDestroy {
         }
       });
       if (list.length === 0) {
-        this.toastService.show('No entries to cancel.', { classname: 'bg-warning text-dark' });
+        this.toastService.show(this.lang()=='ms'?'Tiada entri untuk dibatalkan':'No entries to cancel.', { classname: 'bg-warning text-dark' });
         return;
       }
       combineLatest(list)
         .subscribe(res => {
-          this.toastService.show(`${res.length} entries successfully retracted`, { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?`${res.length} entri berjaya dibatalkan`:`${res.length} entries successfully retracted`, { classname: 'bg-success text-light' });
           this.getEntryList(this.pageNumber());
         });
     }
@@ -827,9 +828,9 @@ export class ListComponent implements OnInit, OnDestroy {
             } catch (e) { this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`) }
           }
           entry = deepMerge(entry, res);
-          this.toastService.show("Entry submitted successfully", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Entri telah dihantar":"Entry submitted successfully", { classname: 'bg-success text-light' });
         }, error: err => {
-          this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Entri gagal dihantar":"Entry submission failed", { classname: 'bg-danger text-light' });
         }
       })
   }

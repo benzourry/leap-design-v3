@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, viewChild } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { EndpointService } from '../../../service/endpoint.service';
@@ -213,41 +213,54 @@ export class EndpointEditorComponent implements OnInit {
 
     }
 
-    request: any = {}
-    showPrompt(url) {
-        this.request = {};
-        this.result = undefined;
-        //const array = [...url.matchAll(/{(.+?)}\s*\)/ig)];
-        // console.log(this.params);
-        this.params.forEach(e => {
-            if (!this.request[e]) {
-                this.request[e] = prompt("Enter value for parameter '" + e + "'");
-            }
-        })
-    }
+    // showPrompt(url) {
+    //     this.request = {};
+    //     this.result = undefined;
+    //     //const array = [...url.matchAll(/{(.+?)}\s*\)/ig)];
+    //     // console.log(this.params);
+    //     // this.params.forEach(e => {
+    //     //     if (!this.request[e]) {
+    //     //         this.request[e] = prompt("Enter value for parameter '" + e + "'");
+    //     //     }
+    //     // })
+    // }
 
+    request: any = {}
     result:any;
     error:any;
+
+    endpointPromptTpl = viewChild('endpointPromptTpl');
     runEndpoint() {
-        this.showPrompt(this.endpoint.url);
+        
         this.result = null;
         this.error = null;
-        this.endpointService.runEndpoint(this.endpointId, this.request)
-        .subscribe({
-            next:(res)=>{
-                this.result = res;
-                this.cdr.detectChanges();
-            },
-            error: (error)=>{
-                this.error = error;
-                this.cdr.detectChanges();
-            }
+        this.request = {};
 
-        })
-            // .subscribe(res => {
-            //     this.result = res;
-            // }, err);
+        const run = (data) => {
+            this.endpointService.runEndpoint(this.endpointId, this.request)
+            .subscribe({
+                next:(res)=>{
+                    this.result = res;
+                    this.cdr.detectChanges();
+                },
+                error: (error)=>{
+                    this.error = error;
+                    this.cdr.detectChanges();
+                }
+            })            
+        }
 
+        // this.showPrompt(this.endpoint.url);
+
+        if (this.params.length > 0){
+          // IF THERE ARE PROMPTS
+          this.modalService.open(this.endpointPromptTpl(), { backdrop: 'static' })
+          .result.then(data => {
+            run(data);
+          }, res=>{});
+        }else{
+            run({});
+        }
     }
 
     nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
@@ -256,7 +269,6 @@ export class EndpointEditorComponent implements OnInit {
     toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
 
     toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-
     itemExist = (f) => this.endpointList.filter(e => e.code == f.code).length > 0 && !f.id;
 
 }

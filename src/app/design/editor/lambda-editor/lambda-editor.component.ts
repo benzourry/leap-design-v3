@@ -389,8 +389,13 @@ export class LambdaEditorComponent implements OnInit {
   //     }
   //   })
   // }
+  lambdaPromptsKeys:any[] = []
+  lambdaPromptsData :any = {}
   showPrompt(script) {
     this.request = {};
+
+    this.lambdaPromptsKeys = [];
+    this.lambdaPromptsData = {};
   
     const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
     const arrayParam = [...script.matchAll(/_param\.(\w+)/ig)];
@@ -401,29 +406,50 @@ export class LambdaEditorComponent implements OnInit {
       if (!match || !match[1]) continue; // skip if malformed
   
       const paramName = match[1].trim();
-      if (!this.request[paramName]) {
-        this.request[paramName] = prompt(`Enter value for parameter '${paramName}'`);
+      if (!this.lambdaPromptsKeys.includes(paramName)) {
+        this.lambdaPromptsKeys.push(paramName);
+        this.lambdaPromptsData[paramName] = '';
+        // this.request[paramName] = prompt(`Enter value for parameter '${paramName}'`);
       }
     }
   }
 
   resultLoading = signal<any>({});
   runRes = signal<any>({});
+
+  lambdaPromptTpl = viewChild('lambdaPromptTpl');
   runLambda(lambda) {
-    this.resultLoading.update(rl=>({...rl,[lambda.id]:true}));
+
+    const run = (data) =>{
+      this.resultLoading.update(rl=>({...rl,[lambda.id]:true}));
+      this.lambdaService.runLambda(lambda.id, data)
+      .subscribe(res => {
+        this.runRes.update(rr => ({...rr, [lambda.id]:res}));
+        this.toastService.show("Script executed successfully", { classname: 'bg-success text-light' });
+        this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
+      }, err => {
+        this.toastService.show("Script execution failed", { classname: 'bg-danger text-light' });
+        this.runRes.update(rr => ({...rr,[lambda.id]:{ message: JSON.stringify(err.error), success: false }}));
+        this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
+      });
+    }
+
     this.lambdaService.save(this.user.email, this.appId, lambda)
       .subscribe(res => {
+        
         this.showPrompt(lambda.data.f);
-        this.lambdaService.runLambda(lambda.id, this.request)
-          .subscribe(res => {
-            this.runRes.update(rr => ({...rr, [lambda.id]:res}));
-            this.toastService.show("Script executed successfully", { classname: 'bg-success text-light' });
-            this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
-          }, err => {
-            this.toastService.show("Script execution failed", { classname: 'bg-danger text-light' });
-            this.runRes.update(rr => ({...rr,[lambda.id]:{ message: JSON.stringify(err.error), success: false }}));
-            this.resultLoading.update(rl => ({...rl, [lambda.id]:false}));
-          });
+
+        if (this.lambdaPromptsKeys.length > 0) {
+
+          // IF THERE ARE PROMPTS
+          this.modalService.open(this.lambdaPromptTpl(), { backdrop: 'static' })
+          .result.then(data => {
+            run(data);
+          }, res=>{});
+        }else{
+          // IF NO PROMPTS
+          run({});
+        }
       });
   }
 

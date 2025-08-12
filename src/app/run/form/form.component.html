@@ -147,7 +147,7 @@
                     <button type="button" class="btn btn-round btn-primary" (click)="save()"
                       [disabled]="saving() || (form().validateSave && entryForm.invalid)">
                       <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                      {{form()?.x?.saveLbl??(app()?.x?.lang=='ms'?'Simpan':'Save')}}
+                      {{form()?.x?.saveLbl??(lang()=='ms'?'Simpan':'Save')}}
                       @if (saving()) {
                         <div class="spinner-border spinner-border-sm" role="status">
                           <span class="sr-only">Loading...</span>
@@ -159,7 +159,7 @@
                     <button type="button" class="btn btn-round btn-success ms-auto" [disabled]="entryForm.invalid || saving()"
                       [hidden]="!(form().tiers?.length>0 && entry?.currentStatus=='drafted') || !form().canSubmit"
                       (click)="submit(false)">
-                      {{app()?.x?.lang=='ms'?'Hantar':'Submit'}}
+                      {{lang()=='ms'?'Hantar':'Submit'}}
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[0]?.name}}
                       @if (saving()||submitting()) {
@@ -172,7 +172,7 @@
                   @if (form().tiers?.length>0 && entry?.currentEdit) {
                     <button type="button" class="btn btn-round btn-success ms-auto" [disabled]="entryForm.invalid || saving()"
                       (click)="submit(true)" [hidden]="!form().canSubmit">
-                      {{app()?.x?.lang=='ms'?'Hantar Semula':'Re-submit'}}
+                      {{lang()=='ms'?'Hantar Semula':'Re-submit'}}
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[entry?.currentTier].name}}
                       @if (saving()||submitting()) {
@@ -679,7 +679,7 @@
                           } @else {
                             <div class="card-body p-3">
                               <p class="my-2">
-                                @if (app()?.x?.lang=='ms') {
+                                @if (lang()=='ms') {
                                   <span>Tiada data tersedia. Untuk menambah
                                   {{e.title}}, klik butang <i>{{e.addLabel||'Add'}}</i> di bawah</span>
                                 } @else {
@@ -717,7 +717,7 @@
                 @if (!tabfirst) {
                   <button type="button" class="btn btn-round bg-white text-truncate me-2" (click)="progBack(tabidx)">
                     <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
-                    {{app()?.x?.lang=='ms'?'Kembali':'Back'}}
+                    {{lang()=='ms'?'Kembali':'Back'}}
                     @if (saving()) {
                       <div class="spinner-border spinner-border-sm" role="status">
                         <span class="sr-only">Loading...</span>
@@ -744,7 +744,7 @@
                       <button type="button" class="btn btn-round btn-primary text-truncate ms-1" (click)="save()"
                         [disabled]="saving() || (form().validateSave && entryForm.invalid)">
                         <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                        {{form()?.x?.saveLbl??(app()?.x?.lang=='ms'?'Simpan':'Save')}}
+                        {{form()?.x?.saveLbl??(lang()=='ms'?'Simpan':'Save')}}
                         @if (saving()) {
                           <div class="spinner-border spinner-border-sm" role="status">
                             <span class="sr-only">Loading...</span>
@@ -757,7 +757,7 @@
                       [disabled]="saving() || entryForm.invalid"
                       [hidden]="!(form().tiers?.length>0 && entry?.currentStatus=='drafted') || !form().canSubmit"
                       (click)="submit(false)">
-                      {{app()?.x?.lang=='ms'?'Hantar':'Submit'}}
+                      {{lang()=='ms'?'Hantar':'Submit'}}
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[0]?.name}}
                       @if (saving()||submitting()) {
@@ -771,7 +771,7 @@
                         [disabled]="entryForm.invalid || saving()"
                         (click)="submit(true)"
                         [hidden]="!form().canSubmit">
-                        {{app()?.x?.lang=='ms'?'Hantar Semula':'Re-submit'}}
+                        {{lang()=='ms'?'Hantar Semula':'Re-submit'}}
                         <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                         {{form().tiers[entry?.currentTier].name}}
                         @if (saving()||submitting()) {
@@ -790,16 +790,16 @@
       } @else {
         @if (formInactive()) {
           <div class="detail text-muted">
-            <h3>{{app()?.x?.lang=='ms'?'Borang tidak aktif':'Form inactive'}}</h3>
-            <p>{{app()?.x?.lang=='ms'?'Borang cuma boleh diakses':'Form can only be accessed'}}
+            <h3>{{lang()=='ms'?'Borang tidak aktif':'Form inactive'}}</h3>
+            <p>{{lang()=='ms'?'Borang cuma boleh diakses':'Form can only be accessed'}}
               @if (form()?.startDate) {
                 <span>
-                  {{app()?.x?.lang=='ms'?'dari':'from'}} <strong>{{form()?.startDate|date:'medium'}}</strong>
+                  {{lang()=='ms'?'dari':'from'}} <strong>{{form()?.startDate|date:'medium'}}</strong>
                 </span>
               }
               @if (form()?.endDate) {
                 <span>
-                  {{app()?.x?.lang=='ms'?'sehingga':'until'}} <strong>{{form()?.endDate|date:'medium'}}</strong>
+                  {{lang()=='ms'?'sehingga':'until'}} <strong>{{form()?.endDate|date:'medium'}}</strong>
                 </span>
               }
             </p>
@@ -812,13 +812,13 @@
         }
         @if (invalidFacet()) {
           <div class="detail text-muted">
-            <h3>{{app()?.x?.lang=='ms'?'Facet borang tidak sah: '+invalidFacetKey():
+            <h3>{{lang()=='ms'?'Facet borang tidak sah: '+invalidFacetKey():
             'Invalid form facet: '+invalidFacetKey()}}</h3>
           </div>
         }
         @if (editWithoutId()) {
           <div class="detail text-muted">
-            <h3>{{app()?.x?.lang=='ms'?'Id atau parameter entry tidak disertakan':
+            <h3>{{lang()=='ms'?'Id atau parameter entry tidak disertakan':
             'Entry id or parameter is not provided'}}</h3>
           </div>
         }

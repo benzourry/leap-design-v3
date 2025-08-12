@@ -596,3 +596,28 @@
     </button>
   </div>
 </ng-template>
+
+<ng-template #lambdaPromptTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Run Lambda</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        @for (b of lambdaPromptsKeys; track $index) {
+          <div class="form-group mb-3">
+            <label class="form-label">{{b}}</label>
+            <input type="text" class="form-control" [(ngModel)]="lambdaPromptsData[b]"
+              name="{{lambda.id}}-data-{{b}}" id="{{lambda.id}}-data-{{b}}">
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(lambdaPromptsData)">
+        <i class="icon-minus-sign-alt"></i> Execute Lambda
+      </button>
+    </div>
+  </div>
+</ng-template>

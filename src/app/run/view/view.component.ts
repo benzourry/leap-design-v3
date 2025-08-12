@@ -88,6 +88,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   param = input<any>({});
   _param:any = {};
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   baseUrl = computed<string>(() => this.runService.$baseUrl());
   preurl = computed<string>(()=>this.runService.$preurl());
   accessToken = computed<string>(()=>this.userService.getToken());
@@ -695,7 +696,7 @@ export class ViewComponent implements OnInit, OnDestroy {
         // && !this.app?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
         groupAuthorized = true;
       }else{
-        this.unAuthorizedMsg = this.app()?.x?.lang=='ms'?"Anda tidak mempunyai akses kepada borang ini":"You are not authorized to access this form";
+        this.unAuthorizedMsg = this.lang()=='ms'?"Anda tidak mempunyai akses kepada borang ini":"You are not authorized to access this form";
       }
       if (entry?.id){
         if (form.x?.accessByApprover){
@@ -709,7 +710,7 @@ export class ViewComponent implements OnInit, OnDestroy {
           condAuthorized = this.preCheckStr(form.x?.accessByCond, entry.data);
         }
         if (!(approverAuthorized||userAuthorized||condAuthorized)){
-          this.unAuthorizedMsg = this.app()?.x?.lang=='ms'?"Anda tidak mempunyai akses kepada maklumat ini":"You are not authorized to access this information";
+          this.unAuthorizedMsg = this.lang()=='ms'?"Anda tidak mempunyai akses kepada maklumat ini":"You are not authorized to access this information";
         }
       }else{
         formSingle = form.single;
@@ -774,9 +775,9 @@ export class ViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: res => {
           this.getData(this.entry.id, this.form());
-          this.toastService.show("Entry cancelled successfully", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran entri berjaya dibatalkan":"Entry cancelled successfully", { classname: 'bg-success text-light' });
         }, error: err => {
-          this.toastService.show("Entry cancellation failed", { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran entri tidak berjaya dibatalkan":"Entry cancellation failed", { classname: 'bg-danger text-light' });
         }
       })
   }
@@ -794,12 +795,12 @@ export class ViewComponent implements OnInit, OnDestroy {
               this._eval(this.entry,this.entry?.data, res.approval[tier.id], tier.post, this.form());
             } catch (e) { this.logService.log(`{view-${tier.name}-post}-${e}`) }
           }
-          this.toastService.show("Approval submission success", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan berjaya":"Approval submission success", { classname: 'bg-success text-light' });
           if (this.asComp()) {
             this.approved.emit(res);
           }
         }, error: err => {
-          this.toastService.show("Approval submission failed", { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan tidak berjaya":"Approval submission failed", { classname: 'bg-danger text-light' });
         }
       })
   }
@@ -829,7 +830,7 @@ export class ViewComponent implements OnInit, OnDestroy {
         }
         this.editTier[tier.id] = false;
         this.entry = res;
-        this.toastService.show("Approval update success", { classname: 'bg-success text-light' });
+        this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan berjaya":"Approval update success", { classname: 'bg-success text-light' });
         this.runCheckTier();
         if (this.asComp()) {
           this.approved.emit(res);
@@ -842,7 +843,7 @@ export class ViewComponent implements OnInit, OnDestroy {
         this.getData(this.entry.id, this.form());
         this.editTier[tier.id] = false;
         this.entry = res;
-        this.toastService.show("Approval successfully removed", { classname: 'bg-success text-light' });
+        this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan berjaya":"Approval successfully removed", { classname: 'bg-success text-light' });
         this.runCheckTier();
         if (this.asComp()) {
           this.approved.emit(res);
@@ -1004,9 +1005,9 @@ export class ViewComponent implements OnInit, OnDestroy {
           .subscribe({
             next: res => {
               this.getForm(this.form().id, this.entry.id);
-              this.toastService.show("Approver successfully assigned", { classname: 'bg-success text-light' });
+              this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan berjaya":"Approver successfully assigned", { classname: 'bg-success text-light' });
             }, error: err => {
-              this.toastService.show("Approver assignment failed", { classname: 'bg-success text-light' });
+              this.toastService.show(this.lang()=='ms'?"Penghantaran pengesahan tidak berjaya":"Approver assignment failed", { classname: 'bg-success text-light' });
             }
           })
       }, res => { });
@@ -1070,14 +1071,14 @@ export class ViewComponent implements OnInit, OnDestroy {
               this._eval(entry, entry.data, entry.approval, form.onSubmit, form);
             } catch (e) { this.logService.log(`{form-${form.title}-onSubmit}-${e}`) }
           }
-          this.toastService.show("Entry submitted successfully", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran entri berjaya":"Entry submitted successfully", { classname: 'bg-success text-light' });
           if (this.asComp()) {
             this.submitted.emit(res);
           }
           this.entry = deepMerge(entry, res);
           this.$digest$();
         }, error: err => {
-          this.toastService.show("Entry submission failed", { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Penghantaran entri tidak berjaya":"Entry submission failed", { classname: 'bg-danger text-light' });
         }
       })
   }
