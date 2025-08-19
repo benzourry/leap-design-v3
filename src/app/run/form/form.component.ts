@@ -26,7 +26,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
-import { debounceTime, first, map, share, tap } from 'rxjs/operators';
+import { debounceTime, first, map, shareReplay, tap } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
@@ -484,6 +484,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // bleh consider cache observable instead of result.
     // tp bila pake observable.. request dipolah on subscribe();
     // settle with share()
+    // Masalah bila cache observable, still the same observable akan multiple request bila disubscribe berkali2
     if (this.lookupDataObs[cacheId]) {
       return this.lookupDataObs[cacheId]
     }
@@ -492,7 +493,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       param = Object.assign(param || {}, { email: this.user().email });
       this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
         .pipe(
-          tap({ next: cb, error: err }), first(), share()
+          tap({ next: cb, error: err }), first(), shareReplay(1)
         )
     } else {
       // param = Object.assign(param || {}, { sort: 'id,asc' });
@@ -500,7 +501,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
         .pipe(
           tap({ next: cb, error: err }), first(),
-          map((res: any) => res.content), share()
+          map((res: any) => res.content), shareReplay(1)
         )
     }
     return this.lookupDataObs[cacheId];
@@ -1360,6 +1361,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.entryFiles.splice(this.entryFiles.indexOf(file), 1);
           delete this.filesMap[file];
         })
+        if (this.entry?.id){
+          this.updateField(this.entry.id, { [f.code]: null }, () => {
+            this.toastService.show(this.lang()=='ms'?"Fail berjaya dibuang":"File successfully removed", { classname: 'bg-success text-light' });
+          }, err => {
+            this.toastService.show(this.lang()=='ms'?"Fail tidak berjaya dibuang":"File removal failed", { classname: 'bg-danger text-light' });
+          });
+        }
       });
     // }
   }

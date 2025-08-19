@@ -208,7 +208,7 @@ export class ChatbotComponent implements OnInit {
   targetBlank = targetBlank;
 
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'question-circle'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'question-circle'];
 
   copyChatText(text) {
     navigator.clipboard.writeText(text).then((res) => {

@@ -21,7 +21,7 @@ import { btoaUTF, cleanText, hashObject, splitAsList, tblToExcel, toSnakeCase, t
 import { baseApi } from '../../../../_shared/constant.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { ScreenService } from '../../../../service/screen.service';
-import { Observable, first, map, share, tap } from 'rxjs';
+import { Observable, first, map, shareReplay, tap } from 'rxjs';
 import { SafePipe } from '../../../../_shared/pipe/safe.pipe';
 import { GroupByPipe } from '../../../../_shared/pipe/group-by.pipe';
 import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
@@ -638,6 +638,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     lookup = {}; // lookup entry list
     mod = {};
 
+    private lookupMapCache: { [dataSource: string]: Observable<any> } = {};
+
     getLookupIdList(id) {
         this.lookupService.getInForm(id)
             .subscribe(res => {
@@ -652,14 +654,26 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     // }
 
                     if (key.type != 'modelPicker') {
-                        this.lookupService.getLookup(key.dataSource)
-                            .subscribe({
-                                next: res => {
-                                    this.lookupMap[key.dataSource] = res;
-                                    this.cdr.detectChanges(); // <--- Add here
-                                },
-                                error: err => { }
-                            })
+                        // this.lookupService.getLookup(key.dataSource)
+                        //     .subscribe({
+                        //         next: res => {
+                        //             this.lookupMap[key.dataSource] = res;
+                        //             this.cdr.detectChanges(); // <--- Add here
+                        //         },
+                        //         error: err => { }
+                        //     })
+
+                        // Use cache to avoid duplicate requests
+                        if (!this.lookupMapCache[key.dataSource]) {
+                            this.lookupMapCache[key.dataSource] = this.lookupService.getLookup(key.dataSource).pipe(shareReplay(1));
+                        }
+                        this.lookupMapCache[key.dataSource].subscribe({
+                            next: res => {
+                                this.lookupMap[key.dataSource] = res;
+                                this.cdr.detectChanges();
+                            },
+                            error: err => { }
+                        });
                     }
 
                 });
@@ -734,7 +748,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             param = Object.assign(param || {}, { email: this.user.email });
             this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
                 .pipe(
-                    tap({ next: cb, error: err }), first(), share()
+                    tap({ next: cb, error: err }), first(), shareReplay(1)
                 )
         } else {
             // param = Object.assign(param || {}, { sort: 'id,asc' });
@@ -742,7 +756,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
                 .pipe(
                     tap({ next: cb, error: err }), first(),
-                    map((res: any) => res.content), share()
+                    map((res: any) => res.content), shareReplay(1)
                 )
         }
         return this.lookupDataObs[cacheId];

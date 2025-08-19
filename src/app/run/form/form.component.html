@@ -431,7 +431,7 @@
                                                 @if (listKv?.key=='undefined'){
                                                   <span class="text-muted fst-italic"> Data not available</span>
                                                 }@else {
-                                                  {{listKv?.key}}
+                                                  <span [innerHtml]="listKv?.key">{{listKv?.key}}</span> 
                                                 }
                                               </div>
                                               <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
@@ -539,7 +539,7 @@
                                       @if (listKv?.key=='undefined'){
                                         <span class="text-muted fst-italic"> Data not available</span>
                                       }@else {
-                                        {{listKv?.key}}
+                                        <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
                                       }
                                     </div>
                                   <!-- </div> -->

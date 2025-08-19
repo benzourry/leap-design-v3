@@ -185,7 +185,7 @@
                 @if (gf?.key=='undefined'){
                   <span class="text-muted fst-italic"> Data not available</span>
                 }@else {
-                  {{gf?.key}}
+                  <span [innerHtml]="gf?.key">{{gf?.key}}</span>
                 }
               </button>
             }
@@ -252,7 +252,7 @@
                 </tr>
               </thead>
               @for(listKv of groupedEntryList(); track $index){
-                @if( !groupFilter() || groupFilter()==listKv.key){
+                @if( !groupFilter() || groupFilter()==listKv?.key){
                 <tbody class="list-tmid ds-tbody">
                   @if(groupFieldCode()){
                     <tr class="ds-group-header">
@@ -268,7 +268,7 @@
                             @if (listKv?.key=='undefined'){
                               <span class="text-muted fst-italic"> Data not available</span>
                             }@else {
-                              {{listKv?.key}}
+                              <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
                             }
                           </div>
                           <div class="bg-secondary px-1 text-white ms-2 mb-auto" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>

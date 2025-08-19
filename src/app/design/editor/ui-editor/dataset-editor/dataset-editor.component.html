@@ -173,6 +173,11 @@
                   <div>
                     Default Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong>
                   </div>
+                  @if (curDataset.x?.defGroupField){
+                    <div>
+                      Default Group: {{curDataset.x.defGroupField}}
+                    </div>
+                  }
                   @if (curDataset.showIndex) {
                     <div>
                       <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true">

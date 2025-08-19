@@ -1046,7 +1046,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   linkify = linkify;
 
-  getIcon = (str) => str ? str.split(":") : ['far', 'question-circle'];
+  // getIcon = (str) => str ? str.split(":") : ['far', 'question-circle'];
 
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());
