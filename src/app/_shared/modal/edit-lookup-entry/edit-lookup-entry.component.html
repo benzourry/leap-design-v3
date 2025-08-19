@@ -58,39 +58,40 @@
                       <input class="form-control form-control-sm" type="text"
                         name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]">
-                    }
-                    @if (e.type=='longtext') {
+                    }@else if (e.type=='longtext') {
                       <textarea class="form-control form-control-sm"
                         name="value_{{$index}}"
                       [(ngModel)]="_lookupEntry.data[e.key]"></textarea>
-                    }
-                    @if (e.type=='number') {
+                    }@else if (e.type=='number') {
                       <input class="form-control form-control-sm" type="number"
                         name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]">
-                    }
-                    @if (e.type=='date') {
+                    }@else if (e.type=='date') {
                       <input class="form-control form-control-sm" type="text"
                         name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]" (click)="d2.toggle()" ngbDatepicker
                         #d2="ngbDatepicker">
-                    }
-                    @if (e.type=='options') {
+                    }@else if (e.type=='options') {
                       <select class="form-control form-control-sm" name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]">
                         @for (a of e.opts; track $index) {
                           <option [ngValue]="a">{{a}}</option>
                         }
                       </select>
-                    }
-                    @if (e.type=='lookup') {
+                    }@else if (e.type=='lookup') {
                       <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap[e.opts]" 
                         [virtualScroll]="true" 
                         bindLabel="name" placeholder="No value" [(ngModel)]="_lookupEntry.data[e.key]"
                         name="value_{{$index}}">
                       </ng-select>
-                    }
-                    @if (e.type=='file') {
+                    }@else if (e.type=='multiplelookup') {
+                      <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap[e.opts]" 
+                        [virtualScroll]="true" 
+                        [multiple]="true"
+                        bindLabel="name" placeholder="No value" [(ngModel)]="_lookupEntry.data[e.key]"
+                        name="value_{{$index}}">
+                      </ng-select>
+                    }@else if (e.type=='file') {
                       <label class="flex-grow-1">
                         <input type="file" [hidden]="true" (change)="uploadFile($event, _lookupEntry.data, e.key)"
                           name="file" />
@@ -99,9 +100,13 @@
                           {{_lookupEntry.data[e.key]||'Browse'}}
                         </div>
                       </label>
+                    }@else{
+                      <input class="form-control form-control-sm" type="text"
+                        name="value_{{$index}}"
+                        [(ngModel)]="_lookupEntry.data[e.key]">
                     }
 
-                    @if (e.type!='lookup'){
+                    @if (e.type!='lookup'&&e.type!='multiplelookup'){
                       <button type="button" style="--bs-btn-border-color:#ddd" class="btn btn-sm btn-outline-secondary border-start-0"
                         (click)="deleteDataRow(_lookupEntry.data, e.key)">
                         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>

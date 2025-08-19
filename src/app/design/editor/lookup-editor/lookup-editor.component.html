@@ -243,18 +243,24 @@
                                         <td>
                                           @if (['longtext','text','options'].indexOf(mapDataFields[o.key])>-1) {
                                             <span [innerHtml]="o.value"></span>
-                                          }
-                                          @if (mapDataFields[o.key]=='lookup') {
+                                          }@else if (mapDataFields[o.key]=='lookup') {
                                             <span>{{o.value?.name}}</span>
-                                          }
-                                          @if (mapDataFields[o.key]=='number') {
+                                          }@else if (mapDataFields[o.key]=='multiplelookup') {
+                                            @if (o.value && o.value.length>0) {
+                                              <div class="list-group list-group-sm small">                                            
+                                                @for(v of o.value; track $index) {
+                                                  <div class="list-group-item p-1 px-2">{{v.name}}</div>
+                                                }
+                                              </div>
+                                            }
+                                          }@else if (mapDataFields[o.key]=='number') {
                                             <span>{{o.value}}</span>
-                                          }
-                                          @if (mapDataFields[o.key]=='date') {
+                                          }@else if (mapDataFields[o.key]=='date') {
                                             <span>{{o.value|date:'medium'}}</span>
-                                          }
-                                          @if (mapDataFields[o.key]=='file') {
+                                          }@else if (mapDataFields[o.key]=='file') {
                                             <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
+                                          }@else {
+                                            <span>{{o.value}}</span>
                                           }
                                         </td>
                                       </tr>

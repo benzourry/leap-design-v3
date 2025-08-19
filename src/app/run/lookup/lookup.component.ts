@@ -11,6 +11,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 @Component({
     selector: 'app-lookup',
@@ -18,7 +19,7 @@ import { RunService } from '../_service/run.service';
     styleUrls: ['./lookup.component.scss'],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
     imports: [PageTitleComponent, FaIconComponent, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FormsModule,
-        NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
+        NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgSelectComponent,
         NgbDropdownItem, NgbInputDatepicker, DatePipe, KeyValuePipe]
 })
 export class LookupComponent implements OnInit {
@@ -77,18 +78,21 @@ export class LookupComponent implements OnInit {
     }
 
 
-    editLookupEntryData = signal<any>({});
-    editLookupEntryDataFields = signal<any[]>([]);
-    editLookupEntryDataFieldsOrphan = signal<any>({});
+    _lookupEntry:any = {};
+    lookupEntryFields: any[];
+    lookupEntryFieldsOrphan: any;
+    // editLookupEntryDataFieldsOrphan = signal<any>({});
     editLookupEntry(content, lookupEntry, isNew) {
         if (this.lookup().dataEnabled) {
             if (!lookupEntry.data) {
                 lookupEntry.data = {}
             }
-            this.editLookupEntryDataFields.set(this.fieldsAsList(this.lookup().dataFields));
-            this.editLookupEntryDataFieldsOrphan.set(this.fieldsExistOrphan(lookupEntry.data));
+            this.lookupEntryFields = this.fieldsAsList(this.lookup().dataFields);
+            // this.editLookupEntryDataFields = this.fieldsAsList(this.lookup().dataFields));
+            this.lookupEntryFieldsOrphan = this.fieldsExistOrphan(lookupEntry.data);
+            // this.editLookupEntryDataFieldsOrphan.set(this.fieldsExistOrphan(lookupEntry.data));
         }
-        this.editLookupEntryData.set(lookupEntry);
+        this._lookupEntry = lookupEntry;
 
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -155,7 +159,7 @@ export class LookupComponent implements OnInit {
 
     fieldsExistOrphan = (data) => {
         var hhh = Object.assign({}, data);
-        this.editLookupEntryDataFields().forEach(el => {
+        this.lookupEntryFields.forEach(el => {
             delete hhh[el.key];
         });
         return hhh;

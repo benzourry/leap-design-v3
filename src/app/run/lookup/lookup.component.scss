@@ -2,3 +2,17 @@
     text-decoration: line-through;
 }
 .extra-data-tbl tr:last-child{border-bottom:transparent;}
+
+.add-data-split{
+    position:relative;
+    margin: 0.5rem 0;
+}
+.add-data-split::before{
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  background-color: #ddd;
+  position:absolute;
+  top:16px;
+}

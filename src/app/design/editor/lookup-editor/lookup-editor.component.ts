@@ -313,9 +313,13 @@ export class LookupEditorComponent implements OnInit {
     mapDataFields = {};
     loadLookup(id) {
         this.lookupId = id;
+        this.entryPageNumber = 1; // Reset to first page on lookup change
+
         this.lookupService.getLookup(id)
             .subscribe(lookup => {
                 this.lookup = lookup;
+                
+                this.cdr.detectChanges();
 
                 if (this.lookup.dataEnabled) {
                 //     this.lookupDataFields = this.fieldsAsList(this.lookup.dataFields);
@@ -327,7 +331,6 @@ export class LookupEditorComponent implements OnInit {
                 if (lookup.sourceType == 'db') {
                     this.getLookupEntryList(this.entryPageNumber);
                 }
-                this.cdr.detectChanges();
             })
 
     }

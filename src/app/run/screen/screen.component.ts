@@ -131,6 +131,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
         if (!deepEqual(this._param,param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
           this._param = this.param();
           this._startTimestamp = startTimestamp;
+          
+          if (this._param['$prev$.$id']) {
+            this.prevId = this._param['$prev$.$id'];
+          }
           if (this.screen()?.dataset) {
             this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
           }
@@ -582,7 +586,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.inPopFormId.set(action.next);
 
     params = action.params ? this._pre(this.entry(), action.params, false) : {};
-    console.log("params", params);
+    // console.log("params", params);
 
     if (params) {
       params.entryId = entryId;
@@ -608,7 +612,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   // #### ATTEMPT TO UNIFY POPUP AND NAVIGATE
   runAction(url, inpop, content, entryId, formId, type, facet, params) {
     if (inpop) {
-      this.inPop(content, entryId, formId, type, facet, params)
+      this.inPop(content, entryId, {next:formId}, type, facet, params)
     } else {
       let navigationExtras: NavigationExtras = {
         queryParams: deepMerge({ entryId: entryId }, params),

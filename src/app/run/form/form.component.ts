@@ -461,10 +461,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   lookupLoading = signal<any>({});
 
   lookupDataObs: any = {}
-  _getLookup = (code, param, cb?, err?) => {
+  _getLookup = (code, param, cb?, err?, force?:boolean) => {
     if (code) {
       this.lookupLoading.update(l=>({...l,[code]: true}));
-      this._getLookupObs(code, param, cb, err)
+      this._getLookupObs(code, param, cb, err, force)
         .subscribe({
           next: res => {
             // this.lookup.update(o=>({...o,[code]: res}));
@@ -477,7 +477,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
 
-  _getLookupObs(code, param, cb?, err?): Observable<any> {
+  _getLookupObs(code, param, cb?, err?, force?:boolean): Observable<any> {
 
     var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
@@ -485,7 +485,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // tp bila pake observable.. request dipolah on subscribe();
     // settle with share()
     // Masalah bila cache observable, still the same observable akan multiple request bila disubscribe berkali2
-    if (this.lookupDataObs[cacheId]) {
+    if (this.lookupDataObs[cacheId] && !force) {
       return this.lookupDataObs[cacheId]
     }
     // start loading
@@ -506,7 +506,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
     return this.lookupDataObs[cacheId];
   }
-  getLookup = (code, dsInit: string, dataV?: any) => {
+  getLookup = (code, dsInit: string, dataV?: any, force?:boolean) => {
     if (this.lookupKey[code]?.ds && !this.lookupKey[code].skipLoadSource) {
       if (!dataV) {
         dataV = this.entry.data;
@@ -515,7 +515,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       try {
         param = this._eval(dataV, dsInit, this.form());
       } catch (e) { this.logService.log(`{form-lookup-${code}-dsInit}-${e}`) }
-      this._getLookup(code, param);
+      this._getLookup(code, param, null, null, force);
     }
   }
 
@@ -1547,15 +1547,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.lookupService.saveEntry(lookup.id, data)
               .subscribe({
                 next: (res) => {
-                  this.getLookup(field.code, field.dataSourceInit, entryData);
-                  if (['select', 'radio', 'radioBtn'].indexOf(field.type) > -1) {
-                    entryData[field.code] = res;
-                  }
-                  if (['checkboxOption'].indexOf(field.type) > -1) {
-                    if (!entryData[field.code]) {
-                      entryData[field.code] = [];
+                  // var cacheId = 'key_' + btoaUTF(this.lookupKey[field.code].ds + hashObject(param ?? {}), null);
+                  this.getLookup(field.code, field.dataSourceInit, entryData, true);
+                  if (['select', 'radio', 'checkboxOption'].includes(field.type)) {
+                    if (field.subType === 'multiple' || field.type === 'checkboxOption') {
+                      entryData[field.code] ??= [];
+                      entryData[field.code].push(res);
+                    } else {
+                      entryData[field.code] = res;
                     }
-                    entryData[field.code]?.push(res);
                   }
                   this.toastService.show(this.lang()=='ms'?"Entri berjaya disimpan":"Entry successfully saved", { classname: 'bg-success text-light' });
                 }, error: (err) => {

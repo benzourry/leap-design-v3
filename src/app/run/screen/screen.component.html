@@ -21,7 +21,7 @@
               @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
                 @if (!(form()?.data?.prev && !prevId)) {
                   <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
-                    (click)="runAction('/form/'+form()['data']?.id+'/'+(form().data.prev?'prev':'add'),dataset()?.x?.inpopAdd, inPopTpl,prevId,form()?.data?.id,'form',form().data.prev?'prev':'add', _param)">
+                    (click)="runAction('/form/'+form().data?.id+'/'+(form().prev?'prev':'add'),dataset()?.x?.inpopAdd, inPopTpl,prevId,form()?.data?.id,'form',form().prev?'prev':'add', _param)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     {{dataset()?.x?.addLabel}}
                   </button>
@@ -101,14 +101,16 @@
                 </button>
                 <div ngbDropdownMenu aria-labelledby="dropdownSort">
                   @for (item of dataset()?.items; track item.id) {
-                    <button type="button" class="pointer" [class.text-primary]="sortField()==item.id"
-                      ngbDropdownItem
-                      (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
-                      {{item.label}}&nbsp;
-                      @if (sortField()==item.id && sortDir[item.id]!=null) {
-                        <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
-                      }
-                    </button>
+                    @if (item.label){
+                      <button type="button" class="pointer" [class.text-primary]="sortField()==item.id"
+                        ngbDropdownItem
+                        (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                        {{item.label}}&nbsp;
+                        @if (sortField()==item.id && sortDir[item.id]!=null) {
+                          <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
+                        }
+                      </button>
+                    }
                   }
                 </div>
               </div>
