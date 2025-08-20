@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, model, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, computed, inject, input, model, signal } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { NgbDateAdapter, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
@@ -56,6 +56,7 @@ export class LookupComponent implements OnInit {
     private toastService = inject(ToastService)
     private location = inject(PlatformLocation)
     private utilityService = inject(UtilityService)
+    private cdr = inject(ChangeDetectorRef);
 
     constructor() {
         this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -136,16 +137,18 @@ export class LookupComponent implements OnInit {
         arr.forEach(r => {
             var h = r.split("@");
             let g = h[0].split(":");
-            
+
             const type = g[1]?.trim();
             const isLookupType = ['lookup', 'multiplelookup'].includes(type);
 
-            if (g.length > 2 && isLookupType) {
-                const lookupId = Number(g[2].trim());
-                this.lookupService.getEntryList(lookupId, { size: 9999 }).subscribe({
-                    next: res => { lookupListMap[lookupId] = res.content; },
-                    error: () => {}
-                });
+            if (g.length > 2 && isLookupType){
+                let lookupId = +g[2].trim();
+                this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
+                    next: (res) => {            
+                        this.lookupListMap[lookupId] = res.content;
+                        this.cdr.detectChanges();
+                    }, error: (error) => {}
+                })
             }
               
             rval.push({
@@ -191,7 +194,7 @@ export class LookupComponent implements OnInit {
     // userUnauthorized = signal<boolean>(false);
     userUnauthorized = computed(() => {
         const accessList = this.lookup().accessList;
-        const userGroups = Object.keys(this.user().groups||{});
+        const userGroups = Object.keys(this.user()?.groups||{});
       
         if (accessList?.length > 0) {
           const intercept = accessList.filter((v) => userGroups.includes(v + ""));
@@ -295,6 +298,7 @@ export class LookupComponent implements OnInit {
                     next: (res) => {
                         data[key]= res.fileUrl;
                         this.toastService.show("File uploaded", { classname: 'bg-success text-light' });
+                        this.cdr.detectChanges();
                     }, error: (error) => {}
                 })
         }

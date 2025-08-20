@@ -31,7 +31,7 @@ export class EditLookupEntryComponent {
 
   private lookupService = inject(LookupService)
   private toastService = inject(ToastService)
-  cdr = inject(ChangeDetectorRef);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor() { }
 
