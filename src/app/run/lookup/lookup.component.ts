@@ -136,21 +136,23 @@ export class LookupComponent implements OnInit {
         arr.forEach(r => {
             var h = r.split("@");
             let g = h[0].split(":");
+            
+            const type = g[1]?.trim();
+            const isLookupType = ['lookup', 'multiplelookup'].includes(type);
 
-            if (g.length > 1 && g[1].trim() == 'lookup'){
-                let lookupId = +g[2].trim();
-                this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
-                  next: (res) => {            
-                      lookupListMap[lookupId] = res.content;
-                  }, error: (error) => {}
-                })
+            if (g.length > 2 && isLookupType) {
+                const lookupId = Number(g[2].trim());
+                this.lookupService.getEntryList(lookupId, { size: 9999 }).subscribe({
+                    next: res => { lookupListMap[lookupId] = res.content; },
+                    error: () => {}
+                });
             }
               
             rval.push({
                 key: g[0].trim(),
-                type: g.length > 1 ? g[1].trim() : 'text',
-                opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') :
-                      g.length > 2 && g[1].trim() == 'lookup' ? +g[2].trim() : []
+                type: g.length > 1 ? type: 'text',
+                opts: g.length > 2 && type == 'options' ? g[2].split('|') :
+                      g.length > 2 && isLookupType ? +g[2].trim() : []
             });
         })
         this.lookupListMap.set(lookupListMap);

@@ -57,7 +57,10 @@ export class EditLookupEntryComponent {
         var h = r.split("@");
         let g = h[0].split(":");
 
-        if (g.length > 1 && (g[1].trim() == 'lookup'||g[1].trim() == 'multiplelookup')){
+        const type = g[1]?.trim();
+        const isLookupType = ['lookup', 'multiplelookup'].includes(type);
+
+        if (g.length > 2 && isLookupType){
           let lookupId = +g[2].trim();
           this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
             next: (res) => {            
@@ -69,9 +72,9 @@ export class EditLookupEntryComponent {
         
         rval.push({
             key: g[0].trim(),
-            type: g.length > 1 ? g[1].trim() : 'text',
-            opts: g.length > 2 && g[1].trim() == 'options' ? g[2].split('|') :
-                  g.length > 2 && (g[1].trim() == 'lookup' || g[1].trim() == 'multiplelookup') ? +g[2].trim() : []
+            type: g.length > 1 ? type: 'text',
+            opts: g.length > 2 && type == 'options' ? g[2].split('|') :
+                  g.length > 2 && isLookupType ? +g[2].trim() : []
         });
     })
     return rval;
