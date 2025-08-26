@@ -43,7 +43,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_reka",
+                "input": "./src/assets/icons_alpha",
                 "output": "./assets/icons/"
               }
             ],

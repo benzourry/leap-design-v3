@@ -136,9 +136,12 @@ export class CognaEditorComponent implements OnInit {
   inferModelNameList = [
     { name: 'GPT-3.5 TURBO', code: 'gpt-3.5-turbo', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4', code: 'gpt-4', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-4 TURBO', code: 'gpt-4-turbo', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4o', code: 'gpt-4o', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4o MINI', code: 'gpt-4o-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4 TURBO', code: 'gpt-4-turbo', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-4.1', code: 'gpt-4.1', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-4.1 MINI', code: 'gpt-4.1-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     // { name: 'R1', code: 'r1', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Reasoner', code: 'deepseek-reasoner', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
