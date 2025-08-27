@@ -361,7 +361,7 @@ export class FieldEditComponent extends ElementBase<any> {
     // console.log("event",event);
     // perlu x tok???
     // console.log("valueChanged---", next)
-    if (!deepEqual(next, this.previousEmitted)) {
+    if (!deepEqual(next, this.previousEmitted)|| this.field()?.type=='btn') {
       this.previousEmitted = next;
 
       if (this.field()?.subType == 'time') {
