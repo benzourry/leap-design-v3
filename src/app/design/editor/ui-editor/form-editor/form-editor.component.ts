@@ -1967,7 +1967,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             params['dateTo'] = this.trailTo;
         }
         this.formService.getEntryTrailByFormId(id, params)
-            .subscribe(trail => { this.trails = trail.content; this.trailsTotal = trail.page?.totalElements });
+            .subscribe(trail => { 
+                this.trails = trail.content; 
+                this.trailsTotal = trail.page?.totalElements ;
+                this.cdr.detectChanges(); // <--- Add here
+            });
     }
     viewEntryTrails(content) {
         history.pushState(null, null, window.location.href);
