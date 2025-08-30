@@ -25,8 +25,8 @@ import { PlatformLocation, NgTemplateOutlet, NgStyle, DatePipe } from '@angular/
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
-import { debounceTime, first, map, shareReplay, tap } from 'rxjs/operators';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
+import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
@@ -128,6 +128,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   
   watchList = new Map();
   watchListSection: any = {};
+  reactiveCognaList: any = {};
 
   onInit:() => any;
   onSave:() => any;
@@ -191,6 +192,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.appConfig = this.runService?.appConfig;
     // this.entry.update(c => ({ ...c, email: this.user()?.email }));
     this.entry.email= this.user()?.email;
+
+    this.rcognaSubject.pipe(
+        debounceTime(700), // Wait 700ms after the last keystroke
+        distinctUntilChanged((prev,curr)=>prev.value==curr.value) // Only emit if the value has changed
+      ).subscribe((obj:any) => this.classifyField(obj.code));
   }
 
   dsChanged(ev, fieldCode) {
@@ -293,8 +299,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           form.sections.forEach(s => {
             if (['section'].indexOf(s.type) > -1) { // watch for section eval. previously section+approval
               s.items.forEach(item => {
-                if (form.items[item.code].type == 'eval') {
-                  this.watchList.set(item.code, form.items[item.code].f)
+                let field = form.items[item.code];
+                if (field.type == 'eval') {
+                  this.watchList.set(item.code, field.f)
+                }
+                if (field.x?.rtxtcls || field.x?.rtxtgen) {
+                    let extracted = extractVariables(["$"],field.x?.rcognaTpl)
+                    // console.log("rtxtcls", field.x?.rtxtcls, field.x?.rcognaTpl, extracted?.["$"])
+                    this.reactiveCognaList[item.code] = extracted?.["$"];
                 }
               });
             } else if (s.type == 'list') { // watch for section in list
@@ -322,6 +334,37 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       });
   }
 
+  private rcognaSubject = new Subject<any>();
+  classifyField(code) {
+    console.log("classifyField", code, Date.now());
+    console.log("reactiveCognaList", this.reactiveCognaList);
+    const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.includes(code));
+    list.forEach(key => {
+      var item = this.form().items[key];
+      if (item.x?.rtxtcls){
+        this.lookupLoading.update(l=>({...l,[code]: true}));
+        this.runService.cognaClassifyField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), false, this.user().email)
+        .subscribe({
+          next:res=>{
+            this.entry.data[key] = res.data;
+            this.cdr.detectChanges();
+            this.lookupLoading.update(l=>({...l,[code]: false}));
+          }
+        });        
+      }
+      if (item.x?.rtxtgen){
+        this.lookupLoading.update(l=>({...l,[code]: true}));
+        this.runService.cognaTxtGenField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), item.x?.rtxtgenMode, false, this.user().email)
+        .subscribe({
+          next:res=>{
+            this.entry.data[key] = res.data;
+            this.cdr.detectChanges();
+            this.lookupLoading.update(l=>({...l,[code]: false}));
+          }
+        });        
+      }
+    });
+  }
   // unAuthorizedMsg: string = "";
 
   unAuthorizedMsg = computed<string>(() => {
@@ -770,9 +813,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       // if da section, try filterChildItems
       this.filterChildItems(data, section);
     }
-
-    // this.data
-
+    
     this.filterTabs();
     // console.log(",,fieldchange,,", this.entry)
     // utk kes dataset, filterItems mungkin run awal gilak dari postaction, so preCompFilter mungkin belom proper
@@ -1529,6 +1570,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.classifyData(field, field.x?.txtcls, field.x?.txtclsTarget, data[field.code], data, index);
       // }
     }
+ 
+    this.rcognaSubject.next({code:field.code,value:$event});
   }
 
   editLookupItem: any = {};
@@ -1681,5 +1724,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
+    this.rcognaSubject.unsubscribe();
+    this.valueUpdate.unsubscribe();
   }
 }

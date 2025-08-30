@@ -106,7 +106,7 @@ export class ChatbotComponent implements OnInit {
       sessionStorage.setItem("cogna-" + cogna.id + "-" + this.user().email, JSON.stringify(this.chatResponseList()))
 
       if (cogna.streamSupport) {
-        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), this.user().email)
+        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), true, this.user().email)
           .pipe(
             map(res => {
               if (res['type'] == 4) {
@@ -143,7 +143,7 @@ export class ChatbotComponent implements OnInit {
 
       } else {
 
-        this.runService.cognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), this.user().email)
+        this.runService.cognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), true, this.user().email)
           .subscribe({
             next: res => {
               this.chatPromptLoading.set(false);

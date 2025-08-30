@@ -235,7 +235,7 @@ async function createMermaidSvg(id: string, text: string): Promise<string> {
     // const { svg } = await mermaid.render(elem.id, text, undefined, elem);
     // return svg;
   }
-  console.error("Mermaid syntax error");
+  console.log("Mermaid syntax error");
   return `<div class="text-danger">Invalid <strong>Mermaid</strong> syntax</div>`;
 }
 
@@ -1038,4 +1038,28 @@ export function setModel(obj: any, path: string, newValue: any): any {
   }
   temp[keys[keys.length - 1]] = newValue;
   return result;
+}
+
+export function extractVariables(prefixes, input) {
+  if (!prefixes || prefixes.size === 0 || !input) return {};
+
+  const sorted = [...prefixes].sort((a, b) => b.length - a.length);
+  const prefixGroup = sorted.map(escapeRegex).join("|");
+  const regex = new RegExp(`(${prefixGroup})\\.([$a-zA-Z_][a-zA-Z0-9_]*)`, "g");
+
+  const result = {};
+  for (const p of prefixes) result[p] = [];
+
+  let match;
+  while ((match = regex.exec(input)) !== null) {
+    const [ , prefix, variable ] = match;
+    if (!result[prefix].includes(variable)) {
+      result[prefix].push(variable);
+    }
+  }
+  return result;
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -290,6 +290,12 @@ export class RunService {
   cognaClassify(cognaId: number, text: string, fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/classify`,{text: text, fromCogna: fromCogna, email:email});
   } 
+  cognaClassifyField(itemId: number, text: string, fromCogna: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/classify-field?itemId=${itemId}`,{text: text, fromCogna: fromCogna, email:email});
+  } 
+  cognaTxtGenField(itemId: number, text: string, action: string, fromCogna: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/txtgen-field/${action}?itemId=${itemId}`,{text: text, fromCogna: fromCogna, email:email});
+  } 
   cognaImgGen(cognaId: number, text: string, fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/imggen`,{text: text, fromCogna: fromCogna, email:email});
   } 
@@ -299,11 +305,11 @@ export class RunService {
   cognaImgCls(cognaId: number, docList: string[], fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/imgcls`,{docList: docList, fromCogna: fromCogna, email:email});
   }
-  cognaPrompt(cognaId: number, prompt: string, fileList: string[], email: string): any {
-    return this.http.post(`${this.baseApi}/cogna/${cognaId}/prompt`,{prompt: prompt, fileList: fileList, email:email});
+  cognaPrompt(cognaId: number, prompt: string, fileList: string[], fromCogna: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/${cognaId}/prompt`,{prompt: prompt, fileList: fileList, fromCogna: fromCogna, email:email});
   }
-  streamCognaPrompt(cognaId: number, prompt: string, fileList: string[], email: string): any {
-    return this.http.post(`${this.baseApi}/cogna/${cognaId}/prompt-stream`,{prompt: prompt, fileList: fileList, email:email}, { responseType:'text', observe: 'events', reportProgress: true });
+  streamCognaPrompt(cognaId: number, prompt: string, fileList: string[], fromCogna: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/${cognaId}/prompt-stream`,{prompt: prompt, fileList: fileList, fromCogna: fromCogna, email:email}, { responseType:'text', observe: 'events', reportProgress: true });
   }
   clearCognaMemoryByIdAndEmail(cognaId: any, email:string) {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/clear-by-email?email=${email}`, {});

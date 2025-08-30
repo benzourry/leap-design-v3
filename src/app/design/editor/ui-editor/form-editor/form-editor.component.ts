@@ -17,7 +17,7 @@ import { CommService } from '../../../../_shared/service/comm.service';
 import { NgbUnixTimestampAdapter } from '../../../../_shared/service/date-adapter';
 import { NgbUnixTimestampTimeAdapter } from '../../../../_shared/service/time-adapter';
 import { EndpointService } from '../../../../service/endpoint.service';
-import { btoaUTF, cleanText, hashObject, splitAsList, tblToExcel, toSnakeCase, toSpaceCase } from '../../../../_shared/utils';
+import { btoaUTF, cleanText, extractVariables, hashObject, splitAsList, tblToExcel, toSnakeCase, toSpaceCase } from '../../../../_shared/utils';
 import { baseApi } from '../../../../_shared/constant.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { ScreenService } from '../../../../service/screen.service';
@@ -586,6 +586,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.formService.getForm(id)
             .subscribe(res => {
                 this.curForm = res;
+                this.cdr.detectChanges(); // <--- Add here
                 this.curForm.sections
                     .map(s => s.parentObj = this.getTab(s.parent))
                     .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
@@ -849,6 +850,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
+    rcognaExtractor(val){
+        // console.log(val)
+        this.editItemData.x.rcognaFields = extractVariables(["$"],val)?.["$"]||[];
+    }
+
     editItemData: any;
     editItemFromPalette: boolean = false;
     editItem(content, section, data, sortOrder, fromPalette: boolean = false) {
@@ -893,6 +899,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     fieldList.push(rItem);
                 }
                 fieldList.forEach((aa, index) => {
+                    if (aa.x?.rtxtcls||aa.x?.rtxtgen){
+                        aa.x.rcognaFields = extractVariables(["$"], aa.x?.rcognaTpl)?.["$"]||[];
+                    }
                     this.formService.saveItem(this.curForm.id, section.id, aa, sortOrder + index)
                         .subscribe({
                             next: (e) => {
