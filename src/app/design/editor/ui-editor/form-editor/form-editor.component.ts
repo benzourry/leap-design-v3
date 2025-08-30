@@ -261,7 +261,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     superItems = [];
     buildSuper() {
-        console.log("superForm", this.superForm)
+        // console.log("superForm", this.superForm)
         this.superItems = Object.values(this.superForm?.items).map((i: any) => {
             delete i.id;
             i.x.extended = true;

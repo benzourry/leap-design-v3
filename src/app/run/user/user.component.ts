@@ -145,7 +145,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit() {
     if (this.groupId()) {
-      console.log("DA groupId()", this.groupId())
+      // console.log("DA groupId()", this.groupId())
       this.cs = this.groupId();
       this.hasGroupId.set(true);
       this.runService.getGroup(this.groupId())

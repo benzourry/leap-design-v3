@@ -38,7 +38,7 @@ marked.use({
   extensions: [{
      name: 'code',
      renderer({lang, raw, text}) {
-      console.log({lang, raw, text})
+      // console.log({lang, raw, text})
       if (lang=='mermaid') {
         return `
           <pre class="mermaid">${text}</pre>
@@ -524,7 +524,7 @@ export class CognaEditorComponent implements OnInit {
     //   this.editToolData.appId = this.app.id;
     // }
 
-    console.log("lambdaId",this.editToolData.lambdaId)
+    // console.log("lambdaId",this.editToolData.lambdaId)
 
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -1359,7 +1359,7 @@ export class CognaEditorComponent implements OnInit {
       for (var i = 0; i < $event.target.files.length; i++) {
         let file = $event.target.files[i];
         let fileType = file.type;
-        console.log("fileType",file.type)
+        // console.log("fileType",file.type)
         if (file.type.includes("image")){
           resizeImage({
             file: file,

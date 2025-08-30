@@ -572,12 +572,12 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   
       const topNode = `${cursor.name}`; // ← Cast to general string
 
-      console.log(topNode);
+      // console.log(topNode);
   
       if (topNode === "ExpressionStatement") {
         if (cursor.firstChild()) {
           const innerNode = `${cursor.name}`; // ← Also cast here
-          console.log(innerNode);
+          // console.log(innerNode);
           return innerNode !== "AssignmentExpression"; // ✅ No TS error
         }
       }

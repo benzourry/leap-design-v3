@@ -610,7 +610,7 @@ export class ListComponent implements OnInit, OnDestroy {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {
-        console.log("res", res);
+        // console.log("res", res);
         this.filtersData.set({...res}); // re-assign sbb mungkin da Reset ({}), must use {...} to avoid reference issue and force signal update
         this.getEntryList(1);
       }, res => { });
@@ -849,7 +849,7 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   fclose(){
-    console.log("## FCLOSE");
+    // console.log("## FCLOSE");
   }
 
 }

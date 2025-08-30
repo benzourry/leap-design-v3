@@ -14,7 +14,7 @@ export class OrderByPipe implements PipeTransform {
         let ae = byString(a,orderField);
         // let be = b[orderField];
         let be = byString(b,orderField);
-        console.log("sort",orderField,ae,be)
+        // console.log("sort",orderField,ae,be)
         if (ae == undefined && be == undefined) return 0;
         if (ae == undefined && be != undefined) return orderType ? 1 : -1;
         if (ae != undefined && be == undefined) return orderType ? -1 : 1;
@@ -22,7 +22,7 @@ export class OrderByPipe implements PipeTransform {
         return orderType ? (ae.toString().toLowerCase() > be.toString().toLowerCase() ? -1 : 1) : (be.toString().toLowerCase() > ae.toString().toLowerCase() ? -1 : 1);
       });
     }
-    console.log(array);
+    // console.log(array);
     return array;
   }
 

@@ -973,7 +973,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   modalClose(d) {
-    console.log("modalClosed")
+    // console.log("modalClosed")
 
     if (['list', 'map'].indexOf(this.screen().type) > -1) {
       this.loadDatasetEntry(this.dataset(), this.pageNumber());

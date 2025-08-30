@@ -66,7 +66,7 @@ export class ScanComponent implements OnInit, OnDestroy {
 
         
         if (cameras.length === 0) {
-          console.log("xda camera");
+          // console.log("xda camera");
           this.camSupport.set(false);
           throw 'No camera found on this device.';
         }

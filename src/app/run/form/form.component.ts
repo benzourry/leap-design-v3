@@ -336,8 +336,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   private rcognaSubject = new Subject<any>();
   classifyField(code) {
-    console.log("classifyField", code, Date.now());
-    console.log("reactiveCognaList", this.reactiveCognaList);
     const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.includes(code));
     list.forEach(key => {
       var item = this.form().items[key];

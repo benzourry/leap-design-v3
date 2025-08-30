@@ -86,7 +86,7 @@ export class ChatbotComponent implements OnInit {
   }
 
   onrespinit() {
-    console.log("resp init");
+    // console.log("resp init");
   }
 
   chatResponseList = signal<any[]>([]);
