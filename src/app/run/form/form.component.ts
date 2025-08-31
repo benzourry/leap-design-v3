@@ -303,17 +303,21 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 if (field.type == 'eval') {
                   this.watchList.set(item.code, field.f)
                 }
-                if (field.x?.rtxtcls || field.x?.rtxtgen) {
+                if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
                     let extracted = extractVariables(["$"],field.x?.rcognaTpl)
-                    // console.log("rtxtcls", field.x?.rtxtcls, field.x?.rcognaTpl, extracted?.["$"])
-                    this.reactiveCognaList[item.code] = extracted?.["$"];
+                    this.reactiveCognaList[item.code] = {sources:extracted?.["$"], data: this.entry?.data};
                 }
               });
             } else if (s.type == 'list') { // watch for section in list
               this.watchListSection[s.code] = new Map();
               s.items.forEach(item => {
-                if (form.items[item.code].type == 'eval') {
-                  this.watchListSection[s.code].set(item.code, form.items[item.code].f)
+                let field = form.items[item.code];
+                if (field.type == 'eval') {
+                  this.watchListSection[s.code].set(item.code, field.f)
+                }
+                if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
+                    let extracted = extractVariables(["$"],field.x?.rcognaTpl)
+                    this.reactiveCognaList[item.code] = {sources:extracted?.["$"], data: this.entry?.data?.[s.code]};
                 }
               });
             }
@@ -334,36 +338,59 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       });
   }
 
+  private rcognaLoading = signal<any>({});
   private rcognaSubject = new Subject<any>();
   classifyField(code) {
-    const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.includes(code));
+    const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.sources?.includes(code));
     list.forEach(key => {
       var item = this.form().items[key];
       if (item.x?.rtxtcls){
-        this.lookupLoading.update(l=>({...l,[code]: true}));
+        this.rcognaLoading.update(l=>({...l,[key]: true}));
         this.runService.cognaClassifyField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), false, this.user().email)
         .subscribe({
           next:res=>{
-            this.entry.data[key] = res.data;
+            this.reactiveCognaList[key].data[key] = res.data;
+            // this.entry.data[key] = res.data;
             this.cdr.detectChanges();
-            this.lookupLoading.update(l=>({...l,[code]: false}));
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
+          },
+          error:err=>{
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
           }
         });        
       }
       if (item.x?.rtxtgen){
-        this.lookupLoading.update(l=>({...l,[code]: true}));
+        this.rcognaLoading.update(l=>({...l,[key]: true}));
         this.runService.cognaTxtGenField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), item.x?.rtxtgenMode, false, this.user().email)
         .subscribe({
           next:res=>{
-            this.entry.data[key] = res.data;
+            // this.entry.data[key] = res.data;
+            this.reactiveCognaList[key].data[key] = res.data;
             this.cdr.detectChanges();
-            this.lookupLoading.update(l=>({...l,[code]: false}));
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
+          },
+          error:err=>{
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
+          }
+        });        
+      }
+      if (item.x?.rimggen){
+        this.rcognaLoading.update(l=>({...l,[key]: true}));
+        this.runService.cognaImgGenField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), false, this.user().email)
+        .subscribe({
+          next:res=>{
+            // this.entry.data[key] = res.data;
+            this.reactiveCognaList[key].data[key] = res.data;
+            this.cdr.detectChanges();
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
+          },
+          error:err=>{
+            this.rcognaLoading.update(l=>({...l,[key]: false}));
           }
         });        
       }
     });
   }
-  // unAuthorizedMsg: string = "";
 
   unAuthorizedMsg = computed<string>(() => {
     const form = this.form();

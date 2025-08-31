@@ -147,6 +147,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DALL.E 2', code: 'dall-e-2', type: 'openai', use: ['imggen'] },
     { name: 'DALL.E 3', code: 'dall-e-3', type: 'openai', use: ['imggen'] },
+    { name: 'GPT Image', code: 'gpt-image-1', type: 'openai', use: ['imggen'] },
     // { name: 'ResNet101v1', code: 'resnet101v1', type: 'onnx', use: ['imgcls'] },
     // { name: 'YOLOv8', code: 'yolov8n', type: 'onnx', use: ['imgcls'] },
     { name: 'YOLOv10s', code: 'yolov10s.onnx', type: 'onnx', use: ['imgcls'] },

@@ -2708,184 +2708,6 @@
                   </select>
                 </div>
               }
-              @if (['select','radio', 'simpleOption','checkboxOption' ].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Smart Form (classified from text)</label>
-                  <select class="form-select" name="txtcls"
-                    [(ngModel)]="editItemData.x.rtxtcls">
-                    <option [ngValue]="undefined" style="color:gray">No AI classifier</option>
-                    @for (b of cognaList; track b.id) {
-                      {{b.type}}
-                      @if(b.type=='txtcls'){
-                        <option [ngValue]="b.id">{{b.name}}
-                        </option>
-                      }
-                    }
-                  </select>
-                </div>
-                @if(editItemData.x?.rtxtcls){
-                  <div class="form-group mb-3">
-                    <label class="form-label">Text to classify (support template) *</label>
-                    <app-cm name="rtxtclsTpl" lang="javascript"
-                        [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
-                        subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
-                    </app-cm>
-                    @for(i of editItemData.x?.rcognaFields; track $index){
-                      <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
-                    }
-                  </div>
-                }
-              }
-              @if (['text'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Smart Form (text processing)</label>
-                  <select class="form-select" name="rtxtgen"
-                    [(ngModel)]="editItemData.x.rtxtgen">
-                    <option [ngValue]="undefined" style="color:gray">No AI text processing</option>
-                    @for (b of cognaList; track b.id) {
-                      {{b.type}}
-                      @if(b.type=='txtgen'){
-                        <option [ngValue]="b.id">{{b.name}}
-                        </option>
-                      }
-                    }
-                  </select>
-                </div>
-                @if (editItemData.x?.rtxtgen){
-                  <div class="form-group mb-3">
-                    <label class="form-label">Text to process (support template) *</label>
-                    <app-cm name="rtxtclsTpl" lang="javascript"
-                        [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
-                        subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
-                    </app-cm>
-                    @for(i of editItemData.x?.rcognaFields; track $index){
-                      <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
-                    }
-                  </div>
-                  <div class="form-group mb-3">
-                    <div class="input-group input-group-sm mb-1">
-                      <div class="input-group-text">
-                        <input class="form-check-input mt-0"  type="radio" value="summarize" aria-label="Text summarization"
-                          name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode">
-                      </div>
-                      <span class="input-group-text">Summarize</span>
-                      <input type="text" class="form-control" [disabled]="editItemData.x?.rtxtgenMode!=='summarize'" placeholder="Maximum words length" name="rtxtgenSummarizeN"  [(ngModel)]="editItemData.x.rtxtgenSummarizeN" aria-label="Maximum words length">
-                    </div>
-                    <div class="input-group input-group-sm mb-1">
-                      <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="translate" aria-label="Text translation"
-                          name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode"> 
-                      </div>
-                      <span class="input-group-text">Translate</span>
-                      <input type="text" class="form-control" list="global-languages" [disabled]="editItemData.x?.rtxtgenMode!=='translate'" placeholder="Tanslate language" name="rtxtgenTranslateLang" [(ngModel)]="editItemData.x.rtxtgenTranslateLang" aria-label="Tanslate language">
-                      <datalist id="global-languages">
-                        <option value="English"></option>
-                        <option value="Mandarin Chinese"></option>
-                        <option value="Spanish"></option>
-                        <option value="Hindi"></option>
-                        <option value="Arabic"></option>
-                        <option value="French"></option>
-                        <option value="Bengali"></option>
-                        <option value="Portuguese"></option>
-                        <option value="Russian"></option>
-                        <option value="German"></option>
-                        <option value="Japanese"></option>
-                        <option value="Urdu"></option>
-                        <option value="Swahili"></option>
-                        <option value="Turkish"></option>
-                        <option value="Italian"></option>
-                        <option value="Korean"></option>
-                        <option value="Vietnamese"></option>
-                        <option value="Persian (Farsi/Dari/Tajik)"></option>
-                        <option value="Polish"></option>
-                        <option value="Malay / Indonesian"></option>
-                      </datalist>
-                    </div>
-                    <div class="input-group input-group-sm mb-1">
-                      <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="generate" aria-label="Text translation"
-                          name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode"> 
-                      </div>
-                      <span class="input-group-text">Generate</span>
-                      <input type="text" class="form-control" [disabled]="editItemData.x?.rtxtgenMode!=='generate'" placeholder="Generate instruction" name="rtxtgenGenerateMsg" [(ngModel)]="editItemData.x.rtxtgenGenerateMsg" aria-label="Generate instruction">
-                    </div>
-                  </div>
-                }
-              }
-              <!-- @if (['text'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Smart Form (text classifier)</label>
-                  <select class="form-select" name="txtcls"
-                    [(ngModel)]="editItemData.x.txtcls">
-                    <option [ngValue]="undefined" style="color:gray">No AI classifier</option>
-                    @for (b of cognaList; track b.id) {
-                      {{b.type}}
-                      @if(b.type=='txtcls'){
-                        <option [ngValue]="b.id">{{b.name}}
-                        </option>
-                      }
-                    }
-                  </select>
-                </div>
-                @if (editItemData.x.txtcls){
-                  <div class="input-group input-group-sm mt-1 mb-2">
-                    <label class="input-group-text">Classifier field target *</label>
-                    <select class="form-select" name="txtclsTarget"
-                      [(ngModel)]="editItemData.x.txtclsTarget" required>
-                      <option [ngValue]="undefined" style="color:gray">No target field</option>
-                      @for (f of curForm.items|keyvalue; track $index) {
-                          <option [ngValue]="f.value.code">{{f.value.label}}</option>
-                      }
-                    </select>
-                  </div>
-                }
-              } -->
-              @if (['file','speech'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Smart Form (extractor)</label>
-                  <select class="form-select" name="extractor"
-                    [(ngModel)]="editItemData.x.extractor">
-                    <option [ngValue]="undefined" style="color:gray">No AI extractor</option>
-                    @for (b of cognaList; track b.id) {
-                      {{b.type}}
-                      @if(b.type=='txtext'){
-                        <option [ngValue]="b.id">{{b.name}}
-                        </option>
-                      }
-                    }
-                  </select>
-                </div>
-              }
-              @if (['file'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Smart Form (image classifier)</label>
-                  <select class="form-select" name="imgcls"
-                    [(ngModel)]="editItemData.x.imgcls">
-                    <option [ngValue]="undefined" style="color:gray">No classifier</option>
-                    @for (b of cognaList; track b.id) {
-                      {{b.type}}
-                      @if(b.type=='imgcls'){
-                        <option [ngValue]="b.id">{{b.name}}
-                        </option>
-                      }
-                    }
-                  </select>
-                </div>
-                @if (editItemData.x.imgcls){
-                  <div class="input-group input-group-sm mt-1 mb-2">
-                    <label class="input-group-text">Classifier field target *</label>
-                    <select class="form-select" name="imgclsTarget"
-                      [(ngModel)]="editItemData.x.imgclsTarget">
-                      <option [ngValue]="undefined" style="color:gray">No target field</option>
-                      @for (f of curForm.items|keyvalue; track $index) {
-                          <option [ngValue]="f.value.code">{{f.value.label}}</option>
-                      }
-                    </select>
-                    <!-- <input type="text" class="form-control" [(ngModel)]="editItemData.x" name="txtclsTarget"
-                    placeholder="ie: sentiment_type" required>  -->
-                  </div>
-                }
-              }
               @if (['speech'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Speech stop word</label>
@@ -3111,6 +2933,186 @@
                   }
                 </div>
               }
+
+              
+              <div class="mx-n2 mb-n3 p-2 bg-light">
+                @if (['select','radio', 'simpleOption','checkboxOption' ].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Smart Form (classified from text)</label>
+                    <select class="form-select" name="txtcls"
+                      [(ngModel)]="editItemData.x.rtxtcls">
+                      <option [ngValue]="undefined" style="color:gray">No AI classifier</option>
+                      @for (b of cognaList; track b.id) {
+                        {{b.type}}
+                        @if(b.type=='txtcls'){
+                          <option [ngValue]="b.id">{{b.name}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  </div>
+                  @if(editItemData.x?.rtxtcls){
+                    <div class="form-group mb-3">
+                      <label class="form-label">Text to classify (support template) *</label>
+                      <app-cm name="rtxtclsTpl" lang="javascript"
+                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                      </app-cm>
+                      @for(i of editItemData.x?.rcognaFields; track $index){
+                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                      }
+                    </div>
+                  }
+                }
+                @if (['text'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Smart Form (text processing)</label>
+                    <select class="form-select" name="rtxtgen"
+                      [(ngModel)]="editItemData.x.rtxtgen">
+                      <option [ngValue]="undefined" style="color:gray">No AI text processing</option>
+                      @for (b of cognaList; track b.id) {
+                        {{b.type}}
+                        @if(b.type=='txtgen'){
+                          <option [ngValue]="b.id">{{b.name}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  </div>
+                  @if (editItemData.x?.rtxtgen){
+                    <div class="form-group mb-3">
+                      <label class="form-label">Text to process (support template) *</label>
+                      <app-cm name="rtxtclsTpl" lang="html"
+                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                      </app-cm>
+                      @for(i of editItemData.x?.rcognaFields; track $index){
+                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                      }
+                    </div>
+                    <div class="form-group mb-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <div class="input-group-text">
+                          <input class="form-check-input mt-0"  type="radio" value="summarize" aria-label="Text summarization"
+                            name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode">
+                        </div>
+                        <span class="input-group-text">Summarize</span>
+                        <input type="text" class="form-control" [disabled]="editItemData.x?.rtxtgenMode!=='summarize'" placeholder="Maximum words length" name="rtxtgenSummarizeN"  [(ngModel)]="editItemData.x.rtxtgenSummarizeN" aria-label="Maximum words length">
+                      </div>
+                      <div class="input-group input-group-sm mb-1">
+                        <div class="input-group-text">
+                          <input class="form-check-input mt-0" type="radio" value="translate" aria-label="Text translation"
+                            name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode"> 
+                        </div>
+                        <span class="input-group-text">Translate</span>
+                        <input type="text" class="form-control" list="global-languages" [disabled]="editItemData.x?.rtxtgenMode!=='translate'" placeholder="Tanslate language" name="rtxtgenTranslateLang" [(ngModel)]="editItemData.x.rtxtgenTranslateLang" aria-label="Tanslate language">
+                        <datalist id="global-languages">
+                          <option value="English"></option>
+                          <option value="Mandarin Chinese"></option>
+                          <option value="Spanish"></option>
+                          <option value="Hindi"></option>
+                          <option value="Arabic"></option>
+                          <option value="French"></option>
+                          <option value="Bengali"></option>
+                          <option value="Portuguese"></option>
+                          <option value="Russian"></option>
+                          <option value="German"></option>
+                          <option value="Japanese"></option>
+                          <option value="Urdu"></option>
+                          <option value="Swahili"></option>
+                          <option value="Turkish"></option>
+                          <option value="Italian"></option>
+                          <option value="Korean"></option>
+                          <option value="Vietnamese"></option>
+                          <option value="Persian (Farsi/Dari/Tajik)"></option>
+                          <option value="Polish"></option>
+                          <option value="Malay / Indonesian"></option>
+                        </datalist>
+                      </div>
+                      <div class="input-group input-group-sm mb-1">
+                        <div class="input-group-text">
+                          <input class="form-check-input mt-0" type="radio" value="generate" aria-label="Text translation"
+                            name="rtxtgenMode" [(ngModel)]="editItemData.x.rtxtgenMode"> 
+                        </div>
+                        <span class="input-group-text">Generate</span>
+                        <input type="text" class="form-control" [disabled]="editItemData.x?.rtxtgenMode!=='generate'" placeholder="Generate instruction" name="rtxtgenGenerateMsg" [(ngModel)]="editItemData.x.rtxtgenGenerateMsg" aria-label="Generate instruction">
+                      </div>
+                    </div>
+                  }
+                }
+                @if (['file'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Smart Form (image generator)</label>
+                    <select class="form-select" name="rimggen"
+                      [(ngModel)]="editItemData.x.rimggen">
+                      <option [ngValue]="undefined" style="color:gray">No AI Image generator</option>
+                      @for (b of cognaList; track b.id) {
+                        {{b.type}}
+                        @if(b.type=='imggen'){
+                          <option [ngValue]="b.id">{{b.name}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  </div>
+                  @if (editItemData.x?.rimggen){
+                    <div class="form-group mb-3">
+                      <label class="form-label">Image prompt (support template) *</label>
+                      <app-cm name="rcognaTpl" lang="html"
+                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                      </app-cm>
+                      @for(i of editItemData.x?.rcognaFields; track $index){
+                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                      }
+                    </div>
+                  }
+                }
+                @if (['file','speech'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Smart Form (extractor)</label>
+                    <select class="form-select" name="extractor"
+                      [(ngModel)]="editItemData.x.extractor">
+                      <option [ngValue]="undefined" style="color:gray">No AI extractor</option>
+                      @for (b of cognaList; track b.id) {
+                        {{b.type}}
+                        @if(b.type=='txtext'){
+                          <option [ngValue]="b.id">{{b.name}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['file'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Smart Form (image classifier)</label>
+                    <select class="form-select" name="imgcls"
+                      [(ngModel)]="editItemData.x.imgcls">
+                      <option [ngValue]="undefined" style="color:gray">No classifier</option>
+                      @for (b of cognaList; track b.id) {
+                        {{b.type}}
+                        @if(b.type=='imgcls'){
+                          <option [ngValue]="b.id">{{b.name}}
+                          </option>
+                        }
+                      }
+                    </select>
+                  </div>
+                  @if (editItemData.x.imgcls){
+                    <div class="input-group input-group-sm mt-1 mb-2">
+                      <label class="input-group-text">Classifier field target *</label>
+                      <select class="form-select" name="imgclsTarget"
+                        [(ngModel)]="editItemData.x.imgclsTarget">
+                        <option [ngValue]="undefined" style="color:gray">No target field</option>
+                        @for (f of curForm.items|keyvalue; track $index) {
+                            <option [ngValue]="f.value.code">{{f.value.label}}</option>
+                        }
+                      </select>
+                    </div>
+                  }
+                }
+              </div>
             </div>
           </ng-template>
         </li>

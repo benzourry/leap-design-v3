@@ -224,24 +224,24 @@
                       <div>{{cogna.inferModelName}}</div>
                     </div>
                     @if(['imggen'].includes(cogna.type)){
-                      <div class="list-group-item">
+                      <!-- <div class="list-group-item">
                         <div class="small text-muted">
                           Quality
                         </div>
                         <div>{{cogna.data?.imgQuality}}</div>
-                      </div>
+                      </div> -->
                       <div class="list-group-item">
                         <div class="small text-muted">
                           Size
                         </div>
                         <div>{{cogna.data?.imgSize}}</div>
                       </div>
-                      <div class="list-group-item">
+                      <!-- <div class="list-group-item">
                         <div class="small text-muted">
                           Style
                         </div>
                         <div>{{cogna.data?.imgStyle}}</div>
-                      </div>
+                      </div> -->
                       @if (cogna.data?.genBucket){
                         <div class="list-group-item">
                           <div class="small text-muted">
@@ -1410,7 +1410,7 @@
                         </select>
                       </div>
                     </div>
-                    <div class="col-6">
+                    <!-- <div class="col-6">
                       <div class="form-group mb-3">
                         <label class="form-label">Quality *</label>
                         <div>
@@ -1445,7 +1445,7 @@
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> -->
                   </div>
                 }
               }

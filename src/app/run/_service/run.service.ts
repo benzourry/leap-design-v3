@@ -296,6 +296,9 @@ export class RunService {
   cognaTxtGenField(itemId: number, text: string, action: string, fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/txtgen-field/${action}?itemId=${itemId}`,{text: text, fromCogna: fromCogna, email:email});
   } 
+  cognaImgGenField(itemId: number, text: string, fromCogna: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/imggen-field?itemId=${itemId}`,{text: text, fromCogna: fromCogna, email:email});
+  } 
   cognaImgGen(cognaId: number, text: string, fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/imggen`,{text: text, fromCogna: fromCogna, email:email});
   } 

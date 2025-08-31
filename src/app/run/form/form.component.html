@@ -278,7 +278,7 @@
                                               [data]="compileDataWithTimestamp"></field-view>
                                           }
                                         </div>
-                                      } @else {                                        
+                                      } @else {                                   
                                         <!-- [data]="{$user$:user(), $conf$:appConfig, $_:entry, $:data, $prev$:entry?.prev,
                                            $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $this$:_this, 
                                            $param$:_param, $ngForm$:entryForm, $file$:filesMap, timestamp: timestamp}" -->
@@ -286,6 +286,7 @@
                                           [scopeId]="scopeId()"
                                           [fileProgress]="uploadProgress()[f.code+(index??'')+(index_child??'')]"
                                           [extractLoading]="extractLoading()[f.code+(index??'')+(index_child??'')]"
+                                          [class.opacity-50]="rcognaLoading()[f.code]"
                                           [class.mt-0]="field.subType=='clearfix'"
                                           [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
                                           [class]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
@@ -611,6 +612,7 @@
                                                     [scopeId]="scopeId()"
                                                     [fileProgress]="uploadProgress()[f.code+(index??'')+(index_child??'')]"
                                                     [extractLoading]="extractLoading()[f.code+(index??'')+(index_child??'')]"
+                                                    [class.disabled]="rcognaLoading()[f.code]"
                                                     [class.mt-0]="field.subType=='clearfix'"
                                                     [hidden]="field.hidden || (field?.x?.facet?.[_action]||section.x?.facet?.[_action])=='hidden'"
                                                     [class]="field.size||'col-sm-12'" name="fn-{{f.id}}-{{index_child}}" [field]="field"
