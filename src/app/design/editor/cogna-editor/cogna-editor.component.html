@@ -338,21 +338,27 @@
                 <div class="card overflow-hidden border border-2 mb-2">
                   <div class="card-header p-2">
                     <div class="text-muted text-strong col">
-                      @if (cogna.data?.txtclsWhat){
-                        {{cogna.data?.txtclsWhat}}
+                      @if (classifyWhat){
+                        {{classifyWhat}}
                       }@else {
                         Classifications
                       }
                     </div>
                   </div>
 
-                  <div class="list-group list-group-flush">
-                    @for(le of lookupEntries;track $index){
-                      <div class="list-group-item p-2">
-                        {{le.name}}
-                      </div>
-                    }
-                  </div>
+                  @if (classifyLookupId){
+                    <div class="list-group list-group-flush">
+                      @for(le of lookupEntries;track $index){
+                        <div class="list-group-item p-2">
+                          {{le.name}}
+                        </div>
+                      }@empty {
+                        <div class="text-black-50 p-3 text-center fs-4"> No lookup entries</div>
+                      }
+                    </div>
+                  }@else{
+                    <div class="text-black-50 p-3 text-center fs-4"> No lookup selected</div>
+                  }
                 </div>
               }
 
@@ -785,6 +791,29 @@
                     Testing/Preview
                   </div>
                   <div class="card-body" [class.disabled]="classifyLoading">
+
+
+                    @if (cogna.data?.txtclsLlm){
+                      <div class="input-group input-group-sm mt-1 mb-2">
+                        <label class="input-group-text">Classification of what *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classifyWhat" name="classifyWhat"
+                        placeholder="ie: Sentiment" required> 
+                      </div>
+                      <div class="input-group input-group-sm mt-1 mb-2">
+                        <label class="input-group-text">Classification Lookup *</label>
+                        <select class="form-select" name="classifyLookupId"
+                          (ngModelChange)="loadLookupEntries($event)"
+                          [(ngModel)]="classifyLookupId" required>
+                          <option value="" disabled>Select lookup...</option>
+                          @for (lookup of lookupList; track $index) {
+                            <option [ngValue]="lookup.id">{{lookup.name}}
+                              [{{lookup.id}}]
+                            </option>
+                          }
+                        </select>
+                      </div>
+                    }
+
                     <div class="form-group mb-3">
                       <label class="form-label">Classify from text</label>
                       <textarea class="form-control" 
@@ -793,7 +822,7 @@
                     </div>
                   </div>
                   <div class="card-footer">
-                    <button type="button" (click)="startClassifyData(cogna)" [disabled]="classifyLoading" class="btn btn-primary btn-round px-3">
+                    <button type="button" (click)="startClassifyData(cogna)" [disabled]="classifyLoading || !classifyWhat || !classifyLookupId" class="btn btn-primary btn-round px-3">
                       @if(classifyLoading){
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden" role="status">Loading...</span>                        
@@ -1026,31 +1055,6 @@
                   <input type="checkbox" class="form-check-input" id="txtclsLlm"
                     [(ngModel)]="editCognaData.data.txtclsLlm" name="txtclsLlm">
                     <label class="form-check-label" for="txtclsLlm">Use LLM for text classification
-
-                      @if (editCognaData.data.txtclsLlm){
-                        <div class="input-group input-group-sm mt-1 mb-2">
-                          <label class="input-group-text">Classification Lookup *</label>
-                          <select class="form-select" name="genBucketId"
-                            [(ngModel)]="editCognaData.data.txtclsLookupId" required>
-                            <option value="" disabled>Select lookup...</option>
-                            @for (lookup of lookupList; track $index) {
-                              <option [ngValue]="lookup.id">{{lookup.name}}
-                                [{{lookup.id}}]
-                              </option>
-                            }
-                          </select>
-                        </div>
-                        <div class="input-group input-group-sm mt-1 mb-2">
-                          <label class="input-group-text">Classification of what *</label>
-                          <input type="text" class="form-control" [(ngModel)]="editCognaData.data.txtclsWhat" name="txtclsWhat"
-                          placeholder="ie: Sentiment" required> 
-                        </div>
-                        <!-- <div class="input-group input-group-sm mt-1 mb-2">
-                          <label class="input-group-text">Classifier field target *</label>
-                          <input type="text" class="form-control" [(ngModel)]="editCognaData.data.txtclsTarget" name="txtclsTarget"
-                          placeholder="ie: sentiment_type" required> 
-                        </div> -->
-                      }
                     </label>
                 </div>
               </div>   

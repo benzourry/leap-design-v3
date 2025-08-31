@@ -804,13 +804,9 @@ export class CognaEditorComponent implements OnInit {
           this.chatResponseList = [];
         }
 
-        if (this.cogna.type=='txtcls' && this.cogna.data.txtclsLookupId){
-          this.lookupService.getEntryList(this.cogna.data?.txtclsLookupId,{})
-          .subscribe(res=>{
-            this.lookupEntries = res.content;
-            this.cdr.detectChanges();
-          })
-        }
+        // if (this.cogna.type=='txtcls' && this.cogna.data.txtclsLookupId){
+
+        // }
 
         if (this.cogna.type=='imgcls' && this.cogna.data?.imgclsCat){
           let list = this.cogna.data?.imgclsCat.split("\n");
@@ -837,6 +833,15 @@ export class CognaEditorComponent implements OnInit {
       this.cdr.detectChanges();
 
 
+  }
+
+  loadLookupEntries(lookupId){
+    console.log(lookupId)
+    this.lookupService.getEntryList(lookupId,{})
+    .subscribe(res=>{
+      this.lookupEntries = res.content;
+      this.cdr.detectChanges();
+    })
   }
 
   imgclsMore:number=0;
@@ -1131,6 +1136,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   classifyText:string;
+  classifyWhat:string;
+  classifyLookupId:number;
   classifyRes:any={};
   classifyLoading:boolean;
   classifyError:any={};
@@ -1139,7 +1146,7 @@ export class CognaEditorComponent implements OnInit {
     this.classifyLoading = true;
     this.classifyError[cogna.id]=null;
     this.classifyRes[cogna.id] = {};
-    this.runService.cognaClassify(cogna.id,this.classifyText, true, this.user.email)
+    this.runService.cognaClassify(cogna.id,this.classifyText, true, this.classifyLookupId, this.classifyWhat??'Category', this.user.email)
     .subscribe({
       next:res=>{
         this.classifyLoading=false;

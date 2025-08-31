@@ -1563,11 +1563,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.extractData(field, field.x?.extractor, [], data[field.code], data, index);
       // }
     }
-    if (field.x?.txtcls) {
-      // if (!field.x?.stopWord || $event?.toLowerCase().includes(field.x?.stopWord?.toLowerCase())){
-      this.classifyData(field, field.x?.txtcls, field.x?.txtclsTarget, data[field.code], data, index);
-      // }
-    }
+    // if (field.x?.txtcls) {
+    //   // if (!field.x?.stopWord || $event?.toLowerCase().includes(field.x?.stopWord?.toLowerCase())){
+    //   this.classifyData(field, field.x?.txtcls, field.x?.txtclsTarget, data[field.code], data, index);
+    //   // }
+    // }
  
     this.rcognaSubject.next({code:field.code,value:$event});
   }
@@ -1626,22 +1626,22 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       });
   }
 
-  classifyLoading = signal<any>({})
-  classifyData(field, cognaId, targetField, text, data, index) {
-    this.classifyLoading.update(curr=>({...curr, [field.code]: true}));
-    this.runService.cognaClassify(cognaId, text, false, this.user().email)
-      .subscribe({
-        next: res => {
-          data[targetField] = res.data;
-          this._this[field.code] = { txtcls: res.data }
-          this.filterItems();
-          this.classifyLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
-        },
-        error: err => {
-          this.classifyLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
-        }
-      });
-  }
+  // classifyLoading = signal<any>({})
+  // classifyData(field, cognaId, targetField, text, data, index) {
+  //   this.classifyLoading.update(curr=>({...curr, [field.code]: true}));
+  //   this.runService.cognaClassify(cognaId, text, false, this.user().email)
+  //     .subscribe({
+  //       next: res => {
+  //         data[targetField] = res.data;
+  //         this._this[field.code] = { txtcls: res.data }
+  //         this.filterItems();
+  //         this.classifyLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
+  //       },
+  //       error: err => {
+  //         this.classifyLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
+  //       }
+  //     });
+  // }
 
   imgclsLoading = signal<any>({})
   imgclsVal: any = {}
