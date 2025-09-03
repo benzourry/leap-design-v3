@@ -4,7 +4,8 @@ import { DatePipe } from '@angular/common';
 
 @Pipe({
     name: 'groupBy',
-    standalone: true
+    standalone: true,
+    pure: true // ensures Angular caches results unless input changes
 })
 export class GroupByPipe implements PipeTransform {
 
@@ -16,13 +17,12 @@ export class GroupByPipe implements PipeTransform {
         return null;
     }
 
-    collection = collection.map((item, index) => {
-        item.__index = index;
-        return item;
-    })
+    // make immutable copy
+    const cloned = collection.map((item, index) => ({ ...item, __index: index }));
+
 
     if(!property || !enabled){
-        return [{key:'Ungroup',value:collection}];
+        return [{key:'Ungroup',value:cloned}];
     }
 
     let splitted = property.split(/[|:]/);
@@ -32,7 +32,7 @@ export class GroupByPipe implements PipeTransform {
 
     let groupedCollection:any={}
     if (splitted.length>1 && splitted[1]=='date'){
-        groupedCollection = collection.reduce((previous, current)=> {
+        groupedCollection = cloned.reduce((previous, current)=> {
             let v = this.datePipe.transform(byString(current,splitted[0]),splitted[2]);
             // if sort included
             if (sort){
@@ -48,7 +48,7 @@ export class GroupByPipe implements PipeTransform {
             return previous;
         }, {});  
     }else{
-        groupedCollection = collection.reduce((previous, current)=> {
+        groupedCollection = cloned.reduce((previous, current)=> {
             let v = byString(current,property);
             // if sort included
             if (sort){
