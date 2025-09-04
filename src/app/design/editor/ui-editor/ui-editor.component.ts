@@ -150,7 +150,6 @@ export class UiEditorComponent implements OnInit {
                             });
                     }
 
-
                 });
 
             this.appService.getAppMyList({

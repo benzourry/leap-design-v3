@@ -8,7 +8,7 @@ import { AppService } from '../../../../service/app.service';
 // import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgClass, NgStyle, KeyValuePipe } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, KeyValuePipe, JsonPipe } from '@angular/common';
 // import { HttpParams } from '@angular/common/http';
 import { DashboardService } from '../../../../service/dashboard.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -170,21 +170,17 @@ export class DashboardEditorComponent implements OnInit {
   }
 
   form: any = {};
-  editHolderForm: any = {}
-  loadForm(id, holder, chart) {
+  // editHolderForm: any = {}
+  editHolderFormSig = signal<any>({})
+  loadForm(id, holderSig, chart) {
     this.formService.getForm(id)
       .subscribe(res => {
+        holderSig.set({data:res, prev:res.prev})
 
-        holder['data'] = res;
-        holder['prev'] = res.prev;
+        this.sectionItems['data'] = this.getSectionItemsNew(holderSig().data, ['section', 'approval', 'list']);
+        this.sectionItems['prev'] = this.getSectionItemsNew(holderSig().prev, ['section', 'approval', 'list']);
 
-        this.sectionItems['data'] = this.getSectionItemsNew(holder['data'], ['section', 'approval', 'list']);
-        this.sectionItems['prev'] = this.getSectionItemsNew(holder['prev'], ['section', 'approval', 'list']);
-
-        // this.sectionItems['data'] = this.getSectionItemsNew(holder['data'],['section','approval']);
-        // this.sectionItems['prev'] = this.getSectionItemsNew(holder['prev'],['section','approval']);
-
-        this.statusFilterForm = this.convertStatusToDisplay(chart.statusFilter, holder);
+        this.statusFilterForm = this.convertStatusToDisplay(chart.statusFilter, holderSig());
 
         this.cdr.detectChanges(); // ✅ Good: after async update
       });
@@ -239,7 +235,7 @@ export class DashboardEditorComponent implements OnInit {
 
   getPrefix = (fm, section) => {
     var mapFm = { 'data': '$', 'prev': '$prev$', 'approval': '$$' };
-    var tier = this.getTierFromSection(section && section.id, this.editHolderForm[fm]);
+    var tier = this.getTierFromSection(section && section.id, this.editHolderFormSig()[fm]);
     if (section && section.type == 'approval') {
         if (tier) {
             return '$$.' + tier.id;
@@ -276,14 +272,14 @@ export class DashboardEditorComponent implements OnInit {
   }
 
 getFilterPath(fm, section,f){
-  return this.getPrefix(fm,section)+'.'+f.code+(this.editHolderForm[fm].items[f.code].subType=='multiple'?'*':'')+'.code';
+  return this.getPrefix(fm,section)+'.'+f.code+(this.editHolderFormSig()[fm].items[f.code].subType=='multiple'?'*':'')+'.code';
 }
 
 
 checkAllStatus(checked){
   this.statusFilterForm['-1'].drafted = checked;
   this.statusFilterForm['-1'].submitted = checked;
-  this.editHolderForm['data']?.tiers?.forEach(tier=>{
+  this.editHolderFormSig().data?.tiers?.forEach(tier=>{
     for (const action in tier.actions){
       this.statusFilterForm[tier.id][action] = checked;
     }
@@ -322,7 +318,7 @@ checkAllStatus(checked){
     this.editChartData = data;
 
     if (data.form) {
-      this.loadForm(data.form.id, this.editHolderForm, data);
+      this.loadForm(data.form.id, this.editHolderFormSig, data);
       this.getLookupIdList(data.form.id);
     }
 

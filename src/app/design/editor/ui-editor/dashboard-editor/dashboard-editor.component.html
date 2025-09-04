@@ -287,7 +287,7 @@
                   >
                   <label class="form-label">Select Form</label>
                   <select class="form-select" name="form" #cForm
-                    (change)="loadForm(editChartData.form.id, editHolderForm, editChartData)"
+                    (change)="loadForm(editChartData.form.id, editHolderFormSig(), editChartData)"
                     [compareWith]="compareByIdFn" [(ngModel)]="editChartData.form">
                     <option value="" disabled>Select model...</option>
                     @for (form of formList; track form.id) {
@@ -318,51 +318,27 @@
                         [(ngModel)]="editChartData.fieldCode" required>
                         <option value="" disabled>Select field...</option>
                         @for (fm of ['prev','data']; track fm) {
-                          @if (editHolderForm[fm]) {
-                            <optgroup [label]="editHolderForm[fm].title">
+                          @if (editHolderFormSig()[fm]) {
+                            <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
                               @for (s of sectionItems[fm]; track $index) {
-                                <!-- @if (s.tier!=null) {
                                   @for (f of s.items; track f.id) {
-                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code;
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="prefixedField">
-                                        {{editHolderForm[fm].items[f.code]?.label}} ^
-                                      </option>
-                                    } -->
-                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="'approval#'+ s.tier.id + '.' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
-                                        {{editHolderForm[fm].items[f.code]?.label}} ^
-                                      </option>
-                                    } -->
-                                  <!-- } -->
-                                <!-- } @else { -->
-                                  @for (f of s.items; track f.id) {
-                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderForm[fm].items[f.code]);
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                                    @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
                                       @if (true){
                                         <option
                                           [ngValue]="prefixedField">
-                                          {{editHolderForm[fm].items[f.code]?.label}}
+                                          {{editHolderFormSig()[fm].items[f.code]?.label}}
                                           @if(s.tier){^}
                                         </option>
                                       }
                                     }
-                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="fm+'#' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
-                                        {{editHolderForm[fm].items[f.code]?.label}}
-                                      </option>
-                                    } -->
                                   }
-                                <!-- } -->
                               }
                             </optgroup>
                           }
                         }
-                        @if (editHolderForm['data']?.tiers?.length>0) {
+                        @if (editHolderFormSig().data?.tiers?.length>0) {
                           <option value="$_.current_status"># Current Status</option>
                         }
                       </select>
@@ -375,49 +351,26 @@
                         [(ngModel)]="editChartData.fieldValue" required>
                         <option value="" disabled>Select field...</option>
                         @for (fm of ['prev','data']; track fm) {
-                          @if (editHolderForm[fm]) {
-                            <optgroup [label]="editHolderForm[fm].title">
+                          @if (editHolderFormSig()[fm]) {
+                            <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
                               @for (s of sectionItems[fm]; track $index) {
                                 <!-- @if (s.tier!=null) { -->
                                   @for (f of s.items; track f.id) {
-                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+ getPostfix(editHolderForm[fm].items[f.code]);
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+ getPostfix(editHolderFormSig()[fm].items[f.code]);
+                                    @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
                                       <option
                                         [ngValue]="prefixedField">
-                                        {{editHolderForm[fm].items[f.code]?.label}} 
+                                        {{editHolderFormSig()[fm].items[f.code]?.label}} 
                                         @if(s.tier){^}
                                       </option>
                                     }
-                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="'approval#'+ s.tier.id + '.' + f.code + (['select','radio'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?'.name':'')">
-                                        {{editHolderForm[fm].items[f.code]?.label}} ^
-                                      </option>
-                                    } -->
                                   }
-                                <!-- } @else {
-                                  @for (f of s.items; track f.id) {
-                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code;
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="prefixedField">
-                                        {{editHolderForm[fm].items[f.code]?.label}}
-                                      </option>
-                                    } -->
-                                    <!-- @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="fm+'#' + f.code + (['select','radio'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?'.name':'')">
-                                        {{editHolderForm[fm].items[f.code]?.label}}
-                                      </option>
-                                    } -->
-                                  <!-- } -->
-                                <!-- } -->
                               }
                             </optgroup>
                           }
                         }
-                        @if (editHolderForm['data']?.tiers?.length>0) {
+                        @if (editHolderFormSig().data?.tiers?.length>0) {
                           <option value="$_.current_status"># Current Status</option>
                         }
                       </select>
@@ -450,32 +403,22 @@
                         [(ngModel)]="editChartData.fieldSeries" required>
                         <option value="" disabled>Select field...</option>
                         @for (fm of ['prev','data']; track fm) {
-                          @if (editHolderForm[fm]) {
-                            <optgroup [label]="editHolderForm[fm].title">
+                          @if (editHolderFormSig()[fm]) {
+                            <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
                               @for (s of sectionItems[fm]; track $index) {
                                 <!-- @if (s.tier!=null) { -->
                                   @for (f of s.items; track f.id) {
-                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderForm[fm].items[f.code]);
+                                    @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
                                     {{f.type}}
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
+                                    @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
                                       <option
                                         [ngValue]="prefixedField">
-                                        {{editHolderForm[fm].items[f.code]?.label}}
+                                        {{editHolderFormSig()[fm].items[f.code]?.label}}
                                         @if(s.tier){^}
                                       </option>
                                     }
                                   }
-                                <!-- } @else { -->
-                                  <!-- @for (f of s.items; track f.id) {
-                                    @if (editHolderForm[fm].items[f.code]?.type!='static') {
-                                      <option
-                                        [ngValue]="fm+'#' + f.code + (['select','radio','modelPicker'].indexOf(editHolderForm[fm].items[f.code]?.type)>-1?(editHolderForm[fm].items[f.code]?.type=='modelPicker'?'.'+editHolderForm[fm].items[f.code]?.bindLabel:'.name'):'')">
-                                        {{editHolderForm[fm].items[f.code]?.label}}
-                                      </option>
-                                    }
-                                  } -->
-                                <!-- } -->
                               }
                             </optgroup>
                           }
@@ -630,7 +573,7 @@
                     <label class="form-check-label" for="submittedFilter11">Submitted</label>
                   </div>
                   <div>
-                    @for (tier of editHolderForm['data']?.tiers; track tier.id) {
+                    @for (tier of editHolderFormSig()['data']?.tiers; track tier.id) {
                       <div class="p-2">
                         <h6>{{tier.name}}</h6>
                         @for (action of tier.actions|keyvalue; track $index) {
@@ -720,7 +663,7 @@
             <ng-template ngbNavContent>
               <div class="single-pane">
                 <!-- {{editChartData.filters}} -->
-                <app-entry-filter [formHolder]="editHolderForm" [presetFilters]="editChartData.presetFilters"
+                <app-entry-filter [formHolder]="editHolderFormSig()" [presetFilters]="editChartData.presetFilters"
                   [(filters)]="editChartData.filters" [sectionItems]="sectionItems"
                 [lookup]="lookup"></app-entry-filter>
               </div>

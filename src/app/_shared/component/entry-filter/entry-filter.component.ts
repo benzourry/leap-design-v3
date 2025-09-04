@@ -4,6 +4,7 @@ import { FilterPipe } from '../../pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
+import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'app-entry-filter',
@@ -20,7 +21,7 @@ export class EntryFilterComponent {
 
   filters = model<any[]>([]);
 
-  formHolder = input<any>({})
+  formHolder = input<any>();
 
   sectionItems = input<any>({});
 

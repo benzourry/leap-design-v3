@@ -803,7 +803,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   mapList: any[];
   processForMap() {
     this.mapList = this.entryList()
-      .filter(e => e.data?.coord || (e.data?.[this.screen().data?.lat] && e.data?.[this.screen().data?.lng]))
+      .filter(e => e.data?.[this.screen().data?.coord] || (e.data?.[this.screen().data?.lat] && e.data?.[this.screen().data?.lng]))
       .map(e => {
         let longitude, latitude;
         if (!this.screen()?.data?.coord) {
