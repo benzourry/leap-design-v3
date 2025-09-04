@@ -191,8 +191,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
         this.entryService.getListByDataset(ds.id, param)
           .subscribe(res => {
-            this.entryList = res.content;
-            var events = this.entryList.filter(e => e.data[this.screen().data.start])
+            this.entryList.set(res.content);
+            var events = this.entryList().filter(e => e.data[this.screen().data.start])
               .map(e => {
                 // var acLink = ac ? this.buildGo(e.id)[ac.id] : `#${this.preurl}/form/${ds.form.id}/view?entryId=${e.id}`;
                 var eventObj: any = {
