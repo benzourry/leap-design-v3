@@ -765,9 +765,6 @@ export class ListComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
-
   _eval = (data, entry, v) => this._evalRun(entry, v, false);// new Function('$_', '$', '$prev$', `return ${v}`)(entry, data, entry && entry.prev);
 
   _evalRun = (entry, f, bulk) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$',
@@ -846,6 +843,7 @@ export class ListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroyed = true;
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
+    delete window['_this_' + this.scopeId()];
   }
 
   fclose(){

@@ -34,7 +34,7 @@ export const OAUTH = {
     FINAL_URI: full + "/#/",
     TOKEN_GET: "https://io.dev.ireka.my/token/get",
     PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0guMI71FGGK2CC0siIw?e=E0o5H5",
-    SIGNIN_OPT: ['unimas','unimasid'],
+    SIGNIN_OPT:['unimas','unimasid','google','azuread','facebook','github','linkedin','twitter','local'],
     COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
 }
 

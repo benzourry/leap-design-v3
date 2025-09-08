@@ -3,9 +3,12 @@
   <div class="d-flex flex-column wrapper-in">
     @if (error) {
       <div class="text-danger text-center my-3">
-        {{error.error}} {{error.message}}
+        {{error.error}} 
+        @if (error.message){
+          - {{error.message}}
+        }
         @if (useEmail) {
-          <div>Forgot password? <button type="button" class="p-0 px-1 btn-outline-secondary btn btn-sm"
+          <div class="mt-2">Forgot password? <button type="button" class="p-0 px-1 btn-outline-secondary btn btn-sm"
           (click)="reset(cred.email)">Reset Password</button></div>
         }
       </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, OnDestroy, signal, TemplateRef, ViewChild } from '@angular/core';
 import { FormService } from '../../../service/form.service';
 import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody } from '@ng-bootstrap/ng-bootstrap';
@@ -47,7 +47,7 @@ import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/
         EditFormComponent, CloneFormComponent, CloneDatasetComponent, CloneScreenComponent, EditDatasetComponent,
         EditDashboardComponent, CloneDashboardComponent, EditScreenComponent, FilterPipe, GroupByPipe]
 })
-export class UiEditorComponent implements OnInit {
+export class UiEditorComponent implements OnInit, OnDestroy {
 
 
     user: any;
@@ -704,6 +704,24 @@ export class UiEditorComponent implements OnInit {
         this.datasetList.set(datasetList);
         this.datasetService.saveDatasetOrder(datasetList)
         .subscribe();
+    }
+
+    ngOnDestroy() {
+        // Remove popstate listener
+        this.location.onPopState(null);
+
+        // Nullify ViewChild references
+        this.editFormTpl = null;
+        this.editDatasetTpl = null;
+        this.editDashboardTpl = null;
+        this.editScreenTpl = null;
+
+        // Reset signals
+        this.counts.set({});
+        this.datasetList.set([]);
+
+        // Optionally clear searchInApp map if needed
+        // this.appService.searchInApp.clear();
     }
 
 

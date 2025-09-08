@@ -1094,6 +1094,8 @@ export class ViewComponent implements OnInit, OnDestroy {
     Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i=> clearInterval(i));
     this.timeoutList.forEach(i=> clearTimeout(i));
+    delete window['_this_' + this.scopeId()];
+    this.elMap = {};
   }
 
 }

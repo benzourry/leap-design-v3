@@ -1589,13 +1589,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       // if (!field.x?.stopWord || $event?.toLowerCase().includes(field.x?.stopWord?.toLowerCase())){
       this.extractData(field, field.x?.extractor, [], data[field.code], data, index);
       // }
-    }
-    // if (field.x?.txtcls) {
-    //   // if (!field.x?.stopWord || $event?.toLowerCase().includes(field.x?.stopWord?.toLowerCase())){
-    //   this.classifyData(field, field.x?.txtcls, field.x?.txtclsTarget, data[field.code], data, index);
-    //   // }
-    // }
- 
+    } 
     this.rcognaSubject.next({code:field.code,value:$event});
   }
 
@@ -1751,5 +1745,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.timeoutList.forEach(i => clearTimeout(i));
     this.rcognaSubject.unsubscribe();
     this.valueUpdate.unsubscribe();
+
+    this.location.onPopState(null);
+    delete window['_this_' + this.scopeId()];
+    this.elMap = {};
   }
 }

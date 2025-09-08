@@ -213,8 +213,14 @@
                                     yet</span>
                                   }
                                 </div>
-                                <div>Account type: <fa-icon [icon]="provider[appUser.user.provider]"
-                                  [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}</div>
+                                <div>Account type: 
+                                  @if (appUser.user?.provider){
+                                    <fa-icon [icon]="provider[appUser.user.provider]"
+                                    [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
+                                  } @else {
+                                    <span class="text-muted">No provider specified</span> 
+                                  }
+                                  </div>
                               </div>
                               <div class="mt-1">
                                 @for (tag of appUser.tags; track $index) {
@@ -777,8 +783,14 @@
             @for (u of selectedUsersArray; track $index) {
               <div class="list-group-item">
                 {{u.user.name}}
-                <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
-                [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+                <div class="text-muted small">{{u.user.email}} - 
+                  @if (u.user?.provider){
+                    <fa-icon [icon]="provider[u.user.provider]"
+                    [fixedWidth]="true"></fa-icon> {{u.user.provider}}
+                  } @else {
+                    <span class="text-muted">No provider specified</span> 
+                  }              
+                </div>
               </div>
             }
           </div>
@@ -815,8 +827,16 @@
         @for (u of selectedUsersArray; track $index) {
           <div class="list-group-item">
             {{u.user.name}}
-            <div class="text-muted small">{{u.user.email}} - <fa-icon [icon]="provider[u.user.provider]"
-            [fixedWidth]="true"></fa-icon> {{u.user.provider}}</div>
+            <div class="text-muted small">{{u.user.email}} - 
+
+              @if (u.user?.provider){
+                <fa-icon [icon]="provider[u.user.provider]"
+                [fixedWidth]="true"></fa-icon> {{u.user.provider}}
+              } @else {
+                <span class="text-muted">No provider specified</span> 
+              }
+                          
+            </div>
           </div>
         }
       </div>
