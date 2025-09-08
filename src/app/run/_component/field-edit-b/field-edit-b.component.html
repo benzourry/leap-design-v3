@@ -389,12 +389,14 @@
         <div role="group">
           <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
           @for (i of lookupList(); track $index) {
-            <!-- <input type="radio" name="f-{{field().id}}-{{id()}}" #formField [value]="i"
-              [checked]="value.code === i.code" (change)=" value = i;valueChanged(i);" [required]="field()?.v?.required"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off" /> -->
-            <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
+            <input type="radio" name="f-{{field().id}}-{{id()}}" #formField [checked]="value?.code === i?.code" 
+              (change)="value=i;valueChanged(i);" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
+              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off" />
+
+            <!-- <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
               (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
+              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off"> -->
+
             <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}"
               [class.active]="value?.code === i?.code">
               @if (field()?.placeholder) {
@@ -411,12 +413,15 @@
         <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
         @for (c of lookupList(); track $index; let isLast = $last) {
           <div class="form-check mt-1" [class.form-check-inline]="field().x?.inline" [class.disabled]="field().readOnly">
-            <!-- <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
-              [checked]="value?.code === c?.code" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
-              (change)=" value = c;valueChanged(c);" /> -->
+            
             <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
+              [checked]="value?.code === c?.code" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+              (change)="value=c;valueChanged(c);" />
+
+            <!-- <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
               [(ngModel)]="value" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
-              (ngModelChange)="value = c;valueChanged(c);" />
+              (ngModelChange)="value = c;valueChanged(c);" /> -->
+
             <label class="form-check-label d-block" for="f-{{field().id}}-{{id()}}-{{c?.code}}">
               @if (field()?.placeholder) {
                 <div [innerHtml]="compileTpl(field().placeholder,{'$':c})|safe:'html'"></div>

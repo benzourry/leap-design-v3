@@ -1183,21 +1183,21 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   evalAll(data) {
     this.watchList.forEach((value, key) => {
-      data[key] = this.changeEval(data, value);
+      data[key] = this.changeEval(data, value, key);
     })
   }
 
   evalAllSection(data, section) {
     this.watchListSection[section.code]?.forEach((value, key) => {
-      data[key] = this.changeEval(data, value);
+      data[key] = this.changeEval(data, value, section?.code+"."+key);
     })
   }
 
-  changeEval(data, js) {
+  changeEval(data, js, key?) {
     let res = undefined;
     try {
       res = this._eval(data, js, this.form());
-    } catch (e) { this.logService.log(`{form-${this.form().title}-change}-${e}`) }
+    } catch (e) { this.logService.log(`{form-${this.form().id}:${key}-change}-${e}:${js}`) }
     return res;
   }
 
