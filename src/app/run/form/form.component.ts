@@ -1364,28 +1364,34 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   editChildData: any;
   editChildItems: any;
   editChild(content, section, data, isNew) {
+    console.log('editChildDataB4', data);
     this.editChildData = data;
     this.editChildItems = { section: section }
     // this.preItem[section.code]={}
 
     // $index perlu diset awal supaya dlm template bleh pass sbg index_child
-    this.editChildData['$index'] = this.entry.data[section.code] ? this.entry.data[section.code].length : 0;
+    if (!this.editChildData['$index']) {
+      this.editChildData['$index'] = this.entry.data[section.code] ? this.entry.data[section.code].length : 0;
+    }
 
     this.filterChildItems(data, section);
 
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {
+        // console.log('editChildDataAfter', res);
         /** Ada evaluated field main masok dlm child sebab evalAll(data) kt fieldChange */
         if (res) {
-          Object.assign(data, res); // why Object.assign? Adakah sebab mok mutate data?
-        }
-        if (isNew) {
-          if (!this.entry.data[section.code]) {
-            this.entry.data[section.code] = []
+          if (isNew) {
+            if (!this.entry.data[section.code]) {
+              this.entry.data[section.code] = []
+            }
+            // res['$index'] = this.entry.data[section.code].length;
+            this.entry.data[section.code].push(res);
+          }else{
+            const index = res.__index;
+            this.entry.data[section.code][index] = res;
           }
-          // res['$index'] = this.entry.data[section.code].length;
-          this.entry.data[section.code].push(res);
         }
         this.entryForm().form.markAsDirty();
         this.evalAll(this.entry.data);
