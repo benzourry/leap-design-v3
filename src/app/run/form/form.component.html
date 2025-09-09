@@ -558,7 +558,7 @@
                                             @let field = form()?.items[f.code];
                                             <!-- @if (form()?.items[f.code] && preCheckStr(form()?.items[f.code].pre,child)  && !((form().items[f.code]?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) { -->
                                             @if (field && preItem()[e.code]?.[$index_child]?.[f.code]  && !((field?.x?.facet?.[_action]||e.x?.facet?.[_action])=='none')) {
-                                              <ng-container *ngTemplateOutlet="fieldRender;context:{data:child, f:f, field:field, section:e, forceView: !e.inline, index: $index, index_child: $index_child}"></ng-container>
+                                              <ng-container *ngTemplateOutlet="fieldRender;context:{data:entry?.data[e.code]?.[child.__index], f:f, field:field, section:e, forceView: !e.inline, index: $index, index_child: $index_child}"></ng-container>
                                               <!-- REFERRED TO BY ABOVE -->
                                               <ng-template #fieldRender let-data="data" let-section="section" let-f="f"
                                                 let-field="field" let-forceView="forceView" let-index="index" let-index_child="index_child">
