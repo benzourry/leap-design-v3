@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -41,7 +41,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   imports: [PageTitleComponent, FormsModule, NgStyle, RouterLinkActive, 
     RouterLink, FaIconComponent, FilterPipe, DatePipe, IconSplitPipe]
 })
-export class TilesComponent implements OnInit {
+export class TilesComponent implements OnInit, OnDestroy {
 
   badge = signal<any>({});
   app = computed<any>(() => this.runService.$app());
@@ -171,6 +171,8 @@ export class TilesComponent implements OnInit {
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
   endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
 
-
+  ngOnDestroy(): void {    
+    delete window['_this_tiles'];
+  }
 
 }

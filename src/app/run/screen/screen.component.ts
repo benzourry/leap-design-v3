@@ -1058,6 +1058,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
 
+    delete window['_popup_' + this.scopeId()];
+    delete window['_this_' + this.scopeId()];
+
+    this.elMap = {};
+
     // Problem delete $popup and $this$ from global because this is delayed. 
     // It will delete the newly created $popup and $this$ when loading other screen.
     // console.log("delete $popup and $this$ from global")

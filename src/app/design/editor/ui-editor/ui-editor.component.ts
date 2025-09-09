@@ -199,16 +199,16 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
     }
 
-    datasetList = signal<any[]>([]);
+    datasetList: any[] =[];
     datasetGroupBy: string = null;
     getDatasetList() {
         this.datasetService.getDatasetList(this.app.id)
             .subscribe(res => {
-                this.datasetList.set(res);
+                this.datasetList = res;
                 // this.commService.emitChange({ key: 'dataset', value: res.length });
                 // this.counts['dataset'] = res.length;
                 this.counts.update(c=>({...c, dataset: res.length}));
-                this.datasetList().forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
+                this.datasetList.forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
             })
     }
@@ -687,6 +687,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     reorderScreen(event: CdkDragDrop<number[]>, parent){
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         let screenList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
+        this.screenList = [...parent];
         this.screenService.saveScreenOrder(screenList)
         .subscribe();
     }
@@ -694,6 +695,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     reorderDashboard(event: CdkDragDrop<number[]>, parent){
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         let dashboardList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
+        this.dashboardList = [...parent];
         this.dashboardService.saveDashboardOrder(dashboardList)
         .subscribe();
     }
@@ -701,7 +703,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     reorderDataset(event: CdkDragDrop<number[]>, parent){
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         let datasetList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
-        this.datasetList.set(datasetList);
+        this.datasetList = [...parent];
         this.datasetService.saveDatasetOrder(datasetList)
         .subscribe();
     }
@@ -718,7 +720,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
         // Reset signals
         this.counts.set({});
-        this.datasetList.set([]);
+        // this.datasetList.set([]);
 
         // Optionally clear searchInApp map if needed
         // this.appService.searchInApp.clear();

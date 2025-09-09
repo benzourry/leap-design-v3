@@ -69,9 +69,9 @@
                       }
                     <div ngbAccordionBody 
                       cdkDropList cdkDropListOrientation="vertical"
-                      (cdkDropListDropped)="reorderDataset($event, datasetList())">
+                      (cdkDropListDropped)="reorderDataset($event, datasetList)">
                       
-                      @for (dsKv of datasetList()|filter:searchText|groupBy:datasetGroupBy; track $index) {
+                      @for (dsKv of datasetList|filter:searchText|groupBy:datasetGroupBy; track $index) {
                         @if (datasetGroupBy){
                           <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
                         }
@@ -560,7 +560,7 @@
 <ng-template #editScreenTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
     <app-edit-screen [dismiss]="d" [close]="c" [screen]="editScreenData" [app]="app" [formList]="formList"
-        [datasetList]="datasetList()" [cognaList]="cognaList" [bucketList]="bucketList" [accessList]="accessList"></app-edit-screen>
+        [datasetList]="datasetList" [cognaList]="cognaList" [bucketList]="bucketList" [accessList]="accessList"></app-edit-screen>
   }@loading {
     <div class="text-center m-5">
       <div class="spinner-grow text-primary" role="status">

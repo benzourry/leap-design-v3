@@ -1364,7 +1364,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   editChildData: any;
   editChildItems: any;
   editChild(content, section, data, isNew) {
-    console.log('editChildDataB4', data);
+    // console.log('editChildDataB4', data);
     this.editChildData = data;
     this.editChildItems = { section: section }
     // this.preItem[section.code]={}

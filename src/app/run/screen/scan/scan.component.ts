@@ -143,6 +143,11 @@ export class ScanComponent implements OnInit, OnDestroy {
       this.switchTorch(false);
     }
     this.track.stop();
+
+    //destroy stream
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+    }
   }
 
   isTorch = signal<boolean>(false);

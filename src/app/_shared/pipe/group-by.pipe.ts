@@ -5,7 +5,7 @@ import { DatePipe } from '@angular/common';
 @Pipe({
     name: 'groupBy',
     standalone: true,
-    pure: true // ensures Angular caches results unless input changes
+    pure: false // check all groupBy usage before setting to true
 })
 export class GroupByPipe implements PipeTransform {
 
