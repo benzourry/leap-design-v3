@@ -88,6 +88,16 @@
                             <small
                             >{{item.url}}</small>
                           }
+
+                          @if (item.pre) {
+                            <div>
+                              <div class="mt-2"
+                                class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
+                                style="font-weight: bold;font-size:0.6em"
+                                [title]="item.pre">PRE</div>
+                            </div>
+                          }
+
                         </div>
                       </span>
                       <div class="element-edit mt-1 cursor-move bg-white text-info"

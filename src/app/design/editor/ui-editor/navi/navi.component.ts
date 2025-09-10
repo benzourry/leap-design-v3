@@ -1,4 +1,4 @@
-import { Component, effect, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { UserService } from '../../../../_shared/service/user.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -10,7 +10,6 @@ import { ToastService } from '../../../../_shared/service/toast-service';
 import { FormService } from '../../../../service/form.service';
 import { DatasetService } from '../../../../service/dataset.service';
 import { DashboardService } from '../../../../service/dashboard.service';
-import { HttpParams } from '@angular/common/http';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { ScreenService } from '../../../../service/screen.service';
 import { GroupService } from '../../../../service/group.service';
@@ -399,13 +398,16 @@ export class NaviComponent implements OnInit {
     this.modalService.open(content)
       .result.then(res => {
         this.appService.save(this.editNaviData, this.user.email)
-          .subscribe(res => {
+        .subscribe({
+          next: (res) => {
             this.getNavisAll(this.appId);
             this.toastService.show("Navi setting saved successfully", { classname: 'bg-success text-light' });
             this.cdr.detectChanges(); // <--- Add here
-          }, err => {
+          }, 
+          error: (err) => {
             this.toastService.show("Navi setting saving failed", { classname: 'bg-danger text-light' });
-          })
+          }
+        })
       }, err => {
         // this.toastService.show("Group saving failed", { classname: 'bg-danger text-light' });
       });

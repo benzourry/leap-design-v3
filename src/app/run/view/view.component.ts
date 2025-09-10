@@ -921,7 +921,8 @@ export class ViewComponent implements OnInit, OnDestroy {
                     data[f.code] = list;
                     this.fieldChange(fileList, data, f, section);
                     this.entryFiles.push(res.body.fileUrl);
-                  }
+                  }                  
+                  this.cdr.markForCheck();
                 })
             }).catch(function (err) {
               console.error(err);
@@ -942,6 +943,7 @@ export class ViewComponent implements OnInit, OnDestroy {
                   this.fieldChange(fileList, data, f, section);
                   this.entryFiles.push(res.body.fileUrl);
                 }
+                this.cdr.markForCheck();
               })
             // console.log("upload resized image")
           }).catch(function (err) {
@@ -968,7 +970,7 @@ export class ViewComponent implements OnInit, OnDestroy {
                   this.fieldChange(fileList, data, f, section);
                   this.entryFiles.push(res.body.fileUrl);
                 }
-
+                this.cdr.markForCheck();
               })
           }
         } else {
@@ -985,7 +987,8 @@ export class ViewComponent implements OnInit, OnDestroy {
                 data[f.code] = res.body.fileUrl;
                 this.fieldChange(fileList, data, f, section);
                 this.entryFiles.push(res.body.fileUrl);
-              }
+              }              
+              this.cdr.markForCheck();
             })
         }
 
