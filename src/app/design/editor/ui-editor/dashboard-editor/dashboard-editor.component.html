@@ -287,7 +287,7 @@
                   >
                   <label class="form-label">Select Form</label>
                   <select class="form-select" name="form" #cForm
-                    (change)="loadForm(editChartData.form.id, editHolderFormSig(), editChartData)"
+                    (change)="loadForm(editChartData.form.id, editHolderFormSig, editChartData)"
                     [compareWith]="compareByIdFn" [(ngModel)]="editChartData.form">
                     <option value="" disabled>Select model...</option>
                     @for (form of formList; track form.id) {
