@@ -2143,7 +2143,7 @@
         </div> -->
           @if(editToolData.params && editToolData.params.length>0){
             @for(p of editToolData.params; track $index){
-              @if (paramEdit[p.key]){
+              @if (paramEdit[$index]){
                 <div class="list-group-item p-3 bg-light">
                   <div class="mb-2">
                     <label class="form-label small">Parameter Key</label>
@@ -2163,7 +2163,7 @@
                         <label class="form-check-label" for="paramRequired">Required parameter</label>
                     </div>
                   </div>   
-                  <button class="btn btn-secondary btn-sm" (disabled)="!(p.key&&p.description)" (click)="paramEdit[p.key]=false">Save Parameter</button>
+                  <button class="btn btn-secondary btn-sm" (disabled)="!(p.key&&p.description)" (click)="paramEdit[$index]=false">Save Parameter</button>
                 </div>
               }@else {
                 <div class="list-group-item">                
@@ -2171,7 +2171,7 @@
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true" (click)="removeToolParam($index)">
                     </fa-icon>
                   </button>
-                  <button class="btn btn-sm float-end" (click)="paramEdit[p.key]=true">
+                  <button class="btn btn-sm float-end" (click)="paramEdit[$index]=true">
                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                     </fa-icon>
                   </button>
