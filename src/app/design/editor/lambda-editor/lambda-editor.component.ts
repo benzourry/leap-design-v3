@@ -461,7 +461,8 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   getPdfUrl() {
-    return this.lambda?.code ? base + '/~/' + this.lambda.code + '/pdf' : baseApi + '/lambda/' + this.lambda?.id + '/pdf'
+    let accessToken = this.userService.getToken();
+    return this.lambda?.code ? base + '/~/' + this.lambda.code + '/pdf?access_token='+accessToken : baseApi + '/lambda/' + this.lambda?.id + '/pdf?access_token='+accessToken
   }
 
   // streamRes:any;
