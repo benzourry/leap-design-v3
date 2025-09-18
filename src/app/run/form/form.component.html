@@ -21,7 +21,8 @@
         </div>
       </div>
     }@else {
-      @if (form() && (!formInactive() && isAuthorized() && !invalidFacet() && !editWithoutId())) {
+      <!-- ONLY DEACTIVATE FOR ADD NEW DATA -->
+      @if (form() && (!(formInactive() && ['add','prev'].includes(action())) && isAuthorized() && !invalidFacet() && !editWithoutId())) {
         @if (!form()?.hideStatus) {
           @if (entry?.id) {
             <div class="limit-width centered">
@@ -790,7 +791,8 @@
           }
         </ng-template>
       } @else {
-        @if (formInactive()) {
+        <!-- ONLY DEACTIVATE FOR ADD NEW DATA -->
+        @if (formInactive() && ['add','prev'].includes(action())) {
           <div class="detail text-muted">
             <h3>{{lang()=='ms'?'Borang tidak aktif':'Form inactive'}}</h3>
             <p>{{lang()=='ms'?'Borang cuma boleh diakses':'Form can only be accessed'}}
