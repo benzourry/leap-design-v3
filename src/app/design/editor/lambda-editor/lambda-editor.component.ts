@@ -253,6 +253,11 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_toEntry", type: "function", apply: "_toEntry(#{object})", detail: "Convert object to Entry" },
         );
       }
+      if (b.type == '_jsoup') {
+        this.extraAutoComplete.push(
+          { label: "_jsoup.connect", type: "function", apply: "_jsoup.connect('#{url}').get()", detail: "Fetch data from URL and get Document object" }
+        );
+      }
       if (b.type == '_user') {
         this.extraAutoComplete.push(
           { label: "_user.name", type: "property", apply: "_user.name", detail: "Name of logged in user" },
@@ -531,6 +536,7 @@ export class LambdaEditorComponent implements OnInit {
     this.bindingSrcs.push({ name: "⚙ Endpoint", type: '_endpoint' })
     this.bindingSrcs.push({ name: "⚙ User", type: '_user' })
     this.bindingSrcs.push({ name: "⚙ Mapper", type: '_mapper' })
+    this.bindingSrcs.push({ name: "⚙ Jsoup", type: '_jsoup' })
     this.bindingSrcs.push({ name: "⚙ Token", type: '_token' })
     this.bindingSrcs.push({ name: "⚙ SQL", type: '_sql' })
     this.bindingSrcs.push({ name: "⚙ IO/File", type: '_io' })
