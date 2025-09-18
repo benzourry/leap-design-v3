@@ -255,8 +255,8 @@ export class LambdaEditorComponent implements OnInit {
       }
       if (b.type == '_jsoup') {
         this.extraAutoComplete.push(
-          { label: "_jsoup.connect", type: "function", apply: "_jsoup.connect('#{url}').get()", detail: "Fetch data from URL and get Document object" }
-          { label: "_jsoup.parse", type: "function", apply: "_jsoup.parse(`#{html}`)", detail: "Parse document from HTML text" }
+          { label: "_jsoup.connect", type: "function", apply: "_jsoup.connect('#{url}').get()", detail: "Fetch data from URL and get Document object" },
+          { label: "_jsoup.parse", type: "function", apply: "_jsoup.parse(`#{html}`)", detail: "Parse document from HTML text" },
           { label: "_jsoup.parseBodyFragment", type: "function", apply: "_jsoup.parseBodyFragment(`#{html-fragment}`)", detail: "Parse document from HTML fragment text" }
         );
       }
