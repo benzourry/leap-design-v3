@@ -432,6 +432,13 @@
                                       <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                       {{ac.label}}
                                     </button>
+                                  }@else if (ac.action=='extend') {
+                                    <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
+                                      [ngClass]="ac.style" [class.disabled]="offline()"
+                                      (click)="runAction('/form/'+ac.next+'/edit',ac.inpop,inPopTpl,i.id,ac.next,'form','edit',_eval(i.data, i, ac.params))">
+                                      <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                      {{ac.label}}
+                                    </button>                                
                                   }@else if (ac.action=='facet') {
                                     <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap"
                                       [ngClass]="ac.style" [class.disabled]="offline()"

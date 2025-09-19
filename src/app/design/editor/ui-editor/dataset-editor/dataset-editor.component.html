@@ -661,6 +661,7 @@
                     <option value="approve">Approve Entry</option>
                     <option value="screen">Open in Screen</option>
                     <option value="facet">Open in Facet</option>
+                    <option value="extend">Open in Extended Form</option>
                     <option value="prev">Next Form</option>
                     <option value="edit-single">Edit Single</option>
                     <option value="view-single">View Single</option>
@@ -754,6 +755,20 @@
                   </select>
                 </div>
               }
+              
+              @if (['extend'].indexOf(editActionData.action)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Next form *</label>
+                  <select class="form-select" name="next"
+                    [(ngModel)]="editActionData.next" required>
+                    <option value="" disabled>Select sub form...</option>
+                    @for (item of subFormList; track item.id) {
+                      <option [value]="item.id">{{item.title}}
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
               @if (['url'].indexOf(editActionData.action)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">URL</label>
@@ -792,7 +807,7 @@
                   </div>
                 </div>
               }
-              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','prev-prev','route','url'].includes(editActionData.action)) {
+              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','extend','prev','prev-prev','route','url'].includes(editActionData.action)) {
                 <div class="form-check form-switch mb-1"
                   >
                   <input class="form-check-input" type="checkbox" id="inpop"

@@ -85,6 +85,7 @@ export class DatasetEditorComponent implements OnInit {
     dsError: any;
     datasetList: any[];
     formList: any[];
+    subFormList: any[];
     offline: boolean;
     appId: number;
     datasetLoading: boolean;
@@ -164,6 +165,7 @@ export class DatasetEditorComponent implements OnInit {
             next: (res) => {
                 this.form = {};
                 this.curDataset = res;
+                this.initSubForm();
                 this.editDatasetData = res;
                 this.datasetLoading = false;
                 if (this.curDataset.form) {
@@ -376,8 +378,15 @@ export class DatasetEditorComponent implements OnInit {
         this.formService.getListBasic({appId})
             .subscribe(res => {
                 this.formList = res.content;
+                this.initSubForm();
                 this.cdr.detectChanges(); // <--- Add here
             });
+    }
+
+    initSubForm(){
+        if (this.formList?.length>0 && this.curDataset?.form){
+            this.subFormList = this.formList.filter(f=>f.x?.extended == this.curDataset.form.id);
+        }
     }
 
 
