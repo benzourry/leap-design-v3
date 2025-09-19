@@ -200,31 +200,59 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     @if (['file'].indexOf(field()?.type)>-1) {
       <span>
         @if (field().subType=='image') {
-          <a class="thumbnail" [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
-            <img loading="lazy" [src]="getUrl('/entry/file/inline/',value())|secure|async" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-          </a>
-        }
-        @if (field().subType=='imagemulti') {
+          @if (field().x?.secure){
+            <a class="thumbnail" [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
+              <img loading="lazy" [src]="getUrl('/entry/file/inline/',value())|secure|async" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+            </a>
+          }@else{
+            <a class="thumbnail" [href]="getUrl('/entry/file/inline/',value())" target="_blank">
+              <img loading="lazy" [src]="getUrl('/entry/file/inline/',value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+            </a>
+          }
+        }@else if (field().subType=='imagemulti') {
           <div class="img-grid-cont">
+            @if (field().x?.secure){
             @for (vf of value(); track $index) {
               <a class="img-grid-item" [href]="getUrl('/entry/file/',vf)|secure|async" target="_blank">
                 <img loading="lazy" [src]="getUrl('/entry/file/inline/',vf)|secure|async" onError="this.src='./assets/img/placeholder-128.png'">
               </a>
             }
-          </div>
-        }
-        @if (field().subType=='other'||!field().subType) {
-          <a [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
-            {{value()}}
-          </a>
-        }
-        @if (field().subType=='othermulti') {
-          @for (vf of value(); track $index) {
-            <div>
-              <a [href]="getUrl('/entry/file/',vf)|secure|async" target="_blank">
-                {{vf}}
+          }@else{
+            @for (vf of value(); track $index) {
+              <a class="img-grid-item" [href]="getUrl('/entry/file/inline/',vf)" target="_blank">
+                <img loading="lazy" [src]="getUrl('/entry/file/inline/',vf)" onError="this.src='./assets/img/placeholder-128.png'">
               </a>
-            </div>
+            }
+          }
+          </div>
+        }@else if (field().subType=='other'||!field().subType) {
+          @if (field().x?.secure){
+            <a [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
+              {{value()}}
+            </a>
+          }@else {
+            <a [href]="getUrl('/entry/file/inline/',value())" target="_blank">
+              {{value()}}
+            </a>
+          }
+          
+        }@else if (field().subType=='othermulti') {
+          @if (field().x?.secure){
+            @for (vf of value(); track $index) {
+              <div>
+                <a [href]="getUrl('/entry/file/',vf)|secure|async" target="_blank">
+                  {{vf}}
+                </a>
+              </div>
+            }
+          }@else {
+            @for (vf of value(); track $index) {
+              <div>
+                <a [href]="getUrl('/entry/file/inline/',vf)" target="_blank">
+                  {{vf}}
+                </a>
+              </div>
+            }
           }
         }
       </span>

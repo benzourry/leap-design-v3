@@ -1753,7 +1753,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.valueUpdate.unsubscribe();
 
     this.location.onPopState(null);
-    delete window['_this_' + this.scopeId()];
+    // delete window['_this_' + this.scopeId()];
     this.elMap = {};
   }
 }
