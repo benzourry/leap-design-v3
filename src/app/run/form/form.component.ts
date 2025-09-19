@@ -866,7 +866,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               next: res => {
                 if (this.form().onSubmit) {
                   try {
-                    this._eval(this.entry.data, this.form().onSubmit, this.form());
+                    this.onSubmit();
+                    // this._eval(this.entry.data, this.form().onSubmit, this.form());
                   } catch (e) { this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`) }
                 }
                 this.toastService.show(this.lang()=='ms'?"Entry berjaya dihantar":"Entry submitted successfully", { classname: 'bg-success text-light' });
@@ -1096,7 +1097,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.cdr.detectChanges();
           if (this.form().onSave) {
             try {
-              this._eval(this.entry.data, this.form().onSave, this.form());
+              // this._eval(this.entry.data, this.form().onSave, this.form());
+              this.onSave();
+              // this.initForm(this.form().onSave, this.entry.data, this.form())()
             } catch (e) { this.logService.log(`{form-${this.form().title}-onSave}-${e}`) }
           }
           // this.router.navigate(["run", this.form().app.id, "form", this.form().id, "view", this.entry.id]);

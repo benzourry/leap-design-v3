@@ -1102,4 +1102,3 @@ export class ViewComponent implements OnInit, OnDestroy {
   }
 
 }
-
