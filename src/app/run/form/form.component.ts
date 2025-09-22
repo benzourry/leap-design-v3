@@ -93,7 +93,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   hideGroup = signal<any>({});
   pageSize = 15;
   accessToken = computed<string>(()=>this.userService.getToken());
-  entry:any = createProxy({ currentStatus: 'drafted', data: {}},() => this.cdr.markForCheck());
+  // data = createProxy({}, (prop, value) => {this.rcognaSubject.next({code:prop,value:}); this.cdr.markForCheck()});
+  entry:any = { currentStatus: 'drafted', data: {}};
   lookup:any = {};
   saving = signal<boolean>(false);
   submitting = signal<boolean>(false);
@@ -196,7 +197,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.rcognaSubject.pipe(
         debounceTime(700), // Wait 700ms after the last keystroke
         distinctUntilChanged((prev,curr)=>prev.value==curr.value) // Only emit if the value has changed
-      ).subscribe((obj:any) => this.classifyField(obj.code));
+      ).subscribe((obj:any) => this.runFieldCogna(obj.code));
   }
 
   dsChanged(ev, fieldCode) {
@@ -340,7 +341,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   private rcognaLoading = signal<any>({});
   private rcognaSubject = new Subject<any>();
-  classifyField(code) {
+  /**runFieldCogna(code) {
     const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.sources?.includes(code));
     list.forEach(key => {
       var item = this.form().items[key];
@@ -351,7 +352,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           next:res=>{
             this.reactiveCognaList[key].data[key] = res.data;
             // this.entry.data[key] = res.data;
-            this.cdr.detectChanges();
+            // this.cdr.detectChanges();
+            this.$digest$();
             this.rcognaLoading.update(l=>({...l,[key]: false}));
           },
           error:err=>{
@@ -366,7 +368,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           next:res=>{
             // this.entry.data[key] = res.data;
             this.reactiveCognaList[key].data[key] = res.data;
-            this.cdr.detectChanges();
+            // this.cdr.detectChanges();
+            this.$digest$();
             this.rcognaLoading.update(l=>({...l,[key]: false}));
           },
           error:err=>{
@@ -381,7 +384,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           next:res=>{
             // this.entry.data[key] = res.data;
             this.reactiveCognaList[key].data[key] = res.data;
-            this.cdr.detectChanges();
+            // this.cdr.detectChanges();
+            this.$digest$();
             this.rcognaLoading.update(l=>({...l,[key]: false}));
           },
           error:err=>{
@@ -390,6 +394,47 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         });        
       }
     });
+  }**/
+
+  runFieldCogna(code: string): void {
+    const list = Object.keys(this.reactiveCognaList)
+      .filter(key => this.reactiveCognaList[key]?.sources?.includes(code));
+
+    const handleCognaResponse = (key: string, res: { data: unknown }) => {
+      this.reactiveCognaList[key].data[key] = res.data;
+      this.$digest$();
+      this.rcognaLoading.update(l => ({ ...l, [key]: false }));
+    };
+
+    const handleCognaError = (key: string) => {
+      this.rcognaLoading.update(l => ({ ...l, [key]: false }));
+    };
+
+    for (const key of list) {
+      const item = this.form().items[key];
+      const tpl = this.compileTpl(item.x?.rcognaTpl, {});
+      const email = this.user().email;
+
+      const runCogna = (
+        obs$: Observable<{ data: unknown }>
+      ) => {
+        this.rcognaLoading.update(l => ({ ...l, [key]: true }));
+        obs$.subscribe({
+          next: res => handleCognaResponse(key, res),
+          error: () => handleCognaError(key)
+        });
+      };
+
+      if (item.x?.rtxtcls) {
+        runCogna(this.runService.cognaClassifyField(item.id, tpl, false, email));
+      }
+      if (item.x?.rtxtgen) {
+        runCogna(this.runService.cognaTxtGenField(item.id, tpl, item.x?.rtxtgenMode, false, email));
+      }
+      if (item.x?.rimggen) {
+        runCogna(this.runService.cognaImgGenField(item.id, tpl, false, email));
+      }
+    }
   }
 
   unAuthorizedMsg = computed<string>(() => {
@@ -1722,6 +1767,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   reorder(items, index, op) {
     items[index + op].altClass = 'swapStart';
     items[index].altClass = 'swapStart';
+    this.$digest$();
 
     items.forEach((i, $index) => {
       i.sortOrder = $index;
@@ -1738,10 +1784,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     setTimeout(() => {
       items[index + op].altClass = 'swapEnd';
       items[index].altClass = 'swapEnd';
-      this.cdr.detectChanges();
+      // this.cdr.detectChanges();
+      this.$digest$();
     }, 500);
-    
-    this.$digest$();
   }
 
   canDeactivate() {
