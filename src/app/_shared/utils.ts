@@ -265,12 +265,18 @@ function r$val(m: string, p1: string): string {
         break;
       case 'imgSrc':
       case 'src': {
+        let pre = '";if('+parts[0]+'){output+="';
         const type = parts[2] ? `${parts[2]}/` : "";
-        aVal = baseApi + '/entry/file/' + type + key(parts[0], 'encodeURI');
+        let mid = baseApi + '/entry/file/' + type + key(parts[0], 'encodeURI');
+        let post = '";}output+="';
+        aVal = pre + mid + post;
         break;
       }
       case 'qr':
-        aVal = baseApi + '/form/qr?code=' + key(parts[0], 'encodeURIComponent');
+        let pre = '";if('+parts[0]+'){output+="';
+        let mid = baseApi + '/form/qr?code=' + key(parts[0], 'encodeURIComponent');
+        let post = '";}output+="';
+        aVal = pre + mid + post;
         break;
       case 'json':
         aVal = key(`JSON.stringify(${parts[0]})`);

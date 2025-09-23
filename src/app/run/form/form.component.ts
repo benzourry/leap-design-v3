@@ -360,19 +360,23 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   runCognaField(fieldCode){
-    const handleCognaResponse = (key: string, res: { data: unknown }) => {
-      this.reactiveCognaList[key].data[key] = res.data;
-      this.$digest$();
+    const item = this.form().items[fieldCode];
+    const tpl = this.compileTpl(item.x?.rcognaTpl, {});
+    const email = this.user().email;
 
+    const handleCognaResponse = (key: string, res: { data: unknown }) => {
+      if (item.x?.rtxtgenMode=='summarize'){
+        this.reactiveCognaList[key].data[key] = (res.data as []).join('\n');
+      }else{
+        this.reactiveCognaList[key].data[key] = res.data;
+      }      
+      this.$digest$();
       this.rcognaLoading.update(l => ({ ...l, [key]: false }));
     };
 
     const handleCognaError = (key: string) => {
       this.rcognaLoading.update(l => ({ ...l, [key]: false }));
     };
-    const item = this.form().items[fieldCode];
-    const tpl = this.compileTpl(item.x?.rcognaTpl, {});
-    const email = this.user().email;
 
     const runCogna = (
       obs$: Observable<{ data: unknown }>
@@ -459,55 +463,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
     return hasGroupAccess || isApprover || isOwner || passesCondition || isAddNoGroup || isSingleForm;
   };
-  // userUnauthorized by default is false
-  // checkAuthorized = (form, user, entry) => {
-  //   if (form?.x?.restrictAccess) {
-  //     let groupAuthorized = false;
-  //     let approverAuthorized = false;
-  //     // let isAdd = false;
-  //     let userAuthorized = false;
-  //     let condAuthorized = false;
-  //     let formSingle = false;
-
-  //     let intercept = form.accessList?.filter(v => Object.keys(user.groups||{}).includes(v + ""));
-  //     if (intercept.length > 0) {
-  //       // this.form().accessList?.length == 0 || 
-  //       // && !this.app?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
-  //       groupAuthorized = true;
-  //     } 
-  //     // else {
-  //     //   this.unAuthorizedMsg = this.app()?.x?.lang == 'ms' ? "Anda tidak mempunyai akses kepada borang ini" : "You are not authorized to access this form";
-  //     // }
-  //     // mn set restrict access + user + approver, time add request knak restrict sbb group x set yg allowed
-  //     // so, condition nya always false.
-  //     // tp mn include isAdd, bila da set group, nya always allow on on.
-  //     // mn tambah condition (isAdd && this.form().accessList?.length==0)?
-  //     let isAddNoGroup = ['add', 'prev'].includes(this._action) && this.form().accessList?.length == 0;
-
-  //     if (entry?.id) {
-  //       if (form.x?.accessByApprover) {
-  //         let authorizer = Object.values(entry.approver).join(",")
-  //         approverAuthorized = authorizer.includes(user.email)
-  //       }
-  //       if (form.x?.accessByUser) {
-  //         userAuthorized = entry.email == user.email
-  //       }
-  //       if (form.x?.accessByCond) {
-  //         condAuthorized = this.preCheckStr(form.x?.accessByCond, entry);
-  //       }
-  //       // if (!(approverAuthorized || userAuthorized || condAuthorized)) {
-  //       //   this.unAuthorizedMsg = this.app()?.x?.lang == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information" ;
-  //       // }
-  //     } else {
-  //       formSingle = form.single;
-  //     }
-
-  //     // console.log("user", userAuthorized,"approver", approverAuthorized,"group", groupAuthorized,"cond",condAuthorized, "isAddNoGroup", isAddNoGroup,"formSingle", formSingle)
-  //     return groupAuthorized || approverAuthorized || userAuthorized || condAuthorized || isAddNoGroup || formSingle;
-  //   } else {
-  //     return true;
-  //   }
-  // }
 
   getLookupIdList(id) {
     this.lookupService.getInForm(id, ['section', 'list'])
