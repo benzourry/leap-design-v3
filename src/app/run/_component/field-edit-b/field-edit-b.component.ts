@@ -357,10 +357,6 @@ export class FieldEditComponent extends ElementBase<any> {
   private previousEmitted: any;
 
   valueChanged(next: any) {
-    // console.log(event)
-    // console.log("event",event);
-    // perlu x tok???
-    // console.log("valueChanged---", next)
     if (!deepEqual(next, this.previousEmitted)|| this.field()?.type=='btn') {
       this.previousEmitted = next;
 
@@ -372,7 +368,6 @@ export class FieldEditComponent extends ElementBase<any> {
         d.setFullYear(h.getFullYear());
         this.value = d.getTime();
       }
-
       this.valueChange.emit(next);
     }
   }
@@ -536,7 +531,9 @@ export class FieldEditComponent extends ElementBase<any> {
           }
         });
       }
-    }
+    }else{ // if value provided
+      this.valueChanged(value); // need to emit changes, if set programmatically
+    }    
     // Otherwise, set the provided value
     super.writeValue(value);
   }

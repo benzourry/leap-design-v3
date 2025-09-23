@@ -176,8 +176,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.valueUpdate
       .pipe(debounceTime(150))
       .subscribe((obj: any) => {
-        // Call your search function here
-        // console.log("valueUpdate")
         this.fieldChange(obj.event, obj.data, obj.field, obj.section);
       });
   }
@@ -195,9 +193,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.entry.email= this.user()?.email;
 
     this.rcognaSubject.pipe(
-        debounceTime(700), // Wait 700ms after the last keystroke
+        debounceTime(1000), // Wait 700ms after the last keystroke
         distinctUntilChanged((prev,curr)=>prev.value==curr.value) // Only emit if the value has changed
-      ).subscribe((obj:any) => this.runFieldCogna(obj.code));
+      ).subscribe((obj:any) => this.triggerDependentCognaFields(obj.code));
   }
 
   dsChanged(ev, fieldCode) {
@@ -266,7 +264,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
           if (action == 'edit') {
             if (entryId || !this.isEmpty(this._param || {})) {
-              // console.log("///////////")
               this.getData(entryId, form);
             } else {
               if (form.single) {
@@ -295,7 +292,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.invalidFacet.set(true);
             this.invalidFacetKey.set(action);
           }
-
+          
           // make sure order of eval field is followed
           form.sections.forEach(s => {
             if (['section'].indexOf(s.type) > -1) { // watch for section eval. previously section+approval
@@ -317,8 +314,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   this.watchListSection[s.code].set(item.code, field.f)
                 }
                 if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                    let extracted = extractVariables(["$"],field.x?.rcognaTpl)
-                    this.reactiveCognaList[item.code] = {sources:extracted?.["$"], data: this.entry?.data?.[s.code]};
+                    let extracted:any = extractVariables(["$"],field.x?.rcognaTpl)
+                    this.reactiveCognaList[item.code] = {sources:extracted?.$, data: this.entry?.data?.[s.code]};
                 }
               });
             }
@@ -331,6 +328,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // perlu engkah lepas filterTabs(); Tp knak nya run twice??!!
           this.tabPostAction(this._navIndex());
 
+          this.runAllCognaField();
+
         },
         error: err => {
           this.logService.log(`Error fetching form: ${err.message}`);
@@ -341,99 +340,55 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   private rcognaLoading = signal<any>({});
   private rcognaSubject = new Subject<any>();
-  /**runFieldCogna(code) {
-    const list = Object.keys(this.reactiveCognaList).filter(key => this.reactiveCognaList[key]?.sources?.includes(code));
-    list.forEach(key => {
-      var item = this.form().items[key];
-      if (item.x?.rtxtcls){
-        this.rcognaLoading.update(l=>({...l,[key]: true}));
-        this.runService.cognaClassifyField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), false, this.user().email)
-        .subscribe({
-          next:res=>{
-            this.reactiveCognaList[key].data[key] = res.data;
-            // this.entry.data[key] = res.data;
-            // this.cdr.detectChanges();
-            this.$digest$();
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          },
-          error:err=>{
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          }
-        });        
-      }
-      if (item.x?.rtxtgen){
-        this.rcognaLoading.update(l=>({...l,[key]: true}));
-        this.runService.cognaTxtGenField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), item.x?.rtxtgenMode, false, this.user().email)
-        .subscribe({
-          next:res=>{
-            // this.entry.data[key] = res.data;
-            this.reactiveCognaList[key].data[key] = res.data;
-            // this.cdr.detectChanges();
-            this.$digest$();
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          },
-          error:err=>{
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          }
-        });        
-      }
-      if (item.x?.rimggen){
-        this.rcognaLoading.update(l=>({...l,[key]: true}));
-        this.runService.cognaImgGenField(item.id, this.compileTpl(item.x?.rcognaTpl,{}), false, this.user().email)
-        .subscribe({
-          next:res=>{
-            // this.entry.data[key] = res.data;
-            this.reactiveCognaList[key].data[key] = res.data;
-            // this.cdr.detectChanges();
-            this.$digest$();
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          },
-          error:err=>{
-            this.rcognaLoading.update(l=>({...l,[key]: false}));
-          }
-        });        
-      }
-    });
-  }**/
 
-  runFieldCogna(code: string): void {
+  runAllCognaField(): void {
+    // console.log("runAllFieldCogna", this.reactiveCognaList);
+    Object.keys(this.reactiveCognaList).forEach(key => {
+      this.runCognaField(key);
+    })
+  }
+
+  triggerDependentCognaFields(code: string): void {
     const list = Object.keys(this.reactiveCognaList)
       .filter(key => this.reactiveCognaList[key]?.sources?.includes(code));
+    for (const key of list) {
+      this.runCognaField(key);
+    }
+  }
 
+  runCognaField(fieldCode){
     const handleCognaResponse = (key: string, res: { data: unknown }) => {
       this.reactiveCognaList[key].data[key] = res.data;
       this.$digest$();
+
       this.rcognaLoading.update(l => ({ ...l, [key]: false }));
     };
 
     const handleCognaError = (key: string) => {
       this.rcognaLoading.update(l => ({ ...l, [key]: false }));
     };
+    const item = this.form().items[fieldCode];
+    const tpl = this.compileTpl(item.x?.rcognaTpl, {});
+    const email = this.user().email;
 
-    for (const key of list) {
-      const item = this.form().items[key];
-      const tpl = this.compileTpl(item.x?.rcognaTpl, {});
-      const email = this.user().email;
+    const runCogna = (
+      obs$: Observable<{ data: unknown }>
+    ) => {
+      this.rcognaLoading.update(l => ({ ...l, [fieldCode]: true }));
+      obs$.subscribe({
+        next: res => handleCognaResponse(fieldCode, res),
+        error: () => handleCognaError(fieldCode)
+      });
+    };
 
-      const runCogna = (
-        obs$: Observable<{ data: unknown }>
-      ) => {
-        this.rcognaLoading.update(l => ({ ...l, [key]: true }));
-        obs$.subscribe({
-          next: res => handleCognaResponse(key, res),
-          error: () => handleCognaError(key)
-        });
-      };
-
-      if (item.x?.rtxtcls) {
-        runCogna(this.runService.cognaClassifyField(item.id, tpl, false, email));
-      }
-      if (item.x?.rtxtgen) {
-        runCogna(this.runService.cognaTxtGenField(item.id, tpl, item.x?.rtxtgenMode, false, email));
-      }
-      if (item.x?.rimggen) {
-        runCogna(this.runService.cognaImgGenField(item.id, tpl, false, email));
-      }
+    if (item.x?.rtxtcls) {
+      runCogna(this.runService.cognaClassifyField(item.id, tpl, false, email));
+    }
+    if (item.x?.rtxtgen) {
+      runCogna(this.runService.cognaTxtGenField(item.id, tpl, item.x?.rtxtgenMode, false, email));
+    }
+    if (item.x?.rimggen) {
+      runCogna(this.runService.cognaImgGenField(item.id, tpl, false, email));
     }
   }
 
@@ -893,6 +848,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // console.log("fieldChange");
     this.filterItems(); // PENYEBAB!!
 
+    // this.triggerDependentCognaFields(field.code);
+    this.rcognaSubject.next({code:field.code,value:$event});
+
     this.cdr.detectChanges();
   }
 
@@ -987,8 +945,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.loading.set(true);
 
     const handleResponse = (res: any): void => {
-      // console.log("## LOADED ENTRY", id, res.id);
-      // this.entry.set(res);
       this.entry = res;
       this.getDataFiles('data', res.id);
       this.evalAll(this.entry.data);
@@ -1644,7 +1600,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.extractData(field, field.x?.extractor, [], data[field.code], data, index);
       // }
     } 
-    this.rcognaSubject.next({code:field.code,value:$event});
+    // this.rcognaSubject.next({code:field.code,value:$event});
   }
 
   editLookupItem: any = {};
