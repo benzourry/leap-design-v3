@@ -342,8 +342,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   private rcognaSubject = new Subject<any>();
 
   runAllCognaField(): void {
-    // console.log("runAllFieldCogna", this.reactiveCognaList);
-    Object.keys(this.reactiveCognaList).forEach(key => {
+    // only run cogna field if dependent fields have value
+    const filtered = Object.keys(this.reactiveCognaList).filter(key =>
+      this.reactiveCognaList[key].sources.some(source => this.entry.data[source] !== null && this.entry.data[source] !== undefined)
+    );
+    filtered.forEach(key => {
       this.runCognaField(key);
     })
   }
