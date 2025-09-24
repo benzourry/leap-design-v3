@@ -532,7 +532,11 @@ export class FieldEditComponent extends ElementBase<any> {
         });
       }
     }else{ // if value provided
-      this.valueChanged(value); // need to emit changes, if set programmatically
+      if (this.field().type != 'eval') { // if eval, then do not emit valueChanged, because it will cause loop esp when value always change ie Date.now()
+        queueMicrotask(() => {
+          this.valueChanged(value); // need to emit changes, if set programmatically
+        })
+      }
     }    
     // Otherwise, set the provided value
     super.writeValue(value);
