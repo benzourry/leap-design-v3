@@ -174,22 +174,43 @@ export class ScreenComponent implements OnInit, OnDestroy {
       plugins: [dayGridPlugin, timeGridPlugin],
       events: (function (info, success, failure) {
         var ds = this.screen().dataset;
-        var param = { email: this.user().email, size: 999 };
-        var filter = {};
+
+        let filtersAll: any = {};
+
+        var calFilter = {};
         if (this.screen().data.start) {
-          filter['$.' + this.screen().data.start + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
+          calFilter['$.' + this.screen().data.start + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
         }
         if (this.screen().data.end) {
-          filter['$.' + this.screen().data.end + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
+          calFilter['$.' + this.screen().data.end + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
         }
-        filter = deepMerge(filter, this.param())
-        param['filters'] = JSON.stringify(filter);
-        param['@cond'] = "OR";
-        param['searchText'] = this.searchText();
+
+        filtersAll = Object.assign(filtersAll, this.filtersData(), calFilter, this._param);
+
+        let params = { 
+          email: this.user().email, 
+          searchText: this.searchText(),
+          filters: JSON.stringify(filtersAll),
+          size: 999 
+        };
+
+
+        // utk handle $conf$, if ada $conf$, override dengan value dari frontend
+        if (ds.presetFilters) {
+          Object.keys(ds.presetFilters)
+            .filter(k => (ds.presetFilters[k] + "").includes("$conf$"))
+            .forEach(k => {
+              params[k] = this.compileTpl(ds.presetFilters[k] ?? '', { $user$: this.user(), $conf$: this.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this._this, $param$: this._param })
+            })
+        }
+
+        params = Object.assign(params, this._pre({}, ds.x?.initParam, false));
+
+        params['@cond'] = "OR";
 
         var ac = this.screen().actions[0];
 
-        this.entryService.getListByDataset(ds.id, param)
+        this.entryService.getListByDataset(ds.id, params)
           .subscribe(res => {
             this.entryList.set(res.content);
             var events = this.entryList().filter(e => e.data[this.screen().data.start])
