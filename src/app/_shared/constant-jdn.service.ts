@@ -23,7 +23,7 @@ var full = location.protocol + '//' + location.hostname + (location.port ? ':' +
 export const baseApi = 'https://io.reka.jdn.gov.my/api';   // prefer
 export const base = 'https://io.reka.jdn.gov.my'; // prefer
 export const cognaBase = 'https://io.reka.jdn.gov.my'; // prefer
-export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?alpha\.moh\.gov\.my/;
+export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?reka\.jdn\.gov\.my/;
 export const domainBase = "reka.jdn.gov.my"; 
 export const OAUTH = {
         AUTH_URI : "https://io.reka.jdn.gov.my/oauth2/authorize",
