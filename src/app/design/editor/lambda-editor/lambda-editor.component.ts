@@ -321,6 +321,8 @@ export class LambdaEditorComponent implements OnInit {
         this.extraAutoComplete.push(
           { label: "_cogna.prompt", type: "function", apply: "_cogna.prompt(#{cognaId},{\n\t#{\n\t\tprompt:'#{text}'\n\t}\n},'#{email}')", detail: "Prompt for cogna" },
           { label: "_cogna.classify", type: "function", apply: "_cogna.classify(#{cognaId},#{text})", detail: "Classify text using cogna" },
+          { label: "_cogna.classifyWithLlm", type: "function", apply: "_cogna.classifyWithLlm(#{cognaId},{#{key, description}},#{what},#{text},#{multiple})", detail: "Classify text with LLM" },
+          { label: "_cogna.classifyWithEmbedding", type: "function", apply: "_cogna.classifyWithEmbedding(#{cognaId},#{text}, #{minScore}, #{multiple})", detail: "Classify text with embedding" },
           { label: "_cogna.extract", type: "function", apply: "_cogna.extract(#{cognaId},{\n\t#{\n\t\ttext:'#{text}',\n\t\tdocList:[]\n\t}\n})", detail: "Extract data from text" },
           { label: "_cogna.summarize", type: "function", apply: "_cogna.summarize(#{cognaId},'#{text}',#{pointCount})", detail: "Summarize text into points" },
           { label: "_cogna.translate", type: "function", apply: "_cogna.translate(#{cognaId},'#{text}',#{lang})", detail: "Translate text into other language" },

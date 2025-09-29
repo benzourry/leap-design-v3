@@ -287,8 +287,8 @@ export class RunService {
   blastUser(appId,userIdList, data){
     return this.http.post<any>(`${this.baseApi}/app/${appId}/user/blast`,{userIdList:userIdList, data:data});
   }
-  cognaClassify(cognaId: number, text: string, fromCogna: boolean, lookupId:number, what: string, email: string): any {
-    return this.http.post(`${this.baseApi}/cogna/${cognaId}/classify?lookupId=${lookupId}&what=${what}`,{text: text, fromCogna: fromCogna, email:email});
+  cognaClassify(cognaId: number, text: string, fromCogna: boolean, lookupId:number, what: string, minScore: number, multiple: boolean, email: string): any {
+    return this.http.post(`${this.baseApi}/cogna/${cognaId}/classify?lookupId=${lookupId??''}&what=${what}&minScore=${minScore??0.8}&multiple=${multiple??false}`,{text: text, fromCogna: fromCogna, email:email});
   } 
   cognaClassifyField(itemId: number, text: string, fromCogna: boolean, email: string): any {
     return this.http.post(`${this.baseApi}/cogna/classify-field?itemId=${itemId}`,{text: text, fromCogna: fromCogna, email:email});

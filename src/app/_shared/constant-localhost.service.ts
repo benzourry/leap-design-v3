@@ -20,42 +20,42 @@ import { RxStompConfig } from "@stomp/rx-stomp";
 var full = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
 
 // /* LEAP */
-export const baseApi = 'http://10.28.114.194:8882/api';   // prefer
-export const base = 'http://10.28.114.194:8882'; // prefer
-export const cognaBase = 'http://10.28.114.194:8882'; // prefer
-export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?ireka\.my/;
-export const domainBase = "ireka.my"; 
-export const OAUTH = {
-    AUTH_URI : "http://10.28.114.194:8882/oauth2/authorize",
-    LOGOUT_URI : "http://10.28.114.194:8882/logout",
-    USER_URI : "http://10.28.114.194:8882/user/me",
-    USER_URI_DEBUG : "http://10.28.114.194:8882/user/debug-me",
-    CALLBACK : full + "/#/" ,
-    FINAL_URI: full + "/#/",
-    USER_UNBOX: null,
-    TOKEN_GET: "http://10.28.114.194:8882/token/get", 
-    PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fk6h2gVRugYo8tQ?e=e2HSrz",
-    SIGNIN_OPT:['unimas','unimasid','google','azuread','facebook','github','linkedin','twitter','local'],
-    COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
-}
-
-// export const baseApi = 'http://10.28.114.194:8882/ia/api';   // prefer
-// export const base = 'http://10.28.114.194:8882/ia'; // prefer
-// export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?leap\.my/;
-// export const domainBase = "ia.unimas.my"; 
+// export const baseApi = 'http://10.28.114.194:8882/api';   // prefer
+// export const base = 'http://10.28.114.194:8882'; // prefer
+// export const cognaBase = 'http://10.28.114.194:8882'; // prefer
+// export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?ireka\.my/;
+// export const domainBase = "ireka.my"; 
 // export const OAUTH = {
-//     AUTH_URI : "http://10.28.114.194:8882/ia/oauth2/authorize",
-//     LOGOUT_URI : "http://10.28.114.194:8882/ia/logout",
-//     USER_URI : "http://10.28.114.194:8882/ia/user/me",
-//     USER_URI_DEBUG : "http://10.28.114.194:8882/ia/user/debug-me",
+//     AUTH_URI : "http://10.28.114.194:8882/oauth2/authorize",
+//     LOGOUT_URI : "http://10.28.114.194:8882/logout",
+//     USER_URI : "http://10.28.114.194:8882/user/me",
+//     USER_URI_DEBUG : "http://10.28.114.194:8882/user/debug-me",
 //     CALLBACK : full + "/#/" ,
 //     FINAL_URI: full + "/#/",
 //     USER_UNBOX: null,
-//     TOKEN_GET: "http://10.28.114.194:8882/ia/token/get", 
+//     TOKEN_GET: "http://10.28.114.194:8882/token/get", 
 //     PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fk6h2gVRugYo8tQ?e=e2HSrz",
 //     SIGNIN_OPT:['unimas','unimasid','google','azuread','facebook','github','linkedin','twitter','local'],
 //     COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
 // }
+
+export const baseApi = 'http://10.28.114.194:8882/ia/api';   // prefer
+export const base = 'http://10.28.114.194:8882/ia'; // prefer
+export const domainRegex = /(?:http[s]*\:\/\/)*(.*?)\.(?=[^\/]*\.)?leap\.my/;
+export const domainBase = "ia.unimas.my"; 
+export const OAUTH = {
+    AUTH_URI : "http://10.28.114.194:8882/ia/oauth2/authorize",
+    LOGOUT_URI : "http://10.28.114.194:8882/ia/logout",
+    USER_URI : "http://10.28.114.194:8882/ia/user/me",
+    USER_URI_DEBUG : "http://10.28.114.194:8882/ia/user/debug-me",
+    CALLBACK : full + "/#/" ,
+    FINAL_URI: full + "/#/",
+    USER_UNBOX: null,
+    TOKEN_GET: "http://10.28.114.194:8882/ia/token/get", 
+    PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fk6h2gVRugYo8tQ?e=e2HSrz",
+    SIGNIN_OPT:['unimas','unimasid','google','azuread','facebook','github','linkedin','twitter','local'],
+    COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
+}
 
 export const myRxStompConfig: RxStompConfig = {
     brokerURL: 'wss://io.ireka.my/ping/ws',

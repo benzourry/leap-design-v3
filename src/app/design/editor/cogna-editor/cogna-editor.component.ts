@@ -1138,6 +1138,8 @@ export class CognaEditorComponent implements OnInit {
 
   classifyText:string;
   classifyWhat:string;
+  classifyMinScore:number=0.8;
+  classifyMultiple:boolean=false;
   classifyLookupId:number;
   classifyRes:any={};
   classifyLoading:boolean;
@@ -1147,7 +1149,7 @@ export class CognaEditorComponent implements OnInit {
     this.classifyLoading = true;
     this.classifyError[cogna.id]=null;
     this.classifyRes[cogna.id] = {};
-    this.runService.cognaClassify(cogna.id,this.classifyText, true, this.classifyLookupId, this.classifyWhat??'Category', this.user.email)
+    this.runService.cognaClassify(cogna.id,this.classifyText, true, this.classifyLookupId, this.classifyWhat??'Category', this.classifyMinScore, this.classifyMultiple, this.user.email)
     .subscribe({
       next:res=>{
         this.classifyLoading=false;

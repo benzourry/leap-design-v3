@@ -812,7 +812,23 @@
                           }
                         </select>
                       </div>
+                    }@else {
+                      <div class="input-group input-group-sm mt-1 mb-2">
+                        <label class="input-group-text">Min Score *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classifyMinScore" name="classifyMinScore"
+                        (change)="startClassifyData(cogna)"
+                        placeholder="ie: 0.8" required> 
+                      </div>
                     }
+
+                    <div class="form-group mb-3">
+                      <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="classifyMultiple"
+                        (change)="startClassifyData(cogna)"
+                          [(ngModel)]="classifyMultiple" name="classifyMultiple">
+                          <label class="form-check-label" for="classifyMultiple">Classify into multiple results</label>
+                      </div>
+                    </div> 
 
                     <div class="form-group mb-3">
                       <label class="form-label">Classify from text</label>
@@ -822,7 +838,7 @@
                     </div>
                   </div>
                   <div class="card-footer">
-                    <button type="button" (click)="startClassifyData(cogna)" [disabled]="classifyLoading || !classifyWhat || !classifyLookupId" class="btn btn-primary btn-round px-3">
+                    <button type="button" (click)="startClassifyData(cogna)" [disabled]="classifyLoading || (cogna.data?.txtclsLlm && (!classifyWhat || !classifyLookupId))" class="btn btn-primary btn-round px-3">
                       @if(classifyLoading){
                         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                         <span class="visually-hidden" role="status">Loading...</span>                        
@@ -836,14 +852,35 @@
                     <div class="px-2 py-1 bg-white small limit-height">
                       @if (classifyIsOk){
                         @if (!isEmptyObject(classifyRes[cogna.id])) {
-                          <div>Category: <strong>{{classifyRes[cogna.id]?.category}}</strong></div>
-                          @if (classifyRes[cogna.id]?.score){
-                            <div>Score: {{classifyRes[cogna.id]?.score}}</div>
+
+                          @if (classifyMultiple){
+
+                            @for(cat of classifyRes[cogna.id]?.category; track $index; let last = $last){
+                              <div>Category: <strong>{{classifyRes[cogna.id]?.category[$index]}}</strong></div>
+                              @if (classifyRes[cogna.id]?.data){
+                                <div>Data:</div>
+                                <pre><code class="language-js">{{classifyRes[cogna.id]?.data[$index] | json}}</code></pre>
+                              }
+                              @if (classifyRes[cogna.id]?.score){
+                                <div>Score: {{classifyRes[cogna.id]?.score[$index]}}</div>
+                              }
+                              @if (!$last){
+                                <hr>
+                              }
+                            }
+
+                          }@else{
+                            <div>Category: <strong>{{classifyRes[cogna.id]?.category}}</strong></div>
+                            @if (classifyRes[cogna.id]?.score){
+                              <div>Score: {{classifyRes[cogna.id]?.score}}</div>
+                            }
+                            @if (classifyRes[cogna.id]?.data){
+                              <div>Data:</div>
+                              <pre><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
+                            }
+
                           }
-                          @if (classifyRes[cogna.id]?.data){
-                            <div>Data:</div>
-                            <pre><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
-                          }
+
                         }@else{
                           <div class="text-muted">No response</div>
                         }
