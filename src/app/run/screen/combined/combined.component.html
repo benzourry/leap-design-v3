@@ -86,7 +86,9 @@
         }
       }@else if (['screen'].indexOf(compType)>-1) {
         @defer(prefetch on idle){
-          <app-screen [screenId]="sId" [hideTitle]="true"></app-screen>
+          <!-- screen
+          {{param()|json}} -->
+          <app-screen [screenId]="sId" [hideTitle]="true" [param]="param()"></app-screen>
         }@loading {
           <div class="text-center m-5">
             <div class="spinner-grow text-primary" role="status">
@@ -96,7 +98,7 @@
         }
       }@else if (['dataset'].indexOf(compType)>-1) {
         @defer(prefetch on idle){
-          <app-list [hideTitle]="true" [datasetId]="sId" [param]="param()">
+          <app-list [datasetId]="sId" [hideTitle]="true" [param]="param()">
           </app-list>
         }@loading {
           <div class="text-center m-5">

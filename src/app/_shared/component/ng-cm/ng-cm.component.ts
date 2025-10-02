@@ -472,6 +472,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       options: this.processSnippet([
         { label: '_request.getParameter', type: "method", apply: "_request.getParameter(\"${key}\")", detail: "Get request parameter" },
         { label: '_param', type: "method", apply: "_param.${key}", detail: "Get parameter from cogna tool or request parameter" },
+        { label: '_param._body', type: "method", apply: "_param.${key}", detail: "Get request body from POST request" },
         { label: "_out.put", type: "method", apply: "_out.put(\"${key}\", ${value})", detail: "Add item in output" },
         { label: "_response", type: "method", apply: "_response.#{}", detail: "Access to HTTP response" },
         { label: "_response.sendRedirect", type: "method", apply: "_response.sendRedirect('#{url}')", detail: "Redirect to URL" },

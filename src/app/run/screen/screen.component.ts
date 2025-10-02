@@ -49,13 +49,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
     ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule, RouterLink,
     forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
-    NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle, 
+    NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle,
     MorphHtmlDirective,
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, BucketComponent, NgLeafletComponent, MailboxComponent, CombinedComponent]
 })
 export class ScreenComponent implements OnInit, OnDestroy {
 
-  
+
   private userService = inject(UserService);
   public runService = inject(RunService);
   private entryService = inject(EntryService);
@@ -102,9 +102,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   prevSignalKey: string = '';
 
-  appConfig:any = this.runService.appConfig;
+  appConfig: any = this.runService.appConfig;
 
-  scopeId = computed<string>(() => "screen_"+this.screenId());
+  scopeId = computed<string>(() => "screen_" + this.screenId());
 
 
   constructor() {
@@ -121,17 +121,17 @@ export class ScreenComponent implements OnInit, OnDestroy {
       if (this._screenId && this.user() && this.prevSignalKey != key) {
         this.prevSignalKey = key;
         this.getScreen(this.screenId());
-      }    
+      }
     })
 
     effect(() => {
       if (this.user()) {
         const startTimestamp = this.runService.$startTimestamp();
-        const param =  this.param()
-        if (!deepEqual(this._param,param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
+        const param = this.param()
+        if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
           this._param = this.param();
           this._startTimestamp = startTimestamp;
-          
+
           if (this._param['$prev$.$id']) {
             this.prevId = this._param['$prev$.$id'];
           }
@@ -187,11 +187,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
         filtersAll = Object.assign(filtersAll, this.filtersData(), calFilter, this._param);
 
-        let params = { 
-          email: this.user().email, 
+        let params = {
+          email: this.user().email,
           searchText: this.searchText(),
           filters: JSON.stringify(filtersAll),
-          size: 999 
+          size: 999
         };
 
 
@@ -249,8 +249,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
 
   options: any = {}
-  
+
   getScreen(screenId: any) {
+    // console.log("getScreen", screenId)
     this.loading.set(true);
 
     this.runService.getRunScreen(screenId)
@@ -278,65 +279,72 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.popObj = this.buildPop(this._entryId, true);
 
         // console.log("sprinkle $popup and $this$ in global")
-        Object.defineProperty(window, '_popup_'+this.scopeId(), {
-          get: ()=> this.popObj,
+        Object.defineProperty(window, '_popup_' + this.scopeId(), {
+          get: () => this.popObj,
           configurable: true,   // so you can delete it later 
         });
-        Object.defineProperty(window, '_this_'+this.scopeId(), {
-          get: ()=> this._this,
+        Object.defineProperty(window, '_this_' + this.scopeId(), {
+          get: () => this._this,
           configurable: true,   // so you can delete it later 
           // writable: true,
-        });      
+        });
 
-        if (['list', 'map'].indexOf(this.screen().type) > -1) {
-          this.dataset.set(this.screen().dataset);
-          this.form.set({
-            data: this.dataset().form,
-            prev: this.dataset().form.prev || null
-          })
+        this.refreshScreen();
 
-          this.getLookupInFilter();
-
-          // loadDatasetEntry + strtListenFilter cause double loading and flicker
-          this.loadDatasetEntry(this.dataset(), this.pageNumber());
-
-        } else if (this.screen().type == 'calendar') {
-
-          this.dataset.set(this.screen().dataset);
-          this.form.set({
-            data: this.dataset().form,
-            prev: this.dataset().form.prev || null
-          })
-
-          this.getLookupInFilter();
-          this.populateCalendarEvent();
-
-        } else if (this.screen().type == 'page') {
-          this.form.set({
-            data: this.screen().form,
-            prev: this.screen().form.prev
-          })
-          this.loadFormEntry(this.screen().form.id);
-        } else if (this.screen().type == 'static') {
-          this.entry.set({ id: this._entryId, data: {} })
-          // this execute tooo early. html not yet available. problem when get dom reference
-
-          this.initScreen(this.screen().data.f);
-
-        } else if (this.screen().type == 'chatbot') {
-        }
 
         this.cdr.detectChanges();
       })
+  }
+
+  refreshScreen() {
+    if (['list', 'map'].indexOf(this.screen().type) > -1) {
+      this.dataset.set(this.screen().dataset);
+      this.form.set({
+        data: this.dataset().form,
+        prev: this.dataset().form.prev || null
+      })
+
+      this.getLookupInFilter();
+
+      // loadDatasetEntry + strtListenFilter cause double loading and flicker
+      this.loadDatasetEntry(this.dataset(), this.pageNumber());
+
+    } else if (this.screen().type == 'calendar') {
+      this.dataset.set(this.screen().dataset);
+      this.form.set({
+        data: this.dataset().form,
+        prev: this.dataset().form.prev || null
+      })
+      this.getLookupInFilter();
+      this.populateCalendarEvent();
+
+    } else if (this.screen().type == 'page') {
+      this.form.set({
+        data: this.screen().form,
+        prev: this.screen().form.prev
+      })
+      this.loadFormEntry(this.screen().form.id);
+
+    } else if (this.screen().type == 'static') {
+      this.entry.set({ id: this._entryId, data: {} })
+      // this execute tooo early. html not yet available. problem when get dom reference
+
+      this.initScreen(this.screen().data.f);
+
+    } else if (this.screen().type == 'combine') {
+      this.initScreen(this.screen().data.f);
+
+    } else if (this.screen().type == 'chatbot') {
+    }
   }
 
   initScreen(js) {
     let jsTxt = this.compileTpl(js, { $: this.entry()?.data, $prev$: this.entry()?.prev, $_: this.entry(), $go: this.buildGo(this.entry()?.id), $popup: this.buildPop(this.entry()?.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
 
     let res = undefined;
-      try {
-        res = this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
-      } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
+    // try {
+    res = this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
+    // } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
     return res;
   }
 
@@ -351,78 +359,79 @@ export class ScreenComponent implements OnInit, OnDestroy {
     if (!this.elMap[el]) {
       this.elMap[el] = document.querySelector(el);
     }
-    return this.elMap[el]; 
+    return this.elMap[el];
   }
 
   openNav = (opened: boolean) => {
     this.pageTitleService.open(opened);
   }
 
-  _this = createProxy({},()=>this.cdr.markForCheck());
+  _this = createProxy({}, () => this.cdr.markForCheck());
 
   // private $this$ = this.createProxy(this.$privthis$);
   // _eval = (data, v) => new Function('setTimeout', 'setInterval', '$app$', '$screen$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$upload$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$el$', '$form$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$popup', '$q$', '$showNav$',
   //   `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.screen, this.entry(), this.entry && this.entry().data, this.entry && this.entry().prev, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this._this, this.loadScript, this.$digest$, this._param, this.log, this.updateField, this.updateLookup, this.form()?.data?.items, this.form().data, this.$toast$, this.base, this.baseUrl, this.baseApi, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.goObj, this.popObj, this.$q, this.openNav);
   _eval = (data, v) => {
     const bindings = this.getEvalContext(this.entry()?.data);
-    const argNames  = Object.keys(bindings);
+    const argNames = Object.keys(bindings);
     const argValues = Object.values(bindings);
     return new Function(...argNames,
-    `return ${v}`)(...argValues);
+      `return ${v}`)(...argValues);
   }
 
   getEvalContext = (data) => {
     return {
-      setTimeout     : this._setTimeout,
-      setInterval    : this._setInterval,
-      $app$          : this.app,
-      $screen$       : this.screen,
-      $_             : this.entry(),
-      $              : data,
+      setTimeout: this._setTimeout,
+      setInterval: this._setInterval,
+      $app$: this.app,
+      $screen$: this.screen,
+      $_: this.entry(),
+      $: data,
       // $$_: appr,
       // $$: appr?.data,
-      $prev$         : this.entry()?.prev,
-      $user$         : this.user(),
-      $conf$         : this.appConfig,
+      $prev$: this.entry()?.prev,
+      $user$: this.user(),
+      $conf$: this.appConfig,
       // $action$: this.action(),
       // $lookup$: this._getLookup,
-      $http$         : this.httpGet,
-      $post$         : this.httpPost,
-      $upload$       : this.uploadFile,
-      $endpoint$     : this.endpointGet,
+      $http$: this.httpGet,
+      $post$: this.httpPost,
+      $upload$: this.uploadFile,
+      $endpoint$: this.endpointGet,
       // $save$: () => this._save(this.entry(), form || this.form()),
       // $submit$: (resubmit: boolean) => this.submit(resubmit, this.entry(), form || this.form()),
-      $el$           : this.form()?.data?.items,
-      $form$         : this.form().data,
-      $this$         : this._this,
-      $loadjs$       : this.loadScript,
-      $digest$       : this.$digest$,
-      $param$        : this._param,
-      $log$          : this.log,
+      $el$: this.form()?.data?.items,
+      $reload$: this.refreshScreen.bind(this),
+      $form$: this.form().data,
+      $this$: this._this,
+      $loadjs$: this.loadScript,
+      $digest$: this.$digest$,
+      $param$: this._param,
+      $log$: this.log,
       // $activate$: this.setActive,
       // $activeIndex$: this._navIndex(),
-      $toast$        : this.$toast$,
-      $update$       : this.updateField,
-      $updateLookup$ : this.updateLookup,
-      $base$         : this.base,
-      $baseUrl$      : this.baseUrl,
-      $baseApi$      : this.baseApi,
+      $toast$: this.$toast$,
+      $update$: this.updateField,
+      $updateLookup$: this.updateLookup,
+      $base$: this.base,
+      $baseUrl$: this.baseUrl,
+      $baseApi$: this.baseApi,
       dayjs,
       ServerDate,
       echarts,
-      $live$         : this.runService?.$live$(this.liveSubscription, this.$digest$),
-      $token$        : this.accessToken,
-      $merge$        : deepMerge,
-      $web$          : this.http,
+      $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
+      $token$: this.accessToken,
+      $merge$: deepMerge,
+      $web$: this.http,
       // $file$: this.filesMap,
       // onInit: this.onInit,
       // onSave: this.onSave,
       // onSubmit: this.onSubmit,
       // onView: this.onView,
-      $go            : this.goObj,
-      $popup         : this.popObj, 
-      $q$            : this.$q,
-      $showNav$      : this.openNav,
+      $go: this.goObj,
+      $popup: this.popObj,
+      $q$: this.$q,
+      $showNav$: this.openNav,
     };
   }
 
@@ -619,13 +628,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
       .result.then(res => {
         // this.getScreen(this.screen().id);
         // this.getEntryList(this.pageNumber(),this.sort);
-      }, err => { 
+      }, err => {
         // this.getScreen(this.screen().id);
-      }).finally(()=>{
+      }).finally(() => {
         // console.log("delete $popup and $this$ from global")
         // delete (window as any).$popup;
         // delete (window as any).$this;
-        this.getScreen(this.screen().id);
+        // this.getScreen(this.screen().id);
+        this.refreshScreen();
       });
 
   }
@@ -633,7 +643,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   // #### ATTEMPT TO UNIFY POPUP AND NAVIGATE
   runAction(url, inpop, content, entryId, formId, type, facet, params) {
     if (inpop) {
-      this.inPop(content, entryId, {next:formId}, type, facet, params)
+      this.inPop(content, entryId, { next: formId }, type, facet, params)
     } else {
       let navigationExtras: NavigationExtras = {
         queryParams: deepMerge({ entryId: entryId }, params),
@@ -728,7 +738,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.loadDatasetEntry(this.dataset(), this.pageNumber(), this.sort());
   }
 
-  readonly hasConfPresetFilters = computed(() =>{
+  readonly hasConfPresetFilters = computed(() => {
     const dataset = this.dataset();
     return dataset?.presetFilters && Object.keys(dataset.presetFilters).some(k => String(dataset.presetFilters[k]).includes('$conf$'));
   });
@@ -740,7 +750,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   // searchTextEncoded: string = "";
   entryList = signal<any[]>([]);
   entryTotal = signal<number>(0);
-  filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({...this.filtersData(), ...this.param()})));
+  filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({ ...this.filtersData(), ...this.param() })));
   searchText = signal<string>('');
   searchTextEncoded = computed(() => encodeURIComponent(this.searchText()));
 
@@ -940,11 +950,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
   editFilterItems: any;
   filtersCond: string = "AND";
   editFilter(content, data) {
-    this.filtersData.set({...data});
+    this.filtersData.set({ ...data });
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {
-        this.filtersData.set({...res});
+        this.filtersData.set({ ...res });
         // localStorage.setItem("filter-" + this.dataset().id, JSON.stringify(this.filtersData()));
         this.loadDatasetEntry(this.screen().dataset, 1);
       }, res => { });
@@ -996,14 +1006,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
   modalClose(d) {
     // console.log("modalClosed")
 
-    if (['list', 'map'].indexOf(this.screen().type) > -1) {
-      this.loadDatasetEntry(this.dataset(), this.pageNumber());
-    } else if (this.screen().type == 'calendar') {
-      this.populateCalendarEvent();
-    }
+    // if (['list', 'map'].indexOf(this.screen().type) > -1) {
+    //   this.loadDatasetEntry(this.dataset(), this.pageNumber());
+    // } else if (this.screen().type == 'calendar') {
+    //   this.populateCalendarEvent();
+    // }
 
 
-    this.getScreen(this.screen().id);
+    // this.refreshScreen()
     d();
   }
 

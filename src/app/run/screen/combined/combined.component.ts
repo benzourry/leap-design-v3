@@ -16,7 +16,7 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
     selector: 'app-combined',
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,
-        NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav, 
+        NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
         NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
         FaIconComponent, forwardRef(() => ListComponent), forwardRef(() => DashboardComponent),
         forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => UserComponent),

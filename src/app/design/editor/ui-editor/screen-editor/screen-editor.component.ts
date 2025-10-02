@@ -549,6 +549,8 @@ defaultMapStyle:string = `height: 600px;`
     this.extraAutoCompleteHtml = [];
     this.extraAutoCompleteJs = [];
 
+    this.extraAutoCompleteJs.push({c: 2, label: "$reload$()", type: "text", apply: "$reload$()", detail: "Reload current screen"});
+
     this.curScreen.actions?.forEach(a => {
       this.extraAutoCompleteHtml.push({ label: `{{$go['${a.id}']}}`, type: "text", apply: `{{$go['${a.id}']}}`, detail: a.label })
       this.extraAutoCompleteHtml.push({ label: `$popup['${a.id}']()`, type: "text", apply: `$popup['${a.id}']()`, detail: a.label })
@@ -647,7 +649,7 @@ defaultMapStyle:string = `height: 600px;`
           this.loadBucket(res.bucket.id, this.bucket);
         } else if (res.type == 'page') {
           this.loadForm(res.form.id, this.form);
-        } else if (res.type == 'static') {
+        } else if (['static','combine'].indexOf(res.type)>-1) {
           this.form = {};
           this.dataset = {};
           this.populateAutoComplete(); // since not call loadForm, has to be called manually
