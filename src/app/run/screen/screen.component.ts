@@ -342,9 +342,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
     let jsTxt = this.compileTpl(js, { $: this.entry()?.data, $prev$: this.entry()?.prev, $_: this.entry(), $go: this.buildGo(this.entry()?.id), $popup: this.buildPop(this.entry()?.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
 
     let res = undefined;
-    // try {
-    res = this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
-    // } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
+    try {
+      res = this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
+    } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
     return res;
   }
 
