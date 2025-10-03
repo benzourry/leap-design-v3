@@ -626,7 +626,7 @@
                                 <input type="text" class="form-control" [(ngModel)]="curScreen.data.logo"
                                   name="logo">
                               </div>
-                              <div class="form-group">
+                              <div class="form-group mb-3">
                                 <label class="form-label">Suggested prompt</label>
                                 <div class="list-group" cdkDropList
                                   cdkDropListOrientation="vertical"
@@ -663,7 +663,23 @@
                                     </a>
                                   </div>
                                 </div>
-                              </div>                            
+                              </div>  
+                              
+                              <div class="form-check mb-3 form-switch">
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.speechInput"
+                                  name="speechInput" id="speechInput">
+                                <label class="form-check-label" for="speechInput">Enable speech input</label>
+                              </div>
+
+                              <div class="form-group mb-3">
+                                <label class="form-label">Custom Parameters</label>
+                                <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam
+                                [placeholder]="defaultCognaParam"
+                                  (keydown)="onKeyDown($event)" subType="active" [skipCheck]="true"
+                                  [extraAutoComplete]="extraAutoCompleteJs"
+                                  [(ngModel)]="curScreen.data.cognaParam" [linenumber]="true" required>
+                                </app-cm>
+                              </div>
                             </div>
                           }
                           @if (['combine'].indexOf(curScreen.type)>-1){                    
@@ -884,7 +900,7 @@
                         </ng-template>
                       </li>
                     }
-                    <li ngbNavItem [disabled]="['list','page','static','combine','map','qr'].indexOf(curScreen.type)==-1">
+                    <li ngbNavItem [disabled]="['list','page','static','combine','map','qr','chatbot'].indexOf(curScreen.type)==-1">
                       <a class="small px-2" ngbNavLink>Init &fnof;</a>
                       <ng-template ngbNavContent>
                         @if (curScreen.id) {

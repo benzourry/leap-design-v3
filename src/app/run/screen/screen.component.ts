@@ -335,6 +335,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       this.initScreen(this.screen().data.f);
 
     } else if (this.screen().type == 'chatbot') {
+      this.initScreen(this.screen().data.f);
+      
     }
   }
 

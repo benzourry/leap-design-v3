@@ -227,12 +227,16 @@ export class ScreenEditorComponent implements OnInit {
     });
   }
 
-  defaultBucketParam:string = `{
+defaultBucketParam:string = `{
     searchText: '', 
     email: $user$.email, 
     fileType: 'image/jpeg', 
     itemId: 1, 
     entryId: 1
+}`  
+defaultCognaParam:string = `{
+    longitude: 110.33, 
+    latitude: 1.48
 }`  
 defaultMapStyle:string = `height: 600px;`
 

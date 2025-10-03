@@ -193,7 +193,7 @@
             }
           }@else if (screen().type=='chatbot') {
             @defer(prefetch on idle){
-              <app-chatbot [screen]="screen()" [compileTplData]="{ $user$: user(), $base$: base, $baseUrl$: baseUrl, $baseApi$: baseApi, $this$:_this, $param$:_param,$showNav$:openNav}"></app-chatbot>
+              <app-chatbot [screen]="screen()" [compileTplData]="{ $user$: user(), $base$: base, $baseUrl$: baseUrl, $baseApi$: baseApi, $this$:_this, $conf$:appConfig, $param$:_param,$showNav$:openNav}"></app-chatbot>
             }@loading {
               <div class="text-center m-5">
                 <div class="spinner-grow text-primary" role="status">

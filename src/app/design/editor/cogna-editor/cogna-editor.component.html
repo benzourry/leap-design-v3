@@ -596,6 +596,16 @@
                       </div>
                     }
                   </div>
+                  <div>
+                    <div class="bg-light p-2">Custom Parameters</div>
+                    <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam
+                      [placeholder]="defaultCognaParam" subType="active" [skipCheck]="true"
+                      [hideControl]="true"
+                      [extraAutoComplete]="extraAutoCompleteJs"
+                      [(ngModel)]="chatPromptParam" [linenumber]="true" required>
+                    </app-cm>
+                  </div>
+
                   <div class="bg-secondary bg-opacity-25">
 
 

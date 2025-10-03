@@ -121,17 +121,19 @@
         maxlength="2000"
         [placeholder]="isListening()?app().x?.lang=='ms'?'Saya mendengar...':'I\'m listening...':(app().x?.lang=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
         placeholder="Ask me something...">  
-      @if (isListening()){
-        <button type="button" class="btn bg-transparent border-0 blink_me" style="height:38px; min-width:38px"
-          (click)="stopListen()">
-          <fa-icon [icon]="['fas','square']"></fa-icon>
-        </button>  
-      }@else {
-        <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px"
-          (click)="startListen()">
-          <fa-icon [icon]="['fas','microphone']"></fa-icon>
-        </button>          
-      }
+        @if (screen().data.speechInput){
+          @if (isListening()){
+            <button type="button" class="btn bg-transparent border-0 blink_me" style="height:38px; min-width:38px"
+              (click)="stopListen()">
+              <fa-icon [icon]="['fas','square']"></fa-icon>
+            </button>  
+          }@else {
+            <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px"
+              (click)="startListen()">
+              <fa-icon [icon]="['fas','microphone']"></fa-icon>
+            </button>          
+          }
+        }
 
       <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [class.disabled]="!chatPromptText()?.trim()" [disabled]="!(chatPromptText()?.trim() || fileList().length>0)"
         (click)="chatPrompt(screen().cogna, chatPromptText())">

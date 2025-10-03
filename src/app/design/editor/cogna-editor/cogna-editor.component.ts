@@ -13,9 +13,9 @@ import { FormService } from '../../../service/form.service';
 import { base, baseApi, domainBase, OAUTH } from '../../../_shared/constant.service';
 // import { LookupService } from '../../../service/lookup.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
-import { map } from 'rxjs';
+import { lastValueFrom, map } from 'rxjs';
 import { BucketService } from '../../../service/bucket.service';
-import { br2nl, imagify, linkify, nl2br, resizeImage, splitAsList, targetBlank, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
+import { br2nl, compileTpl, imagify, linkify, loadScript, nl2br, resizeImage, splitAsList, targetBlank, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { UniqueAppPathDirective } from '../../../_shared/app-path-validator';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -58,7 +58,7 @@ marked.use({
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
       NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, 
-      NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, 
+      NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,
       NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent]
 })
 export class CognaEditorComponent implements OnInit {
@@ -1020,6 +1020,7 @@ export class CognaEditorComponent implements OnInit {
   chatResponseList: any[] = [];
   lastChatPromptText = signal<string>("");
   chatPromptText = signal<string>("");
+  chatPromptParam:string="";
   chatPromptLoading = signal<boolean>(false);
   streamTyping = signal<boolean>(false);
   streamResult = signal<string>("");
@@ -1032,8 +1033,10 @@ export class CognaEditorComponent implements OnInit {
       this.lastChatPromptText.set(this.chatPromptText());
       this.cdr.detectChanges();
 
+      let param = this._eval({}, compileTpl(this.chatPromptParam,{}, 'cogna_editor_'+ cogna.id));
+
       if (cogna.streamSupport){
-        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList.map(f=>f.path), true, this.user?.email)
+        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList.map(f=>f.path),param, true, this.user?.email)
         .pipe(
           map(res => {
             // console.log(res);
@@ -1070,7 +1073,7 @@ export class CognaEditorComponent implements OnInit {
 
       }else{
 
-        this.runService.cognaPrompt(cogna.id, prompt,this.fileList.map(f=>f.path), true, this.user?.email)
+        this.runService.cognaPrompt(cogna.id, prompt,this.fileList.map(f=>f.path), param, true, this.user?.email)
         .subscribe({
           next:res=>{
             this.chatPromptLoading.set(false);
@@ -1247,6 +1250,24 @@ export class CognaEditorComponent implements OnInit {
         this.lambdaList = res.content;
         this.cdr.detectChanges();
       })
+  }
+
+  getEvalContext = (includeActive: boolean = false, additionalData: any = {}) => {
+    let passive = {
+    }
+    let active = {
+    };
+    return includeActive ? { ...passive, ...active, ...additionalData } : { ...passive, ...additionalData };
+  }
+
+  liveSubscription: any = {};
+  
+  _eval = (data: any, v: string) => {
+    const bindings = this.getEvalContext(true, {});
+    const argNames = Object.keys(bindings);
+    const argValues = Object.values(bindings);
+    return new Function(...argNames,
+      `return ${v}`)(...argValues);
   }
 
   keepMinute00 = (object) => {
@@ -1516,4 +1537,6 @@ export class CognaEditorComponent implements OnInit {
         this.getLambdaList(appId);
     }
   }
+  
+
 }

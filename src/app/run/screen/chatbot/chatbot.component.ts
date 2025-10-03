@@ -43,6 +43,8 @@ export class ChatbotComponent implements OnInit {
   baseApi = baseApi;
   scopeId = computed<string>(() => "screen_"+this.screen().id);
 
+  // evalContextFn = input<any>();
+
   ngOnInit() {
     this.cogna = this.screen().cogna;
     let fromStorage = sessionStorage.getItem("cogna-" + this.cogna.id + "-" + this.user().email)
@@ -91,6 +93,7 @@ export class ChatbotComponent implements OnInit {
 
   chatResponseList = signal<any[]>([]);
   chatPromptText = signal<string>("");
+  chatPromptParam = signal<string>("");
   chatPromptLoading = signal<boolean>(false);
   streamTyping = signal<boolean>(false);
   streamResult = signal<string>("");
@@ -105,8 +108,11 @@ export class ChatbotComponent implements OnInit {
       this.chatPromptLoading.set(true);
       sessionStorage.setItem("cogna-" + cogna.id + "-" + this.user().email, JSON.stringify(this.chatResponseList()))
 
+      let param = this._eval({},compileTpl(this.screen().data.cognaParam,{}, this.scopeId()));
+      // console.log("Cogna Param:", param);
+
       if (cogna.streamSupport) {
-        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), true, this.user().email)
+        this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), param, true, this.user().email)
           .pipe(
             map(res => {
               if (res['type'] == 4) {
@@ -143,7 +149,7 @@ export class ChatbotComponent implements OnInit {
 
       } else {
 
-        this.runService.cognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), true, this.user().email)
+        this.runService.cognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), param, true, this.user().email)
           .subscribe({
             next: res => {
               this.chatPromptLoading.set(false);
@@ -232,6 +238,19 @@ export class ChatbotComponent implements OnInit {
     }
     return f;
   }
+
+  
+  _eval = (data:any, v:string) => { 
+    const bindings = this.compileTplData();
+    // console.log("Eval Bindings:", bindings);
+    bindings.$ = data;
+    // bindings.$conf$ = this.appConfig; // only binding that allow write
+    const argNames  = Object.keys(bindings);
+    const argValues = Object.values(bindings);
+    return new Function(...argNames,
+    `return ${v}`)(...argValues);
+  }
+
 
 
   uploadPromptImg;
