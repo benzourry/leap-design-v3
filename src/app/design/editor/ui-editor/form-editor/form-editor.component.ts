@@ -261,7 +261,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     superItems = [];
     buildSuper() {
-        // console.log("superForm", this.superForm)
         this.superItems = Object.values(this.superForm?.items).map((i: any) => {
             delete i.id;
             i.x.extended = true;
@@ -485,7 +484,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     resetAutoComplete() {
-        // console.log("--reset-ac")
         this.extraAutoCompleteHtml = [];
         this.extraAutoCompleteJs = [
             { c: 1, label: "$form$.canSave", type: "keyword", apply: "$form$.canSave", detail: "Show/hide save button" },
@@ -591,7 +589,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .map(s => s.parentObj = this.getTab(s.parent))
                     .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
 
-                // console.log("sections=",this.curForm.sections)
                 this.getLookupIdList(this.curForm.id);
                 this.facetList = this.getAsList(this.curForm.x?.facet);
                 this.curFormColumns = [];
@@ -600,7 +597,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.populateCodeList();
                 // this.drawTierLines();
                 if (res.tiers?.length > 0) {
-                    // console.log({id:-1, color:'rgb(0, 123, 255)', action:'goTier', nextTier:res.tiers[0].id});
                     // Highlight first line
                     this.highlightSubmit();
                     // this.highlightLine({id:-1}, {id:-1, color:'rgb(0, 123, 255)', action:'goTier', nextTier:res.tiers[0].id});// {
@@ -618,7 +614,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.cdr.detectChanges();
                 // }
             }, err => {
-                // console.log(err);
                 this.formError = err.error;
             })
     }
@@ -744,7 +739,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             return this.lookupDataObs[cacheId]
         }
         // start loading
-        // console.log('loading '+this.lookupKey[code],code);
         if (this.lookupKey[code].type == 'modelPicker') {
             param = Object.assign(param || {}, { email: this.user.email });
             this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
@@ -782,7 +776,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(form => {
                 if (!form.x.extended) {
-                    // console.log("delete extended", form.x.extended);
                     delete form.x.extended;
                 }
                 this.formService.saveForm(form.appId ?? this.app.id, form)
@@ -851,11 +844,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     rcognaExtractor(val){
-        // console.log(val)
         this.editItemData.x.rcognaFields = extractVariables(["$"],val)?.["$"]||[];
     }
 
     editItemData: any;
+    editItemSection: any;
     editItemFromPalette: boolean = false;
     editItem(content, section, data, sortOrder, fromPalette: boolean = false) {
         if (!data.v) {
@@ -872,6 +865,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if (!this.editItemData.x.appId) {
             this.editItemData.x.appId = this.app.id;
         }
+
+        this.editItemSection = section;
 
         this.loadOtherAppList(this.editItemData.type, this.editItemData.x.appId);
 
@@ -892,7 +887,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     var labels = rItem.label.split(",");
                     labels.forEach(we => {
                         var h = Object.assign({}, rItem, { label: we, code: this.toSnakeCase(we) });
-                        // console.log(h);
                         fieldList.push(h);
                     })
                 } else {
@@ -1007,10 +1001,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.selectedLine = tierAction.id;
         this.selectedTier = tier.id;
         this.selectedColor = tierAction.color;
-        // console.log("HHH",tierAction)
         if (tierAction.action == 'goTier') {
             this.selectedLineTier = tierAction.nextTier;
-            // console.log("nextTier",tierAction.nextTier);
         } else if (tierAction.action == 'nextTier') {
             if (this.curForm.tiers[tier.sortOrder + 1]) {
                 this.selectedLineTier = this.curForm.tiers[tier.sortOrder + 1]?.id;
@@ -1296,7 +1288,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     // @ViewChild("editItemLabel") editItemLabelField: ElementRef<any>;
 
     dropItem(event: CdkDragDrop<any[]>, parent) {
-        // console.log("Container Id:" + event.previousContainer.id);
         if (event.previousContainer.id == "palette-pane") {
             var item = event.previousContainer.data[event.previousIndex].item;
             if (['html', 'clearfix'].indexOf(item.subType) > -1) {
@@ -1428,11 +1419,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .result.then(res => { }, err => { });
     }
 
-    backendEfSave(item, force) {
+    backendEfSave(item, section, force) {
+        let sectionCode = '';
+        if (section?.type=='list'){
+            sectionCode = section.code;
+        }
         this.formService.saveItemOnly(this.curForm.id, item)
             .subscribe({
                 next: (e) => {
-                    this.backendEf(item, force);
+                    this.backendEf(item, sectionCode, force);
                 }, error: (e) => {
                     this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
                     this.cdr.detectChanges(); // <--- Add here
@@ -1445,9 +1440,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     showlog: any = {};
     efResult: any = {};
     efLoading: any = {};
-    backendEf(item, force) {
+    backendEf(item, section, force) {
         this.efLoading[item.code] = true;
-        this.formService.backendEf(this.curForm.id, item.code, force == true)
+        this.cdr.detectChanges(); 
+        this.formService.backendEf(this.curForm.id, item.code, section, force == true)
             .subscribe(res => {
                 let result = `<table width="100%">
                             <tr><td>Success</td><td>: ${res.successCount}</td></tr>
@@ -1605,7 +1601,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             new Function(code);
             return "OK";
         } catch (e) {
-            // console.log(e);
             return "ERR: " + e;
         }
     };
@@ -1806,7 +1801,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .result.then(data => {
                         this.moveFormToAppData.datasetIds = this.formRelatedComps.dataset.filter(e => e.isChecked).map(e => e.id);
                         this.moveFormToAppData.screenIds = this.formRelatedComps.screen.filter(e => e.isChecked).map(e => e.id);
-                        // console.log(this.moveFormToAppData);
                         this.formService.moveToApp(this.curFormId, this.moveFormToAppData)
                             .subscribe(data => {
                                 this.commService.emitChange({ key: 'form', value: 0 });
@@ -2138,18 +2132,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editMailerData: any;
     editMailer = (content, mailer, obj, prop) => {
-        // console.log(mailer);
-        // mailer.content = this.br2nl(mailer.content);
         if (!mailer.content) mailer.content = '';
         this.editMailerData = mailer;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(data => {
-                // data.content = this.nl2br(data.content);
                 this.mailerService.save(this.user.email, this.app.id, data)
                     .subscribe(res => {
                         this.getMailerList();
-                        // this.loadMailer(res.id);
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
                         if (!obj[prop]) {
                             obj[prop] = [];

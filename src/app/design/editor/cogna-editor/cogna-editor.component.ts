@@ -823,7 +823,7 @@ export class CognaEditorComponent implements OnInit {
   }
 
   loadLookupEntries(lookupId){
-    console.log(lookupId)
+    // console.log(lookupId)
     this.lookupService.getEntryList(lookupId,{})
     .subscribe(res=>{
       this.lookupEntries = res.content;

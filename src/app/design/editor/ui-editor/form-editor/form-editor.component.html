@@ -2299,7 +2299,7 @@
                                 <button type="button" [disabled]="efLoading[editItemData.code]"
                                   class="btn btn-sm btn-danger text-start border-white"
                                   style="border-width:2px;"
-                                  (click)="backendEfSave(editItemData, force[editItemData.code])">
+                                  (click)="backendEfSave(editItemData, editItemSection,force[editItemData.code])">
                                   @if (efLoading[editItemData.code]) {
                                     <span>Executing update...please
                                     wait</span>
