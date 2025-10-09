@@ -116,6 +116,10 @@ export class CognaService {
     return this.http.post(`${this.baseApi}/cogna/${cId}/mcp`, data)
   }
 
+  saveSub(cId, data):any{
+    return this.http.post(`${this.baseApi}/cogna/${cId}/sub`, data)
+  }
+
   removeSrc(cId):any{
     return this.http.post(`${this.baseApi}/cogna/delete-src/${cId}`, {})
   }
@@ -125,6 +129,10 @@ export class CognaService {
 
   removeMcp(cId):any{
     return this.http.post(`${this.baseApi}/cogna/delete-mcp/${cId}`, {})
+  }
+
+  removeSub(cId):any{
+    return this.http.post(`${this.baseApi}/cogna/delete-sub/${cId}`, {})
   }
   // saveOld(email: string, data: any): any {
   //   return this.http.post(`${this.baseApi}/cogna?email=${email}`, data)

@@ -152,7 +152,7 @@
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                   </button>
 
-                  @if (cogna.type=='txtgen'){
+                  @if (['txtgen','master'].includes(cogna.type)){
                     <div ngbDropdown class="ms-auto d-inline-block">
                       <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-auto"
                         title="Clear chat memory" ngbDropdownToggle>
@@ -558,9 +558,46 @@
                 </div>
               }
 
+              @if(['master'].includes(cogna.type)){
+                <div class="card border border-2 mb-2">
+                  <div class="card-header p-2">                    
+                    Sub Agents
+                    <div class="small">{{cogna.subs?.length}} tools</div>                                
+                  </div>
+                  <div class="list-group list-group-flush">
+                    @for (b of cogna.subs; track b.id) {
+                      <div class="list-group-item p-2 element">
+                        <div class="element-edit nowrap"
+                          style="position:absolute;top:3px;right:3px; padding:3px">
+                            <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Sub"
+                              (click)="editCognaSub(editCognaSubTpl, b, false)">
+                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                              </fa-icon>
+                            </button>
+                          <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Sub"
+                            (click)="removeCognaSub(b)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                            </fa-icon>
+                          </button>
+                        </div>
+                        <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>                        
+                        <div class="ms-4" [class.strike]="!b.enabled" [class.text-muted]="!b.enabled">{{b.name}}</div>
+                      </div>
+                    }@empty {
+                      <div class="text-black-50 p-3 text-center fs-4"> No sub specified</div>
+                    }
+                    <div class="list-group-item p-2">
+                      <a class="pointer" (click)="editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                        Add Sub
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
             <div class="col-sm-8 col-lg-9">
-              @if(['txtgen'].includes(cogna.type)){
+              @if(['txtgen','master'].includes(cogna.type)){
                 <div class="rounded rounded-2 bg-light border border-1 overflow-hidden shadow-sm">
                   <div class="p-3 py-2 bg-secondary bg-opacity-25">Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})</div>
                   <div id="chat-response-list" class="p-3 bg-white" style="min-height:300px; max-height:600px;overflow:auto">
@@ -1053,6 +1090,11 @@
                     #cognaType="ngModel" [(ngModel)]="editCognaData.type" [required]="true">
                     <label for="imgcls" class="btn btn-outline-secondary border-2 me-1 mb-1" (click)="setImgClsModels()">
                       Classify<br/>Image
+                  </label>
+                  <input type="radio" class="btn-check" id="master" name="master" value="master"
+                    #cognaType="ngModel" [(ngModel)]="editCognaData.type" [required]="true">
+                    <label for="master" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                      Master<br/>Agent
                   </label>
                 </div>
               </div>
@@ -2295,9 +2337,9 @@
       </div>
     </div> 
     <div class="mb-3">
-      <label class="form-label">SSE URL *</label>
-      <input type="text" class="form-control" [(ngModel)]="editMcpData.sseUrl" #sseUrl="ngModel"
-        name="sseUrl"
+      <label class="form-label">URL *</label>
+      <input type="text" class="form-control" [(ngModel)]="editMcpData.url" #mcpUrl="ngModel"
+        name="mcpUrl"
         required>
     </div>
     <div class="mb-3">
@@ -2314,6 +2356,65 @@
       (click)="c(editMcpData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save MCP Server
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #editCognaSubTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Sub Agent</h4>
+  </div>
+  <div class="modal-body fix-gutter" #cognaSubEditForm="ngForm" ngForm>
+    
+    <div class="mb-1">
+      <label class="form-label">Sub Agent Name *</label>
+      <input type="text" class="form-control" [(ngModel)]="editSubData.name" #name="ngModel"      
+        (ngModelChange)="editSubData.name=toSnakeCase(editSubData.name)"
+        name="name" required>
+      @if (name?.invalid) {
+        <small class="form-text has-warning">
+          @if (name?.errors?.required) {
+            <span class="help-block">Name is required</span>
+          }
+        </small>
+      }
+    </div>
+    <div class="mb-3">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="enabled"
+          [(ngModel)]="editSubData.enabled" name="enabled">
+          <label class="form-check-label" for="enabled">Sub Agent Enabled</label>
+      </div>
+    </div> 
+    <div class="form-group mb-3">
+      <label class="form-label">Select App</label>
+      <select class="form-select" name="appId"
+        (change)="getOtherCognaList(editSubData.appId)"
+        [(ngModel)]="editSubData.appId">
+        @for (app of otherAppList; track app.id) {
+          <option [ngValue]="app.id">{{app.title}}</option>
+        }
+      </select>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Select Cogna *</label>
+      <select class="form-select" name="subId"
+        [(ngModel)]="editSubData.subId" required #mSubPicker>
+        <option value="" disabled>Select cogna...</option>
+        @for (cogna of otherCognaList; track $index){ 
+          <option [ngValue]="cogna.id">{{cogna.name}}
+            [{{cogna.id}}]
+          </option>
+        }
+      </select>
+    </div>        
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="cognaSubEditForm.invalid"
+      (click)="c(editSubData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Sub Agent
     </button>
   </div>
 </ng-template>

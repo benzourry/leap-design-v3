@@ -206,9 +206,7 @@ export class LambdaEditorComponent implements OnInit {
     this.lambdaService.getLambda(id)
       .subscribe(lambda => {
         this.lambda = lambda;
-        // console.log(lambda.code)
         this.initialCode = lambda.code;
-        // this.runRes[id] = undefined;
         this.extraAutoComplete = [];
         this.populateAutoComplete();
         this.moreAutocomplete();
@@ -223,7 +221,6 @@ export class LambdaEditorComponent implements OnInit {
 
   extraAutoComplete: any[] = [];
   populateAutoComplete() {
-    // console.log("#########");
     // this.extraAutoComplete = [];
     this.lambda.binds.forEach(b => {
       if (b.type == 'lookup') {
@@ -396,27 +393,15 @@ export class LambdaEditorComponent implements OnInit {
 
   consoleType = 'text';
   request: any = {}
-  // showPrompt(script) {
-  //   this.request = {};
-  //   const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
-  //   const arrayParam = [...script.matchAll(/_param\.(.+?)\s*/ig)];
-  //   [...array, ...arrayParam].forEach(e => {
-  //     if (!this.request[e[1]]) {
-  //       this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
-  //     }
-  //   })
-  // }
   lambdaPromptsKeys:any[] = []
   lambdaPromptsData :any = {}
   showPrompt(script) {
     this.request = {};
-
     this.lambdaPromptsKeys = [];
     this.lambdaPromptsData = {};
   
     const array = [...script.matchAll(/_request\.getParameter\(["'](.+?)["']\s*\)/ig)];
-    const arrayParam = [...script.matchAll(/_param\.(\w+)/ig)];
-  
+    const arrayParam = [...script.matchAll(/_param\.(\w+)/ig)];  
     const matches = [...array, ...arrayParam];
   
     for (const match of matches) {
@@ -426,7 +411,6 @@ export class LambdaEditorComponent implements OnInit {
       if (!this.lambdaPromptsKeys.includes(paramName)) {
         this.lambdaPromptsKeys.push(paramName);
         this.lambdaPromptsData[paramName] = '';
-        // this.request[paramName] = prompt(`Enter value for parameter '${paramName}'`);
       }
     }
   }
@@ -536,11 +520,13 @@ export class LambdaEditorComponent implements OnInit {
         this.cdr.detectChanges();
       })
   }
+  
   keepMinute00 = (object) => {
     if (object['clock'].length >= 4) {
       object['clock'] = object['clock'].slice(0, -1) + '0';
     }
   }
+
   otherBinds() {
     this.bindingSrcs.push({ name: "⚙ Mailer", type: '_mail' })
     this.bindingSrcs.push({ name: "⚙ Entry", type: '_entry' })
@@ -558,6 +544,7 @@ export class LambdaEditorComponent implements OnInit {
     this.bindingSrcs.push({ name: "⚙ HTTP", type: '_http' })
     this.bindingSrcs.push({ name: "⚙ PDF", type: '_pdf' })
   }
+
   getLookupList() {
     this.lookupService.getLookupList({ appId: this.appId, size: 999 })
       .subscribe(res => {
@@ -567,16 +554,6 @@ export class LambdaEditorComponent implements OnInit {
         this.cdr.detectChanges();
       });
   }
-
-  // getFormList() {
-  //   this.formService.getListBasic({appId:this.appId})
-  //     .subscribe(res => {
-  //       this.formList = res.content;
-  //       this.formList.forEach(d=>{
-  //         this.bindingSrcs.push({name:d.title,type:'form',srcId:d.id})
-  //       })
-  //     });
-  // }
 
   isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;
 
@@ -613,6 +590,7 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   nl2br = nl2br;// (text) => text ? text.replace(/\n/g, "<br/>") : text;
+
   br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
 
   toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
@@ -620,7 +598,6 @@ export class LambdaEditorComponent implements OnInit {
   toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
 
   toHyphen = toHyphen; //(string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
-
 
   itemExist = (f) => this.lambdaList().filter(e => e.code == f.code).length > 0 && !f.id;
 
@@ -633,6 +610,7 @@ export class LambdaEditorComponent implements OnInit {
     { name: "Friday", value: 6 },
     { name: "Saturday", value: 7 }
   ]
+
   monthOfYearList = [
     { name: "January", value: 0 },
     { name: "February", value: 1 },
@@ -649,6 +627,5 @@ export class LambdaEditorComponent implements OnInit {
   ]
 
   dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
-
 
 }

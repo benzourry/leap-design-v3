@@ -93,6 +93,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'OpenAI', code: 'openai' },
     { name: 'HuggingFace', code: 'huggingface' },
     { name: 'VertexAi', code: 'vertex-ai' },
+    // { name: 'Gemini', code: 'vertex-ai' },
     { name: 'LocalAI', code: 'localai' },
     { name: 'Ollama', code: 'ollama' },
   ]
@@ -103,6 +104,7 @@ export class CognaEditorComponent implements OnInit {
     'huggingface': { name: 'HuggingFace', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'vertex-ai': { name: 'Vertex AI', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'vertex-ai-gemini': { name: 'Vertex AI Gemini', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
+    'gemini': { name: 'Gemini', logo: 'https://www.gstatic.com/devrel-devsite/prod/va726f77ce19c264bc8ae4520f2ee26cc9641a80eead40c2c8c599dc34ccb25d1/googledevai/images/gemini-api-logo.svg' },
     'localai': { name: 'LocalAI', logo: 'https://github.com/go-skynet/LocalAI/assets/2420543/0966aa2a-166e-4f99-a3e5-6c915fc997dd' },
     'ollama': { name: 'Ollama', logo: 'https://ollama.com/public/ollama.png' },
   }
@@ -124,9 +126,10 @@ export class CognaEditorComponent implements OnInit {
   // txtgen, txtcls, txtext, imggen
   inferModelTypeList = [
     { name: 'OpenAI', code: 'openai', use: ['txtgen','txtcls','txtext','imggen'] },
+    { name: 'Gemini', code: 'gemini', use: ['txtgen','txtcls','txtext','imggen'] },
     { name: 'DeepSeek', code: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'HuggingFace', code: 'huggingface', use: ['txtgen','txtcls','txtext'] },
-    { name: 'VertexAi Gemini', code: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
+    // { name: 'VertexAi Gemini', code: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'LocalAI', code: 'localai', use: ['txtgen','txtcls','txtext'] },
     { name: 'Ollama', code: 'ollama', use: ['txtgen','txtcls','txtext'] },
     { name: 'Zhipu AI', code: 'zhipuai', use: ['txtgen','txtcls','txtext'] },
@@ -142,6 +145,13 @@ export class CognaEditorComponent implements OnInit {
     { name: 'GPT-4.1', code: 'gpt-4.1', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4.1 MINI', code: 'gpt-4.1-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+
+    { name: 'Gemini 1.0 Pro', code: 'gemini-1.0-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Gemini 1.5 Pro', code: 'gemini-1.5-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Gemini 1.5 Flash', code: 'gemini-1.5-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
+    { name: 'Gemini 2.0 Flash', code: 'gemini-2.0-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
+
     // { name: 'R1', code: 'r1', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Reasoner', code: 'deepseek-reasoner', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
@@ -158,7 +168,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'CF-WAI-Stable Diffusion', code: 'stable-diffusion-xl', type: 'vertex-ai-gemini', use: ['imggen'] },
     { name: 'COGVIEW-3', code: 'cogview-3', type: 'zhipuai', use: ['imggen'] },
 
-    { name: 'Gemini Pro', code: 'gemini-pro', type: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
+    // { name: 'Gemini Pro', code: 'gemini-pro', type: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
     { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
 
@@ -280,6 +290,8 @@ export class CognaEditorComponent implements OnInit {
                   this.lookupList = res.content;
                   this.cdr.detectChanges();
                 })
+
+                this.getOtherCognaList(this.appId);
             }
 
             this.loadCognaList(1);
@@ -295,9 +307,7 @@ export class CognaEditorComponent implements OnInit {
         }).subscribe(res => {
             this.otherAppList = res.content;
             this.cdr.detectChanges();
-        })
-
-
+        });
 
         this.route.queryParams
           .subscribe((params: Params) => {
@@ -355,8 +365,6 @@ export class CognaEditorComponent implements OnInit {
   formList: any[];
   getFormList(appId) {
       let params = { appId: appId }
-      // new HttpParams()
-      //     .set("appId", this.app.id)
 
       this.formService.getListBasic(params)
           .subscribe(res => {
@@ -449,25 +457,11 @@ export class CognaEditorComponent implements OnInit {
 
   editSrcData: any;
   editCognaSrc(content, cognaSrc, isNew) {
-    // console.log(cogna);
-    // cogna.content = this.br2nl(cogna.content);
     this.editSrcData = cognaSrc;
 
-    // console.log(this.editSrcData);
     if (!this.editSrcData.appId) this.editSrcData.appId = this.app.id;
       
     this.loadOtherAppList(this.editSrcData?.type, this.editSrcData?.appId)
-    // if (this.editSrcData.appId){
-    //   this.loadOtherAppList(this.editSrcData?.type, this.editSrcData?.appId)
-    // }else{
-    //   this.editSrcData.appId = this.app.id;
-    // }
-        // if (this.editItemData.type == 'modelPicker' && this.editItemData.dataSource) {
-        //     this.loadDataset(this.editItemData.dataSource);
-        // } else {
-        //     this.dataset = null;
-        // }
-
 
     if (this.editSrcData?.type == 'dataset' && this.editSrcData?.srcId) {
       this.loadDataset(this.editSrcData.srcId);
@@ -510,22 +504,11 @@ export class CognaEditorComponent implements OnInit {
   paramEdit:any={}
   editToolData: any;
   editCognaTool(content, cognaTool, isNew) {
-    // console.log(cogna);
-    // cogna.content = this.br2nl(cogna.content);
     this.editToolData = cognaTool;
 
-    // console.log(this.editSrcData);
     if (!this.editToolData.appId) this.editToolData.appId = this.app.id;
 
-
-    // if (this.editToolData.appId){
-      this.getLambdaList(this.editToolData.appId)
-      // this.loadOtherAppList(this.editToolData?.type, this.editToolData?.appId)
-    // }else{
-    //   this.editToolData.appId = this.app.id;
-    // }
-
-    // console.log("lambdaId",this.editToolData.lambdaId)
+    this.getLambdaList(this.editToolData.appId)
 
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -568,23 +551,9 @@ export class CognaEditorComponent implements OnInit {
 
   editMcpData: any;
   editCognaMcp(content, cognaMcp, isNew) {
-    // console.log(cogna);
-    // cogna.content = this.br2nl(cogna.content);
     this.editMcpData = cognaMcp;
 
-    // console.log(this.editSrcData);
     if (!this.editMcpData.appId) this.editMcpData.appId = this.app.id;
-
-
-    // if (this.editToolData.appId){
-      // this.getLambdaList(this.editToolData.appId)
-      // this.loadOtherAppList(this.editToolData?.type, this.editToolData?.appId)
-    // }else{
-    //   this.editToolData.appId = this.app.id;
-    // }
-
-    // console.log("lambdaId",this.editToolData.lambdaId)
-
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
@@ -597,6 +566,28 @@ export class CognaEditorComponent implements OnInit {
             this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna MCP server saving failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
+          });
+      }, res => { })
+  }
+
+  editSubData: any;
+  editCognaSub(content, cognaSub, isNew) {
+    this.editSubData = cognaSub;
+
+    if (!this.editSubData.appId) this.editSubData.appId = this.app.id;
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static' })
+      .result.then(data => {
+
+        this.cognaService.saveSub(this.cognaId, data)
+          .subscribe(res => {
+            this.loadCognaList(this.pageNumber);
+            this.loadCogna(this.cognaId);
+            this.toastService.show("Cogna Sub Agent successfully saved", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
+          }, err => {
+            this.toastService.show("Cogna Sub Agent server saving failed", { classname: 'bg-danger text-light' });
             this.cdr.detectChanges();
           });
       }, res => { })
@@ -782,14 +773,12 @@ export class CognaEditorComponent implements OnInit {
   url: string = "";
 
   lookupEntries:any[]=[];
-  // cognaRunning: boolean = true;
-  // cognaUp: boolean = true;
+  
   loadCogna(id) {
     this.cognaId = id;
 
     this.fileList = [];
 
-    // console.log(id);
     this.cognaService.getCogna(id)
       .subscribe(cogna => {
         this.cogna = cogna;
@@ -798,7 +787,7 @@ export class CognaEditorComponent implements OnInit {
           this.extractJsonObj = JSON.parse(cogna.data.extractSchema||{});
         }        
         let fromStorage = sessionStorage.getItem("cogna-" + cogna.id)
-        // console.log(fromStorage);
+        
         if (fromStorage) {
           this.chatResponseList = JSON.parse(fromStorage)
         } else {
@@ -821,7 +810,6 @@ export class CognaEditorComponent implements OnInit {
           this.cdr.detectChanges();
         })  
       }, error => {
-        // console.log(error);
         this.cdr.detectChanges();
       })
 
@@ -832,8 +820,6 @@ export class CognaEditorComponent implements OnInit {
         }catch(e){}
       }
       this.cdr.detectChanges();
-
-
   }
 
   loadLookupEntries(lookupId){
@@ -1221,6 +1207,7 @@ export class CognaEditorComponent implements OnInit {
   datasetList: any[];
   bucketList: any[];
   lambdaList: any[];
+  otherCognaList: any[];
   // formList: any[];
   getDatasetList(appId) {
     this.datasetService.getDatasetList(appId)
@@ -1252,11 +1239,17 @@ export class CognaEditorComponent implements OnInit {
       })
   }
 
+  getOtherCognaList(appId) {
+    this.cognaService.getCognaList({ appId: appId })
+      .subscribe(res => {
+        this.otherCognaList = res.content;
+        this.cdr.detectChanges();
+      })
+  }
+
   getEvalContext = (includeActive: boolean = false, additionalData: any = {}) => {
-    let passive = {
-    }
-    let active = {
-    };
+    let passive = {};
+    let active = {};
     return includeActive ? { ...passive, ...active, ...additionalData } : { ...passive, ...additionalData };
   }
 
@@ -1317,9 +1310,9 @@ export class CognaEditorComponent implements OnInit {
   toSnakeCase = toSnakeCase; //(string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
   toHyphen = toHyphen; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
 
-  isResponse=(text)=>{
+  /*isResponse=(text)=>{
     return text.includes("Here is some information that might be useful for answering:");
-  }
+  }*/
   linkify=linkify;
   imagify=imagify;
   targetBlank=targetBlank;

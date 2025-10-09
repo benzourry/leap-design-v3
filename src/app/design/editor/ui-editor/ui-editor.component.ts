@@ -95,18 +95,21 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
         this.commService.changeEmitted$.subscribe(data => {
             this.counts.update(c=>({...c, [data.key]: data.value}));
-            if (data.key == 'form') {
-                this.getFormList();
+            if (this.app.id){
+                if (data.key == 'form') {
+                    this.getFormList();
+                }
+                if (data.key == 'dataset') {
+                    this.getDatasetList();
+                }
+                if (data.key == 'screen') {
+                    this.getScreenList();
+                }
+                if (data.key == 'dashboard') {
+                    this.getDashboardList();
+                }                
             }
-            if (data.key == 'dataset') {
-                this.getDatasetList();
-            }
-            if (data.key == 'screen') {
-                this.getScreenList();
-            }
-            if (data.key == 'dashboard') {
-                this.getDashboardList();
-            }
+
         });
 
         this.route.parent.url.subscribe(e => {
