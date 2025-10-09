@@ -35,7 +35,7 @@
                 [(ngModel)]="_editFormData.x.extended">
                 <option [ngValue]="null"> * No Form </option>
                 @for (form of formListRoot(); track form.id) {
-                <option [ngValue]="form.id">{{form.title}}
+                <option [value]="form.id">{{form.title}}
                 </option>
                 }
               </select>
