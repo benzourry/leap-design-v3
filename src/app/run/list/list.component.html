@@ -62,21 +62,21 @@
               <div ngbDropdownMenu aria-labelledby="dropdownExport">
                 @if (dataset()?.exportXls) {
                   <a title="Export to Excel" ngbDropdownItem target="blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
                     Export to Excel
                   </a>
                 }
                 @if (dataset()?.exportCsv) {
                   <a title="Export to CSV" ngbDropdownItem target="blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
                     Export to CSV
                   </a>
                 }
                 @if (dataset()?.exportPdf) {
                   <a title="Export to PDF" ngbDropdownItem target="blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
+                    href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
                     Export to PDF
                   </a>

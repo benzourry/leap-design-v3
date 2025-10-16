@@ -234,6 +234,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
             success(events);
 
+            this.initScreen(this.screen().data.f);
+
             this.loading.set(false);
           })
       }).bind(this),

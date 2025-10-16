@@ -536,7 +536,6 @@
                                     }@else {
                                       <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                                     }  
-                                  <!-- <div class="position-relative p-3 bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key]=!hideGroup[e.code+listKv?.key]"> -->
                                     <div class="ms-2">
                                       @if (listKv?.key=='undefined'){
                                         <span class="text-muted fst-italic"> Data not available</span>
@@ -544,7 +543,6 @@
                                         <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
                                       }
                                     </div>
-                                  <!-- </div> -->
                                   <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
                                   </button>
                                 }
