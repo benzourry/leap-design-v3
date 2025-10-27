@@ -45,6 +45,7 @@ import { FieldViewComponent } from '../../../../run/_component/field-view.compon
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
+import { KryptaService } from '../../../../service/krypta.service';
 // declare var LeaderLine: any;
 // import { combineLatest } from 'rxjs';
 
@@ -311,6 +312,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     private groupService = inject(GroupService);
     private bucketService = inject(BucketService);
     private cognaService = inject(CognaService);
+    private kryptaService = inject(KryptaService);
     private endpointService = inject(EndpointService);
     private datasetService = inject(DatasetService);
     private screenService = inject(ScreenService);
@@ -369,6 +371,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getAccessList();
                             this.getBucketList();
                             this.getCognaList();
+                            this.getWalletList();
                             this.getDatasetList(this.app.id);
                             this.getScreenList(this.app.id);
                             this.getEndpointList();
@@ -418,6 +421,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.cognaService.getCognaList({ appId: this.app.id })
             .subscribe(res => {
                 this.cognaList = res.content;
+            });
+    }
+
+    walletList: any[] = [];
+    getWalletList() {
+        this.kryptaService.getWalletList({ appId: this.app.id })
+            .subscribe(res => {
+                this.walletList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
             });
     }
 

@@ -23,6 +23,7 @@ export const DESIGN_ROUTES: Routes = [
         { path: 'user', loadComponent: () => import('./editor/group-editor/group-editor.component').then(mod => mod.GroupEditorComponent) },
         // { path: 'bucket', component: BucketManagerComponent },
         { path: 'bucket', loadComponent: () => import('./editor/bucket-manager/bucket-manager.component').then(mod => mod.BucketManagerComponent) },
+        { path: 'krypta', loadComponent: () => import('./editor/krypta-editor/krypta-editor.component').then(mod => mod.KryptaEditorComponent) },
         { path: 'summary', loadComponent: () => import('../admin/app-summary/app-summary.component').then(mod => mod.AppSummaryComponent), data:{platform:false} },
   
       ],

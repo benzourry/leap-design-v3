@@ -1,0 +1,564 @@
+<style>
+  input[type=search].start {
+  /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+background-size: 20px 16px;
+border: none;
+padding: 6px 10px 6px 32px;
+vertical-align: middle;
+border-radius: 10em;
+color: black;
+max-width: 100%;
+}
+input[type=search].start:focus {
+border-color: #0078d7;
+outline: none;
+-webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+-moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+}
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+    <!-- <h4>{{app?.title}}</h4>
+    <p>{{app?.description}}</p> -->
+    <h5 class="mb-3">Krypta Manager</h5>
+    <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadWalletList(1)"
+      autocapitalize="none"
+      [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading()) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }@else {
+        <div class="mb-3">
+          @for (a of kryptaList | filter:searchText; track a.id) {
+            <a class="pointer element" [routerLink]="['/design',appId,'krypta']"
+              [queryParams]="{id:a?.id}" [class.active]="a.id==kryptaId"
+              routerLinkActive="active"
+              >
+              <div class="list-group-item-heading">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editWallet(editWalletTpl,{email: user.email}, true)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Wallet
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (kryptaTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="kryptaTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadWalletList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+
+      @if (!contractLoading()) {
+        <div class="mb-3">
+          <small class="ms-3">Smart Contracts</small>
+          @for (a of contractList | filter:searchText; track a.id) {
+            <div class="pointer element link-item">
+              <div class="list-group-item-heading"  [class.strike]="a.enabled==0">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+              <div class="element-edit" style="position:absolute;top:10px;right:5px;">
+                <button type="button" class="btn btn-secondary btn-round btn-sm"
+                  (click)="editContract(editContractTpl, a, false)">
+                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-secondary btn-round btn-sm" (click)="removeContract(removeContractTpl,a)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+              </div>
+            </div>
+          }
+          <a class="pointer element" (click)="editContract(editContractTpl,{}, true)" [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Contract
+          </a>
+        </div>
+      }
+
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (krypta) {
+          <div>
+            <div class="">
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{krypta.name}}</h5>
+                <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{krypta.description}}
+                </div>
+              </div>
+              <div class="d-flex flex-row">
+                <div class="flex-grow-1 pt-2">
+                  @if (krypta.shared) {
+                    <span>
+                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
+                      Shared Krypta
+                    </span>
+                  }@else{
+                    <span class="text-danger">
+                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                      Private Krypta
+                    </span>
+                  }
+                </div>
+                <div class="d-flex flex-row">
+                  @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) {
+                    <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                      (click)="editWallet(editWalletTpl,krypta,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                      (click)="removeWallet(removeWalletTpl,krypta)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  }
+
+                </div>
+              </div>
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }@else{
+            }
+            <div class="card mt-2">
+              <div class="card-header">Wallet Info</div>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                  <div class="small">RPC URL</div>
+                  {{krypta.rpcUrl}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Chain ID</div>
+                  {{krypta.chainId}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Contract Address</div>
+                  @if (!krypta.contractAddress){
+                    <div class="alert alert-warning p-2 mb-2 mt-2">
+                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                      Contract is not initialized. Please initialize the contract to get address.
+                    </div>
+                  }@else{
+                    {{krypta.contractAddress}}
+                  }
+                </div>
+                <div class="list-group-item">
+                  <div class="small mb-2">Contract Functions</div>
+                  @if (!krypta.contractAddress){
+                    <div class="alert alert-warning p-2 mb-2">
+                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                      Contract is not initialized. Please initialize the contract to run functions.
+                    </div>
+                  }@else{
+                    @for (f of krypta.contract?.abiSummary?.functions; track $index) {
+                      <button class="btn btn-light me-1 mb-1" (click)="runContractFn(runContractFnTpl, f)">
+                        <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                        {{f.name}}
+                      </button>
+                    }                    
+                  }
+
+                </div>
+                <div class="list-group-item">
+                  <div class="small mb-2">Contract Functions</div>
+                  @if (!krypta.contractAddress){
+                    <div class="alert alert-warning p-2 mb-2">
+                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                      Contract is not initialized. Please initialize the contract to view logs.
+                    </div>
+                  }@else{
+                    @for (f of krypta.contract?.abiSummary?.events; track f) {
+                      <button class="btn btn-light btn-sm me-1 mb-1" (click)="logsEvent(f)">{{f}}</button>
+                    }
+                  }                  
+                </div>
+              </div>
+            </div>
+
+            <div>
+              @if (!krypta.contractAddress){
+                <button class="btn btn-primary mt-2 me-2" (click)="initContract()">
+                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                  Initialize Contract
+                </button>
+              }@else{
+                <button class="btn btn-secondary mt-2 me-2" (click)="initContract()">
+                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                  Re-initialize Contract
+                </button>
+                <button class="btn btn-secondary mt-2 me-2" (click)="verifyHash()">
+                  <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                  Verify Hash
+                </button>
+
+              }
+            </div>
+            
+            @if (resultLoading()){
+              <span class="spinner-border spinner-border-sm m-3" aria-hidden="true"></span>
+            }@else{
+              @if (result[kryptaId]) {
+                <div class="card mt-2 mb-2">
+                  <div class="small p-2 text-white bg-success d-flex">
+                    <div>
+                      Result
+                    </div>                                    
+                  </div>
+                  
+                  <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                      @if(result[kryptaId].type=='transaction'){
+                        <div>Transaction Hash: {{result[kryptaId].txHash}}</div>
+                        <div>Status: {{result[kryptaId].status}}</div>
+                        <div>Gas Used: {{result[kryptaId].gasUsed}}</div>
+                      }@else if(result[kryptaId].type=='read'){ 
+                        @if(result[kryptaId].result){
+                          <pre class="m-0"><code class="language-js" [innerHtml]="result[kryptaId].result"></code></pre>
+                        }@else{
+                          <div>No data returned.</div>
+                        }
+                        
+                      }@else if(result[kryptaId].type=='verify'){
+                        <json-viewer [json]="result[kryptaId]"></json-viewer>
+                      }@else if(result[kryptaId].type=='logs'){
+                        <json-viewer [json]="result[kryptaId]"></json-viewer>
+                      }
+                    
+                  </div>
+                </div>              
+              }
+            }
+          @if (error[krypta.id]) {
+            <div class="card mt-2">
+              <!-- <div class="card-body"> -->
+              <div class="small mb-3 p-3 text-white bg-danger">Error</div>
+              <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                <pre class="m-0"><code class="language-js">{{error[krypta.id].error | json}}</code></pre>
+              </div>
+            <!-- </div> -->
+          </div>
+        }
+      </div>
+    }
+    @if (!krypta) {
+      <div style="color:#aaa;">
+        <h3>Please select Krypta from the list on the left to view it's data.</h3>
+      </div>
+    }
+  </div>
+</div>
+</div>
+</div>
+
+
+<ng-template #removeWalletTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Wallet</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Krypta Name</label>
+          <p class="form-control-static">{{removeWalletData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeWalletData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeWalletData)">
+        <i class="icon-minus-sign-alt"></i> Remove Wallet
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editWalletTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Wallet Info</h4>
+  </div>
+  <div class="modal-body fix-gutter" #kryptaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Wallet Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editWalletData.name"
+        #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [(ngModel)]="editWalletData.description"
+        name="description"></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">RPC URL *</label>
+        <input type="text" class="form-control" [(ngModel)]="editWalletData.rpcUrl" name="rpcUrl"
+          placeholder="ie: http://127.0.0.1:8545" required>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Chain ID *</label>
+        <input type="number" class="form-control" [(ngModel)]="editWalletData.chainId" name="chainId"
+          placeholder="ie: 1337" required>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Private Key</label>
+        <input type="text" class="form-control" [(ngModel)]="editWalletData.privateKey" name="privateKey"
+          placeholder="Private Key" required>
+      </div>
+      <div class="form-group mb-3 mt-1">
+        <label class="form-label">Smart Contract</label>
+        <select class="form-select" name="contract" [compareWith]="compareByIdFn"
+          [(ngModel)]="editWalletData.contract">
+          <option [ngValue]="null"> * Default contract </option>
+          @for (item of contractList; track item.id) {
+          <option [ngValue]="item">{{item?.name}}
+          </option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="kryptaEditForm.invalid"
+        (click)="c(editWalletData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Wallet
+    </button>
+  </div>
+</ng-template>
+
+
+<ng-template #removeContractTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Contract</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Contract Name</label>
+          <p class="form-control-static">{{removeContractData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeContractData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeContractData)">
+        <i class="icon-minus-sign-alt"></i> Remove Contract
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editContractTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Contract Editor</h4>
+  </div>
+  <div class="modal-body fix-gutter" #contractEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Contract Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editContractData.name"
+        #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [(ngModel)]="editContractData.description"
+        name="description"></textarea>
+      </div>
+
+      <div class="form-group mb-3">
+        <label class="form-label small mb-2">Solidity Codes</label>
+        <div class="form-control overflow-hidden p-0">
+          <app-cm name="f" lang="javascript" [(ngModel)]="editContractData.sol" hideControl="true" [skipCheck]="true"
+            subType="passive" [linenumber]="true">
+          </app-cm>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <button class="btn btn-secondary" (click)="compileContract(editContractData.id)">
+          <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+          Compile Contract
+        </button>
+        @if(editContractData.bin){
+          <div class="list-group mt-2">
+            <div class="list-group-item">
+              <div class="small">Bytecode (BIN)</div>
+              <div>{{editContractData.bin}}</div>
+            </div>
+            <div class="list-group-item">
+              <div class="small">ABI</div>
+              <div>{{editContractData.abi}}</div>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="contractEditForm.invalid"
+        (click)="c(editContractData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Contract
+    </button>
+  </div>
+</ng-template>
+
+
+<!-- <ng-template #kryptaPromptTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Wallet Data</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+          <div class="form-group mb-3">
+            <label class="form-label">Data ID</label>
+            <input type="number" class="form-control" [(ngModel)]="request.dataId"
+              name="{{krypta.id}}-data-certId" id="{{krypta.id}}-data-certId">
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Data</label>
+            <input type="text" class="form-control" [(ngModel)]="request.data"
+              name="{{krypta.id}}-data-data" id="{{krypta.id}}-data-data">
+          </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(request)">
+        <i class="icon-minus-sign-alt"></i> Add Data
+      </button>
+    </div>
+  </div>
+</ng-template> -->
+
+<!-- <ng-template #callContractFunctionTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Call Contract Function</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+
+        <select class="form-select" name="cFunction"
+          [(ngModel)]="ccfData.function">
+          <option [ngValue]="null"> * Default contract </option>
+          @for (item of krypta.contract?.abiSummary?.functions; track item.id) {
+          <option [ngValue]="item">{{item?.name}}
+          </option>
+          }
+        </select>
+
+        @for (b of ccfData.function?.inputs; track $index) {
+          <div class="form-group mb-3">
+            <label class="form-label">{{b.name}}</label>
+            <input type="text" class="form-control" [(ngModel)]="request.data"
+              name="{{krypta.id}}-data-{{b.name}}" id="{{krypta.id}}-data-data">
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(request)">
+        <i class="icon-minus-sign-alt"></i> Add Data
+      </button>
+    </div>
+  </div>
+</ng-template> -->
+
+<ng-template #runContractFnTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Run Contract Function</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+
+        @for (b of rcfData.inputs; track $index) {
+          <div class="form-group mb-3">
+            <label class="form-label">{{b.name}}</label>
+            <input type="text" class="form-control" [(ngModel)]="request[kryptaId][b.name]"
+              name="{{krypta.id}}-data-{{b.name}}" id="{{krypta.id}}-data-{{b.name}}">
+          </div>
+        }@empty{
+          <div>No input parameters for this function.</div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(request[kryptaId])">
+        <i class="icon-minus-sign-alt"></i> Run {{rcfData.name}}
+      </button>
+    </div>
+  </div>
+</ng-template>

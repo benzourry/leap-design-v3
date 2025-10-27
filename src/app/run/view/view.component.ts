@@ -178,6 +178,10 @@ export class ViewComponent implements OnInit, OnDestroy {
     return !code || res;
   }
 
+  getQrURL(code:string){
+    return baseApi + '/form/qr?code=' + encodeURIComponent(code);
+  }
+
   // evalAllEntry(entry,data) { // should be {data:{}} structure, ie: approval, entry
   //   this.watchList.forEach((value, key) => {
   //     if (!entry) {
@@ -385,6 +389,10 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   openNav = (opened: boolean) => {
     this.pageTitleService.open(opened);
+  }
+
+  getKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 
 
@@ -1041,6 +1049,13 @@ export class ViewComponent implements OnInit, OnDestroy {
 
 
   viewTrail(content) {
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static' })
+      .result.then(res => {
+      }, res => { });
+  }
+
+  viewTxHash(content) {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {

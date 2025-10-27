@@ -64,10 +64,18 @@
             <div class="limit-width centered fix-gutter" [class.disabled]="offline()"> 
               @if (action()!='approve') {
                 <div class="text-end">
+
                   @if (trails().length>0 && !form()?.x?.hideTrail) {
                   <!-- @if (trails.length>0 && ((!form()?.hideStatus) || (form()?.admin && user.groups[form()?.admin.id])) && !form()?.x?.hideTrail) { -->
                     <button type="button" class="btn btn-round btn-light btn-sm print-hide"
                     (click)="viewTrail(viewTrailTpl)">View Trails</button>
+                  }
+                  <!-- {{form()?.x?.wallet}}, {{getKeys(entry.txHash).length}} -->
+                  @if (getKeys(entry.txHash).length>0 && form()?.x?.wallet) {
+                    <button type="button" class="btn ms-1 btn-round btn-light text-success btn-sm print-hide"
+                    (click)="viewTxHash(viewTxHashTpl)">
+                      <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon> Recorded
+                    </button>
                   }
                 </div>
               }
@@ -509,6 +517,24 @@
           <span> - {{trail.remark}}</span>
         }
         <div class="small">{{trail.email}}</div>
+      </div>
+    }
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+  </div>
+</ng-template>
+<ng-template #viewTxHashTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Transaction Hash (Smart Contract)</h4>
+  </div>
+  <div class="list-group list-group-flush">
+    @for (txHash of entry.txHash|keyvalue; track $index) {
+      <!-- {{txHash}} -->
+      <div class="list-group-item">
+        <div class="small">{{txHash.key}}</div>
+        <div class="text-break">{{txHash.value}}</div>
+        <img [src]="getQrURL(txHash.value)" alt="QR Code for {{txHash.value}}" width="200" height="200">
       </div>
     }
   </div>

@@ -1006,9 +1006,10 @@
 
 <ng-template #editFormTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
+    <!-- {{walletList|json}} -->
     <app-edit-form [form]="editFormData" [app]="app" [user]="user"
-     [formList]="formList" [accessList]="accessList"
-     [extraAutoCompleteJs]="extraAutoCompleteJs" [close]="c" [dismiss]="d"></app-edit-form>
+     [formList]="formList" [accessList]="accessList" [walletList]="walletList"
+     [extraAutoCompleteJs]="extraAutoCompleteJs" [extraAutoCompleteHtml]="extraAutoCompleteHtml" [close]="c" [dismiss]="d"></app-edit-form>
   }@loading {
     <div class="text-center m-5">
       <div class="spinner-grow text-primary" role="status">
