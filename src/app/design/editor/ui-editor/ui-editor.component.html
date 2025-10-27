@@ -472,7 +472,7 @@
 <ng-template #editFormTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
     <app-edit-form [dismiss]="d" [close]="c" [app]="app" [user]="user" [form]="editFormData"
-      [formList]="formList"
+      [formList]="formList" [walletList]="walletList"
       [accessList]="accessList"></app-edit-form>
   }@loading {
     <div class="text-center m-5">

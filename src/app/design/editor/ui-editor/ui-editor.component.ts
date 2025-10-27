@@ -35,6 +35,7 @@ import { EntryService } from '../../../run/_service/entry.service';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
 import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/clone-dashboard.component';
+import { KryptaService } from '../../../service/krypta.service';
 
 @Component({
     selector: 'app-ui-editor',
@@ -66,6 +67,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     private dashboardService = inject(DashboardService);
     private screenService = inject(ScreenService);
     private cognaService = inject(CognaService);
+    private kryptaService = inject(KryptaService);
     private lookupService = inject(LookupService);
     private mailerService = inject(MailerService);
     private groupService = inject(GroupService);
@@ -144,6 +146,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                                 this.getScreenList();
 
                                 this.getCognaList(res.id);
+                                this.getWalletList(res.id);
                                 this.getMailerList(res.id);
                                 this.getAccessList(res.id);
                                 this.getLookupList(res.id);
@@ -313,6 +316,15 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 this.cognaList.forEach(f => this.appService.searchInApp.set('cogna' + f.id, { icon: ['fas', 'robot'], name: 'Cogna: ' + f.name, route: ['cogna'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
             })
+    }
+
+    walletList: any[] = [];
+    getWalletList(appId) {
+        this.kryptaService.getWalletList({ appId: appId, size: 9999 })
+            .subscribe(res => {
+                this.walletList = res.content;
+                this.cdr.detectChanges(); // <--- Add here
+            });
     }
 
 
