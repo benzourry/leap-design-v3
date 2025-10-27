@@ -257,6 +257,13 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_jsoup.parseBodyFragment", type: "function", apply: "_jsoup.parseBodyFragment(`#{html-fragment}`)", detail: "Parse document from HTML fragment text" }
         );
       }
+      if (b.type == '_krypta') {
+        this.extraAutoComplete.push(
+          { label: "_krypta.call", type: "function", apply: "_krypta.call(#{walletId},#{functionName},#{args})", detail: "Call function in smart contract" },
+          { label: "_krypta.verify", type: "function", apply: "_krypta.verify(#{walletId},'#{txHash}')", detail: "Verify transaction hash" },
+          { label: "_krypta.logs", type: "function", apply: "_krypta.logs(#{walletId},#{eventName})", detail: "View transaction logs for specific event" }
+        );
+      }
       if (b.type == '_live') {
         this.extraAutoComplete.push(
           { label: "_live.publish", type: "function", apply: "_live.publish(#{channel-list},'#{url}')", detail: "Publish notification for live subscription" }
@@ -536,6 +543,7 @@ export class LambdaEditorComponent implements OnInit {
     this.bindingSrcs.push({ name: "⚙ User", type: '_user' })
     this.bindingSrcs.push({ name: "⚙ Mapper", type: '_mapper' })
     this.bindingSrcs.push({ name: "⚙ Jsoup", type: '_jsoup' })
+    this.bindingSrcs.push({ name: "⚙ Krypta", type: '_krypta' })
     this.bindingSrcs.push({ name: "⚙ Live", type: '_live' })
     this.bindingSrcs.push({ name: "⚙ Token", type: '_token' })
     this.bindingSrcs.push({ name: "⚙ SQL", type: '_sql' })
