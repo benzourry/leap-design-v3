@@ -345,7 +345,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         name="description"></textarea>
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">RPC URL *</label>
+        <label class="form-label">RPC URL (EVM-compatible network)*</label>
         <input type="text" class="form-control" [(ngModel)]="editWalletData.rpcUrl" name="rpcUrl"
           placeholder="ie: http://127.0.0.1:8545" required>
       </div>
@@ -355,15 +355,15 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
           placeholder="ie: 1337" required>
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">Private Key</label>
+        <label class="form-label">Private Key *</label>
         <input type="text" class="form-control" [(ngModel)]="editWalletData.privateKey" name="privateKey"
           placeholder="Private Key" required>
       </div>
       <div class="form-group mb-3 mt-1">
-        <label class="form-label">Smart Contract</label>
+        <label class="form-label">Smart Contract *</label>
         <select class="form-select" name="contract" [compareWith]="compareByIdFn"
-          [(ngModel)]="editWalletData.contract">
-          <option [ngValue]="null"> * Default contract </option>
+          [(ngModel)]="editWalletData.contract" required>
+          <option [ngValue]="null" style="color:gray"> * No contract selected </option>
           @for (item of contractList; track item.id) {
           <option [ngValue]="item">{{item?.name}}
           </option>
