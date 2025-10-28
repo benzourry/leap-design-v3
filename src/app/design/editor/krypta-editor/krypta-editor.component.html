@@ -327,7 +327,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
   </div>
   <div class="modal-body fix-gutter" #kryptaEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
-      <label class="form-label">Wallet Name</label>
+      <label class="form-label">Wallet Name *</label>
       <input type="text" class="form-control" [(ngModel)]="editWalletData.name"
         #name="ngModel"
         name="name" required>
@@ -442,10 +442,17 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       </div>
 
       <div class="mb-3">
-        <button class="btn btn-secondary" (click)="compileContract(editContractData.id)">
-          <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-          Compile Contract
-        </button>
+        @if(editContractData.id){
+          <button class="btn btn-secondary" (click)="compileContract(editContractData.id)">
+            <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+            Compile Contract
+          </button>
+        }@else {
+          <div class="alert alert-warning p-2 mb-2">
+            <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+            Contract is not yet saved. Save the contract first and re-edit to compile.
+          </div>
+        }
         @if(editContractData.bin){
           <div class="list-group mt-2">
             <div class="list-group-item">
