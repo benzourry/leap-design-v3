@@ -2106,7 +2106,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.lookupService.saveEntry(lookup.id, data)
                             .subscribe({
                                 next: (res) => {
-                                    this.getLookup(field.code, field.dataSourceInit ? this.parseJson(field.dataSourceInit) : null);
+                                    // everytime an entry is saved, we need to clear the cache observable to force reload
+                                    let param = field.dataSourceInit ? this.parseJson(field.dataSourceInit) : null;
+                                    var cacheId = 'key_' + btoaUTF(this.lookupKey[field.code].ds + hashObject(param ?? {}), null);
+                                    delete this.lookupDataObs[cacheId];
+
+                                    this.getLookup(field.code, param);
                                     this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
                                 }, error: (err) => {
                                     this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });

@@ -106,7 +106,7 @@ export class KryptaEditorComponent implements OnInit {
 
     user: any;
     kryptaId = '';
-    data = { 'list': [] };
+    // data = { 'list': [] };
     pageSize = 45;
     currentPage = 1;
     itemsPerPage = 15;
@@ -116,6 +116,7 @@ export class KryptaEditorComponent implements OnInit {
 
     pageNumber: number = 1;
     entryPageNumber: number = 1;
+
 
     // this.loadWalletList = loadWalletList;
     loadWalletList(pageNumber) {
@@ -210,20 +211,33 @@ export class KryptaEditorComponent implements OnInit {
 
     params: string[];
     loadWallet(id) {
+        this.contract = null;
         this.kryptaId = id;
         this.cdr.detectChanges();
         this.kryptaService.getWallet(id)
             .subscribe(krypta => {
                 this.krypta = krypta;
-                // let g = krypta.url.match(/\{(.[^{]+)\}/ig);
-                // this.params = [];
-                // g?.forEach(element => {
-                //     this.params.push(element.replace(/([{}\s]+)/ig, ''));
-                // });
+                this.contract = krypta.contract;
                 this.cdr.detectChanges();
             })
 
     }
+
+    
+    contract:any;
+    loadContract(id) {
+        this.krypta=null;
+        // this.cdr.markForCheck();
+        console.log("Loading contract", id);
+        this.kryptaService.getContract(id)
+            .subscribe(contract => {
+                console.log("Contract loaded", contract);
+                this.contract = contract;
+                this.cdr.detectChanges();
+            })
+    }
+
+
 
     editContractData: any;
     editContract(content, contract, isNew) {
@@ -245,14 +259,15 @@ export class KryptaEditorComponent implements OnInit {
     }
 
     removeContractData: any;
-    removeContract(content, krypta) {
-        this.removeContractData = krypta;
+    removeContract(content, contract) {
+        this.removeContractData = contract;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
-                this.kryptaService.deleteContract(krypta.id, data)
+                this.kryptaService.deleteContract(contract.id, data)
                     .subscribe(res => {
                         this.loadContractList(1);
+                        this.contract = null;
                         this.toastService.show("Contract successfully removed", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
                     }, res => {
@@ -262,17 +277,25 @@ export class KryptaEditorComponent implements OnInit {
             }, res => { });
     }
 
+    compileError = new Map<number, string>();
+    compileLoading = new Map<number, boolean>();
     compileContract(contractId:number){
         if (confirm("Are you sure to compile the smart contract? Previous ABI and Bytecode will be overwritten.")){
+            this.compileLoading.set(contractId,true);
+            this.cdr.detectChanges();
             this.kryptaService.compileContract(contractId)
             .subscribe({
                 next:(res)=>{
                     this.toastService.show("Contract compiled successfully", { classname: 'bg-success text-light' });
                     this.editContractData = res;
+                    this.compileLoading.set(contractId, false);
                     this.cdr.detectChanges();
                 },
                 error: (error)=>{
+                    // console.log("Compilation error", error);
+                    this.compileError.set(contractId,error.error);
                     this.toastService.show("Contract compilation failed", { classname: 'bg-danger text-light' });
+                    this.compileLoading.set(contractId, false);
                     this.cdr.detectChanges();
                 }
             })
@@ -362,15 +385,23 @@ export class KryptaEditorComponent implements OnInit {
         }    
     }
 
-    initContract(){
+
+    deployError = new Map<number, string>();
+    deployLoading = new Map<number, boolean>();
+    deployContract(){
+        this.deployLoading.set(+this.kryptaId,true);
+        this.cdr.detectChanges();
         this.kryptaService.deployContract(+this.kryptaId)
         .subscribe({
             next:(res)=>{
                 this.toastService.show("Contract initialized successfully", { classname: 'bg-success text-light' });
+                this.deployLoading.set(+this.kryptaId, false);
                 this.cdr.detectChanges();
             },
             error: (error)=>{
                 this.toastService.show("Contract initialization failed", { classname: 'bg-danger text-light' });
+                this.deployLoading.set(+this.kryptaId, false);
+                this.deployError.set(+this.kryptaId,error.error);
                 this.cdr.detectChanges();
             }
         })

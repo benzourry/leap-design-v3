@@ -86,23 +86,14 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         <div class="mb-3">
           <small class="ms-3">Smart Contracts</small>
           @for (a of contractList | filter:searchText; track a.id) {
-            <div class="pointer element link-item">
-              <div class="list-group-item-heading"  [class.strike]="a.enabled==0">
+            <a class="pointer element link-item" [class.active]="a.id==contract?.id" (click)="loadContract(a.id)">
+              <div class="list-group-item-heading" [class.strike]="a.enabled==0">
                 {{a.name}}
               </div>
               @if (a.description) {
                 <div class="list-group-item-text">{{a.description}}</div>
               }
-              <div class="element-edit" style="position:absolute;top:10px;right:5px;">
-                <button type="button" class="btn btn-secondary btn-round btn-sm"
-                  (click)="editContract(editContractTpl, a, false)">
-                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                </button>
-                <button type="button" class="btn btn-secondary btn-round btn-sm" (click)="removeContract(removeContractTpl,a)">
-                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                </button>
-              </div>
-            </div>
+            </a>
           }
           <a class="pointer element" (click)="editContract(editContractTpl,{}, true)" [class.disabled]="offline">
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -116,182 +107,280 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
   <div class="content" content>
     <div class="limit-width fix-gutter">
       <div class="p-2">
-        @if (krypta) {
-          <div>
-            <div class="">
-              <div class="me-auto d-flex flex-row w-100 py-2">
-                <h5 class="m-0 text-truncate">{{krypta.name}}</h5>
-                <div class="ms-2 text-truncate align-bottom text-muted">
-                  {{krypta.description}}
-                </div>
-              </div>
-              <div class="d-flex flex-row">
-                <div class="flex-grow-1 pt-2">
-                  @if (krypta.shared) {
-                    <span>
-                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
-                      Shared Krypta
-                    </span>
-                  }@else{
-                    <span class="text-danger">
-                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                      Private Krypta
-                    </span>
-                  }
+        @if (contract?.id || krypta?.id) {
+          @if (krypta) {
+            <div class="mb-3">
+              <div class="">
+                <div class="me-auto d-flex flex-row w-100 py-2">
+                  <h5 class="m-0 text-truncate">{{krypta.name}}</h5>
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                    {{krypta.description}}
+                  </div>
                 </div>
                 <div class="d-flex flex-row">
-                  @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) {
+                  <div class="flex-grow-1 pt-2">
+                    @if (krypta.shared) {
+                      <span>
+                        <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
+                        Shared Krypta
+                      </span>
+                    }@else{
+                      <span class="text-danger">
+                        <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                        Private Krypta
+                      </span>
+                    }
+                  </div>
+                  <div class="d-flex flex-row">
+                    @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) {
+                      <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                        (click)="editWallet(editWalletTpl,krypta,false)" [class.disabled]="offline">
+                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                        (click)="removeWallet(removeWalletTpl,krypta)" [class.disabled]="offline">
+                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                    }
+
+                  </div>
+                </div>
+              </div>
+              @if (loading) {
+                <div class="p-4 text-center">
+                  <div class="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                </div>
+              }
+              <div class="card mt-2">
+                <div class="card-header">Wallet Info</div>
+                <div class="list-group list-group-flush">
+                  <div class="list-group-item">
+                    <div class="small">RPC URL</div>
+                    {{krypta.rpcUrl}}
+                  </div>
+                  <div class="list-group-item">
+                    <div class="small">Chain ID</div>
+                    {{krypta.chainId}}
+                  </div>
+                  
+                    @if (!krypta.contractAddress){
+                      <div class="list-group-item list-group-item-warning">
+                        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                        Contract is not deployed. Please deploy the contract to get address and perform transaction.
+                      </div>
+                    }@else{
+                      <div class="list-group-item">
+                        <div class="small">Contract Address</div>
+                          {{krypta.contractAddress}}
+                      </div>
+                      <div class="list-group-item">
+                        <div class="small mb-2">Contract Functions</div>
+                        @for (f of krypta.contract?.abiSummary?.functions; track $index) {
+                          <button class="btn btn-light me-1 mb-1" (click)="runContractFn(runContractFnTpl, f)">
+                            <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                            {{f.name}}
+                          </button>     
+                        }
+
+                      </div>
+                      <div class="list-group-item">
+                        <div class="small mb-2">Contract Functions</div>
+                          @for (f of krypta.contract?.abiSummary?.events; track f) {
+                            <button class="btn btn-light btn-sm me-1 mb-1" (click)="logsEvent(f)">{{f}}</button>
+                          }             
+                      </div>
+                    }
+                </div>
+              </div>
+
+              <div>
+                @if (!krypta.contractAddress){
+                  <button class="btn btn-primary mt-2 me-2" (click)="deployContract()" [disabled]="deployLoading.get(krypta.id)">
+                    @if(deployLoading.get(krypta.id)){
+                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>              
+                    }@else {
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                    }   
+                    Deploy Contract
+                  </button>
+                }@else{
+                  <button class="btn btn-secondary mt-2 me-2" (click)="deployContract()" [disabled]="deployLoading.get(krypta.id)">
+                    @if(deployLoading.get(krypta.id)){
+                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>              
+                    }@else {
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                    }   
+                    Re-deploy Contract
+                  </button>
+                  <button class="btn btn-secondary mt-2 me-2" (click)="verifyHash()">
+                    <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                    Verify Hash
+                  </button>
+
+                }
+              </div>
+
+              @if(deployError.get(krypta.id)){
+                <div class="p-2 bg-danger text-white mt-2">
+                  {{deployError.get(krypta.id)?.message}}
+                </div>
+              }
+              
+              @if (resultLoading()){
+                <span class="spinner-border spinner-border-sm m-3" aria-hidden="true"></span>
+              }@else{
+                @if (result[kryptaId]) {
+                  <div class="card mt-2 mb-2">
+                    <div class="small p-2 text-white bg-success d-flex">
+                      <div>
+                        Result
+                      </div>                                    
+                    </div>
+                    
+                    <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                        @if(result[kryptaId].type=='transaction'){
+                          <div>Transaction Hash: {{result[kryptaId].txHash}}</div>
+                          <div>Status: {{result[kryptaId].status}}</div>
+                          <div>Gas Used: {{result[kryptaId].gasUsed}}</div>
+                        }@else if(result[kryptaId].type=='read'){ 
+                          @if(result[kryptaId].result){
+                            <pre class="m-0"><code class="language-js" [innerHtml]="result[kryptaId].result"></code></pre>
+                          }@else{
+                            <div>No data returned.</div>
+                          }
+                          
+                        }@else if(result[kryptaId].type=='verify'){
+                          <json-viewer [json]="result[kryptaId]"></json-viewer>
+                        }@else if(result[kryptaId].type=='logs'){
+                          <json-viewer [json]="result[kryptaId]"></json-viewer>
+                        }
+                      
+                    </div>
+                  </div>              
+                }
+              }
+              @if (error[krypta.id]) {
+                <div class="card mt-2">
+                  <!-- <div class="card-body"> -->
+                  <div class="small mb-3 p-3 text-white bg-danger">Error</div>
+                  <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                    <pre class="m-0"><code class="language-js">{{error[krypta.id].error | json}}</code></pre>
+                  </div>
+                <!-- </div> -->
+                </div>
+              }
+            </div>
+          }
+          @if (contract){
+
+
+            <div>
+              
+              <div class="d-flex flex-row">
+                <div class="me-auto d-flex flex-row w-100 py-2">
+                  <h5 class="m-0 text-truncate"><span class="text-muted">Contract: </span>{{contract.name}}</h5>
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                    {{contract.description}}
+                  </div>
+                </div>
+                  <!-- @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) { -->
                     <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
-                      (click)="editWallet(editWalletTpl,krypta,false)" [class.disabled]="offline">
+                      (click)="editContract(editContractTpl, contract, false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
-                      (click)="removeWallet(removeWalletTpl,krypta)" [class.disabled]="offline">
+                      (click)="removeContract(removeContractTpl,contract)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
-                  }
-
+                  <!-- } -->
                 </div>
-              </div>
             </div>
-            @if (loading) {
-              <div class="p-4 text-center">
-                <div class="lds-ellipsis">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </div>
-              </div>
-            }@else{
-            }
+
+            
             <div class="card mt-2">
-              <div class="card-header">Wallet Info</div>
+              <div class="card-header">Contract Info</div>
               <div class="list-group list-group-flush">
                 <div class="list-group-item">
-                  <div class="small">RPC URL</div>
-                  {{krypta.rpcUrl}}
+                  <div class="small">Contract Name</div>
+                  {{contract.name}}
                 </div>
-                <div class="list-group-item">
-                  <div class="small">Chain ID</div>
-                  {{krypta.chainId}}
-                </div>
-                <div class="list-group-item">
-                  <div class="small">Contract Address</div>
-                  @if (!krypta.contractAddress){
-                    <div class="alert alert-warning p-2 mb-2 mt-2">
-                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                      Contract is not initialized. Please initialize the contract to get address.
-                    </div>
-                  }@else{
-                    {{krypta.contractAddress}}
-                  }
-                </div>
-                <div class="list-group-item">
-                  <div class="small mb-2">Contract Functions</div>
-                  @if (!krypta.contractAddress){
-                    <div class="alert alert-warning p-2 mb-2">
-                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                      Contract is not initialized. Please initialize the contract to run functions.
-                    </div>
-                  }@else{
-                    @for (f of krypta.contract?.abiSummary?.functions; track $index) {
-                      <button class="btn btn-light me-1 mb-1" (click)="runContractFn(runContractFnTpl, f)">
-                        <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-                        {{f.name}}
-                      </button>
-                    }                    
-                  }
-
-                </div>
-                <div class="list-group-item">
-                  <div class="small mb-2">Contract Functions</div>
-                  @if (!krypta.contractAddress){
-                    <div class="alert alert-warning p-2 mb-2">
-                      <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                      Contract is not initialized. Please initialize the contract to view logs.
-                    </div>
-                  }@else{
-                    @for (f of krypta.contract?.abiSummary?.events; track f) {
-                      <button class="btn btn-light btn-sm me-1 mb-1" (click)="logsEvent(f)">{{f}}</button>
+                @if(contract.abi){
+                  <div class="list-group-item">
+                    <div class="small">Contract ABI</div>
+                    {{contract.abi}}
+                  </div>
+                  <div class="list-group-item">
+                    <div class="small">Contract BIN</div>
+                    {{contract.bin}}
+                  </div>
+                  <!-- <div class="list-group-item">
+                    <div class="small mb-2">Contract Functions</div>
+                    @if (!contract?.abiSummary){
+                      <div class="alert alert-warning p-2 mb-2">
+                        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                        Contract is not initialized. Please initialize the contract to run functions.
+                      </div>
+                    }@else{
+                      @for (f of contract?.abiSummary?.functions; track $index) {
+                        <button class="btn btn-light me-1 mb-1" (click)="runContractFn(runContractFnTpl, f)">
+                          <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                          {{f.name}}
+                        </button>
+                      }                    
                     }
-                  }                  
-                </div>
-              </div>
-            </div>
 
-            <div>
-              @if (!krypta.contractAddress){
-                <button class="btn btn-primary mt-2 me-2" (click)="initContract()">
-                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-                  Initialize Contract
-                </button>
-              }@else{
-                <button class="btn btn-secondary mt-2 me-2" (click)="initContract()">
-                  <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-                  Re-initialize Contract
-                </button>
-                <button class="btn btn-secondary mt-2 me-2" (click)="verifyHash()">
-                  <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-                  Verify Hash
-                </button>
-
-              }
-            </div>
-            
-            @if (resultLoading()){
-              <span class="spinner-border spinner-border-sm m-3" aria-hidden="true"></span>
-            }@else{
-              @if (result[kryptaId]) {
-                <div class="card mt-2 mb-2">
-                  <div class="small p-2 text-white bg-success d-flex">
-                    <div>
-                      Result
-                    </div>                                    
                   </div>
-                  
-                  <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
-                      @if(result[kryptaId].type=='transaction'){
-                        <div>Transaction Hash: {{result[kryptaId].txHash}}</div>
-                        <div>Status: {{result[kryptaId].status}}</div>
-                        <div>Gas Used: {{result[kryptaId].gasUsed}}</div>
-                      }@else if(result[kryptaId].type=='read'){ 
-                        @if(result[kryptaId].result){
-                          <pre class="m-0"><code class="language-js" [innerHtml]="result[kryptaId].result"></code></pre>
-                        }@else{
-                          <div>No data returned.</div>
-                        }
-                        
-                      }@else if(result[kryptaId].type=='verify'){
-                        <json-viewer [json]="result[kryptaId]"></json-viewer>
-                      }@else if(result[kryptaId].type=='logs'){
-                        <json-viewer [json]="result[kryptaId]"></json-viewer>
+                  <div class="list-group-item">
+                    <div class="small mb-2">Contract Functions</div>
+                    @if (!contract?.abiSummary){
+                      <div class="alert alert-warning p-2 mb-2">
+                        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                        Contract is not initialized. Please initialize the contract to view logs.
+                      </div>
+                    }@else{
+                      @for (f of contract?.abiSummary?.events; track f) {
+                        <button class="btn btn-light btn-sm me-1 mb-1" (click)="logsEvent(f)">{{f}}</button>
                       }
-                    
+                    }                  
+                  </div> -->
+                }@else {
+                  <div class="list-group-item list-group-item-danger">
+                    <div class="small">Contract ABI/BIN not found.</div>
+                    Please compile the contract to generate ABI and BIN.
                   </div>
-                </div>              
-              }
-            }
-          @if (error[krypta.id]) {
-            <div class="card mt-2">
-              <!-- <div class="card-body"> -->
-              <div class="small mb-3 p-3 text-white bg-danger">Error</div>
-              <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
-                <pre class="m-0"><code class="language-js">{{error[krypta.id].error | json}}</code></pre>
+                }
               </div>
-            <!-- </div> -->
+            </div>
+
+            <button class="btn btn-secondary mt-2" (click)="compileContract(contract.id)" [disabled]="compileLoading.get(contract.id)">
+              @if(compileLoading.get(contract.id)){
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>              
+              }@else {
+                <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+              }           
+
+              {{contract.abi?'Re-compile': 'Compile'}} Contract
+            </button>
+
+            @if(compileError.get(contract.id)){
+              <div class="p-2 bg-danger text-white mt-2">
+                {{compileError.get(contract.id)?.message}}
+              </div>
+            }
+          }
+        }@else {
+          <div style="color:#aaa;">
+            <h3>Please select item from the list on the left to view it's data.</h3>
           </div>
         }
       </div>
-    }
-    @if (!krypta) {
-      <div style="color:#aaa;">
-        <h3>Please select Krypta from the list on the left to view it's data.</h3>
-      </div>
-    }
+    </div>
   </div>
-</div>
-</div>
 </div>
 
 
@@ -345,7 +434,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         name="description"></textarea>
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">RPC URL (EVM-compatible network)*</label>
+        <label class="form-label">RPC URL (EVM-compatible network) *</label>
         <input type="text" class="form-control" [(ngModel)]="editWalletData.rpcUrl" name="rpcUrl"
           placeholder="ie: http://127.0.0.1:8545" required>
       </div>
@@ -434,14 +523,14 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
 
       <div class="form-group mb-3">
         <label class="form-label small mb-2">Solidity Codes</label>
-        <div class="form-control overflow-hidden p-0">
+        <div class="mx-n3">
           <app-cm name="f" lang="javascript" [(ngModel)]="editContractData.sol" hideControl="true" [skipCheck]="true"
             subType="passive" [linenumber]="true">
           </app-cm>
         </div>
       </div>
 
-      <div class="mb-3">
+      <!-- <div class="mb-3">
         @if(editContractData.id){
           <button class="btn btn-secondary" (click)="compileContract(editContractData.id)">
             <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
@@ -465,7 +554,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             </div>
           </div>
         }
-      </div>
+      </div> -->
 
     </div>
     <div class="modal-footer justify-content-between">
