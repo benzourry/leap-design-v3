@@ -11,29 +11,30 @@
     <small class="val-text text-danger">
       <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
       @if (formField.errors.required) {
-        <span>{{field().label}} is required</span>
+        <span>{{field().label}} {{lang()=='ms'?'wajib diisi':'is required'}}</span>
       }
       @if (formField.errors.minlength) {
-        <span>{{field().label}} must have at least {{field()?.v?.minlength}}
-        characters</span>
+        <span>{{field().label}} {{lang()=='ms'?'mesti sekurang-kurangnya':'must have at least'}} {{field()?.v?.minlength}}
+        {{lang()=='ms'?'aksara':'characters'}}</span>
       }
       @if (formField.errors.maxlength) {
-        <span>{{field().label}} must have at most {{field()?.v?.maxlength}} characters</span>
+        <span>{{field().label}} {{lang()=='ms'?'mesti tidak lebih dari':'must have at most'}} {{field()?.v?.maxlength}} {{lang()=='ms'?'aksara':'characters'}}</span>
       }
       @if (formField.errors.pattern) {
-        <span>Not a valid {{field().label}}</span>
+        <span>{{lang()=='ms'?'Bukan':'Not a valid'}} {{field().label}} {{lang()=='ms'?'yang sah':''}}</span>
       }
       @if (formField.errors.max) {
-        <span>{{field().label}} should be under {{field()?.v?.max}}</span>
+        <span>{{field().label}} {{lang()=='ms'?'mesti di bawah':'should be under'}} {{field()?.v?.max}}</span>
       }
       @if (formField.errors.min) {
-        <span>{{field().label}} should be above {{field()?.v?.min}}</span>
+        <span>{{field().label}} {{lang()=='ms'?'mesti di atas':'should be above'}} {{field()?.v?.min}}</span>
       }
       @if (formField.errors.ngbDate) {
-        <span>Invalid date</span>
+        <span>{{lang()=='ms'?'Tarikh tidak sah':'Invalid date'}}</span>
       }
       @if (formField.errors.maxsize) {
-        <span>File size should not exceed {{field()?.v?.max}}MB. Ignored file(s):
+        <span>{{lang()=='ms'?'Saiz file tidak boleh melebihi':'File size should not exceed'}} {{field()?.v?.max}}MB. 
+          {{lang()=='ms'?'Fail diabaikan':'Ignored file(s)'}}':
         {{formField.errors.files}}</span>
       }
     </small>
@@ -41,7 +42,7 @@
   @if (value && field()?.x?.imgcls && field()?.v?.imgcls && !imgclsVal()) {
     <small class="val-text text-danger">
       <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
-        <span>Image doesn't contain any '{{field().v.imgcls}}'</span>
+        <span>{{lang()=='ms'?"Gambar tidak mengandungi":"Image doesn't contain any"}} '{{field().v.imgcls}}'</span>
     </small>
   }
 
@@ -99,17 +100,17 @@
   }
   @if (field().subType=='richtext') {
     <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="field().readOnly">
-      <!-- @defer(prefetch on idle){ -->
+      @defer(prefetch on idle){
+        <!-- NOT SURE WHY DEFER WAS DISABLED BEFORE -->
         <angular-editor class="clean" [config]="editorConfig"
           [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
           name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
           [required]="field()?.v?.required"
           [placeholder]="field().placeholder||'&nbsp;'">
         </angular-editor>
-      <!-- } -->
+      }
     </div>
     <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
-
   }
 </ng-template>
 
@@ -507,7 +508,7 @@
     </ng-select>
     @if (!field()?.options) {
       <div class="text-muted">
-        Option not available
+        {{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}
       </div>
     }
   }
@@ -615,10 +616,11 @@
           <div style="background: #aaa;height:250px;max-width:100%;border-radius:var(--bs-border-radius)"
             class="d-flex align-items-center text-center img-holder">
             <div style="flex: 1;color: white; font-size: 0.8em">
-              Click to upload image
+              {{lang()=='ms'?'Klik untuk muatnaik':'Click to upload image'}}
               @if (field().subType == 'imagemulti') {
-                <div>To select multiple files, hold down the CTRL or SHIFT key while
-                selecting</div>
+                <div>
+                  {{lang()=='ms'?'Untuk memilih banyak fail, tekan kekunci CTRL atau SHIFT semasa memilih':
+                  'To select multiple files, hold down the CTRL or SHIFT key while selecting'}}</div>
               }
             </div>
           </div>
@@ -630,12 +632,12 @@
               <div style="bottom:30px;left:20px; position: absolute;padding:3px; font-size: 0.8em;">
                 <div style="border:solid 1px #ccc;background: #fff;padding:0px 3px; border-radius:4px;
                 float:left">
-                Click to change images</div>
+                {{lang()=='ms'?'Klik untuk menukar gambar':'Click to change images'}}</div>
                 <!-- @if (value) { -->
                 <div
                   style="border:solid 1px #ccc;background: #fff;padding:0px 3px;border-radius:4px;
                   float:left;margin-left:3px;cursor: pointer; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);"
-                  (click)="clear(native)">× Clear</div>
+                  (click)="clear(native)">× {{lang()=='ms'?'Padam':'Clear'}}</div>
                 <!-- } -->
               </div>
             </div>
@@ -648,10 +650,10 @@
               }
               <div style="bottom:20px;left:20px; position: absolute;padding:3px; font-size: 0.8em;">
                 <div style="border:solid 1px #ccc;background: #fff;padding:3px;float:left">
-                Click to change images</div>
+                {{lang()=='ms'?'Klik untuk menukar gambar':'Click to change images'}}</div>
                 <div
                   style="border:solid 1px #ccc;background: #fff;padding:3px;float:left;margin-left:3px;cursor: pointer;"
-                  (click)="clear(native)">Clear</div>
+                  (click)="clear(native)">{{lang()=='ms'?'Padam':'Clear'}}</div>
               </div>
             </div>
           }
@@ -711,7 +713,7 @@
 
 <ng-template #speech>
     @defer(prefetch on idle){
-      <app-speech-to-text class="smyds" [field]="field()" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [defaultLang]="field().x?.defLang"></app-speech-to-text>
+      <app-speech-to-text class="smyds" [field]="field()" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [lang]="lang()" [defaultLang]="field().x?.defLang"></app-speech-to-text>
     }@loading {
       <div class="text-center m-5">
         <div class="spinner-grow text-primary" role="status">

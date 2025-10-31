@@ -49,6 +49,7 @@ export class ChartComponent implements OnInit {
   baseUrl = computed<any>(() => this.runService.$baseUrl());
   form = signal<any>({});  
   _this = {};
+  lang = computed(() => this.app().x?.lang);
 
   base: string = base;
   baseApi: string = baseApi;

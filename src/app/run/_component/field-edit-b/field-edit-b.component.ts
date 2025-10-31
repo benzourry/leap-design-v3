@@ -87,6 +87,7 @@ export class FieldEditComponent extends ElementBase<any> {
   data = input<any>();
   loading = input<boolean>();
   scopeId = input<string>();
+  lang = input<string>('en');
   extractLoading = input<boolean>();
   itemList = input<any>();
   always = input<boolean>(false);

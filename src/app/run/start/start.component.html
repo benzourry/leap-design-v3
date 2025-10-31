@@ -1,9 +1,9 @@
 @if (app()?.canPush && ((pushSubError || !pushSub)) && !pushDismissed()) {
   @if (!pushSub) {
     <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
-      <div class="float-start p-1" style="padding:0.4em">Subscribe to Notification</div>
+      <div class="float-start p-1" style="padding:0.4em">{{lang()=='ms'?'Terima Pemberitahuan':'Subscribe to Notification'}}</div>
       <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
-      <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">Subscribe</button>
+      <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">{{lang()=='ms'?'Terima':'Subscribe'}}</button>
       <div class="clearfix"></div>
     </div>
   }
@@ -276,7 +276,7 @@
           <!-- } -->
         }
       } @else {
-        This app is under maintenance
+        {{lang()=='ms'?'Aplikasi ini sedang diselenggara':'This app is under maintenance'}}
       }
     }
   }

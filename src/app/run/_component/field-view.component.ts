@@ -33,7 +33,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 @if (value()===undefined || value()===null) {
   <span>
     @if (['static','file','btn','checkbox'].indexOf(field()?.type)==-1) {
-      <span style="color:#aaa">Data not available</span>
+      <span style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
     }
     @if (['file'].indexOf(field()?.type)>-1) {
       <span>
@@ -41,7 +41,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           <img loading="lazy" style="background: #aaa;max-height:250px;object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
         }
         @if (['other','othermulti'].indexOf(field()?.subType)>-1) {
-          <span style="color:#aaa">Data not available</span>
+          <span style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
         }
       </span>
     }
@@ -357,6 +357,8 @@ export class FieldViewComponent implements OnInit {
   data = input<any>();
 
   scopeId = input<any>();
+
+  lang = input<string>('en');
 
 
   timestamp = input<number>();

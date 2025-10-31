@@ -12,7 +12,7 @@
     <div class="title text-center pb-4">
       <button type="button" class="print-hide btn btn-info btn-round btn-sm" (click)="printReport()">
         <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
-        </fa-icon> Print
+        </fa-icon> {{lang()=='ms'?'Cetak':'Print'}}
       </button>
     </div>
     }

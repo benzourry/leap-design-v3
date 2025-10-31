@@ -19,7 +19,9 @@ export class ScanComponent implements OnInit, OnDestroy {
     this.captures = [];
   }
 
-  public video = viewChild<ElementRef>('video')
+  public video = viewChild<ElementRef>('video');
+  
+  lang = input<string>('en');
 
   public canvas = viewChild<ElementRef>('canvas');
 

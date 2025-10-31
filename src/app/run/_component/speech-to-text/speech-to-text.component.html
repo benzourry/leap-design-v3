@@ -1,15 +1,3 @@
-<!-- @if(!isUserSpeaking){
-<div class="input-group-prepend" (click)="startRecording()">
-    <fa-icon [icon]="['fas','microphone']"></fa-icon>
-    record
-</div>
-}@else {
-<button class="me-1" (click)="stopRecording()">
-    Stop
-</button>
-} -->
-
-
 <div class="custom-file" [class.disabled]="field().readOnly">
     <label class="has-float-label" [class.extracting]="extractLoading()">
         <!-- <input type="file" /> -->
@@ -18,10 +6,10 @@
                 <div class="">
                     @if(isUserSpeaking()){
                         <fa-icon [icon]="['fas','square']" [fixedWidth]="true"></fa-icon>
-                        <span class="blink_me"> Listening...</span>
+                        <span class="blink_me"> {{lang()=='ms'?'Mendengar':'Listening'}}...</span>
                     }@else {
                         <fa-icon [icon]="['fas','microphone']" [fixedWidth]="true"></fa-icon>
-                        {{field().placeholder||'Start listening'}}
+                        {{field().placeholder||(lang()=='ms'?'Mula mendengar':'Start listening')}}
                     }
                     
                 </div>
@@ -31,7 +19,7 @@
                 <div ngbDropdown class="d-inline-block">
                     <div type="button" class="p-0 me-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Choose language" id="chooseLang"
                       ngbDropdownToggle>
-                      <strong>{{lang()}}</strong>
+                      <strong>{{speechLang()}}</strong>
                     </div>
                     <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
                         @for(l of ['en-US','ms-MY','zh-CN']; track $index){
@@ -62,19 +50,6 @@
             </div>
         }
 
-         
-
-        <!-- @if (!field().hideLabel) {
-        <span class="label-span">{{field().label}} @if (field()?.v?.required) {
-            <span>*</span>
-            }</span>
-        } -->
-
-        
-
     </label>
     <!-- <ng-container *ngTemplateOutlet="valError;context:{formField:formField,field:field}"></ng-container> -->
 </div>
-
-
-<!-- {{speechText}} -->

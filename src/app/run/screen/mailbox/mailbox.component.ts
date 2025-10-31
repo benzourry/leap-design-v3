@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
@@ -19,6 +19,7 @@ import { RunService } from '../../_service/run.service';
 export class MailboxComponent {
 
   appId = computed<number>(()=>this.runService.$app()?.id || null);
+  lang = input<string>('en');
   user = computed<any>(()=>this.runService.$user());
   email = computed(()=>this.user()?.email || '');
 

@@ -72,6 +72,7 @@ export class ProfileComponent implements OnInit {
 
   user = computed<any>(() => this.runService.$user());
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
 
   ngOnInit() {
     if (this.app()?.id && this.user()?.email) {

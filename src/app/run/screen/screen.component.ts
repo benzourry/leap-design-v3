@@ -74,6 +74,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   offline = signal<boolean>(false);
   user = computed<any>(() => this.runService.$user());
   app = signal<any>(null);
+  lang = computed(() => this.app().x?.lang);
   preurl: string = '';
   screen = signal<any>(null);
   entryListLoading = signal<boolean>(false);
@@ -705,7 +706,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         // && !this.app()?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
         groupAuthorized = true;
       } else {
-        this.unAuthorizedMsg = this.app()?.x?.lang == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
+        this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
       }
       if (entry?.id) {
         if (screen?.data?.accessByApprover) {
@@ -719,7 +720,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
           condAuthorized = this.preCheck(screen?.data?.accessByCond, entry, false);
         }
         if (!(approverAuthorized || userAuthorized || condAuthorized)) {
-          this.unAuthorizedMsg = this.app()?.x?.lang == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
+          this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
         }
       }
       // console.log("user", userAuthorized, "approver", approverAuthorized, "group", groupAuthorized, "cond", condAuthorized)

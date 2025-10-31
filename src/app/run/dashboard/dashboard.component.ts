@@ -41,6 +41,7 @@ export class DashboardComponent implements OnInit {
   dashboard = signal<any>(null);
   user = computed<any>(() => this.runService.$user());
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   $baseUrl$ = computed<any>(() => this.runService.$baseUrl());
   baseApi: string = baseApi;
   base: string = base;

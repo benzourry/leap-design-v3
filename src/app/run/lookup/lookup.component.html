@@ -23,7 +23,7 @@
                   [class.disabled]="offline()"
                   (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
                   <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                  Add Data
+                  {{lang()=='ms'?'Tambah Data':'Add Data'}}
                 </button>
               }
               <div ngbDropdown class="d-inline-block">
@@ -34,8 +34,8 @@
                 <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor">
                   <a ngbDropdownItem title="Export to Excel" target="blank"
                     href="{{base}}/report/export-lookup/{{lookup()?.id}}/xlsx">
-                    <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> Export
-                    to Excel
+                    <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> 
+                    {{lang()=='ms'?'Export ke Excel':'Export to Excel'}}
                   </a>
                   <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
                     (click)="resyncLookup(syncLookupTpl,lookup()?.id)">
@@ -60,18 +60,18 @@
               @if (lookupEntryList()?.length) {
 
                 <div class="px-2 py-2">
-                  <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+                  <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
                     <div class="row">
                       <div class="col d-flex align-items-center">
-                        <strong>Summary</strong>
+                        <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
                       </div>
-                      <div class="col">Total:
+                      <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
                         <div class="d-sm-inline">{{lookupEntryTotal()}}</div>
                       </div>
-                      <div class="col">Shown:
+                      <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
                         <div class="d-sm-inline">{{lookupEntryElements()}}</div>
                       </div>
-                      <div class="col">Pages:
+                      <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
                         <div class="d-sm-inline">{{lookupEntryPages()}}</div>
                       </div>
                     </div>
@@ -214,18 +214,23 @@
           }
           @if (!loading() && !hasLoadList()) {
             <div class="details my-5">
-              <h3>Data is not loaded</h3>
-              <p>Click the following button to load lookup data</p>
+              <h3>{{lang()=='ms'?'Data tidak dimuatkan':'Data is not loaded'}}</h3>
+              <p>{{lang()=='ms'?'Klik butang berikut untuk memuatkan data lookup':'Click the following button to load lookup data'}}</p>
               @if (!hasLoadList()) {
-                <button type="button" class="btn btn-primary rounded-pill" (click)="getLookupEntryList(1)">Load Data</button>
+                <button type="button" class="btn btn-primary rounded-pill" (click)="getLookupEntryList(1)">{{lang()=='ms'?'Muatkan data':'Load Data'}}</button>
               }
             </div>
           }
           @if (lookupEntryList() == 0 && !loading() && hasLoadList()) {
             <div class="details my-5">
-              <h3>No data for {{lookup().name}}</h3>
-              <p> There is no data assigned to this lookup table.
-                <br /> You can assign a new data by clicking on the Add button.
+              <h3>{{lang()=='ms'?'Tiada data untuk':'No data for'}} {{lookup().name}}</h3>
+              <p> {{lang()=='ms'?
+                'Tiada data yang ditetapkan untuk lookup ini.':
+                'There is no data assigned to this lookup table.'}}
+                <br /> 
+                {{lang()=='ms'?
+                'Anda boleh menetapkan data baru dengan mengklik pada butang Tambah.':
+                'You can assign a new data by clicking on the Add button.'}}
               </p>
             </div>
           }
@@ -247,7 +252,7 @@
 <ng-template #removeLookupEntryTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Remove Lookup Entry</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Padam Data Lookup':'Remove Lookup Entry'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
@@ -270,7 +275,7 @@
     <div class="modal-footer justify-content-between">
       <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeLookupEntryData)">
-        <i class="icon-minus-sign-alt"></i> Remove Lookup
+        <i class="icon-minus-sign-alt"></i> {{lang()=='ms'?'Padam Lookup':'Remove Lookup'}}
       </button>
     </div>
   </div>
@@ -279,7 +284,7 @@
 <ng-template #editLookupEntryTpl let-c="close" let-d="dismiss">
   <div #editLookupEntryForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Add Lookup Entry</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Tambah Data Lookup':'Add Lookup Entry'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form">
@@ -324,118 +329,11 @@
           </div>
         }
 
-
-
-
-        <!-- @if (lookup().dataEnabled) {
-          <div class="form-group mb-3">
-            <label class="form-label small text-muted fw-bold">Data (Additional attributes)</label>
-            <table width="100%">
-              @for (e of editLookupEntryDataFields(); track $index) {
-                <tr>
-                  <td style="vertical-align:top">
-                    {{e.key}}
-                  </td>
-                  <td style="vertical-align:top">
-                    @if (e.type=='text') {
-                      <input class="form-control form-control-sm" style="width:100%" type="text"
-                        name="value_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                    }@else if (e.type=='longtext') {
-                      <textarea class="form-control form-control-sm" style="width:100%"
-                        name="value_{{$index}}"
-                      [(ngModel)]="_lookupEntry.data[e.key]"></textarea>
-                    }@else if (e.type=='number') {
-                      <input class="form-control form-control-sm" style="width:100%" type="number"
-                        name="value_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                    }@else if (e.type=='date') {
-                      <input class="form-control form-control-sm" style="width:100%" type="text"
-                        name="value_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]" (click)="d2.toggle()" ngbDatepicker
-                        #d2="ngbDatepicker">
-                    }@else if (e.type=='options') {
-                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                        @for (a of e.opts; track $index) {
-                          <option [ngValue]="a">{{a}}</option>
-                        }
-                      </select>
-                    }@else if (e.type=='lookup') {
-                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
-                        [compareWith]="compareByCodeFn"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                        @for (a of lookupListMap()[e.opts]; track $index) {
-                          <option [ngValue]="a">{{a.name}}</option>
-                        }
-                      </select>
-                    }@else if (e.type=='multiplelookup') {
-                      <select class="form-control form-control-sm" style="width:100%" name="value_{{$index}}"
-                        [compareWith]="compareByCodeFn"
-                        [multiple]="true"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                        @for (a of lookupListMap()[e.opts]; track $index) {
-                          <option [ngValue]="a">{{a.name}}</option>
-                        }
-                      </select>
-                    }@else if (e.type=='file') {
-                      <label style="width:100%">
-                        <input type="file" [hidden]="true" (change)="uploadFile($event, _lookupEntry.data, e.key)"
-                          name="file" />
-                        <div class="form-control form-control-sm" style="background: white">
-                          <fa-icon [icon]="['fas','upload']"></fa-icon>
-                          {{_lookupEntry.data[e.key]||'Browse'}}
-                        </div>
-                      </label>
-                    }@else {
-                      <input class="form-control form-control-sm" style="width:100%" type="text"
-                        name="value_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                    }
-                  </td>
-                  <td style="width:30px;vertical-align:top">
-                    <button type="button" class="btn btn-sm btn-light"
-                      (click)="deleteDataRow(_lookupEntry.data, e.key)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  </td>
-                </tr>
-              }
-              @for (e of editLookupEntryDataFieldsOrphan()|keyvalue; track $index) {
-                <tr>
-                  <td>
-                    {{e.key}} (orphan)
-                  </td>
-                  <td>
-                    @if (!isNumber(_lookupEntry.data[e.key])) {
-                    <input class="form-control form-control-sm" style="width:100%" type="text"
-                      name="valueorph_{{$index}}"
-                      [(ngModel)]="_lookupEntry.data[e.key]">
-                    }
-                    @if (isNumber(_lookupEntry.data[e.key])) {
-                      <input class="form-control form-control-sm" style="width:100%" type="number"
-                        name="valueorph_{{$index}}"
-                        [(ngModel)]="_lookupEntry.data[e.key]">
-                    }
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn-sm btn-light"
-                      (click)="deleteDataRow(_lookupEntry.data, e.key)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </table>
-          </div>
-        } -->
-
-
         @if (lookup().dataEnabled) {
           <div class="mb-3">
             <div class="text-muted small fw-bold text-center add-data-split mx-n3">
               <span class="bg-white" style="display: inline-block;z-index: 1;position: relative;padding: 5px;">
-                Data (additional attributes)</span>
+                {{lang()=='ms'?'Data (maklumat Tambahan)':'Data (additional attributes)'}}</span>
             </div>
               @for (e of lookupEntryFields; track $index) {
                 <div class="form-group mb-3">
@@ -536,17 +434,17 @@
               (change)="_lookupEntry.enabled = $event.target.checked ? 1: 0"
               [(ngModel)]="_lookupEntry.enabled" name="enabled"
               id="enabled">
-              <label class="form-check-label" for="enabled">Enabled</label>
+              <label class="form-check-label" for="enabled">{{lang()=='ms'?'Diaktifkan':'Enabled'}}</label>
           </div>
         </div>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editLookupEntryForm.invalid"
         (click)="c(_lookupEntry)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-        Save Lookup
+        {{lang()=='ms'?'Simpan Lookup':'Save Lookup'}}
       </button>
     </div>
   </div>
@@ -560,10 +458,11 @@
     <div class="modal-body">
       <div class="form">
         <p>
-          Resync older data that uses this lookup with the new updated value.
+          {{lang()=='ms'?'Gunakan fungsi ini untuk menyegerakkan semula data yang menggunakan lookup ini dengan nilai terkini.':
+          'Use this function to resync older data that uses this lookup with the new updated value.'}}'
         </p>
         <div class="form-group mb-3">
-          <label class="form-label">Select reference column</label>
+          <label class="form-label">{{lang()=='ms'?'Pilih medan rujukan':'Select reference column'}}</label>
           <select class="form-select" name="refCol" [(ngModel)]="syncLookupData.refCol">
             @if (lookup()?.sourceType=='db'){
               <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
@@ -572,14 +471,16 @@
             <option value="name">Name @if(lookup()?.x?.nameLbl){ ({{lookup()?.x?.nameLbl}}) }</option>
             <option value="extra">Extra @if(lookup()?.x?.extraLbl){ ({{lookup()?.x?.extraLbl}}) }</option>
           </select>
-          <div class="mt-2"><small>Reference column is a common identifier for target data & replacement data.
-            To synchronize, both target and replacement should have the same value for reference
-          column.</small></div>
+          <div class="mt-2"><small>
+            {{lang()=='ms'?
+            'Medan rujukan adalah pengecam biasa untuk data sasaran & data pengganti. Untuk menyegerakkan, kedua-dua sasaran dan pengganti harus mempunyai nilai yang sama untuk medan rujukan.':
+            'Reference column is a common identifier for target data & replacement data. To synchronize, both target and replacement should have the same value for reference column.'}}
+            </small></div>
         </div>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-success" (click)="c()">
         <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
         Resync Lookup

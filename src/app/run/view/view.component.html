@@ -30,7 +30,7 @@
                 @if (form()?.prev && prevEntry && !form()?.x?.hidePrev) {
                   <div class="form-previous pb-3" style="border-bottom:solid 2px #ccc">
                     <form-view [form]="form()?.prev" [entry]="prevEntry" [data]="prevEntry?.data"
-                      [evalContextFn]="getEvalContext"
+                      [evalContextFn]="getEvalContext" [lang]="lang()"
                       [$this$]="_this" [$param$]="param()"
                       [$action$]="action()"
                       [$file$]="filesMap?.prev">
@@ -52,7 +52,7 @@
                   <form-view [form]="form()" [entry]="entry" [data]="entry?.data" 
                     [$this$]="_this" [$param$]="param()"
                     [navIndex]="_navIndex()"
-                    [evalContextFn]="getEvalContext"
+                    [evalContextFn]="getEvalContext" [lang]="lang()"
                     [timestamp]="timestamp()"
                     [$action$]="action()"
                     [$file$]="filesMap?.data"></form-view>
@@ -68,13 +68,13 @@
                   @if (trails().length>0 && !form()?.x?.hideTrail) {
                   <!-- @if (trails.length>0 && ((!form()?.hideStatus) || (form()?.admin && user.groups[form()?.admin.id])) && !form()?.x?.hideTrail) { -->
                     <button type="button" class="btn btn-round btn-light btn-sm print-hide"
-                    (click)="viewTrail(viewTrailTpl)">View Trails</button>
+                    (click)="viewTrail(viewTrailTpl)">{{lang()=='ms'?'Lihat Jejak':'View Trails'}}</button>
                   }
                   <!-- {{form()?.x?.wallet}}, {{getKeys(entry.txHash).length}} -->
                   @if (getKeys(entry.txHash).length>0 && form()?.x?.wallet) {
                     <button type="button" class="btn ms-1 btn-round btn-light text-success btn-sm print-hide"
                     (click)="viewTxHash(viewTxHashTpl)">
-                      <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon> Recorded
+                      <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Direkod':'Recorded'}}
                     </button>
                   }
                 </div>
@@ -156,7 +156,7 @@
                                               } -->
 
                                               <field-edit [ngClass]="field.size||'col-sm-12'" name="{{f.code}}"
-                                                [scopeId]="scopeId()"
+                                                [scopeId]="scopeId()" [lang]="lang()"
                                                 [fileProgress]="uploadProgress[f.code+($index??'')]"
                                                 [class.mt-0]="field.subType=='clearfix'"
                                                 [hidden]="field.hidden"
@@ -319,7 +319,7 @@
                                                   }
                                                   <!-- {{entry?.approval[tier.id]?.data|json}} -->
                                                   <p class="form-control-static">
-                                                    <field-view [field]="field" [scopeId]="scopeId()"
+                                                    <field-view [field]="field" [scopeId]="scopeId()" [lang]="lang()"
                                                       [value]="getVal(field,entry?.approval[tier.id])"
                                                       [data]="{
                                                         $app$: app(),
@@ -392,7 +392,7 @@
                                   <div>
                                     <div class="tier-head">
                                       <fa-icon [icon]="['fas','question']" [fixedWidth]="true"></fa-icon>
-                                      Pending
+                                      {{lang()=='ms'?'Menunggu tindakan':'Pending'}}
                                       <strong>{{tier.name}}</strong>
                                       @if (tier.showApprover && entry?.approver[tier.id]) {
                                         <footer>by
@@ -412,7 +412,7 @@
                                   </div>
                                 }
                               } @else {
-                                <h5 class="text-muted p-2">Status hidden</h5>
+                                <h5 class="text-muted p-2">{{lang()=='ms'?'Status disembunyikan':'Status hidden'}}</h5>
                               }
                             </div>
                           }
@@ -499,7 +499,7 @@
 </ng-template>
 <ng-template #viewTrailTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Approval Trails</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Jejak Kelulusan':'Approval Trails'}}</h4>
   </div>
   <div class="list-group list-group-flush">
     @for (trail of trails(); track trail.id) {
@@ -521,7 +521,7 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-default" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
   </div>
 </ng-template>
 <ng-template #viewTxHashTpl let-c="close" let-d="dismiss">
@@ -539,6 +539,6 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-default" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
   </div>
 </ng-template>

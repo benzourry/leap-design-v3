@@ -12,11 +12,11 @@
             <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
             @if (!importLoading()) {
             <div class="btn border border-2 btn-outline-primary btn-sm ms-1">
-              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Upload File
+              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
             </div>
             }@else {
             <button type="button" class="btn border border-2 btn-outline-primary btn-sm ms-1" disabled>
-              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Uploading...
+              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Memuatnaik':'Uploading'}}...
             </button>
             }
           </label>
@@ -30,22 +30,22 @@
               <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
                 (click)="initZip(initBucketZipTpl, bucket().id)">
                 <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
-                Initialize Zip
+                {{lang()=='ms'?'Cipta fail Zip':'Initialize Zip'}}
               </button>
               <button type="button" title="Bucket Stat" ngbDropdownItem (click)="bucketStat(bucketStatTpl)"
                 [class.disabled]="offline()">
                 <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
-                Bucket Statistics
+                {{lang()=='ms'?'Statistik Bucket':'Bucket Statistics'}}
               </button>
               <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline()"
                 (click)="reorganize(bucket().id)">
-                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reorganize
-                Bucket files
+                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                {{lang()=='ms'?'Susun semula fail Bucket':'Reorganize Bucket files'}}
               </button>
               <button type="button" title="View anti-virus scanning logs" ngbDropdownItem
                 [disabled]="!serverInfo.avEnabled" (click)="openAvLogs(avLogListTpl, bucket().id)">
                 <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                Anti-virus Scan
+                {{lang()=='ms'?'Imbas Anti-virus':'Anti-virus Scan'}}
               </button>
             </div>
           </div>
@@ -64,19 +64,19 @@
         <div class="mt-1">
           <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}" (click)="bySStatus(undefined)">
-            All
+            {{lang()=='ms'?'Semua':'All'}}
           </button>
           <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='OK'}" (click)="bySStatus('OK')">
-            Safe file
+            {{lang()=='ms'?'Fail Selamat':'Safe file'}}
           </button>
           <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='FOUND'}" (click)="bySStatus('FOUND')">
-            Threat Found
+            {{lang()=='ms'?'Ancaman Dikesan':'Threat Found'}}
           </button>
           <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='VAULT'}" (click)="bySStatus('VAULT')">
-            Quarantined
+            {{lang()=='ms'?'Kuarantin':'Quarantined'}}
           </button>
         </div>
         <div class="position-relative">
@@ -90,9 +90,9 @@
                 <table class="table table-bordered">
                   <thead>
                     <tr>
-                      <th style="width: 10%">Preview</th>
-                      <th class="w-10">File Name</th>
-                      <th style="width: 5%">Uploader</th>
+                      <th style="width: 10%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
+                      <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
+                      <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
                       @if (screen().data?.enableDelete){
                       <th style="width: 5%">&nbsp;</th>
                       }
@@ -106,8 +106,8 @@
                         <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="58"
                           onerror="this.src='assets/img/placeholder-128.png'">
                         } @else {
-                        <span class="text-muted text-center">No Preview
-                          Available</span>
+                        <span class="text-muted text-center">
+                          {{lang()=='ms'?'Tiada Paparan Tersedia':'No Preview Available'}}</span>
                         }
                       </td>
                       <td>
@@ -120,11 +120,11 @@
                             {{bucketFile.fileUrl}}
                             }
                           </div>
-                          <div>Uploaded on: {{bucketFile.timestamp|date:'medium'}}</div>
-                          <div>File size: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
-                          <div>File type: {{bucketFile.fileType}}</div>
+                          <div>{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}: {{bucketFile.timestamp|date:'medium'}}</div>
+                          <div>{{lang()=='ms'?'Saiz Fail':'File size'}}: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
+                          <div>{{lang()=='ms'?'Jenis Fail':'File type'}}: {{bucketFile.fileType}}</div>
                           @if (bucketFile.itemLabel) {
-                          <div>From input: {{bucketFile.itemLabel}}</div>
+                          <div>{{lang()=='ms'?'Dari Input':'From input'}}: {{bucketFile.itemLabel}}</div>
                           }
                           @if (bucketFile.entryId) {
                           <div>For entry #{{bucketFile.entryId}}</div>
@@ -188,15 +188,15 @@
       }
       @if (bucketFileList()?.length == 0 && !loading()) {
       <div class="details">
-        <h3>No data</h3>
-        <p> There is no file uploaded to this bucket.
-          <br /> You can upload new file by clicking on the Upload button.
+        <h3>{{lang()=='ms'?'Tiada data':'No data'}}</h3>
+        <p> {{lang()=='ms'?'Tiada fail dimuatnaik ke dalam bucket ini':'There is no file uploaded to this bucket'}}.
+          <br /> {{lang()=='ms'?'Anda boleh muatnaik fail dengan klik pada butang Muatnaik':'You can upload new file by clicking on the Upload button'}}.
         </p>
       </div>
       }
     }@else{
     <div style="color:#aaa;">
-      <h3>Please select Bucket from the list on the left to view it's data.</h3>
+      <h3>{{lang()=='ms'?'Sili pilih Bucket dari senarai':"Please select Bucket from the list on the left to view it's data"}}.</h3>
     </div>
     }
   </div>
@@ -205,12 +205,12 @@
 <ng-template #removeBucketFileTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Remove File</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Buang Fail':'Remove File'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
         <div class="form-group mb-3">
-          <label class="form-label">Name</label>
+          <label class="form-label">{{lang()=='ms'?'Nama':'Name'}}</label>
           <p class="form-control-static">{{removeBucketFileData.fileName}}</p>
         </div>
         <div class="form-group mb-3">
@@ -218,19 +218,19 @@
           <p class="form-control-static">{{removeBucketFileData.fileUrl}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Uploaded on</label>
+          <label class="form-label">{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}</label>
           <p class="form-control-static">{{removeBucketFileData.timestamp|date:'medium'}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Uploaded by</label>
+          <label class="form-label">{{lang()=='ms'?'Pemuatnaik':'Uploaded by'}}</label>
           <p class="form-control-static">{{removeBucketFileData.email}}</p>
         </div>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeBucketFileData)">
-        <i class="icon-minus-sign-alt"></i> Remove File
+        <i class="icon-minus-sign-alt"></i> {{lang()=='ms'?'Buang Fail':'Remove File'}}
       </button>
     </div>
   </div>
@@ -239,15 +239,15 @@
 <ng-template #avLogListTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Anti-virus Scan</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Imbas Anti-virus':'Anti-virus Scan'}}</h4>
     </div>
     <div class="modal-body">
       <div>
         <button class="btn btn-primary" [disabled]="scanLoading[bucket().id]" (click)="startScan(bucket)">
           @if(!scanLoading[bucket().id]){
-          Start Scan
+          {{lang()=='ms'?'Mula Imbasan':'Start Scan'}}
           }@else {
-          Scanning <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          {{lang()=='ms'?'Mengimbas':'Scanning'}} <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
           }
         </button>
 
@@ -269,11 +269,11 @@
         }
       </ul>
       }@else{
-      <h4 class="text-muted mt-3">No log available</h4>
+      <h4 class="text-muted mt-3">{{lang()=='ms'?'Tiada log tersedia':'No log available'}}</h4>
       }
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     </div>
   </div>
 </ng-template>
@@ -286,7 +286,7 @@
     <div class="modal-body">
       <div class="form form-horizontal">
         <div class="form-group mb-3">
-          <label class="form-label">File Name</label>
+          <label class="form-label">{{lang()=='ms'?'Nama Fail':'File Name'}}</label>
           <p class="form-control-static">{{initZipData.fileName}}</p>
         </div>
         <div class="form-group mb-3">
@@ -294,20 +294,20 @@
           <p class="form-control-static"><a href="{{initZipData.fileUrl}}">{{initZipData.fileUrl}}</a></p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Start archiving</label>
+          <label class="form-label">{{lang()=='ms'?'Mula mengarkib':'Start archiving'}}</label>
           <p class="form-control-static">{{initZipData.timestamp|date:'medium'}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Total</label>
+          <label class="form-label">{{lang()=='ms'?'Keseluruhan':'Total'}}</label>
           <p class="form-control-static">{{initZipData.total}}</p>
         </div>
         <button type="button" class="btn btn-primary" (click)="downloadZip(initZipData.fileName)">
-          <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon> Download Zip
+          <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatturun Zip':'Download Zip'}}
         </button>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     </div>
   </div>
 </ng-template>
@@ -315,26 +315,26 @@
 <ng-template #bucketStatTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">In this bucket</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Dalam bucket ini':'In this bucket'}}</h4>
     </div>
     <div class="modal-body">
       <div class="">
         <div class="row">
           <div class="col-6">
             <div class="form-group mb-3">
-              <label class="form-label">Total File</label>
+              <label class="form-label">{{lang()=='ms'?'Keseluruhan Fail':'Total File'}}</label>
               <p class="form-control-static">{{bucketStatData.totalCount}}</p>
             </div>
           </div>
           <div class="col-6">
             <div class="form-group mb-3">
-              <label class="form-label">Total Size</label>
+              <label class="form-label">{{lang()=='ms'?'Keseluruhan Saiz':'Total Size'}}</label>
               <p class="form-control-static">{{bucketStatData.totalSize/(1024*1024)|number}}<sup>MiB</sup></p>
             </div>
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Count by Type</label>
+          <label class="form-label">{{lang()=='ms'?'Bilangan mengikut Jenis':'Count by Type'}}</label>
           <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
             @for (i of bucketStatData.typeCount; track $index; let index = $index) {
               <div
@@ -359,7 +359,7 @@
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Size by Type</label>
+          <label class="form-label">{{lang()=='ms'?'Saiz mengikut Jenis':'Size by Type'}}</label>
           <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
             @for (i of bucketStatData.typeSize; track $index; let index = $index) {
               <div
@@ -385,7 +385,7 @@
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Count by Form Field</label>
+          <label class="form-label">{{lang()=='ms'?'Bilangan mengikut Medan Borang':'Count by Form Field'}}</label>
           <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
             @for (i of bucketStatData.labelCount; track $index; let index = $index) {
               <div
@@ -410,7 +410,7 @@
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Size by Form Field</label>
+          <label class="form-label">{{lang()=='ms'?'Saiz mengikut Medan Borang':'Size by Form Field'}}</label>
           <div class="d-flex overflow-hidden my-2" style="border-radius:3px;">
             @for (i of bucketStatData.labelSize; track $index; let index = $index) {
               <div
@@ -438,7 +438,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     </div>
   </div>
 </ng-template>

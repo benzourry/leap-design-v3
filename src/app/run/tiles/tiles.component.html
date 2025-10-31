@@ -36,16 +36,16 @@
                             }
                           }
                           @if (naviDataItem?.inactive) {
-                            <span class="sub text-danger">Open
+                            <span class="sub text-danger">{{lang()=='ms'?'Dibuka':'Open'}}
                               @if (naviDataItem?.startDate) {
                                 <span>
-                                  from
+                                  {{lang()=='ms'?'dari':'from'}}
                                   {{naviDataItem?.startDate|date:'mediumDate'}}
                                 </span>
                               }
                               @if (naviDataItem?.endDate) {
                                 <span>
-                                  until
+                                  {{lang()=='ms'?'hingga':'until'}}
                                   {{naviDataItem?.endDate|date:'mediumDate'}}
                                 </span>
                               }
@@ -66,16 +66,16 @@
                             }
                           }
                           @if (naviDataItem?.inactive) {
-                            <span class="sub text-danger">Open
+                            <span class="sub text-danger">{{lang()=='ms'?'Dibuka':'Open'}}
                               @if (naviDataItem?.startDate) {
                                 <span>
-                                  from
+                                  {{lang()=='ms'?'dari':'from'}}
                                   {{naviDataItem?.startDate|date:'mediumDate'}}
                                 </span>
                               }
                               @if (naviDataItem?.endDate) {
                                 <span>
-                                  until
+                                  {{lang()=='ms'?'hingga':'until'}}
                                   {{naviDataItem?.endDate|date:'mediumDate'}}
                                 </span>
                               }
@@ -183,7 +183,7 @@
         </div>
       }@else{
         <div class="p-20 text-muted text-center">
-          <h3>No modules currently available</h3>
+          <h3>{{lang()=='ms'?'Tiada modul tersedia buat masa ini':'No modules currently available'}}</h3>
         </div>
       }
     </div>

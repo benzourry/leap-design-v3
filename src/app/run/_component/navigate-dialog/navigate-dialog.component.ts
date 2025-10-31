@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { RunService } from '../../_service/run.service';
 
 @Component({
     selector: 'app-navigate-dialog',
@@ -9,6 +10,12 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
     standalone: true
 })
 export class NavigateDialogComponent {
+    
+
+  private runService = inject(RunService);
+
+  app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
 
   constructor(public activeModal: NgbActiveModal) { }
 

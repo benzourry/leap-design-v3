@@ -416,9 +416,9 @@ export class ListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: res => {
           let result = `<table width="100%">
-                          <tr><td>Total Entry</td><td>: ${res.totalCount}</td></tr>
-                          <tr><td>Total Sent</td><td>: ${res.totalSent}</td></tr>
-                          <tr><td>Success</td><td>: ${res.success ? 'Yes' : 'No'}</td></tr>
+                          <tr><td>${this.lang()=='ms'?'Keseluruhan':'Total Entry'}</td><td>: ${res.totalCount}</td></tr>
+                          <tr><td>${this.lang()=='ms'?'Dihantar':'Total Sent'}</td><td>: ${res.totalSent}</td></tr>
+                          <tr><td>${this.lang()=='ms'?'Berjaya':'Success'}</td><td>: ${res.success ? 'Yes' : 'No'}</td></tr>
                         </table>`;
           this.toastService.show(this.lang()=='ms'?"Blast berjaya":"Blast successful <br/>" + result, { classname: 'bg-success text-light' });
         }, error: err => {
@@ -446,9 +446,9 @@ export class ListComponent implements OnInit, OnDestroy {
           next: res => {
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
             this.getEntryList(this.pageNumber());
-            this.toastService.show(this.lang()=='ms'?"Entry berjaya dibuang":"Entry removed successfully", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entri berjaya dibuang":"Entry removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dibuang":"Entry removal failed", { classname: 'bg-danger text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya dibuang":"Entry removal failed", { classname: 'bg-danger text-light' });
           }
         })
     }
@@ -706,9 +706,9 @@ export class ListComponent implements OnInit, OnDestroy {
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
             // this.pageNumber = (this.numberOfElements == 1 && !this.first) ? this.pageNumber - 1 : this.pageNumber;
             this.getEntryList(this.pageNumber());
-            this.toastService.show(this.lang()=='ms'?"Entry berjaya dibuang":"Entries removed successfully", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entri berjaya dibuang":"Entries removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dibuang":"Entries removal failed", { classname: 'bg-danger text-light' });
+            this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya dibuang":"Entries removal failed", { classname: 'bg-danger text-light' });
             this.selectedEntries().clear();
             this.checkAllInput.set(false);
           }

@@ -38,6 +38,8 @@ export class LookupComponent implements OnInit {
     user = computed<any>(() => this.runService.$user());
 
     app = computed(() => this.runService.$app());
+
+    lang = computed(() => this.app().x?.lang);
     
     lookupId = model<number>();
     

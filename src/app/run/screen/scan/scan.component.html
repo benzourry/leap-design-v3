@@ -6,14 +6,14 @@
         <div [ngClass]="altClass" class="position-absolute">
           @if (error) {
             <div style="color: #f00">
-              Invalid QR Code ({{errorMsg()}})
+              {{lang()=='ms'?'Kod QR tidak sah':'Invalid QR Code'}} ({{errorMsg()}})
             </div>
           }
           @if (!pause()) {
             <div class="d-flex justify-content-center align-items-center scanner-box">
               <div class="custom-scanner"></div>
               <div>
-                Align QR Code here
+                {{lang()=='ms'?'Halakan Kod QR di sini':'Align QR Code here'}}
               </div>
             </div>
           }
@@ -25,8 +25,8 @@
       <div class="form-check form-switch form-group mt-2">
         <input type="checkbox" class="form-check-input" [disabled]="!torchSupport()" [(ngModel)]="isTorch" name="isTorchOn"
           id="isTorchOn" (change)="switchTorch(isTorch())">
-        <label class="form-check-label" for="isTorchOn">Turn On Flash @if (!torchSupport()) {
-          <span>(No flash found)</span>
+        <label class="form-check-label" for="isTorchOn">{{lang()=='ms'?'Hidupkan Flash':'Turn On Flash'}} @if (!torchSupport()) {
+          <span>({{lang()=='ms'?'Tiada flash':'No flash found'}})</span>
         }</label>
       </div>
     }
@@ -38,7 +38,7 @@
         <input type="file" [hidden]="true" id="qr-input-screen" (change)="qrValueChanged($event)" [(ngModel)]="file"
           name="screen" accept="image/*" capture />
         <fa-icon [icon]="['fas','qrcode']" [fixedWidth]="true"></fa-icon>
-        Upload QR Code
+        {{lang()=='ms'?'Muatnaik Kod QR':'Upload QR Code'}}
       </label>
     }
   </div>

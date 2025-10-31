@@ -30,7 +30,7 @@
               @if (!dataset()?.x?.hideSearch) {
                 <input type="search" autocapitalize="none"
                   class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
-                  placeholder="{{app().x?.lang=='ms'?'Tapis senarai':'Filter list'}}" [(ngModel)]="searchText"
+                  placeholder="{{lang()=='ms'?'Tapis senarai':'Filter list'}}" [(ngModel)]="searchText"
                   (keyup.enter)="loadDatasetEntry(dataset(), 1)">
               }              
               @if (dataset()?.filters && dataset()?.filters.length>0) {
@@ -54,21 +54,21 @@
                       <a title="Export to Excel" ngbDropdownItem target="blank"
                         href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
                         <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
-                        Export to Excel
+                        Export {{lang()=='ms'?'ke':'to'}} Excel
                       </a>
                     }
                     @if (dataset()?.exportCsv) {
                       <a title="Export to CSV" ngbDropdownItem target="blank"
                         href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
                         <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
-                        Export to CSV
+                        Export {{lang()=='ms'?'ke':'to'}} CSV
                       </a>
                     }
                     @if (dataset()?.exportPdf) {
                       <a title="Export to PDF" ngbDropdownItem target="blank"
                         href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}">
                         <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
-                        Export to PDF
+                        Export {{lang()=='ms'?'ke':'to'}} PDF
                       </a>
                     }
                   </div>
@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        @if (screen().data?.showSummary) {
+        <!-- @if (screen().data?.showSummary) {
           <div class="px-2 pb-2 list-summary print-hide">
             <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
               <div class="row">
@@ -140,6 +140,26 @@
                   <div class="d-sm-inline">{{numberOfElements()}}</div>
                 </div>
                 <div class="col">Pages:
+                  <div class="d-sm-inline">{{entryPages()}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        } -->
+        @if (screen().data?.showSummary) {
+          <div class="px-2 pb-2">
+            <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
+              <div class="row">
+                <div class="col d-flex align-items-center">
+                  <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
+                </div>
+                <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
+                  <div class="d-sm-inline">{{entryTotal()}}</div>
+                </div>
+                <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
+                  <div class="d-sm-inline">{{numberOfElements()}}</div>
+                </div>
+                <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
                   <div class="d-sm-inline">{{entryPages()}}</div>
                 </div>
               </div>
@@ -163,7 +183,7 @@
             </div> 
           }@else if (screen().type=='mailbox') {
             @defer(prefetch on idle){
-              <app-mailbox></app-mailbox>
+              <app-mailbox [lang]="lang()"></app-mailbox>
             }@loading {
               <div class="text-center m-5">
                 <div class="spinner-grow text-primary" role="status">
@@ -183,7 +203,7 @@
             }
           }@else if (screen().type=='qr') {
             @defer(prefetch on idle){
-              <app-scan (valueChange)="qrValueChange($event, screen())" #scanner></app-scan>
+              <app-scan (valueChange)="qrValueChange($event, screen())" [lang]="lang()" #scanner></app-scan>
             }@loading {
               <div class="text-center m-5">
                 <div class="spinner-grow text-primary" role="status">
@@ -292,8 +312,8 @@
                   <input type="text" class="form-control" (keyup.enter)="runEntry(testId.value)"
                   autocapitalize="none"
                     name="test-id" #testId>
-                  <button type="button" class="btn btn-secondary" (click)="runEntry(testId.value)">Load
-                  Data</button>
+                  <button type="button" class="btn btn-secondary" (click)="runEntry(testId.value)">
+                    {{lang()=='ms'?'Muat Data':'Load Data'}}</button>
                 </div>
               </div>
             }@else{
@@ -326,7 +346,7 @@
   <div class="modal-body d-flex">
     <div class="d-flex justify-content-center flex-column align-items-center m-a">
       <div class="d-flex flex-column">
-        <div class="py-3 text-center text-muted" style="font-weight: 1.2em;">{{app().x?.lang=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
+        <div class="py-3 text-center text-muted" style="font-weight: 1.2em;">{{lang()=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
         @for (action of actionLinks(); track $index) {
           <a [routerLink]="action.url" [queryParams]="action.param"
           class="btn btn-secondary m-1 rounded-pill border-2" (click)="d(action.url)">{{action.label}}</a>
@@ -352,21 +372,19 @@
       </div>
     }
     <div class="form-group mb-3">
-      <label class="form-label">Condition type</label>
+      <label class="form-label">{{lang()=='ms'?'Jenis kondisi':'Condition type'}}</label>
       <div>
-        <div class="btn-group">
-          <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all"
-            [(ngModel)]="filtersCond" required>
-          <label for="match-all" class="btn btn-outline-secondary">Match All</label>
-          <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any"
-            [(ngModel)]="filtersCond" required>
-          <label for="match-any" class="btn btn-outline-secondary">Match Any</label>
-        </div>
+        <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all"
+          [(ngModel)]="filtersCond" required>
+        <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Semua':'Match All'}}</label>
+        <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any"
+          [(ngModel)]="filtersCond" required>
+        <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Mana-mana':'Match Any'}}</label>
       </div>
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     <div>
       <button type="button" class="btn btn-round btn-secondary me-1" (click)="c({})">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
@@ -374,7 +392,7 @@
       </button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData())">
         <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-        Filter
+        {{lang()=='ms'?'Tapis':'Filter'}}
       </button>
     </div>
   </div>

@@ -127,14 +127,14 @@
     </div>
   }@else{
     <div class="d-flex justify-content-center" [ngStyle]="{'height':maxState()?'auto':(chart().height+'px'||'450px')}">
-      <span class="align-self-center text-muted">No data</span>
+      <span class="align-self-center text-muted">{{lang()=='ms'?'Tiada data':'No data'}}</span>
     </div>
   }
 </div>
 
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{app().x?.lang=='ms'?'Tapis':'Filter'}} {{dataset?.title}}</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} {{dataset?.title}}</h4>
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){
@@ -175,7 +175,7 @@
       </button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(filtersData)">
         <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-        {{app().x?.lang=='ms'?'Tapis':'Filter'}}
+        {{lang()=='ms'?'Tapis':'Filter'}}
       </button>
     </div>
   </div>

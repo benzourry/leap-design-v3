@@ -142,8 +142,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                         @if (field && preItem()[f.code]  && !((field?.x?.facet?.['view']||e.x?.facet?.['view'])=='none')) {
                           <div [ngClass]="field?.size"
                             [class.mt-0]="field?.subType=='clearfix'"
-                            [hidden]="field?.hidden || (field?.x?.facet?.['view']||e.x?.facet?.['view'])=='hidden'"
-                            >
+                            [hidden]="field?.hidden || (field?.x?.facet?.['view']||e.x?.facet?.['view'])=='hidden'">
                             @if (field?.type!='btn' && field?.subType!='clearfix' && !field?.hideLabel) {
                               <label class="form-label label-span">{{field?.label}}</label>
                             }
@@ -153,7 +152,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                   <p class="form-control-static mb-0">
                                     @if (data()) {
                                       <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,data())"
-                                      [scopeId]="scopeId()"
+                                      [scopeId]="scopeId()" [lang]="lang()"
                                       [data]="evalContextFn()(entry(),data(), {}, form())"></field-view>
                                       <!-- [data]="{$user$:user(),$conf$:appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,
                                         $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
@@ -165,7 +164,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                 <div>
                                   @if (data()) {
                                     <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,data())"
-                                    [scopeId]="scopeId()"
+                                    [scopeId]="scopeId()" [lang]="lang()"
                                     [data]="evalContextFn()(entry(),data(), {}, form())"></field-view>
                                     <!-- [data]="{$user$:user(),$conf$:appConfig,$:data(),$_:entry(),$prev$:entry()?.prev,
                                       $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
@@ -204,7 +203,6 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           </div>
                         }
                       }
-                      <!-- <div class="clearfix"></div> -->
                     </div>
                   </div>
                 </div>
@@ -255,7 +253,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                       }  
                                       <div class="ms-2">
                                         @if (listKv?.key=='undefined'){
-                                          <span class="text-muted fst-italic"> Data not available</span>
+                                          <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                                         }@else {
                                           {{listKv?.key}}
                                         }
@@ -276,23 +274,12 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                       @let field = form()?.items[f];
                                       @if (field && field.subType!='clearfix'){
                                         <td>
-                                          <!-- <field-view [field]="form().items[f]" [value]="child[f]" [scopeId]="scopeId()">
-                                          </field-view> -->
-                                          <!-- <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)"
-                                            [scopeId]="scopeId()"
-                                            [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,
-                                              $baseUrl$:$baseUrl$(),$baseApi$:baseApi, $base$:base, $this$:$this$(),
-                                              $param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$()}"></field-view> -->
-                                        
                                             @if (field.type!='static') {
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()"></field-view>
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()" [lang]="lang()"></field-view>
                                             }
                                             @if (field.type=='static') {
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()" 
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field,child)" [scopeId]="scopeId()" [lang]="lang()" 
                                                 [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
-                                                <!-- [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,
-                                                $baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(),
-                                                $file$:$file$(), $index: child.$index}"></field-view> -->
                                             }                                      
                                         </td>
                                       }
@@ -318,7 +305,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           <!-- <div class="position-relative p-3 bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key]=!hideGroup[e.code+listKv?.key]"> -->
                             <div class="ms-2">
                               @if (listKv?.key=='undefined'){
-                                <span class="text-muted fst-italic"> Data not available</span>
+                                <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                               }@else {
                                 {{listKv?.key}}
                               }
@@ -347,7 +334,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                               <label class="label-span form-label">{{field?.label}}</label>
                                             }
                                             <p class="form-control-static mb-0">
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"></field-view>
+                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" [lang]="lang()"></field-view>
                                             </p>
                                           </div>
                                         }
@@ -355,7 +342,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                           @if (field?.subType!='clearfix' && !field?.hideLabel) {
                                             <label class="label-span form-label">{{field?.label}}</label>
                                           }
-                                          <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" 
+                                          <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"  [lang]="lang()"
                                             [data]="evalContextFn()(entry(),child, {}, this.form())"></field-view>
                                           <!-- [data]="{$user$:user(),$conf$:appConfig,$:child,$_:entry(),$prev$:entry()?.prev,$baseUrl$:$baseUrl$(),$this$:$this$(),$param$:$param$(),$token$:$token$(), $action$:$action$(), $file$:$file$(), $index: child.$index}"></field-view> -->
                                         }
@@ -374,7 +361,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                   <!-- @if ((data && !data[e.code]) || data[e.code]?.length==0) { -->
                     <div class="card-body p-3">
                     <!--<h4>No record</h4>-->
-                      <p>No data available for {{e.title}}</p>
+                      <p>{{lang()=='ms'?'Tiada data tersedia untuk':'No data available for'}} {{e.title}}</p>
                     </div>
                   }
                 </div>
@@ -439,6 +426,8 @@ export class FormViewComponent implements OnInit {
   // submitted = output<any>();
 
   $action$ = input<string>();
+
+  lang = input<string>('en');
  
 
   defaultParam: string = "{'$prev$.$id':$.$id}";

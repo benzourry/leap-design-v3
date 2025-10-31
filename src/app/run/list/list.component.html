@@ -64,21 +64,21 @@
                   <a title="Export to Excel" ngbDropdownItem target="blank"
                     href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
-                    Export to Excel
+                    Export {{lang()=='ms'?'ke':'to'}} Excel
                   </a>
                 }
                 @if (dataset()?.exportCsv) {
                   <a title="Export to CSV" ngbDropdownItem target="blank"
                     href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
-                    Export to CSV
+                    Export {{lang()=='ms'?'ke':'to'}} CSV
                   </a>
                 }
                 @if (dataset()?.exportPdf) {
                   <a title="Export to PDF" ngbDropdownItem target="blank"
                     href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}">
                     <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
-                    Export to PDF
+                    Export {{lang()=='ms'?'ke':'to'}} PDF
                   </a>
                 }
               </div>
@@ -139,7 +139,7 @@
                 <button type="button" class="pointer fst-italic"
                   ngbDropdownItem
                   (click)="groupByField(null,null,null)">
-                  Ungroup
+                  {{lang()=='ms'?'Nyahkumpul':'Ungroup'}}
                 </button>
                 @for (gf of dataset()?.x?.groupFields|keyvalue; track $index){
                   <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'')>-1"
@@ -156,18 +156,18 @@
       </div>
       @if (dataset()?.x?.showSummary) {
         <div class="px-2 pb-2">
-          <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+          <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
             <div class="row">
               <div class="col d-flex align-items-center">
-                <strong>Summary</strong>
+                <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
               </div>
-              <div class="col">Total:
+              <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
                 <div class="d-sm-inline">{{entryTotal()}}</div>
               </div>
-              <div class="col">Shown:
+              <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
                 <div class="d-sm-inline">{{numberOfElements()}}</div>
               </div>
-              <div class="col">Pages:
+              <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
                 <div class="d-sm-inline">{{entryPages()}}</div>
               </div>
             </div>
@@ -178,12 +178,12 @@
         <div class="px-2">
           <div class="pb-1 small m-a" [class.limit-width]="!dataset()?.wide">
             <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter()==null}" (click)="groupFilter.set(null)">
-              <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
+              <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Semua':'All'}}
             </button>
             @for(gf of groupedEntryList(); track $index){
               <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"  [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter()==gf.key}" (click)="groupFilter.set(gf.key)">
                 @if (gf?.key=='undefined'){
-                  <span class="text-muted fst-italic"> Data not available</span>
+                  <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                 }@else {
                   <span [innerHtml]="gf?.key">{{gf?.key}}</span>
                 }
@@ -266,7 +266,7 @@
                           }   
                           <div class="ms-2">
                             @if (listKv?.key=='undefined'){
-                              <span class="text-muted fst-italic"> Data not available</span>
+                              <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                             }@else {
                               <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
                             }
@@ -327,7 +327,7 @@
                                       </tbody>
                                     </table>                              
                                   }@else {
-                                    <div class="p-2" style="color:#aaa">Data not available</div>
+                                    <div class="p-2" style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
                                   }
                                 }@else {
                                   <field-view [field]="form()[item.root]?.items[item.code]" [scopeId]="scopeId()"
@@ -640,11 +640,11 @@
         </div>
         @if (dataset().x?.bulkAction && entryList()?.length>0 && selectedEntries().size>0) {
           <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
-            &#8627; With Selected
+            &#8627; {{lang()=='ms'?'Dengan yang dipilih':'With Selected'}}
             @if (dataset()?.canBlast) {
               <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
                 (click)="bulkEmail(blastTpl,blastData())"><fa-icon [icon]="['far','envelope']"
-              [fixedWidth]="true"></fa-icon> Send Email</button>
+              [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Hantar Emel':'Send Email'}}</button>
             }
             @for (ac of dataset().actions; track ac.id) {
               @if (ac.action=='delete') {
@@ -712,7 +712,7 @@
 
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} {{dataset()?.title}}</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} <span [innerHtml]="compileTpl(dataset()?.title)"></span></h4>
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){
@@ -726,14 +726,14 @@
       </div>
     }
     <div class="form-group mb-3">
-      <label class="form-label">Condition type</label>
+      <label class="form-label">{{lang()=='ms'?'Jenis Kondisi':'Condition type'}}</label>
       <div>
         <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all"
           [(ngModel)]="filtersCond" required>
-        <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">Match All</label>
+        <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Semua':'Match All'}}</label>
         <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any"
           [(ngModel)]="filtersCond" required>
-        <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">Match Any</label>
+        <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Mana-mana':'Match Any'}}</label>
       </div>
     </div>
   </div>
@@ -755,19 +755,20 @@
 
 <ng-template #blastTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Blast Email</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Hantar Emel Pukal':'Blast Email'}}</h4>
   </div>
   <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
     <p>
-      Email will be sent to field <strong>{{form().data?.items[dataset().blastTo].label}}</strong> in
-      <strong>{{blastData().bulk? selectedEntries().size: entryTotal()}}</strong> record(s)
+      {{lang()=='ms'?'Emel akan dihantar mengikut medan':'Email will be sent to field'}} 
+      <strong>{{form().data?.items[dataset().blastTo].label}}</strong> {{lang()=='ms'?'dalam':'in'}}
+      <strong>{{blastData().bulk? selectedEntries().size: entryTotal()}}</strong> {{lang()=='ms'?'rekod':'record(s)'}}
     </p>
     @if (mailerList().length>0) {
       <div class="form-group mb-3">
-        <label class="form-label">Select From Template</label>
+        <label class="form-label">{{lang()=='ms'?'Pilih dari templat':'Select From Template'}}</label>
         <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData().template)"
           [(ngModel)]="blastData().template">
-          <option value="" disabled>Select mailer...</option>
+          <option value="" disabled>{{lang()=='ms'?'Pilih mailer...':'Select mailer...'}}</option>
           @for (mailer of mailerList(); track mailer.id) {
             <option [ngValue]="mailer">{{mailer.name}}</option>
           }
@@ -775,13 +776,13 @@
       </div>
     }
     <div class="form-group mb-3">
-      <label class="form-label">Subject</label>
+      <label class="form-label">{{lang()=='ms'?'Subjek':'Subject'}}</label>
       <input type="text" class="form-control" [(ngModel)]="blastData().subject" #subject="ngModel"
         name="subject" required>
       @if (subject?.invalid) {
         <small class="form-text has-warning">
           @if (subject?.errors?.required) {
-            <span class="help-block">Subject is required</span>
+            <span class="help-block">{{lang()=='ms'?'Subjek diperlukan':'Subject is required'}}</span>
           }
         </small>
       }
@@ -807,10 +808,10 @@
       </div>
     }
     <div class="form-group mb-3">
-      <label class="form-label">Content (support HTML)</label>
+      <label class="form-label">{{lang()=='ms'?'Isi (menyokong HTML)':'Content (support HTML)'}}</label>
       <div class="form-check form-switch mb-1 float-end">
         <input type="checkbox" class="form-check-input" [(ngModel)]="showHint" name="showHint" id="showHint">
-          <label class="form-check-label" for="showHint">Hint</label>
+          <label class="form-check-label" for="showHint">{{lang()=='ms'?'Petunjuk':'Hint'}}</label>
       </div>
       <div class="mx-n2">
         <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content"
@@ -822,17 +823,19 @@
       <div class="form-check">
         <input type="checkbox" class="form-check-input" id="pushable" [(ngModel)]="blastData().pushable"
           name="pushable">
-        <label class="form-check-label" for="pushable">Attempt to use Push Notification (if the recipient
-        subscribed)</label>
+        <label class="form-check-label" for="pushable">{{lang()=='ms'?
+        'Cuba Push Notification (jika penerima melanggan)':
+        'Attempt to use Push Notification (if the recipient subscribed)'}}
+        </label>
       </div>
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="mailerEditForm.invalid"
       (click)="c(blastData())">
       <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
-      Blast Email
+      {{lang()=='ms'?'Hantar Emel':'Blast Email'}}
     </button>
   </div>
 </ng-template>
@@ -873,7 +876,7 @@
         [entryId]="inPopEntryId()" [asComp]="true"
         (screenLoaded)="screenLoaded($event)"></app-screen>
         <div class="modal-footer justify-content-between">
-          <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+          <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
         </div>      
       }@loading {
         <div class="text-center m-5">
@@ -893,6 +896,6 @@
     <iframe [src]="actionUrl()|safe:'resourceUrl'" title="actionTitle" style="width:100%; height:100%;"></iframe>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
   </div>
 </ng-template>

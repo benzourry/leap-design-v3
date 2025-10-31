@@ -37,6 +37,7 @@ export class ChatbotComponent implements OnInit {
   offline = signal<boolean>(false);
   screen = input<any>();
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   user = computed<any>(() => this.runService.$user());
   cogna: any;
   compileTplData = input<any>();

@@ -98,7 +98,7 @@
           <button type="button" id="clear-chat-btn" class="btn btn-sm px-1 rounded-pill btn-outline-danger ms-auto print-hide"
                 title="Clear chat memory" (click)="clearCognaMemory(screen().cogna)"
                 [class.disabled]="offline()">
-            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon><span class="text"> Clear Chat</span>
+            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon><span class="text"> {{lang()=='ms'?'Padam Perbualan':'Clear Chat'}}</span>
           </button>
         </div>
       }
@@ -119,7 +119,7 @@
       <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill p-1"  autocomplete="off" 
         (keyup.enter)="chatPrompt(screen().cogna, chatPromptText())"  autocapitalize="none" [(ngModel)]="chatPromptText"
         maxlength="2000"
-        [placeholder]="isListening()?app().x?.lang=='ms'?'Saya mendengar...':'I\'m listening...':(app().x?.lang=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
+        [placeholder]="isListening()?lang()=='ms'?'Saya mendengar...':'I\'m listening...':(lang()=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
         placeholder="Ask me something...">  
         @if (screen().data.speechInput){
           @if (isListening()){

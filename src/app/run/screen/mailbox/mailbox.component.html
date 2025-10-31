@@ -36,9 +36,9 @@
                     <div class="p-5 text-center text-muted">
                         <fa-icon [icon]="['fas','mail-bulk']"  size="4x"></fa-icon>
                         @if(listSearchText){
-                            <div class="mt-3">No notification found with '{{listSearchText}}' </div>
+                            <div class="mt-3">{{lang()=='ms'?'Tiada notifikasi dijumpai untuk':'No notification found with'}} '{{listSearchText}}' </div>
                         }@else {
-                            <div class="mt-3">You don't have any notification </div>
+                            <div class="mt-3">{{lang()=='ms'?'Tiada notifikasi':"You don't have any notification"}} </div>
                         }
                     </div>
                 }
@@ -50,7 +50,7 @@
                     <div class="mb-3">
                         <button class="btn btn-rounded fs-5" (click)="notif=null">
                             <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
-                            Back
+                            {{lang()=='ms'?'Kembali':'Back'}}
                         </button>
                     </div>
                     @if (notif.subject){
@@ -60,21 +60,21 @@
                     }
                     @else {
                         <div class="fs-5 p-3 text-body-tertiary">
-                            Subject not recorded
+                            {{lang()=='ms'?'Subjek tidak direkodkan':'Subject not recorded'}}
                         </div>
                     }                      
                     <div class="card card-clean mb-2 overflow-hidden">
                         <div class="list-group list-group-flush">
                             <div class="list-group-item">
-                                <div class="label-span">From</div>
+                                <div class="label-span">{{lang()=='ms'?'Daripada':'From'}}</div>
                                 <div class="text-truncate">{{notif.sender}}</div>
                             </div>
                             <div class="list-group-item">
-                                <div class="label-span">To</div>
+                                <div class="label-span">{{lang()=='ms'?'Kepada':'To'}}</div>
                                 <div class="text-truncatei">@if(notif.email){ {{notif.email}} }@else{ <span class="text-muted">N/A</span> }</div>
                             </div>
                             <div class="list-group-item">
-                                <div class="label-span">Timestamp</div>
+                                <div class="label-span">{{lang()=='ms'?'Masa':'Timestamp'}}</div>
                                 <div class="text-truncate">{{notif.timestamp|date:'medium'}}</div>
                             </div>
                             <div class="list-group-item" style="border-left:solid 3px lightgray" >
@@ -90,7 +90,7 @@
                 }@else{
                     <div class="p-5 text-center text-muted">
                         <fa-icon [icon]="['fas','mail-bulk']"  size="4x"></fa-icon>
-                        <div class="mt-3">Select an item to read </div>
+                        <div class="mt-3">{{lang()=='ms'?'Pilih item untuk dibaca':'Select an item to read'}} </div>
                     </div>
 
                 }

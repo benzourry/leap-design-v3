@@ -284,7 +284,7 @@
                                            $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $this$:_this, 
                                            $param$:_param, $ngForm$:entryForm, $file$:filesMap, timestamp: timestamp}" -->
                                         <field-edit [loading]="lookupLoading()[f.code]" id="fn-{{f.id}}-{{index_child}}"
-                                          [scopeId]="scopeId()"
+                                          [scopeId]="scopeId()" [lang]="lang()"
                                           [fileProgress]="uploadProgress()[f.code+(index??'')+(index_child??'')]"
                                           [extractLoading]="extractLoading()[f.code+(index??'')+(index_child??'')]"
                                           [class.opacity-50]="rcognaLoading()[f.code]"
@@ -431,7 +431,7 @@
                                               }  
                                               <div class="ms-2">
                                                 @if (listKv?.key=='undefined'){
-                                                  <span class="text-muted fst-italic"> Data not available</span>
+                                                  <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'</span>
                                                 }@else {
                                                   <span [innerHtml]="listKv?.key">{{listKv?.key}}</span> 
                                                 }
@@ -538,7 +538,7 @@
                                     }  
                                     <div class="ms-2">
                                       @if (listKv?.key=='undefined'){
-                                        <span class="text-muted fst-italic"> Data not available</span>
+                                        <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                                       }@else {
                                         <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
                                       }
@@ -608,7 +608,7 @@
                                                   </div>
                                                 } @else {
                                                   <field-edit [loading]="lookupLoading()[f.code]" id="fn-{{f.id}}-{{index_child}}"
-                                                    [scopeId]="scopeId()"
+                                                    [scopeId]="scopeId()" [lang]="lang()"
                                                     [fileProgress]="uploadProgress()[f.code+(index??'')+(index_child??'')]"
                                                     [extractLoading]="extractLoading()[f.code+(index??'')+(index_child??'')]"
                                                     [class.disabled]="rcognaLoading()[f.code]"
@@ -900,7 +900,7 @@
                   </div>
                 } @else {
                   <field-edit [loading]="lookupLoading()[f.code]" id="fn-{{f.id}}-{{index_child}}"
-                    [scopeId]="scopeId()"
+                    [scopeId]="scopeId()" [lang]="lang()"
                     [fileProgress]="uploadProgress()[f.code+(index??'')+(index_child??'')]"
                     [extractLoading]="extractLoading()[f.code+(index??'')+(index_child??'')]"
                     [class.mt-0]="field.subType=='clearfix'"
@@ -930,7 +930,7 @@
         </div>
       </div>
       <div class="modal-footer justify-content-between">
-        <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+        <button type="button" class="btn btn-round btn-default" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
         <button type="button" class="btn btn-round btn-primary" [disabled]="editChildForm.invalid"
           (click)="c(editChildData)">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>

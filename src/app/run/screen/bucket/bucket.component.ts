@@ -24,6 +24,7 @@ export class BucketComponent {
 
   offline = signal<boolean>(false);
   app = computed(()=>this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
 
   loading = signal<boolean>(false);
   bucketList = signal<any[]>([]);
@@ -83,7 +84,7 @@ export class BucketComponent {
       },
       error: error => {
         this.loading.set(false);
-        this.toastService.show("Failed to load bucket", { classname: 'bg-danger text-light' });
+        this.toastService.show(this.lang()=='ms'?'Bucket tidak berjaya dimuatkan':"Failed to load bucket", { classname: 'bg-danger text-light' });
       }
     });
   }
@@ -119,7 +120,7 @@ export class BucketComponent {
       },
       error: error => {
         this.itemLoading.set(false);
-        this.toastService.show("Failed to load bucket files", { classname: 'bg-danger text-light' });
+        this.toastService.show(this.lang()=='ms'?"Fail bucket tidak berjaya dimuatkan":"Failed to load bucket files", { classname: 'bg-danger text-light' });
       }
     })
   }
@@ -132,7 +133,7 @@ export class BucketComponent {
       .result.then(data => {
         this.runService.removeBucketFile(data.id, this.user().email)
           .subscribe(res => {
-            this.toastService.show("File successfully removed", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang()=='ms'?"Fail berjaya dibuang":"File successfully removed", { classname: 'bg-success text-light' });
             this.getFileList(this.pageNumber(), this.params);
           })
       }, res => { });
@@ -150,12 +151,12 @@ export class BucketComponent {
       .subscribe({
         next:res=>{          
           this.importLoading.set(false);
-          this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang()=='ms'?"Fail berjaya dimuatnaik":"File successfully uploaded", { classname: 'bg-success text-light' });
           this.getFileList(this.pageNumber(), this.params);
         },
         error:error=>{
           this.importLoading.set(false);
-          this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
+          this.toastService.show(this.lang()=='ms'?"Fail tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' });
         }
       })
     }

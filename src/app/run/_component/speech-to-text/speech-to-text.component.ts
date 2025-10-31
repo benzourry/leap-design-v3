@@ -17,13 +17,15 @@ export class SpeechToTextComponent {
 
     field = input<any>();
 
+    lblLang = input<string>('en');
+
     voiceRecognition = inject(VoiceRecognitionService)
 
     constructor() {
 
       effect(()=>{
         if (this.defaultLang()){
-          this.lang.set(this.defaultLang());
+          this.speechLang.set(this.defaultLang());
         } 
       })
 
@@ -35,7 +37,7 @@ export class SpeechToTextComponent {
     // speechText:string = "";
 
     model=model<string>('');
-    lang= signal<string>('en-US');
+    speechLang= signal<string>('en-US');
     defaultLang = input<string>();
 
     value=input<string>('');
@@ -67,7 +69,7 @@ export class SpeechToTextComponent {
      */
     initVoiceInput() {
       // Subscription for initializing and this will call when user stopped speaking.
-      this.voiceRecognition.init(this.valueText(), this.lang()).subscribe(() => {
+      this.voiceRecognition.init(this.valueText(), this.speechLang()).subscribe(() => {
         // User has stopped recording
         // Do whatever when mic finished listening
       });
@@ -87,7 +89,7 @@ export class SpeechToTextComponent {
     }
 
     setLang(lang){
-      this.lang.set(lang);
+      this.speechLang.set(lang);
       this.voiceRecognition.updateLang(lang());
     }
   

@@ -84,6 +84,7 @@ export class StartComponent implements OnInit, OnDestroy {
   });
   darkMode = signal<boolean>(false);
   app = signal<any>(null);
+  lang = computed(() => this.app().x?.lang);
   user = signal<any>(null);
   navis = signal<any[]>([]);
   naviData = signal<any>(null);

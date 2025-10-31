@@ -1,7 +1,8 @@
 <div class="viewport ">
   @if (!hideTitle()) {
     <page-title>
-      <h4>User List @if (group) {
+      <h4>{{lang()=='ms'?'Senarai Pengguna':'User List'}}
+      @if (group) {
         <span>: {{group.name}}</span>
       }</h4>
     </page-title>
@@ -14,7 +15,7 @@
           <div>
             <button type="button" class="btn btn-sm btn-round btn-outline-warning ms-1 mb-1" [class.active]="cs==-1"
               (click)="getPendingList()">
-              Pending
+              {{lang()=='ms'?'Menunggu Kelulusan':'Pending'}}
             </button>
             @for (g of groupList(); track g.id) {
               <button type="button" class="btn btn-sm btn-round btn-outline-info ms-1 mb-1" [class.active]="cs==g.id"
@@ -25,7 +26,7 @@
             <button type="button" class="btn btn-sm btn-round btn-outline-secondary ms-1 mb-1" [class.active]="cs==null"
                 (click)="getGroupList(null)">
               <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
-              All Users
+              {{lang()=='ms'?'Semua Pengguna':'All Users'}}
             </button>
           </div>
         </div>
@@ -35,7 +36,7 @@
         @if (!(group?.appId==app().id || groupId()==-1 || groupId()==null)){
         <!-- @if (group?.appId!=app.id && groupId()!=-1 && groupId()!=null){ -->
           <div class="text-danger text-center">
-            User group is in the other app
+            {{lang()=='ms'?'Kumpulan pengguna dalam app lain':'User group is in the other app'}}
           </div>
         }                
         @if (loading()) {
@@ -61,25 +62,25 @@
                     [class.disabled]="offline()"
                     (click)="editAppUser(editAppUserTpl,{},true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                      Add User
+                      {{lang()=='ms'?'Tambah Pengguna':'Add User'}}
                     </button>
                 </div>
               }
             </div>      
             @if (appUserList()?.length) {
               <div class="px-2 py-2">
-                <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:450px;">
+                <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
                   <div class="row">
                     <div class="col d-flex align-items-center">
-                      <strong>Summary</strong>
+                      <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
                     </div>
-                    <div class="col">Total:
+                    <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
                       <div class="d-sm-inline">{{appUserTotal()}}</div>
                     </div>
-                    <div class="col">Shown:
+                    <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
                       <div class="d-sm-inline">{{numberOfElements()}}</div>
                     </div>
-                    <div class="col">Pages:
+                    <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
                       <div class="d-sm-inline">{{entryPages()}}</div>
                     </div>
                   </div>
@@ -94,8 +95,8 @@
                       <th class="tblcol-check" style="width: 1%">
                         <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
                           (click)="checkAllUsers(checkAll.checked)">
-                      <th style="width: 5%">PHOTO</th>
-                      <th class="w-10">USER</th>
+                      <th style="width: 5%">{{lang()=='ms'?'GAMBAR':'PHOTO'}}</th>
+                      <th class="w-10">{{lang()=='ms'?'PENGGUNA':'USER'}}</th>
                       <th style="width: 5%">STATUS</th>
                       <!-- <th class="w-10">GROUP</th> -->
                       <th style="width: 5%">&nbsp;</th>
@@ -113,18 +114,17 @@
                           <div>{{appUser.user.name}}</div>
                           <div class="small">
                             <div>{{appUser.user.email}}</div>
-                            <div>First login: {{appUser.user.firstLogin|date:'medium'}}
+                            <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium'}}
                               @if (!appUser.user.firstLogin) {
-                                <span class="text-muted">No login
-                                yet</span>
+                                <span class="text-muted">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
                               }
                             </div>
-                            <div>Account type: 
+                            <div>{{lang()=='ms'?'Jenis akaun':'Account type'}}: 
                               @if (appUser.user?.provider){
                                 <fa-icon [icon]="provider[appUser.user.provider]"
                                 [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
                               } @else {
-                                <span class="text-muted">No provider specified</span> 
+                                <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
                               }
                             </div>
                           </div>
@@ -192,10 +192,10 @@
                 <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
                   (click)="bulkRemoveUser()">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                Remove User</button>
+                {{lang()=='ms'?'Buang Pengguna':'Remove User'}}</button>
                 <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
                   (click)="changeProvider(changeProviderTpl)">
-                Change Provider</button>
+                {{lang()=='ms'?'Tukar Penyedia':'Change Provider'}}</button>
               </div>
             }
             @if ((appUserList()?.length) > 0) {
@@ -222,13 +222,13 @@
             }
             @if (appUserList()?.length == 0 && !loading()) {
               <div class="details my-5">
-                <h3>No user</h3>
+                <h3>{{lang()=='ms'?'Tiada pengguna':'No user'}}</h3>
                 @if (groupId) {
-                  <p> There is no user assigned to this group.
-                    <br /> You can assign a new user by clicking on the Add button.
+                  <p> {{lang()=='ms'?'Tiada pengguna ditetapkan untuk kumpulan ini':'There is no user assigned to this group'}}.
+                    <br /> {{lang()=='ms'?'Anda boleh menambah pengguna dengan klik butang Tambah':'You can assign a new user by clicking on the Add button'}}.
                   </p>
                 } @else {
-                  <p> There is no pending user.</p>
+                  <p> {{lang()=='ms'?'Tiada pengguna menunggu kelulusan':'There is no pending user'}}.</p>
                 }
               </div>
             }
@@ -247,7 +247,7 @@
 <ng-template #editAppUserTpl let-c="close" let-d="dismiss">
   <div #editAppUserForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Add User Access</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Tambah Akses Pengguna':'Add User Access'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form">
@@ -255,43 +255,43 @@
           <div class="form-check form-switch">
             <input type="checkbox" class="form-check-input" name="bulk-reg"
               [(ngModel)]="editAppUserData().bulkReg" id="bulk-reg">
-            <label class="form-check-label" for="bulk-reg">Register many users at once</label>
+            <label class="form-check-label" for="bulk-reg">{{lang()=='ms'?'Daftar banyak pengguna sekaligus':'Register many users at once'}}</label>
           </div>
         </div>
         @if (!editAppUserData().bulkReg) {
           <div class="form-group mb-3">
-            <label class="form-label">Email *</label>
+            <label class="form-label">{{lang()=='ms'?'Emel':'Email'}} *</label>
             <input type="text" class="form-control" name="email" #email="ngModel"
               [(ngModel)]="editAppUserData().email" required />
             @if (email?.invalid) {
               <small class="form-text has-warning">
                 @if (email.errors?.required) {
-                  <span class="help-block">Email is required</span>
+                  <span class="help-block">{{lang()=='ms'?'Emel wajib diisi':'Email is required'}}</span>
                 }
               </small>
             }
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Name *</label>
+            <label class="form-label">{{lang()=='ms'?'Nama':'Name'}} *</label>
             <input type="text" class="form-control" name="name" #name="ngModel"
               [(ngModel)]="editAppUserData().name" required />
             @if (name?.invalid) {
               <small class="form-text has-warning">
                 @if (name.errors?.required) {
-                  <span class="help-block">Name is required</span>
+                  <span class="help-block">{{lang()=='ms'?'Nama wajib diisi':'Name is required'}}</span>
                 }
               </small>
             }
           </div>
         } @else {
           <div class="form-group mb-3">
-            <label class="form-label">Email list (comma separated) *</label>
+            <label class="form-label">{{lang()=='ms'?'Senarai emel (dipisahkan koma)':'Email list (comma separated)'}}' *</label>
             <textarea class="form-control" name="email" #email="ngModel" rows="8"
             [(ngModel)]="editAppUserData().email" required></textarea>
             @if (email?.invalid) {
               <small class="form-text has-warning">
                 @if (email.errors?.required) {
-                  <span class="help-block">Email is required</span>
+                  <span class="help-block">{{lang()=='ms'?'Emel wajib diisi':'Email is required'}}</span>
                 }
               </small>
             }
@@ -299,7 +299,7 @@
         }
         @if (!hasGroupId()) {
           <div class="form-group mb-3">
-            <label class="form-label">Requested User Groups *</label>
+            <label class="form-label">{{lang()=='ms'?'Kumpulan Pengguna':'Requested User Groups'}} *</label>
             @for (group of groupList(); track group.id) {
               <div class="form-check form-switch mt-1">
                 <input type="checkbox" class="form-check-input" name="role-{{group.id}}"
@@ -315,7 +315,7 @@
         }
         @if (hasGroupId()) {
           <div class="form-group mb-3">
-            <label class="form-label">Requested User Groups</label>
+            <label class="form-label">{{lang()=='ms'?'Kumpulan Pengguna':'Requested User Groups'}}</label>
             <p class="form-static"><strong>{{group.name}}</strong></p>
           </div>
         }
@@ -330,7 +330,7 @@
                 <label for="status-pending" class="btn btn-sm btn-primary">
                   <fa-icon [icon]="['far',editAppUserData()?.status=='pending'?'check-square':'square']"
                   [fixedWidth]="true"></fa-icon>
-                  Pending
+                  {{lang()=='ms'?'Menunggu Kelulusan':'Pending'}}
                 </label>
                 <input type="radio" class="btn-check" [value]="'approved'"
                   [required]="!editAppUserData()?.status" id="status-approved" name="status-approved"
@@ -338,7 +338,7 @@
                 <label for="status-approved" class="btn btn-sm btn-success">
                   <fa-icon [icon]="['far',editAppUserData()?.status=='approved'?'check-square':'square']"
                   [fixedWidth]="true"></fa-icon>
-                  Approved
+                  {{lang()=='ms'?'Diluluskan':'Approved'}}
                 </label>
                 <input type="radio" class="btn-check" [value]="'rejected'"
                   [required]="!editAppUserData()?.status" id="status-rejected" name="status-rejected"
@@ -346,13 +346,13 @@
                 <label for="status-rejected" class="btn btn-sm btn-danger">
                   <fa-icon [icon]="['far',editAppUserData()?.status=='rejected'?'check-square':'square']"
                   [fixedWidth]="true"></fa-icon>
-                  Rejected
+                  {{lang()=='ms'?'Ditolak':'Rejected'}}
                 </label>
               </div>
               @if (status?.invalid) {
                 <small class="form-text has-warning">
                   @if (status.errors?.required) {
-                    <span class="help-block">Status is required</span>
+                    <span class="help-block">{{lang()=='ms'?'Status wajib diisi':'Status is required'}}</span>
                   }
                 </small>
               }
@@ -375,7 +375,7 @@
       <button type="button" class="btn btn-round btn-primary" [disabled]="editAppUserForm.invalid"
         (click)="c(editAppUserData())">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-        Save User Access
+        {{lang()=='ms'?'Simpan Akses Pengguna':'Save User Access'}}
       </button>
     </div>
   </div>
@@ -383,25 +383,25 @@
 <ng-template #approveAppUserTpl let-c="close" let-d="dismiss">
   <div #approveAppUserForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Group Request Approval</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Kelulusan Permohonan Kumpulan':'Group Request Approval'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form">{{approveAppUserData().id}}bb
         <div class="form-group mb-3">
-          <label class="form-label">Email *</label>
+          <label class="form-label">{{lang()=='ms'?'Emel':'Email'}} *</label>
           <p class="form-control-static">{{approveAppUserData().user.email}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Name *</label>
+          <label class="form-label">{{lang()=='ms'?'Nama':'Name'}} *</label>
           <p class="form-control-static">{{approveAppUserData().user.name}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Group *</label>
+          <label class="form-label">{{lang()=='ms'?'Kumpulan':'Group'}} *</label>
           <p class="form-control-static">
             @if (approveAppUserData().group){
             {{approveAppUserData().group?.name}}
             }@else {
-              <span class="text-muted fst-italic">Not assigned to any group</span>
+              <span class="text-muted fst-italic">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
             }
           </p>
         </div>
@@ -415,7 +415,7 @@
               <label for="status-pending" class="btn btn-sm btn-primary">
                 <fa-icon [icon]="['far',approveAppUserData()?.status=='pending'?'check-square':'square']"
                 [fixedWidth]="true"></fa-icon>
-                Pending
+                {{lang()=='ms'?'Menunggu Kelulusan':'Pending'}}
               </label>
               <input type="radio" class="btn-check" [value]="'approved'" [required]="true"
                 id="status-approved" name="status-approved" #status="ngModel"
@@ -423,7 +423,7 @@
               <label for="status-approved" class="btn btn-sm btn-success">
                 <fa-icon [icon]="['far',approveAppUserData()?.status=='approved'?'check-square':'square']"
                 [fixedWidth]="true"></fa-icon>
-                Approved
+                {{lang()=='ms'?'Diluluskan':'Approved'}}
               </label>
               <input type="radio" class="btn-check" [value]="'rejected'" [required]="true"
                 id="status-rejected" name="status-rejected" #status="ngModel"
@@ -431,7 +431,7 @@
               <label for="status-rejected" class="btn btn-sm btn-danger">
                 <fa-icon [icon]="['far',approveAppUserData()?.status=='rejected'?'check-square':'square']"
                 [fixedWidth]="true"></fa-icon>
-                Rejected
+                {{lang()=='ms'?'Ditolak':'Rejected'}}
               </label>
             </div>
           </div>
@@ -451,7 +451,7 @@
       <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(approveAppUserData())">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-        Save User
+        {{lang()=='ms'?'Simpan Pengguna':'Save User'}}
       </button>
     </div>
   </div>
@@ -459,18 +459,18 @@
 <ng-template #removeAppUserTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Remove User Access</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Buang Akses Pengguna':'Remove User Access'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
         <div class="form-group mb-3">
-          <label class="form-label col-md-3">Name</label>
+          <label class="form-label col-md-3">{{lang()=='ms'?'Nama':'Name'}}</label>
           <div class="col-md-6">
             <p class="form-control-static">{{removeAppUserData().user?.name}}</p>
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label col-md-3">Email</label>
+          <label class="form-label col-md-3">{{lang()=='ms'?'Emel':'Email'}}</label>
           <div class="col-md-6">
             <p class="form-control-static">{{removeAppUserData().user?.email}}</p>
           </div>
@@ -480,7 +480,7 @@
           <div class="col-md-6">
             <p class="form-control-static">
               @if (!removeAppUserData().group){
-                <span class="text-muted">Not assigned to any group</span>
+                <span class="text-muted">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
               }
               {{removeAppUserData().group?.name}}
             </p>
@@ -489,9 +489,9 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeAppUserData())">
-        <i class="icon-minus-sign-alt"></i> Remove User
+        <i class="icon-minus-sign-alt"></i> {{lang()=='ms'?'Buang pengguna':'Remove User'}}
       </button>
     </div>
   </div>
@@ -499,29 +499,29 @@
 <ng-template #editUserTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Update User Info</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Kemaskini Maklumat Pengguna':'Update User Info'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
         <div class="form-group mb-3">
-          <label class="form-label">User System ID</label>
+          <label class="form-label">{{lang()=='ms'?'ID Sistem Pengguna':'User System ID'}}</label>
           <p class="form-control-static">{{editUserData().id}}</p>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Name *</label>
+          <label class="form-label">{{lang()=='ms'?'Nama':'Name'}} *</label>
           <input type="text" class="form-control"
             [(ngModel)]="editUserData().name" name="name" required>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Email *</label>
+          <label class="form-label">{{lang()=='ms'?'Emel':'Email'}} *</label>
           <input type="text" class="form-control"
             [(ngModel)]="editUserData().email" name="email" required>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Provider *</label>
+          <label class="form-label">{{lang()=='ms'?'Penyedia':'Provider'}} *</label>
           <select class="form-control custom-select" id="provider" name="provider"
             [(ngModel)]="editUserData().provider" required>
-            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            <option [ngValue]="undefined" style="color:gray">No Provider</option>
             @for (item of providerList; track $index) {
               <option [value]="item.id">{{item.name}} [{{item.id}}]
               </option>
@@ -531,9 +531,9 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(editUserData())">
-        Save User
+        {{lang()=='ms'?'Simpan Pengguna':'Save User'}}
       </button>
     </div>
   </div>
@@ -541,12 +541,12 @@
 <ng-template #changeProviderTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
-      <h4 class="modal-title">Change Provider</h4>
+      <h4 class="modal-title">{{lang()=='ms'?'Tukar Penyedia':'Change Provider'}}</h4>
     </div>
     <div class="modal-body">
       <div class="form form-horizontal">
         <div class="form-group mb-3">
-          <label class="form-label">Change provider for the following users</label>
+          <label class="form-label">{{lang()=='ms'?'Tukar penyedia untuk pengguna berikut':'Change provider for the following users'}}</label>
           <div class="list-group">
             @for (u of selectedUsersArray; track $index) {
               <div class="list-group-item">
@@ -556,7 +556,7 @@
                     <fa-icon [icon]="provider[u.user.provider]"
                     [fixedWidth]="true"></fa-icon> {{u.user.provider}}
                   } @else {
-                    <span class="text-muted">No provider specified</span> 
+                    <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
                   }
                 </div>
               </div>
@@ -564,10 +564,10 @@
           </div>
         </div>
         <div class="form-group mb-3">
-          <label class="form-label">Change to Provider</label>
+          <label class="form-label">{{lang()=='ms'?'Tukar ke Penyedia':'Change to Provider'}}</label>
           <select class="form-control custom-select" id="provider" name="provider"
             [(ngModel)]="changeProviderData.provider" required>
-            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            <option [ngValue]="undefined" style="color:gray">No Provider</option>
             @for (item of providerList; track $index) {
               <option [value]="item.id">{{item.name}} [{{item.id}}]
               </option>
@@ -577,20 +577,20 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(changeProviderData)">
-        Change Provider
+        {{lang()=='ms'?'Tukar Penyedia':'Change Provider'}}
       </button>
     </div>
   </div>
 </ng-template>
 <ng-template #blastTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Blast Email</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Hantar Emel':'Blast Email'}}</h4>
   </div>
   <div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
-      <label class="form-label">Email will be sent to</label>
+      <label class="form-label">{{lang()=='ms'?'Email akan dihantar kepada':'Email will be sent to'}}</label>
       <div class="list-group">
         @for (u of selectedUsersArray; track $index) {
           <div class="list-group-item">
@@ -600,7 +600,7 @@
                 <fa-icon [icon]="provider[u.user.provider]"
                 [fixedWidth]="true"></fa-icon> {{u.user.provider}}
               } @else {
-                <span class="text-muted">No provider specified</span> 
+                <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
               }
             </div>
           </div>
@@ -609,7 +609,7 @@
     </div>
     @if (mailerList.length>0) {
       <div class="form-group mb-3">
-        <label class="form-label">Select From Template</label>
+        <label class="form-label">{{lang()=='ms'?'Pilih dari templat':'Select From Template'}}</label>
         <select class="form-select" name="mailTemplate" (change)="loadTemplate(blastData.template)"
           [(ngModel)]="blastData.template">
           <option value="" disabled>Select mailer...</option>
@@ -620,19 +620,19 @@
       </div>
     }
     <div class="form-group mb-3">
-      <label class="form-label">Subject</label>
+      <label class="form-label">{{lang()=='ms'?'Subjek':'Subject'}}</label>
       <input type="text" class="form-control" [(ngModel)]="blastData.subject" #subject="ngModel"
         name="subject" required>
       @if (subject?.invalid) {
         <small class="form-text has-warning">
           @if (subject?.errors?.required) {
-            <span class="help-block">Subject is required</span>
+            <span class="help-block">{{lang()=='ms'?'Subjek wajib diisi':'Subject is required'}}</span>
           }
         </small>
       }
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Content (support HTML)</label>
+      <label class="form-label">{{lang()=='ms'?'Isi (menyokong HTML)':'Content (support HTML)'}}</label>
       <div class="mx-n2">
         <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content"
           #formField="ngModel" [(ngModel)]="blastData.content">
@@ -641,11 +641,11 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="mailerEditForm.invalid"
       (click)="c(blastData)">
       <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
-      Blast Email
+      {{lang()=='ms'?'Hantar Emel':'Blast Email'}}
     </button>
   </div>
 </ng-template>

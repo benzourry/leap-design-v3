@@ -42,6 +42,7 @@ export class UserComponent implements OnInit {
 
   pageNumber = signal<number>(1);
   app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
   baseUrl = computed(()=>this.runService.$baseUrl());
   cs: number;
 
