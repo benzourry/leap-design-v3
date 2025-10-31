@@ -861,6 +861,7 @@
       @defer(prefetch on idle){
         <app-view (approved)="getEntryList(pageNumber(),sort());d()" (closed)="d()"
           [formId]="inPopFormId()" [entryId]="inPopEntryId()"
+          [param]="inPopParams()"
           [asComp]="true" [action]="inPopType()"
           (formLoaded)="formLoaded($event)"></app-view>
       }@loading {
@@ -873,7 +874,8 @@
     }@else if (['screen'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
         <app-screen (closed)="d()" [screenId]="inPopFormId()"
-        [entryId]="inPopEntryId()" [asComp]="true"
+        [entryId]="inPopEntryId()" [asComp]="true" 
+        [param]="inPopParams()"
         (screenLoaded)="screenLoaded($event)"></app-screen>
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>

@@ -417,7 +417,7 @@
     @if (['view','approve'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
         <app-view (approved)="loadDatasetEntry(dataset(), pageNumber(),sort);modalClose(d)" (closed)="modalClose(d)"
-          [formId]="inPopFormId()" [entryId]="inPopEntryId()"
+          [formId]="inPopFormId()" [entryId]="inPopEntryId()"  [param]="inPopParams"
           [asComp]="true" [action]="inPopType()"></app-view>
       }@loading {
         <div class="text-center m-5">
