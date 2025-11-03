@@ -396,6 +396,8 @@ export class KryptaEditorComponent implements OnInit {
         this.kryptaService.deployContract(+this.kryptaId)
         .subscribe({
             next:(res)=>{
+                this.krypta = res;
+                this.contract = res.contract;
                 this.toastService.show("Contract initialized successfully", { classname: 'bg-success text-light' });
                 this.deployLoading.set(+this.kryptaId, false);
                 this.deployError.delete(+this.kryptaId);

@@ -468,7 +468,7 @@ export class FormViewComponent implements OnInit {
   fieldChange($event, data, field, section) {
     if (field.post) {
       try {
-        this._eval(data, field.post);
+        this._eval(data, field.post, true);
       } catch (e) { }
     }
   }
@@ -543,7 +543,7 @@ export class FormViewComponent implements OnInit {
               preItem[i.code] = this.preCheckStr(this.form().items[i.code].pre)
               if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
                 try{
-                  preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                  preCompFilter[i.code] = this._eval(this.entry()?.data, (this.form().items[i.code].dataSourceInit || this.defaultParam), false)
                 }catch(e){}
               }
             })
@@ -567,7 +567,7 @@ export class FormViewComponent implements OnInit {
                     preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
                     if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
                       try{
-                        preCompFilter[i.code] = this._eval(this.entry()?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                        preCompFilter[i.code] = this._eval(this.entry()?.data, (this.form().items[i.code].dataSourceInit || this.defaultParam), false)
                       }catch(e){}
                     }
                   })
@@ -588,7 +588,7 @@ export class FormViewComponent implements OnInit {
     if (field.type == 'eval' && value == null) {
       if (field.f) {
         try {
-          value = this._eval(data, field.f);
+          value = this._eval(data, field.f, false);
         } catch (e) { }
       }
     }
@@ -601,7 +601,7 @@ export class FormViewComponent implements OnInit {
       if (!dataV) {
         dataV = this.entry().data;
       }
-      res = this._eval(dataV, code);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+      res = this._eval(dataV, code, false);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
     } catch (e) { this.logService.log(`{formview-precheck}-:${code}:${e}`) }
     return !code || res;
   }
@@ -621,8 +621,8 @@ export class FormViewComponent implements OnInit {
   // //   `return ${v}`)(this.entry(), data, this.entry()?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.form()?.items||this.form()?.items, this.form()||this.form(), this.$this$(), this.$param$(), this.$toast$, this.updateField, this.$token$(), this.$action$(), this.$file$(), this.base, this.$baseUrl$(), this.baseApi, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.$token$(), deepMerge, this.http);
   
 
-  _eval = (data:any, v:string) => { 
-    const bindings = this.evalContextFn()(this.entry(),data, {}, this.form());
+  _eval = (data:any, v:string, includeActive:boolean) => { 
+    const bindings = this.evalContextFn()(this.entry(),data, {}, this.form(), includeActive);
     bindings.$ = data;
     bindings.$this$ = this.$this$();
     bindings.$conf$ = this.appConfig; // only binding that allow write
