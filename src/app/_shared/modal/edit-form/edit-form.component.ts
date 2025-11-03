@@ -125,6 +125,24 @@ export class EditFormComponent implements OnInit {
   //   this.cdr.detectChanges();
   // }
 
+  onWalletFunctionSelect(fnName: string) {
+    const fnList = this.walletMap()[this._editFormData.x.walletId]?.contract?.abiSummary?.functions || [];
+    const selected = fnList.find(f => f.name === fnName);
+
+    var params = {}
+    selected.inputs.forEach(inp=>{
+      params[inp.name]=inp.type=='string'?'':null;
+    })
+
+    this._editFormData.x.walletTextTpl = JSON.stringify(params, null, 2);
+  }
+
+
+  getTxFn(walletId){
+    let list = this.walletMap()[walletId]?.contract?.abiSummary?.functions;
+    return list.filter(f=>f.stateMutability==='nonpayable' || f.stateMutability==='payable');
+  }
+
   // onWalletFunctionSelect(event, fnName: string) {
   //   const fnList = this.walletMap()[this._editFormData.x.walletId]?.contract?.abiSummary?.functions || [];
   //   const selected = fnList.find(f => f.name === fnName);

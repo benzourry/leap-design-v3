@@ -531,11 +531,23 @@
   <div class="list-group list-group-flush">
     @for (txHash of entry.txHash|keyvalue; track $index) {
       <!-- {{txHash}} -->
-      <div class="list-group-item">
-        <div class="small">{{txHash.key}}</div>
-        <div class="text-break">{{txHash.value}}</div>
-        <img [src]="getQrURL(txHash.value)" alt="QR Code for {{txHash.value}}" width="200" height="200">
-      </div>
+       @if (txHash.value=='pending'){
+        <div class="list-group-item">
+          <button class="btn btn-sm btn-round btn-info ms-2 float-end" (click)="refreshTxHash()">
+            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Refresh
+          </button>
+          <div class="small">{{txHash.key}}</div>
+          <div class="text-break">
+            Pending 
+          </div>
+        </div>
+       }@else{
+        <div class="list-group-item">
+          <div class="small">{{txHash.key}}</div>
+          <div class="text-break">{{txHash.value}}</div>
+          <img [src]="getQrURL(txHash.value)" alt="QR Code for {{txHash.value}}" width="200" height="200">
+        </div>
+      }
     }
   </div>
   <div class="modal-footer justify-content-between">

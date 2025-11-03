@@ -371,7 +371,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editAppUserForm.invalid"
         (click)="c(editAppUserData())">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -448,7 +448,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(approveAppUserData())">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
         {{lang()=='ms'?'Simpan Pengguna':'Save User'}}

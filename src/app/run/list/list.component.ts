@@ -261,9 +261,10 @@ export class ListComponent implements OnInit, OnDestroy {
             + (res?.showAction ? 1 : 0);
 
           this.groupFieldCode.set(res.x?.defGroupField);
+          this.pageSize.set(res.x?.defPageSize || 25);
           this.actionsInline = res.actions.filter(f => f.type == 'inline');
           this.actionsDropdown = res.actions.filter(f => f.type == 'dropdown');
-          this.loading.set(false);
+          this.loading.set(false); 
 
 
           this.form.set({

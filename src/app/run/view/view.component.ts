@@ -1107,6 +1107,10 @@ export class ViewComponent implements OnInit, OnDestroy {
     return compileTpl(code, obj, this.scopeId())
   }
 
+  refreshTxHash(){
+    this.getData(this.entry.id, this.form());
+  }
+
 
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());

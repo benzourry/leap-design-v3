@@ -1435,7 +1435,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary"
         [disabled]="editSectionForm.invalid || (itemExist(editSectionData) && editSectionData.type=='list')"
         (click)="c(editSectionData)">
@@ -1527,7 +1527,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editTabForm.invalid"
         (click)="c(editTabData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -1691,7 +1691,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editTierActionForm.invalid"
         (click)="c(editTierActionData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -1973,7 +1973,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editTierForm.invalid"
         (click)="c(editTierData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -3125,7 +3125,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary"
       [disabled]="editItemForm.invalid || itemExist(editItemData)" (click)="c(editItemData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -3152,7 +3152,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeItemData)">
       Remove Item
     </button>
@@ -3179,7 +3179,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeSectionData)">
       Remove Section
     </button>
@@ -3202,7 +3202,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeTabData)">
       Remove Tab
     </button>
@@ -3242,7 +3242,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeFormData)">
       Remove Form
     </button>
@@ -3265,7 +3265,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeTierData)">
       Remove Tier
     </button>
@@ -3438,7 +3438,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>
 
@@ -3540,7 +3540,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       @if (importExcelData?.success) {
         <button type="button" class="btn btn-round btn-success" (click)="c()">
           <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
@@ -3693,7 +3693,7 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="exportTrailToExcel()">Download Excel</button>
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>
 
@@ -3767,7 +3767,7 @@
   <!-- </div> -->
   <div class="modal-footer justify-content-between">
     <!-- <button type="button" class="btn btn-round btn-secondary" (click)="c()">Download Excel</button> -->
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>
 
@@ -3812,7 +3812,7 @@
 
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(moveFormToAppData)">Move Form</button>
   </div>
 </ng-template>

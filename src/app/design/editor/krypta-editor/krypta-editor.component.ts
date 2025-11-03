@@ -288,6 +288,8 @@ export class KryptaEditorComponent implements OnInit {
                 next:(res)=>{
                     this.toastService.show("Contract compiled successfully", { classname: 'bg-success text-light' });
                     this.editContractData = res;
+                    this.contract = res;
+                    this.compileError.delete(contractId);
                     this.compileLoading.set(contractId, false);
                     this.cdr.detectChanges();
                 },
@@ -322,7 +324,7 @@ export class KryptaEditorComponent implements OnInit {
         this.modalService.open(tpl, { backdrop: 'static' })
         .result.then(data => {
             this.cdr.detectChanges();
-            this.kryptaService.runFn(+this.kryptaId, fn.name, Object.values(data))
+            this.kryptaService.runFn(+this.kryptaId, fn.name, data)
             .subscribe({
                 next:(res)=>{
                     this.resultLoading.set(false);
@@ -396,6 +398,7 @@ export class KryptaEditorComponent implements OnInit {
             next:(res)=>{
                 this.toastService.show("Contract initialized successfully", { classname: 'bg-success text-light' });
                 this.deployLoading.set(+this.kryptaId, false);
+                this.deployError.delete(+this.kryptaId);
                 this.cdr.detectChanges();
             },
             error: (error)=>{

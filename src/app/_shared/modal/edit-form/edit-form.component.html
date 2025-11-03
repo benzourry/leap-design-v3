@@ -352,16 +352,79 @@
 
                 
               @if(_editFormData.x?.wallet){
-                <div class="form-group mb-3 mt-1">
-                  <select class="form-select" name="walletId" [compareWith]="compareByIdFn"
-                    [(ngModel)]="_editFormData.x.walletId" required>
-                    <option [ngValue]="null"> * No wallet selected </option>
-                    @for (item of walletList(); track item.id) {
-                    <option [value]="item?.id">{{item?.name}}
-                    </option>
-                    }
-                  </select>
+
+                <div class="form-group mb-2 mt-2">
+                  <label class="form-label">Register data on *</label>
+                  <div>
+                    <div class="btn-group-sm" role="group">
+                      <input type="radio" name="walletOn" [(ngModel)]="_editFormData.x.walletOn" value="save" class="btn-check"
+                        id="walletOnSave" required>
+                      <label class="btn btn-outline-secondary me-1 mb-1" for="walletOnSave">On Save</label>
+                      <input type="radio" name="walletOn" [(ngModel)]="_editFormData.x.walletOn" value="submit" class="btn-check"
+                        id="walletOnSubmit" required>
+                      <label class="btn btn-outline-secondary me-1 mb-1" for="walletOnSubmit">On Submit</label>
+                    </div>
+                  </div>
                 </div>
+
+
+                <div class="row mb-2">
+                  <div class="col-sm-6">
+                    <!-- <div class="form-group"> -->
+                      <div class="input-group input-group-sm mb-1">
+                        <span class="input-group-text">Wallet *</span>
+                        <!-- <label class="form-label" for="walletId">Select Wallet</label> -->
+                        <select class="form-select form-select-sm" name="walletId" [compareWith]="compareByIdFn"
+                          [(ngModel)]="_editFormData.x.walletId" required>
+                          <option [ngValue]="null"> * No wallet selected </option>
+                          @for (item of walletList(); track item.id) {
+                          <option [value]="item?.id">{{item?.name}}
+                          </option>
+                          }
+                        </select>
+                      </div>
+                    <!-- </div> -->
+                  </div>
+                  <div class="col-sm-6">
+                    <!-- <div class="form-group"> -->
+                      <div class="input-group input-group-sm mb-1">
+                        <span class="input-group-text">Function *</span>
+                        <select class="form-select form-select-sm" name="walletFn"
+                          (ngModelChange)="onWalletFunctionSelect($event)"
+                          [(ngModel)]="_editFormData.x.walletFn" required>
+                          <option [ngValue]="null"> * No function </option>
+                          @for (item of getTxFn(_editFormData.x.walletId); track $index) {
+                          <option [ngValue]="item?.name" >{{item?.name}}
+                          </option>
+                          }
+                        </select>
+                      </div>
+                    <!-- </div> -->
+                  </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                  <label class="form-label">Template for data *</label>
+                  <div class="mx-n2">
+                    <app-cm name="walletTextTpl" lang="html" [(ngModel)]="_editFormData.x.walletTextTpl" [hideControl]="true"
+                      [extraAutoComplete]="extraAutoCompleteHtml()" subType="active" [linenumber]="true" required>
+                    </app-cm>
+                  </div>
+                </div>
+                
+
+                <!-- <div class="input-group input-group-sm mb-2 mt-2">
+                <span class="input-group-text">Smart Contract</span>
+                <select class="form-select" name="walletFnOnInit"
+                  (ngModelChange)="onWalletFunctionSelect('onInit',$event)"
+                  [(ngModel)]="_editFormData.x.walletFnOnInit">
+                  <option [ngValue]="null"> * No function </option>
+                  @for (item of walletMap()[_editFormData.x.walletId]?.contract?.abiSummary?.functions; track $index) {
+                  <option [ngValue]="item?.name" >{{item?.name}}
+                  </option>
+                  }
+                </select>
+              </div> -->
 
 
                 <!-- <div class="form-check form-switch mt-1">
@@ -415,27 +478,6 @@
 
                 
                 
-                <div class="form-group mb-3">
-                  <label class="form-label">Register data on *</label>
-                  <div>
-                    <div class="btn-group-sm" role="group">
-                      <input type="radio" name="walletOn" [(ngModel)]="_editFormData.x.walletOn" value="save" class="btn-check"
-                        id="walletOnSave" required>
-                      <label class="btn btn-outline-secondary me-1 mb-1" for="walletOnSave">On Save</label>
-                      <input type="radio" name="walletOn" [(ngModel)]="_editFormData.x.walletOn" value="submit" class="btn-check"
-                        id="walletOnSubmit" required>
-                      <label class="btn btn-outline-secondary me-1 mb-1" for="walletOnSubmit">On Submit</label>
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group mb-3">
-                  <label class="form-label">Template for data *</label>
-                  <div class="mx-n2">
-                    <app-cm name="walletTextTpl" lang="html" [(ngModel)]="_editFormData.x.walletTextTpl" [hideControl]="true"
-                      [extraAutoComplete]="extraAutoCompleteHtml()" subType="active" [linenumber]="true" required>
-                    </app-cm>
-                  </div>
-                </div>
               }
               </div>
             </div>
@@ -654,7 +696,7 @@
     <div [ngbNavOutlet]="nav"></div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Close</button>
+    <button type="button" class="btn btn-round" (click)="dismiss()()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="editFormForm.invalid"
       (click)="done(_editFormData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>

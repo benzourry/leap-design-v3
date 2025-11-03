@@ -64,7 +64,7 @@
       </div> -->
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editRestorePointForm.invalid || loading"
         (click)="c(editRestorePointData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -105,7 +105,7 @@
       <p>Please note that this action is <strong>IRREVERSIBLE</strong>. Please create a restore point for the current data if you wish to revert to this current data later.</p>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-danger" [disabled]="goRestorePointForm.invalid"
         (click)="c(goRestorePointData)">
         <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
@@ -140,7 +140,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-danger" [disabled]="removeRestorePointForm.invalid"
         (click)="c(removeRestorePointData)">
         <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
