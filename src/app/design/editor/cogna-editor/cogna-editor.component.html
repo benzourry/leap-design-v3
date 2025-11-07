@@ -151,25 +151,6 @@
                     (click)="removeCogna(removeCognaTpl,cogna)" [class.disabled]="offline">
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                   </button>
-
-                  @if (['txtgen','master'].includes(cogna.type)){
-                    <div ngbDropdown class="ms-auto d-inline-block">
-                      <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-auto"
-                        title="Clear chat memory" ngbDropdownToggle>
-                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Memory
-                      </button>
-                      <div ngbDropdownMenu style="min-width:340px">
-                        <button type="button" title="Clear memory for {{user.email}}" ngbDropdownItem  (click)="clearUserMemory(cogna)">
-                          Clear memory for {{user.email}}
-                        </button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" title="Clear memory for all user" ngbDropdownItem
-                        (click)="clearMemory(cogna)">
-                          Clear memory for all user
-                        </button>
-                      </div>
-                    </div>
-                  }
                 } @else {
                   <div class="bg-warning p-1 small">
                     Interactive access and modification only available for <i>{{cogna.email}}</i>
@@ -599,7 +580,27 @@
             <div class="col-sm-8 col-lg-9">
               @if(['txtgen','master'].includes(cogna.type)){
                 <div class="rounded rounded-2 bg-light border border-1 overflow-hidden shadow-sm">
-                  <div class="p-3 py-2 bg-secondary bg-opacity-25">Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})</div>
+                  <div class="bg-secondary bg-opacity-25 d-flex flex-row p-1">
+                    <div class="p-3 py-1">
+                    Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})
+                    </div>
+                    <div ngbDropdown class="ms-auto d-inline-block">
+                      <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-auto"
+                        title="Clear chat memory" ngbDropdownToggle>
+                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Memory
+                      </button>
+                      <div ngbDropdownMenu style="min-width:340px">
+                        <button type="button" title="Clear memory for {{user.email}}" ngbDropdownItem  (click)="clearUserMemory(cogna)">
+                          Clear memory for {{user.email}}
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" title="Clear memory for all user" ngbDropdownItem
+                        (click)="clearMemory(cogna)">
+                          Clear memory for all user
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <div id="chat-response-list" class="p-3 bg-white" style="min-height:300px; max-height:600px;overflow:auto">
                     @for (p of chatResponseList; track $index) {
                       @if(p.text){

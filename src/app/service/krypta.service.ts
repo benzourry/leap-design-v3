@@ -70,9 +70,9 @@ export class KryptaService {
   // getEntryListFull(kryptaId: any, params: HttpParams): any {
   //   return this.http.get(`${this.baseApi}/krypta/${kryptaId}/entry-full`, { params: params });
   // }
-  initContract(kryptaId: any): any {
-    return this.http.get(`${this.baseApi}/krypta/wallet/${kryptaId}/init-contract`, {});
-  }
+  // initContract(kryptaId: any): any {
+  //   return this.http.get(`${this.baseApi}/krypta/wallet/${kryptaId}/init-contract`, {});
+  // }
 
   // addData(kryptaId: number, certData: any): any {
   //   return this.http.post(`${this.baseApi}/krypta/tx/${kryptaId}/add`, certData);

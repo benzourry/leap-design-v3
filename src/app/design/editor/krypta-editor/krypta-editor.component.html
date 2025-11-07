@@ -46,7 +46,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
               routerLinkActive="active"
               >
               <div class="list-group-item-heading">
-                {{a.name}}
+                {{a.name}} <sup>{{a.id}}</sup>
               </div>
               @if (a.description) {
                 <div class="list-group-item-text">{{a.description}}</div>
@@ -84,9 +84,21 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
 
       @if (!contractLoading()) {
         <div class="mb-3">
-          <small class="ms-3">Smart Contracts</small>
-          @for (a of contractList | filter:searchText; track a.id) {
+          <div class="small ms-3 mb-2">Smart Contracts</div>
+          <!-- @for (a of contractList | filter:searchText; track a.id) {
             <a class="pointer element link-item" [class.active]="a.id==contract?.id" (click)="loadContract(a.id)">
+              <div class="list-group-item-heading" [class.strike]="a.enabled==0">
+                {{a.name}}
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          } -->
+
+          @for (a of contractList | filter:searchText; track a.id) {
+            <a class="pointer element link-item" [routerLink]="['/design',appId,'krypta']"
+              [queryParams]="{contractId:a?.id}" [class.active]="a.id==contract?.id" routerLinkActive="active">
               <div class="list-group-item-heading" [class.strike]="a.enabled==0">
                 {{a.name}}
               </div>
@@ -134,10 +146,12 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                   <div class="d-flex flex-row">
                     @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) {
                       <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                        title="Edit wallet info"
                         (click)="editWallet(editWalletTpl,krypta,false)" [class.disabled]="offline">
                         <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                       </button>
                       <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                        title="Remove wallet info"
                         (click)="removeWallet(removeWalletTpl,krypta)" [class.disabled]="offline">
                         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                       </button>
@@ -189,7 +203,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
 
                       </div>
                       <div class="list-group-item">
-                        <div class="small mb-2">Contract Functions</div>
+                        <div class="small mb-2">Contract Events</div>
                           @for (f of krypta.contract?.abiSummary?.events; track f) {
                             <button class="btn btn-light btn-sm me-1 mb-1" (click)="logsEvent(f)">{{f}}</button>
                           }             
@@ -266,12 +280,10 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
               }
               @if (error[krypta.id]) {
                 <div class="card mt-2">
-                  <!-- <div class="card-body"> -->
                   <div class="small mb-3 p-3 text-white bg-danger">Error</div>
                   <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
                     <pre class="m-0"><code class="language-js">{{error[krypta.id].error | json}}</code></pre>
                   </div>
-                <!-- </div> -->
                 </div>
               }
             </div>
@@ -288,16 +300,16 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     {{contract.description}}
                   </div>
                 </div>
-                  <!-- @if (krypta && (krypta.email?.indexOf(user.email)>-1) && (krypta.app?.id == appId)) { -->
-                    <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
-                      (click)="editContract(editContractTpl, contract, false)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
-                      (click)="removeContract(removeContractTpl,contract)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  <!-- } -->
+                  <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                    title="Edit smart contract"
+                    (click)="editContract(editContractTpl, contract, false)" [class.disabled]="offline">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                    title="Remove smart contract"
+                    (click)="removeContract(removeContractTpl,contract)" [class.disabled]="offline">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
                 </div>
             </div>
 

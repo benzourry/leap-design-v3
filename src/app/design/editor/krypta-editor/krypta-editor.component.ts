@@ -77,9 +77,6 @@ export class KryptaEditorComponent implements OnInit {
                             let params = {
                                 email: user.email
                             }
-                            // new HttpParams()
-                            //     .set("email", user.email);
-
                             this.appService.getApp(this.appId, params)
                                 .subscribe(res => {
                                     this.app = res;
@@ -99,6 +96,10 @@ export class KryptaEditorComponent implements OnInit {
                         const id = params['id'];
                         if (id) {
                             this.loadWallet(id);
+                        }
+                        const contractId = params['contractId'];
+                        if (contractId){
+                            this.loadContract(contractId);
                         }
                     })
             });
@@ -213,12 +214,13 @@ export class KryptaEditorComponent implements OnInit {
     loadWallet(id) {
         this.contract = null;
         this.kryptaId = id;
-        this.cdr.detectChanges();
+        // this.cdr.markForCheck();
+        // this.cdr.detectChanges();
         this.kryptaService.getWallet(id)
             .subscribe(krypta => {
                 this.krypta = krypta;
                 this.contract = krypta.contract;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             })
 
     }
@@ -227,13 +229,16 @@ export class KryptaEditorComponent implements OnInit {
     contract:any;
     loadContract(id) {
         this.krypta=null;
-        // this.cdr.markForCheck();
+        this.cdr.markForCheck(); 
         console.log("Loading contract", id);
         this.kryptaService.getContract(id)
             .subscribe(contract => {
-                console.log("Contract loaded", contract);
+                console.log("Contract loaded", id);
                 this.contract = contract;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
+                // setTimeout(()=>{    
+                //     this.cdr.detectChanges();
+                // });
             })
     }
 
@@ -241,7 +246,6 @@ export class KryptaEditorComponent implements OnInit {
 
     editContractData: any;
     editContract(content, contract, isNew) {
-
         this.editContractData = contract;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
@@ -249,6 +253,7 @@ export class KryptaEditorComponent implements OnInit {
                 this.kryptaService.saveContract(this.user.email, this.appId, data)
                     .subscribe(res => {
                         this.loadContractList(this.pageNumber);
+                        this.contract = res;
                         this.toastService.show("Contract successfully saved", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
                     }, res => {
@@ -309,11 +314,10 @@ export class KryptaEditorComponent implements OnInit {
     result:any={};
     error:any={};
     resultLoading=signal<boolean>(false);
-
     rcfData:any;
     runContractFn(tpl, fn) {
         this.resultLoading.set(true);
-        this.cdr.detectChanges
+        this.cdr.detectChanges();
         
         // this.result = null;
         // this.error = null;
@@ -364,8 +368,7 @@ export class KryptaEditorComponent implements OnInit {
 
     verifyHash() {
         let txHash = prompt("Enter transaction hash");    
-        if (txHash){
-            
+        if (txHash){            
             this.resultLoading.set(true);
 
             this.result[this.kryptaId] = null;

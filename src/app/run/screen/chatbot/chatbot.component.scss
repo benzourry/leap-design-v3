@@ -96,7 +96,8 @@
 
 #clear-chat-btn {
     text-align: center;
-    width: 2.2em;
+    max-width: 2.2em;
+    min-width:2.2em;
     transition: all 300ms ease-in-out;
     text-wrap: nowrap;
 }
@@ -107,7 +108,7 @@
 
 #clear-chat-btn:hover,
 #clear-chat-btn:active {
-    width: 8em;
+    max-width: 200px;
 }
 
 #clear-chat-btn:hover .text,
