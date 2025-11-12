@@ -385,6 +385,14 @@
                               <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
                             } 
                           </button>
+                          <button type="button" class="btn btn-round btn-sm btn-danger" title="Clear DB Source"
+                            (click)="clearDbSrc(b)" [class.disabled]="clearDbSrcLoading()[b.id]">
+                            @if (clearDbSrcLoading()[b.id]) {
+                              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                            }@else {
+                              <fa-icon [icon]="['fas','remove']" [fixedWidth]="true"></fa-icon>
+                            } 
+                          </button>
                           <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Source"
                             (click)="removeCognaSrc(b)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">

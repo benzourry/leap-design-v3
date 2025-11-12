@@ -2001,13 +2001,15 @@
           <a ngbNavLink>Field Setting</a>
           <ng-template ngbNavContent>
             <div class="single-pane">
-              <div class="form-group mb-3">
-                <div class="form-check form-switch">
-                  <input type="checkbox" class="form-check-input" name="bulk-add"
-                    [(ngModel)]="editItemData.bulkAdd" id="bulk-add">
-                  <label class="form-check-label" for="bulk-add">Register many field at once</label>
+              @if(!editItemData.id){
+                <div class="form-group mb-3">
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="bulk-add"
+                      [(ngModel)]="editItemData.bulkAdd" id="bulk-add">
+                    <label class="form-check-label" for="bulk-add">Register many field at once</label>
+                  </div>
                 </div>
-              </div>
+              }
               @if (!editItemData.bulkAdd) {
                 <div class="row">
                   <div class="col-md-6">

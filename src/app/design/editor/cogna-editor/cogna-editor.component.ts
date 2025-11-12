@@ -863,6 +863,28 @@ export class CognaEditorComponent implements OnInit {
       })
   }
 
+  clearDbSrcLoading = signal<any>({});
+  clearDbSrc(cognaSrc) {
+    this.clearDbSrcLoading[cognaSrc.id] = true;
+    this.cognaService.clearDbBySrcId(cognaSrc.id)
+      .subscribe({
+        next: res => {
+          this.loadCogna(this.cogna.id);
+          // this.ingestRes.set({...this.ingestRes(), [cognaSrc.id]: res});
+          this.toastService.show("Source successfully cleared from DB", { classname: 'bg-success text-light' });
+          // this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents successfully ingested<br/>Doc counts: " + res.docCount});
+          // this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'true'});
+          this.clearDbSrcLoading.set({...this.clearDbSrcLoading(), [cognaSrc.id]: false});
+        },
+        error: err => {
+          this.toastService.show("Source DB clear failure: " + err.error.message, { classname: 'bg-danger text-light' });
+          // this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents ingestion failure: " + err.error.message});
+          // this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'false'});
+          this.clearDbSrcLoading.set({...this.clearDbSrcLoading(), [cognaSrc.id]: false});
+        }
+      })
+  }
+
   ingestRes = signal<any>({});
   // ingestSuccess: string;
   ingestSuccess = signal<any>({});

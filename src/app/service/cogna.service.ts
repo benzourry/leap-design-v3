@@ -49,12 +49,15 @@ export class CognaService {
     return this.http.post(`${this.baseApi}/cogna/ingest-src/${cognaSrcId}`, {});
   }
 
-  clearMemoryById(cognaId: any) {
+  clearMemoryById(cognaId: number) {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/clear`, {});
   }
 
-  clearDb(cognaId: any) {
+  clearDb(cognaId: number) {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/clear-db`, {});
+  }
+  clearDbBySrcId(cognaSrcId: number) {
+    return this.http.post(`${this.baseApi}/cogna/clear-db-src/${cognaSrcId}`, {});
   }
 
   check(cognaId: number): any {
