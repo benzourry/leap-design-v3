@@ -79,7 +79,7 @@ export class StartComponent implements OnInit, OnDestroy {
   pushDismissed = signal(localStorage.getItem('pushDismissed') === '1');
   maintenance = computed(() => {
     const app = this.app();
-    const path = this.getPath();
+    const path = window.location.host;
     return !this.editMode && !!app && !app.live && !path.includes('--dev');
   });
   darkMode = signal<boolean>(false);
