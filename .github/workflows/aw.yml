@@ -1,15 +1,15 @@
 name: Deploy to AW Server
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/workflows/**'
-      - '.gitlab/ci/**'
-      - 'README.md'
-      - 'angular-*.json'
-      - 'ngsw-config_*.json'
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - '.github/workflows/**'
+  #     - '.gitlab/ci/**'
+  #     - 'README.md'
+  #     - 'angular-*.json'
+  #     - 'ngsw-config_*.json'
   workflow_dispatch:
 
 jobs:
