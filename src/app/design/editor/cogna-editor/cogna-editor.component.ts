@@ -90,6 +90,7 @@ export class CognaEditorComponent implements OnInit {
 
   embedModelTypeList = [
     { name: 'AllMiniLM', code: 'minilm' },
+    { name: 'E5SmallV2', code: 'e5small' },
     { name: 'OpenAI', code: 'openai' },
     { name: 'HuggingFace', code: 'huggingface' },
     // { name: 'VertexAi', code: 'vertex-ai' },

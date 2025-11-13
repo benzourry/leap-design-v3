@@ -180,6 +180,8 @@
                     <div class="list-group-item">
                     @if (cogna.embedModelType=='minilm'){
                       All-MiniLM (built-in)
+                    }@else if(cogna.embedModelType=='e5small'){
+                      E5-Small-V2 (built-in)
                     }@else{
                       <div class="small text-muted">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
                       <div>{{cogna.embedModelName}}</div>
@@ -1227,7 +1229,7 @@
                     </select>
                   </div>
                 </div>
-                @if(editCognaData.embedModelType!='minilm'){
+                @if(!['minilm','e5small'].includes(editCognaData.embedModelType)){
                   <div class="col-6">
                     <div class="form-group mb-3">
                       <label class="form-label" for="binds">Model Name *</label>
@@ -1248,7 +1250,7 @@
                 }
     
               </div>
-              @if(editCognaData.embedModelType!='minilm'){
+              @if(!['minilm','e5small'].includes(editCognaData.embedModelType)){
                 <div class="form-check form-switch mb-3">
                   <input type="checkbox" class="form-check-input" id="overrideEmbed"
                     [(ngModel)]="editCognaData.data.overrideEmbed" name="overrideEmbed">
