@@ -150,9 +150,7 @@
                       <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                       {{form()?.x?.saveLbl??(lang()=='ms'?'Simpan':'Save')}}
                       @if (saving()) {
-                        <div class="spinner-border spinner-border-sm" role="status">
-                          <span class="sr-only">Loading...</span>
-                        </div>
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
                     </button>
                   }
@@ -164,9 +162,7 @@
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[0]?.name}}
                       @if (saving()||submitting()) {
-                        <div class="spinner-border spinner-border-sm" role="status">
-                          <span class="sr-only">Loading...</span>
-                        </div>
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
                     </button>
                   }
@@ -177,9 +173,7 @@
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[entry?.currentTier].name}}
                       @if (saving()||submitting()) {
-                        <div class="spinner-border spinner-border-sm" role="status">
-                          <span class="sr-only">Loading...</span>
-                        </div>
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
                     </button>
                   }
@@ -720,9 +714,7 @@
                     <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                     {{lang()=='ms'?'Kembali':'Back'}}
                     @if (saving()) {
-                      <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="sr-only">Loading...</span>
-                      </div>
+                      <div class="spinner-border spinner-border-sm" role="status"></div>
                     }
                   </button>
                 }
@@ -732,9 +724,7 @@
                     [disabled]="(form().x?.progression && form().x?.validateProgress) && tForm?.invalid || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]" (click)="progNext(tabidx)">
                     <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                     @if (saving()) {
-                      <div class="spinner-border spinner-border-sm" role="status">
-                        <span class="sr-only">Loading...</span>
-                      </div>
+                      <div class="spinner-border spinner-border-sm" role="status"></div>
                     }
                     {{filteredTabs()[tabidx+1]?.title}} 
                     <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
@@ -747,9 +737,7 @@
                         <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                         {{form()?.x?.saveLbl??(lang()=='ms'?'Simpan':'Save')}}
                         @if (saving()) {
-                          <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="sr-only">Loading...</span>
-                          </div>
+                          <div class="spinner-border spinner-border-sm" role="status"></div>
                         }
                       </button>
                     }
@@ -762,9 +750,7 @@
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                       {{form().tiers[0]?.name}}
                       @if (saving()||submitting()) {
-                        <div class="spinner-border spinner-border-sm" role="status">
-                          <span class="sr-only">Loading...</span>
-                        </div>
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
                     </button>
                     @if (form().tiers?.length>0 && entry?.currentEdit) {
@@ -776,9 +762,7 @@
                         <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
                         {{form().tiers[entry?.currentTier].name}}
                         @if (saving()||submitting()) {
-                          <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="sr-only">Loading...</span>
-                          </div>
+                          <div class="spinner-border spinner-border-sm" role="status"></div>
                         }
                       </button>
                     }
