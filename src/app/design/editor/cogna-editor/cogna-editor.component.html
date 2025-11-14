@@ -51,7 +51,7 @@
             </a>
           }
           <a class="pointer element"
-            (click)="editCogna(editCognaTpl,{type:'txtgen', embedModelType:'minilm', embedModelName:'', embedModelApiKey:'', chunkLength:100, chunkOverlap:10, embedMaxResult:5, inferModelType:'openai', inferModelName:'gpt-4o-mini', inferModelApiKey:'demo', temperature:0.0, maxChatMemory:5, vectorStoreType:'inmemory', systemMessage:defaultSysMsg, data:{}}, true)"
+            (click)="editCogna(editCognaTpl,{type:'txtgen', embedModelType:'e5small', embedModelName:'', embedModelApiKey:'', chunkLength:100, chunkOverlap:10, embedMaxResult:5, inferModelType:'openai', inferModelName:'gpt-4o-mini', inferModelApiKey:'demo', temperature:0.0, maxChatMemory:5, vectorStoreType:'inmemory', systemMessage:defaultSysMsg, data:{}}, true)"
             [class.disabled]="offline">
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
             Create Cogna
@@ -181,7 +181,9 @@
                     @if (cogna.embedModelType=='minilm'){
                       All-MiniLM (built-in)
                     }@else if(cogna.embedModelType=='e5small'){
-                      E5-Small-V2 (built-in)
+                      Multilingual E5-Small-V2 (built-in)
+                    }@else if(cogna.embedModelType=='e5large'){
+                      E5-Large-V2 (built-in)
                     }@else{
                       <div class="small text-muted">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
                       <div>{{cogna.embedModelName}}</div>
@@ -1229,7 +1231,7 @@
                     </select>
                   </div>
                 </div>
-                @if(!['minilm','e5small'].includes(editCognaData.embedModelType)){
+                @if(!['minilm','e5small','e5large'].includes(editCognaData.embedModelType)){
                   <div class="col-6">
                     <div class="form-group mb-3">
                       <label class="form-label" for="binds">Model Name *</label>
@@ -1250,7 +1252,7 @@
                 }
     
               </div>
-              @if(!['minilm','e5small'].includes(editCognaData.embedModelType)){
+              @if(!['minilm','e5small','e5large'].includes(editCognaData.embedModelType)){
                 <div class="form-check form-switch mb-3">
                   <input type="checkbox" class="form-check-input" id="overrideEmbed"
                     [(ngModel)]="editCognaData.data.overrideEmbed" name="overrideEmbed">
