@@ -138,8 +138,8 @@
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){
-      <app-user-entry-filter [formHolder]="form" [presetFilters]="chart().presetFilters"
-        [filtersConfig]="chart()?.filters" [(filtersData)]="filtersData" [scopeId]="scopeId()"
+      <app-user-entry-filter [formHolder]="form()" [presetFilters]="chart().presetFilters"
+        [filtersConfig]="chart()?.filters" [(filtersData)]="filtersData"
         [lookup]="lookup"></app-user-entry-filter>
     }@loading {
       <div class="text-center m-5">

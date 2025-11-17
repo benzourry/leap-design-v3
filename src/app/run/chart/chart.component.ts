@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { NgbDateAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 // import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
@@ -34,6 +34,7 @@ export class ChartComponent implements OnInit {
   private lookupService = inject(LookupService);
   private runService = inject(RunService);
   private modalService = inject(NgbModal);
+  private cdr = inject(ChangeDetectorRef);
 
 
   chart = input<any>();
@@ -323,10 +324,13 @@ export class ChartComponent implements OnInit {
   lookup = {};
   // Problem if prev form not yet loaded
   getLookupInFilter() {
+      // console.log("getLookupInFilter")
     this.chart().filters.forEach(f => {
-      let ds = this.form[f.root]?.items[f.code]?.dataSource;
-      let dsInit = this.form[f.root]?.items[f.code]?.dataSourceInit;
-      let type = this.form[f.root]?.items[f.code]?.type;
+      // console.log("getLookupInFilter-foreach",f)
+      let ds = this.form()[f.root]?.items[f.code]?.dataSource;
+      let dsInit = this.form()[f.root]?.items[f.code]?.dataSourceInit;
+      let type = this.form()[f.root]?.items[f.code]?.type;
+      // console.log("daaaa", ds, dsInit, type)
       if (ds) { // only load filter with ds, which is lookup
         this.lookupKey[f.code] = {
           ds: ds,
@@ -342,6 +346,7 @@ export class ChartComponent implements OnInit {
   }
 
   getLookup = (code, dsInit?: any) => {
+    // console.log("#######getLookup");
     var param = null;
     if (code) {
       if (this.lookupKey[code].type == 'modelPicker') {
@@ -349,6 +354,8 @@ export class ChartComponent implements OnInit {
         this.entryService.getListByDatasetData(this.lookupKey[code].ds, dsInit || param)
           .subscribe(res => {
             this.lookup[code] = res;
+            this.cdr.detectChanges();
+            // console.log("============", res);
           })
       } else {
         // param = Object.assign(param || {}, { sort: 'id,asc' });
@@ -356,6 +363,8 @@ export class ChartComponent implements OnInit {
         this.lookupService.getByKey(this.lookupKey[code].ds, dsInit || param)
           .subscribe(res => {
             this.lookup[code] = res.content;
+            this.cdr.detectChanges();
+            // console.log("============", res);
           });
       }
     }
