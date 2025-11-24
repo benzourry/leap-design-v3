@@ -298,7 +298,7 @@
       [searchFn]="lookupSearchFn">
       @if (field()?.placeholder) {
         <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
-          <div [innerHtml]="compileTpl(field().placeholder,{'$':item})|safe:'html'">
+          <div [innerHtml]="compileTpl(field().placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'">
           </div>
         </ng-template>
       }
@@ -309,7 +309,7 @@
           <div class="list-group">
             @for (sv of value; track $index) {
               <div class="list-group-item"
-              [innerHtml]="compileTpl(field().placeholder,{'$':sv})|safe:'html'"></div>
+              [innerHtml]="compileTpl(field().placeholder,{'$':sv,'$prev$':sv.$prev})|safe:'html'"></div>
             }
           </div>
         }

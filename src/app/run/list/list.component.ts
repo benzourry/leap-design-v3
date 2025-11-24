@@ -519,7 +519,7 @@ export class ListComponent implements OnInit, OnDestroy {
     this.entryService.removeApproval(entry.id, tierId)
       .subscribe(res => {
         this.getEntryList(this.pageNumber());
-        delete entry.approval[tierId];
+        delete entry.approval?.[tierId];
       })
   }
 

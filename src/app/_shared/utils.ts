@@ -824,18 +824,20 @@ export function imagify(text) {
 export function byString(o, s) {
   s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
   s = s.replace(/^\./, '');           // strip a leading dot
-  var a = s.split('.');
-  for (var i = 0, n = a.length; i < n; ++i) {
-      var k = a[i];
-      if (typeof o === 'object'){
-        if (k in o) {
-            o = o[k];
-        } else {
-            return;
-        }        
-      }else{
-        return;
+  const a = s.split('.');
+  for (let i = 0; i < a.length; i++) {
+      const k = a[i];
+
+      // If o is null or not an object → stop immediately
+      if (o === null || typeof o !== 'object') {
+        return undefined;
       }
+
+      if (k in o) {
+          o = o[k];
+      } else {
+          return undefined;
+      }   
   }
   return o;
 }

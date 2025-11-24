@@ -337,7 +337,7 @@
                                 }
                               } @else {
                                 <field-view [field]="form().data?.items[item.code]" [scopeId]="scopeId()"
-                                  [value]="getVal(form().data?.items[item.code], i.approval[item.root], i.approval[item.root]?.data)">
+                                  [value]="getVal(form().data?.items[item.code], i.approval?.[item.root], i.approval?.[item.root]?.data)">
                                 </field-view>
                               }
                               <div class="clearfix"></div>
