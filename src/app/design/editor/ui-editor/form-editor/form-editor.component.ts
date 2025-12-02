@@ -597,9 +597,19 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .subscribe(res => {
                 this.curForm = res;
                 this.cdr.detectChanges(); // <--- Add here
-                this.curForm.sections
-                    .map(s => s.parentObj = this.getTab(s.parent))
-                    .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
+                // this.curForm.sections
+                //     .map(s => s.parentObj = this.getTab(s.parent))
+                //     .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
+
+                this.curForm.sections.forEach(s => s.parentObj = this.getTab(s.parent));
+                this.curForm.sections.sort((a, b) => {
+                    const pa = a.parentObj?.sortOrder ?? 0;
+                    const pb = b.parentObj?.sortOrder ?? 0;
+                    if (pa !== pb) return pa - pb;
+                    const sa = a.sortOrder ?? 0;
+                    const sb = b.sortOrder ?? 0;
+                    return sa - sb;
+                });
 
                 this.getLookupIdList(this.curForm.id);
                 this.facetList = this.getAsList(this.curForm.x?.facet);

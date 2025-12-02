@@ -74,6 +74,16 @@ export class GroupByPipe implements PipeTransform {
         list.sort((a,b)=> a.sortOrder - b.sortOrder)
     }
 
+    // xdapat sbb kt reorder nya pake curform.sections (original section orders dari form)
+    // so, mesti order siap2 kt formeditor
+    // let __indexOrder = 0;
+    // list.forEach(g=>{
+    //     g.value.forEach(v=>{
+    //         v.__index = __indexOrder;
+    //         __indexOrder++;
+    //     })
+    // })
+
     return list;
         // .sort((a,b) => (a.sortOrder > b.last_nom) ? 1 : ((b.last_nom > a.last_nom) ? -1 : 0));
   }
