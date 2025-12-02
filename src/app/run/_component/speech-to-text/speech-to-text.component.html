@@ -2,14 +2,14 @@
     <label class="has-float-label" [class.extracting]="extractLoading()">
         <!-- <input type="file" /> -->
         @if (!valueText()) {
-            <div class="form-control nobreak cursor-pointer extracting" (click)="isUserSpeaking()?stopRecording():startRecording()" [class.is-invalid]="formField?.invalid">
+            <div class="form-control nobreak cursor-pointer extracting smyds" (click)="isUserSpeaking()?stopRecording():startRecording()" [class.is-invalid]="formField?.invalid">
                 <div class="">
                     @if(isUserSpeaking()){
                         <fa-icon [icon]="['fas','square']" [fixedWidth]="true"></fa-icon>
-                        <span class="blink_me"> {{lang()=='ms'?'Mendengar':'Listening'}}...</span>
+                        <span class="blink_me"> {{lblLang()=='ms'?'Mendengar':'Listening'}}...</span>
                     }@else {
                         <fa-icon [icon]="['fas','microphone']" [fixedWidth]="true"></fa-icon>
-                        {{field().placeholder||(lang()=='ms'?'Mula mendengar':'Start listening')}}
+                        {{field().placeholder||(lblLang()=='ms'?'Mula mendengar':'Start listening')}}
                     }
                     
                 </div>
@@ -23,7 +23,7 @@
                     </div>
                     <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
                         @for(l of ['en-US','ms-MY','zh-CN']; track $index){
-                            <div class="d-flex" (click)="setLang(l)" ngbDropdownItem >
+                            <div class="d-flex" (click)="setSpeechLang(l)" ngbDropdownItem >
                                 {{l}}
                             </div>
                         }

@@ -35,7 +35,7 @@ export const OAUTH = {
         TOKEN_GET: "https://io.alpha.moh.gov.my/token/get",
         PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fj9Ry8MLD1iskng?e=9SZVb2",
         SIGNIN_OPT:['google','mydigitalid'],
-        COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
+        COGNA_VECTOR_DB:["chromadb","inmemory"]
 }
 
 export const myRxStompConfig: RxStompConfig = {

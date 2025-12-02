@@ -26,7 +26,7 @@
           <!-- <div class="btn-group btn-group-toggle" name="sourceType"> -->
             <input type="radio" class="btn-check" value="db" #sourceType="ngModel" name="sourceTypeDb"
               id="sourceTypeDb" [(ngModel)]="_lookup.sourceType" [required]="true">
-            <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeDb">
+            <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeDb" (click)="setLocal()">
               Database
               <div><small>Key-in locally</small></div>
             </label>

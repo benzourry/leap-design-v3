@@ -43,7 +43,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./src/assets/icons_leap",
+                "input": "./src/assets/icons_reka",
                 "output": "./assets/icons/"
               }
             ],
@@ -74,7 +74,7 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config_leap.json"
+              "serviceWorker": "ngsw-config_ireka.json"
             },
             "development": {
               "optimization": false,

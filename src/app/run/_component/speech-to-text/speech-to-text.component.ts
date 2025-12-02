@@ -88,9 +88,9 @@ export class SpeechToTextComponent {
       });
     }
 
-    setLang(lang){
+    setSpeechLang(lang){
       this.speechLang.set(lang);
-      this.voiceRecognition.updateLang(lang());
+      this.voiceRecognition.updateLang(lang);
     }
   
     /**

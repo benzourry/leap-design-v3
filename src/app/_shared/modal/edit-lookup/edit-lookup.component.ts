@@ -37,4 +37,10 @@ export class EditLookupComponent {
     this.close()?.(data);
   }
 
+  setLocal(){
+    this._lookup.x.autoResync = true;
+    this._lookup.x.refCol = 'id';
+    this.cdr.markForCheck();
+  }
+
 }
