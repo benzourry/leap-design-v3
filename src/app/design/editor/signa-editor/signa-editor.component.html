@@ -1,0 +1,395 @@
+<style>
+  input[type=search].start {
+  /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
+background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+background-size: 20px 16px;
+border: none;
+padding: 6px 10px 6px 32px;
+vertical-align: middle;
+border-radius: 10em;
+color: black;
+max-width: 100%;
+}
+input[type=search].start:focus {
+border-color: #0078d7;
+outline: none;
+-webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+-moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+}
+</style>
+<div class="wrapper" split-pane>
+  <div class="sidebar bg-white" sidebar #sidebar>
+    <div class="p-3">
+    <h5 class="mb-3">Signa Manager</h5>
+    <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadSignaList(1)"
+      autocapitalize="none"
+      [(ngModel)]="searchText">
+    </div>
+    <div class="group-list">
+      @if (itemLoading()) {
+        <div class="p-3 text-center">
+          <div class="lds-ellipsis white">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      }@else {
+        <div class="mb-3">
+          @for (a of signaList | filter:searchText; track a.id) {
+            <a class="pointer element" [routerLink]="['/design',appId,'signa']"
+              [queryParams]="{id:a?.id}" [class.active]="a.id==signaId"
+              routerLinkActive="active"
+              >
+              <div class="list-group-item-heading">
+                {{a.name}} <sup>{{a.id}}</sup>
+              </div>
+              @if (a.description) {
+                <div class="list-group-item-text">{{a.description}}</div>
+              }
+            </a>
+          }
+          <a class="pointer element" (click)="editSigna(editSignaTpl,{email: user.email}, true)"
+            [class.disabled]="offline">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            Create Signa
+          </a>
+          <div class="p-2 pagination-rounded">
+            @if (signaTotal>itemsPerPage) {
+              <ngb-pagination [collectionSize]="signaTotal"
+                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
+                (pageChange)="loadSignaList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>              
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="content" content>
+    <div class="limit-width fix-gutter">
+      <div class="p-2">
+        @if (signa) {
+          <div class="mb-3">
+            <div class="">
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{signa.name}}</h5>
+                <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{signa.description}}
+                </div>
+              </div>
+              <div class="d-flex flex-row">
+                <div class="flex-grow-1 pt-2">
+                  @if (signa.shared) {
+                    <span>
+                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
+                      Shared Signa
+                    </span>
+                  }@else{
+                    <span class="text-danger">
+                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                      Private Signa
+                    </span>
+                  }
+                </div>
+                <div class="d-flex flex-row">
+                  @if (signa && (signa.email?.indexOf(user.email)>-1) && (signa.appId == appId)) {
+                    <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                      title="Edit signa info"
+                      (click)="editSigna(editSignaTpl,signa,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                      title="Remove wallet info"
+                      (click)="removeSigna(removeSignaTpl,signa)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  }
+
+                </div>
+              </div>
+            </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+            <div class="card mt-2">
+              <div class="card-header">Signa Info</div>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                  <div class="small">Name</div>
+                  {{signa.name}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Reason</div>
+                  {{signa.reason}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Location</div>
+                  {{signa.location}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Hash Algorithm</div>
+                  {{signa.hashAlg}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Keystore Type</div>
+                  {{signa.keystoreType}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Stamp Coordinates (Llx, Lly, Urx, Ury)</div>
+                  {{signa.stampLlx}}, {{signa.stampLly}}, {{signa.stampUrx}}, {{signa.stampUry}}
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Private Key File</div>
+                  @if(signa.keyPath){
+
+                    <label class="form-label float-end">
+
+                      <input type="file" [hidden]="true" (change)="uploadKey($event)" name="file" required
+                        accept=".jks,.keystore,.p12,.pfx,.bks" />
+                        <div class="form-control" style="background: white">
+                          Change
+                        </div>
+                    </label>
+                    
+                    {{signa.keyPath}}
+                  }@else{
+                    <div class="text-danger mb-2">No key file uploaded</div>
+                    <label class="form-label">
+
+                      <input type="file" [hidden]="true" (change)="uploadKey($event)" name="file" required
+                        accept=".jks" />
+                      @if (uploadKeyLoading) {
+                        <div class="form-control" style="background: white">
+                          Uploading...
+                        </div>
+                      }@else{
+                        <div class="form-control" style="background: white">
+                          <fa-icon [icon]="['fas','upload']"></fa-icon>
+                          {{signa.keyPath??'Upload Key File'}}
+                        </div>
+                      }
+                    </label>
+                  }
+                </div>
+                <div class="list-group-item">
+                  <div class="small">Signature Image</div>
+                  <label class="form-label">
+                    <input type="file" [hidden]="true" (change)="uploadImage($event)" name="file" required
+                      accept="image/*" />
+                    @if (uploadImageLoading) {
+                      <div class="form-control" style="background: white">
+                        Uploading...
+                      </div>
+                    }@else{
+                      @if (signa.imagePath) {
+                      <img src="{{baseApi}}/signa/{{signa.id}}/file/{{signa.imagePath}}" alt="Signature Image"
+                        style="max-height:100px;max-width:200px;display:block;margin-bottom:8px;" />
+                      }@else {
+                        <div class="text-muted mb-2">No signature image uploaded</div>
+                      }
+                      <div class="form-control" style="background: white">
+                        <fa-icon [icon]="['fas','upload']"></fa-icon>
+                        {{signa.imagePath??'Upload Signature Image'}}
+                      </div>
+                    }
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        }@else {
+          <div style="color:#aaa;">
+            <h3>Please select item from the list on the left to view it's data.</h3>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #removeSignaTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Remove Signa</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        <div class="form-group mb-3">
+          <label class="form-label">Signa Name</label>
+          <p class="form-control-static">{{removeSignaData.name}}</p>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Description</label>
+          <p class="form-control-static">{{removeSignaData.name}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(removeSignaData)">
+        <i class="icon-minus-sign-alt"></i> Remove Signa
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editSignaTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Signa Info</h4>
+  </div>
+  <div class="modal-body fix-gutter" #signaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Signa Name *</label>
+      <input type="text" class="form-control" [(ngModel)]="editSignaData.name"
+        #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Reason *</label>
+        <textarea class="form-control" [(ngModel)]="editSignaData.reason"
+        name="reason" required></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Location *</label>
+        <input type="text" class="form-control" [(ngModel)]="editSignaData.location" name="location"
+          placeholder="ie: Kuching" required>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" [(ngModel)]="editSignaData.password" name="password"
+          placeholder="ie: changeit">
+      </div>
+      <div class="row">
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Llx *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampLlx" name="stampLlx"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Lly *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampLly" name="stampLLy"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Urx *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampUrx" name="stampUrx"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Ury *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampUry" name="stampUry"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        
+      </div>
+      <div class="form-group mb-3 mt-1">
+        <label class="form-label">Hash Algorithm *</label>
+        <select class="form-select" name="hashAlg"
+          [(ngModel)]="editSignaData.hashAlg" required>
+          <!-- <option [ngValue]="null" style="color:gray"> * No contract selected </option> -->
+          @for (item of algList; track item.id) {
+          <option [ngValue]="item">{{item}}
+          </option>
+          }
+        </select>
+      </div>
+      <div class="form-group mb-3 mt-1">
+        <label class="form-label">Keystore File Format *</label>
+        <select class="form-select" name="ksFormat"
+          [(ngModel)]="editSignaData.keystoreType" required>
+          <!-- <option [ngValue]="null" style="color:gray"> * No contract selected </option> -->
+          @for (item of ksTypeList; track item.id) {
+          <option [ngValue]="item">{{item}}
+          </option>
+          }
+        </select>
+      </div>
+      <!-- @if(editSignaData && editSignaData.id){
+
+        <div class="form-group mb-3">
+          <div class="form-label">Private Key File</div>
+          <label class="form-label">
+            <input type="file" [hidden]="true" (change)="uploadKey($event)" name="file" required
+              accept=".jks" />
+            @if (uploadKeyLoading) {
+              <div class="form-control" style="background: white">
+                Uploading...
+              </div>
+            }@else{
+              <div class="form-control" style="background: white">
+                <fa-icon [icon]="['fas','upload']"></fa-icon>
+                {{editSignaData.keyPath??'Browse'}}
+              </div>
+            }
+          </label>
+        </div>
+        <div class="form-group mb-3">
+          <div class="form-label">Signature Image</div>
+          <label class="form-label">
+            <input type="file" [hidden]="true" (change)="uploadImage($event)" name="file" required
+              accept="image/*" />
+            @if (uploadImageLoading) {
+              <div class="form-control" style="background: white">
+                Uploading...
+              </div>
+            }@else{
+              <img src="{{baseApi}}/signa/{{editSignaData.id}}/file/{{editSignaData.imagePath}}" alt="Signature Image"
+                style="max-height:100px;max-width:200px;display:block;margin-bottom:8px;" />
+              <div class="form-control" style="background: white">
+                <fa-icon [icon]="['fas','upload']"></fa-icon>
+                {{editSignaData.imagePath??'Browse'}}
+              </div>
+            }
+          </label>
+        </div>
+
+      } -->
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="signaEditForm.invalid"
+        (click)="c(editSignaData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Signa
+    </button>
+  </div>
+</ng-template>

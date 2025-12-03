@@ -27,6 +27,7 @@ import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
+import { SignaService } from '../../../service/signa.service';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -71,6 +72,7 @@ export class LambdaEditorComponent implements OnInit {
   private location = inject(PlatformLocation)
   private router = inject(Router)
   private appService = inject(AppService)
+  private signaService = inject(SignaService)
   private toastService = inject(ToastService)
   private endpointService = inject(EndpointService)
   private utilityService = inject(UtilityService)
@@ -109,6 +111,7 @@ export class LambdaEditorComponent implements OnInit {
             this.loadLambdaList(1);
             // this.loadSharedList(1);
             this.loadBindingSrcs();
+            this.loadSignaList();
 
           });
 
@@ -152,6 +155,19 @@ export class LambdaEditorComponent implements OnInit {
         this.lambdaTotal.set(res.page?.totalElements);
         this.itemLoading.set(false);
       }, res => this.itemLoading.set(false))
+  }
+
+  signaList: any[] = [];
+  loadSignaList() {
+    let params = {
+      appId: this.appId,
+      size: 9999
+    }
+    this.signaService.getSignaList(params)
+      .subscribe(res => {
+        this.signaList = res.content;
+        this.cdr.detectChanges();
+      })
   }
 
   editCode: boolean;
@@ -564,6 +580,10 @@ export class LambdaEditorComponent implements OnInit {
         })
         this.cdr.detectChanges();
       });
+  }
+
+  compareByIdFn(a, b): boolean {
+    return (a && a.id) === (b && b.id);
   }
 
   isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;

@@ -427,6 +427,22 @@
           <label class="form-check-label" for="publicAccess">Public Lambda (require no authentication)</label>
         </div>
         <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="digisign"
+            [ngModel]="editLambdaData.data && editLambdaData.data.digisign" (ngModelChange)="editLambdaData.data && (editLambdaData.data.digisign = $event)" name="digisign">
+          <label class="form-check-label" for="digisign">Embed Digital Signature (PDF Output)</label>
+          @if (editLambdaData.data && editLambdaData.data.digisign) {
+            <div>
+                <select class="form-select form-select-sm  mb-1" name="signa"  [compareWith]="compareByIdFn"
+                [(ngModel)]="editLambdaData.signa" required>                
+                  <option [ngValue]="undefined" disabled>Select Signature (* required)</option>
+                  @for (signa of signaList; track $index) {
+                    <option [ngValue]="signa">{{signa.name}}</option>
+                  }
+                </select>
+            </div>
+          }
+        </div>
+        <div class="form-check form-switch">
           <input type="checkbox" class="form-check-input" id="scheduled"
             [ngModel]="editLambdaData && editLambdaData.scheduled" (ngModelChange)="editLambdaData && (editLambdaData.scheduled = $event)" name="scheduled">
           <label class="form-check-label" for="scheduled">Scheduled Run</label>
