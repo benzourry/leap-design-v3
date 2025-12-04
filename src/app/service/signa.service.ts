@@ -46,6 +46,15 @@ export class SignaService {
   saveSigna(email: string, appId: number, data: any): any {
     return this.http.post(`${this.baseApi}/signa?appId=${appId}&email=${email}`, data)
   }
+  generateKey(signaId: number, email: string): any {
+    return this.http.post(`${this.baseApi}/signa/${signaId}/generate-key?email=${email}`, {})
+  }
+  downloadCsr(signaId: number, email: string): any {
+    return this.http.get(`${this.baseApi}/signa/${signaId}/download-csr?email=${email}`, { responseType: 'blob' })
+  }
+  clearFile(signaId: number, type:string, email: string): any {
+    return this.http.post(`${this.baseApi}/signa/${signaId}/clear-${type}?email=${email}`, {})
+  }
   getSignaList(params?: any): any {
     return this.http.get<any>(`${this.baseApi}/signa`, { params: params });
   }

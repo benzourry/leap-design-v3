@@ -45,7 +45,8 @@ export class SignaEditorComponent implements OnInit {
     resultType:string = 'text';
     baseApi=baseApi;
 
-    algList = ['SHA-256'];
+    hashAlgList = ['SHA256','SHA384','SHA512'];
+    keyAlgList = ['RSA','ECDSA'];
 
     ksTypeList = ['JKS', 'PKCS12', 'BKS'];
 
@@ -104,7 +105,7 @@ export class SignaEditorComponent implements OnInit {
     }
 
     user: any;
-    signaId = '';
+    signaId:number;
     // data = { 'list': [] };
     pageSize = 45;
     currentPage = 1;
@@ -194,6 +195,53 @@ export class SignaEditorComponent implements OnInit {
             })
 
     }
+
+    generateKey(id) {
+        this.signaService.generateKey(this.signaId, this.user.email)
+            .subscribe(signa => {
+                this.signa = signa;
+                this.cdr.detectChanges();
+            })
+
+    }
+
+    downloadCsr(id) {
+        this.signaService.downloadCsr(this.signaId, this.user.email)
+            .subscribe(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `signa-${this.signaId}.csr`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+
+    }
+
+    clearFile(type) {
+        if(!confirm(`Are you sure to clear the existing ${type}?`)) {
+            return;
+        }
+        this.signaService.clearFile(this.signaId, type,this.user.email)
+            .subscribe(signa => {
+                this.signa = signa;
+                this.cdr.detectChanges();
+            })
+
+    }
+    // clearImg(id) {
+    //     if(!confirm("Are you sure to clear the existing key?")) {
+    //         return;
+    //     }
+    //     this.signaService.clearFile(this.signaId, 'img',this.user.email)
+    //         .subscribe(signa => {
+    //             this.signa = signa;
+    //             this.cdr.detectChanges();
+    //         })
+
+    // }
 
 
     
