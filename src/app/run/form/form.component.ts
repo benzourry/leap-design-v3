@@ -26,7 +26,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
-import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap, takeUntil } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
@@ -66,6 +66,10 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 })
 export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, ComponentCanDeactivate {
 
+  private destroy$ = new Subject<void>();
+  private popStateSubscription: () => void;
+  private windowKey: string;
+
   private userService = inject(UserService);
   private runService = inject(RunService);
   private lookupService = inject(LookupService);
@@ -88,14 +92,14 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   baseApi: string = baseApi;
   base: string = base;
   baseUrl = computed<string>(() => this.runService.$baseUrl());
-  preurl = computed<string>(()=>this.runService.$preurl());
+  preurl = computed<string>(() => this.runService.$preurl());
   hideTitle = input<boolean>(false);
   hideGroup = signal<any>({});
   pageSize = 15;
-  accessToken = computed<string>(()=>this.userService.getToken());
+  accessToken = computed<string>(() => this.userService.getToken());
   // data = createProxy({}, (prop, value) => {this.rcognaSubject.next({code:prop,value:}); this.cdr.markForCheck()});
-  entry:any = { currentStatus: 'drafted', data: {}};
-  lookup:any = {};
+  entry: any = { currentStatus: 'drafted', data: {} };
+  lookup: any = {};
   saving = signal<boolean>(false);
   submitting = signal<boolean>(false);
   lookupKey = {};
@@ -126,15 +130,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   defaultParam: string = "{'$prev$.$id':$.$id}";
 
   liveSubscription: any = {};
-  
+
   watchList = new Map();
   watchListSection: any = {};
   reactiveCognaList: any = {};
 
-  onInit:() => any;
-  onSave:() => any;
-  onSubmit:() => any;
-  onView:() => any;
+  onInit: () => any;
+  onSave: () => any;
+  onSubmit: () => any;
+  onView: () => any;
 
   invalidFacet = signal<boolean>(false);
   invalidFacetKey = signal<string>("");
@@ -150,17 +154,17 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .replace(/^[0-9]/, '_$&')        // Prefix numbers with underscore
       .replace(/_+/g, '_')             // Replace multiple underscores with single
       .replace(/^_|_$/g, '');          // Remove leading/trailing underscores
-    
+
     return `form_${this.formId()}_${sanitizedAction}`;
   });
 
 
   constructor() {
-    this.location.onPopState(() => this.modalService.dismissAll(''));
+    this.popStateSubscription = this.location.onPopState(() => this.modalService.dismissAll(''));
 
     effect(() => {
       // require local variable sebab ada di update locally
-      this._action = this.action();      
+      this._action = this.action();
       this._param = this.param();
       this._navIndex.set(this.navIndex());
 
@@ -174,7 +178,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     })
 
     this.valueUpdate
-      .pipe(debounceTime(150))
+      .pipe(
+        debounceTime(150),
+        takeUntil(this.destroy$)
+      )
       .subscribe((obj: any) => {
         this.fieldChange(obj.event, obj.data, obj.field, obj.section);
       });
@@ -190,12 +197,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   ngOnInit() {
     this.appConfig = this.runService?.appConfig;
     // this.entry.update(c => ({ ...c, email: this.user()?.email }));
-    this.entry.email= this.user()?.email;
+    this.entry.email = this.user()?.email;
 
     this.rcognaSubject.pipe(
-        debounceTime(1000), // Wait 700ms after the last keystroke
-        distinctUntilChanged((prev,curr)=>prev.value==curr.value) // Only emit if the value has changed
-      ).subscribe((obj:any) => this.triggerDependentCognaFields(obj.code));
+      debounceTime(1000), // Wait 700ms after the last keystroke
+      distinctUntilChanged((prev, curr) => prev.value == curr.value), // Only emit if the value has changed
+      takeUntil(this.destroy$)
+    ).subscribe((obj: any) => this.triggerDependentCognaFields(obj.code));
   }
 
   dsChanged(ev, fieldCode) {
@@ -206,7 +214,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   toggleHideGroup(eCode: string, listKey: string): void {
     const key = eCode + listKey;
-  
+
     this.hideGroup.update((currentGroup) => ({
       ...currentGroup,
       [key]: !currentGroup[key], // Toggle the value for the specific key
@@ -220,14 +228,20 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   getForm(formId, entryId, action) {
     this.loading.set(true);
     this.runService.getRunForm(formId)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: form => {
 
-          Object.defineProperty(window, '_this_'+this.scopeId(), {
+          if (this.windowKey) {
+            delete window[this.windowKey];
+          }
+          this.windowKey = '_this_' + this.scopeId();
+          
+          Object.defineProperty(window, this.windowKey, {
             get: () => this._this,
             configurable: true,   // so you can delete it later 
             // writable: true,
-          });  
+          });
 
           this.formLoaded.emit(form);
           this.form.set(form);
@@ -235,14 +249,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
           // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
           if (form.nav != 'simple') {
-            this.sectionMap.update(sm=>({...sm,
+            this.sectionMap.update(sm => ({
+              ...sm,
               [-1]: this.filterSection(form.sections, ['section', 'list'], -1),
               [-999]: this.filterSection(form.sections, ['section', 'list'], -999)
             }));
           }
 
           formTab.forEach(tab => {
-            this.sectionMap.update(sm=>({
+            this.sectionMap.update(sm => ({
               ...sm,
               [tab?.id]: this.filterSection(form.sections, ['section', 'list'], tab?.id)
             }));
@@ -251,7 +266,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // this.entry.update(c => ({ ...c, currentStatus: 'drafted', data: {} })); // reset entry 
           this.entry = {
             currentStatus: 'drafted',
-            data:{}
+            data: {}
           }
           // this.entry.currentStatus = 'drafted'; // reset entry 
           // this.entry.data = {}; // reset entry 
@@ -284,7 +299,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           } else if (form.x?.facet?.includes(action)) {
             if (entryId || !this.isEmpty(this._param || {})) {
               this.getData(entryId, form);
-            }else{
+            } else {
               this.initForm(form.f, this.entry.data, form);
             }
             // this.initForm(this.form().f); //comment after change initform receive data parameter
@@ -292,7 +307,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             this.invalidFacet.set(true);
             this.invalidFacetKey.set(action);
           }
-          
+
           // make sure order of eval field is followed
           form.sections.forEach(s => {
             if (['section'].indexOf(s.type) > -1) { // watch for section eval. previously section+approval
@@ -302,8 +317,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   this.watchList.set(item.code, field.f)
                 }
                 if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                    let extracted = extractVariables(["$"],field.x?.rcognaTpl)
-                    this.reactiveCognaList[item.code] = {sources:extracted?.["$"], data: this.entry?.data};
+                  let extracted = extractVariables(["$"], field.x?.rcognaTpl)
+                  this.reactiveCognaList[item.code] = { sources: extracted?.["$"], data: this.entry?.data };
                 }
               });
             } else if (s.type == 'list') { // watch for section in list
@@ -314,8 +329,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   this.watchListSection[s.code].set(item.code, field.f)
                 }
                 if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                    let extracted:any = extractVariables(["$"],field.x?.rcognaTpl)
-                    this.reactiveCognaList[item.code] = {sources:extracted?.$, data: this.entry?.data?.[s.code]};
+                  let extracted: any = extractVariables(["$"], field.x?.rcognaTpl)
+                  this.reactiveCognaList[item.code] = { sources: extracted?.$, data: this.entry?.data?.[s.code] };
                 }
               });
             }
@@ -359,17 +374,17 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
 
-  runCognaField(fieldCode){
+  runCognaField(fieldCode) {
     const item = this.form().items[fieldCode];
     const tpl = this.compileTpl(item.x?.rcognaTpl, {});
     const email = this.user().email;
 
     const handleCognaResponse = (key: string, res: { data: unknown }) => {
-      if (item.x?.rtxtgenMode=='summarize'){
+      if (item.x?.rtxtgenMode == 'summarize') {
         this.reactiveCognaList[key].data[key] = (res.data as []).join('\n');
-      }else{
+      } else {
         this.reactiveCognaList[key].data[key] = res.data;
-      }      
+      }
       this.$digest$();
       this.rcognaLoading.update(l => ({ ...l, [key]: false }));
     };
@@ -382,7 +397,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       obs$: Observable<{ data: unknown }>
     ) => {
       this.rcognaLoading.update(l => ({ ...l, [fieldCode]: true }));
-      obs$.subscribe({
+      obs$.pipe(takeUntil(this.destroy$)).subscribe({
         next: res => handleCognaResponse(fieldCode, res),
         error: () => handleCognaError(fieldCode)
       });
@@ -440,7 +455,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   });
 
   isAuthorized = computed<boolean>(() => this.checkAuthorized(this.form(), this.user(), this.entry));
-  
+
   checkAuthorized = (form, user, entry) => {
     if (!form?.x?.restrictAccess) return true;
 
@@ -466,6 +481,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   getLookupIdList(id) {
     this.lookupService.getInForm(id, ['section', 'list'])
+      .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
         this.lookupIds = res;
         this.lookupIds.forEach(key => {
@@ -487,23 +503,24 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   lookupLoading = signal<any>({});
 
   lookupDataObs: any = {}
-  _getLookup = (code, param, cb?, err?, force?:boolean) => {
+  _getLookup = (code, param, cb?, err?, force?: boolean) => {
     if (code) {
-      this.lookupLoading.update(l=>({...l,[code]: true}));
+      this.lookupLoading.update(l => ({ ...l, [code]: true }));
       this._getLookupObs(code, param, cb, err, force)
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: res => {
             // this.lookup.update(o=>({...o,[code]: res}));
             this.lookup[code] = res;
-            this.lookupLoading.update(l=>({...l,[code]: false}));
+            this.lookupLoading.update(l => ({ ...l, [code]: false }));
           }, error: err => {
-            this.lookupLoading.update(l=>({...l,[code]: false}));
+            this.lookupLoading.update(l => ({ ...l, [code]: false }));
           }
         })
     }
   }
 
-  _getLookupObs(code, param, cb?, err?, force?:boolean): Observable<any> {
+  _getLookupObs(code, param, cb?, err?, force?: boolean): Observable<any> {
 
     var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
@@ -532,7 +549,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
     return this.lookupDataObs[cacheId];
   }
-  getLookup = (code, dsInit: string, dataV?: any, force?:boolean) => {
+  getLookup = (code, dsInit: string, dataV?: any, force?: boolean) => {
     if (this.lookupKey[code]?.ds && !this.lookupKey[code].skipLoadSource) {
       if (!dataV) {
         dataV = this.entry.data;
@@ -576,7 +593,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   filteredTabs = signal<any>({});
   // filteredTabs = computed(()=> this.form().tabs.filter(t => this.preCheckStr(t.pre) && !(t.x?.facet?.[this._action] == 'none')));
-  
+
   disabledTabs = signal<any>({});
 
   // xpat pake. Sebab mn data diload pake $http$ pasya assign ke entry, x trigger tok.
@@ -625,7 +642,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   filterItems() {
     let preItem = {};
     let dynDefaultValue = {};
-    let preSection = {}; 
+    let preSection = {};
     let classSection = {};
     let preCompFilter = {};
     let groupedChildList = {};
@@ -670,7 +687,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
             var idx = 0;
             groupedChildList[s.code].forEach((ge, index_g) => {
-              ge.value.forEach((child, index_c) => {                
+              ge.value.forEach((child, index_c) => {
                 child.$index = idx++; // re-assign index
                 var index = index_g + '-' + index_c;
                 preItem[s.code][index] = {}
@@ -724,7 +741,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.preItem.set(preItem);
     this.dynDefaultValue.set(dynDefaultValue);
     this.preSection.set(preSection);
-    this.classSection.set(classSection); 
+    this.classSection.set(classSection);
     this.preCompFilter.set(preCompFilter);
     this.groupedChildList.set(groupedChildList);
     this.timestamp = Date.now();
@@ -751,10 +768,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   sectionSort = signal<any>({})
 
   sortChild(sectionKey, field, label, dir) {
-    this.sectionSort.update(s => 
-      ({ ...s, 
-        [sectionKey]: { label: label, field: field, dir: dir } 
-      })
+    this.sectionSort.update(s =>
+    ({
+      ...s,
+      [sectionKey]: { label: label, field: field, dir: dir }
+    })
     );
     let childs = this.entry.data[sectionKey];
     if (dir == 'desc') {
@@ -796,7 +814,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       // if da section, try filterChildItems
       this.filterChildItems(data, section);
     }
-    
+
     this.filterTabs();
     // console.log(",,fieldchange,,", this.entry)
     // utk kes dataset, filterItems mungkin run awal gilak dari postaction, so preCompFilter mungkin belom proper
@@ -807,7 +825,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.filterItems(); // PENYEBAB!!
 
     // this.triggerDependentCognaFields(field.code);
-    this.rcognaSubject.next({code:field.code,value:$event});
+    this.rcognaSubject.next({ code: field.code, value: $event });
 
     this.cdr.detectChanges();
   }
@@ -815,6 +833,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   submit = (resubmit: boolean) => {
     this.saving.set(true);
     this._save(this.form())
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           this.entry = res;
@@ -823,6 +842,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.submitting.set(true);
           this.cdr.detectChanges();
           this.entryService.submit(res.id, this.user().email, resubmit)
+            .pipe(takeUntil(this.destroy$))
             .subscribe({
               next: res => {
                 if (this.form().onSubmit) {
@@ -831,7 +851,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                     // this._eval(this.entry.data, this.form().onSubmit, this.form());
                   } catch (e) { this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`) }
                 }
-                this.toastService.show(this.lang()=='ms'?"Entry berjaya dihantar":"Entry submitted successfully", { classname: 'bg-success text-light' });
+                this.toastService.show(this.lang() == 'ms' ? "Entry berjaya dihantar" : "Entry submitted successfully", { classname: 'bg-success text-light' });
                 this.submitting.set(false);
                 if (this.asComp()) {
                   this.submitted.emit(res);
@@ -843,7 +863,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.cdr.detectChanges();
               }, error: err => {
                 this.submitting.set(false);
-                this.toastService.show(this.lang()=='ms'?"Entry tidak berjaya dihantar":"Entry submission failed", { classname: 'bg-danger text-light' });
+                this.toastService.show(this.lang() == 'ms' ? "Entry tidak berjaya dihantar" : "Entry submission failed", { classname: 'bg-danger text-light' });
               }
             })
         }, error: err => {
@@ -855,6 +875,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   getDataSingle(form) {
     this.entryService.getFirstEntryByParam(this._eval({}, form.singleQ, form), form.id)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           // this.entry.set(res); //
@@ -893,6 +914,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     if (id) {
       this.filesMap[holder] = {};
       this.entryService.getEntryFiles(id)
+        .pipe(takeUntil(this.destroy$))
         .subscribe(res => {
           res.content?.forEach(ea => this.filesMap[holder][ea.fileUrl] = ea);
         })
@@ -923,33 +945,39 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.loading.set(false);
     };
 
-    if (form){
+    if (form) {
       if (id) {
         // Fetch entry by ID
-        this.entryService.getEntry(id, form.id).subscribe({
-          next: handleResponse,
-          error: handleError,
-        });
+        this.entryService.getEntry(id, form.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: handleResponse,
+            error: handleError,
+          });
       } else if (!this.isEmpty(this._param)) {
         // Fetch entry by parameters
-        this.entryService.getFirstEntryByParam(this._param, form.id).subscribe({
-          next: handleResponse,
-          error: handleError,
-        });
+        this.entryService.getFirstEntryByParam(this._param, form.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: handleResponse,
+            error: handleError,
+          });
       } else if (form.single) {
         // Fetch single entry
         const singleQuery = this._eval({}, form.singleQ, form);
-        this.entryService.getFirstEntryByParam(singleQuery, form.id).subscribe({
-          next: handleResponse,
-          error: handleError,
-        });
+        this.entryService.getFirstEntryByParam(singleQuery, form.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: handleResponse,
+            error: handleError,
+          });
       }
     }
   }
 
 
   prevId = signal<number>(null);
-  prevEntry:any = null;
+  prevEntry: any = null;
   prevLoading = signal<boolean>(false);
   getPrevData(id: number, params: any, form: any): void {
     this.prevLoading.set(true);
@@ -972,21 +1000,26 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     };
 
     if (id) {
-      this.entryService.getEntry(id, form?.id).subscribe({
-        next: handleResponse,
-        error: handleError,
-      });
+      this.entryService.getEntry(id, form?.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: handleResponse,
+          error: handleError,
+        });
     } else {
-      this.entryService.getFirstEntryByParam(params, form?.id).subscribe({
-        next: handleResponse,
-        error: handleError,
-      });
+      this.entryService.getFirstEntryByParam(params, form?.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: handleResponse,
+          error: handleError,
+        });
     }
   }
 
   progBack(index) {
     this.saving.set(true);
     this._save(this.form())
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           this.saving.set(false);
@@ -1002,6 +1035,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   progNext(index) {
     this.saving.set(true);
     this._save(this.form())
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           this.saving.set(false);
@@ -1048,6 +1082,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   save = () => {
     this.saving.set(true);
     this._save(this.form())
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           // this.entry.set(res);
@@ -1062,7 +1097,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             } catch (e) { this.logService.log(`{form-${this.form().title}-onSave}-${e}`) }
           }
           // this.router.navigate(["run", this.form().app.id, "form", this.form().id, "view", this.entry.id]);
-          this.toastService.show(this.lang()=='ms'?"Entry berjaya disimpan":"Entry saved successfully", { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang() == 'ms' ? "Entry berjaya disimpan" : "Entry saved successfully", { classname: 'bg-success text-light' });
 
           if (!(this.form().x && this.form().x.saveAndStay)) {
             if (this.asComp()) {
@@ -1070,7 +1105,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             } else {
               this.router.navigate([this.preurl(), "form", this.form().id, "view"], { queryParams: { entryId: this.entry.id } });
             }
-          }else{
+          } else {
             this.updated.emit(res); // emit updated to ensure list is updated
           }
         }, error: err => {
@@ -1086,7 +1121,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
 
     if (form?.prev && !this.prevId()) {
-      return throwError(() => new Error(this.lang()=='ms'?"Entri sebelumnya diperlukan":"Previous entry is required"));
+      return throwError(() => new Error(this.lang() == 'ms' ? "Entri sebelumnya diperlukan" : "Previous entry is required"));
     }
 
     return this.entryService.save(form.id, this.entry, this.prevId(), userKey)
@@ -1109,6 +1144,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   linkFiles(e) {
     this.entryService.linkFiles(e.id, this.entryFiles, this.user().email)
+      .pipe(takeUntil(this.destroy$))
       .subscribe(res => { });
   }
 
@@ -1151,7 +1187,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   evalAllSection(data, section) {
     this.watchListSection[section.code]?.forEach((value, key) => {
-      data[key] = this.changeEval(data, value, section?.code+"."+key);
+      data[key] = this.changeEval(data, value, section?.code + "." + key);
     })
   }
 
@@ -1210,7 +1246,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   // _prePassive = (data, v) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$action$', '$el$', '$form$', '$this$', '$digest$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$ngForm$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$file$', '$activeIndex$',
   //   `return ${v}`)(this.app(), this.entry, data, this.entry?.prev, this.user(), this.runService?.appConfig, this._action, this.form()?.items, this.form(), this._this, this.$digest$, this._param, this.log, this.base, this.baseUrl(), this.baseApi, this.entryForm(), this.lookup, dayjs, ServerDate, this.accessToken(), this.filesMap, this._navIndex());
 
-  getEvalContext = (entry:any, data: any, approval:any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
+  getEvalContext = (entry: any, data: any, approval: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
     let passive = {
       // READ ONLY CONTEXT
       // CAN BE USED IN TEMPLATE
@@ -1281,7 +1317,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   _eval = (data: any, v: string, form: any) => {
-    const bindings = this.getEvalContext(this.entry,data, this.entry?.approval, form, true, {});
+    const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
     const argNames = Object.keys(bindings);
     const argValues = Object.values(bindings);
     return new Function(...argNames,
@@ -1289,7 +1325,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   _prePassive = (data: any, v: string) => {
-    const bindings = this.getEvalContext(this.entry,data, this.entry?.approval, this.form(), false, {});
+    const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
     const argNames = Object.keys(bindings);
     const argValues = Object.values(bindings);
     return new Function(...argNames,
@@ -1350,7 +1386,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             }
             // res['$index'] = this.entry.data[section.code].length;
             this.entry.data[section.code].push(res);
-          }else{
+          } else {
             const index = res.__index;
             this.entry.data[section.code][index] = res;
           }
@@ -1363,7 +1399,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   removeChild(section, $index) {
     if (section.confirmable) {
-      if (confirm(this.lang()=='ms'?"Anda pasti untuk menghapus data ini?":"Are you sure you want to remove this data?")) {
+      if (confirm(this.lang() == 'ms' ? "Anda pasti untuk menghapus data ini?" : "Are you sure you want to remove this data?")) {
         this.entry.data[section.code].splice($index, 1);
         this.entryForm().form.markAsDirty();
       }
@@ -1384,6 +1420,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
     var fileList = f.subType.indexOf('multi') > -1 ? $event : [$event];
     this.entryService.deleteAttachment($event)
+      .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
         // delete this.uploadProgress[f.code + (index ?? '') + (index_child ?? '')];
         this.uploadProgress.update((currentProgress) => {
@@ -1395,11 +1432,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.entryFiles.splice(this.entryFiles.indexOf(file), 1);
           delete this.filesMap[file];
         })
-        if (this.entry?.id){
+        if (this.entry?.id) {
           this.updateField(this.entry.id, { [f.code]: null }, () => {
-            this.toastService.show(this.lang()=='ms'?"Fail berjaya dibuang":"File successfully removed", { classname: 'bg-success text-light' });
+            this.toastService.show(this.lang() == 'ms' ? "Fail berjaya dibuang" : "File successfully removed", { classname: 'bg-success text-light' });
           }, err => {
-            this.toastService.show(this.lang()=='ms'?"Fail tidak berjaya dibuang":"File removal failed", { classname: 'bg-danger text-light' });
+            this.toastService.show(this.lang() == 'ms' ? "Fail tidak berjaya dibuang" : "File removal failed", { classname: 'bg-danger text-light' });
           });
         }
       });
@@ -1434,11 +1471,12 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file }) + ext;
               }
               this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
+                .pipe(takeUntil(this.destroy$))
                 .subscribe({
                   next: res => {
                     this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, true, list);
                   }, error: err => {
-                    this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                    this.toastService.show(this.lang() == 'ms' ? "File tidak berjaya dimuatnaik" : "File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                     console.error(err);
                   }
                 })
@@ -1458,11 +1496,12 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 + ext;
             }
             this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
+              .pipe(takeUntil(this.destroy$))
               .subscribe({
                 next: res => {
                   this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, false, list);
                 }, error: err => {
-                  this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang() == 'ms' ? "File tidak berjaya dimuatnaik" : "File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
               })
           }).catch(function (err) {
@@ -1484,12 +1523,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 + ext;
             }
             this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, file.name)
+              .pipe(takeUntil(this.destroy$))
               .subscribe({
                 next: res => {
                   this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, true, list);
                 },
                 error: err => {
-                  this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang() == 'ms' ? "File tidak berjaya dimuatnaik" : "File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
               })
           }
@@ -1506,14 +1546,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               + ext;
           }
           this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, filename)
+            .pipe(takeUntil(this.destroy$))
             .subscribe({
               next: res => {
                 this.processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, false, list);
               },
               error: err => {
                 // console.log(err)
-                this.uploadProgress.update(curr => ({...curr, [f.code + (index ?? '') + (index_child ?? '')]: 0}));
-                this.toastService.show(this.lang()=='ms'?"File tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.statusText, { classname: 'bg-danger text-light' });
+                this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: 0 }));
+                this.toastService.show(this.lang() == 'ms' ? "File tidak berjaya dimuatnaik" : "File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.statusText, { classname: 'bg-danger text-light' });
               }
             })
         }
@@ -1525,10 +1566,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     if (res.type === HttpEventType.UploadProgress) {
       progressSize = res.loaded;
       // console.log("progressSize",progressSize);
-      this.uploadProgress.update(curr => ({...curr, [f.code + (index ?? '') + (index_child ?? '')]: Math.round(100 * progressSize / totalSize)}));
+      this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: Math.round(100 * progressSize / totalSize) }));
     } else if (res instanceof HttpResponse) {
       if (res.body?.success) {
-        this.uploadProgress.update(curr => ({...curr, [f.code + (index ?? '') + (index_child ?? '')]: 100}));
+        this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: 100 }));
         if (multi) {
           list.push(res.body.fileUrl)
           data[f.code] = list
@@ -1557,7 +1598,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       // if (!field.x?.stopWord || $event?.toLowerCase().includes(field.x?.stopWord?.toLowerCase())){
       this.extractData(field, field.x?.extractor, [], data[field.code], data, index);
       // }
-    } 
+    }
     // this.rcognaSubject.next({code:field.code,value:$event});
   }
 
@@ -1565,6 +1606,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   editLookupEntryData: any = {};
   editLookupEntry(content, field, entryData, value) {
     this.lookupService.getLookup(field.dataSource)
+      .pipe(takeUntil(this.destroy$))
       .subscribe(lookup => {
         this.editLookupItem = lookup;
         this.editLookupEntryData = value;
@@ -1575,6 +1617,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               data.code = data.name
             }
             this.lookupService.saveEntry(lookup.id, data)
+              .pipe(takeUntil(this.destroy$))
               .subscribe({
                 next: (res) => {
                   // var cacheId = 'key_' + btoaUTF(this.lookupKey[field.code].ds + hashObject(param ?? {}), null);
@@ -1587,9 +1630,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                       entryData[field.code] = res;
                     }
                   }
-                  this.toastService.show(this.lang()=='ms'?"Entri berjaya disimpan":"Entry successfully saved", { classname: 'bg-success text-light' });
+                  this.toastService.show(this.lang() == 'ms' ? "Entri berjaya disimpan" : "Entry successfully saved", { classname: 'bg-success text-light' });
                 }, error: (err) => {
-                  this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya disimpan":"Entry saving failed", { classname: 'bg-danger text-light' });
+                  this.toastService.show(this.lang() == 'ms' ? "Entri tidak berjaya disimpan" : "Entry saving failed", { classname: 'bg-danger text-light' });
                 }
               })
           }, res => { })
@@ -1598,8 +1641,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   extractLoading = signal<any>({});
   extractData(field, cognaId, docList, text, data, index) {
-    this.extractLoading.update(curr=> ({...curr, [field.code + (index ?? '')]: true}));
+    this.extractLoading.update(curr => ({ ...curr, [field.code + (index ?? '')]: true }));
     this.runService.cognaExtract(cognaId, text, docList, false, this.user().email)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           var rval = res[0];
@@ -1607,10 +1651,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           data = deepMerge(data, rval);
           this.evalAll(data);
           this.filterItems();
-          this.extractLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
+          this.extractLoading.update(curr => ({ ...curr, [field.code + (index ?? '')]: false }));
         },
         error: err => {
-          this.extractLoading.update(curr=>({...curr,[field.code + (index ?? '')]: false}));
+          this.extractLoading.update(curr => ({ ...curr, [field.code + (index ?? '')]: false }));
         }
       });
   }
@@ -1636,8 +1680,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   imgclsVal: any = {}
   imgclsModel: any = {}
   imgclsData(field, cognaId, docList, data, indexChild) {
-    this.imgclsLoading.update(curr=>({...curr, [field.code + (indexChild ?? '')]: true}));
+    this.imgclsLoading.update(curr => ({ ...curr, [field.code + (indexChild ?? '')]: true }));
     this.runService.cognaImgCls(cognaId, docList, false, this.user().email)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
           let txtList = [];
@@ -1653,7 +1698,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           // masalah dgn multi file upload
           this._this[field.code + (indexChild ?? '')] = { imgcls: res }
           this.filterItems();
-          this.imgclsLoading.update(curr=>({...curr, [field.code + (indexChild ?? '')]: false}));
+          this.imgclsLoading.update(curr => ({ ...curr, [field.code + (indexChild ?? '')]: false }));
           if (field?.v?.imgcls) {
             var imgclsres = Object.values(res).map((i: any[]) => i.map(j => j.desc).join(",")).join(",");
             this.imgclsVal[field.code + (indexChild ?? '')] = (imgclsres ?? '').includes(field?.v?.imgcls) ? true : false;
@@ -1661,16 +1706,16 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           }
         },
         error: err => {
-          this.imgclsLoading.update(curr=>({...curr, [field.code + (indexChild ?? '')]: false}));
+          this.imgclsLoading.update(curr => ({ ...curr, [field.code + (indexChild ?? '')]: false }));
         }
       });
   }
 
   compileTpl = (code, additionalData) => {
-    let obj = Object.assign(additionalData, { 
-      $user$: this.user(), $: this.entry?.data, $_: this.entry, 
-      $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi, 
-      $this$: this._this, $param$: this._param, $ngForm$: this.entryForm() 
+    let obj = Object.assign(additionalData, {
+      $user$: this.user(), $: this.entry?.data, $_: this.entry,
+      $prev$: this.entry?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi,
+      $this$: this._this, $param$: this._param, $ngForm$: this.entryForm()
     });
     return compileTpl(code, obj, this.scopeId())
   }
@@ -1708,14 +1753,22 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
     this.rcognaSubject.unsubscribe();
     this.valueUpdate.unsubscribe();
 
-    this.location.onPopState(null);
-    // delete window['_this_' + this.scopeId()];
+    if (this.popStateSubscription) {
+      this.popStateSubscription();
+    }
+
+    if (this.windowKey) {
+      delete window[this.windowKey];
+    }
     this.elMap = {};
   }
 }

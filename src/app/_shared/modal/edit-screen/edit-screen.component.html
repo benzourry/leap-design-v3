@@ -127,7 +127,7 @@
         <div class="form-group mb-1">
           <label class="form-label">Allow access by group</label>
           <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
-            placeholder="Anyone" [(ngModel)]="_editScreenData.accessList"
+            placeholder="No group selected" [(ngModel)]="_editScreenData.accessList"
             name="accessList">
           </ng-select>
         </div>

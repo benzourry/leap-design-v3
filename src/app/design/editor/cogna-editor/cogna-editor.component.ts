@@ -1026,6 +1026,7 @@ export class CognaEditorComponent implements OnInit {
       next:res=>{
         this.chatHistoryList = res.content;
         this.chatHistoryTotal = res.page?.totalElements;
+        this.cdr.detectChanges();
       },
       error:err=>{
 
