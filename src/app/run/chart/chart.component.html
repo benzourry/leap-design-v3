@@ -51,9 +51,9 @@
               <thead>
                 <tr>
                   <th class="border-top-0 position-sticky sticky-top">Name</th>
-                  <th class="border-top-0 position-sticky sticky-top">Value</th>
+                  <th class="border-top-0 position-sticky sticky-top text-end">Value</th>
                   @if (chart().showAgg && chart().x?.percentage) {
-                    <th class="border-top-0 position-sticky sticky-top">%</th>
+                    <th class="border-top-0 position-sticky sticky-top text-end">%</th>
                   }
                 </tr>
               </thead>
@@ -61,18 +61,18 @@
                 @for (d of chartDataset()?.data; track $index) {
                   <tr>
                     <td>{{d.name}}</td>
-                    <td>{{d.value}}</td>
+                    <td class="text-end">{{d.value}}</td>
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>{{((d.value/chartDataset()?._a)*100).toFixed(2)}}</td>
+                      <td class="text-end">{{((d.value/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
                   </tr>
                 }
                 @if (chart().showAgg) {
                   <tr>
                     <td class="bg-dark text-white">Total</td>
-                    <td class="bg-dark text-white">{{chartDataset()?._a}}</td>
+                    <td class="bg-dark text-white text-end">{{chartDataset()?._a}}</td>
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>100.00</td>
+                      <td class="text-end">100.00</td>
                     }
                   </tr>
                 }
@@ -87,10 +87,10 @@
                     >{{header}}</th>
                   }
                   @if (chartDataset()?._arow) {
-                    <th class="bg-dark text-white position-sticky sticky-top">{{chartDataset()?._arow[0]}}</th>
+                    <th class="bg-dark text-white position-sticky sticky-top text-end">{{chartDataset()?._arow[0]}}</th>
                   }
                   @if (chart().showAgg && chart().x?.percentage) {
-                    <th class="position-sticky sticky-top">%</th>
+                    <th class="position-sticky sticky-top text-end">%</th>
                   }
                 </tr>
               </thead>
@@ -101,10 +101,10 @@
                       <td>{{dv}}</td>
                     }
                     @if (chart().showAgg) {
-                      <td class="bg-dark text-white">{{chartDataset()?._arow[$idx+1]}}</td>
+                      <td class="bg-dark text-white text-end">{{chartDataset()?._arow[$idx+1]}}</td>
                     }
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>{{((chartDataset()?._arow[$idx+1]/chartDataset()?._a)*100).toFixed(2)}}</td>
+                      <td class="text-end">{{((chartDataset()?._arow[$idx+1]/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
                   </tr>
                 }
@@ -113,9 +113,9 @@
                     @for (dv of chartDataset()?._acol; track $index; let $idx = $index) {
                       <td class="bg-dark text-white">{{chartDataset()?._acol[$idx]}}</td>
                     }
-                    <td><strong>{{chartDataset()?._a}}</strong></td>
+                    <td class="text-end"><strong>{{chartDataset()?._a}}</strong></td>
                     @if (chart().showAgg && chart().x?.percentage) {
-                      <td>100.00</td>
+                      <td class="text-end">100.00</td>
                     }
                   </tr>
                 }
@@ -166,7 +166,7 @@
       </div> -->
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary"
+    <button type="button" class="btn btn-round"
     (click)="d()">{{app().x?.lang=='ms'?'Tutup':'Close'}}</button>
     <div>
       <button type="button" class="btn btn-round btn-secondary me-1" (click)="c({})">
