@@ -8,46 +8,46 @@
     </div>
     <div class="p-2 pb-0 bg-light">
         @for (notif of list(); track $index) {
-        <div class="card card-clean mb-2 overflow-hidden">
-            <div class="list-group list-group-flush">
-                <div class="list-group-item">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="label-span">From</div>
-                            <div class="text-truncate">{{notif.sender}}</div>
+            <div class="card card-clean mb-2 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item" [class.list-group-item-danger]="notif.status=='failed'">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="label-span">From</div>
+                                <div class="text-truncate">{{notif.sender}}</div>
+                            </div>
+                            <div class="col-6"  style="border-left:solid 2px lightgray">
+                                <div class="label-span">Init By</div>
+                                <div class="text-truncate">@if(notif.initBy){ {{notif.initBy}} }@else{ <span class="text-muted">N/A</span> }</div>
+                            </div>
                         </div>
-                        <div class="col-6"  style="border-left:solid 2px lightgray">
-                            <div class="label-span">Init By</div>
-                            <div class="text-truncate">@if(notif.initBy){ {{notif.initBy}} }@else{ <span class="text-muted">N/A</span> }</div>
+                    </div>
+                    <div class="list-group-item" [class.list-group-item-danger]="notif.status=='failed'">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="label-span">To</div>
+                                <div class="text-truncate">@if(notif.email){ {{notif.email}} }@else{ <span class="text-muted">N/A</span> }</div>
+                            </div>
+                            <div class="col-6" style="border-left:solid 2px lightgray">
+                                <div class="label-span">Timestamp</div>
+                                <div class="text-truncate">{{notif.timestamp|date:'medium'}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item" [class.list-group-item-danger]="notif.status=='failed'">
+                        <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore[notif.id]?'unset':'126px')}">
+                        <span [innerHtml]="notif.content|safe:'html'"></span>
+                            <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore[notif.id]?'calc(100% - 35px)':'95px'}" >
+                            <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore[notif.id]=!isReadMore[notif.id]">
+                            {{isReadMore[notif.id]?'Less...':'More...'}}
+                            </button>
+                        </div>
                         </div>
                     </div>
                 </div>
-                <div class="list-group-item">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="label-span">To</div>
-                            <div class="text-truncate">@if(notif.email){ {{notif.email}} }@else{ <span class="text-muted">N/A</span> }</div>
-                        </div>
-                        <div class="col-6" style="border-left:solid 2px lightgray">
-                            <div class="label-span">Timestamp</div>
-                            <div class="text-truncate">{{notif.timestamp|date:'medium'}}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="list-group-item " >
-                    <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore[notif.id]?'unset':'126px')}">
-                      <span [innerHtml]="notif.content|safe:'html'"></span>
-                        <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore[notif.id]?'calc(100% - 35px)':'95px'}" >
-                        <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore[notif.id]=!isReadMore[notif.id]">
-                          {{isReadMore[notif.id]?'Less...':'More...'}}
-                        </button>
-                      </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            </div>        
         }@empty {
-        <div class="p-3 fs-4 text-center">No email history</div>
+            <div class="p-3 fs-4 text-center">No email history</div>
         }
     </div>
     @if (listTotal() > listPageSize) {
