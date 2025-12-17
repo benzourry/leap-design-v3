@@ -97,7 +97,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
         this.commService.changeEmitted$.subscribe(data => {
             this.counts.update(c=>({...c, [data.key]: data.value}));
-            if (this.app.id){
+            if (this.app?.id){
                 if (data.key == 'form') {
                     this.getFormList();
                 }

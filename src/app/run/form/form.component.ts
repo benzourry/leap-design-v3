@@ -236,7 +236,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             delete window[this.windowKey];
           }
           this.windowKey = '_this_' + this.scopeId();
-          
           Object.defineProperty(window, this.windowKey, {
             get: () => this._this,
             configurable: true,   // so you can delete it later 
