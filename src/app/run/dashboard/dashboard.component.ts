@@ -57,6 +57,8 @@ export class DashboardComponent implements OnInit {
 
   loading = signal<boolean>(false);
 
+  scopeId = computed<string>(() => "dashboard_"+this.dashboardId());
+
   max = signal<number>(null);
   maxState = signal<boolean>(false);
   constructor() {

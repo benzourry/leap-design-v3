@@ -4,7 +4,7 @@ import { NgbDateAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
-import { ServerDate, deepMerge, tblToExcel } from '../../_shared/utils';
+import { ServerDate, compileTpl, deepMerge, tblToExcel } from '../../_shared/utils';
 // import { UserEntryFilterComponent } from '../../_shared/component/user-entry-filter/user-entry-filter.component';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 import { JsonPipe, NgClass, NgStyle, SlicePipe } from '@angular/common';
@@ -51,6 +51,7 @@ export class ChartComponent implements OnInit {
   form = signal<any>({});  
   _this = {};
   lang = computed(() => this.app().x?.lang);
+  scopeId = input<any>();
 
   base: string = base;
   baseApi: string = baseApi;
@@ -92,6 +93,15 @@ export class ChartComponent implements OnInit {
   loadChartData() {
     const params = { filters: JSON.stringify(this.filtersData), email: this.user()?.email };
     
+    // utk handle $conf$, if ada $conf$, override dengan value dari frontend
+    if (this.chart().presetFilters) {
+      Object.keys(this.chart().presetFilters)
+        .filter(k => (this.chart().presetFilters[k] + "").includes("$conf$"))
+        .forEach(k => {
+          params[k] = compileTpl(this.chart().presetFilters[k] ?? '', {}, this.scopeId())
+        })
+    }
+
     this.entryService.getChartData(this.chart().id, params)
       .subscribe(res => {
         this.chartDataset.set(res);

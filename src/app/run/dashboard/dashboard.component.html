@@ -23,7 +23,7 @@
             @if ((!maxState() || max()==chart.id) && preCheck(chart, {})) {
             <div [ngClass]="maxState()?'col-sm-12':chart.size">
               <app-chart [chart]="chart" [maxState]="maxState()" (onEnterMaxState)="enterMaxState($event)"
-                (onExitMaxState)="exitMaxState()" [param]="param()"></app-chart>
+                (onExitMaxState)="exitMaxState()" [scopeId]="scopeId()" [param]="param()"></app-chart>
             </div>
             }
           }

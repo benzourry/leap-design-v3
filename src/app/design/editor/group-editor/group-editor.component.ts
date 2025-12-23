@@ -184,30 +184,38 @@ export class GroupEditorComponent implements OnInit {
   pageNumber = signal<number>(1);
   // entryPageNumber: number = 1;
 
-  provider: any = {
+
+    provider: any = {
     unimas: ['fas', 'university'],
     unimasid: ['fas', 'university'],
-    icatsid: ['fas', 'university'],
     ssone: ['fas', 'university'],
+    icatsid: ['fas', 'university'],
+    mydigitalid: ['fas', 'university'],
+    sarawakid: ['fas', 'university'],
     google: ['fab', 'google'],
     azuread: ['fab','microsoft'],
     facebook: ['fab', 'facebook-f'],
     github: ['fab', 'github'],
     linkedin: ['fab', 'linkedin'],
+    twitter: ['fab', 'twitter'],
     local: ['far', 'envelope'],
     undetermine: ['fas', 'question']
   }
 
+  
   providerList: any[] = [
     {id: 'unimas', name:"UNIMAS Identity (Old)"},
     {id: 'unimasid', name:"UNIMAS ID"},
     {id: 'icatsid', name:"ICATS Identity"},
+    {id: 'mydigitalid', name:"MyDigitalID"},
+    {id: 'sarawakid', name:"SarawakID"},
     {id: 'ssone', name:"ssOne"},
     {id: 'google', name:"Google"},
     {id: 'azuread', name:"Microsoft"},
     {id: 'facebook', name:"Facebook"},
     {id: 'github', name:"Github"},
     {id: 'linkedin', name:"LinkedIn"},
+    {id: 'twitter', name:"Twitter"},
     {id: 'local', name:"Local Account"},
     {id: 'undetermine', name:"Undetermine"},
   ];

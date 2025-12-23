@@ -395,6 +395,7 @@ export class CognaEditorComponent implements OnInit {
       // this.editCognaData.data.extractFmt = res.fmt;
       // this.editCognaData.data.extractJson = res.json;
       this.extractJsonObj = JSON.parse(res.schema);
+      this.cdr.detectChanges();
     })
   }
 
