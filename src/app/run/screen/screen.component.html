@@ -439,5 +439,24 @@
         </div>
       }
     }
+    @if (['dataset'].indexOf(inPopType())>-1) {
+      @defer(prefetch on idle){
+        <div style="overflow: auto;">
+          <app-list [asComp]="false"
+            (closed)="modalClose(d)"
+            [datasetId]="inPopFormId()"
+            [param]="inPopParams"></app-list>
+        </div>
+      }@loading {
+        <div class="text-center m-5">
+          <div class="spinner-grow text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+      <div class="justify-content-between bg-white p-3">
+        <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
+      </div>
+    }
   </div>
 </ng-template>

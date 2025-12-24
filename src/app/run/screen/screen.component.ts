@@ -37,6 +37,7 @@ import { EntryService } from '../_service/entry.service';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
+import { ListComponent } from '../list/list.component';
 
 
 @Component({
@@ -48,7 +49,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
   imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
     ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule, RouterLink,
-    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
+    forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => ListComponent),
     NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle,
     MorphHtmlDirective,
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, BucketComponent, NgLeafletComponent, MailboxComponent, CombinedComponent]
