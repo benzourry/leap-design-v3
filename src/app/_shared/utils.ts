@@ -40,6 +40,7 @@ const multiReplace = (text: string, map: Record<string, string>): string => {
 
 const tag2sym = { table: 'table_', tr: 'tr_', td: 'td_', th: 'th_', tbody: 'tbody_', thead: 'thead_', src:'src_' };
 const sym2tag = { table_: 'table', tr_: 'tr', td_: 'td', th_: 'th', tbody_: 'tbody', thead_: 'thead', src_:'src' };
+const htmlEntities = {'&lt;': '<','&gt;': '>','&amp;': '&','&quot;': '"','&#39;': "'",'&apos;': "'"};
 
 export function compileTpl(templateText: string, data: any, scopeId: string): string {
   if (!templateText) return "";
@@ -63,13 +64,15 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
     ['x-foreach', 'x-for', 'x-if'].forEach(attr => {
       doc.querySelectorAll(`[${attr}]`).forEach(e => {
         const val = e.getAttribute(attr);
-        // ① clone the node so we can edit it without touching doc
+        // clone the node so we can edit it without touching doc
         const clone = e.cloneNode(true) as HTMLElement;
-        // ② remove the triggering attribute from the *inner* element
+        // remove the triggering attribute from the *inner* element
         clone.removeAttribute(attr);
 
-        fullTpl = fullTpl.replace(e.outerHTML,
-          `<!--##--${attr} $="${val}"!--##-->${clone.outerHTML}<!--##--/${attr}!--##-->`);
+        fullTpl = fullTpl.replace(multiReplace(e.outerHTML, htmlEntities),
+          `<!--##--${attr} $="${val}"!--##-->${multiReplace(clone.outerHTML, htmlEntities)}<!--##--/${attr}!--##-->`);
+        // Problem dgn replace mn inside nya ada => or > < sbb e.outerHTML akan kenak encode jd &gt;, tp dlm fullTpl nya. So, x match utk direplace.
+        // tapi dh disetel pake multiReplace(htmlEntities)
       });
     });
 

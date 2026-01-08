@@ -409,15 +409,15 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       { c: 2, label: "$live$.publish", type: "function", apply: "$live$.publish(['${channel-list}'], '${message}')", detail: "Publish live update to specified channel" },
       { c: 2, label: "$digest$", type: "function", apply: "$digest$()", detail: "Force page update (if update was done through DOM)" },
       { c: 2, label: "$toast$", type: "function", apply: "$toast$(\"#{content}\", #{{classname: 'bg-success text-light'}})", detail: "Show toast alert at the top-right" },
-      { c: 2, label: "dayjs().format", type: "text", apply: "dayjs(${field_code}).format(\"${DD-MM-YYYY}\")", detail: "DayJs" },
+      { c: 1, label: "dayjs().format", type: "text", apply: "dayjs(${field_code}).format(\"${DD-MM-YYYY}\")", detail: "DayJs" },
       { c: 2, label: "echarts.init", type: "text", apply: "echarts.init(#{dom},{#{//echarts options}})", detail: "Create ECharts chart/graph" },
       { c: 2, label: "$q$", type: "text", apply: "$q$('#{html element selector}')", detail: "Get element using query selector" },
       { c: 2, label: "onInit()", type: "text", apply: "onInit()", detail: "Trigger Init Function" },
       { c: 2, label: "onSave()", type: "text", apply: "onSave()", detail: "Trigger On Save" },
       { c: 2, label: "onSubmit()", type: "text", apply: "onSubmit()", detail: "Trigger On Submit" },
       { c: 2, label: "onView()", type: "text", apply: "onView()", detail: "Trigger On View" },
-      { c: 2, label: "ServerDate.now()", type: "text", apply: "ServerDate.now()", detail: "Get server timestamp" },
-      { c: 2, label: "ServerDate.offset", type: "text", apply: "ServerDate.offset", detail: "Get server time offset (against browser time)" },
+      { c: 1, label: "ServerDate.now()", type: "text", apply: "ServerDate.now()", detail: "Get server timestamp" },
+      { c: 1, label: "ServerDate.offset", type: "text", apply: "ServerDate.offset", detail: "Get server time offset (against browser time)" },
       { c: 2, label: "$merge$", type: "text", apply: "$merge$(#{target},${source})", detail: "Perform object deep merge" },
       ... this.extraAutoComplete()
     ];
