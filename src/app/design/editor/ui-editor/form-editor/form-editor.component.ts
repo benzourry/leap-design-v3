@@ -264,6 +264,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     buildSuper() {
         this.superItems = Object.values(this.superForm?.items).map((i: any) => {
             delete i.id;
+            if (!i.x) i.x={};
             i.x.extended = true;
             return {
                 label: i.label,
@@ -809,7 +810,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         },
                         error: (err) => {
-                            this.toastService.show("Form saving failed", { classname: 'bg-danger text-light' });
+                            this.toastService.show("Form saving failed:" + err.message, { classname: 'bg-danger text-light' });
                         }
                     })
                 this.cdr.detectChanges(); // <--- Add here
