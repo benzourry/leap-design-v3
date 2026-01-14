@@ -3,7 +3,7 @@ import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass, JsonPipe } from '@angular/common';
+import { PlatformLocation, NgClass, JsonPipe, DatePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
@@ -37,7 +37,7 @@ import { SignaService } from '../../../service/signa.service';
       NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
       NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, 
       JsonViewerComponent,
-      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe],
+      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, DatePipe],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LambdaEditorComponent implements OnInit {
@@ -112,6 +112,7 @@ export class LambdaEditorComponent implements OnInit {
             // this.loadSharedList(1);
             this.loadBindingSrcs();
             this.loadSignaList();
+            this.loadSecretList();
 
           });
 
@@ -120,6 +121,15 @@ export class LambdaEditorComponent implements OnInit {
             const id = params['id'];
             if (id) {
               this.loadLambda(id);
+              this.showSecret = false;
+            }
+          })
+
+        this.route.queryParams
+          .subscribe((params: Params) => {
+            const key = params['key'];
+            if (key) {
+              this.showSecret = true;
             }
           })
       });
@@ -170,6 +180,37 @@ export class LambdaEditorComponent implements OnInit {
       })
   }
 
+  showSecret:boolean=false;
+  secretList: any[] = [];
+  loadSecretList() {
+    this.lambdaService.getSecretList(this.appId)
+      .subscribe(res => {
+        this.secretList = res;
+        this.cdr.detectChanges();
+      })
+  }
+
+  removeSecretData:any;
+  deleteSecret(content, secret){
+    this.removeSecretData = secret;
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content)
+      .result.then(res => {
+        this.lambdaService.deleteSecret(res.id)
+        .subscribe({
+          next:(res)=>{
+            this.loadSecretList();
+            this.toastService.show("Secret successfully removed", { classname: 'bg-success text-light' });
+            this.cdr.detectChanges();
+          },
+          error:(err)=>{
+            this.toastService.show("Secret removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
+          }
+        })
+      }, err => { });
+  }
+
   editCode: boolean;
   editLambdaData: any;
   editLambda(content, lambda, isNew) {
@@ -189,6 +230,25 @@ export class LambdaEditorComponent implements OnInit {
             this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
           }, err => {
             this.toastService.show("Lambda saving failed", { classname: 'bg-danger text-light' });
+          });
+      }, res => { })
+  }
+
+  editSecretCode: boolean;
+  editSecretData: any;
+  editSecret(content, secret, isNew) {
+    this.editSecretData = secret;
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static' })
+      .result.then(data => {
+        // data.content = this.nl2br(data.content);
+        this.lambdaService.saveSecret(this.appId, data)
+          .subscribe(res => {
+            this.loadSecretList();
+            // this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
+            this.toastService.show("Secret successfully saved", { classname: 'bg-success text-light' });
+          }, err => {
+            this.toastService.show("Secret saving failed", { classname: 'bg-danger text-light' });
           });
       }, res => { })
   }
@@ -221,6 +281,7 @@ export class LambdaEditorComponent implements OnInit {
     // console.log(id);
     this.lambdaService.getLambda(id)
       .subscribe(lambda => {
+        this.showSecret = false;
         this.lambda = lambda;
         this.initialCode = lambda.code;
         this.extraAutoComplete = [];
@@ -256,6 +317,11 @@ export class LambdaEditorComponent implements OnInit {
               this.extraAutoComplete.push({ label: `_endpoint.run(${r.code})`, type: "function", apply: `_endpoint.run('${r.code}', {\n\t#{/*Parameter Obj*/}\n}, {\n\t#{/*Body Obj*/}\n}, _this)`, detail: r.name })
             })
           })
+      }
+      if (b.type == '_secret'){
+        this.secretList.forEach(s=>{
+          this.extraAutoComplete.push({ label: `_secret.${s.key}`, type: "function", apply: `_secret.${s.key}`, detail: s.name })
+        })
       }
       if (b.type == '_mapper') {
         this.extraAutoComplete.push(
@@ -559,6 +625,7 @@ export class LambdaEditorComponent implements OnInit {
     this.bindingSrcs.push({ name: "⚙ Lookup", type: '_lookup' })
     this.bindingSrcs.push({ name: "⚙ Cogna", type: '_cogna' })
     this.bindingSrcs.push({ name: "⚙ Endpoint", type: '_endpoint' })
+    this.bindingSrcs.push({ name: "⚙ Secret", type: '_secret' })
     this.bindingSrcs.push({ name: "⚙ User", type: '_user' })
     this.bindingSrcs.push({ name: "⚙ Mapper", type: '_mapper' })
     this.bindingSrcs.push({ name: "⚙ Jsoup", type: '_jsoup' })

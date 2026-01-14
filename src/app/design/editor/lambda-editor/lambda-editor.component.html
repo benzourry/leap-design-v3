@@ -77,258 +77,305 @@
           </div>
         </div>
       }
+
+      
+      <a class="pointer text-truncate"  [routerLink]="['/design',appId,'lambda']" [queryParams]="{key:true}"
+       routerLinkActive="active">
+          <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+          <div class="list-group-item-heading ms-4">
+              Manage Secrets
+          </div>
+      </a>
     </div>
   </div>
   <div class="content" content>
     <div class="p-2">
-      @if (lambda) {
-        <div>
-          <div class="limit-width">
-            <div class="me-auto d-flex flex-row w-100 py-2">
-              <h5 class="m-0 text-truncate">{{lambda.name}}</h5>
-              @if (lambda.description) {
-                <div class="ms-2 text-truncate align-bottom text-muted">
-                {{lambda.description}}</div>
-              }
+
+      @if(showSecret){
+        <div class="p-3 pb-0 limit-width">
+          <div class="text-center">
+            <h4>Manage Secret</h4>
+          </div>
+        </div>
+        <div class="limit-width fix-gutter">
+          <div class="single-pane pt-0">
+            <p class="text-center">Secret can be used to store confidential value and can be accessed inside Lambda using <code>_secret</code></p>
+            @for (secret of secretList; track $index) {
+              <div class="p-3 bg-white mb-1">
+                <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="deleteSecret(removeSecretTpl, secret, false)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-round btn-sm btn-secondary float-end me-2"  (click)="editSecret(editSecretTpl, secret, false)">
+                  <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
+                </button>
+                  {{secret.key}} 
+                <div class="small text-muted">Updated on {{secret.timestamp|date:'medium'}}</div>       
+              </div>
+            }
+            @if (apiKeyList?.length==0) {
+              <div class="detail">
+                <p>No Secret is currently available. To create a new Secret, please click button below.</p>
+              </div>
+            }
+            <div class="text-center">
+              <button type="button" class="btn btn-round btn-primary mt-1" (click)="editSecret(editSecretTpl, {enabled:1}, true)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+              Create New Secret</button>
             </div>
-            @if (lambda && (lambda.app?.id == appId)) {
-              <div class="d-flex flex-row mt-2">
-                @if (lambda.email.indexOf(user.email)>-1) {
-                  <div ngbDropdown>
-                    <button type="button" class="btn btn-sm border border-2" id="lambdaEditor" ngbDropdownToggle>
-                      <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <div ngbDropdownMenu aria-labelledby="lambdaEditor" style="min-width:340px">
-                      <div class="px-2" [class.text-danger]="!lambda.publicAccess">
-                        @if (lambda.publicAccess) {
-                          <fa-icon [icon]="['fas','globe']"
-                            [fixedWidth]="true">
-                          </fa-icon>
-                        }
-                        @if (!lambda.publicAccess) {
-                          <fa-icon [icon]="['fas','lock']"
-                            [fixedWidth]="true">
-                          </fa-icon>
-                        }
-                        {{lambda.publicAccess?'Public Lambda': 'Private Lambda'}}
-                      </div>
-                      <div class="dropdown-divider"></div>
-                      <div class="px-2">
-                        <label class="small">Lambda Endpoint</label>
-                        <input name="endpointUrl"
-                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                          type="text" class="form-control border-0 bg-light small"
-                          value="{{lambda.code? base+'/~/'+lambda.code+'/out':baseApi+'/lambda/'+lambda.id+'/out'}}"
-                          readonly>
-                      </div>
-                      <div class="dropdown-divider"></div>
-                      <div class="px-2">
-                        <label class="small">Lambda Print Output</label>
-                        <input name="printUrl"
-                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                          type="text" class="form-control border-0 bg-light small"
-                          value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}"
-                          readonly>
-                      </div>
-                      <div class="px-2">
-                        <label class="small">Lambda Print Output (PDF)</label>
-                        <input name="printUrl"
-                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                          type="text" class="form-control border-0 bg-light small"
-                          value="{{lambda.code? base+'/~/'+lambda.code+'/pdf':baseApi+'/lambda/'+lambda.id+'/pdf'}}"
-                          readonly>
-                      </div>
-                      <div class="dropdown-divider"></div>
-                      <div class="px-2">
-                        <label class="small">Lambda Stream Output</label>
-                        <input name="printUrl"
-                          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                          type="text" class="form-control border-0 bg-light small"
-                          value="{{lambda.code? base+'/~/'+lambda.code+'/stream':baseApi+'/lambda/'+lambda.id+'/stream'}}"
-                          readonly>
-                      </div>
-                      <div class="dropdown-divider"></div>
-                      @if (lambda.code) {
+          </div>
+        </div>
+      }@else {
+        @if (lambda) {
+          <div>
+            <div class="limit-width">
+              <div class="me-auto d-flex flex-row w-100 py-2">
+                <h5 class="m-0 text-truncate">{{lambda.name}}</h5>
+                @if (lambda.description) {
+                  <div class="ms-2 text-truncate align-bottom text-muted">
+                  {{lambda.description}}</div>
+                }
+              </div>
+              @if (lambda && (lambda.app?.id == appId)) {
+                <div class="d-flex flex-row mt-2">
+                  @if (lambda.email.indexOf(user.email)>-1) {
+                    <div ngbDropdown>
+                      <button type="button" class="btn btn-sm border border-2" id="lambdaEditor" ngbDropdownToggle>
+                        <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <div ngbDropdownMenu aria-labelledby="lambdaEditor" style="min-width:340px">
+                        <div class="px-2" [class.text-danger]="!lambda.publicAccess">
+                          @if (lambda.publicAccess) {
+                            <fa-icon [icon]="['fas','globe']"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }
+                          @if (!lambda.publicAccess) {
+                            <fa-icon [icon]="['fas','lock']"
+                              [fixedWidth]="true">
+                            </fa-icon>
+                          }
+                          {{lambda.publicAccess?'Public Lambda': 'Private Lambda'}}
+                        </div>
+                        <div class="dropdown-divider"></div>
                         <div class="px-2">
-                          <label class="small">UI viewer</label>
-                          <input name="printUrl"
+                          <label class="small">Lambda Endpoint</label>
+                          <input name="endpointUrl"
                             onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
                             type="text" class="form-control border-0 bg-light small"
-                            [value]="'https://' +(this.app?.appPath ? this.app?.appPath+'.'+domainBase+'/#/web/'+lambda.code : domainBase+'/#/run/'+appId+'/web/'+lambda.code)"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/out':baseApi+'/lambda/'+lambda.id+'/out'}}"
                             readonly>
                         </div>
                         <div class="dropdown-divider"></div>
-                      }
-                      <div class="px-2">
-                        <small>Append <code>/cache</code> at the end of URL to use cached version for faster loading</small>
-                        <div>
-                          <button type="button" class="btn btn-danger btn-sm mt-2" (click)="evictCache()">Evict
-                          Cache</button>
+                        <div class="px-2">
+                          <label class="small">Lambda Print Output</label>
+                          <input name="printUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control border-0 bg-light small"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}"
+                            readonly>
+                        </div>
+                        <div class="px-2">
+                          <label class="small">Lambda Print Output (PDF)</label>
+                          <input name="printUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control border-0 bg-light small"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/pdf':baseApi+'/lambda/'+lambda.id+'/pdf'}}"
+                            readonly>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="px-2">
+                          <label class="small">Lambda Stream Output</label>
+                          <input name="printUrl"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            type="text" class="form-control border-0 bg-light small"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/stream':baseApi+'/lambda/'+lambda.id+'/stream'}}"
+                            readonly>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        @if (lambda.code) {
+                          <div class="px-2">
+                            <label class="small">UI viewer</label>
+                            <input name="printUrl"
+                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                              type="text" class="form-control border-0 bg-light small"
+                              [value]="'https://' +(this.app?.appPath ? this.app?.appPath+'.'+domainBase+'/#/web/'+lambda.code : domainBase+'/#/run/'+appId+'/web/'+lambda.code)"
+                              readonly>
+                          </div>
+                          <div class="dropdown-divider"></div>
+                        }
+                        <div class="px-2">
+                          <small>Append <code>/cache</code> at the end of URL to use cached version for faster loading</small>
+                          <div>
+                            <button type="button" class="btn btn-danger btn-sm mt-2" (click)="evictCache()">Evict
+                            Cache</button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
-                    (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline">
-                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
-                    (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline">
-                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
-                    [disabled]="contentForm.pristine" (click)="saveLambda(lambda)">
-                    <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <div ngbDropdown>
-                    <button type="button" class="btn btn-sm border border-2 btn-outline-success ms-1" ngbDropdownToggle>
-                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
+                      (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <div ngbDropdownMenu aria-labelledby="lambdaRun" style="min-width:340px">
-                      <button type="button" title="Run lambda normally" ngbDropdownItem (click)="runLambda(lambda)">
-                        Normal Run
-                        <div class="small text-muted fst-italic">Run lambda normally.<br />Result will
-                        be displayed once finish.</div>
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
+                      (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                      [disabled]="contentForm.pristine" (click)="saveLambda(lambda)">
+                      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <div ngbDropdown>
+                      <button type="button" class="btn btn-sm border border-2 btn-outline-success ms-1" ngbDropdownToggle>
+                        <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                       </button>
-                      <div class="dropdown-divider"></div>
-                      <button type="button" title="Run lambda with trailing output" ngbDropdownItem
-                        (click)="streamLambda(lambda)">
-                        Run with trailing output stream
-                        <div class="small text-muted fst-italic">Display output stream in real-time.
-                        </div>
-                      </button>
+                      <div ngbDropdownMenu aria-labelledby="lambdaRun" style="min-width:340px">
+                        <button type="button" title="Run lambda normally" ngbDropdownItem (click)="runLambda(lambda)">
+                          Normal Run
+                          <div class="small text-muted fst-italic">Run lambda normally.<br />Result will
+                          be displayed once finish.</div>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" title="Run lambda with trailing output" ngbDropdownItem
+                          (click)="streamLambda(lambda)">
+                          Run with trailing output stream
+                          <div class="small text-muted fst-italic">Display output stream in real-time.
+                          </div>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                } @else {
-                  <div class="bg-warning p-1 small">
-                    Interactive access and modification only available for <i>{{lambda.email}}</i>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-          @if (loading) {
-            <div class="p-4 text-center">
-              <div class="lds-ellipsis">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-            </div>
-          }
-          <div class="row width-auto align-items-center g-1 mt-1 gx-0">
-            <div class=" col-auto small">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text"
-                  style="text-transform: uppercase;"><strong>{{lambda.lang}}</strong></span>
-              </div>
-            </div>
-            @for (b of lambda.binds; track $index) {
-              <div class=" col-auto">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">{{b.name}}</span>
-                  <span class="input-group-text"
-                    [ngClass]="['_mail','_entry','_endpoint','_mapper','_user','_token','_io','_sql','_http','_util','_jsoup','_krypta','_live'].indexOf(b.type)>-1?'bg-secondary text-white':'bg-white'">
-                    {{b.type}}{{b.srcId?'_'+b.srcId:''}}
-                  </span>
-                </div>
-              </div>
-            }
-            <div class=" col-auto">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text">Request</span>
-                <span class="input-group-text bg-secondary text-white">_request</span>
-              </div>
-            </div>
-            <div class=" col-auto">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text">Response</span>
-                <span class="input-group-text bg-secondary text-white">_response</span>
-              </div>
-            </div>
-            <div class=" col-auto">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text">Output</span>
-                <span class="input-group-text bg-secondary text-white">_out</span>
-              </div>
-            </div>
-          </div>
-          <form name="contentForm" #contentForm="ngForm" ngForm>
-            <div class="mt-2">
-              <app-cm name="init" #codeeditorinit lang="lambda" lambda="true"
-                [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
-                [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
-                [readOnly]="lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
-              </app-cm>
-            </div>
-          </form>
-          
-          @if (runRes()[lambda.id]) {
-            <div [class.opacity-50]="resultLoading()[lambda.id]" class="border border-light">
-              @if (runRes()[lambda.id]?.print) {
-                <div class="bg-secondary text-white px-2 py-1 small d-flex"
-                  [class.bg-danger]="runRes()[lambda.id]?.print.indexOf('!err')>-1">
-                  Console
-                  <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
-                    <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText"
-                      [(ngModel)]="consoleType" value="text">
-                    <label class="btn btn-light" for="consoleTypeText"> Plain Text </label>
-                    <input type="radio" class="btn-check" name="consoleTypeHtml" id="consoleTypeHtml"
-                      [(ngModel)]="consoleType" value="html">
-                    <label class="btn btn-light" for="consoleTypeHtml"> HTML (rendered) </label>
-                    <input type="radio" class="btn-check" name="consoleTypePdf" id="consoleTypePdf"
-                      [(ngModel)]="consoleType" value="pdf">
-                    <label class="btn btn-light" for="consoleTypePdf"> PDF </label>
-                  </div>
-                </div>
-                @if (runRes()[lambda.id]) {
-                  <div style="position: relative;">
-                    @if (consoleType=='text') {
-                      <div class="px-2 py-1 bg-white limit-height code-container">
-                        <div>
-                          <pre class="my-0">{{runRes()[lambda.id].print}}</pre>
-                        </div>
-                      </div>
-                    }
-                    @if (consoleType=='html') {
-                      <div class="px-2 py-1" [innerHtml]="runRes()[lambda.id].print">
-                      </div>
-                    }
-                    @if (consoleType=='pdf') {
-                      <div>
-                        <iframe style="height: 450px;width:100%" [src]="getPdfUrl()|safe:'resourceUrl'"></iframe>
-                      </div>
-                    }
-                  </div>
-                }
-              }
-              @if (runRes()[lambda.id] && !isEmptyObject(runRes()[lambda.id].out)) {
-                <div class="px-2 py-1 bg-success text-white small">
-                  <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                  This function returns output: <span>{{'{ '}}{{keyList(runRes()[lambda.id]?.out)}}{{' }'}}</span>
-                </div>
-                <div class="px-2 py-1 bg-white small limit-height">
-                  <json-viewer [json]="runRes()[lambda.id]?.out"></json-viewer>
-                  <!-- <pre><code class="language-js">{{runRes[lambda.id].out | json}}</code></pre> -->
-                </div>
-              }
-              @if (runRes()[lambda.id] && !runRes()[lambda.id]?.success) {
-                <div class="px-2 py-1 bg-danger text-white">
-                  <div>{{runRes()[lambda.id]?.message}}</div>
-                  @if (runRes()[lambda.id]?.line||runRes()[lambda.id]?.col) {
-                    <div>Line: {{runRes()[lambda.id]?.line}}, Col: {{runRes()[lambda.id]?.col}}</div>
+                  } @else {
+                    <div class="bg-warning p-1 small">
+                      Interactive access and modification only available for <i>{{lambda.email}}</i>
+                    </div>
                   }
                 </div>
               }
             </div>
-          }
-        </div>
-      }@else {
-        <div style="color:#aaa;">
-          <h3>Please select Lambda from the list on the left to view it's data.</h3>
-        </div>
+            @if (loading) {
+              <div class="p-4 text-center">
+                <div class="lds-ellipsis">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            }
+            <div class="row width-auto align-items-center g-1 mt-1 gx-0">
+              <div class=" col-auto small">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text"
+                    style="text-transform: uppercase;"><strong>{{lambda.lang}}</strong></span>
+                </div>
+              </div>
+              @for (b of lambda.binds; track $index) {
+                <div class=" col-auto">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">{{b.name}}</span>
+                    <span class="input-group-text"
+                      [ngClass]="['_mail','_entry','_endpoint','_secret','_mapper','_user','_token','_io','_sql','_http','_util','_jsoup','_krypta','_live'].indexOf(b.type)>-1?'bg-secondary text-white':'bg-white'">
+                      {{b.type}}{{b.srcId?'_'+b.srcId:''}}
+                    </span>
+                  </div>
+                </div>
+              }
+              <div class=" col-auto">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Request</span>
+                  <span class="input-group-text bg-secondary text-white">_request</span>
+                </div>
+              </div>
+              <div class=" col-auto">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Response</span>
+                  <span class="input-group-text bg-secondary text-white">_response</span>
+                </div>
+              </div>
+              <div class=" col-auto">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Output</span>
+                  <span class="input-group-text bg-secondary text-white">_out</span>
+                </div>
+              </div>
+            </div>
+            <form name="contentForm" #contentForm="ngForm" ngForm>
+              <div class="mt-2">
+                <app-cm name="init" #codeeditorinit lang="lambda" lambda="true"
+                  [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
+                  [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
+                  [readOnly]="lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
+                </app-cm>
+              </div>
+            </form>
+            
+            @if (runRes()[lambda.id]) {
+              <div [class.opacity-50]="resultLoading()[lambda.id]" class="border border-light">
+                @if (runRes()[lambda.id]?.print) {
+                  <div class="bg-secondary text-white px-2 py-1 small d-flex"
+                    [class.bg-danger]="runRes()[lambda.id]?.print.indexOf('!err')>-1">
+                    Console
+                    <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
+                      <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText"
+                        [(ngModel)]="consoleType" value="text">
+                      <label class="btn btn-light" for="consoleTypeText"> Plain Text </label>
+                      <input type="radio" class="btn-check" name="consoleTypeHtml" id="consoleTypeHtml"
+                        [(ngModel)]="consoleType" value="html">
+                      <label class="btn btn-light" for="consoleTypeHtml"> HTML (rendered) </label>
+                      <input type="radio" class="btn-check" name="consoleTypePdf" id="consoleTypePdf"
+                        [(ngModel)]="consoleType" value="pdf">
+                      <label class="btn btn-light" for="consoleTypePdf"> PDF </label>
+                    </div>
+                  </div>
+                  @if (runRes()[lambda.id]) {
+                    <div style="position: relative;">
+                      @if (consoleType=='text') {
+                        <div class="px-2 py-1 bg-white limit-height code-container">
+                          <div>
+                            <pre class="my-0">{{runRes()[lambda.id].print}}</pre>
+                          </div>
+                        </div>
+                      }
+                      @if (consoleType=='html') {
+                        <div class="px-2 py-1" [innerHtml]="runRes()[lambda.id].print">
+                        </div>
+                      }
+                      @if (consoleType=='pdf') {
+                        <div>
+                          <iframe style="height: 450px;width:100%" [src]="getPdfUrl()|safe:'resourceUrl'"></iframe>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+                @if (runRes()[lambda.id] && !isEmptyObject(runRes()[lambda.id].out)) {
+                  <div class="px-2 py-1 bg-success text-white small">
+                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                    This function returns output: <span>{{'{ '}}{{keyList(runRes()[lambda.id]?.out)}}{{' }'}}</span>
+                  </div>
+                  <div class="px-2 py-1 bg-white small limit-height">
+                    <json-viewer [json]="runRes()[lambda.id]?.out"></json-viewer>
+                    <!-- <pre><code class="language-js">{{runRes[lambda.id].out | json}}</code></pre> -->
+                  </div>
+                }
+                @if (runRes()[lambda.id] && !runRes()[lambda.id]?.success) {
+                  <div class="px-2 py-1 bg-danger text-white">
+                    <div>{{runRes()[lambda.id]?.message}}</div>
+                    @if (runRes()[lambda.id]?.line||runRes()[lambda.id]?.col) {
+                      <div>Line: {{runRes()[lambda.id]?.line}}, Col: {{runRes()[lambda.id]?.col}}</div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }@else {
+          <div style="color:#aaa;">
+            <h3>Please select Lambda from the list on the left to view it's data.</h3>
+          </div>
+        }
+
       }
+
     </div>
   </div>
 </div>
@@ -613,6 +660,50 @@
   </div>
 </ng-template>
 
+<ng-template #editSecretTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add Secret</h4>
+  </div>
+  <div class="modal-body fix-gutter" #secretEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Key</label>
+      <input type="text" class="form-control" [(ngModel)]="editSecretData.key" #key="ngModel"
+        (ngModelChange)="editSecretData.id||editSecretData.key=toSnakeCase(editSecretData.key)" name="key"
+        required>
+        @if (name?.invalid) {
+          <small class="form-text has-warning">
+            @if (key?.errors?.required) {
+              <span class="help-block">Key is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Value</label>
+        <textarea class="form-control" [(ngModel)]="editSecretData.value"
+        name="value"></textarea>
+        <div class="form-text">Enter a new value to replace the existing one. Leave blank to keep the current value.</div>
+      </div>
+      <div class="form-group mb-3">
+        <div class="form-check form-switch mt-1">
+          <input type="checkbox" class="form-check-input"
+            (change)="editSecretData.enabled = $event.target.checked ? 1: 0"
+            [(ngModel)]="editSecretData.enabled" name="enabled"
+            id="enabled">
+          <label class="form-check-label" for="enabled">Enabled</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="secretEditForm.invalid"
+        (click)="c(editSecretData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Secret
+    </button>
+  </div>
+</ng-template>
+
 <ng-template #lambdaPromptTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -633,6 +724,33 @@
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(lambdaPromptsData)">
         <i class="icon-minus-sign-alt"></i> Execute Lambda
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #removeSecretTpl let-c="close" let-d="dismiss">
+  <div #removeSecretForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete the following key</h4>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete this secret?
+      </p>
+      <div class="form">
+        <div class="form-group mb-3">
+          <label class="form-label">Secret Key</label>
+          <p class="form-control-static">{{removeSecretData.key}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-danger" [disabled]="removeSecretForm.invalid"
+        (click)="c(removeSecretData)">
+        <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+        Confirm Remove
       </button>
     </div>
   </div>

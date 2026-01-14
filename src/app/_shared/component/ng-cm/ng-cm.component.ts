@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect } from '@angular/core';
 
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
@@ -11,7 +11,7 @@ import { rekaTheme } from './reka-theme';
 import { placeholder, EditorViewConfig, lineNumbers, highlightActiveLineGutter, 
   highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, 
   crosshairCursor, highlightActiveLine, keymap, KeyBinding } from '@codemirror/view';
-import { EditorState, Transaction } from '@codemirror/state';
+import { Compartment, EditorState, Transaction } from '@codemirror/state';
   import { foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
     syntaxHighlighting, defaultHighlightStyle, 
     bracketMatching, foldKeymap} from '@codemirror/language';
@@ -184,6 +184,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
 
   config: EditorViewConfig;
   editor: EditorView;
+  editableCompartment = new Compartment();
   plusSquare: string = '<svg role="img" aria-hidden="true" focusable="false" data-prefix="far" data-icon="plus-square" class="svg-inline--fa fa-plus-square fa-w-14 fa-fw fa-2x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M352 240v32c0 6.6-5.4 12-12 12h-88v88c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-88h-88c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h88v-88c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v88h88c6.6 0 12 5.4 12 12zm96-160v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z"></path></svg>';
   minusSquare: string = '<svg role="img" aria-hidden="true" focusable="false" data-prefix="far" data-icon="minus-square" class="svg-inline--fa fa-minus-square fa-w-14 fa-fw fa-2x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M108 284c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h232c6.6 0 12 5.4 12 12v32c0 6.6-5.4 12-12 12H108zM448 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z"></path></svg>';
 
@@ -245,6 +246,13 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     @Optional() @Inject(NG_ASYNC_VALIDATORS) asyncValidators: Array<any>,
   ) {
     super(validators, asyncValidators);
+
+    effect(() => {
+      this.editor?.dispatch({
+        effects: this.editableCompartment.reconfigure(EditorView.editable.of(!this.readOnly()))
+      });
+    });
+
   }
 
   // override writeValue(value) {
@@ -262,7 +270,6 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     });
     this.value = safeValue;
   }
-
 
   ngAfterViewInit(): void {
 
@@ -295,7 +302,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       ... this.linenumber() ? [lineNumbers()] : [],
       ... this.placeholder() ? [placeholder(this.placeholder())] : [],
       rekaTheme,
-      EditorView.editable.of(!this.readOnly()),
+      this.editableCompartment.of(EditorView.editable.of(!this.readOnly())),
       EditorView.updateListener.of(update => {
         this.valueChanged(update.state.doc.toString());
       }),

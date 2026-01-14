@@ -92,4 +92,16 @@ export class LambdaService {
     return this.http.get<any>(`${this.baseApi}/lambda/cache-evict?code=${code}&action=${action}`)
   }
 
+  getSecretList(appId:number): any {
+    return this.http.get<any>(`${this.baseApi}/app/${appId}/secrets`)
+  }
+  
+  saveSecret(appId:number, secret:any): any {
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/secret`,secret)
+  }
+
+  deleteSecret(secretId:number): any {
+    return this.http.post<any>(`${this.baseApi}/app/delete-secret/${secretId}`,{})
+  }
+
 }
