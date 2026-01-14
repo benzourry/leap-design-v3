@@ -302,6 +302,8 @@ export class CognaEditorComponent implements OnInit {
                 this.getOtherCognaList(this.appId);
             }
 
+            this.loadSecretList();
+
             this.loadCognaList(1);
             // this.loadSharedList(1);
             this.loadBindingSrcs();
@@ -366,6 +368,15 @@ export class CognaEditorComponent implements OnInit {
         this.cdr.detectChanges();
       }, res => {
         this.itemLoading = false;
+        this.cdr.detectChanges();
+      })
+  }
+
+  secretList: any[] = [];
+  loadSecretList() {
+    this.lambdaService.getSecretList(this.appId)
+      .subscribe(res => {
+        this.secretList = res;
         this.cdr.detectChanges();
       })
   }

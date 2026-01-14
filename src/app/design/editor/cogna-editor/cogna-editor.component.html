@@ -1293,7 +1293,15 @@
             <div class="form-group mb-3">
               <label class="form-label">Model API Key/Access Token</label>
               <input type="text" class="form-control form-control-sm" [(ngModel)]="editCognaData.embedModelApiKey"
+                list="embedSecretList"
                 #embedModelApiKey="ngModel" name="embedModelApiKey" required>
+                
+                <datalist id="embedSecretList">
+                  @for(secret of secretList; track $index) {
+                    @let secretKey = '{{'+secret.key+'}}';
+                    <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+                  }
+                </datalist>
             </div>
             }
             }
@@ -1579,7 +1587,15 @@
               <input type="text" class="form-control form-control-sm"
                 [ngModel]="editCognaData && editCognaData.inferModelApiKey"
                 (ngModelChange)="editCognaData && (editCognaData.inferModelApiKey = $event)" #inferModelApiKey="ngModel"
+                list="secretList"
                 name="inferModelApiKey" required>
+
+                <datalist id="inferSecretList">
+                  @for(secret of secretList; track $index) {
+                    @let secretKey = '{{'+secret.key+'}}';
+                    <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+                  }
+                </datalist>
             </div>
             }
             }
