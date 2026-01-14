@@ -1295,7 +1295,7 @@
               <input type="text" class="form-control form-control-sm" [(ngModel)]="editCognaData.embedModelApiKey"
                 list="embedSecretList"
                 #embedModelApiKey="ngModel" name="embedModelApiKey" required>
-                
+
                 <datalist id="embedSecretList">
                   @for(secret of secretList; track $index) {
                     @let secretKey = '{{'+secret.key+'}}';
@@ -1587,7 +1587,7 @@
               <input type="text" class="form-control form-control-sm"
                 [ngModel]="editCognaData && editCognaData.inferModelApiKey"
                 (ngModelChange)="editCognaData && (editCognaData.inferModelApiKey = $event)" #inferModelApiKey="ngModel"
-                list="secretList"
+                list="inferSecretList"
                 name="inferModelApiKey" required>
 
                 <datalist id="inferSecretList">
