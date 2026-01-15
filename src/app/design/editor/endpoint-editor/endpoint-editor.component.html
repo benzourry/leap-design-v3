@@ -392,7 +392,14 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                 <label class="form-label">Client Secret *</label>
                 <input type="text" class="form-control"
                   [ngModel]="editEndpointData && editEndpointData.clientSecret" (ngModelChange)="editEndpointData && (editEndpointData.clientSecret = $event)" name="clientSecret"
-                  placeholder="ie: 87897jhjd-9182731yye" required>
+                  placeholder="ie: 87897jhjd-9182731yye" list="clientSecretList" autocomplete="off" required>
+                <datalist id="clientSecretList">
+                  @for(secret of secretList; track $index) {
+                    @let secretKey = '{{'+secret.key+'}}';
+                    <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+                  }
+                </datalist>
+
               </div>
             </div>
           </div>

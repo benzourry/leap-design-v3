@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { ChangeDetectorRef } from '@angular/core';
+import { LambdaService } from '../../../service/lambda.service';
 
 @Component({
     selector: 'app-endpoint-editor',
@@ -50,6 +51,7 @@ export class EndpointEditorComponent implements OnInit {
     private location = inject(PlatformLocation);
     private router = inject(Router);
     private appService = inject(AppService);
+    private lambdaService = inject(LambdaService); 
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
@@ -82,6 +84,7 @@ export class EndpointEditorComponent implements OnInit {
                                 .subscribe(res => {
                                     this.app = res;
                                     this.cdr.detectChanges();
+                                    this.loadSecretList();
                                 });
                         }
 
@@ -113,6 +116,17 @@ export class EndpointEditorComponent implements OnInit {
 
     pageNumber: number = 1;
     entryPageNumber: number = 1;
+
+    
+    secretList: any[] = [];
+    loadSecretList() {
+        this.lambdaService.getSecretList(this.appId)
+        .subscribe(res => {
+            this.secretList = res;
+            this.cdr.detectChanges();
+        })
+    }
+
 
     // this.loadEndpointList = loadEndpointList;
     loadEndpointList(pageNumber) {

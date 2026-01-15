@@ -425,7 +425,7 @@
 </ng-template>
 <ng-template #editLookupTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
-    <app-edit-lookup [lookup]="editLookupData" [accessList]="accessList" [dismiss]="d" [close]="c"></app-edit-lookup>
+    <app-edit-lookup [appId]="appId" [lookup]="editLookupData" [accessList]="accessList" [dismiss]="d" [close]="c"></app-edit-lookup>
   }@loading {
     <div class="text-center m-5">
       <div class="spinner-grow text-primary" role="status">
