@@ -1298,7 +1298,7 @@
 
                 <datalist id="embedSecretList">
                   @for(secret of secretList; track $index) {
-                    @let secretKey = '{{'+secret.key+'}}';
+                    @let secretKey = '{{_secret.'+secret.key+'}}';
                     <option value="{{secretKey}}">Secret: {{secret.key}}</option>
                   }
                 </datalist>
@@ -1592,7 +1592,7 @@
 
                 <datalist id="inferSecretList">
                   @for(secret of secretList; track $index) {
-                    @let secretKey = '{{'+secret.key+'}}';
+                    @let secretKey = '{{_secret.'+secret.key+'}}';
                     <option value="{{secretKey}}">Secret: {{secret.key}}</option>
                   }
                 </datalist>

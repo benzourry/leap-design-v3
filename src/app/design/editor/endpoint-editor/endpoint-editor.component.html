@@ -395,7 +395,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                   placeholder="ie: 87897jhjd-9182731yye" list="clientSecretList" autocomplete="off" required>
                 <datalist id="clientSecretList">
                   @for(secret of secretList; track $index) {
-                    @let secretKey = '{{'+secret.key+'}}';
+                    @let secretKey = '{{_secret.'+secret.key+'}}';
                     <option value="{{secretKey}}">Secret: {{secret.key}}</option>
                   }
                 </datalist>

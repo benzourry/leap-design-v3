@@ -317,7 +317,7 @@
                   placeholder="ie: 87897jhjd-9182731yye" autocomplete="off" required>
                   <datalist id="clientSecretList">
                     @for(secret of secretList; track $index) {
-                      @let secretKey = '{{'+secret.key+'}}';
+                      @let secretKey = '{{_secret.'+secret.key+'}}';
                       <option value="{{secretKey}}">Secret: {{secret.key}}</option>
                     }
                   </datalist>
