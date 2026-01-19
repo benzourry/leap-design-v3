@@ -164,7 +164,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                   </div>
                 }
                 <div class="list-group-item">
-                  <div class="small">Private Key File</div>
+                  <div class="small">Keystore File</div>
                   
                   @if(signa.keyPath){
                     
@@ -174,7 +174,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     <label class="form-label me-1">
                       <button class="form-control bg-danger text-white" (click)="clearFile('key')">
                         <fa-icon [icon]="['fas','trash']"></fa-icon>
-                        Clear Key
+                        Clear Keystore
                       </button>
                     </label>
                     <label class="form-label me-1">
@@ -192,12 +192,13 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     </label>
                   }@else{
                     
-                    <div class="text-danger mb-2">No key file uploaded</div>
+                    <div class="text-danger mb-2">No keystore file uploaded</div>
                     
                     <label class="form-label me-1">
-                      <button class="form-control" style="background: white" (click)="generateKey()">
+                      <button class="form-control text-start" style="background: white" (click)="generateKey()">
                         <fa-icon [icon]="['fas','bolt']"></fa-icon>
-                        Generate Key
+                        Generate Keystore File
+                        <div class="small ms-4 mt-1 text-muted">Generate keystore with<br/>self-signed certificate</div>
                       </button>
                     </label>
                     <label class="form-label">
@@ -210,7 +211,8 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                       }@else{
                         <div class="form-control" style="background: white">
                           <fa-icon [icon]="['fas','upload']"></fa-icon>
-                          {{signa.keyPath??'Upload Key File'}}
+                          {{signa.keyPath??'Upload Keystore File'}}
+                          <div class="small ms-4 mt-1 text-muted">Upload keystore with<br/>CA-signed certificate</div>
                         </div>
                       }
                     </label>
