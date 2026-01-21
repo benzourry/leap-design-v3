@@ -290,7 +290,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
 
 <ng-template #editSignaTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Digital Signature</h4>
+    <h4 class="modal-title">{{editSignaData.id?'Edit':'Add'}} Digital Signature</h4>
   </div>
   <div class="modal-body fix-gutter" #signaEditForm="ngForm" ngForm>
     <!-- <form autocomplete="off"> -->

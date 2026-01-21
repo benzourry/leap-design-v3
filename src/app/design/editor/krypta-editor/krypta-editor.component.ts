@@ -17,6 +17,7 @@ import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json
 import { ChangeDetectorRef } from '@angular/core';
 import { KryptaService } from '../../../service/krypta.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
+import { LambdaService } from '../../../service/lambda.service';
 
 @Component({
     selector: 'app-krypta-editor',
@@ -52,6 +53,7 @@ export class KryptaEditorComponent implements OnInit {
     private location = inject(PlatformLocation);
     private router = inject(Router);
     private appService = inject(AppService);
+    private lambdaService = inject(LambdaService);
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
@@ -86,6 +88,7 @@ export class KryptaEditorComponent implements OnInit {
 
                         this.loadWalletList(1);
                         this.loadContractList(1);
+                        this.loadSecretList();
                         // this.loadSharedList(1);
                     });
 
@@ -141,6 +144,17 @@ export class KryptaEditorComponent implements OnInit {
                 this.cdr.detectChanges();
             })
     }
+
+    
+    secretList: any[] = [];
+    loadSecretList() {
+        this.lambdaService.getSecretList(this.appId)
+        .subscribe(res => {
+            this.secretList = res;
+            this.cdr.detectChanges();
+        })
+    }
+
 
     contractTotal: number;
     contractLoading = signal<boolean>(false);

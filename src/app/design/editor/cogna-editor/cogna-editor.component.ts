@@ -465,9 +465,9 @@ export class CognaEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(res.id);
+            this.cdr.detectChanges();
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Cogna successfully saved", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges();
           }, err => {
             this.toastService.show("Cogna saving failed", { classname: 'bg-danger text-light' });
             this.cdr.detectChanges();

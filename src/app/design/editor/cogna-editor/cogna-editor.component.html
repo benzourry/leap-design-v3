@@ -1038,7 +1038,7 @@
 
 <ng-template #editCognaTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Cogna</h4>
+    <h4 class="modal-title">{{editCognaData.id?'Edit':'Add'}} Cogna</h4>
   </div>
 
   <div ngbAccordion #cognaEditForm="ngForm" ngForm class="accordion-flush fix-gutter" [closeOthers]="true"
@@ -1925,7 +1925,7 @@
 
 <ng-template #editCognaSrcTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Knowledge Source</h4>
+    <h4 class="modal-title">{{editSrcData.id?'Edit':'Add'}} Knowledge Source</h4>
   </div>
   <div class="modal-body fix-gutter" #cognaSrcEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
@@ -2200,7 +2200,7 @@
 
 <ng-template #editCognaToolTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Tool</h4>
+    <h4 class="modal-title">{{editToolData.id?'Edit':'Add'}} Tool</h4>
   </div>
   <div class="modal-body fix-gutter" #cognaToolEditForm="ngForm" ngForm>
 
@@ -2345,7 +2345,7 @@
 
 <ng-template #editCognaMcpTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add MCP Server</h4>
+    <h4 class="modal-title">{{editMcpData.id?'Edit':'Add'}} MCP Server</h4>
   </div>
   <div class="modal-body fix-gutter" #cognaMcpEditForm="ngForm" ngForm>
 

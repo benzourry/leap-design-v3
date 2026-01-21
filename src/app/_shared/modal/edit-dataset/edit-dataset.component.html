@@ -1,6 +1,6 @@
 <div #editDatasetForm="ngForm" ngForm>
   <div class="modal-header">
-    <h4 class="modal-title">Edit Dataset</h4>
+    <h4 class="modal-title">{{_editDatasetData.id?'Edit':'Add'}} Dataset</h4>
   </div>
   <div class="tab-simple">
     <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">

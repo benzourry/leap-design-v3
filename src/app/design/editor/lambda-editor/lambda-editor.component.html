@@ -406,7 +406,7 @@
 </ng-template>
 <ng-template #editLambdaTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Lambda</h4>
+    <h4 class="modal-title">{{editLambdaData.id?'Edit':'Add'}} Lambda</h4>
   </div>
   <div class="modal-body fix-gutter" #lambdaEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
@@ -662,7 +662,7 @@
 
 <ng-template #editSecretTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Secret</h4>
+    <h4 class="modal-title">{{editSecretData.id?'Edit':'Add'}} Secret</h4>
   </div>
   <div class="modal-body fix-gutter" #secretEditForm="ngForm" ngForm>
     <div class="form-group mb-3">

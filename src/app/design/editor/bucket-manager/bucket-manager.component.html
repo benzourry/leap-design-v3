@@ -348,7 +348,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
 
 <ng-template #editBucketTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Add Bucket</h4>
+    <h4 class="modal-title">{{editBucketData.id?'Edit':'Add'}} Bucket</h4>
   </div>
   <div class="modal-body fix-gutter" #bucketEditForm="ngForm" ngForm>
     <div class="form-group mb-3">

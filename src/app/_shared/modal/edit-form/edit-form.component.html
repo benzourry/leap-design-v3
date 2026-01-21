@@ -1,6 +1,6 @@
 <div #editFormForm="ngForm" ngForm>
   <div class="modal-header">
-    <h4 class="modal-title">Edit Form</h4>
+    <h4 class="modal-title">{{_editFormData.id?'Edit':'Add'}} Form</h4>
   </div>
   <div class="tab-simple" justify="center">
     <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">

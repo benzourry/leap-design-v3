@@ -1,6 +1,6 @@
 <div #editLookupEntryForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Add <strong>{{lookup().name}}</strong> Entry</h4>
+      <h4 class="modal-title">{{_lookupEntry.id?'Edit':'Add'}} <strong>{{lookup().name}}</strong> Entry</h4>
     </div>
     <div class="modal-body">
       <div class="form">
