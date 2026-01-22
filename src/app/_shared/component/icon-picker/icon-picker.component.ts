@@ -139,6 +139,7 @@ export class IconPickerComponent {
     { key: "fas:microphone", value: ["fas", "microphone"]},
     { key: "fas:signature", value: ["fas", "signature"]},
     { key: "fas:hashtag", value: ["fas", "hashtag"]},
+    { key: "fas:key", value: ["fas", "key"]},
   ];
 
   model= model<string>();

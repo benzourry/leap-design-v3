@@ -348,6 +348,11 @@
                 }
               </div>
             }
+            @if (!loading && hasLoadList && error){
+              <div class="bg-danger p-3 text-white mt-3">
+                {{error}}
+              </div>
+            }
             @if (lookupEntryList == 0 && !loading && hasLoadList) {
               <div class="details mt-2">
                 <h3>No data for {{lookup.name}}</h3>

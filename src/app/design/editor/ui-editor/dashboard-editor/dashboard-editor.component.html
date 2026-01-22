@@ -223,7 +223,7 @@
 <ng-template #editChartTpl let-c="close" let-d="dismiss">
   <div #editChartForm="ngForm" class="fix-gutter" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Edit Chart</h4>
+      <h4 class="modal-title">{{editChartData.id?'Edit':'Add'}} Chart</h4>
     </div>
     <div class="tab-simple">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">

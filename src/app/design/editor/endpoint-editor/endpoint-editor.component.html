@@ -345,7 +345,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         }
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">Endpoint URL *</label>
+        <label class="form-label">Endpoint URL * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
         <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.url" (ngModelChange)="editEndpointData && (editEndpointData.url = $event)" name="url"
           placeholder="ie: https://research.unimas.my/api/research/list" required>
       </div>
@@ -389,7 +389,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             </div>
             <div class="col-sm-6">
               <div class="form-group mb-3">
-                <label class="form-label">Client Secret *</label>
+                <label class="form-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
                 <input type="text" class="form-control"
                   [ngModel]="editEndpointData && editEndpointData.clientSecret" (ngModelChange)="editEndpointData && (editEndpointData.clientSecret = $event)" name="clientSecret"
                   placeholder="ie: 87897jhjd-9182731yye" list="clientSecretList" autocomplete="off" required>

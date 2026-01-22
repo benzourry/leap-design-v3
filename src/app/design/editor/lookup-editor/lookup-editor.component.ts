@@ -301,8 +301,10 @@ export class LookupEditorComponent implements OnInit {
         this.request = {};
         const array = [...script.matchAll(/{(.+?)}/ig)];
         array.forEach(e => {
-            if (!this.request[e[1]]) {
-                this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
+            if (!e[1].includes('_secret')){
+                if (!this.request[e[1]]) {
+                    this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
+                }
             }
         })
     }
@@ -335,8 +337,11 @@ export class LookupEditorComponent implements OnInit {
 
     }
 
+    error:string;
+
     getLookupEntryList(pageNumber) {
         this.loading = true;
+        this.error = null;
         this.entryPageNumber = pageNumber;
         let params: any = {
             page: pageNumber - 1,
@@ -360,7 +365,8 @@ export class LookupEditorComponent implements OnInit {
         }
 
         this.lookupService.getEntryListFull(this.lookupId, params)
-            .subscribe(response => {
+            .subscribe({
+                next: response =>{
                 this.loading = false;
                 this.lookupEntryPages = response.page?.totalPages;
                 this.lookupEntryElements = response.content?.length;
@@ -369,7 +375,15 @@ export class LookupEditorComponent implements OnInit {
                 this.lookupEntryList = response.content;
                 this.hasLoadList = true;
                 this.cdr.detectChanges();
-            });
+                },
+                error: err =>{
+                    this.loading = false;
+                    this.hasLoadList = true;
+                    this.error = err.error?.message || err.message || 'An error occurred while loading lookup entries.';
+                    this.cdr.detectChanges();
+                    console.log(this.error);
+                }
+            })
     }
 
 

@@ -342,7 +342,7 @@
 <ng-template #editGroupTpl let-c="close" let-d="dismiss">
   <div #editGroupForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Edit Group</h4>
+      <h4 class="modal-title">{{editGroupData.id?'Edit':'Add'}} Group</h4>
     </div>
     <div class="single-pane">
       <div class="form-group mb-3">
@@ -383,7 +383,7 @@
 <ng-template #editItemTpl let-c="close" let-d="dismiss">
   <div #editItemForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Edit Item</h4>
+      <h4 class="modal-title">{{editItemData.id?'Edit':'Add'}} Item</h4>
     </div>
     <div class="tab-simple fix-gutter" justify="center">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">

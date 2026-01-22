@@ -203,7 +203,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     </label>
                     <label class="form-label">
                       <input type="file" [hidden]="true" (change)="uploadKey($event)" name="file" required
-                        accept=".jks" />
+                        accept=".jks,.keystore,.p12,.pfx,.bks" />
                       @if (uploadKeyLoading) {
                         <div class="form-control" style="background: white">
                           Uploading...

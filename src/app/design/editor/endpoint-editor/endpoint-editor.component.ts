@@ -220,7 +220,9 @@ export class EndpointEditorComponent implements OnInit {
                 let g = endpoint.url.match(/\{(.[^{]+)\}/ig);
                 this.params = [];
                 g?.forEach(element => {
-                    this.params.push(element.replace(/([{}\s]+)/ig, ''));
+                    if (!element.includes('_secret')){
+                        this.params.push(element.replace(/([{}\s]+)/ig, ''));
+                    }
                 });
                 this.cdr.detectChanges();
             })
@@ -259,6 +261,7 @@ export class EndpointEditorComponent implements OnInit {
                 },
                 error: (error)=>{
                     this.error = error;
+                    console.log(this.error);
                     this.cdr.detectChanges();
                 }
             })            

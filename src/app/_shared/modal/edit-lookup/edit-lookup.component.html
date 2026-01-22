@@ -174,7 +174,7 @@
         }
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">RESTful Endpoint *</label>
+        <label class="form-label">RESTful Endpoint * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
         <input type="text" class="form-control" [(ngModel)]="_lookup.endpoint"
           #endpoint="ngModel" name="endpoint" required>
         @if (endpoint?.invalid) {
@@ -311,7 +311,7 @@
             </div>
             <div class="col-sm-6">
               <div class="form-group mb-3">
-                <label class="form-label">Client Secret *</label>
+                <label class="form-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
                 <input type="text" class="form-control"
                   [(ngModel)]="_lookup.clientSecret" name="clientSecret" list="clientSecretList"
                   placeholder="ie: 87897jhjd-9182731yye" autocomplete="off" required>
