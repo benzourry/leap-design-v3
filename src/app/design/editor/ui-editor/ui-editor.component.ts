@@ -93,6 +93,8 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
     currentPath: string = "form";
 
+    excelImportIsNext:boolean=false;
+
     ngOnInit() {
 
         this.commService.changeEmitted$.subscribe(data => {

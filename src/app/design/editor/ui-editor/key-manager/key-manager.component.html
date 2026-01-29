@@ -21,11 +21,11 @@
        
       </div>
     }
-    @if (apiKeyList?.length==0) {
+    <!-- @if (apiKeyList?.length==0) {
       <div class="detail">
         <p>No API Key is currently available. To create a new API Key, please click button below.</p>
       </div>
-    }
+    } -->
     <div class="text-center">
       <button type="button" class="btn btn-round btn-primary mt-1" (click)="generateApiKey()">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
