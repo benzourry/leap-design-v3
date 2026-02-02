@@ -399,7 +399,7 @@
 </ng-template>
 
 <ng-template #inPopTpl let-c="close" let-d="dismiss">
-  <div style="margin-bottom:-68px; background: whitesmoke;">
+  <div style="background: whitesmoke;" [style.margin-bottom.px]="inPopType()=='screen'?0:-68">
     @if (['form'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
         <app-form (saved)="onSavedInit();modalClose(d)" (submitted)="onSavedInit();modalClose(d)"
@@ -429,8 +429,12 @@
     }
     @if (['screen'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
-        <app-screen (closed)="modalClose(d)" [screenId]="inPopFormId()" [param]="inPopParams"
+        <app-screen (closed)="modalClose(d)" [screenId]="inPopFormId()" 
+        [param]="inPopParams"
         [entryId]="inPopEntryId()" [asComp]="true"></app-screen>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
+        </div> 
       }@loading {
         <div class="text-center m-5">
           <div class="spinner-grow text-primary" role="status">

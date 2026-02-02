@@ -1201,7 +1201,7 @@
       </div>
     </div>
     <!-- Embedding only required for textgeneration and classification -->
-    @if(['txtgen','txtcls'].includes(editCognaData.type)){
+    @if(['txtgen'].includes(editCognaData.type) || (['txtcls'].includes(editCognaData.type) && !editCognaData.data?.txtclsLlm)){
     <div ngbAccordionItem>
       <h2 ngbAccordionHeader>
         <button type="button" class="p-3" ngbAccordionButton>
@@ -1415,7 +1415,7 @@
             </div>
             }
 
-            @if (['txtgen'].includes(editCognaData.type)){
+            @if (['txtgen', 'txtcls'].includes(editCognaData.type)){
             <div class="mb-3">
               <div class="form-check form-switch">
                 <input type="checkbox" class="form-check-input" id="mmSupport" [(ngModel)]="editCognaData.mmSupport"
@@ -1461,7 +1461,8 @@
               </div>
               }
             </div>
-
+          }
+          @if (['txtgen'].includes(editCognaData.type)){
             <h5>Post-processing</h5>
             <div class="form-check form-switch">
               <input type="checkbox" class="form-check-input" id="imggenOn" [(ngModel)]="editCognaData.data.imggenOn"

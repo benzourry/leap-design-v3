@@ -22,6 +22,14 @@
                 [ngClass]="group.altClass">
                 <div class="card-header group-header element">
                   {{group.title}}
+                  @if (group.pre) {
+                    <div>
+                      <div class="mt-2"
+                        class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
+                        style="font-weight: bold;font-size:0.6em"
+                        [title]="group.pre">PRE</div>
+                    </div>
+                  }
                   <div class="element-edit nowrap"
                     style="position:absolute;top:3px;right:3px; padding:3px">
                     <button type="button" class="btn btn-round btn-sm btn-info"

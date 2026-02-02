@@ -395,7 +395,7 @@ export class NaviComponent implements OnInit {
   editNaviSetting(content, isNew) {
     this.editNaviData = this.app;
     history.pushState(null, null, window.location.href);
-    this.modalService.open(content)
+    this.modalService.open(content, { size: 'lg' })
       .result.then(res => {
         this.appService.save(this.editNaviData, this.user.email)
         .subscribe({

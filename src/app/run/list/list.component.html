@@ -840,7 +840,7 @@
   </div>
 </ng-template>
 <ng-template #inPopTpl let-c="close" let-d="dismiss">
-  <div style="margin-bottom:-68px; background: whitesmoke;">
+  <div style="background: whitesmoke;" [style.margin-bottom.px]="inPopType()=='screen'?0:-68">
     @if (['form'].indexOf(inPopType())>-1) {
       @defer(prefetch on idle){
         <app-form 

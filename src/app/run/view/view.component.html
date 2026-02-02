@@ -28,7 +28,7 @@
             <div class="form-wrapper">
               @if (!prevLoading()){   
                 @if (form()?.prev && prevEntry && !form()?.x?.hidePrev) {
-                  <div class="form-previous pb-3" style="border-bottom:solid 2px #ccc">
+                  <div class="form-previous" style="border-bottom:solid 2px #ccc">
                     <form-view [form]="form()?.prev" [entry]="prevEntry" [data]="prevEntry?.data"
                       [evalContextFn]="getEvalContext" [lang]="lang()"
                       [$this$]="_this" [$param$]="param()"
