@@ -497,8 +497,6 @@ export class LambdaEditorComponent implements OnInit {
       if (!match || !match[1]) continue; // skip if malformed
   
       const paramName = match[1].trim();
-
-      if (paramName === '_body') continue;
       
       if (!this.lambdaPromptsKeys.includes(paramName)) {
         this.lambdaPromptsKeys.push(paramName);

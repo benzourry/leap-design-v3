@@ -712,10 +712,22 @@
     <div class="modal-body">
       <div class="form form-horizontal">
         @for (b of lambdaPromptsKeys; track $index) {
+          @if (b!="_body"){
+            <div class="form-group mb-3">
+              <label class="form-label">{{b}}</label>
+              <input type="text" class="form-control" [(ngModel)]="lambdaPromptsData[b]"
+                name="{{lambda.id}}-data-{{b}}" id="{{lambda.id}}-data-{{b}}">
+            </div>
+          }
+        }
+        @if (lambdaPromptsKeys.includes("_body")){
           <div class="form-group mb-3">
-            <label class="form-label">{{b}}</label>
-            <input type="text" class="form-control" [(ngModel)]="lambdaPromptsData[b]"
-              name="{{lambda.id}}-data-{{b}}" id="{{lambda.id}}-data-{{b}}">
+            <label class="form-label">Form Body (JSON Body)</label>
+            <app-cm name="body" #codeeditorbody lang="javascript" [skipCheck]="true"
+              [ngModel]="lambdaPromptsData['_body']" (ngModelChange)="lambdaPromptsData['_body'] = $event"
+              hideControl="true"
+              [linenumber]="true" [readOnly]="false">
+            </app-cm>
           </div>
         }
       </div>
