@@ -330,8 +330,6 @@ export class KryptaEditorComponent implements OnInit {
     resultLoading=signal<boolean>(false);
     rcfData:any;
     runContractFn(tpl, fn) {
-        this.resultLoading.set(true);
-        this.cdr.detectChanges();
         
         // this.result = null;
         // this.error = null;
@@ -341,7 +339,9 @@ export class KryptaEditorComponent implements OnInit {
 
         this.modalService.open(tpl, { backdrop: 'static' })
         .result.then(data => {
+            this.resultLoading.set(true);
             this.cdr.detectChanges();
+            // this.cdr.detectChanges();
             this.kryptaService.runFn(+this.kryptaId, fn.name, data)
             .subscribe({
                 next:(res)=>{

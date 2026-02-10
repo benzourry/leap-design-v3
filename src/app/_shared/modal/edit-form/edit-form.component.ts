@@ -139,7 +139,10 @@ export class EditFormComponent implements OnInit {
 
 
   getTxFn(walletId){
-    let list = this.walletMap()[walletId]?.contract?.abiSummary?.functions;
+    let list = [];
+    if (walletId){
+      list = this.walletMap()[walletId]?.contract?.abiSummary?.functions || [];
+    }
     return list.filter(f=>f.stateMutability==='nonpayable' || f.stateMutability==='payable');
   }
 
