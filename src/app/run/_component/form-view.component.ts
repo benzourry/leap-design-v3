@@ -95,7 +95,11 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                 padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
               border-radius:20px;">{{$index+1}}</div>
             }
-          {{tab.title}}</a>
+            @if (tab.x?.icon){
+              <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+            }
+            {{tab.title}}
+          </a>
           <ng-template ngbNavContent>
             <ng-container *ngTemplateOutlet="sectionGroup;context:{tab:tab}"></ng-container>
           </ng-template>
