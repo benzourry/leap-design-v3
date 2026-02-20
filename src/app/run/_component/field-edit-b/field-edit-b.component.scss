@@ -49,6 +49,7 @@
     outline: none !important;
     box-shadow: 0 0 0 0.18em rgba(13, 110, 253, .25);
 }
+.ng-select.ng-invalid.ng-select-focused:not(.ng-select-opened) > .ng-select-container,
 .is-invalid.form-control:focus,
 .is-invalid .angular-editor .angular-editor-wrapper .angular-editor-textarea:focus{
     box-shadow: 0 0 0 0.18em rgba(var(--bs-danger-rgb), 0.25);
