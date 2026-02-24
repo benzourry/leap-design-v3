@@ -448,7 +448,10 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       <div class="form-group mb-3">
         <label class="form-label">RPC URL (EVM-compatible network) *</label>
         <input type="text" class="form-control" [(ngModel)]="editWalletData.rpcUrl" name="rpcUrl"
-          placeholder="ie: http://127.0.0.1:8545" required>
+          list="rpcUrlList" placeholder="ie: http://127.0.0.1:8545" required>
+        <datalist id="rpcUrlList">
+          <option value="http://10.224.203.61:8545">UNIMAS Node0-dev</option>
+        </datalist>
       </div>
       <div class="form-group mb-3">
         <label class="form-label">Chain ID *</label>

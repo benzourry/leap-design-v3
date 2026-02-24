@@ -371,7 +371,7 @@
                               <span class="input-group-text">Wallet *</span>
                               <select class="form-select form-select-sm" name="walletId-{{item}}" [compareWith]="compareByIdFn"
                                 [(ngModel)]="_editFormData.krypta[item].wallet" required>
-                                <option [ngValue]="null"> * No wallet selected </option>
+                                <option [ngValue]="undefined"> * No wallet selected </option>
                                 @for (item of walletList(); track item.id) {
                                 <option [value]="item?.id">{{item?.name}}
                                 </option>
@@ -385,7 +385,7 @@
                               <select class="form-select form-select-sm" name="walletFn-{{item}}"
                                 (ngModelChange)="onWalletFunctionSelect(item, $event)"
                                 [(ngModel)]="_editFormData.krypta[item].fn" required>
-                                <option [ngValue]="null"> * No function </option>
+                                <option [ngValue]="undefined"> * No function </option>
                                 @for (item of getTxFn(_editFormData.krypta[item]?.wallet); track $index) {
                                 <option [ngValue]="item?.name" >{{item?.name}}
                                 </option>

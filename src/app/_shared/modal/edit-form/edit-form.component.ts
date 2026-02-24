@@ -135,7 +135,7 @@ export class EditFormComponent implements OnInit {
   // }
 
   onWalletFunctionSelect(hook:string, fnName: string) {
-    const fnList = this.walletMap()[this._editFormData.krypta[hook].id]?.contract?.abiSummary?.functions || [];
+    const fnList = this.walletMap()[this._editFormData.krypta[hook].wallet]?.contract?.abiSummary?.functions || [];
     const selected = fnList.find(f => f.name === fnName);
 
     var params = {}
