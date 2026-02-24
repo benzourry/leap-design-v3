@@ -540,7 +540,9 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       </div>
 
       <div class="form-group mb-3">
-        <label class="form-label small mb-2">Solidity Codes</label>
+        <label class="form-label small mb-2">Solidity Codes 
+          <div class="small text-muted">(support up to version 0.8.19)</div>
+        </label>
         <div class="mx-n3">
           <app-cm name="f" lang="javascript" [(ngModel)]="editContractData.sol" hideControl="true" [skipCheck]="true"
             subType="passive" [linenumber]="true">
