@@ -60,6 +60,15 @@ export class EditFormComponent implements OnInit {
       this._editFormData.x = {};
     }
 
+    if (!this._editFormData.krypta) {
+      this._editFormData.krypta = {};
+    }
+
+    Object.keys(this._editFormData.krypta).forEach(k=>{
+      this.kryptaHookToggle[k]=true;
+    })
+    
+
     
     // const fnList = this.walletMap()[this._editFormData.x.walletId]?.contract?.abiSummary?.functions || [];
     // // const selected = fnList.find(f => f.name === fnName);
@@ -125,8 +134,8 @@ export class EditFormComponent implements OnInit {
   //   this.cdr.detectChanges();
   // }
 
-  onWalletFunctionSelect(fnName: string) {
-    const fnList = this.walletMap()[this._editFormData.x.walletId]?.contract?.abiSummary?.functions || [];
+  onWalletFunctionSelect(hook:string, fnName: string) {
+    const fnList = this.walletMap()[this._editFormData.krypta[hook].id]?.contract?.abiSummary?.functions || [];
     const selected = fnList.find(f => f.name === fnName);
 
     var params = {}
@@ -134,15 +143,25 @@ export class EditFormComponent implements OnInit {
       params[inp.name]=inp.type=='string'?'':null;
     })
 
-    this._editFormData.x.walletTextTpl = JSON.stringify(params, null, 2);
+    this._editFormData.krypta[hook].tpl = JSON.stringify(params, null, 2);
+  }
+
+  kryptaHookToggle:any={}
+
+  onHookEnable(item, event){
+    if (event){
+      this._editFormData.krypta[item]={};
+    }else{
+      delete this._editFormData.krypta[item];
+    }
   }
 
 
   getTxFn(walletId){
-    let list = [];
-    if (walletId){
-      list = this.walletMap()[walletId]?.contract?.abiSummary?.functions || [];
-    }
+    const list =
+      walletId
+        ? this.walletMap()[walletId]?.contract?.abiSummary?.functions || []
+        : [];
     return list.filter(f=>f.stateMutability==='nonpayable' || f.stateMutability==='payable');
   }
 
