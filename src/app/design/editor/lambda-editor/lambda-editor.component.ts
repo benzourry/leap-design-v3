@@ -425,16 +425,17 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_entry.save", type: "function", apply: "_entry.save({\n\tdata:{#{/*Data obj*/}}\n},#{formId}, #{prev-entry-id}, _this)", detail: "Save entry", boost: 10 },
           { label: "_entry.update", type: "function", apply: "_entry.update(${entryId}, {\n\t#{/*Data obj*/}\n}, _this)", detail: "Update entry", boost: 10 },
           { label: "_entry.approval", type: "function", apply: "_entry.approval(${entryId}, {\n\ttier:{id:000},\n\tstatus:'approved',\n\tremark:'',\n\tdata:{}\n}, _user.email, _this)", detail: "Approve entry", boost: 10 },
-          { label: "_entry.submit", type: "function", apply: "_entry.submit(${entryId})", detail: "Submit entry", boost: 10 },
+          { label: "_entry.submit", type: "function", apply: "_entry.submit(${entryId}, _user.email, _this)", detail: "Submit entry", boost: 10 },
           { label: "_entry.chart", type: "function", apply: "_entry.chart(${chartId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Run specified chart ID", boost: 10 },
           { label: "_entry.chartAsMap", type: "function", apply: "_entry.chartAsMap(${chartData})", detail: "Convert chart data to Map", boost: 10 },
           { label: "_entry.chartize", type: "function", apply: "_entry.chartize(${formId}, {\n\tagg:'#{count}',\n\tby:'#{$.category.name}',\n\tvalue:'#{$.$id}',\n\tseries:'',\n\tshowAgg: true,\n\tstatus: {},\n\tfilter: {}\n}, _user.email, _this)", detail: "Generate ad-hoc chart", boost: 10 },
-          { label: "_entry.delete", type: "function", apply: "_entry.delete(${entryId}, _this)", detail: "Delete entry" },
+          { label: "_entry.delete", type: "function", apply: "_entry.delete(${entryId}, _user.email, _this)", detail: "Delete entry" },
           { label: "_entry.count", type: "function", apply: "_entry.count(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Get dataset entries count", boost: 10 },
           { label: "_entry.dataset", type: "function", apply: "_entry.dataset(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Load dataset entries", boost: 10 },
           { label: "_entry.flatDataset", type: "function", apply: "_entry.flatDataset(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Load flat dataset entries (without envelope)", boost: 10 },
           { label: "_entry.streamDataset", type: "function", apply: "_entry.streamDataset(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Stream dataset entries", boost: 10 },
           { label: "_entry.relinkPrev", type: "function", apply: "_entry.relinkPrev(${entryId}, ${prevEntryId}, _this)", detail: "Relink entry with specified prev entry", boost: 10 },
+          { label: "_entry.updateOwner", type: "function", apply: "_entry.updateOwner(${entryId}, ${'newOwnerEmail'}, _this)", detail: "Update entry owner", boost: 10 },
         )
       }
       if (b.type == '_lookup') {
