@@ -137,6 +137,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
           if (this._param['$prev$.$id']) {
             this.prevId = this._param['$prev$.$id'];
           }
+
+          if (this._param['$.$id']) {
+            this._entryId = this._param['$.$id'];
+          }
+
+          if (this._param['entryId']) {
+            this._entryId = this._param['entryId'];
+          }
+          
           if (this.screen()?.dataset) {
             this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
           }

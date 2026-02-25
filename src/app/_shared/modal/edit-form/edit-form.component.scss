@@ -1,3 +1,13 @@
 .ms-4-5{
     margin-left: 2.5rem !important;
 }
+
+/* Re-enable the checkbox interaction even if the parent tab is disabled */
+.nav-link.disabled .form-check-input {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.text-disabled{
+    color: #6c757db8 !important;
+}

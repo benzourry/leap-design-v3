@@ -914,77 +914,7 @@
                         }
                       </ng-template>
                     </li>
-                    <!-- <li ngbNavItem [disabled]="['chatbot','qr'].indexOf(curScreen.type)>-1">
-                      <a class="small px-2" ngbNavLink>Preview</a>
-                      <ng-template ngbNavContent>
-                        <div class="p-2">
-                          @if (curScreen.type=='static') {
-                            <div class="p-3 bg-light" [innerHtml]="compileTpl(curScreen?.data?.content, {$_:{},$:{},$prev$:{},$$_:{},$maps$:[],$go:{},$popup:{},$param$:$param$,$this$:$this$,$user$:user, $conf$:runService.appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi})|safe:'html'"></div>
-                          }
-                          @if (curScreen.type=='page') {
-                            <div class="bg-white mb-2">
-                              <div class="input-group">
-                                <span class="input-group-text">Test ID</span>
-                                <input type="text" class="form-control" name="test-id" #testId>
-                                <button type="button" class="btn btn-secondary"
-                                (click)="runPreview(curScreen.type, testId.value)">Run</button>
-                              </div>
-                            </div>
-                            @if (curPreviewPage.$id) {
-                              <div class="p-3 bg-light" [ngClass]="curScreen?.data?.parentclass"
-                                [innerHtml]="compileTpl(curScreen?.data?.content,{$:curPreviewPage,$$:curPreviewPage.$prev,$go:{}})|safe:'html'">
-                              </div>
-                            }
-                          }
-                          @if (['list','calendar'].indexOf(curScreen.type)>-1) {
-                            <div class="bg-white mb-2">
-                              <button type="button" class="btn btn-sm btn-round px-3 btn-secondary"
-                              (click)="runPreview(curScreen.type, null)">Run Page</button>
-                            </div>
-                            <div class="p-3 bg-light">
-                              <div [outerHTML]="curScreen?.data?.pretext"></div>
-                              @if (['list'].indexOf(curScreen.type)>-1) {
-                                <div [ngClass]="curScreen?.data?.parentclass">
-                                  @for (entry of curPreviewList; track entry.id) {
-                                    <div
-                                      [outerHTML]="compileTpl(curScreen?.data?.content,{$:entry,$$:entry.$prev,$go:{}})|safe:'html'">
-                                    </div>
-                                  }
-                                  @if (curPreviewList.length==0) {
-                                    <div class="p-3 text-muted bg-light d-flex align-items-center">
-                                      <h5>No entry available</h5>
-                                    </div>
-                                  }
-                                </div>
-                              }
-                              @if (['calendar'].indexOf(curScreen.type)>-1) {
-                                <div>
-                                  <full-calendar [options]="{
-                                    initialView: curScreen?.data?.defaultView,
-                                    weekends: true,
-                                    header: {
-                                    center: 'title',
-                                    left: 'filter,dayGridMonth,timeGridWeek,timeGridDay',
-                                    right: 'prev,next,today'
-                                    },
-                                    buttonText: {
-                                    today:    'T',
-                                    month:    'M',
-                                    week:     'W',
-                                    day:      'D',
-                                    list:     'list'
-                                    },
-                                    plugins: calendarPlugins,
-                                    events: entryEvent
-                                  }" deepChangeDetection="true"></full-calendar>
-                                </div>
-                              }
-                              <div [outerHTML]="curScreen?.data?.posttext"></div>
-                            </div>
-                          }
-                        </div>
-                      </ng-template>
-                    </li> -->
+
                   </ul>
                 </div>
                 <div [ngbNavOutlet]="nav"></div>
