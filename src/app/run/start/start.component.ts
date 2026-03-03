@@ -23,7 +23,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, NgStyle } from '@angular/common';
 import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.service';
 import { Title } from '@angular/platform-browser';
-import { Subscription, lastValueFrom } from 'rxjs';
+import { Observable, Subscription, firstValueFrom, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../_shared/service/page-title-service';
 import { ServerDate, compileTpl, createProxy, deepMerge, getQuery, loadScript } from '../../_shared/utils';
 import { LogService } from '../../_shared/service/log.service';
@@ -355,11 +355,10 @@ export class StartComponent implements OnInit, OnDestroy {
     this.appLoading.set(true);
     this.runService.getRunApp(id, { email: this.user().email })
       .subscribe({
-        next: (res) => {
+        next: async (res) => {
           this.app.set(res);
           this.runService.$app.set(res);
 
-          this.appLoading.set(false);
           // this.isDev.set(res.email.indexOf(this.userService.getActualUser().email) > -1);
 
           this.runService.getAppUserByEmail(id, { email: this.user().email })
@@ -375,7 +374,7 @@ export class StartComponent implements OnInit, OnDestroy {
               .subscribe(screen => this.screen.set(screen));
           }
           this.checkPush(res);
-          this.initScreen(res.f);
+          await this.initScreen(res.f);
 
           // this.startPage.set(res.startPage??'start');
 
@@ -400,6 +399,7 @@ export class StartComponent implements OnInit, OnDestroy {
             }
           }
 
+          this.appLoading.set(false);
 
         },
         error: (err) => this.appLoading.set(false)
@@ -514,9 +514,28 @@ export class StartComponent implements OnInit, OnDestroy {
   // _eval = (v) => new Function('$app$', '$navi$', '$navis$', '$badge$', '$user$', '$conf$', '$this$','$loadjs$', '$param$','$http$', '$post$', '$endpoint$', 'ServerDate', '$base$', '$baseUrl$','$baseApi$', '$token$', `return ${v}`)
   //   (this.app, this.naviData, this.navis, this.badge, this.user, this.runService?.appConfig, this._this, this.loadScript, this.$param$, this.httpGet, this.httpPost, this.endpointGet, ServerDate, this.base, this.baseUrl, this.baseApi, this.accessToken);
 
-  _eval = (v) => new Function('setTimeout','setInterval','$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$pop', '$q$', '$showNav$',
-    `return ${v}`)(this._setTimeout, this._setInterval, this.app(), {}, {}, {}, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$digest$, this.$param$, this.log, this.updateField, this.updateLookup, this.$toast$, this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate, null, this.runService?.$live$(this.liveSubscription(), this.$digest$), this.accessToken, deepMerge, this.http, null, null, this.$q, this.openNav);
+  _eval = async(v) => new Function('setTimeout','setInterval','$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$pop', '$q$', '$showNav$',
+    `return ${v}`)(this._setTimeout, this._setInterval, this.app(), {}, {}, {}, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$digest$, this.$param$, this.log, this.updateField, this.updateLookup, this.$toast$, this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate, null, this.runService?.$live$(this.liveSubscription(), this.$digest$), this.accessToken, deepMerge, this.hybridWeb, null, null, this.$q, this.openNav);
 
+  private wrapObservable<T>(obs: Observable<T>): Observable<T> & PromiseLike<T> {
+    const thenable = obs as any;
+
+    // We attach a .then() method to the Observable
+    // This makes 'await' treat the Observable like a Promise
+    thenable.then = (resolve: any, reject: any) => 
+      firstValueFrom(obs).then(resolve, reject);
+
+    return thenable;
+  }
+
+  get hybridWeb() {
+    return {
+      get: (url: string, opts?: any) => this.wrapObservable(this.http.get(url, opts)),
+      post: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.post(url, body, opts)),
+      put: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.put(url, body, opts)),
+      delete: (url: string, opts?: any) => this.wrapObservable(this.http.delete(url, opts)),
+    };
+  }
 
   compileTpl(html, data) {
     var f = "";
@@ -528,11 +547,11 @@ export class StartComponent implements OnInit, OnDestroy {
     return f;
   }
 
-  initScreen(js) {
+  async initScreen(js) {
     let res = undefined;
     let jsTxt = this.compileTpl(js, { $param$: this.$param$, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl(), $baseApi$: baseApi })
     try {
-      res = this._eval(jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
+      res = await this._eval(jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
     } catch (e) { this.logService.log(`{start-${this.app().title}-initNavi}-${e}`) }
     this.runPre();
     return res;

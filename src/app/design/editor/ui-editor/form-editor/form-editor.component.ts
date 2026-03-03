@@ -1059,6 +1059,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     editTierData: any;
     editTier(content, data) {
         this.editTierData = data;
+        if (!this.editTierData.x) {
+            this.editTierData.x = {};
+        }
         if (this.editTierData.orgMapParam) {
             this.editTierData.orgMapParamStr = JSON.stringify(this.editTierData.orgMapParam);
         }

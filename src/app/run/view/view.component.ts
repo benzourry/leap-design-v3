@@ -754,7 +754,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
 
   isMine(tier) {
-    return this.entry.approver[tier.id].indexOf(this.user().email) > -1
+    return this.entry.approver?.[tier.id]?.indexOf(this.user().email) > -1
   }
 
   tierCheckStatus: any = {};

@@ -291,11 +291,22 @@
                                           </span>
                                         }
                                         <strong>{{tier.name}} </strong>
-                                        @if (isMine(tier)) {
-                                          <button type="button" class="btn btn-round btn-info btn-sm float-end"
-                                            (click)="editApproval(entry?.approval[tier.id],tier)">
-                                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                                          </button>
+                                        @if(tier.x?.anyApproverEdit){
+                                          @if (isMine(tier)) {
+                                            <button type="button" class="btn btn-round btn-info btn-sm float-end"
+                                              title="Edit approval by {{entry?.approval[tier.id]?.email}}"
+                                              (click)="editApproval(entry?.approval[tier.id],tier)">
+                                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                            </button>
+                                          }
+                                        }@else {
+                                          @if (entry?.approval[tier.id]?.email == user().email){
+                                            <button type="button" class="btn btn-round btn-info btn-sm float-end"
+                                              title="Edit my approval"
+                                              (click)="editApproval(entry?.approval[tier.id],tier)">
+                                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                            </button>
+                                          }
                                         }
                                       </span>
                                       @if (entry?.approval[tier.id]?.remark) {
