@@ -631,7 +631,7 @@
                                         </fa-icon>
                                       }
                                       @if (tier.alwaysApprove) {
-                                        <fa-icon class="me-2" [icon]="['fas','circle-notch']"
+                                        <fa-icon class="me-2 text-primary" [icon]="['fas','circle-notch']"
                                           title="Decision always approve mode"
                                           [fixedWidth]="true">
                                         </fa-icon>
@@ -668,69 +668,86 @@
                                     117, 125)'" -->
                                     <!-- class="btn btn-outline-secondary btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative" -->
                                     <!-- [style.border-width]="selectedLine==o.value.id?'2px':'2px'" -->
-                                    @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
-                                      <button type="button" (click)="highlightLine(tier,o.value)"
-                                        [title]="o.value.label"
-                                        [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
-                                        [style.color]="selectedLine==o.value.id?selectedColor:''"
-                                        class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
-                                        >
-                                        @if (!simplifiedProcessView) {
-                                          {{o.value.label}}
-                                        } @else {
-                                          <fa-icon [fixedWidth]="true"
-                                            [icon]="['fas',o.value.icon]">
-                                          </fa-icon>
-                                        }
-                                        @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
-                                          <fa-icon
-                                            class="text-danger blink_me"
-                                            style="position:absolute; right:-5px;top:-10px"
-                                            title="Action [Go to tier] leads to nonexistent tier"
-                                            [icon]="['fas','exclamation-triangle']"
-                                            [fixedWidth]="true" size="xs">
-                                          </fa-icon>
-                                        }
-                                        @if (o.value.mailer?.length>0) {
-                                          <fa-icon
-                                            [icon]="['far','envelope']" [fixedWidth]="true">
-                                          </fa-icon>
-                                        }
-                                        @if (!curForm.x?.extended){
-                                          <div class="element-edit shadow-sm leafup nowrap">
-                                            <button type="button" class="btn btn-round btn-sm btn-info"
-                                              (click)="editTierAction(editTierActionTpl,tier,o.value)">
-                                              <fa-icon [icon]="['fas','pencil-alt']"
-                                                [fixedWidth]="true">
-                                              </fa-icon>
-                                            </button>
-                                            <button type="button" class="btn btn-round btn-sm btn-info"
-                                              (click)="removeTierAction(o.value)">
-                                              <fa-icon [icon]="['fas','trash']"
-                                                [fixedWidth]="true">
-                                              </fa-icon>
-                                            </button>
-                                            @if (!$a_first) {
-                                              <button type="button" class="btn btn-info btn-round btn-sm"
-                                                (click)="reorderTierAction($index,$a_index, -1)">
-                                                <fa-icon [icon]="['fas','arrow-left']"
-                                                  [fixedWidth]="true">
-                                                </fa-icon>
-                                              </button>
-                                            }
-                                            @if (!$a_last) {
-                                              <button type="button" class="btn btn-info btn-round btn-sm"
-                                                (click)="reorderTierAction($index,$a_index, 1)">
-                                                <fa-icon [icon]="['fas','arrow-right']"
-                                                  [fixedWidth]="true">
-                                                </fa-icon>
-                                              </button>
-                                            }
-                                          </div>
-                                        }
+                                    @if (tier.alwaysApprove) {
+                                      <button type="button" (click)="highlightLine(tier,{id:-2323, color:'rgb(0, 123, 255)', action:'nextTier'})"
+                                          title="Always approve"
+                                          [style.border-color]="selectedLine==-2323?'rgb(0, 123, 255)':'#aaa'"
+                                          [style.color]="selectedLine==-2323?'rgb(0, 123, 255)':''"
+                                          style="border-style:dashed;"
+                                          class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative">
+                                          @if (!simplifiedProcessView) {
+                                            Always approve
+                                          } @else {
+                                            <fa-icon [fixedWidth]="true"
+                                              [icon]="['fas','circle-notch']">
+                                            </fa-icon>
+                                          }
                                       </button>
+                                    }@else{
+                                      @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                        <button type="button" (click)="highlightLine(tier,o.value)"
+                                          [title]="o.value.label"
+                                          [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
+                                          [style.color]="selectedLine==o.value.id?selectedColor:''"
+                                          class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
+                                          >
+                                          @if (!simplifiedProcessView) {
+                                            {{o.value.label}}
+                                          } @else {
+                                            <fa-icon [fixedWidth]="true"
+                                              [icon]="['fas',o.value.icon]">
+                                            </fa-icon>
+                                          }
+                                          @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
+                                            <fa-icon
+                                              class="text-danger blink_me"
+                                              style="position:absolute; right:-5px;top:-10px"
+                                              title="Action [Go to tier] leads to nonexistent tier"
+                                              [icon]="['fas','exclamation-triangle']"
+                                              [fixedWidth]="true" size="xs">
+                                            </fa-icon>
+                                          }
+                                          @if (o.value.mailer?.length>0) {
+                                            <fa-icon
+                                              [icon]="['far','envelope']" [fixedWidth]="true">
+                                            </fa-icon>
+                                          }
+                                          @if (!curForm.x?.extended){
+                                            <div class="element-edit shadow-sm leafup nowrap">
+                                              <button type="button" class="btn btn-round btn-sm btn-info"
+                                                (click)="editTierAction(editTierActionTpl,tier,o.value)">
+                                                <fa-icon [icon]="['fas','pencil-alt']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                              <button type="button" class="btn btn-round btn-sm btn-info"
+                                                (click)="removeTierAction(o.value)">
+                                                <fa-icon [icon]="['fas','trash']"
+                                                  [fixedWidth]="true">
+                                                </fa-icon>
+                                              </button>
+                                              @if (!$a_first) {
+                                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                                  (click)="reorderTierAction($index,$a_index, -1)">
+                                                  <fa-icon [icon]="['fas','arrow-left']"
+                                                    [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                              @if (!$a_last) {
+                                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                                  (click)="reorderTierAction($index,$a_index, 1)">
+                                                  <fa-icon [icon]="['fas','arrow-right']"
+                                                    [fixedWidth]="true">
+                                                  </fa-icon>
+                                                </button>
+                                              }
+                                            </div>
+                                          }
+                                        </button>
+                                      }
                                     }
-                                    @if (!curForm.x?.extended){
+                                    @if (!curForm.x?.extended && !tier.alwaysApprove) {
                                       <button
                                         class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
                                         (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
@@ -740,55 +757,70 @@
                                     }
                                   </div>
                                   <div style="position:absolute;right:0px; top:0px; width:0px; height:100%">
-                                    @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
-                                      <div id="ta_{{o.value.id}}"
+                                    @if (tier.alwaysApprove) {
+                                      <div id="ta_-2323"
                                         style="position:absolute;left:0px;height:4px;width:0px;"
-                                        [style.top.px]="50+($a_index*10)">
+                                        [style.top.px]="50+(0*10)">
                                       </div>
-                                      @if (['goTier','nextTier','prevTier'].includes(o.value.action)) {
-                                        <div id="line_{{o.value.id}}"
-                                          class="line-tier"
-                                          [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                          [class.is-nexttier]="o.value.action=='nextTier'"
-                                          [class.selected-line]="selectedLine==o.value.id"
-                                          [style.top.px]="50+($a_index*10)"
-                                          [style.width.px]="10+$a_index*10">
+                                      <div id="line_-2323"
+                                        class="line-tier"
+                                        [style.border-color]="selectedLine==-2323?selectedColor:'#ccc'"
+                                        [class.is-nexttier]="true"
+                                        [class.selected-line]="selectedLine==-2323"
+                                        [style.top.px]="50+(0*10)"
+                                        [style.width.px]="10+0*10">
+                                      </div>
+                                    }@else{
+                                      @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                        <div id="ta_{{o.value.id}}"
+                                          style="position:absolute;left:0px;height:4px;width:0px;"
+                                          [style.top.px]="50+($a_index*10)">
                                         </div>
-                                      }
-                                      @if (['curTier'].includes(o.value.action)) {
-                                        @if (o.value.userEdit) {
+                                        @if (['goTier','nextTier','prevTier'].includes(o.value.action)) {
                                           <div id="line_{{o.value.id}}"
                                             class="line-tier"
                                             [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                            [style.display]="selectedLine==o.value.id?'block':'none'"
+                                            [class.is-nexttier]="o.value.action=='nextTier'"
                                             [class.selected-line]="selectedLine==o.value.id"
                                             [style.top.px]="50+($a_index*10)"
-                                            style="width:15px;">
-                                            <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                              style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
-                                              @if (o.value.action=='curTier') {
-                                                <fa-icon
-                                                  size="xs" [icon]="['fas',o.value.icon]">
-                                                </fa-icon>
-                                              }
-                                            </div>
+                                            [style.width.px]="10+$a_index*10">
                                           </div>
                                         }
-                                        @if (!o.value.userEdit) {
-                                          <div id="term_{{o.value.id}}"
-                                            [style.display]="selectedLine==o.value.id?'block':'none'"
-                                            [style.top.px]="50+($a_index*10)"
-                                            style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
-                                            <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                              [style.color]="selectedLine==o.value.id?selectedColor:'black'"
-                                              style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
-                                              @if (o.value.action=='curTier') {
-                                                <fa-icon
-                                                  size="xs" [icon]="['fas',o.value.icon]">
-                                                </fa-icon>
-                                              }
+                                        @if (['curTier'].includes(o.value.action)) {
+                                          @if (o.value.userEdit) {
+                                            <div id="line_{{o.value.id}}"
+                                              class="line-tier"
+                                              [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                              [style.display]="selectedLine==o.value.id?'block':'none'"
+                                              [class.selected-line]="selectedLine==o.value.id"
+                                              [style.top.px]="50+($a_index*10)"
+                                              style="width:15px;">
+                                              <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                                @if (o.value.action=='curTier') {
+                                                  <fa-icon
+                                                    size="xs" [icon]="['fas',o.value.icon]">
+                                                  </fa-icon>
+                                                }
+                                              </div>
                                             </div>
-                                          </div>
+                                          }
+                                          @if (!o.value.userEdit) {
+                                            <div id="term_{{o.value.id}}"
+                                              [style.display]="selectedLine==o.value.id?'block':'none'"
+                                              [style.top.px]="50+($a_index*10)"
+                                              style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
+                                              <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                [style.color]="selectedLine==o.value.id?selectedColor:'black'"
+                                                style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                                @if (o.value.action=='curTier') {
+                                                  <fa-icon
+                                                    size="xs" [icon]="['fas',o.value.icon]">
+                                                  </fa-icon>
+                                                }
+                                              </div>
+                                            </div>
+                                          }
                                         }
                                       }
                                     }
@@ -3711,6 +3743,7 @@
     </div>
   }
 </ng-template>
+
 <ng-template #editLookupTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
     <app-edit-lookup [appId]="app.id" [lookup]="editLookupData" [accessList]="accessList" [dismiss]="d" [close]="c"></app-edit-lookup>
@@ -3734,6 +3767,7 @@
     </div>
   }
 </ng-template>
+
 <ng-template #editGroupTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
     <app-edit-role [editGroupData]="editGroupData" [accessList]="accessList" [lookupList]="lookupList" [dismiss]="d" [close]="c"></app-edit-role>
@@ -3745,6 +3779,7 @@
     </div>
   }
 </ng-template>
+
 <ng-template #editMailerTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
     <app-edit-mailer [editMailerData]="editMailerData" [selectedForm]="curForm" [formList]="formList" [dismiss]="d" [close]="c"></app-edit-mailer>
@@ -3756,6 +3791,7 @@
     </div>
   }
 </ng-template>
+
 <ng-template #viewJsonSchemaTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
     <h4 class="modal-title">Form Data JSON Schema</h4>

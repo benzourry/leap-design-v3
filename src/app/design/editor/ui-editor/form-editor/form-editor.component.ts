@@ -949,10 +949,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         var allTaIndex = 0;
         this.curForm?.tiers.forEach((t, indext) => {
             this.tierMap[t.id] = t;
-            let actions = Object.keys(t.actions);
-            actions.forEach((tak, indexta) => {
+
+            let actionsObj:any[] = Object.values(t.actions);
+            if (t.alwaysApprove){
+                actionsObj = [{id:-2323, color:"rgb(0, 123, 255)", action:'nextTier'}]; // -2323 is just a random id that will never exist in db to represent alwaysApprove action
+            }
+
+            actionsObj.forEach((ta, indexta) => {
                 let addToLines = false;
-                let ta = t.actions[tak];
+                // let ta = t.actions[tak];
                 let tElem;
                 let toComplete: boolean;
                 if (ta.action == 'nextTier') {
