@@ -249,51 +249,19 @@ export class FieldEditComponent extends ElementBase<any> {
     //   }
     // });
 
-    effect(() => {
-      if (this.field()?.type == 'radio') {
-        // … do the mutation without tracking it:    
-        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
-          untracked(() => {
-            queueMicrotask(() => {
-              this.value = this.lookupList().find(option => option.code === this.value.code) || this.value;
-            });
-          });
-        }
-      }
-    })
 
+    // !!! WHY use effect() to handle snap value. Value itself is not even a signal, so, this will not trigger when value change.
+    // REASON TOK ARIYA SBB lookupList() often arrive late. So, engkah dlm effect supaya once it is arrive, snap the value.
+    // REPLACE with this simple block reusing autoSnapValue function
     effect(() => {
-      if (this.field()?.type == 'modelPicker') {
-        // … do the mutation without tracking it:    
-        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
-          untracked(() => {
-            queueMicrotask(() => {
-              if (this.field().subType == 'multiple') {
-                this.value = this.value.map(v => this.lookupList().find(option => option?.$id === v?.$id) || v);
-              } else {
-                this.value = this.lookupList().find(option => option?.$id === this.value?.$id) || this.value;
-              }
-            });
-          });
-        }
+      if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
+        untracked(() => {
+          queueMicrotask(() => {
+            this.value = this.autoSnapValue(this.value);
+          })
+        });
       }
-    })
-
-    effect(() => {
-      if (this.field()?.type == 'checkboxOption') {
-        // … do the mutation without tracking it:    
-        if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null && this.value.length > 0) {
-          if (this.value instanceof Array) {
-            untracked(() => {
-              queueMicrotask(() => {
-                const newVal = this.value?.map(v => this.lookupList().find(option => option?.code === v?.code) || v)
-                this.value = newVal;
-              });
-            });
-          }
-        }
-      }
-    })
+    });
 
     effect(() => {
       if (this.field().x?.inlineImg) {
@@ -350,7 +318,76 @@ export class FieldEditComponent extends ElementBase<any> {
     return false;
   }
 
+  VALUE_SNAP_TYPE = ['radio', 'select', 'modelPicker', 'checkboxOption']; // if type in this, then need to auto snap value to lookupList reference
+
+  // autoSnapValueOld(oldValue: any){
+  //   let retVal = oldValue;
+  //   if (oldValue === undefined || oldValue === null) return oldValue;
+
+  //   // console.log(`autoSnapValue called with`,this.field()?.type,this.lookupList(),oldValue);
+
+  //   if (this.field()?.type == 'radio') {
+  //     // … do the mutation without tracking it:    
+  //     if (this.lookupList() != null && this.lookupList().length > 0 && oldValue != null) {
+  //       retVal = this.lookupList().find(option => option.code === oldValue.code) || oldValue;
+  //     }
+  //   }else if (this.field()?.type == 'select') {
+  //     // … do the mutation without tracking it:    
+  //     if (this.lookupList() != null && this.lookupList().length > 0 && oldValue != null) {
+  //       if (this.field().subType == 'multiple') {
+  //         retVal = retVal.map(v => this.lookupList().find(option => option.code === v.code) || v);
+  //       } else {
+  //         retVal = this.lookupList().find(option => option.code === oldValue.code) || oldValue;
+  //       }
+  //     }
+  //   }else if (this.field()?.type == 'modelPicker') {
+  //     // … do the mutation without tracking it:    
+  //     if (this.lookupList() != null && this.lookupList().length > 0 && oldValue != null) {
+  //       if (this.field().subType == 'multiple') {
+  //         retVal = retVal.map(v => this.lookupList().find(option => option?.$id === v?.$id) || v);
+  //       } else {
+  //         retVal = this.lookupList().find(option => option?.$id === oldValue?.$id) || oldValue;
+  //       }
+  //     }
+  //   }else if (this.field()?.type == 'checkboxOption') {
+  //     // … do the mutation without tracking it:    
+  //     if (this.lookupList() != null && this.lookupList().length > 0 && oldValue != null && oldValue.length > 0) {
+  //       if (oldValue instanceof Array) {
+  //             const newVal = oldValue?.map(v => this.lookupList().find(option => option?.code === v?.code) || v)
+  //             retVal = newVal;
+  //       }
+  //     }
+  //   }
+  //   // console.log(`autoSnapValue: ${JSON.stringify(oldValue)} -> ${JSON.stringify(retVal)}`);
+  //   return retVal;
+  // }
+
+
+  autoSnapValue(oldValue: any) {
+    const field = this.field();
+    const list = this.lookupList();
+
+    if (oldValue == null || !list?.length) return oldValue;
+
+    const type = field?.type;
+    const isMultiple = field?.subType === 'multiple' || type === 'checkboxOption';
+
+    const key = (type === 'modelPicker') ? '$id' : 'code';
+
+    const snap = (val: any) => {
+      if (!val || typeof val !== 'object') return val;
+      return list.find(option => option[key] === val[key]) ?? val;
+    };
+
+    if (isMultiple && Array.isArray(oldValue)) {
+      return oldValue.map(v => snap(v));
+    }
+
+    return snap(oldValue);
+  }
+
   compareFn = (val1: any, val2: any) => val1 && val1.code == val2.code;
+
   valueBlured(event) {
     this.valueBlur.emit(event);
   }
@@ -358,7 +395,11 @@ export class FieldEditComponent extends ElementBase<any> {
   private previousEmitted: any;
 
   valueChanged(next: any) {
-    if (!deepEqual(next, this.previousEmitted)|| this.field()?.type=='btn') {
+    // this.value = next;
+    // this.valueChange.emit(next);
+    // jika value b4<>next, emit
+    // field type button, perlu sentiasa emit
+    if (!deepEqual(next, this.previousEmitted) || this.field()?.type=='btn' || this.VALUE_SNAP_TYPE.includes(this.field()?.type)) {
       this.previousEmitted = next;
 
       if (this.field()?.subType == 'time') {
@@ -369,6 +410,12 @@ export class FieldEditComponent extends ElementBase<any> {
         d.setFullYear(h.getFullYear());
         this.value = d.getTime();
       }
+      
+      if (this.VALUE_SNAP_TYPE.includes(this.field()?.type)) {
+        next = this.autoSnapValue(next);
+        this.value = next;
+      }
+
       this.valueChange.emit(next);
     }
   }

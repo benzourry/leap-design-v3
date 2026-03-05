@@ -195,8 +195,10 @@ export class ListComponent implements OnInit, OnDestroy {
           (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
         this._param = param;
         this._startTimestamp = startTimestamp;
-        if (this._param['$prev$.$id']) {
-          this.prevId = this._param['$prev$.$id'];
+        if (this._param){
+          if (this._param['$prev$.$id']) {
+            this.prevId = this._param['$prev$.$id'];
+          }
         }
         this.getEntryList(this.pageNumber(), this.sort());
       }

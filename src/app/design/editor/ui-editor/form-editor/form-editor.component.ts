@@ -965,7 +965,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     if (nextTier) {
                         tElem = document.getElementById("t_" + nextTier.id);
                         addToLines = true;
-                    } else if (t.sortOrder == this.curForm?.tiers?.length - 1) {
+                    } else if (t.sortOrder == this.curForm.tiers?.length - 1) {
                         tElem = document.getElementById("t_999");
                         this.hasLineToComplete = true;
                         toComplete = true;
