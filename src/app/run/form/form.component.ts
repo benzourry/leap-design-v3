@@ -487,12 +487,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.lookupKey[key.code] = {
             ds: key.dataSource,
             type: key.type,
-            skipLoadSource: key.skipLoadSource
+            skipLoadSource: key.skipLoadSource,
+            initLoadSource: key.initLoadSource
           }
 
           // only pre-load lookup data if not select or text. select/text init param value might not available for loading
           // select/text also loaded when onfocus.
-          if (['select', 'text'].indexOf(key.type) == -1 && !key.skipLoadSource) {
+          if (key.initLoadSource || (['select', 'text'].indexOf(key.type) == -1 && !key.skipLoadSource)) {
             this.getLookup(key.code, key.dataSourceInit, this.entry.data);
           }
         });

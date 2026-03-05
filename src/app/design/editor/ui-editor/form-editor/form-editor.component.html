@@ -2196,11 +2196,18 @@
                 </div>
               }
               
+              @if ((['modelPicker','select','text'].indexOf(editItemData.type)>-1)){
+                <div class="form-check mb-1">
+                  <input type="checkbox" class="form-check-input" id="initLoadSource"
+                    [(ngModel)]="editItemData.x.initLoadSource" name="initLoadSource">
+                  <label for="initLoadSource" class="form-check-label">Load list source on form init (immediately load list)</label>
+                </div>
+              }
               @if ((['modelPicker','dataset','select','radio','radioBtn','checkboxOption','text'].indexOf(editItemData.type)>-1)){
                 <div class="form-check mb-3">
                   <input type="checkbox" class="form-check-input" id="skipLoadSource"
                     [(ngModel)]="editItemData.x.skipLoadSource" name="skipLoadSource">
-                  <label for="skipLoadSource" class="form-check-label">Don't load list source (load manually)</label>
+                  <label for="skipLoadSource" class="form-check-label">Don't load list source on focus (load manually)</label>
                 </div>
               }
 
