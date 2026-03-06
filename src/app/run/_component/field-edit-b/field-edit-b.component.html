@@ -67,8 +67,7 @@
   @defer (on idle) {
     <ng-container
       *ngTemplateOutlet="{'text':text,'number':number,'date':date,'checkbox':checkbox,'select':select,'radio':radio,'simpleOption':simpleOption,'scaleTo10':scaleTpl,'scaleTo5':scaleTpl,'scale':scaleTpl,
-      'speech':speech,
-      'imagePreview':imagePreview,'file':file,'eval':eval,'static':static,'qr':qr,'modelPicker':modelPicker,'checkboxOption':checkboxOption, 'btn':btn, 'color':color, 'map':map}[f.type]">
+      'speech':speech,'imagePreview':imagePreview,'file':file,'eval':eval,'static':static,'qr':qr,'modelPicker':modelPicker,'checkboxOption':checkboxOption, 'btn':btn, 'color':color, 'map':map}[f.type]">
     </ng-container>
     @if (f.hint) {
       <small class="val-text form-text text-muted d-block">
@@ -105,7 +104,7 @@
     <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
   @if (f.subType=='richtext') {
-    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="f.readOnly">
+    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="!!value" [class.pe-none]="f.readOnly">
       @defer(prefetch on idle){
         <!-- NOT SURE WHY DEFER WAS DISABLED BEFORE -->
         <angular-editor class="clean" [config]="editorConfig"
