@@ -375,7 +375,7 @@ export class FieldEditComponent extends ElementBase<any> {
 
       this.previousEmitted = processedValue;
 
-      this.valueChange.emit(next);
+      this.valueChange.emit(processedValue);
     }
   }
 
