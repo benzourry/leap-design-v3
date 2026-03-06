@@ -1,3 +1,10 @@
+@let f = field();
+@let m = model();
+@let uid = 'f-'+f.id+'-'+id();
+@let isInvalid = m?.touched && m?.invalid;
+@let placeholder = f.placeholder||' ';
+
+
 <ng-template #errorIcon>
   <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='#dc3545' viewBox='0 0 12 12'>
     <circle cx='6' cy='6' r='4.5' />
@@ -11,49 +18,48 @@
     <small class="val-text text-danger">
       <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
       @if (formField.errors.required) {
-        <span>{{field().label}} {{lang()=='ms'?'wajib diisi':'is required'}}</span>
+        <span>{{f.label}} {{lang()=='ms'?'wajib diisi':'is required'}}</span>
       }
       @if (formField.errors.minlength) {
-        <span>{{field().label}} {{lang()=='ms'?'mesti sekurang-kurangnya':'must have at least'}} {{field()?.v?.minlength}}
+        <span>{{f.label}} {{lang()=='ms'?'mesti sekurang-kurangnya':'must have at least'}} {{f?.v?.minlength}}
         {{lang()=='ms'?'aksara':'characters'}}</span>
       }
       @if (formField.errors.maxlength) {
-        <span>{{field().label}} {{lang()=='ms'?'mesti tidak lebih dari':'must have at most'}} {{field()?.v?.maxlength}} {{lang()=='ms'?'aksara':'characters'}}</span>
+        <span>{{f.label}} {{lang()=='ms'?'mesti tidak lebih dari':'must have at most'}} {{f?.v?.maxlength}} {{lang()=='ms'?'aksara':'characters'}}</span>
       }
       @if (formField.errors.pattern) {
-        <span>{{lang()=='ms'?'Bukan':'Not a valid'}} {{field().label}} {{lang()=='ms'?'yang sah':''}}</span>
+        <span>{{lang()=='ms'?'Bukan':'Not a valid'}} {{f.label}} {{lang()=='ms'?'yang sah':''}}</span>
       }
       @if (formField.errors.max) {
-        <span>{{field().label}} {{lang()=='ms'?'mesti di bawah':'should be under'}} {{field()?.v?.max}}</span>
+        <span>{{f.label}} {{lang()=='ms'?'mesti di bawah':'should be under'}} {{f?.v?.max}}</span>
       }
       @if (formField.errors.min) {
-        <span>{{field().label}} {{lang()=='ms'?'mesti di atas':'should be above'}} {{field()?.v?.min}}</span>
+        <span>{{f.label}} {{lang()=='ms'?'mesti di atas':'should be above'}} {{f?.v?.min}}</span>
       }
       @if (formField.errors.ngbDate) {
         <span>{{lang()=='ms'?'Tarikh tidak sah':'Invalid date'}}</span>
       }
       @if (formField.errors.maxsize) {
-        <span>{{lang()=='ms'?'Saiz file tidak boleh melebihi':'File size should not exceed'}} {{field()?.v?.max}}MB. 
+        <span>{{lang()=='ms'?'Saiz file tidak boleh melebihi':'File size should not exceed'}} {{f?.v?.max}}MB. 
           {{lang()=='ms'?'Fail diabaikan':'Ignored file(s)'}}':
         {{formField.errors.files}}</span>
       }
     </small>
   }
-  @if (value && field()?.x?.imgcls && field()?.v?.imgcls && !imgclsVal()) {
+  @if (value && f?.x?.imgcls && f?.v?.imgcls && !imgclsVal()) {
     <small class="val-text text-danger">
       <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
-        <span>{{lang()=='ms'?"Gambar tidak mengandungi":"Image doesn't contain any"}} '{{field().v.imgcls}}'</span>
+        <span>{{lang()=='ms'?"Gambar tidak mengandungi":"Image doesn't contain any"}} '{{f.v.imgcls}}'</span>
     </small>
   }
 
 </ng-template>
 
-<div class="field-edit form-group position-relative" [ngClass]="field().altClass">
-  @if (field()?.type!='btn' && field()?.subType!='clearfix' && !field()?.hideLabel) {
-    <!-- [class.text-danger]="formField?.touched && formField?.invalid" -->
-    <label class="label-span me-1" for="f-{{field().id}}-{{id()}}">
-        <span [innerHtml]="field().label">{{field().label}} </span>
-        @if (field()?.v?.required) {
+<div class="field-edit form-group position-relative" [ngClass]="f.altClass">
+  @if (f?.type!='btn' && f?.subType!='clearfix' && !f?.hideLabel) {
+    <label class="label-span me-1" for="{{uid}}">
+        <span [innerHtml]="f.label">{{f.label}} </span>
+        @if (f?.v?.required) {
           <span> *</span>
         }
     </label>
@@ -62,78 +68,78 @@
     <ng-container
       *ngTemplateOutlet="{'text':text,'number':number,'date':date,'checkbox':checkbox,'select':select,'radio':radio,'simpleOption':simpleOption,'scaleTo10':scaleTpl,'scaleTo5':scaleTpl,'scale':scaleTpl,
       'speech':speech,
-      'imagePreview':imagePreview,'file':file,'eval':eval,'static':static,'qr':qr,'modelPicker':modelPicker,'checkboxOption':checkboxOption, 'btn':btn, 'color':color, 'map':map}[field().type]">
+      'imagePreview':imagePreview,'file':file,'eval':eval,'static':static,'qr':qr,'modelPicker':modelPicker,'checkboxOption':checkboxOption, 'btn':btn, 'color':color, 'map':map}[f.type]">
     </ng-container>
-    @if (field().hint) {
+    @if (f.hint) {
       <small class="val-text form-text text-muted d-block">
         <fa-icon [icon]="['fas','info-circle']" class="float-start"></fa-icon>
-        <div class="ms-4">{{field().hint}}</div>
+        <div class="ms-4">{{f.hint}}</div>
       </small>
     }
   }
 </div>
 
 <ng-template #text>
-  @if (field().subType=='input') {
-    <input class="form-control smyds" [attr.list]="'datalist-'+field().id+'-'+id()" [class.is-invalid]="model()?.touched && model()?.invalid"
-      type="text" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-      [maxlength]="field()?.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="field()?.v?.mask"
-      [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'" [pattern]="field()?.v?.pattern"
+  @if (f.subType=='input') {
+    <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
+      type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+      [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
+      [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
       (blur)="valueBlured($event)"
-      [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="field().readOnly" />
+      [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
     @if (hasFocus) {
-      <datalist id="datalist-{{field().id}}-{{id()}}">
+      <datalist id="datalist-{{uid}}">
         @for (c of lookupList(); track $index) {
           <option>{{c.name}}</option>
         }
       </datalist>
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
-  @if (field().subType=='textarea') {
-    <textarea class="form-control smyds" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-      [ngxMask]="field()?.v?.mask" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-      [maxlength]="field()?.v?.maxlength" [minlength]="field()?.v?.minlength" [placeholder]="field().placeholder||'&nbsp;'"
-      [pattern]="field()?.v?.pattern" [rows]="field()?.v?.rows||3" [required]="field()?.v?.required"
-      (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="field().readOnly"></textarea>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  @if (f.subType=='textarea') {
+    <textarea class="form-control smyds" [class.is-invalid]="isInvalid" [id]="uid"
+      [ngxMask]="f.v?.mask" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+      [maxlength]="f.v?.maxlength" [minlength]="f.v?.minlength" [placeholder]="placeholder"
+      [pattern]="f.v?.pattern" [rows]="f.v?.rows||3" [required]="f.v?.required"
+      (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="f.readOnly"></textarea>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
-  @if (field().subType=='richtext') {
-    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="field().readOnly">
+  @if (f.subType=='richtext') {
+    <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="value?true:false" [class.pe-none]="f.readOnly">
       @defer(prefetch on idle){
         <!-- NOT SURE WHY DEFER WAS DISABLED BEFORE -->
         <angular-editor class="clean" [config]="editorConfig"
-          [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-          name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
-          [required]="field()?.v?.required"
-          [placeholder]="field().placeholder||'&nbsp;'">
+          [class.is-invalid]="isInvalid" [id]="uid"
+          [name]="uid" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
+          [required]="f.v?.required"
+          [placeholder]="placeholder">
         </angular-editor>
       }
     </div>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
 </ng-template>
 
 <ng-template #color>
-  <input class="form-control form-control-color smyds" [class.is-invalid]="model()?.touched && model()?.invalid"
-    type="color" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-    autocomplete="off" [ngxMask]="field()?.v?.mask"
-    [placeholder]="field().placeholder||'&nbsp;'"
-    [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="field().readOnly" />
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
+    type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+    autocomplete="off" [ngxMask]="f.v?.mask"
+    [placeholder]="placeholder"
+    [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #number>
-  @if (field().subType == 'range'){
-    @if (field()?.v?.required && !value) {
+  @if (f.subType == 'range'){
+    @if (f?.v?.required && !value) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
     <div class="d-flex">
-      <input class="form-range my-2 smyds" type="range" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-        name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [placeholder]="field().placeholder||'&nbsp;'"
-        [min]="field()?.v?.min" [max]="field()?.v?.max"
-        [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)"
-        [disabled]="field().readOnly">
+      <input class="form-range my-2 smyds" type="range" [class.is-invalid]="isInvalid" [id]="uid"
+        [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
+        [min]="f.v?.min" [max]="f.v?.max"
+        [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+        [disabled]="f.readOnly">
       <div class="ms-2 my-2">
         @if(value!=undefined){
           {{value}}
@@ -141,104 +147,104 @@
       </div>
     </div>
   } @else{
-    <input class="form-control smyds" type="number" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-      name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [placeholder]="field().placeholder||'&nbsp;'"
-      [min]="field()?.v?.min" [max]="field()?.v?.max" [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)"
-      [readonly]="field().readOnly" />
+    <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
+      [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
+      [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+      [readonly]="f.readOnly" />
   
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
 </ng-template>
 
 <ng-template #date>
   <div class="row">
-    @if (['date','date-inline','datetime','datetime-inline'].indexOf(field().subType)>-1) {
-      <div class="col" [class.col-auto]="field().subType?.indexOf('inline')>-1">
-        @if (field().subType?.indexOf('inline')>-1) {
-          @if (model()?.touched && model()?.invalid) {
+    @if (['date','date-inline','datetime','datetime-inline'].indexOf(f.subType)>-1) {
+      <div class="col" [class.col-auto]="f.subType?.indexOf('inline')>-1">
+        @if (f.subType?.indexOf('inline')>-1) {
+          @if (isInvalid) {
             <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
           }
           <div>
-            <ngb-datepicker class="smyds" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-              name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value" [required]="field()?.v?.required"
-              [minDate]="field()?.v?.minDate" [maxDate]="field()?.v?.maxDate" (ngModelChange)="valueChanged($event)"
-              [disabled]="field().readOnly">
+            <ngb-datepicker class="smyds" [class.is-invalid]="isInvalid" [id]="uid"
+              [name]="uid" #formField="ngModel" [(ngModel)]="value" [required]="f.v?.required"
+              [minDate]="f.v?.minDate" [maxDate]="f.v?.maxDate" (ngModelChange)="valueChanged($event)"
+              [disabled]="f.readOnly">
             </ngb-datepicker>
           </div>
         } @else {
           <div class="input-group">
-            <input class="form-control smyds" type="text" [class.is-invalid]="model()?.touched && model()?.invalid" id="f-{{field().id}}-{{id()}}"
-              name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-              [placeholder]="field().placeholder||'&nbsp;'" [required]="field()?.v?.required"
-              [minDate]="toNgbDateStruct(field()?.v?.minDate)" [maxDate]="toNgbDateStruct(field()?.v?.maxDate)"
+            <input class="form-control smyds" type="text" [class.is-invalid]="isInvalid" [id]="uid"
+              [name]="uid" #formField="ngModel" [(ngModel)]="value"
+              [placeholder]="placeholder" [required]="f.v?.required"
+              [minDate]="toNgbDateStruct(f?.v?.minDate)" [maxDate]="toNgbDateStruct(f?.v?.maxDate)"
               (click)="d.toggle()" (ngModelChange)="valueChanged($event)" ngbDatepicker #d="ngbDatepicker"
-              [disabled]="field().readOnly">
+              [disabled]="f.readOnly">
             <button type="button" class="btn btn-light smyds" style="border-color: var(--bs-border-color)" (click)="d.toggle()"
-              [disabled]="field().readOnly" type="button">
+              [disabled]="f.readOnly" type="button">
               <fa-icon [icon]="['far','calendar-alt']"></fa-icon>
             </button>
           </div>
         }
       </div>
     }
-    @if (['datetime','datetime-inline','time'].indexOf(field().subType)>-1) {
-      <div class="col-auto" [class.addon-timepicker]="field().subType=='datetime'">
-        <ngb-timepicker  name="f-{{field().id}}-{{id()}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
-          [meridian]="field().x?.meridian"
-          [seconds]="field().x?.seconds"
-          [disabled]="field().readOnly"></ngb-timepicker>
+    @if (['datetime','datetime-inline','time'].indexOf(f.subType)>-1) {
+      <div class="col-auto" [class.addon-timepicker]="f.subType=='datetime'">
+        <ngb-timepicker  name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+          [meridian]="f.x?.meridian"
+          [seconds]="f.x?.seconds"
+          [disabled]="f.readOnly"></ngb-timepicker>
       </div>
     }
   </div>
   <!-- Tok still x berfungsi. Xpat refer ke formField since #formField dalam @if -->
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #checkbox>
-    @if (model()?.touched && model()?.invalid) {
+    @if (isInvalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
-  <div [class.disabled]="field().readOnly">
+  <div [class.disabled]="f.readOnly">
     <div class="form-check">
       <input type="checkbox" class="form-check-input smyds" [(ngModel)]="value" #formField="ngModel"
-        id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+        [id]="uid" [name]="uid" [required]="f.v?.required"
         (ngModelChange)="checkValueChanged($event)">
-        @if (field().placeholder) {
-          <label class="form-check-label" for="f-{{field().id}}-{{id()}}">
-            @if (field()?.v?.required && field().hideLabel) {
+        @if (f.placeholder) {
+          <label class="form-check-label" for="{{uid}}">
+            @if (f?.v?.required && f.hideLabel) {
               <span>* </span>
             }
-            <span [innerHtml]="compileTpl(field().placeholder,data())|safe:'html'">{{field().placeholder}}</span>
+            <span [innerHtml]="compileTpl(f.placeholder,data())|safe:'html'">{{f.placeholder}}</span>
           </label>
         } @else {
-          <label class="form-check-label" for="f-{{field().id}}-{{id()}}">
-            @if (field()?.v?.required && field().hideLabel) {
+          <label class="form-check-label" for="{{uid}}">
+            @if (f?.v?.required && f.hideLabel) {
               <span>* </span>
             }
-            <span [innerHtml]="compileTpl(field().label,data())|safe:'html'">{{field().label}}</span>
+            <span [innerHtml]="compileTpl(f.label,data())|safe:'html'">{{f.label}}</span>
           </label>
         }
     </div>
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #checkboxOption>
-  @if (model()?.invalid) { 
+  @if (m?.invalid) { 
     <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
   }
-  <div [class.disabled]="field().readOnly">
-    @if (field()?.subType=='btn') {
+  <div [class.disabled]="f.readOnly">
+    @if (f?.subType=='btn') {
       <!-- <div> -->
         <div role="group">
           @for (i of lookupList(); track $index) {
-            <input type="checkbox" class="smyds" name="f-{{field().id}}-{{id()}}"
-              (change)="toggleValue(i)" [required]="field()?.v?.required" [checked]="checkValue(i)" [value]="i" class="btn-check"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
-            <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}"
+            <input type="checkbox" class="smyds" [name]="uid"
+              (change)="toggleValue(i)" [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" class="btn-check"
+              id="{{uid}}-{{$index}}" autocomplete="off">
+            <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}"
               [class.active]="checkValue(i)">
-              @if (field()?.placeholder) {
-                <div [innerHtml]="compileTpl(field().placeholder,{'$':i})|safe:'html'">
+              @if (f?.placeholder) {
+                <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'">
                 </div>
               }@else {
                 <span [innerHtml]="i?.name">{{i?.name}}</span>
@@ -250,12 +256,12 @@
     } @else {
       <div>
         @for (c of lookupList(); track $index; let isLast = $last) {
-          <div class="form-check mt-1" [class.form-check-inline]="field().x?.inline" >
-            <input type="checkbox" class="form-check-input smyds" [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
-              [checked]="checkValue(c)" name="f-{{field().id}}-{{id()}}" (change)="toggleValue(c);" />
-            <label class="form-check-label" for="f-{{field().id}}-{{id()}}-{{c?.code}}">
-              @if (field()?.placeholder) {
-                <div [innerHtml]="compileTpl(field().placeholder,{'$':c})|safe:'html'">
+          <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" >
+            <input type="checkbox" class="form-check-input smyds" [value]="c" id="{{uid}}-{{c?.code}}"
+              [checked]="checkValue(c)" [name]="uid" (change)="toggleValue(c);" />
+            <label class="form-check-label" for="{{uid}}-{{c?.code}}">
+              @if (f?.placeholder) {
+                <div [innerHtml]="compileTpl(f.placeholder,{'$':c})|safe:'html'">
                 </div>
               }@else {
                 <span [innerHtml]="c?.name">{{c?.name}}</span>
@@ -265,92 +271,92 @@
         }
       </div>
     }
-    @if (!hideAddAction() && field().x?.addEntryEnabled){
+    @if (!hideAddAction() && f.x?.addEntryEnabled){
       <div class="mt-1">
         <button type="button" class="btn btn-xs btn-light" (click)="triggerAddAction('')">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
         </button>
       </div>
     }
-    <input type="hidden" id="f-{{field().id}}-{{id()}}-hid" name="f-{{field().id}}-{{id()}}-hid" [ngModel]="value"
-      #formField="ngModel" [required]="value && field()?.v?.required">
-    @if (model()?.invalid) {
+    <input type="hidden" id="{{uid}}-hid" name="{{uid}}-hid" [ngModel]="value"
+      #formField="ngModel" [required]="value && f?.v?.required">
+    @if (m?.invalid) {
       <small class="val-text form-text text-danger">
         <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>
-        @if (model().errors.required) {
-          <span>{{field().label}} is required</span>
+        @if (m.errors.required) {
+          <span>{{f.label}} is required</span>
         }
       </small>
     }
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #modelPicker>
-  <div [class.modelPicker]="value && field()?.placeholder">
-    <ng-select class="smyds" [items]="lookupList()" #formField="ngModel" id="f-{{field().id}}-{{id()}}" [bindLabel]="field()?.bindLabel"
-      [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" name="f-{{field().id}}-{{id()}}"
-      [required]="field()?.v?.required" (ngModelChange)="valueChanged($event)"
-      [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
+  <div [class.modelPicker]="value && f?.placeholder">
+    <ng-select class="smyds" [items]="lookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+      [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
+      [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+      [groupBy]="f.x?.groupBy?selectGroupBy:null"
       [loading]="loading()"
-      [multiple]="field().subType?.indexOf('multiple')>-1"
-      [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')" [readonly]="field().readOnly"
+      [multiple]="f.subType?.indexOf('multiple')>-1"
+      [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')" [readonly]="f.readOnly"
       [searchFn]="lookupSearchFn">
-      @if (field()?.placeholder) {
+      @if (f?.placeholder) {
         <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
-          <div [innerHtml]="compileTpl(field().placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'">
+          <div [innerHtml]="compileTpl(f.placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'">
           </div>
         </ng-template>
       }
     </ng-select>
-    @if (field()?.placeholder) {
-      @if (field().subType?.indexOf('multiple')>-1) {
+    @if (f?.placeholder) {
+      @if (f.subType?.indexOf('multiple')>-1) {
         @if (value?.length>0) {
           <div class="list-group">
             @for (sv of value; track $index) {
               <div class="list-group-item"
-              [innerHtml]="compileTpl(field().placeholder,{'$':sv,'$prev$':sv.$prev})|safe:'html'"></div>
+              [innerHtml]="compileTpl(f.placeholder,{'$':sv,'$prev$':sv.$prev})|safe:'html'"></div>
             }
           </div>
         }
       } @else {
         @if (value) {
           <div class="card card-body single-pane"
-            [innerHtml]="compileTpl(field().placeholder,{'$':value})|safe:'html'">
+            [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'">
           </div>
         }
       }
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #select>
-  <div [class.modelPicker]="value && field()?.placeholder">
-    <ng-select [items]="lookupList()" class="smyds" [class.is-invalid]="model()?.touched && model()?.invalid" #formField="ngModel"
-      id="f-{{field().id}}-{{id()}}" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)"
-      name="f-{{field().id}}-{{id()}}" [virtualScroll]="true" [required]="field()?.v?.required"        
-      [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
+  <div [class.modelPicker]="value && f?.placeholder">
+    <ng-select [items]="lookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
+      [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)"
+      [name]="uid" [virtualScroll]="true" [required]="f.v?.required"        
+      [groupBy]="f.x?.groupBy?selectGroupBy:null"
       [loading]="loading()"
-      [multiple]="field().subType?.indexOf('multiple')>-1" (change)="valueChanged($event)" [readonly]="field().readOnly"
-      [addTag]="field().x?.addEntryEnabled?triggerAddAction:null"
-      (search)="valueSearched($event)" [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')"
+      [multiple]="f.subType?.indexOf('multiple')>-1" (change)="valueChanged($event)" [readonly]="f.readOnly"
+      [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
+      (search)="valueSearched($event)" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')"
       [searchFn]="lookupSearchFn"
       >
-      @if (field()?.placeholder) {
+      @if (f?.placeholder) {
         <ng-template ng-option-tmp let-item="item" let-index="index" let-search="searchTerm">
-          <div [innerHtml]="compileTpl(field().placeholder,{'$':item})|safe:'html'">
+          <div [innerHtml]="compileTpl(f.placeholder,{'$':item})|safe:'html'">
           </div>
         </ng-template>
       }
-      @if (field()?.x?.groupBy){
+      @if (f?.x?.groupBy){
         <ng-template ng-label-tmp let-item="item">
-          <span [innerHTML]="compileTpl(field()?.x?.groupBy,{'$':item})|safe:'html'"></span> 
+          <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
           <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
           {{item.name}}
         </ng-template>
       }
-      @if(field().x?.addEntryEnabled){
+      @if(f.x?.addEntryEnabled){
         <ng-template ng-tag-tmp let-item="item" let-index="index" let-search="searchTerm">
           <div>
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong>
@@ -358,50 +364,50 @@
         </ng-template>
       }
     </ng-select>
-    @if (field()?.placeholder) {
-      @if (field().subType?.indexOf('multiple')>-1) {
+    @if (f?.placeholder) {
+      @if (f.subType?.indexOf('multiple')>-1) {
         @if (value?.length>0) {
           <div class="list-group">
             @for (sv of value; track $index) {
               <div class="list-group-item"
-                [innerHtml]="compileTpl(field().placeholder,{'$':sv})|safe:'html'"></div>
+                [innerHtml]="compileTpl(f.placeholder,{'$':sv})|safe:'html'"></div>
             }
           </div>
         }
       } @else {
         @if (value) {
           <div class="card card-body single-pane"
-            [innerHtml]="compileTpl(field().placeholder,{'$':value})|safe:'html'">
+            [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'">
           </div>
         }
       }
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #radio>
-  @if (model()?.touched && field()?.v?.required && !value) {
+  @if (m?.touched && f?.v?.required && !value) {
     <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
   }
   <div>
-    @if (field()?.subType=='btn') {
+    @if (f?.subType=='btn') {
       <div>
         <div role="group">
           <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
           @for (i of lookupList(); track $index) {
-            <input type="radio" name="f-{{field().id}}-{{id()}}" #formField [checked]="value?.code === i?.code" 
-              (change)="value=i;valueChanged(i);" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off" />
+            <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
+              (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
+              id="{{uid}}-{{$index}}" autocomplete="off" />
 
-            <!-- <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-              (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off"> -->
+            <!-- <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+              (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check smyds"
+              id="{{uid}}-{{$index}}" autocomplete="off"> -->
 
-            <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}"
+            <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}"
               [class.active]="value?.code === i?.code">
-              @if (field()?.placeholder) {
-                <div [innerHtml]="compileTpl(field().placeholder,{'$':i})|safe:'html'"></div>
+              @if (f?.placeholder) {
+                <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
               }@else {
                 <span [innerHtml]="i?.name">{{i?.name}}</span>
               }
@@ -413,19 +419,19 @@
       <div>
         <!-- UTK OBJECT VALUE, XPAT GUNA [(NGMODEL)] SBB X DAPAT SET CHECKED, PERLU COMPARE OBJ PROPS -->
         @for (c of lookupList(); track $index; let isLast = $last) {
-          <div class="form-check mt-1" [class.form-check-inline]="field().x?.inline" [class.disabled]="field().readOnly">
+          <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
             
-            <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
-              [checked]="value?.code === c?.code" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+            <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="{{uid}}-{{c?.code}}"
+              [checked]="value?.code === c?.code" [name]="uid" [required]="f.v?.required"
               (change)="value=c;valueChanged(c);" />
 
-            <!-- <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="f-{{field().id}}-{{id()}}-{{c?.code}}"
-              [(ngModel)]="value" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+            <!-- <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="{{uid}}-{{c?.code}}"
+              [(ngModel)]="value" [name]="uid" [required]="f.v?.required"
               (ngModelChange)="value = c;valueChanged(c);" /> -->
 
-            <label class="form-check-label d-block" for="f-{{field().id}}-{{id()}}-{{c?.code}}">
-              @if (field()?.placeholder) {
-                <div [innerHtml]="compileTpl(field().placeholder,{'$':c})|safe:'html'"></div>
+            <label class="form-check-label d-block" for="{{uid}}-{{c?.code}}">
+              @if (f?.placeholder) {
+                <div [innerHtml]="compileTpl(f.placeholder,{'$':c})|safe:'html'"></div>
               }@else {
                 <span [innerHtml]="c?.name">{{c?.name}}</span>
               }
@@ -439,7 +445,7 @@
         Option not available
       </div>
     }
-    @if (!hideAddAction() && field().x?.addEntryEnabled){
+    @if (!hideAddAction() && f.x?.addEntryEnabled){
       <div class="mt-1">
         <button type="button" class="btn btn-xs btn-light" (click)="triggerAddAction('')">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
@@ -447,26 +453,26 @@
       </div>
     }
   </div>
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #simpleOption>
-  @if (field().subType=='btn') {
-      @if (model()?.touched && model()?.invalid) {
+  @if (f.subType=='btn') {
+      @if (isInvalid) {
         <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
       }
     <div>
-      <div [class.disabled]="field().readOnly">
+      <div [class.disabled]="f.readOnly">
         <div role="group">
           <!-- UTK SIMPLE OPTION, XDA MASALAH UTK GUNA [(NGMODEL)] SEBAB SELECTED WITH VALUE -->
           @for (i of simpleList(); track $index) {
-            <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-              (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check smyds"
-              id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
-            <label class="btn btn-outline-secondary smyds me-1 mb-1 light toggle-opt" for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
+            <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+              (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check smyds"
+              id="{{uid}}-{{$index}}" autocomplete="off">
+            <label class="btn btn-outline-secondary smyds me-1 mb-1 light toggle-opt" for="{{uid}}-{{$index}}">{{i}}</label>
           }
         </div>
-        @if (!field()?.options) {
+        @if (!f?.options) {
           <div class="text-muted">
             Option not available
           </div>
@@ -474,65 +480,65 @@
       </div>
     </div>
   }
-  @if (field().subType=='radio') {
-    @if (model()?.touched && field()?.v?.required && !value) {
+  @if (f.subType=='radio') {
+    @if (m?.touched && f?.v?.required && !value) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
     <div>
       <!-- UTK SIMPLE VALUE, BOLEH GUNA [(NGMODEL)] SBB DPT SET CHECKED VALUE ON INIT (NO NEED COMPARISON OBJ PROPS) -->
       @for (i of simpleList(); track $index) {
-        <div class="form-check mt-1" [class.disabled]="field().readOnly" [class.form-check-inline]="field().x?.inline" >
-          <input type="radio" class="form-check-input smyds" #formField [value]="i" id="f-{{field().id}}-{{id()}}-{{$index}}"
-            [(ngModel)]="value" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+        <div class="form-check mt-1" [class.disabled]="f.readOnly" [class.form-check-inline]="f.x?.inline" >
+          <input type="radio" class="form-check-input smyds" #formField [value]="i" id="{{uid}}-{{$index}}"
+            [(ngModel)]="value" [name]="uid" [required]="f.v?.required"
             (ngModelChange)="valueChanged(i);" />
-          <!-- <input type="radio" class="form-check-input smyds" #formField [value]="i" id="f-{{field().id}}-{{id()}}-{{$index}}"
-            [checked]="value === i" name="f-{{field().id}}-{{id()}}" [required]="field()?.v?.required"
+          <!-- <input type="radio" class="form-check-input smyds" #formField [value]="i" id="{{uid}}-{{$index}}"
+            [checked]="value === i" [name]="uid" [required]="f.v?.required"
             (change)="value = i;valueChanged(i);" /> -->
-          <label class="form-check-label d-block" for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
+          <label class="form-check-label d-block" for="{{uid}}-{{$index}}">{{i}}</label>
         </div>
       }
     </div>
-    @if (!field()?.options) {
+    @if (!f?.options) {
       <div class="text-muted">
         Option not available
       </div>
     }
   }
-  @if (field().subType=='select') {
-    <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" id="f-{{field().id}}-{{id()}}" [(ngModel)]="value"
+  @if (f.subType=='select') {
+    <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [id]="uid" [(ngModel)]="value"
       [loading]="loading()"
-      [groupBy]="this.field()?.x?.groupBy?selectGroupBy:null"
+      [groupBy]="f.x?.groupBy?selectGroupBy:null"
       [virtualScroll]="true" (change)="valueChanged($event)" (focus)="selectFocused($event)"
-      name="f-{{field().id}}-{{id()}}" [readonly]="field().readOnly" [required]="field()?.v?.required"
-      [placeholder]="(field().label||'&nbsp;') + (field()?.v?.required?' *':' ')">
+      [name]="uid" [readonly]="f.readOnly" [required]="f.v?.required"
+      [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')">
     </ng-select>
-    @if (!field()?.options) {
+    @if (!f?.options) {
       <div class="text-muted">
         {{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}
       </div>
     }
   }
-  <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+  <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
 </ng-template>
 
 <ng-template #scaleTpl>
-    @if (model()?.touched && model()?.invalid) {
+    @if (isInvalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
   <div>
-    <div [class.disabled]="field().readOnly">
+    <div [class.disabled]="f.readOnly">
       <div class="btn-group-toggle mb-n1" role="group">
         <!-- UTK SIMPLE VALUE, BOLEH GUNA [(NGMODEL)] SBB DPT SET CHECKED VALUE ON INIT (NO NEED COMPARISON OBJ PROPS) -->
         @for (i of scales(); track $index) {
-          <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
-            (ngModelChange)="valueChanged(i)" [required]="field()?.v?.required" [value]="i" class="btn-check"
-            id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">
+          <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+            (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check"
+            id="{{uid}}-{{$index}}" autocomplete="off">
           <label class="btn btn-round btn-outline-secondary light width-38 me-1 mb-1 toggle-opt smyds"
-          for="f-{{field().id}}-{{id()}}-{{$index}}">{{i}}</label>
+          for="{{uid}}-{{$index}}">{{i}}</label>
         }
       </div>
     </div>
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   </div>
 </ng-template>
 
@@ -543,30 +549,29 @@
 </ng-template>
 
 <ng-template #file>
-  @if (['other','othermulti'].indexOf(field().subType)>-1) {
-    <!-- @if (field()?.v?.required && !value) {
-     // xperlu sbb da errorIcon dalam formField
-      <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
-    } -->
-    <div class="custom-file" [class.disabled]="field().readOnly">
-      <label class="has-float-label" [class.extracting]="extractLoading()" for="f-{{field().id}}-{{id()}}">
+  @if (['other','othermulti'].indexOf(f.subType)>-1) {
+    <div class="custom-file" [class.disabled]="f.readOnly">
+      <label class="has-float-label" [class.extracting]="extractLoading()" for="{{uid}}">
         @if (fileProgress()) {
-          <div
+          <!-- <div
             style="background:whitesmoke;position:absolute; width:60px; top:5px;right:10px;border-radius: 5px;overflow: hidden;">
             <div style="height:5px;background:green;" [style.width.%]="fileProgress()"></div>
+          </div> -->
+          <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
+            <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
           </div>
         }
-        <input type="file" [hidden]="true" [class.is-invalid]="model()?.touched && model()?.invalid" #native #formField="ngModel" #fileInput
-          (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" id="f-{{field().id}}-{{id()}}"
-          [(ngModel)]="file[field().code]" [multiple]="field().subType == 'othermulti'" name="f-{{field().id}}-{{id()}}"
-          [accept]="field().v.accept" [required]="!value && field()?.v?.required" />
+        <input type="file" [hidden]="true" [class.is-invalid]="isInvalid" #native #formField="ngModel" #fileInput
+          (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
+          [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
+          [accept]="f.v.accept" [required]="!value && f?.v?.required" />
         @if (!value) {
-          <div class="form-control nobreak smyds" [class.is-invalid]="model()?.touched && model()?.invalid">
+          <div class="form-control nobreak smyds" [class.is-invalid]="isInvalid">
             <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon>
-            {{field().placeholder||'Browse'}}
+            {{f.placeholder||'Browse'}}
           </div>
         }@else{
-          @if (field().subType=='other') {
+          @if (f.subType=='other') {
             <div class="form-control nobreak smyds" style="background: white;padding-right:30px;">
               {{value}}
             </div>
@@ -580,7 +585,7 @@
           }
         }
         <div style="position:absolute;top:10px; right:5px;display: flex;background:white;">
-          @if (field().x?.extractor){
+          @if (f.x?.extractor){
             <div style="padding:5px;color: #4c0bce;font-size:0.9em;line-height:0.9em;">
               <div [class.grow_blink_me]="extractLoading()">
                 <fa-icon [icon]="['fas','bolt']"></fa-icon>
@@ -594,22 +599,25 @@
           }        
         </div>
       </label>
-      <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+      <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
     </div>
   }
-  @if (['image','imagemulti'].indexOf(field().subType)>-1) {
-    @if (model()?.touched && model()?.invalid) {
+  @if (['image','imagemulti'].indexOf(f.subType)>-1) {
+    @if (isInvalid) {
       <ng-template [ngTemplateOutlet]="errorIcon"></ng-template>
     }
-    <div [class.disabled]="field().readOnly">
+    <div [class.disabled]="f.readOnly">
       <input type="file" style="display: none" #native #formField="ngModel" (change)="fileValueChanged($event)"
-        id="f-{{field().id}}-{{id()}}" [(ngModel)]="file[field().code]" name="f-{{field().id}}-{{id()}}"
-        [multiple]="field().subType == 'imagemulti'" [required]="!value  && field()?.v?.required" accept="image/*" />
-      <label class="mb-0 d-block position-relative smyds" for="f-{{field().id}}-{{id()}}">
+        [id]="uid" [(ngModel)]="file[f.code]" [name]="uid"
+        [multiple]="f.subType == 'imagemulti'" [required]="!value  && f?.v?.required" accept="image/*" />
+      <label class="mb-0 d-block position-relative smyds" for="{{uid}}">
         @if (fileProgress()) {
-          <div
+          <!-- <div
             style="background:whitesmoke;position:absolute; width:60px; top:10px;right:10px;border-radius:5px;overflow:hidden">
             <div style="height:5px;background:green;" [style.width.%]="fileProgress()"></div>
+          </div> -->
+          <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
+            <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
           </div>
         }
         @if (!value) {
@@ -617,7 +625,7 @@
             class="d-flex align-items-center text-center img-holder">
             <div style="flex: 1;color: white; font-size: 0.8em">
               {{lang()=='ms'?'Klik untuk muatnaik':'Click to upload image'}}
-              @if (field().subType == 'imagemulti') {
+              @if (f.subType == 'imagemulti') {
                 <div>
                   {{lang()=='ms'?'Untuk memilih banyak fail, tekan kekunci CTRL atau SHIFT semasa memilih':
                   'To select multiple files, hold down the CTRL or SHIFT key while selecting'}}</div>
@@ -625,7 +633,7 @@
             </div>
           </div>
         }@else{
-          @if (field().subType=='image') {
+          @if (f.subType=='image') {
             <div style="max-width:100%;border-radius:var(--bs-border-radius);overflow:hidden" class="align-items-center text-center d-relative">
               <img loading="lazy" [src]="baseApi + '/entry/file/inline/'+value | secure | async" style="max-width: 100%;"
                 alt="Image preview...">
@@ -633,12 +641,10 @@
                 <div style="border:solid 1px #ccc;background: #fff;padding:0px 3px; border-radius:4px;
                 float:left">
                 {{lang()=='ms'?'Klik untuk menukar gambar':'Click to change images'}}</div>
-                <!-- @if (value) { -->
                 <div
                   style="border:solid 1px #ccc;background: #fff;padding:0px 3px;border-radius:4px;
                   float:left;margin-left:3px;cursor: pointer; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);"
                   (click)="clear(native)">× {{lang()=='ms'?'Padam':'Clear'}}</div>
-                <!-- } -->
               </div>
             </div>
           } @else {
@@ -659,48 +665,46 @@
           }
         }
       </label>
-      <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+      <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
     </div>
   }
 </ng-template>
 
 <ng-template #eval>
-  @if (field().subType=='text') {
+  @if (f.subType=='text') {
     <div>
       <div class="input-group">
-        @if (field().placeholder) {
-          <span class="input-group-text smyds">{{field().placeholder}}</span>
+        @if (f.placeholder) {
+          <span class="input-group-text smyds">{{f.placeholder}}</span>
         }
-        <input class="form-control smyds" id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" type="text"
-          placeholder="Not Available" [value]="value||''" [readonly]="field().readOnly"
+        <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
+          placeholder="Not Available" [value]="value||''" [readonly]="f.readOnly"
           (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
       </div>
     </div>
-  }@else if (field().subType=='qr') {
+  }@else if (f.subType=='qr') {
     <div>
       <img [src]="value?baseApi+'/form/qr?code='+encodeURIComponent(value):'assets/img/blank-qr.svg'" width="100%">
-      <input id="f-{{field().id}}-{{id()}}" name="f-{{field().id}}-{{id()}}" type="hidden" [value]="value||''">
+      <input [id]="uid" [name]="uid" type="hidden" [value]="value||''">
     </div>
   }
 </ng-template>
 
 <ng-template #static>
-  @if (['html','htmlSave'].indexOf(field().subType)>-1) {
-    <!-- <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" [innerHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div> -->
-    <div class="mb-1" id="f-{{field().id}}-{{id()}}-value" 
+  @if (['html','htmlSave'].indexOf(f.subType)>-1) {
+    <div class="mb-1" id="{{uid}}-value" 
       morphType="inner"
       [morphHtml]="compiledData()|safe:'html'"></div>
-      <!-- [morphHtml]="compileTpl(field().placeholder,data(),field().subType=='htmlSave')|safe:'html'"></div> -->
   }
-  @if (field().subType=='clearfix') {
+  @if (f.subType=='clearfix') {
     <div class="clearfix clfx"></div>
   }
 </ng-template>
 
 <ng-template #map>
   @defer(prefetch on idle){
-    <app-ng-leaflet class="smyds" [useCurrentPos]="field().x?.useCurrent"  [baseMapServerUri]="field().x?.customMapServer"
-      [multiple]="field().subType=='multiple'" [readOnly]="field()?.readOnly"  [dropPinOn]="field().x?.dropPinOn" [(value)]="value"
+    <app-ng-leaflet class="smyds" [useCurrentPos]="f.x?.useCurrent"  [baseMapServerUri]="f.x?.customMapServer"
+      [multiple]="f.subType=='multiple'" [readOnly]="f.readOnly"  [dropPinOn]="f.x?.dropPinOn" [(value)]="value"
       (valueChange)="valueChanged($event)"></app-ng-leaflet>
   }@loading {
     <div class="text-center m-5">
@@ -713,7 +717,7 @@
 
 <ng-template #speech>
     @defer(prefetch on idle){
-      <app-speech-to-text class="smyds" [field]="field()" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [lang]="lang()" [defaultLang]="field().x?.defLang"></app-speech-to-text>
+      <app-speech-to-text class="smyds" [field]="f" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [lang]="lang()" [defaultLang]="f.x?.defLang"></app-speech-to-text>
     }@loading {
       <div class="text-center m-5">
         <div class="spinner-grow text-primary" role="status">
@@ -726,21 +730,21 @@
 <ng-template #qr>
   <div class="custom-file">
     <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
-      id="f-{{field().id}}-{{id()}}" [(ngModel)]="file[field().code]" name="f-{{field().id}}-{{id()}}"
-      [required]="!value && field()?.v?.required" accept="image/*" capture />
+      [id]="uid" [(ngModel)]="file[f.code]" [name]="uid"
+      [required]="!value && f?.v?.required" accept="image/*" capture />
     @if (!value) {
       <div class="form-control smyds" style="background: white">
         <fa-icon [icon]="['fas','qrcode']"></fa-icon>
-        {{field().placeholder||'Scan or Upload QR Code'}}
+        {{f.placeholder||'Scan or Upload QR Code'}}
       </div>
     }@else{
       <div class="form-control smyds" style="background: white">{{value}}</div>
     }
-    <ng-container *ngTemplateOutlet="valError;context:{formField:model(),field:field}"></ng-container>
+    <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   </div>
 </ng-template>
 
 <ng-template #btn>
-  <button type="button" class="btn btn-secondary smyds" [style]="field().placeholder" [disabled]="field().readOnly"
-  (click)="valueChanged($event)">{{field().label}}</button>
+  <button type="button" class="btn btn-secondary smyds" [style]="f.placeholder" [disabled]="f.readOnly"
+  (click)="valueChanged($event)">{{f.label}}</button>
 </ng-template>

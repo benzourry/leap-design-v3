@@ -15,24 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, forwardRef, ViewChild, Optional, Inject, ChangeDetectorRef, output, input, computed, AfterViewInit, effect, viewChild, ChangeDetectionStrategy, untracked, Signal } from '@angular/core';
+import { Component, forwardRef, Optional, Inject, ChangeDetectorRef, output, input, computed, effect, viewChild, ChangeDetectionStrategy, untracked, Signal } from '@angular/core';
 import { baseApi } from '../../../_shared/constant.service';
 import { NG_VALUE_ACCESSOR, NG_ASYNC_VALIDATORS, NG_VALIDATORS, NgModel, FormsModule } from '@angular/forms';
-import { NgbDateAdapter, NgbTimeAdapter, NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
-// import { NgbUnixTimestampAdapter } from '../../service/date-adapter';
-// import { of } from 'rxjs';
-// import { debounceTime, switchMap } from 'rxjs/operators';
-// import { ElementBase } from './element-base';
+import { NgbDateAdapter, NgbTimeAdapter, NgbDatepicker, NgbInputDatepicker, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
 import { ViewEncapsulation } from '@angular/core';
 import { BrowserQRCodeReader } from '@zxing/browser';
-// import { compileTpl, splitAsList } from '../../utils';
-// import { NgbUnixTimestampTimeAdapter } from '../../service/time-adapter';
-// import { LogService } from '../../service/log.service';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
-// import { SecurePipe } from '../../pipe/secure.pipe';
-// import { SafePipe } from '../../pipe/safe.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
-// import { MaskDirective } from '../../directive/mask.directive';
 import { NgClass, NgTemplateOutlet, NgStyle, AsyncPipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { MaskDirective } from '../../../_shared/directive/mask.directive';
@@ -46,12 +36,6 @@ import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 import { ElementBase } from '../element-base';
 import { SpeechToTextComponent } from '../speech-to-text/speech-to-text.component';
 import { MorphHtmlDirective } from '../../../_shared/directive/morph-html.directive';
-// import { ElementBase } from '../../../_shared/component/element-base';
-// import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
-// declare const qrcode: any;
-// declare const zdecoder: any;
-
-
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -217,8 +201,6 @@ export class FieldEditComponent extends ElementBase<any> {
     ]
   };
 
-  _defaultValue: any = {};
-
   constructor(
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
     @Optional() @Inject(NG_ASYNC_VALIDATORS) asyncValidators: Array<any>,
@@ -227,30 +209,7 @@ export class FieldEditComponent extends ElementBase<any> {
   ) {
     super(validators, asyncValidators);
 
-    // USE override writeValue() isntead of this
-    // defaultValue logic will check when writeValue
-    // effect(() => {
-    //   // track only the signals that must trigger the effect
-    //   const useDef = this.field().x?.use_default;
-    //   const defaultValComputed = this.defaultValueComputed();
-    //   const defaultValue = this.defaultValue()
-    //   // only if a real change happened …
-    //   if (useDef && !this.value && defaultValue && !deepEqual(defaultValComputed, this._defaultValue)) {
-    //     // … do the mutation without tracking it:          
-    //     untracked(() => {
-    //       this._defaultValue = defaultValComputed;
-    //       // Defer event emission to avoid change detection issues
-    //       queueMicrotask(() => {
-    //         this.value = defaultValComputed;
-    //         this.writeValue(defaultValComputed); // must be inside this, otherwise it will not work
-    //         this.valueChanged(defaultValComputed); // not needed
-    //       });
-    //     });
-    //   }
-    // });
-
-
-    // !!! WHY use effect() to handle snap value. Value itself is not even a signal, so, this will not trigger when value change.
+    // !!! WHY use effect() to handle snap value? Value itself is not even a signal, so, this will not trigger when value change.
     // REASON TOK ARIYA SBB lookupList() often arrive late. So, engkah dlm effect supaya once it is arrive, snap the value.
     // REPLACE with this simple block reusing autoSnapValue function
     effect(() => {
@@ -273,16 +232,7 @@ export class FieldEditComponent extends ElementBase<any> {
 
   compiledData = computed(() => this.compileTpl(this.field().placeholder, this.data(), this.field().subType == 'htmlSave'))
 
-  // defaultValueComputed = computed(() => (this.value ?? this.defaultValue()))
-
   scales: Signal<number[]> = computed(() => this.createRange(this.field()));
-
-  // ngOnInit(): void {
-  //   // this.list = this.getAsList(this.field().options);    
-  //   if (this.field().x?.inlineImg) {
-  //     this.editorConfig.toolbarHiddenButtons[1].splice(this.editorConfig.toolbarHiddenButtons[1].indexOf('insertImage'), 1);
-  //   }
-  // }
 
   selectGroupBy = (item) => this.field() ? this.compileTpl(this.field()?.x?.groupBy, { '$': item }) : undefined;
 
@@ -394,27 +344,36 @@ export class FieldEditComponent extends ElementBase<any> {
 
   private previousEmitted: any;
 
+  BASE_DATE_EPOCH = 800000000000;
+
   valueChanged(next: any) {
+
+    const field = this.field();
     // this.value = next;
     // this.valueChange.emit(next);
     // jika value b4<>next, emit
     // field type button, perlu sentiasa emit
-    if (!deepEqual(next, this.previousEmitted) || this.field()?.type=='btn' || this.VALUE_SNAP_TYPE.includes(this.field()?.type)) {
-      this.previousEmitted = next;
+    if (!deepEqual(next, this.previousEmitted) || field?.type=='btn' || this.VALUE_SNAP_TYPE.includes(field?.type)) {
 
-      if (this.field()?.subType == 'time') {
-        let d = new Date(this.value);
-        let h = new Date(800000000000);
-        d.setDate(h.getDate());
-        d.setMonth(h.getMonth());
-        d.setFullYear(h.getFullYear());
-        this.value = d.getTime();
+      let processedValue = next;
+
+      if (field?.subType == 'time') {
+        const inputDate = new Date(next);
+        const baseDate = new Date(this.BASE_DATE_EPOCH);
+        inputDate.setDate(baseDate.getDate());
+        inputDate.setMonth(baseDate.getMonth());
+        inputDate.setFullYear(baseDate.getFullYear());
+
+        processedValue = inputDate.getTime();
       }
       
-      if (this.VALUE_SNAP_TYPE.includes(this.field()?.type)) {
-        next = this.autoSnapValue(next);
-        this.value = next;
+      if (this.VALUE_SNAP_TYPE.includes(field?.type)) {
+        processedValue = this.autoSnapValue(next);
       }
+
+      this.value = processedValue;
+
+      this.previousEmitted = processedValue;
 
       this.valueChange.emit(next);
     }
@@ -481,7 +440,6 @@ export class FieldEditComponent extends ElementBase<any> {
     }
 
     return this.value ? this.value?.filter(v => v.code == c.code).length > 0 : false;
-    // return this.value?this.value.indexOf(code+",")>-1:false;
   }
 
   toggleValue(c) {
@@ -519,7 +477,6 @@ export class FieldEditComponent extends ElementBase<any> {
 
         };
         img.src = data;
-
       };
     }
   }
@@ -528,7 +485,6 @@ export class FieldEditComponent extends ElementBase<any> {
 
   compileTpl(a, b, keep?) {
     var f = "";
-    // console.log(a);
     try {
       f = compileTpl(a, b, this.scopeId());
     } catch (e) {
@@ -540,7 +496,6 @@ export class FieldEditComponent extends ElementBase<any> {
       this.value = f;
       // this.formField?.control?.markAsPristine();
     }
-    // console.log(f);
     return f;
   }
 
@@ -561,10 +516,10 @@ export class FieldEditComponent extends ElementBase<any> {
   // use this instead of effect to set default value
   // using effect, the issue is when actual value arrived late, the value will be set with default value
   override writeValue(value: any): void {
-  // console.log(value);
+    const field = this.field();
     if (value === undefined || value === null) {
       // Only set default if no value is provided
-      const useDef = this.field().x?.use_default;
+      const useDef = field.x?.use_default;
       const defaultValue = this.defaultValue();
       if (useDef && defaultValue !== undefined && defaultValue !== null) {
         // queueMicroTask run before setTimeout
@@ -580,7 +535,7 @@ export class FieldEditComponent extends ElementBase<any> {
         });
       }
     }else{ // if value provided
-      if (this.field().type != 'eval') { // if eval, then do not emit valueChanged, because it will cause loop esp when value always change ie Date.now()
+      if (field.type != 'eval') { // if eval, then do not emit valueChanged, because it will cause loop esp when value always change ie Date.now()
         queueMicrotask(() => {
           this.valueChanged(value); // need to emit changes, if set programmatically
         })
