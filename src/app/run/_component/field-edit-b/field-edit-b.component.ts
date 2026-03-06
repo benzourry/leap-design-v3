@@ -365,13 +365,13 @@ export class FieldEditComponent extends ElementBase<any> {
         inputDate.setFullYear(baseDate.getFullYear());
 
         processedValue = inputDate.getTime();
+        this.value = processedValue;
       }
       
       if (this.VALUE_SNAP_TYPE.includes(field?.type)) {
         processedValue = this.autoSnapValue(next);
+        this.value = processedValue;
       }
-
-      this.value = processedValue;
 
       this.previousEmitted = processedValue;
 
