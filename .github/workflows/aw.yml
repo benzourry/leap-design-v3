@@ -39,7 +39,8 @@ jobs:
         with:
           host: ${{ secrets.SFTP_HOST_AW }}
           username: ${{ secrets.SFTP_USER_AW }}
-          password: ${{ secrets.SFTP_PASS_AW }}
+          key: ${{ secrets.SFTP_KEY_AW }}
+          # password: ${{ secrets.SFTP_PASS_AW }}
           script: |
             rm -rf /var/www/vhosts/aw.sarawakskills.edu.my/design/*
 
@@ -48,7 +49,8 @@ jobs:
         with:
           host: ${{ secrets.SFTP_HOST_AW }}
           username: ${{ secrets.SFTP_USER_AW }}
-          password: ${{ secrets.SFTP_PASS_AW }}
+          key: ${{ secrets.SFTP_KEY_AW }}
+          # password: ${{ secrets.SFTP_PASS_AW }}
           source: dist/design/browser/*
           target: /var/www/vhosts/aw.sarawakskills.edu.my/design/
           strip_components: 3
@@ -58,7 +60,8 @@ jobs:
         with:
           host: ${{ secrets.SFTP_HOST_AW }}
           username: ${{ secrets.SFTP_USER_AW }}
-          password: ${{ secrets.SFTP_PASS_AW }}
+          key: ${{ secrets.SFTP_KEY_AW }}
+          # password: ${{ secrets.SFTP_PASS_AW }}
           script: |
             chmod -R 755 /var/www/vhosts/aw.sarawakskills.edu.my/design
             chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/vhosts/aw.sarawakskills.edu.my/design
