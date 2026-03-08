@@ -64,4 +64,4 @@ jobs:
           # password: ${{ secrets.SFTP_PASS_AW }}
           script: |
             chmod -R 755 /var/www/html/design
-            chown -R aw.sarawakskills.edu._kjbgd64pw1:psacln /var/www/html/design
+            chown -R www-data:www-data /var/www/html/design
