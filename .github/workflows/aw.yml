@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SFTP_KEY_AW }}
           # password: ${{ secrets.SFTP_PASS_AW }}
           script: |
-            rm -rf /var/www/html/design/*
+            sudo -i rm -rf /var/www/html/design/*
 
       - name: Upload to AW server via SFTP
         uses: appleboy/scp-action@master
