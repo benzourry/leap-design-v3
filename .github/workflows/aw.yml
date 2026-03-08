@@ -63,5 +63,5 @@ jobs:
           key: ${{ secrets.SFTP_KEY_AW }}
           # password: ${{ secrets.SFTP_PASS_AW }}
           script: |
-            chmod -R 755 /var/www/html/design
-            chown -R www-data:www-data /var/www/html/design
+            sudo chmod -R 755 /var/www/html/design
+            sudo chown -R www-data:www-data /var/www/html/design
