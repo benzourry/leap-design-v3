@@ -326,6 +326,7 @@ export class FieldEditComponent extends ElementBase<any> {
 
     const snap = (val: any) => {
       if (!val || typeof val !== 'object') return val;
+      // console.log(`Auto-snapping value for type ${type}:`, val);
       return list.find(option => option[key] === val[key]) ?? val;
     };
 
@@ -349,11 +350,17 @@ export class FieldEditComponent extends ElementBase<any> {
   valueChanged(next: any) {
 
     const field = this.field();
+
+    // no need to worry. write value for btn will not trigger valueChanged, because in writeValue, if type btn, it will return before set the value
+    // if (field?.type == 'btn') {
+    //   console.log("VALUE-CHANGING "+ field.code);
+    // }
+
     // this.value = next;
     // this.valueChange.emit(next);
     // jika value b4<>next, emit
     // field type button, perlu sentiasa emit
-    if (!deepEqual(next, this.previousEmitted) || field?.type=='btn' || this.VALUE_SNAP_TYPE.includes(field?.type)) {
+    if (!deepEqual(next, this.previousEmitted) || field?.type=='btn') {
 
       let processedValue = next;
 
@@ -370,6 +377,7 @@ export class FieldEditComponent extends ElementBase<any> {
       
       if (this.VALUE_SNAP_TYPE.includes(field?.type)) {
         processedValue = this.autoSnapValue(next);
+        // console.log("PROCESSED-VALUE", processedValue);
         this.value = processedValue;
       }
 
@@ -516,7 +524,14 @@ export class FieldEditComponent extends ElementBase<any> {
   // use this instead of effect to set default value
   // using effect, the issue is when actual value arrived late, the value will be set with default value
   override writeValue(value: any): void {
+
     const field = this.field();
+
+    // ignore/skip if type == btn
+    if (field?.type == 'btn') {
+      return;
+    }    
+
     if (value === undefined || value === null) {
       // Only set default if no value is provided
       const useDef = field.x?.use_default;
