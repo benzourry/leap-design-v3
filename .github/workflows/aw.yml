@@ -55,13 +55,13 @@ jobs:
           target: /var/www/html/design/
           strip_components: 3
 
-      # - name: Set file permissions
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.SFTP_HOST_AW }}
-      #     username: ${{ secrets.SFTP_USER_AW }}
-      #     key: ${{ secrets.SFTP_KEY_AW }}
-      #     # password: ${{ secrets.SFTP_PASS_AW }}
-      #     script: |
-      #       sudo chmod -R 755 /var/www/html/design
-      #       sudo chown -R www-data:www-data /var/www/html/design
+      - name: Set file permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST_AW }}
+          username: ${{ secrets.SFTP_USER_AW }}
+          key: ${{ secrets.SFTP_KEY_AW }}
+          # password: ${{ secrets.SFTP_PASS_AW }}
+          script: |
+            sudo chmod -R 775 /var/www/html/design
+            sudo chown -R www-data:www-data /var/www/html/design
