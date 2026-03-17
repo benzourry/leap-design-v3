@@ -87,6 +87,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
   appConfig: any = this.runService.appConfig;
+  Math: any = Math;
   form = signal<any>({});
   lookupIds: any;
   baseApi: string = baseApi;

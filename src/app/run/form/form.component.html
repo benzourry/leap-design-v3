@@ -171,7 +171,7 @@
                       (click)="submit(true)" [hidden]="!form().canSubmit">
                       {{lang()=='ms'?'Hantar Semula':'Re-submit'}}
                       <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
-                      {{form().tiers[entry?.currentTier].name}}
+                      {{form().tiers[Math.max(0,entry?.currentTier ?? 0)]?.name}}
                       @if (saving()||submitting()) {
                         <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
@@ -760,7 +760,7 @@
                         [hidden]="!form().canSubmit">
                         {{lang()=='ms'?'Hantar Semula':'Re-submit'}}
                         <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
-                        {{form().tiers[entry?.currentTier].name}}
+                        {{form().tiers[Math.max(0,entry?.currentTier ?? 0)]?.name}}
                         @if (saving()||submitting()) {
                           <div class="spinner-border spinner-border-sm" role="status"></div>
                         }

@@ -1107,7 +1107,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editTierActionData: any;
     editTierAction(content, tier, data) {
+        // alert(JSON.stringify(tier));
         this.editTierActionData = data;
+        this.editTierActionData.tierOrder = tier.sortOrder;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {

@@ -1621,7 +1621,7 @@
             </div>
           </div>
           <div class="col-3 mb-2">
-            <div class="form-check">
+            <div class="form-check" [class.disabled]="editTierActionData.tierOrder<=0">
               <input type="radio" class="form-check-input" id="type-prevTier" name="action"
                 [(ngModel)]="editTierActionData.action" value="prevTier" required>
               <label for="type-prevTier" class="form-check-label">Previous Tier</label>
