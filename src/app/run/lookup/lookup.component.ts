@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, computed, inject, input, model, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, computed, inject, input, model, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { NgbDateAdapter, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
@@ -109,6 +109,7 @@ export class LookupComponent implements OnInit {
                                 Object.assign(lookupEntry, res);
                             }
                             this.toastService.show("Lookup entry successfully saved", { classname: 'bg-success text-light' });
+                            this.findDuplicateCode();
                         }, error: (err) => {
                             this.toastService.show("Lookup entry saving failed", { classname: 'bg-danger text-light' });
                         }
@@ -184,6 +185,8 @@ export class LookupComponent implements OnInit {
                     .subscribe({
                         next: (res) => {
                             this.loadLookup(this.lookupId());
+                            this.toastService.show("Lookup entry successfully removed", { classname: 'bg-success text-light' });
+                            this.findDuplicateCode();
                         }, error: (err) => {
                             this.toastService.show("Lookup entry removal failed", { classname: 'bg-danger text-light' });
                         }
@@ -209,11 +212,27 @@ export class LookupComponent implements OnInit {
     lookupDataFields = computed(()=>this.lookup().dataEnabled ? this.fieldsAsList(this.lookup().dataFields) : []);
     // mapDataFields = {};
     mapDataFields = computed(()=>this.lookup().dataEnabled ? this.fieldsAsMap(this.lookup().dataFields) : {});
+    
+    requestParams = signal<any>({});
+    params = signal<string[]>([]);
     loadLookup(id:number) {
         // this.lookupId = id;
         this.lookupService.getLookup(id)
             .subscribe(lookup => {
+                this.requestParams.set({});
                 this.lookup.set(lookup);
+
+                if (lookup.sourceType == 'rest') {
+                    let g = lookup.endpoint?.match(/\{(.[^{]+)\}/ig);
+                    const paramsList: string[] = [];
+                    g?.forEach(element => {
+                        if (!element.includes('_secret')){
+                            paramsList.push(element.replace(/([{}\s]+)/ig, ''));
+                        }
+                    });
+                    this.params.set(paramsList);
+                    this.hasLoadList.set(false);
+                }
 
                 this.hasLoadList.set(false);
                 if (lookup.sourceType=='db'){
@@ -224,6 +243,8 @@ export class LookupComponent implements OnInit {
 
     }
 
+    endpointPromptTpl = viewChild('endpointPromptTpl');
+    
     getLookupEntryList(pageNumber) {
         this.loading.set(true);
         this.entryPageNumber.set(pageNumber);
@@ -232,19 +253,58 @@ export class LookupComponent implements OnInit {
             size: this.pageSize,
             searchText: this.searchText
         }
+
+        const run = (p)=>{
+            this.lookupService.getEntryListFull(this.lookupId(), p)
+            .subscribe({
+                next: (response) => {
+                    this.loading.set(false);
+                    this.lookupEntryTotal.set(response.page?.totalElements);
+                    this.lookupEntryPages.set(response.page?.totalPages);
+                    this.lookupEntryElements.set(response.content?.length);
+                    this.lookupEntryList.set(response.content);
+                    this.hasLoadList.set(true);
+                    this.findDuplicateCode();
+                }, error: (err) => {
+                    this.loading.set(false);
+                    this.hasLoadList.set(true);
+                }
+            });
+        }
         if (this.lookup()?.sourceType=='db'){
             params.sort='ordering,asc';
+            run(params);
+        }else if(this.lookup()?.sourceType == 'rest') {
+            if (this.params()?.length > 0){
+                this.modalService.open(this.endpointPromptTpl(), { backdrop: 'static' })
+                .result.then(data => {
+                    run(data);
+                }).catch(err => {
+                    this.loading.set(false);
+                });
+            }else{
+                run({});
+            }
         }
 
-        this.lookupService.getEntryListFull(this.lookupId(), params)
-            .subscribe(response => {
-                this.loading.set(false);
-                this.lookupEntryTotal.set(response.page?.totalElements);
-                this.lookupEntryPages.set(response.page?.totalPages);
-                this.lookupEntryElements.set(response.content?.length);
-                this.lookupEntryList.set(response.content);
-                this.hasLoadList.set(true);
-            });
+
+    }
+
+    duplicatedCodes: string[] = [];
+    findDuplicateCode(){
+        const contentArray = this.lookupEntryList();
+        const seenCodes = new Set();
+        const duplicateEntries = contentArray.filter(item => {
+            // If the Set already has the code, it's a duplicate
+            if (seenCodes.has(item.code)) {
+                return true; 
+            }
+            // Otherwise, add it to our tracking Set
+            seenCodes.add(item.code);
+            return false;
+        });
+        this.duplicatedCodes = duplicateEntries;
+        this.cdr.markForCheck();
     }
 
     reorderItem(index, op) {

@@ -72,7 +72,7 @@
                       (cdkDropListDropped)="reorderDataset($event, datasetList)">
                       
                       @for (dsKv of datasetList|filter:searchText|groupBy:datasetGroupBy; track $index) {
-                        @if (datasetGroupBy){
+                        @if (datasetGroupBy && dsKv?.key){
                           <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
                         }
                         @for (i of dsKv?.value; track i.id) {
@@ -171,7 +171,7 @@
                           (cdkDropListDropped)="reorderScreen($event, screenList)">
                           
                             @for (scKv of screenList|filter:searchText|groupBy:screenGroupBy; track $index) {
-                              @if (screenGroupBy){
+                              @if (screenGroupBy && scKv?.key){
                                 <div class="element fw-bold text-muted text-capitalize">{{scKv?.key}}</div>
                               }
                               @for (i of scKv?.value; track i.id) {

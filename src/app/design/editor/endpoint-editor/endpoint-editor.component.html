@@ -491,7 +491,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         @for (b of params; track $index) {
           <div class="form-group mb-3">
             <label class="form-label">{{b}}</label>
-            <input type="text" class="form-control" [(ngModel)]="request[b]"
+            <input type="text" class="form-control" [(ngModel)]="requestParams[b]"
               name="{{endpoint.id}}-data-{{b}}" id="{{endpoint.id}}-data-{{b}}">
           </div>
         }
@@ -499,7 +499,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
     </div>
     <div class="modal-footer justify-content-between">
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
-      <button type="button" class="btn btn-round btn-primary" (click)="c(request)">
+      <button type="button" class="btn btn-round btn-primary" (click)="c(requestParams)">
         <i class="icon-minus-sign-alt"></i> Execute Request
       </button>
     </div>

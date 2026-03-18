@@ -611,6 +611,11 @@
                       </div>
                     }
                   </div>
+                  @if(isStatusAllFalse(statusFilterForm)){
+                    <div class="p-3 bg-white blink_me">                      
+                      No status selected. Counting results for <strong>all statuses</strong>.
+                    </div>
+                  }
                 </div>
               }
             </div>

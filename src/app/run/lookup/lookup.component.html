@@ -78,6 +78,33 @@
                   </div>
                 </div>
 
+                <div class="text-center mb-2">
+                  <button type="button" class="btn btn-primary btn-sm rounded-pill" (click)="getLookupEntryList(1)">
+                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reload
+                  </button>
+                </div>
+
+                @if(duplicatedCodes.length>0){
+                  <div class="alert alert-warning">
+                    <h5>Warning: Duplicate entries detected</h5>
+                    <p>Please review and resolve the duplicate codes below to avoid unexpected system behavior.</p>
+                    <ul class="mb-0">
+                      @for(item of duplicatedCodes; track $index) {
+                        <li>{{item.code}} - {{item.name}}
+                          @if(lookup().sourceType=='db') {
+                            <button type="button" class="btn btn-xs btn-outline-secondary ms-2"
+                              [class.disabled]="offline()"
+                              (click)="editLookupEntry(editLookupEntryTpl,item, false)">
+                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                              Edit Entry
+                            </button>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped bg-white">
@@ -224,6 +251,9 @@
           @if (lookupEntryList() == 0 && !loading() && hasLoadList()) {
             <div class="details my-5">
               <h3>{{lang()=='ms'?'Tiada data untuk':'No data for'}} {{lookup().name}}</h3>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill" (click)="getLookupEntryList(1)">
+                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muat semula':'Reload'}}
+              </button>
               <p> {{lang()=='ms'?
                 'Tiada data yang ditetapkan untuk lookup ini.':
                 'There is no data assigned to this lookup table.'}}
@@ -484,6 +514,32 @@
       <button type="button" class="btn btn-round btn-success" (click)="c()">
         <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
         Resync Lookup
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+
+<ng-template #endpointPromptTpl let-c="close" let-d="dismiss">
+  <div>
+    <div class="modal-header">
+      <h4 class="modal-title">Run Request</h4>
+    </div>
+    <div class="modal-body">
+      <div class="form form-horizontal">
+        @for (b of params(); track $index) {
+          <div class="form-group mb-3">
+            <label class="form-label">{{b}}</label>
+            <input type="text" class="form-control" [(ngModel)]="requestParams()[b]"
+              name="{{lookup.id}}-data-{{b}}" id="{{lookup.id}}-data-{{b}}">
+          </div>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" (click)="c(requestParams())">
+        <i class="icon-minus-sign-alt"></i> Execute Request
       </button>
     </div>
   </div>

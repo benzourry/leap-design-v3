@@ -216,6 +216,7 @@ export class EndpointEditorComponent implements OnInit {
         this.endpointId = id;
         this.endpointService.getEndpoint(id)
             .subscribe(endpoint => {
+                this.requestParams = {};
                 this.endpoint = endpoint;
                 let g = endpoint.url.match(/\{(.[^{]+)\}/ig);
                 this.params = [];
@@ -229,31 +230,17 @@ export class EndpointEditorComponent implements OnInit {
 
     }
 
-    // showPrompt(url) {
-    //     this.request = {};
-    //     this.result = undefined;
-    //     //const array = [...url.matchAll(/{(.+?)}\s*\)/ig)];
-    //     // console.log(this.params);
-    //     // this.params.forEach(e => {
-    //     //     if (!this.request[e]) {
-    //     //         this.request[e] = prompt("Enter value for parameter '" + e + "'");
-    //     //     }
-    //     // })
-    // }
-
-    request: any = {}
+    requestParams: any = {}
     result:any;
     error:any;
 
     endpointPromptTpl = viewChild('endpointPromptTpl');
-    runEndpoint() {
-        
+    runEndpoint() {        
         this.result = null;
         this.error = null;
-        this.request = {};
 
-        const run = (data) => {
-            this.endpointService.runEndpoint(this.endpointId, this.request)
+        const run = (p) => {
+            this.endpointService.runEndpoint(this.endpointId, p)
             .subscribe({
                 next:(res)=>{
                     this.result = res;
@@ -266,8 +253,6 @@ export class EndpointEditorComponent implements OnInit {
                 }
             })            
         }
-
-        // this.showPrompt(this.endpoint.url);
 
         if (this.params.length > 0){
           // IF THERE ARE PROMPTS

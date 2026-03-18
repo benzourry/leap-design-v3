@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, viewChild } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -211,6 +211,7 @@ export class LookupEditorComponent implements OnInit {
                             }
                             this.toastService.show("Entry successfully saved", { classname: 'bg-success text-light' });
                             this.cdr.detectChanges();
+                            this.findDuplicateCode();
                         }, error: (err) => {
                             this.toastService.show("Entry saving failed", { classname: 'bg-danger text-light' });
                             this.cdr.detectChanges();
@@ -272,6 +273,7 @@ export class LookupEditorComponent implements OnInit {
                             this.loadLookup(this.lookupId);
                             this.toastService.show("Entry successfully removed", { classname: 'bg-success text-light' });
                             this.cdr.detectChanges();
+                            this.findDuplicateCode();
                         }, error: err => {
                             this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
                             this.cdr.detectChanges();
@@ -296,36 +298,39 @@ export class LookupEditorComponent implements OnInit {
         }
     }
 
-    request: any = {}
-    showPrompt(script) {
-        this.request = {};
-        const array = [...script.matchAll(/{(.+?)}/ig)];
-        array.forEach(e => {
-            if (!e[1].includes('_secret')){
-                if (!this.request[e[1]]) {
-                    this.request[e[1]] = prompt("Enter value for parameter '" + e[1] + "'");
-                }
-            }
-        })
-    }
-
     hasLoadList: boolean = false;
 
     lookupDataFields = [];
     mapDataFields = {};
+    
+    requestParams: any = {}
+    params: string[];
     loadLookup(id) {
         this.lookupId = id;
         this.entryPageNumber = 1; // Reset to first page on lookup change
 
         this.lookupService.getLookup(id)
             .subscribe(lookup => {
+                this.requestParams = {};
                 this.lookup = lookup;
                 
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
 
                 if (this.lookup.dataEnabled) {
                 //     this.lookupDataFields = this.fieldsAsList(this.lookup.dataFields);
                     this.mapDataFields = this.fieldsAsMap(this.lookup.dataFields);
+                }
+
+                if (this.lookup.sourceType == 'rest') {
+                    let g = lookup.endpoint?.match(/\{(.[^{]+)\}/ig);
+                    this.params = [];
+                    g?.forEach(element => {
+                        if (!element.includes('_secret')){
+                            this.params.push(element.replace(/([{}\s]+)/ig, ''));
+                        }
+                    });
+                    this.hasLoadList = false;
+                    this.cdr.markForCheck();
                 }
                 // this.lookupEntryTotal = 0;
                 // this.lookupEntryList = [];
@@ -335,7 +340,9 @@ export class LookupEditorComponent implements OnInit {
                 }
             })
 
-    }
+    } 
+
+    endpointPromptTpl = viewChild('endpointPromptTpl');
 
     error:string;
 
@@ -350,40 +357,64 @@ export class LookupEditorComponent implements OnInit {
             // sort: 'id,asc'
         }
 
-        if (this.lookup?.sourceType == 'db') {
-            params.sort = 'ordering,asc';
-        }
-        // new HttpParams()
-        //     .append('page', (pageNumber - 1).toString())
-        //     .append('size', this.pageSize.toString())
-        //     .append('searchText', this.searchText)
-        //     .append('docFlag', '2')
-
-        if (this.lookup?.sourceType == 'rest') {
-            this.showPrompt(this.lookup.endpoint);
-            params = Object.assign(params, this.request);
-        }
-
-        this.lookupService.getEntryListFull(this.lookupId, params)
+        const run = (p)=>{
+            this.lookupService.getEntryListFull(this.lookupId, p)
             .subscribe({
                 next: response =>{
-                this.loading = false;
-                this.lookupEntryPages = response.page?.totalPages;
-                this.lookupEntryElements = response.content?.length;
+                    this.loading = false;
+                    this.lookupEntryPages = response.page?.totalPages;
+                    this.lookupEntryElements = response.content?.length;
 
-                this.lookupEntryTotal = response.page?.totalElements;
-                this.lookupEntryList = response.content;
-                this.hasLoadList = true;
-                this.cdr.detectChanges();
+                    this.lookupEntryTotal = response.page?.totalElements;
+                    this.lookupEntryList = response.content;
+                    this.hasLoadList = true;
+                    this.cdr.markForCheck();
+
+                    this.findDuplicateCode();
                 },
                 error: err =>{
                     this.loading = false;
                     this.hasLoadList = true;
                     this.error = err.error?.message || err.message || 'An error occurred while loading lookup entries.';
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                     console.log(this.error);
                 }
             })
+        }
+
+        if (this.lookup?.sourceType == 'db') {
+            params.sort = 'ordering,asc';
+            run(params);
+        }else if(this.lookup?.sourceType == 'rest') {
+            if (this.params?.length > 0){
+                this.modalService.open(this.endpointPromptTpl(), { backdrop: 'static' })
+                .result.then(data => {
+                    run(data);
+                }).catch(err => {
+                    this.loading = false;
+                    this.cdr.markForCheck();
+                });
+            }else{
+                run({});
+            }
+        }
+    }
+
+    duplicatedCodes: string[] = [];
+    findDuplicateCode(){
+        const contentArray = this.lookupEntryList;
+        const seenCodes = new Set();
+        const duplicateEntries = contentArray.filter(item => {
+            // If the Set already has the code, it's a duplicate
+            if (seenCodes.has(item.code)) {
+                return true; 
+            }
+            // Otherwise, add it to our tracking Set
+            seenCodes.add(item.code);
+            return false;
+        });
+        this.duplicatedCodes = duplicateEntries;
+        this.cdr.markForCheck();
     }
 
 

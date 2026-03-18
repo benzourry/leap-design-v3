@@ -173,6 +173,7 @@
                   }
                 }
               }
+              
               @if (formHolder['data']) {
                 <div class="form-group mb-3">
                   <div class="btn-group float-end">
@@ -229,6 +230,13 @@
                       </div>
                     }
                   </div>
+
+                  @if(isStatusAllFalse(statusFilterForm)){
+                    <div class="p-3 bg-white blink_me">
+                      No status selected. Showing results for <strong>all statuses</strong>.
+                    </div>
+                  }
+
                 </div>
                 <div class="row g-3">
                   <div class="col-sm-8">

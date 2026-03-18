@@ -252,6 +252,19 @@ export class EditDatasetComponent implements OnInit {
     })
   }
 
+  isStatusAllFalse(filter) {
+    for (const tierKey in filter) {
+        const tierObj = filter[tierKey];
+        for (const statusKey in tierObj) {
+            // If we find even one true value, we stop and return false immediately
+            if (tierObj[statusKey] === true) { 
+                return false; 
+            }
+        }
+    }
+    return true; // If we survive the loops, everything was false
+  }
+
   statusFilterForm: any = {};
   // statusFilterData:any={};
   convertStatusToDisplay(status, form) {
