@@ -302,7 +302,7 @@ export class LookupEditorComponent implements OnInit {
 
     lookupDataFields = [];
     mapDataFields = {};
-    
+
     requestParams: any = {}
     params: string[];
     loadLookup(id) {
@@ -389,7 +389,7 @@ export class LookupEditorComponent implements OnInit {
             if (this.params?.length > 0){
                 this.modalService.open(this.endpointPromptTpl(), { backdrop: 'static' })
                 .result.then(data => {
-                    run(data);
+                    run(data); // or run(this.requestParams) if you want to use the bound requestParams object
                 }).catch(err => {
                     this.loading = false;
                     this.cdr.markForCheck();
@@ -497,7 +497,7 @@ export class LookupEditorComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
-                this.lookupService.updateLookupData(lookupId,this.syncLookupData.refCol)
+                this.lookupService.updateLookupData(lookupId,this.syncLookupData.refCol, this.requestParams)
                     .subscribe({
                         next: (res) => {
                             this.toastService.show("Lookup successfully sync", { classname: 'bg-success text-light' });

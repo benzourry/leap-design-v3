@@ -376,13 +376,15 @@ export class LookupComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
-                this.lookupService.updateLookupData(lookupId,this.syncLookupData.refCol)
+                this.lookupService.updateLookupData(lookupId,this.syncLookupData.refCol, this.requestParams())
                     .subscribe({
                         next: (res) => {
                             this.toastService.show("Lookup successfully sync", { classname: 'bg-success text-light' });
+                            this.cdr.markForCheck();
                         },
                         error: (err) => {
                             this.toastService.show("Lookup sync failed", { classname: 'bg-danger text-light' });
+                            this.cdr.markForCheck();
                         }
                     })
             })

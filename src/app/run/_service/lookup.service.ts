@@ -85,8 +85,8 @@ export class LookupService {
     return this.http.get<any>(`${this.baseApi}/lookup`, { params: params });
   }
 
-  updateLookupData(lookupId?: number, refCol?: string) {
-    return this.http.get<any>(`${this.baseApi}/lookup/update-data?lookupId=${lookupId}&refCol=${refCol}`, {});
+  updateLookupData(lookupId?: number, refCol?: string,params?: any) {
+    return this.http.get<any>(`${this.baseApi}/lookup/update-data?lookupId=${lookupId}&refCol=${refCol}`, {params: params});
   }
 
   getFullLookupList(params?: any) {
