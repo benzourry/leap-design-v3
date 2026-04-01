@@ -379,8 +379,38 @@ export class ListComponent implements OnInit, OnDestroy {
                 this.changed.emit(res);
               } catch (e) { }
 
-              this.aggColumnTotalField = this.dataset().items.filter(i=>i.x?.showTotal);
-              this.aggColumnAvgField = this.dataset().items.filter(i=>i.x?.showAvg);
+              // this.aggColumnTotalField = this.dataset().items.filter(i=>i.x?.showTotal);
+              // this.aggColumnAvgField = this.dataset().items.filter(i=>i.x?.showAvg);
+
+              // const uniqueMap = new Map();
+              // let mathField = [...this.aggColumnTotalField, ...this.aggColumnAvgField];
+
+              // mathField.forEach(item => {
+              //   const key = `${item.root}.${item.code}`;
+              //   if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+              // });
+
+              // mathField = Array.from(uniqueMap.values());
+              const totalField = [];
+              const avgField = [];
+              const uniqueMap = new Map();
+
+              this.dataset().items.forEach(i => {
+                const isTotal = !!i.x?.showTotal;
+                const isAvg = !!i.x?.showAvg;
+
+                if (isTotal) totalField.push(i);
+                if (isAvg) avgField.push(i);
+
+                if (isTotal || isAvg) {
+                  // Use the combination of root and code as the unique key
+                  uniqueMap.set(`${i.root}.${i.code}`, i);
+                }
+              });
+
+              this.aggColumnTotalField = totalField;
+              this.aggColumnAvgField = avgField;
+              let mathField = Array.from(uniqueMap.values());
 
               this.aggColumnTotalValue = {};
               this.aggColumnAvgValue = {};
@@ -389,7 +419,7 @@ export class ListComponent implements OnInit, OnDestroy {
                 this.entryIndex[e.id] = index;
                 this.rowClass[e.id] = compileTpl(this.dataset()?.x?.rowClass ?? '', {$: e?.data, $_: e, $prev$: e?.prev}, this.scopeId())
                 
-                let mathField = [...this.aggColumnTotalField, ...this.aggColumnAvgField];
+                
                 
                 mathField.forEach(element => {
                   // this.aggColumnTotal[element.root+'.'+element.code] = (this.aggColumnTotal[element.root+'.'+element.code] || 0)  + Number(e[element.root][element.code] || 0);
@@ -401,14 +431,6 @@ export class ListComponent implements OnInit, OnDestroy {
                   }
                   
                 });
-                // this.aggColumnAvgField.forEach(element => {
-                //   if (element.root=='data'){
-                //     this.aggColumnAvgValue[element.root+'.'+element.code] = (this.aggColumnAvgValue[element.root+'.'+element.code] || 0) + Number(e.data[element.code] || 0);
-                //   }
-                //   if (element.root=='prev'){
-                //     this.aggColumnAvgValue[element.root+'.'+element.code] = (this.aggColumnAvgValue[element.root+'.'+element.code] || 0) + Number(e.prev[element.code] || 0);
-                //   }
-                // });
               })
 
               if (res.content?.length>0){
