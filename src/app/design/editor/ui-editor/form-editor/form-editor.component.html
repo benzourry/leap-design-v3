@@ -2693,11 +2693,34 @@
                 <textarea class="form-control" [(ngModel)]="editItemData.hint" name="hint"
                 placeholder="Hint for input"></textarea>
               </div>
+              @if (['text','eval','number'].indexOf(editItemData.type)>-1) {
+                <div class="row">
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Input prefix</label>
+                        <input type="text" class="form-control" [(ngModel)]="editItemData.x.prefix" name="prefix" placeholder="ie: $">
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Input postfix</label>
+                        <input type="text" class="form-control" [(ngModel)]="editItemData.x.postfix" name="postfix" placeholder="ie: .com">
+                      </div>
+                  </div>
+                </div>
+              }
               @if (['date'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Format</label>
                   <input type="text" class="form-control" [(ngModel)]="editItemData.format" name="format"
                     placeholder="ie: dd/MM/yyyy">
+                </div>
+              }              
+              @if (['number'].indexOf(editItemData.type)>-1) {
+                <div class="form-group mb-3">
+                  <label class="form-label">Format</label>
+                  <input type="text" class="form-control" [(ngModel)]="editItemData.format" name="format"
+                    placeholder="ie: 1.2-2">
                 </div>
               }
               @if (['modelPicker','select'].indexOf(editItemData.type)>-1) {

@@ -11,7 +11,7 @@
 
     @if (dataset() && !userUnauthorized()) {
       @if (dataset().x?.pre){
-        <div [outerHTML]="compileTpl(dataset().x?.pre,{})|safe:'html'"></div>
+        <div [outerHTML]="compileTpl(dataset().x?.pre,{$_:rawList()})|safe:'html'"></div>
       }
       <div [class.px-2]="!asComp()" class="print-hide">
         <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
@@ -209,7 +209,7 @@
         <div [class.table-responsive]="!dataset()?.wide || asComp()"
           [ngClass]="{'px-2 p-sm-0': dataset()?.x?.tblcard && !asComp()}" style="width:100%">
           @if (entryList()?.length>0) {
-            <table class="table table-print ds-table mb-0 bg-white"
+            <table class="table table-print ds-table mb-0"
               [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
               [ngClass]="{'tblcard':dataset()?.x?.tblcard && !asComp()}">
               <thead class="bg-light list-tmid ds-thead">
@@ -231,8 +231,13 @@
                           <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-black-50"></fa-icon>&nbsp;{{item.label}}
                         </th>
                       }@else{
+                        @let fField = (['data','prev'].indexOf(item.root)>-1)?
+                            form()[item.root]?.items[item.code]
+                            :form().data?.items[item.code];
+
                         <th class="pointer ds-item" [class.text-primary]="sortField()==item.id"
-                          (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                          [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type)>-1"
+                          (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(fField.type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
                           {{item.label}}&nbsp;
                           @if (sortField==item.id && sortDir[item.id]!=null) {
                             <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
@@ -295,9 +300,15 @@
                         }
                         @for (item of dataset().items; track item.id) {
                           @if (preCheck(i, item.pre, false)) {
-                            <td class="ds-item code-{{item.code}}" [class.td-list]="item.type=='list'"
+                            @let fField = (['data','prev'].indexOf(item.root)>-1)?
+                            form()[item.root]?.items[item.code]
+                            :form().data?.items[item.code];
+
+                            <td class="ds-item code-{{item.code}}" [class.td-list]="item.type=='list'" 
+                              [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type)>-1"
                               [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
-                              @if (['data','prev'].indexOf(item.root)>-1) {
+                              @if (['data','prev'].indexOf(item.root)>-1) { 
+                                <!-- @let fField = form()[item.root]?.items[item.code]; -->
                                 @if (item.type=='list'){
                                   @if(i[item.root][item.code]){
                                     <table class="table tbl-child m-0 table-flush small">
@@ -330,14 +341,15 @@
                                     <div class="p-2" style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
                                   }
                                 }@else {
-                                  <field-view [field]="form()[item.root]?.items[item.code]" [scopeId]="scopeId()"
-                                    [value]="getVal(form()[item.root]?.items[item.code], i, i[item.root])"
+                                  <field-view [field]="fField" [scopeId]="scopeId()"
+                                    [value]="getVal(fField, i, i[item.root])"
                                     [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                   </field-view>
                                 }
                               } @else {
-                                <field-view [field]="form().data?.items[item.code]" [scopeId]="scopeId()"
-                                  [value]="getVal(form().data?.items[item.code], i.approval?.[item.root], i.approval?.[item.root]?.data)">
+                                <!-- @let fField = form().data?.items[item.code]; -->
+                                <field-view [field]="fField" [scopeId]="scopeId()"
+                                  [value]="getVal(fField, i.approval?.[item.root], i.approval?.[item.root]?.data)">
                                 </field-view>
                               }
                               <div class="clearfix"></div>
@@ -635,6 +647,57 @@
                   </tbody>
                 }
               }
+
+              @if (aggColumnTotalField.length>0 || aggColumnAvgField.length>0) {
+                <tbody class="">
+                  <tr class="">
+                    @if (dataset()?.x?.bulkAction) {
+                      <td class="bg-transparent"></td>
+                    }
+                    @if (dataset()?.showIndex) {
+                      <td class="bg-transparent"></td>
+                    }
+                    @for (item of dataset().items; track $index) {
+                      @let fField = (['data','prev'].indexOf(item.root)>-1)?
+                            form()[item.root]?.items[item.code]
+                            :form().data?.items[item.code];
+
+                      <td class="text-end code-{{item.code}} pt-0" [class.bg-transparent]="!aggColumnTotalValue[item.root+'.'+item.code] && !aggColumnTotalValue[item.root+'.'+item.code]">
+                        <!-- {{item.code}} -->
+                        @if (['data','prev'].indexOf(item.root)>-1) {
+                          @if (aggColumnTotalValue[item.root+'.'+item.code]){
+                            <div class="small mt-2">Total</div>
+                            @if (fField.x?.prefix) {
+                              <span class="text-muted me-05">{{fField.x?.prefix}}</span>
+                            }                            
+                            {{aggColumnTotalValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.postfix) {
+                              <span class="text-muted ms-05">{{fField.x?.postfix}}</span>
+                            } 
+                          }
+                          @if (aggColumnAvgValue[item.root+'.'+item.code]){
+                            <div class="small mt-2">Average</div>
+                            @if (fField.x?.prefix) {
+                              <span class="text-muted me-05">{{fField.x?.prefix}}</span>
+                            }
+                            {{aggColumnAvgValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.postfix) {
+                              <span class="text-muted ms-05">{{fField.x?.postfix}}</span>
+                            } 
+                          }
+                        } @else {
+                        }
+                      </td>
+                    }
+                    @if (dataset()?.showStatus) {
+                      <td class="bg-transparent">
+                      </td>
+                    }
+                    @if (dataset()?.showAction) {
+                      <td class="bg-transparent">
+                      </td>
+                    }
+                  </tr>
+                </tbody>
+              }
             </table>
           }
         </div>
@@ -677,6 +740,12 @@
             </p>
           </div>
         }
+
+        @if (dataset().x?.post){
+          <div [innerHtml]="compileTpl(dataset().x?.post,{$_:rawList()})|safe:'html'"></div>
+        }
+
+
       </div>
       @if (entryTotal()>pageSize()) {
         <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">

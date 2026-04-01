@@ -789,9 +789,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 });
         }
 
-        if (!data.x) {
-            data['x'] = {};
-        }
+        if (!data.x) data.x = {};
 
         this.editFormData = data;
 
