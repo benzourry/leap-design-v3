@@ -81,8 +81,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             <span class="text-muted me-05">{{field().x?.prefix}}</span>
           }
           <span [morphHtml]="nl2br(value())"></span>
-          @if (field().x?.postfix) {
-            <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+          @if (field().x?.suffix) {
+            <span class="text-muted ms-05">{{field().x?.suffix}}</span>
           }
         </div>
         <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore?'calc(100% - 35px)':'205px'}" >
@@ -123,8 +123,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           }
           <span [innerHtml]="value()"></span>
         </span>
-        @if (field().x?.postfix) {
-          <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+        @if (field().x?.suffix) {
+          <span class="text-muted ms-05">{{field().x?.suffix}}</span>
         }
       }
       @if (field()?.subType=='qr') {
@@ -150,8 +150,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         @case ('scaleTo5') { <sup>/5</sup> }
         @case ('scaleTo10') { <sup>/10</sup> }
       }</span>
-      @if (field().x?.postfix) {
-        <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+      @if (field().x?.suffix) {
+        <span class="text-muted ms-05">{{field().x?.suffix}}</span>
       }
     }
     @if (['date'].indexOf(field()?.type)>-1) {

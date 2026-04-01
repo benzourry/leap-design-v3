@@ -649,7 +649,7 @@
               }
 
               @if (aggColumnTotalField.length>0 || aggColumnAvgField.length>0) {
-                <tbody class="">
+                <tbody class="ds-agg">
                   <tr class="">
                     @if (dataset()?.x?.bulkAction) {
                       <td class="bg-transparent"></td>
@@ -670,8 +670,8 @@
                             @if (fField.x?.prefix) {
                               <span class="text-muted me-05">{{fField.x?.prefix}}</span>
                             }                            
-                            {{aggColumnTotalValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.postfix) {
-                              <span class="text-muted ms-05">{{fField.x?.postfix}}</span>
+                            {{aggColumnTotalValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.suffix) {
+                              <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
                             } 
                           }
                           @if (aggColumnAvgValue[item.root+'.'+item.code]){
@@ -679,8 +679,8 @@
                             @if (fField.x?.prefix) {
                               <span class="text-muted me-05">{{fField.x?.prefix}}</span>
                             }
-                            {{aggColumnAvgValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.postfix) {
-                              <span class="text-muted ms-05">{{fField.x?.postfix}}</span>
+                            {{aggColumnAvgValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.suffix) {
+                              <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
                             } 
                           }
                         } @else {

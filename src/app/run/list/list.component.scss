@@ -170,6 +170,9 @@ table.tbl-child>tbody tr:last-child {
     padding-left:0.8em;
     /* width:70%; */
   }  
+  table.tblcard .ds-agg{
+    display:none;
+  }
   /* table.tblcard .ds-index{
     background-color: white;
     color: black;

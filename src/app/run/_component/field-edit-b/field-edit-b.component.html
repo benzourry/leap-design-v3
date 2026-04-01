@@ -90,8 +90,8 @@
         [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
         (blur)="valueBlured($event)"
         [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-      @if (f.x?.postfix) {
-        <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+      @if (f.x?.suffix) {
+        <span class="input-group-text smyds">{{f.x?.suffix}}</span>
       }
     </div>
     @if (hasFocus) {
@@ -162,8 +162,8 @@
         [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
         [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
         [readonly]="f.readOnly" />
-      @if (f.x?.postfix) {
-        <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+      @if (f.x?.suffix) {
+        <span class="input-group-text smyds">{{f.x?.suffix}}</span>
       }
     </div>
   
@@ -695,8 +695,8 @@
         <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
           [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
           (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
-        @if (f.x?.postfix) {
-          <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+        @if (f.x?.suffix) {
+          <span class="input-group-text smyds">{{f.x?.suffix}}</span>
         }
       </div>
     </div>
