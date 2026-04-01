@@ -80,12 +80,20 @@
 
 <ng-template #text>
   @if (f.subType=='input') {
-    <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
-      type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
-      [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
-      [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
-      (blur)="valueBlured($event)"
-      [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+    <div class="input-group">
+      @if (f.x?.prefix) {
+        <span class="input-group-text smyds">{{f.x?.prefix}}</span>
+      }
+      <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
+        type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+        [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
+        [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
+        (blur)="valueBlured($event)"
+        [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+      @if (f.x?.postfix) {
+        <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+      }
+    </div>
     @if (hasFocus) {
       <datalist id="datalist-{{uid}}">
         @for (c of lookupList(); track $index) {
@@ -146,10 +154,18 @@
       </div>
     </div>
   } @else{
-    <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
-      [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
-      [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
-      [readonly]="f.readOnly" />
+    <div class="input-group">
+      @if (f.x?.prefix) {
+        <span class="input-group-text smyds">{{f.x?.prefix}}</span>
+      }
+      <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
+        [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
+        [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+        [readonly]="f.readOnly" />
+      @if (f.x?.postfix) {
+        <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+      }
+    </div>
   
     <ng-container *ngTemplateOutlet="valError;context:{formField:m,field:field}"></ng-container>
   }
@@ -673,12 +689,15 @@
   @if (f.subType=='text') {
     <div>
       <div class="input-group">
-        @if (f.placeholder) {
-          <span class="input-group-text smyds">{{f.placeholder}}</span>
+        @if (f.x?.prefix) {
+          <span class="input-group-text smyds">{{f.x?.prefix}}</span>
         }
         <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
-          placeholder="Not Available" [value]="value||''" [readonly]="f.readOnly"
+          [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
           (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
+        @if (f.x?.postfix) {
+          <span class="input-group-text smyds">{{f.x?.postfix}}</span>
+        }
       </div>
     </div>
   }@else if (f.subType=='qr') {

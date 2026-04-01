@@ -583,6 +583,19 @@
           </app-cm>
         </div>
       </div>
+
+      @if (['number','scaleTo5','scaleTo10','scale','eval'].includes(form[editItemData.root]?.items[editItemData.code]?.type)) {
+        <div class="form-check form-switch mb-1">
+          <input class="form-check-input" type="checkbox" id="showTotal"
+            [(ngModel)]="editItemData.x.showTotal" name="showTotal">
+          <label class="form-check-label" for="showTotal">Show total</label> 
+        </div>
+        <div class="form-check form-switch mb-1">
+          <input class="form-check-input" type="checkbox" id="showAvg"
+            [(ngModel)]="editItemData.x.showAvg" name="showAvg">
+          <label class="form-check-label" for="showAvg">Show average</label>
+        </div>
+      }
     </div>
     <div class="modal-footer justify-content-between">
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
@@ -808,8 +821,7 @@
                 </div>
               }
               @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','extend','prev','prev-prev','route','url'].includes(editActionData.action)) {
-                <div class="form-check form-switch mb-1"
-                  >
+                <div class="form-check form-switch mb-1">
                   <input class="form-check-input" type="checkbox" id="inpop"
                     [(ngModel)]="editActionData.inpop" name="inpop">
                   <label class="form-check-label" for="inpop">Open in Modal Dialog</label>

@@ -17,7 +17,7 @@
 
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input } from '@angular/core';
 import { baseApi } from '../../_shared/constant.service';
-import { NgStyle, AsyncPipe, DatePipe } from '@angular/common';
+import { NgStyle, AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgLeafletComponent } from './ng-leaflet/ng-leaflet.component';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
@@ -75,7 +75,16 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   @if (['text','simpleOption','speech'].indexOf(field()?.type)>-1) {
     <div>
       <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore?'unset':'236px')}" >
-        <div [morphHtml]="nl2br(value())" [class.pb-5]="isReadMore" ></div>
+        <!-- <div [morphHtml]="nl2br(value())" [class.pb-5]="isReadMore" ></div> -->
+        <div [class.pb-5]="isReadMore" >
+          @if (field().x?.prefix) {
+            <span class="text-muted me-05">{{field().x?.prefix}}</span>
+          }
+          <span [morphHtml]="nl2br(value())"></span>
+          @if (field().x?.postfix) {
+            <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+          }
+        </div>
         <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore?'calc(100% - 35px)':'205px'}" >
           <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore=!isReadMore">
             {{isReadMore?'Less...':'More...'}}
@@ -105,12 +114,18 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   @if (['eval'].indexOf(field()?.type)>-1) {
     <span>
       @if (field().subType=='text') {
+        @if (field().x?.prefix) {
+          <span class="text-muted me-05">{{field().x?.prefix}}</span>
+        }
         <span>
           @if (field().placeholder) {
             <span>{{field().placeholder}} </span>
           }
           <span [innerHtml]="value()"></span>
         </span>
+        @if (field().x?.postfix) {
+          <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+        }
       }
       @if (field()?.subType=='qr') {
         <span>
@@ -127,17 +142,17 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       </span>
     }
     @if (['number','scaleTo5','scaleTo10','scale'].indexOf(field()?.type)>-1) {
-      <span>{{value()}}
-        @if (field()?.type=='scale') {
-          <sup>/{{field()?.v?.max}}</sup>
-        }
-        @if (field()?.type=='scaleTo5') {
-          <sup>/5</sup>
-        }
-        @if (field()?.type=='scaleTo10') {
-          <sup>/10</sup>
-        }
-      </span>
+      @if (field().x?.prefix) {
+        <span class="text-muted me-05">{{field().x?.prefix}}</span>
+      }
+      <span>{{value()|number:field()?.format}}@switch (field()?.type) {
+        @case ('scale') { <sup>/{{field()?.v?.max}}</sup> }
+        @case ('scaleTo5') { <sup>/5</sup> }
+        @case ('scaleTo10') { <sup>/10</sup> }
+      }</span>
+      @if (field().x?.postfix) {
+        <span class="text-muted ms-05">{{field().x?.postfix}}</span>
+      }
     }
     @if (['date'].indexOf(field()?.type)>-1) {
       <span>
@@ -344,7 +359,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     }
   
   `],
-    imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, SecurePipe, NgLeafletComponent]
+    imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, DecimalPipe, SecurePipe, NgLeafletComponent]
 })
 export class FieldViewComponent implements OnInit {
 

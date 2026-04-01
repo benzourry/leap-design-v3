@@ -560,6 +560,15 @@
                 </div>
               </div>
               <div class="form-group mb-3">
+                <label class="form-label">Content after dataset</label>
+                <div class="mx-n2">
+                  <app-cm name="listPost" lang="html"
+                    placeholder="ie: End of list"
+                    [(ngModel)]="_editDatasetData.x.post" [linenumber]="true">
+                  </app-cm>
+                </div>
+              </div>
+              <div class="form-group mb-3">
                 <label class="form-label">Row's custom class</label>
                 <div class="mx-n2">
                   <app-cm name="rowClass" lang="html"

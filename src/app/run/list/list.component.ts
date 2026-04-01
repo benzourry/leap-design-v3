@@ -22,7 +22,7 @@ import { base, baseApi } from '../../_shared/constant.service';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbTooltip, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
-import { NgClass, KeyValuePipe, JsonPipe } from '@angular/common';
+import { NgClass, KeyValuePipe, JsonPipe, DecimalPipe } from '@angular/common';
 import { ToastService } from '../../_shared/service/toast-service';
 import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
@@ -58,7 +58,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
     NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, UserEntryFilterComponent, AngularEditorModule,
     forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent),
-    SafePipe, KeyValuePipe, IconSplitPipe]
+    SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe]
 })
 export class ListComponent implements OnInit, OnDestroy {
 
@@ -240,6 +240,12 @@ export class ListComponent implements OnInit, OnDestroy {
     return dataset.accessList?.length > 0 && intercept.length === 0;
   });
 
+  aggColumnTotalField:any[] = [];
+  aggColumnTotalValue:any = {};
+
+  aggColumnAvgField:any[] = [];
+  aggColumnAvgValue:any = {};
+
 
   loading = signal<boolean>(false);
   mailerList = signal<any[]>([]);
@@ -317,6 +323,8 @@ export class ListComponent implements OnInit, OnDestroy {
     return dataset?.presetFilters && Object.keys(dataset.presetFilters).some(k => String(dataset.presetFilters[k]).includes('$conf$'));
   });
 
+  rawList = signal<any[]>([]);
+
   getEntryList(pageNumber, sort?) {
     if (this.dataset()){
       this.sort.set(sort);
@@ -359,6 +367,8 @@ export class ListComponent implements OnInit, OnDestroy {
             next: res => {
               if (this.destroyed) return;
 
+              this.rawList.set(res);
+
               this.entryList.set(res.content);
               this.entryTotal.set(res.page?.totalElements);
               this.itemLoading.set(false);
@@ -369,10 +379,45 @@ export class ListComponent implements OnInit, OnDestroy {
                 this.changed.emit(res);
               } catch (e) { }
 
+              this.aggColumnTotalField = this.dataset().items.filter(i=>i.x?.showTotal);
+              this.aggColumnAvgField = this.dataset().items.filter(i=>i.x?.showAvg);
+
+              this.aggColumnTotalValue = {};
+              this.aggColumnAvgValue = {};
+
               this.entryList().forEach((e, index) => {
                 this.entryIndex[e.id] = index;
                 this.rowClass[e.id] = compileTpl(this.dataset()?.x?.rowClass ?? '', {$: e?.data, $_: e, $prev$: e?.prev}, this.scopeId())
+                
+                let mathField = [...this.aggColumnTotalField, ...this.aggColumnAvgField];
+                
+                mathField.forEach(element => {
+                  // this.aggColumnTotal[element.root+'.'+element.code] = (this.aggColumnTotal[element.root+'.'+element.code] || 0)  + Number(e[element.root][element.code] || 0);
+                  if (element.root=='data'){
+                    this.aggColumnTotalValue[element.root+'.'+element.code] = (this.aggColumnTotalValue[element.root+'.'+element.code] || 0) + Number(e.data[element.code] || 0);
+                  }
+                  if (element.root=='prev'){
+                    this.aggColumnTotalValue[element.root+'.'+element.code] = (this.aggColumnTotalValue[element.root+'.'+element.code] || 0) + Number(e.prev[element.code] || 0);
+                  }
+                  
+                });
+                // this.aggColumnAvgField.forEach(element => {
+                //   if (element.root=='data'){
+                //     this.aggColumnAvgValue[element.root+'.'+element.code] = (this.aggColumnAvgValue[element.root+'.'+element.code] || 0) + Number(e.data[element.code] || 0);
+                //   }
+                //   if (element.root=='prev'){
+                //     this.aggColumnAvgValue[element.root+'.'+element.code] = (this.aggColumnAvgValue[element.root+'.'+element.code] || 0) + Number(e.prev[element.code] || 0);
+                //   }
+                // });
               })
+
+              if (res.content?.length>0){
+                this.aggColumnAvgField.forEach(element => {
+                  this.aggColumnAvgValue[element.root+'.'+element.code] = this.aggColumnTotalValue[element.root+'.'+element.code] / res.content?.length;
+                })
+              }
+
+              
 
             }, error: err => {
               if (this.destroyed) return;
