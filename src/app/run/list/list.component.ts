@@ -240,10 +240,10 @@ export class ListComponent implements OnInit, OnDestroy {
     return dataset.accessList?.length > 0 && intercept.length === 0;
   });
 
-  aggColumnTotalField:any[] = [];
+  aggColumnTotalField:any = {};
   aggColumnTotalValue:any = {};
 
-  aggColumnAvgField:any[] = [];
+  aggColumnAvgField:any = {};
   aggColumnAvgValue:any = {};
 
 
@@ -325,130 +325,129 @@ export class ListComponent implements OnInit, OnDestroy {
 
   rawList = signal<any[]>([]);
 
-  getEntryList(pageNumber, sort?) {
-    if (this.dataset()){
-      this.sort.set(sort);
-      this.itemLoading.set(true);
-      let filtersAll: any = {};
-      
-      filtersAll = Object.assign(filtersAll, this.filtersData(), this._param);
-      
-      let params = {
-        email: this.user()?.email,
-        // status: this.statusEncoded,
-        searchText: this.searchText(),
-        filters: JSON.stringify(filtersAll),
-        page: pageNumber - 1,
-        size: this.pageSize()
-      }
+  hasAggColumn:boolean = false;
 
-      // utk handle $conf$, if ada $conf$, override dengan value dari frontend
-      if (this.dataset().presetFilters) {
-        Object.keys(this.dataset().presetFilters)
-          .filter(k => (this.dataset().presetFilters[k] + "").includes("$conf$"))
-          .forEach(k => {
-            params[k] = compileTpl(this.dataset().presetFilters[k] ?? '', {}, this.scopeId())
-          })
-      }
-      // const presetFilters = this.processedPresetFilters();
-      // Object.assign(params, presetFilters);
+  getEntryList(pageNumber: number, sort?: any) {
+    const dataset = this.dataset();
+    
+    // Guard clauses for early exit
+    if (!dataset) return;
+    if (!dataset.id) return; 
 
+    this.sort.set(sort);
+    this.itemLoading.set(true);
 
-      params = Object.assign(params, this._pre({}, this.dataset().x?.initParam, false));
+    // Use spread syntax for cleaner merging
+    const filtersAll = { ...this.filtersData(), ...this._param };
 
-      if (this.sort()) {
-        params['sorts'] = this.sort();
-      }
-      params['@cond'] = this.filtersCond;
+    const params: any = {
+      email: this.user()?.email,
+      searchText: this.searchText(),
+      filters: JSON.stringify(filtersAll),
+      page: pageNumber - 1,
+      size: this.pageSize(),
+      ...this._pre({}, dataset.x?.initParam, false),
+      '@cond': this.filtersCond
+    };
 
-      if (this.dataset()?.id) {
-        this.entryService.getListByDataset(this.dataset().id, params)
-          .subscribe({
-            next: res => {
-              if (this.destroyed) return;
+    if (this.sort()) {
+      params['sorts'] = this.sort();
+    }
 
-              this.rawList.set(res);
-
-              this.entryList.set(res.content);
-              this.entryTotal.set(res.page?.totalElements);
-              this.itemLoading.set(false);
-              this.numberOfElements.set(res.content?.length);
-              this.entryPages.set(res.page?.totalPages);
-
-              try {
-                this.changed.emit(res);
-              } catch (e) { }
-
-              // this.aggColumnTotalField = this.dataset().items.filter(i=>i.x?.showTotal);
-              // this.aggColumnAvgField = this.dataset().items.filter(i=>i.x?.showAvg);
-
-              // const uniqueMap = new Map();
-              // let mathField = [...this.aggColumnTotalField, ...this.aggColumnAvgField];
-
-              // mathField.forEach(item => {
-              //   const key = `${item.root}.${item.code}`;
-              //   if (!uniqueMap.has(key)) uniqueMap.set(key, item);
-              // });
-
-              // mathField = Array.from(uniqueMap.values());
-              const totalField = [];
-              const avgField = [];
-              const uniqueMap = new Map();
-
-              this.dataset().items.forEach(i => {
-                const isTotal = !!i.x?.showTotal;
-                const isAvg = !!i.x?.showAvg;
-
-                if (isTotal) totalField.push(i);
-                if (isAvg) avgField.push(i);
-
-                if (isTotal || isAvg) {
-                  // Use the combination of root and code as the unique key
-                  uniqueMap.set(`${i.root}.${i.code}`, i);
-                }
-              });
-
-              this.aggColumnTotalField = totalField;
-              this.aggColumnAvgField = avgField;
-              let mathField = Array.from(uniqueMap.values());
-
-              this.aggColumnTotalValue = {};
-              this.aggColumnAvgValue = {};
-
-              this.entryList().forEach((e, index) => {
-                this.entryIndex[e.id] = index;
-                this.rowClass[e.id] = compileTpl(this.dataset()?.x?.rowClass ?? '', {$: e?.data, $_: e, $prev$: e?.prev}, this.scopeId())
-                
-                
-                
-                mathField.forEach(element => {
-                  // this.aggColumnTotal[element.root+'.'+element.code] = (this.aggColumnTotal[element.root+'.'+element.code] || 0)  + Number(e[element.root][element.code] || 0);
-                  if (element.root=='data'){
-                    this.aggColumnTotalValue[element.root+'.'+element.code] = (this.aggColumnTotalValue[element.root+'.'+element.code] || 0) + Number(e.data[element.code] || 0);
-                  }
-                  if (element.root=='prev'){
-                    this.aggColumnTotalValue[element.root+'.'+element.code] = (this.aggColumnTotalValue[element.root+'.'+element.code] || 0) + Number(e.prev[element.code] || 0);
-                  }
-                  
-                });
-              })
-
-              if (res.content?.length>0){
-                this.aggColumnAvgField.forEach(element => {
-                  this.aggColumnAvgValue[element.root+'.'+element.code] = this.aggColumnTotalValue[element.root+'.'+element.code] / res.content?.length;
-                })
-              }
-
-              
-
-            }, error: err => {
-              if (this.destroyed) return;
-              this.itemLoading.set(false)
-            }
-          });
+    // Handle $conf$ via single pass loop over entries
+    if (dataset.presetFilters) {
+      const scopeId = this.scopeId();
+      for (const [k, v] of Object.entries(dataset.presetFilters)) {
+        if (String(v).includes("$conf$")) {
+          params[k] = compileTpl((v as string) ?? '', {}, scopeId);
+        }
       }
     }
 
+    this.entryService.getListByDataset(dataset.id, params).subscribe({
+      next: res => {
+        if (this.destroyed) return;
+
+        const content = res.content || [];
+        const contentLength = content.length;
+
+        // Batch set signals
+        this.rawList.set(res);
+        this.entryList.set(content);
+        this.entryTotal.set(res.page?.totalElements);
+        this.itemLoading.set(false);
+        this.numberOfElements.set(contentLength);
+        this.entryPages.set(res.page?.totalPages);
+
+        try {
+          this.changed.emit(res);
+        } catch (e) {}
+
+        const totalField = {};
+        const avgField = {};
+        const uniqueMap = {};
+
+        // Process dataset items
+        dataset.items?.forEach(i => {
+          const key = `${i.root}.${i.code}`;
+          const isTotal = !!i.x?.showTotal;
+          const isAvg = !!i.x?.showAvg;
+
+          if (isTotal) totalField[key]= i;
+          if (isAvg) avgField[key] = i;
+
+          if (isTotal || isAvg) uniqueMap[key] = i;
+        });
+
+        this.aggColumnTotalField = totalField;
+        this.aggColumnAvgField = avgField;
+        // Inside getEntryList after you populate the objects:
+        this.hasAggColumn = Object.keys(totalField).length > 0 || Object.keys(avgField).length > 0;
+        const mathField:any = Object.values(uniqueMap);
+
+        this.aggColumnTotalValue = {};
+        this.aggColumnAvgValue = {};
+
+        // Hoist static values outside the loop for performance
+        const scopeId = this.scopeId();
+        const rowClassTemplate = dataset.x?.rowClass ?? '';
+
+        // Process entry rows
+        content.forEach((e, index) => {
+          this.entryIndex[e.id] = index;
+          
+          this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
+
+          // Process math fields dynamically (O(1) branchless access)
+          mathField.forEach(element => {
+            const key = `${element.root}.${element.code}`;
+            
+            // 1. Determine where the data lives (branchless-style conditional)
+            const isBaseRoot = element.root === 'data' || element.root === 'prev';
+            const rootData = isBaseRoot ? e[element.root] : e.approval?.[element.root]?.data;
+            
+            // 2. Perform the math operation once
+            const value = rootData ? Number(rootData[element.code] || 0) : 0;
+            this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + value;
+          });
+
+        });
+
+        // Calculate averages only if we have rows
+        if (contentLength > 0) {
+          for (const code in this.aggColumnAvgField) {
+            const element = this.aggColumnAvgField[code];
+            const key = `${element.root}.${element.code}`; // Or `${element.root}.${code}`            
+            this.aggColumnAvgValue[key] = this.aggColumnTotalValue[key] / contentLength;
+          }
+        }
+
+      }, 
+      error: err => {
+        if (this.destroyed) return;
+        this.itemLoading.set(false);
+      }
+    });
   }
 
   insertTextAtCursor(text) {

@@ -648,7 +648,7 @@
                 }
               }
 
-              @if (aggColumnTotalField.length>0 || aggColumnAvgField.length>0) {
+              @if (hasAggColumn) {
                 <tbody class="ds-agg">
                   <tr class="">
                     @if (dataset()?.x?.bulkAction) {
@@ -662,38 +662,33 @@
                             form()[item.root]?.items[item.code]
                             :form().data?.items[item.code];
 
-                      <td class="text-end code-{{item.code}} pt-0" [class.bg-transparent]="!aggColumnTotalValue[item.root+'.'+item.code] && !aggColumnTotalValue[item.root+'.'+item.code]">
-                        <!-- {{item.code}} -->
-                        @if (['data','prev'].indexOf(item.root)>-1) {
-                          @if (aggColumnTotalValue[item.root+'.'+item.code]){
-                            <div class="small mt-2">Total</div>
-                            @if (fField.x?.prefix) {
-                              <span class="text-muted me-05">{{fField.x?.prefix}}</span>
-                            }                            
-                            {{aggColumnTotalValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.suffix) {
-                              <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
-                            } 
-                          }
-                          @if (aggColumnAvgValue[item.root+'.'+item.code]){
-                            <div class="small mt-2">Average</div>
-                            @if (fField.x?.prefix) {
-                              <span class="text-muted me-05">{{fField.x?.prefix}}</span>
-                            }
-                            {{aggColumnAvgValue[item.root+'.'+item.code]|number:form()[item.root]?.items[item.code]?.format}}@if (fField.x?.suffix) {
-                              <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
-                            } 
-                          }
-                        } @else {
+                      @let aggTotalValue = aggColumnTotalValue[item.root+'.'+item.code];
+                      @let aggAvgValue = aggColumnAvgValue[item.root+'.'+item.code];
+
+                      <td class="text-end code-{{item.code}} pt-0" [class.bg-transparent]="!aggTotalValue && !aggAvgValue">
+                        @if (aggTotalValue && aggColumnTotalField[item.root+'.'+item.code]){
+                          <div class="small mt-2">Total</div>
+                          @if (fField.x?.prefix) {
+                            <span class="text-muted me-05">{{fField.x?.prefix}}</span>
+                          }{{fField?.format? (aggTotalValue|number:fField?.format) : aggTotalValue}}@if (fField.x?.suffix) {
+                            <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
+                          } 
+                        }
+                        @if (aggAvgValue && aggColumnAvgField[item.root+'.'+item.code]){
+                          <div class="small mt-2">Average</div>
+                          @if (fField.x?.prefix) {
+                            <span class="text-muted me-05">{{fField.x?.prefix}}</span>
+                          }{{fField?.format? (aggAvgValue|number:fField?.format) : aggAvgValue}}@if (fField.x?.suffix) {
+                            <span class="text-muted ms-05">{{fField.x?.suffix}}</span>
+                          } 
                         }
                       </td>
                     }
                     @if (dataset()?.showStatus) {
-                      <td class="bg-transparent">
-                      </td>
+                      <td class="bg-transparent"></td>
                     }
                     @if (dataset()?.showAction) {
-                      <td class="bg-transparent">
-                      </td>
+                      <td class="bg-transparent"></td>
                     }
                   </tr>
                 </tbody>
