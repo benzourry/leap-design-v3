@@ -145,7 +145,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       @if (field().x?.prefix) {
         <span class="text-muted me-05">{{field().x?.prefix}}</span>
       }
-      <span>{{value()|number:field()?.format}}@switch (field()?.type) {
+      <span>@if(field()?.format){{{value()|number:field()?.format}}}@else{{{value()}}}@switch (field()?.type) {
         @case ('scale') { <sup>/{{field()?.v?.max}}</sup> }
         @case ('scaleTo5') { <sup>/5</sup> }
         @case ('scaleTo10') { <sup>/10</sup> }
