@@ -122,6 +122,18 @@
                                   style="font-weight: bold;font-size:0.6em"
                                 [title]="field.pre">PRE</div>
                               }
+                              @if (field.x?.showTotal) {
+                                <div class="mt-2"
+                                  class="d-inline-block me-2 border border-1 border-success text-success rounded px-1 small"
+                                  style="font-weight: bold;font-size:0.6em"
+                                [title]="field.pre">TOTAL</div>
+                              }
+                              @if (field.x?.showAvg) {
+                                <div class="mt-2"
+                                  class="d-inline-block me-2 border border-1 border-success text-success rounded px-1 small"
+                                  style="font-weight: bold;font-size:0.6em"
+                                [title]="field.pre">AVERAGE</div>
+                              }
                             </div>
                             <div class="element-edit text-info position-absolute around-0">
                               <div class="d-flex flex-column">

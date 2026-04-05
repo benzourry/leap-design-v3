@@ -121,7 +121,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           @if (field().placeholder) {
             <span>{{field().placeholder}} </span>
           }
-          <span [innerHtml]="value()"></span>
+          @if(field()?.format){<span [innerHtml]="value()|number:field()?.format"></span>}@else{<span [innerHtml]="value()"></span>}
         </span>
         @if (field().x?.suffix) {
           <span class="text-muted ms-05">{{field().x?.suffix}}</span>

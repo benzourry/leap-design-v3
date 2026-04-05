@@ -40,7 +40,6 @@
       <div class="fc-inner" [ngStyle]="{'height':maxState()?'auto':(chart().height+'px'||'450px')}">
         <div class="fc-front" [class.print-hide]="flipped() && !maxState()">
           @if (chartOption()) {
-            <!-- {{chartOption|json}} -->
             <div class="demo-chart" [ngStyle]="{'height.px':(chart().height||450)}" echarts
             [options]="chartOption()"></div>
           }
@@ -61,7 +60,7 @@
                 @for (d of chartDataset()?.data; track $index) {
                   <tr>
                     <td>{{d.name}}</td>
-                    <td class="text-end">{{d.value}}</td>
+                    <td class="text-end"><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">{{((d.value/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
@@ -70,7 +69,7 @@
                 @if (chart().showAgg) {
                   <tr>
                     <td class="bg-dark text-white">Total</td>
-                    <td class="bg-dark text-white text-end">{{chartDataset()?._a}}</td>
+                    <td class="bg-dark text-white text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">100.00</td>
                     }
@@ -97,23 +96,27 @@
               <tbody>
                 @for (d of chartDataset()?.data|slice:1; track $index; let $idx = $index) {
                   <tr>
-                    @for (dv of d; track $index) {
-                      <td>{{dv}}</td>
+                    <td>{{d[0]}}</td>
+                    @for (dv of d|slice:1; track $index) {
+                      <td><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
                     }
                     @if (chart().showAgg) {
-                      <td class="bg-dark text-white text-end">{{chartDataset()?._arow[$idx+1]}}</td>
+                      <td class="bg-dark text-white text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._arow[$idx+1] | number: chart().x.format) : chartDataset()?._arow[$idx+1]}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     }
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">{{((chartDataset()?._arow[$idx+1]/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
                   </tr>
-                }
+                } 
                 @if (chart().showAgg) {
                   <tr>
-                    @for (dv of chartDataset()?._acol; track $index; let $idx = $index) {
-                      <td class="bg-dark text-white">{{chartDataset()?._acol[$idx]}}</td>
+                    <td class="bg-dark text-white">{{chartDataset()?._acol[0]}}</td>
+                    @for (dv of chartDataset()?._acol|slice:1; track $index; let $idx = $index) {
+                      <td class="bg-dark text-white"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     }
-                    <td class="text-end"><strong>{{chartDataset()?._a}}</strong></td>
+                    <td class="text-end">
+                      <strong><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></strong>
+                    </td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">100.00</td>
                     }

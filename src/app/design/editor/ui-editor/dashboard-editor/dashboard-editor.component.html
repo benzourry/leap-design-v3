@@ -626,6 +626,27 @@
             <a ngbNavLink>Options</a>
             <ng-template ngbNavContent>
               <div class="single-pane">
+                <div class="row">
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Value prefix</label>
+                        <input type="text" class="form-control" [(ngModel)]="editChartData.x.prefix" name="prefix" placeholder="ie: $">
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Value suffix</label>
+                        <input type="text" class="form-control" [(ngModel)]="editChartData.x.suffix" name="suffix" placeholder="ie: %">
+                      </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-3">
+                  <label class="form-label">Value number format</label>
+                  <input type="text" class="form-control" [(ngModel)]="editChartData.x.format" name="format"
+                    placeholder="ie: 1.2-2">
+                </div>
+
                 <div class="form-group mb-3">
                   <label class="form-label">Additional options for chart (Echarts)</label>
                   <div class="mx-n2">

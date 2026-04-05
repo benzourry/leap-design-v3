@@ -7,7 +7,7 @@ import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { ServerDate, compileTpl, deepMerge, tblToExcel } from '../../_shared/utils';
 // import { UserEntryFilterComponent } from '../../_shared/component/user-entry-filter/user-entry-filter.component';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
-import { JsonPipe, NgClass, NgStyle, SlicePipe } from '@angular/common';
+import { DecimalPipe, JsonPipe, NgClass, NgStyle, SlicePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-entry-filter.component';
 import { EntryService } from '../_service/entry.service';
@@ -25,7 +25,7 @@ import { RunService } from '../_service/run.service';
         provideEcharts(),
         // provideEchartsCore({ echarts })
     ],
-    imports: [FaIconComponent, NgClass, NgStyle, NgxEchartsDirective, UserEntryFilterComponent, SlicePipe]
+    imports: [FaIconComponent, NgClass, NgStyle, NgxEchartsDirective, UserEntryFilterComponent, SlicePipe, DecimalPipe]
 })
 export class ChartComponent implements OnInit {
 
