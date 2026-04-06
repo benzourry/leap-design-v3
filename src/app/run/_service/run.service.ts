@@ -185,6 +185,10 @@ export class RunService {
         item.pre = atobUTF(item._pre, '@');
       });
 
+      res.form.tiers?.forEach((item:any) => {
+        item.pre = atobUTF(item._pre, '@');
+      });
+
       if (res.form?.prev){
         Object.entries(res.form?.prev.items).forEach(([key, item]: [string, any]) => {
           item.f = atobUTF(item._f, '@');
@@ -192,6 +196,9 @@ export class RunService {
           item.post = atobUTF(item._post, '@');
           item.pre = atobUTF(item._pre, '@');
         });  
+        res.form?.prev?.tiers?.forEach((item:any) => {
+          item.pre = atobUTF(item._pre, '@');
+        });
       }
 
       return {

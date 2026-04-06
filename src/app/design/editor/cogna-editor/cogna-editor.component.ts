@@ -701,6 +701,22 @@ export class CognaEditorComponent implements OnInit {
         })
     }
   }
+  removeCognaSub(cognaSub) {
+    if (confirm("Are you sure you want to remove this Sub Agent?")) {
+      this.cognaService.removeSub(cognaSub.id)
+        .subscribe({
+          next: res => {
+            this.toastService.show("Cogna Sub Agent successfully removed", { classname: 'bg-success text-light' });
+            this.loadCogna(this.cognaId);
+            this.cdr.detectChanges();
+          },
+          error: err => {
+            this.toastService.show("Cogna Sub Agent removal failed", { classname: 'bg-danger text-light' });
+            this.cdr.detectChanges();
+          }
+        })
+    }
+  }
 
 
   removeCognaData: any;

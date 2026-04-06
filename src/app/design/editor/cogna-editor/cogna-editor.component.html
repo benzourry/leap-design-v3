@@ -1147,6 +1147,13 @@
                 <label class="form-check-label" for="publicAccess">Public Cogna (require no authentication)</label>
               </div>
             </div>
+            <div class="form-group">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="streamSupport"
+                  [(ngModel)]="editCognaData.streamSupport" name="streamSupport">
+                <label class="form-check-label" for="streamSupport">Force streaming response</label>
+              </div>
+            </div>
             @if (['txtcls'].includes(editCognaData.type)){
             <div class="form-group">
               <div class="form-check form-switch">
