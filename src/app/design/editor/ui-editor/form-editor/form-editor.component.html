@@ -2204,7 +2204,7 @@
                 </div>
               }
               @if ((['modelPicker','dataset','select','radio','radioBtn','checkboxOption','text'].indexOf(editItemData.type)>-1)){
-                <div class="form-check mb-3">
+                <div class="form-check">
                   <input type="checkbox" class="form-check-input" id="skipLoadSource"
                     [(ngModel)]="editItemData.x.skipLoadSource" name="skipLoadSource">
                   <label for="skipLoadSource" class="form-check-label">Don't load list source on focus (load manually)</label>
