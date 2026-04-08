@@ -213,7 +213,7 @@ export class FieldEditComponent extends ElementBase<any> {
     // REASON TOK ARIYA SBB lookupList() often arrive late. So, engkah dlm effect supaya once it is arrive, snap the value.
     // REPLACE with this simple block reusing autoSnapValue function
     effect(() => {
-      if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null) {
+      if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null && this.VALUE_SNAP_TYPE.includes(this.field()?.type) && !this.field()?.x?.noSnap) {
         untracked(() => {
           queueMicrotask(() => {
             this.value = this.autoSnapValue(this.value);
@@ -332,7 +332,7 @@ export class FieldEditComponent extends ElementBase<any> {
         this.value = processedValue;
       }
       
-      if (this.VALUE_SNAP_TYPE.includes(field?.type)) {
+      if (this.VALUE_SNAP_TYPE.includes(field?.type) && !field.x?.noSnap) {
         processedValue = this.autoSnapValue(next);
         // console.log("PROCESSED-VALUE", processedValue);
         this.value = processedValue;

@@ -259,7 +259,7 @@
                             </div>
                           } @else {
                             <div class="readonly">
-                              @if ((!form()?.hideStatus) || (form()?.admin && user().groups[form()?.admin.id]) || entry?.approver[tier.id]?.indexOf(user().email)>-1) {
+                              @if ((!form()?.hideStatus) || (form()?.admin && user().groups[form()?.admin?.id]) || entry?.approver[tier.id]?.indexOf(user().email)>-1) {
                                 <!-- ##INFO##
                                 appr[tier.id] is just an empty placeholder to hold approval form data (ngModel)
                                 To display actual approval data, we need to use entry?.approval[tier.id] -->
@@ -328,7 +328,6 @@
                                                   @if (!field?.hideLabel) {
                                                     <label>{{field?.label}}</label>
                                                   }
-                                                  <!-- {{entry?.approval[tier.id]?.data|json}} -->
                                                   <p class="form-control-static">
                                                     <field-view [field]="field" [scopeId]="scopeId()" [lang]="lang()"
                                                       [value]="getVal(field,entry?.approval[tier.id])"

@@ -178,28 +178,52 @@ export class RunService {
     return this.http.get<any>(`${this.baseApi}/run/dataset/${id}`)
     .pipe(map(res => {
 
-      Object.entries(res.form.items).forEach(([key, item]: [string, any]) => {
-        item.f = atobUTF(item._f, '@');
-        item.placeholder = item._placeholder;
-        item.post = atobUTF(item._post, '@');
-        item.pre = atobUTF(item._pre, '@');
-      });
+      const decodeForm = (form: any) => {
+        if (!form) return;
 
-      res.form.tiers?.forEach((item:any) => {
-        item.pre = atobUTF(item._pre, '@');
-      });
+        if (form.items) {
+          Object.values(form.items).forEach((item: any) => {
+            item.f = atobUTF(item._f, '@');
+            item.placeholder = item._placeholder;
+            item.post = atobUTF(item._post, '@');
+            item.pre = atobUTF(item._pre, '@');
+          });
+        }
 
-      if (res.form?.prev){
-        Object.entries(res.form?.prev.items).forEach(([key, item]: [string, any]) => {
-          item.f = atobUTF(item._f, '@');
-          item.placeholder = item._placeholder;
-          item.post = atobUTF(item._post, '@');
-          item.pre = atobUTF(item._pre, '@');
-        });  
-        res.form?.prev?.tiers?.forEach((item:any) => {
-          item.pre = atobUTF(item._pre, '@');
-        });
+        if (form.tiers) {
+          form.tiers.forEach((item: any) => {
+            item.pre = atobUTF(item._pre, '@');
+          });
+        }
+      };
+
+      decodeForm(res.form);
+
+      if (res.form?.prev) {
+        decodeForm(res.form.prev);
       }
+
+      // Object.entries(res.form.items).forEach(([key, item]: [string, any]) => {
+      //   item.f = atobUTF(item._f, '@');
+      //   item.placeholder = item._placeholder;
+      //   item.post = atobUTF(item._post, '@');
+      //   item.pre = atobUTF(item._pre, '@');
+      // });
+      // res.form.tiers?.forEach((item:any) => {
+      //   item.pre = atobUTF(item._pre, '@');
+      // });
+
+      // if (res.form?.prev){
+      //   Object.entries(res.form?.prev.items).forEach(([key, item]: [string, any]) => {
+      //     item.f = atobUTF(item._f, '@');
+      //     item.placeholder = item._placeholder;
+      //     item.post = atobUTF(item._post, '@');
+      //     item.pre = atobUTF(item._pre, '@');
+      //   });  
+      //   res.form?.prev.tiers?.forEach((item:any) => {
+      //     item.pre = atobUTF(item._pre, '@');
+      //   });
+      // }
 
       return {
         ...res,

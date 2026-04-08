@@ -174,7 +174,7 @@ export class StepWizardComponent implements OnInit {
     createTooltip(tier,approval){
         var tt = tier.name;
         if (approval[tier.id]){
-            tt+='\n'+new Date(approval[tier.id].timestamp).toLocaleString() ;
+            tt+='\n'+new Date(approval[tier.id]?.timestamp).toLocaleString() ;
         }
         return tt;
     }
