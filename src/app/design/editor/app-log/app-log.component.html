@@ -1,0 +1,102 @@
+<div class="p-3">
+
+    <h5 class="mb-3">App Log > {{ app?.title }}</h5> 
+
+    <div class="mb-2">
+        <div class="row g-2">
+            <div class="col">
+                <input type="text" placeholder="Search logs..." [(ngModel)]="params.searchText"
+                    (keyup.enter)="loadLogs()" class="form-control mb-3" />
+            </div>
+            <div class="col">
+                <select class="form-select form-select mb-3" [(ngModel)]="params.module" (change)="loadLogs()">
+                    <option [ngValue]="undefined">All Modules</option>
+                    @for (mod of modules; track $index) {
+                        <option [value]="mod.code">{{ mod.name }}</option>
+                    }
+                </select>
+            </div>
+            @if (params.module){
+                <div class="col">
+                    @if (params.module == 'lambda'){
+                    
+                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Lambda</option>
+                            @for (mod of lambdaList; track $index) {
+                                <option [value]="mod.id">{{ mod.name }}</option>
+                            }
+                        </select>
+                    }
+                    @if (params.module == 'endpoint'){
+                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Endpoint</option>
+                            @for (mod of endpointList; track $index) {
+                                <option [value]="mod.id">{{ mod.name }}</option>
+                            }
+                        </select>
+                    }
+                    @if (params.module == 'cogna'){
+                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Cogna</option>
+                            @for (mod of cognaList; track $index) {
+                                <option [value]="mod.id">{{ mod.name }}</option>
+                            }
+                        </select>
+                    }
+                    @if (params.module == 'form'){
+                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Form</option>
+                            @for (mod of formList; track $index) {
+                                <option [value]="mod.id">{{ mod.title }}</option>
+                            }
+                        </select>
+                    }
+                    @if (params.module == 'dataset'){
+                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Dataset</option>
+                            @for (mod of datasetList; track $index) {
+                                <option [value]="mod.id">{{ mod.title }}</option>
+                            }
+                        </select>
+                    }
+                    
+                </div>
+            }
+            <div class="col">
+                <div class="input-group">
+                    <input class="form-control" type="text" name="trailFrom" [(ngModel)]="params.dateFrom"
+                        placeholder="From" (ngModelChange)="loadLogs()"
+                        (click)="dtrailfrom.toggle()" ngbDatepicker #dtrailfrom="ngbDatepicker">
+                    <input class="form-control" type="text" name="trailTo" [(ngModel)]="params.dateTo" placeholder="To"
+                        (ngModelChange)="loadLogs()" (click)="dtrailto.toggle()"
+                        ngbDatepicker #dtrailto="ngbDatepicker">
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+   
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>module</th>
+            <th>moduleId</th>
+            <th>log</th>
+            <th>principal</th>
+            <th>timestamp</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for (item of logList|filter:params.searchText; track $index) {
+            <tr>
+                <td>{{ item.module }}</td>
+                <td>{{ item.moduleId }}</td>
+                <td>{{ item.data }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.timestamp }}</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

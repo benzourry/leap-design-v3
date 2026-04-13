@@ -26,6 +26,7 @@ export const DESIGN_ROUTES: Routes = [
         { path: 'krypta', loadComponent: () => import('./editor/krypta-editor/krypta-editor.component').then(mod => mod.KryptaEditorComponent) },
         { path: 'signa', loadComponent: () => import('./editor/signa-editor/signa-editor.component').then(mod => mod.SignaEditorComponent) },
         { path: 'summary', loadComponent: () => import('../admin/app-summary/app-summary.component').then(mod => mod.AppSummaryComponent), data:{platform:false} },
+        { path: 'log', loadComponent: () => import('./editor/app-log/app-log.component').then(mod => mod.AppLogComponent) },
       ],
       // canActivate: [AuthGuardService]
     },

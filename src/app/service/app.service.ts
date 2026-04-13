@@ -55,6 +55,10 @@ export class AppService {
     return this.http.get<any>(`${this.baseApi}/app/${id}/pages`);
   }
 
+  getLogs(id: number, httpParam: any) {
+    return this.http.get<any>(`${this.baseApi}/app/${id}/logs`, { params: httpParam });
+  }
+
   getNavisAll(id: any) {
     return this.http.get<any>(`${this.baseApi}/app/${id}/navis-all`);
   }
