@@ -1,15 +1,20 @@
 <div class="p-3">
 
-    <h5 class="mb-3">App Log > {{ app?.title }}</h5> 
+    <button class="btn btn-sm btn-outline-secondary mb-3 float-end" (click)="loadLogs()">
+        <fa-icon [icon]="['fas','sync']"></fa-icon>
+        Refresh
+    </button>
 
-    <div class="mb-2">
+    <h5 class="mb-3">App Log &#10095; {{ app?.title }}</h5> 
+
+    <div>
         <div class="row g-2">
             <div class="col">
                 <input type="text" placeholder="Search logs..." [(ngModel)]="params.searchText"
-                    (keyup.enter)="loadLogs()" class="form-control mb-3" />
+                    (keyup.enter)="loadLogs()" class="form-control" />
             </div>
             <div class="col">
-                <select class="form-select form-select mb-3" [(ngModel)]="params.module" (change)="loadLogs()">
+                <select class="form-select form-select" [(ngModel)]="params.module" (change)="loadLogs()">
                     <option [ngValue]="undefined">All Modules</option>
                     @for (mod of modules; track $index) {
                         <option [value]="mod.code">{{ mod.name }}</option>
@@ -20,7 +25,7 @@
                 <div class="col">
                     @if (params.module == 'lambda'){
                     
-                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
                             <option [ngValue]="undefined">Any Lambda</option>
                             @for (mod of lambdaList; track $index) {
                                 <option [value]="mod.id">{{ mod.name }}</option>
@@ -28,7 +33,7 @@
                         </select>
                     }
                     @if (params.module == 'endpoint'){
-                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
                             <option [ngValue]="undefined">Any Endpoint</option>
                             @for (mod of endpointList; track $index) {
                                 <option [value]="mod.id">{{ mod.name }}</option>
@@ -36,7 +41,7 @@
                         </select>
                     }
                     @if (params.module == 'cogna'){
-                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
                             <option [ngValue]="undefined">Any Cogna</option>
                             @for (mod of cognaList; track $index) {
                                 <option [value]="mod.id">{{ mod.name }}</option>
@@ -44,7 +49,7 @@
                         </select>
                     }
                     @if (params.module == 'form'){
-                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
                             <option [ngValue]="undefined">Any Form</option>
                             @for (mod of formList; track $index) {
                                 <option [value]="mod.id">{{ mod.title }}</option>
@@ -52,7 +57,7 @@
                         </select>
                     }
                     @if (params.module == 'dataset'){
-                        <select class="form-select form-select mb-3" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
                             <option [ngValue]="undefined">Any Dataset</option>
                             @for (mod of datasetList; track $index) {
                                 <option [value]="mod.id">{{ mod.title }}</option>
@@ -73,30 +78,77 @@
                 </div>
 
             </div>
+            <div class="col-12 mt-2">
+                <div class="small text-muted">Show Columns</div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnModule" [(ngModel)]="showColumn.module">
+                    <label class="form-check-label" for="showColumnModule">Module</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnModuleId" [(ngModel)]="showColumn.moduleId">
+                    <label class="form-check-label" for="showColumnModuleId">Module ID</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnLogMessage" [(ngModel)]="showColumn.log" disabled>
+                    <label class="form-check-label" for="showColumnLogMessage">Log</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnPrincipal" [(ngModel)]="showColumn.principal">
+                    <label class="form-check-label" for="showColumnPrincipal">Principal</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnTimestamp" [(ngModel)]="showColumn.timestamp">
+                    <label class="form-check-label" for="showColumnTimestamp">Timestamp</label>
+                </div>
+            </div>        
         </div>
+ 
     </div>
+</div>
 
+<div class="table-responsive">
    
     <table class="table table-bordered">
         <thead>
         <tr>
+            @if(showColumn.module){
             <th>module</th>
-            <th>moduleId</th>
+            }
+            @if(showColumn.moduleId){
+            <th>mod-Id</th>
+            }
+            @if (showColumn.log) {
             <th>log</th>
+            }
+            @if(showColumn.principal){
             <th>principal</th>
+            }
+            @if(showColumn.timestamp){
             <th>timestamp</th>
+            }
         </tr>
         </thead>
         <tbody>
         @for (item of logList|filter:params.searchText; track $index) {
             <tr>
+                @if (showColumn.module) {
                 <td>{{ item.module }}</td>
+                }
+                @if (showColumn.moduleId) {
                 <td>{{ item.moduleId }}</td>
+                }
+                @if (showColumn.log) {
                 <td>{{ item.data }}</td>
+                }
+                @if (showColumn.principal) {
                 <td>{{ item.email }}</td>
-                <td>{{ item.timestamp }}</td>
+                }
+                @if (showColumn.timestamp) {
+                <td>{{ item.timestamp |date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                }
             </tr>
         }
         </tbody>
     </table>
 </div>
+

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { AppService } from '../../../service/app.service';
-import { JsonPipe, PlatformLocation } from '@angular/common';
+import { DatePipe, JsonPipe, PlatformLocation } from '@angular/common';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { NgbDateAdapter, NgbDatepicker, NgbInputDatepicker, NgbModal, NgbTimeAdapter } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../_shared/service/toast-service';
@@ -16,10 +16,11 @@ import { FormService } from '../../../service/form.service';
 import { DatasetService } from '../../../service/dataset.service';
 import { NgbUnixTimestampTimeAdapter } from '../../../_shared/service/time-adapter';
 import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-app-log',
-  imports: [JsonPipe, FormsModule, FilterPipe, NgbInputDatepicker],
+  imports: [JsonPipe, FormsModule, FilterPipe, NgbInputDatepicker, FaIconComponent, DatePipe],
   templateUrl: './app-log.component.html',
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
     { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
@@ -59,6 +60,14 @@ export class AppLogComponent implements OnInit {
     {code:'endpoint', name:'Endpoint'},
     {code:'cogna', name:'Cogna'}
   ]
+
+  showColumn:any = {
+    module:true,
+    moduleId:true,
+    log:true,
+    principal:true,
+    timestamp:true,
+  }
 
   ngOnInit(): void {
     this.userService.getCreator()
