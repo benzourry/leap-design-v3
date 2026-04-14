@@ -67,6 +67,14 @@
                             }
                         </select>
                     }
+                    @if (params.module == 'krypta'){
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Krypta</option>
+                            @for (mod of kryptaList; track $index) {
+                                <option [value]="mod.id">{{ mod.name }}</option>
+                            }
+                        </select>
+                    }
                     
                 </div>
             }

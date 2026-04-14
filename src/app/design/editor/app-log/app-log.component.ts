@@ -19,6 +19,7 @@ import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { Subscription, switchMap, timer } from 'rxjs';
 import { MailerService } from '../../../service/mailer.service';
+import { KryptaService } from '../../../service/krypta.service';
 
 @Component({
   selector: 'app-app-log',
@@ -38,6 +39,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
   private formService = inject(FormService);
   private datasetService = inject(DatasetService);
   private mailerService = inject(MailerService);
+  private kryptaService = inject(KryptaService);
   private route = inject(ActivatedRoute);
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
@@ -62,6 +64,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
     {code:'dataset', name:'Dataset'},
     {code:'endpoint', name:'Endpoint'},
     {code:'cogna', name:'Cogna'},
+    {code:'krypta', name:'Krypta'},
     {code:'mailer', name:'Mailer'}
   ]
 
@@ -116,6 +119,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
   formList:any[] = [];
   datasetList:any[] = [];
   mailerList:any[] = [];
+  kryptaList:any[] = [];
 
   loadComps(appId:number){
     this.lambdaService.getLambdaList({appId:appId}).subscribe(res => {
@@ -140,6 +144,10 @@ export class AppLogComponent implements OnInit, OnDestroy {
 
     this.mailerService.getMailerList({appId:appId}).subscribe(res => {
       this.mailerList = res.content || [];
+    });
+
+    this.kryptaService.getWalletList({appId:appId}).subscribe(res => {
+      this.kryptaList = res.content || [];
     });
 
   }
@@ -194,7 +202,7 @@ startPolling() {
     })
   ).subscribe(res => {
     // Only updates when the latest, un-cancelled request finishes
-    this.logList = res.content || [];
+    this.logList = res.content || []; 
   });
 }
 
