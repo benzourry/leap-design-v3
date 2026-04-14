@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AppService } from '../../../service/app.service';
 import { DatePipe, JsonPipe, PlatformLocation } from '@angular/common';
 import { ActivatedRoute, Router, Params } from '@angular/router';
@@ -17,6 +17,8 @@ import { DatasetService } from '../../../service/dataset.service';
 import { NgbUnixTimestampTimeAdapter } from '../../../_shared/service/time-adapter';
 import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { Subscription, switchMap, timer } from 'rxjs';
+import { MailerService } from '../../../service/mailer.service';
 
 @Component({
   selector: 'app-app-log',
@@ -26,7 +28,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
   styleUrl: './app-log.component.scss',
 })
-export class AppLogComponent implements OnInit {
+export class AppLogComponent implements OnInit, OnDestroy {
 
   private appService = inject(AppService);
   private userService = inject(UserService);
@@ -35,6 +37,7 @@ export class AppLogComponent implements OnInit {
   private cognaService = inject(CognaService);
   private formService = inject(FormService);
   private datasetService = inject(DatasetService);
+  private mailerService = inject(MailerService);
   private route = inject(ActivatedRoute);
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
@@ -58,12 +61,13 @@ export class AppLogComponent implements OnInit {
     {code:'form', name:'Form'},
     {code:'dataset', name:'Dataset'},
     {code:'endpoint', name:'Endpoint'},
-    {code:'cogna', name:'Cogna'}
+    {code:'cogna', name:'Cogna'},
+    {code:'mailer', name:'Mailer'}
   ]
 
   showColumn:any = {
     module:true,
-    moduleId:true,
+    moduleId:false,
     log:true,
     principal:true,
     timestamp:true,
@@ -95,7 +99,8 @@ export class AppLogComponent implements OnInit {
                   this.cdr.detectChanges();
                 });
 
-              this.loadLogs();
+              // this.loadLogs();
+              this.startPolling();
             }
 
           });
@@ -110,6 +115,7 @@ export class AppLogComponent implements OnInit {
   cognaList:any[] = [];
   formList:any[] = [];
   datasetList:any[] = [];
+  mailerList:any[] = [];
 
   loadComps(appId:number){
     this.lambdaService.getLambdaList({appId:appId}).subscribe(res => {
@@ -132,6 +138,10 @@ export class AppLogComponent implements OnInit {
       this.datasetList = res.content || [];
     });
 
+    this.mailerService.getMailerList({appId:appId}).subscribe(res => {
+      this.mailerList = res.content || [];
+    });
+
   }
 
   loadLogs() {
@@ -146,4 +156,68 @@ export class AppLogComponent implements OnInit {
       this.logList = res.content || [];
     })
   }
+
+  clearLogs() {
+
+    if (!confirm('Are you sure you want to clear logs?')) {
+      return;
+    }
+
+    const cleanParams = Object.fromEntries(
+      Object.entries(this.params).filter(([_, value]) => value !== undefined)
+    );
+
+    console.log("CLEAR LOGS with params", cleanParams);
+    this.appService.clearLogs(this.appId, cleanParams)
+    .subscribe(res => {
+      this.toastService.show('Logs cleared', { classname: 'bg-success text-light' });
+      this.loadLogs();
+    })
+  }
+
+  private pollingSub?: Subscription;
+
+  // 3. Define the polling methods
+startPolling() {
+  this.stopPolling(); 
+  this.isPolling = true; 
+
+  this.pollingSub = timer(0, 3000).pipe(
+    switchMap(() => {
+      // Get params just like you do in loadLogs()
+      const cleanParams = Object.fromEntries(
+        Object.entries(this.params).filter(([_, value]) => value !== undefined)
+      );
+      
+      // Return the HTTP observable so switchMap can manage it
+      return this.appService.getLogs(this.appId, cleanParams);
+    })
+  ).subscribe(res => {
+    // Only updates when the latest, un-cancelled request finishes
+    this.logList = res.content || [];
+  });
+}
+
+  stopPolling() {
+    this.isPolling = false; // Keep state in sync
+    if (this.pollingSub) {
+      this.pollingSub.unsubscribe();
+    }
+  }
+
+  isPolling: boolean = true;
+
+  togglePolling() {
+    if (this.isPolling) {
+      this.startPolling();
+    } else {
+      this.stopPolling();
+    }
+  }
+
+  // 4. Implement ngOnDestroy to prevent memory leaks
+  ngOnDestroy() {
+    this.stopPolling();
+  }
+
 }

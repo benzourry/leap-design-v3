@@ -253,11 +253,11 @@
                           [class.lookup-disabled]="lookup.sourceType=='db' && !entry.enabled"
                           [ngClass]="entry.altClass">
                           @if (!lookup.x?.codeHidden){
-                            <td>{{entry.code}}</td>
+                            <td title="$.<field-code>.code">{{entry.code}}</td>
                           }
-                          <td>{{entry.name}}</td>
+                          <td title="$.<field-code>.name">{{entry.name}}</td>
                           @if(!lookup?.x?.extraDisabled){
-                            <td>{{entry.extra}}</td>
+                            <td title="$.<field-code>.extra">{{entry.extra}}</td>
                           }
                           @if (lookup.dataEnabled) {
                             <td class="p-0">
@@ -267,7 +267,7 @@
                                     @for (o of entry.data|keyvalue; track $index) {
                                       <tr>
                                         <td class="col-1" style="font-weight:500">{{o.key}}</td>
-                                        <td>
+                                        <td title="$.<field-code>.data.{{o.key}}">
                                           @if (['longtext','text','options'].indexOf(mapDataFields[o.key])>-1) {
                                             <span [innerHtml]="o.value"></span>
                                           }@else if (mapDataFields[o.key]=='lookup') {

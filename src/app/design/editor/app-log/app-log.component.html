@@ -1,10 +1,5 @@
 <div class="p-3">
 
-    <button class="btn btn-sm btn-outline-secondary mb-3 float-end" (click)="loadLogs()">
-        <fa-icon [icon]="['fas','sync']"></fa-icon>
-        Refresh
-    </button>
-
     <h5 class="mb-3">App Log &#10095; {{ app?.title }}</h5> 
 
     <div>
@@ -64,6 +59,14 @@
                             }
                         </select>
                     }
+                    @if (params.module == 'mailer'){
+                        <select class="form-select form-select" [(ngModel)]="params.moduleId" (change)="loadLogs()">
+                            <option [ngValue]="undefined">Any Mailer</option>
+                            @for (mod of mailerList; track $index) {
+                                <option [value]="mod.id">{{ mod.name }}</option>
+                            }
+                        </select>
+                    }
                     
                 </div>
             }
@@ -81,6 +84,16 @@
             <div class="col-12 mt-2">
                 <div class="small text-muted">Show Columns</div>
                 <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="showColumnTimestamp" [(ngModel)]="showColumn.timestamp">
+                    <label class="form-check-label" for="showColumnTimestamp">Timestamp</label>
+                </div>
+                @if (showColumn.timestamp){
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showColumnHourOnly" [(ngModel)]="showColumn.hourOnly">
+                        <label class="form-check-label" for="showColumnHourOnly">Hour-only</label>
+                    </div>
+                }
+                <div class="form-check form-check-inline">
                     <input class="form-check-input" type="checkbox" id="showColumnModule" [(ngModel)]="showColumn.module">
                     <label class="form-check-label" for="showColumnModule">Module</label>
                 </div>
@@ -96,59 +109,80 @@
                     <input class="form-check-input" type="checkbox" id="showColumnPrincipal" [(ngModel)]="showColumn.principal">
                     <label class="form-check-label" for="showColumnPrincipal">Principal</label>
                 </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="showColumnTimestamp" [(ngModel)]="showColumn.timestamp">
-                    <label class="form-check-label" for="showColumnTimestamp">Timestamp</label>
+                <div class="form-check form-switch form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="pollingToggle" 
+                        [(ngModel)]="isPolling" 
+                        (change)="togglePolling()">
+                    <label class="form-check-label" for="pollLogs">Polling logs</label>
                 </div>
             </div>        
         </div>
+        @if(logList.length>0){
+            <button class="btn btn-sm btn-outline-secondary mt-3 me-2" (click)="loadLogs()">
+                <fa-icon [icon]="['fas','sync']"></fa-icon>
+                Refresh
+            </button>
+            <button class="btn btn-sm btn-outline-danger mt-3" (click)="clearLogs()">
+                <fa-icon [icon]="['fas','trash']"></fa-icon>
+                Clear Logs
+            </button>
+        }
  
     </div>
 </div>
 
-<div class="table-responsive">
-   
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            @if(showColumn.module){
-            <th>module</th>
-            }
-            @if(showColumn.moduleId){
-            <th>mod-Id</th>
-            }
-            @if (showColumn.log) {
-            <th>log</th>
-            }
-            @if(showColumn.principal){
-            <th>principal</th>
-            }
-            @if(showColumn.timestamp){
-            <th>timestamp</th>
-            }
-        </tr>
-        </thead>
-        <tbody>
-        @for (item of logList|filter:params.searchText; track $index) {
+@if(logList.length==0){
+    <div class="alert alert-info m-3">
+        No logs found. Try adjusting your search criteria or refresh.
+    </div>
+}@else{
+    <div class="table-responsive">   
+        <table class="table table-bordered table-dark table-striped">
+            <thead>
             <tr>
-                @if (showColumn.module) {
-                <td>{{ item.module }}</td>
+                @if(showColumn.timestamp){
+                <th>timestamp</th>
                 }
-                @if (showColumn.moduleId) {
-                <td>{{ item.moduleId }}</td>
+                @if(showColumn.module){
+                <th>module</th>
+                }
+                @if(showColumn.moduleId){
+                <th>mod-Id</th>
                 }
                 @if (showColumn.log) {
-                <td>{{ item.data }}</td>
+                <th>log</th>
                 }
-                @if (showColumn.principal) {
-                <td>{{ item.email }}</td>
-                }
-                @if (showColumn.timestamp) {
-                <td>{{ item.timestamp |date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                @if(showColumn.principal){
+                <th>principal</th>
                 }
             </tr>
-        }
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody class="table-group-divider">
+            @for (item of logList|filter:params.searchText; track $index) {
+                <tr>
+                    @if (showColumn.timestamp) {
+                        @if (showColumn.hourOnly){
+                            <td>{{ item.timestamp |date:'HH:mm:ss' }}</td>
+                        }@else {
+                            <td>{{ item.timestamp |date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                        }
+                    }
+                    @if (showColumn.module) {
+                    <td>{{ item.module }}</td>
+                    }
+                    @if (showColumn.moduleId) {
+                    <td>{{ item.moduleId }}</td>
+                    }
+                    @if (showColumn.log) {
+                    <td>{{ item.data }}</td>
+                    }
+                    @if (showColumn.principal) {
+                    <td>{{ item.email }}</td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
 
