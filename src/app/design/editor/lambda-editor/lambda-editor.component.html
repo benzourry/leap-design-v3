@@ -42,7 +42,7 @@
               [class.active]="a.id==lambdaId"
               routerLinkActive="active">
               <div class="list-group-item-heading">
-                {{a.name}}
+                {{a.name}} <sup>{{a?.id}}</sup>
               </div>
               @if (a.description) {
                 <div class="list-group-item-text">{{a.description}}</div>

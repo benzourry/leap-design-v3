@@ -172,7 +172,7 @@
                         @if (showColumn.hourOnly){
                             <td>{{ item.timestamp |date:'HH:mm:ss' }}</td>
                         }@else {
-                            <td>{{ item.timestamp |date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                            <td>{{ item.timestamp |date:'yyyy-MM-dd HH:mm:ss.SSS' }}</td>
                         }
                     }
                     @if (showColumn.module) {

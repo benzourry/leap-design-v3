@@ -873,7 +873,7 @@ export class CognaEditorComponent implements OnInit {
 
   ingestSrcLoading = signal<any>({});
   ingestSrc(cognaSrc) {
-    this.ingestSrcLoading[cognaSrc.id] = true;
+    this.ingestSrcLoading.set({...this.ingestSrcLoading(), [cognaSrc.id]: true});
     this.cognaService.ingestSrc(cognaSrc.id, {})
       .subscribe({
         next: res => {
@@ -923,7 +923,7 @@ export class CognaEditorComponent implements OnInit {
   // ingestLoading: boolean = false;
   ingestLoading = signal<any>({});
   ingest(cogna) {
-    this.ingestLoading[cogna.id] = true;
+    this.ingestLoading.set({...this.ingestLoading(), [cogna.id]: true});
     this.cognaService.ingest(cogna.id, {})
       .subscribe({
         next: res => {

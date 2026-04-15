@@ -363,7 +363,7 @@
                 Sources
                 <div class="small">{{cogna.sources.length}} documents</div>
               </div>
-              <div class="list-group list-group-flush">
+              <div class="list-group list-group-flush" [class.disabled]="ingestLoading()[cogna.id]">
                 @for (b of cogna.sources; track b.id) {
                 <div class="list-group-item p-2 element">
                   <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">

@@ -23,7 +23,7 @@ import { KryptaService } from '../../../service/krypta.service';
 
 @Component({
   selector: 'app-app-log',
-  imports: [JsonPipe, FormsModule, FilterPipe, NgbInputDatepicker, FaIconComponent, DatePipe],
+  imports: [FormsModule, FilterPipe, NgbInputDatepicker, FaIconComponent, DatePipe],
   templateUrl: './app-log.component.html',
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
     { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
