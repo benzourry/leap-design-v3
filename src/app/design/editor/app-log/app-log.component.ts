@@ -215,21 +215,16 @@ loadLogs() {
   //   });
   // }
 
-  startPolling() {
+startPolling() {
     this.stopPolling();
     this.isPolling = true;
 
     this.pollingSub = timer(0, 3000).pipe(
       exhaustMap(() => {
-        // 1. Clone the base params so we don't accidentally mutate this.params globally
         const pollParams = { ...this.params };
 
-        // 2. If we already have logs, find the newest timestamp
         if (this.logList && this.logList.length > 0) {
-          const newestLog = this.logList[0]; // Index 0 is the newest because of 'desc' sort
-          
-          // Add 1 to the timestamp to avoid fetching the exact same log again
-          // (Assuming your timestamp is a Unix number based on your NgbUnixTimestampAdapter)
+          const newestLog = this.logList[0]; 
           pollParams.dateFrom = newestLog.timestamp + 1; 
         }
 
@@ -247,11 +242,21 @@ loadLogs() {
     ).subscribe(res => {
       if (res && res.content && res.content.length > 0) {
         
-        // Map the incoming logs to include a temporary flag
-        const newLogs = res.content.map((log: any) => ({ ...log, isNew: true }));
+        // 1. Check if this is the very first time we are loading logs
+        const isFirstLoad = this.logList.length === 0;
 
-        // Prepend the mapped logs
-        this.logList = [...newLogs, ...this.logList];
+        // 2. Map the incoming logs. ONLY apply isNew: true if it is NOT the first load
+        const newLogs = res.content.map((log: any) => ({ 
+          ...log, 
+          isNew: !isFirstLoad 
+        }));
+
+        // 3. IMPORTANT: Strip the 'isNew' flag from existing logs so they don't re-animate 
+        // when Angular shifts the table down.
+        const oldLogs = this.logList.map(log => ({ ...log, isNew: false }));
+
+        // 4. Prepend the new logs to the old logs
+        this.logList = [...newLogs, ...oldLogs];
 
         if (this.logList.length > 2000) {
           this.logList = this.logList.slice(0, 2000);
