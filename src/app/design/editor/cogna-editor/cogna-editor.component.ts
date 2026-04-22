@@ -149,7 +149,11 @@ export class CognaEditorComponent implements OnInit {
     { name: 'GPT-4.1', code: 'gpt-4.1', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4.1 MINI', code: 'gpt-4.1-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-5.4', code: 'gpt-5.4', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-5.4 MINI', code: 'gpt-5.4-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+    { name: 'GPT-5.4 NANO', code: 'gpt-5.4-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
+
+
 
     // { name: 'Gemini 1.0 Pro', code: 'gemini-1.0-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     // { name: 'Gemini 1.5 Pro', code: 'gemini-1.5-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
@@ -165,7 +169,8 @@ export class CognaEditorComponent implements OnInit {
     { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DALL.E 2', code: 'dall-e-2', type: 'openai', use: ['imggen'] },
     { name: 'DALL.E 3', code: 'dall-e-3', type: 'openai', use: ['imggen'] },
-    { name: 'GPT Image', code: 'gpt-image-1', type: 'openai', use: ['imggen'] },
+    { name: 'GPT Image 1', code: 'gpt-image-1', type: 'openai', use: ['imggen'] },
+    { name: 'GPT Image 2', code: 'gpt-image-2', type: 'openai', use: ['imggen'] },
     // { name: 'ResNet101v1', code: 'resnet101v1', type: 'onnx', use: ['imgcls'] },
     // { name: 'YOLOv8', code: 'yolov8n', type: 'onnx', use: ['imgcls'] },
     { name: 'YOLOv10s', code: 'yolov10s.onnx', type: 'onnx', use: ['imgcls'] },
