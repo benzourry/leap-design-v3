@@ -4,12 +4,11 @@ import dayjs from 'dayjs';
 import { marked } from 'marked';
 import mermaid from 'mermaid';
 
-const svgCache: Record<string, string> = {};
-const tplCache: Record<number, string> = {};
-
+// const tplCache: Record<number, string> = {};
 const hashCode = (s: string): number =>
   s?.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
 
+const svgCache: Record<string, string> = {};
 marked.use({
   extensions: [{
     name: 'code',
@@ -42,22 +41,18 @@ const tag2sym = { table: 'table_', tr: 'tr_', td: 'td_', th: 'th_', tbody: 'tbod
 const sym2tag = { table_: 'table', tr_: 'tr', td_: 'td', th_: 'th', tbody_: 'tbody', thead_: 'thead', src_:'src' };
 const htmlEntities = {'&lt;': '<','&gt;': '>','&amp;': '&','&quot;': '"','&#39;': "'",'&apos;': "'"};
 
+
+// Updated cache type to store the compiled Function
+const tplCache = new Map<string, Function>();
+
 export function compileTpl(templateText: string, data: any, scopeId: string): string {
   if (!templateText) return "";
-  const tplHash = hashCode(templateText);
-  let code = tplCache[tplHash];
 
-  // Put variables in global if there is onclick handler
-  // ** New experimental
-  const hasEvent = /on\w+="/.test(templateText);
-  // const hasClick = templateText.includes('onclick="');
-  if (hasEvent) {
-    (window as any)[`_data_${scopeId}`] = data.$;
-    (window as any)[`_entry_${scopeId}`] = data.$_;
-    (window as any)[`_prev_${scopeId}`] = data.$prev$;
-  }
+  let cachedFn = tplCache.get(templateText);
+  // let code = tplCache[tplHash];
 
-  if (!code) {
+
+  if (!cachedFn) {
     let fullTpl = multiReplace(templateText, tag2sym);
     const doc = document.createElement("x-template");
     doc.innerHTML = fullTpl;
@@ -80,7 +75,7 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
 
     // using with() to prevent data leaked to the global scope. However, popobj must resides in
     // global to enable onclick handler (only work globally) to work.
-    code = (
+    const code = (
       "return (()=>{" +      
       "with(data){" +
       // "Object.assign(this, data);" + 
@@ -122,23 +117,40 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
       + ";return output;}"
       + "})()"
     )//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
-    tplCache[tplHash] = code;
+    
+    // Instantiate the function once and cache it
+    cachedFn = new Function("data", "get", "formatNumber", "dayjs", code);
+
+    
+    tplCache.set(templateText, cachedFn);
   }
 
-  if (templateText && data) {
-    data.dayjs = dayjs;
+  if (data) {
+    // data.dayjs = dayjs;
 
-    const fn = new Function("data", "get", "formatNumber", code);
+    // const fn = new Function("data", "get", "formatNumber", code);
 
-    let result = "";
+      // Put variables in global if there is onclick handler
+    // ** New experimental
+    const hasEvent = /on\w+="/.test(templateText);
+    // const hasClick = templateText.includes('onclick="');
+    if (hasEvent) {
+      (window as any)[`_data_${scopeId}`] = data.$;
+      (window as any)[`_entry_${scopeId}`] = data.$_;
+      (window as any)[`_prev_${scopeId}`] = data.$prev$;
+    }
+
+
+    // let result = "";
     try {
-      result = fn.call(this, data, get, formatNumber);
-      result = result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
+      let result = cachedFn.call(this, data, get, formatNumber, dayjs);
+      return result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
     } catch (err) {
       throw err;
     }
-    return result;
+    // return result;
   }
+
   return templateText;
 }
 
@@ -149,17 +161,12 @@ function r$markdown(match: string, p1: string): string {
 }
 
 async function createMermaidSvg(id: string, text: string): Promise<string> {
-  // console.log("Rendered Mermaid:", id);
   if (await mermaid.parse(text, { suppressErrors: true })) {
     const elem = document.createElement("div");
     document.body.appendChild(elem);
     elem.id = `${id}_svg`;
     const { svg } = await mermaid.render(elem.id, text);
     return svg;
-    // const elem = document.createElement('div');
-    // elem.id = `${id}_svg`;
-    // const { svg } = await mermaid.render(elem.id, text, undefined, elem);
-    // return svg;
   }
   console.log("Mermaid syntax error");
   return `<div class="text-danger">Invalid <strong>Mermaid</strong> syntax</div>`;
@@ -346,39 +353,6 @@ export function loadScript(src, callback, error) {
   });
 }
 
-// export async function loadScript(
-//   src: string,
-//   callback?: (mod?: any) => void,
-//   error?: (err: any) => void
-// ): Promise<void> {
-//   try {
-//     // Prevent double-loading
-//     if (document.querySelector(`script[src="${src}"]`)) {
-//       callback?.();
-//       return;
-//     }
-
-//     if (src.endsWith('.mjs')) {
-//       const mod = await import(/* @vite-ignore */ src);
-//       callback?.(mod);
-//     } else {
-//       await new Promise<void>((resolve, reject) => {
-//         const script = document.createElement('script');
-//         script.src = src;
-//         script.async = true;
-//         script.onload = () => resolve();
-//         script.onerror = (err) => reject(err);
-
-//         const firstScript = document.getElementsByTagName('script')[0];
-//         firstScript.parentNode?.insertBefore(script, firstScript);
-//       });
-//       callback?.();
-//     }
-//   } catch (err) {
-//     error?.(err);
-//     throw err;
-//   }
-// }
 
 export function deepEqual(a: any, b: any): boolean {
   if (a === b) return true;
@@ -466,9 +440,13 @@ export function tblToExcel(title, html) {
   link.click();
 }
 
-export function getQuery(e) {
-  var n = new RegExp("[\\?&]" + e + "=([^&#]*)").exec(location.href);
-  return null === n ? "" : decodeURIComponent(n[1].replace(/\+/g, " "))
+// export function getQuery(e) {
+//   var n = new RegExp("[\\?&]" + e + "=([^&#]*)").exec(location.href);
+//   return null === n ? "" : decodeURIComponent(n[1].replace(/\+/g, " "))
+// }
+export function getQuery(e: string): string {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(e) || "";
 }
 
 export function cleanText(str) { return str ? str.replace(/<\/?[^>]+(>|$)/g, " ") : str; }
@@ -481,25 +459,6 @@ export const br2nl = (text) => text ? String(text).replace(/<br\s*[\/]?>/gi, "\n
 export const toSpaceCase = (string) => String(string).replace(/[^\w\s$_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim()
 export const toSnakeCase = (string) => string ? toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
 export const toHyphen = (string) => string ? toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
-
-// export function btoaUTF(str) {
-//   return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-//     return String.fromCharCode(parseInt(p1, 16))
-//   }))
-// }
-
-// export function btoaUTF(str, key) {
-//   let bytes = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p) =>
-//     String.fromCharCode(parseInt(p, 16))
-//   );
-
-//   if (key) {
-//     const k = key.charCodeAt(0);
-//     bytes = [...bytes].map(c => String.fromCharCode(c.charCodeAt(0) ^ k)).join('');
-//   }
-
-//   return btoa(bytes);
-// }
 
 export function btoaUTF(str: string, key?: string): string {
   let bytes = new TextEncoder().encode(str); // Uint8Array
@@ -522,12 +481,6 @@ export function getPath() {
     return 'domain:' + window.location.hostname;
   }
 }
-// export function atobUTF(str) {
-//   if (!str) return null;
-//   return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
-//     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-//   }).join(''))
-// }
 
 export function atobUTF(str, key) {
   if (!str) return null;
@@ -545,174 +498,7 @@ export function atobUTF(str, key) {
 
   // Step 3: Percent-decode UTF-8 bytes
   return new TextDecoder().decode(xorBytes);
-  // return decodeURIComponent(
-  //   Array.prototype.map.call(xorDecoded, c =>
-  //     '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-  //   ).join('')
-  // );
 }
-
-// function xorDecode(encoded, keyChar) {
-//   const xorKey = keyChar.charCodeAt(0);
-//   const decoded = atob(encoded);
-//   let result = '';
-//   for (let i = 0; i < decoded.length; i++) {
-//     result += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey);
-//   }
-//   return result;
-// }
-
-// this has been found to also mutate the source
-// export const deepMerge = (t, s) => {
-
-//   // cannot return new object. Need to check other usage that require var mutation
-
-//   var source = Object.assign({}, s);
-//   var target = Object.assign({}, t);
-//   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
-//   if (source != null) {
-//     for (const key of Object.keys(source)) {
-//       if (source[key] instanceof Object) {
-//         if (!target[key]) {
-//           Object.assign(target, { [key]: {} });
-//         }
-//         Object.assign(source[key], deepMerge(target[key], source[key]))
-//       }
-//     }
-//   }
-
-//   // Join `target` and modified `source`
-//   Object.assign(target || {}, source)
-//   return Object.assign(t,target);
-// }
-
-// export const deepMerge = (target, source) => {
-//   if (!source || typeof source !== 'object') return target;
-
-//   for (const key of Object.keys(source)) {
-//     const srcVal = source[key];
-//     const tgtVal = target[key];
-
-//     if (
-//       srcVal &&
-//       typeof srcVal === 'object' &&
-//       !Array.isArray(srcVal)
-//     ) {
-//       if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
-//         target[key] = {};
-//       }
-//       deepMerge(target[key], srcVal); // <- mutate target[key] recursively
-//     } else {
-//       target[key] = srcVal;
-//     }
-//   }
-
-//   return target;
-// };
-
-// export const deepMerge = (target, ...sources) => {
-//   for (const source of sources) {
-//     if (!source || typeof source !== 'object') continue;
-
-//     for (const key of Object.keys(source)) {
-//       const srcVal = source[key];
-//       const tgtVal = target[key];
-
-//       if (
-//         srcVal &&
-//         typeof srcVal === 'object' &&
-//         !Array.isArray(srcVal)
-//       ) {
-//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
-//           target[key] = {};
-//         }
-//         deepMerge(target[key], srcVal); // recursive mutation
-//       } else {
-//         target[key] = srcVal;
-//       }
-//     }
-//   }
-
-//   return target;
-// };
-
-// export const deepMerge = (target, ...sources) => {
-//   for (const source of sources) {
-//     if (!source || typeof source !== 'object') continue;
-
-//     for (const key of Object.keys(source)) {
-//       const srcVal = source[key];
-//       const tgtVal = target[key];
-
-//       if (Array.isArray(srcVal)) {
-//         if (Array.isArray(tgtVal)) {
-//           target[key] = [...new Set(tgtVal.concat(srcVal))]; // deduplicated merge
-//         } else {
-//           target[key] = [...new Set(srcVal)];
-//         }
-//       } else if (
-//         srcVal &&
-//         typeof srcVal === 'object'
-//       ) {
-//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
-//           target[key] = {};
-//         }
-//         deepMerge(target[key], srcVal); // recursive object merge
-//       } else {
-//         target[key] = srcVal;
-//       }
-//     }
-//   }
-
-//   return target;
-// };
-
-// export const deepMerge = (target, ...sources) => {
-//   for (const source of sources) {
-//     if (!source || typeof source !== 'object') continue;
-
-//     for (const key of Object.keys(source)) {
-//       const srcVal = source[key];
-//       const tgtVal = target[key];
-
-//       if (Array.isArray(srcVal)) {
-//         if (Array.isArray(tgtVal)) {
-//           // Merge array by index (for arrays of objects)
-//           const mergedArray = [];
-//           const maxLength = Math.max(tgtVal.length, srcVal.length);
-
-//           for (let i = 0; i < maxLength; i++) {
-//             const a = tgtVal[i];
-//             const b = srcVal[i];
-
-//             if (a && b && typeof a === 'object' && typeof b === 'object') {
-//               mergedArray[i] = deepMerge({}, a, b);
-//             } else {
-//               mergedArray[i] = b ?? a;
-//             }
-//           }
-
-//           target[key] = mergedArray;
-//         } else {
-//           target[key] = srcVal.slice();
-//         }
-
-//       } else if (
-//         srcVal &&
-//         typeof srcVal === 'object'
-//       ) {
-//         if (!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)) {
-//           target[key] = {};
-//         }
-//         deepMerge(target[key], srcVal);
-//       } else {
-//         target[key] = srcVal;
-//       }
-//     }
-//   }
-
-//   return target;
-// };
 
 // Simpler version
 export const deepMerge = (target, ...sources) => {
@@ -845,87 +631,28 @@ export function byString(o, s) {
   return o;
 }
 
-export function getFileExt(filename){
-  var re = /(?:\.([^.]+))?$/;
-  var ext = re.exec(filename)[1];
-  return ext?'.'+ext:'';  
+export function getFileExt(filename: string): string {
+  if (!filename) return '';
+  const re = /(?:\.([^.]+))?$/;
+  const match = re.exec(filename);
+  return match?.[1] ? `.${match[1]}` : '';  
 }
-
-// export async function encryptData(key: string, data: string): Promise<string> {
-//   try {
-//     const encoder = new TextEncoder();
-//     const keyBuffer = await crypto.subtle.importKey(
-//       'raw',
-//       encoder.encode(key),
-//       { name: 'AES-GCM' },
-//       true,
-//       ['encrypt', 'decrypt']
-//     );
-//     // Encryption logic
-//     const iv = crypto.getRandomValues(new Uint8Array(12));
-//     const encodedData = encoder.encode(data);
-//     const encryptedData = await crypto.subtle.encrypt(
-//       { name: 'AES-GCM', iv: iv },
-//       keyBuffer,
-//       encodedData
-//     );
-//     const resultArray = new Uint8Array(iv.length + new Uint8Array(encryptedData).length);
-//     resultArray.set(iv);
-//     resultArray.set(new Uint8Array(encryptedData), iv.length);
-//     return btoa(String.fromCharCode(...resultArray));
-//   } catch (error) {
-//     console.error('Encryption failed:', error);
-//     throw error; // Rethrow the error for the caller to handle
-//   }
-// }
-// export async function decryptData(key: string, encryptedData: string): Promise<string> {
-//   try {
-//     const encoder = new TextEncoder();
-//     const keyBuffer = await crypto.subtle.importKey(
-//       'raw',
-//       encoder.encode(key),
-//       { name: 'AES-GCM' },
-//       true,
-//       ['encrypt', 'decrypt']
-//     );
-//     // Decryption logic
-//     const encryptedArray = new Uint8Array(
-//       atob(encryptedData)
-//         .split('')
-//         .map((char) => char.charCodeAt(0))
-//     );
-//     const iv = encryptedArray.slice(0, 12);
-//     const ciphertext = encryptedArray.slice(12);
-//     const decryptedData = await crypto.subtle.decrypt(
-//       { name: 'AES-GCM', iv: iv },
-//       keyBuffer,
-//       ciphertext
-//     );
-//     return new TextDecoder().decode(decryptedData);
-//   } catch (error) {
-//     console.error('Decryption failed:', error);
-//     throw error; // Rethrow the error for the caller to handle
-//   }
-// }
 
 export function convertQueryParams(queryParams: Record<string, string>): Record<string, unknown> {
   const convertedParams: Record<string, unknown> = {};
 
   for (const key in queryParams) {
     const value = queryParams[key];
+    const trimmed = value.trim();
 
-    if (!isNaN(Number(value))) {
-      // Convert numeric strings to numbers
-      convertedParams[key] = Number(value);
-    } else if (value.toLowerCase() === 'true' || value.toLowerCase() === 'false') {
-      // Convert 'true'/'false' strings to booleans
-      convertedParams[key] = value.toLowerCase() === 'true';
+    if (trimmed !== '' && !isNaN(Number(trimmed))) {
+      convertedParams[key] = Number(trimmed);
+    } else if (trimmed.toLowerCase() === 'true' || trimmed.toLowerCase() === 'false') {
+      convertedParams[key] = trimmed.toLowerCase() === 'true';
     } else {
-      // Keep the value as a string for other cases
       convertedParams[key] = value;
     }
   }
-
   return convertedParams;
 }
 

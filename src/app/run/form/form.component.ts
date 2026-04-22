@@ -227,6 +227,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   getForm(formId, entryId, action) {
+    this.watchList.clear();
+    this.watchListSection = {};
+    this.reactiveCognaList = {};
+
     this.loading.set(true);
     this.runService.getRunForm(formId)
       .pipe(takeUntil(this.destroy$))
@@ -1201,6 +1205,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   $digest$ = () => {
+    if (this.destroy$.closed) return; // Prevent NG0911
     this.filterTabs();
     this.filterItems();
     this.evalAll(this.entry.data);
@@ -1229,13 +1234,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
   $toast$ = (content, opt) => this.toastService.show(content, opt);
 
-  elMap: any = {}
-  $q = (el) => {
-    if (!this.elMap[el]) {
-      this.elMap[el] = document.querySelector(el);
-    }
-    return this.elMap[el];
-  }
+  // elMap: any = {}
+  // $q = (el) => {
+  //   if (!this.elMap[el]) {
+  //     this.elMap[el] = document.querySelector(el);
+  //   }
+  //   return this.elMap[el];
+  // }
+
+  $q = (el) => document.querySelector(el);
 
   openNav = (opened: boolean) => {
     this.pageTitleService.open(opened);
@@ -1317,21 +1324,82 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     return includeActive ? { ...passive, ...active, ...additionalData } : { ...passive, ...additionalData };
   }
 
+  // _eval = (data: any, v: string, form: any) => {
+  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
+  //   const argNames = Object.keys(bindings);
+  //   const argValues = Object.values(bindings);
+  //   return new Function(...argNames,
+  //     `return ${v}`)(...argValues);
+  // }
+
+  private compiledEvalCache = new Map<string, Function>();
   _eval = (data: any, v: string, form: any) => {
     const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
     const argNames = Object.keys(bindings);
-    const argValues = Object.values(bindings);
-    return new Function(...argNames,
-      `return ${v}`)(...argValues);
+    
+    // Cache key based on the function string AND the argument names
+    const cacheKey = `${argNames.join(',')}_${v}`;
+    
+    let fn = this.compiledEvalCache.get(cacheKey);
+    if (!fn) {
+      fn = new Function(...argNames, `return ${v}`);
+      this.compiledEvalCache.set(cacheKey, fn);
+    }  
+    return fn(...Object.values(bindings));
   }
+  
 
-  _prePassive = (data: any, v: string) => {
+  // _prePassive = (data: any, v: string) => {
+  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
+  //   const argNames = Object.keys(bindings);
+  //   const argValues = Object.values(bindings);
+  //   return new Function(...argNames,
+  //     `return ${v}`)(...argValues);
+  // }
+
+  
+  private prePassiveCache = new Map<string, Function>();
+  _prePassive = (data: any, v: string): any => {
+    // Guard against empty expressions 
+    if (!v) return undefined; // v=true
+
     const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
     const argNames = Object.keys(bindings);
     const argValues = Object.values(bindings);
-    return new Function(...argNames,
-      `return ${v}`)(...argValues);
+
+    // Check if we have already compiled this exact string expression
+    let fn = this.prePassiveCache.get(v);
+    
+    if (!fn) {
+        fn = new Function(...argNames, `return ${v}`);
+        this.prePassiveCache.set(v, fn);
+    }
+
+    return fn(...argValues); 
   }
+
+  // _prePassive = (data: any, v: string): any => {
+  //   if (!v) return undefined;
+
+  //   // 1. Check cache FIRST. Don't compute bindings yet.
+  //   let fn = this.prePassiveCache.get(v);
+    
+  //   if (!fn) {
+  //       // 2. Compile a function that accepts ONE context object.
+  //       // This is much faster than re-compiling for every variation of keys.
+  //       // We use destructuring in the arguments to make keys available as variables.
+  //       fn = new Function("ctx", `with(ctx) { return (${v}) }`);
+  //       this.prePassiveCache.set(v, fn);
+  //   }
+
+  //   // 3. Only now compute the data needed for execution.
+  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
+
+
+  //   // 4. Execute with the single context object.
+  //   return fn(bindings);
+  // }
+
 
   setAction = (action) => this._action = action;
 
@@ -1770,6 +1838,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     if (this.windowKey) {
       delete window[this.windowKey];
     }
-    this.elMap = {};
+    // this.elMap = {};
   }
 }

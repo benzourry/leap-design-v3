@@ -27,7 +27,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
 import { LogService } from '../../_shared/service/log.service';
-import { combineLatest, first, lastValueFrom, map, Observable, share, tap } from 'rxjs';
+import { combineLatest, first, lastValueFrom, map, Observable, share, shareReplay, Subject, takeUntil, tap } from 'rxjs';
 import dayjs from 'dayjs';
 import { HttpClient } from '@angular/common/http';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
@@ -73,6 +73,7 @@ export class ListComponent implements OnInit, OnDestroy {
   private logService = inject(LogService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>(); // Add this
 
 
   groupByPipe = new GroupByPipe();
@@ -453,17 +454,15 @@ export class ListComponent implements OnInit, OnDestroy {
   insertTextAtCursor(text) {
     this.insertText("{{" + text + "}}")
   }
+
   insertText(text) {
-    var sel, range;
     if (window.getSelection) {
-      sel = window.getSelection();
+      const sel = window.getSelection();
       if (sel.getRangeAt && sel.rangeCount) {
-        range = sel.getRangeAt(0);
+        const range = sel.getRangeAt(0);
         range.deleteContents();
         range.insertNode(document.createTextNode(text));
       }
-    } else if ((document as any).selection && (document as any).selection.createRange) {
-      (document as any).selection.createRange().text = text;
     }
   }
 
@@ -511,6 +510,7 @@ export class ListComponent implements OnInit, OnDestroy {
   deleteEntry(id) {
     if (confirm("Remove this entry?")) {
       this.entryService.delete(id, this.user().email)
+        .pipe(takeUntil(this.destroy$)) // PREVENTS LEAK
         .subscribe({
           next: res => {
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
@@ -639,7 +639,9 @@ export class ListComponent implements OnInit, OnDestroy {
       param = Object.assign(param || {}, { email: this.user().email });
       this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
         .pipe(
-          tap({ next: cb, error: err }), first(), share()
+          tap({ next: cb, error: err }), first(), 
+          shareReplay(1)
+          // share()
         )
     } else {
       // param = Object.assign(param || {}, { sort: 'id,asc' });
@@ -647,7 +649,9 @@ export class ListComponent implements OnInit, OnDestroy {
       this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
         .pipe(
           tap({ next: cb, error: err }), first(),
-          map((res: any) => res.content), share()
+          map((res: any) => res.content), 
+          shareReplay(1)
+          // share()
         )
     }
     return this.lookupDataObs[cacheId];
@@ -836,10 +840,40 @@ export class ListComponent implements OnInit, OnDestroy {
 
   _eval = (data, entry, v) => this._evalRun(entry, v, false);// new Function('$_', '$', '$prev$', `return ${v}`)(entry, data, entry && entry.prev);
 
-  _evalRun = (entry, f, bulk) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$',
-    `return ${f}`)(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, bulk);
-  _pre = (entry, f, bulk) => !f || new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$',
-    `return ${f}`)(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+  // _evalRun = (entry, f, bulk) => new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$',
+  //   `return ${f}`)(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, bulk);
+  // _pre = (entry, f, bulk) => !f || new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$',
+  //   `return ${f}`)(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+
+
+  private evalCache = new Map<string, Function>();
+  _evalRun = (entry: any, f: string, bulk: boolean) => {
+    if (!f) return undefined;
+    
+    let fn = this.evalCache.get(f);
+    if (!fn) {
+      // Compile ONLY once per unique script string
+      fn = new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
+      this.evalCache.set(f, fn);
+    }
+    
+    // Execute at native speed
+    return fn(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, bulk);
+  };
+
+  private preCache = new Map<string, Function>();
+  _pre = (entry: any, f: string, bulk: boolean) => {
+    if (!f) return true; // Pre-check defaults to true if empty
+
+    let fn = this.preCache.get(f);
+    if (!fn) {
+      fn = new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
+      this.preCache.set(f, fn);
+    }
+    
+    return fn(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+  };
+
 
   preCheck(entry, f, bulk) {
     let res = undefined;
@@ -911,6 +945,8 @@ export class ListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.destroyed = true;
+    this.destroy$.next(); // Clean up
+    this.destroy$.complete();
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
     delete window['_this_' + this.scopeId()];
   }
