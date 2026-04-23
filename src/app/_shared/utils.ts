@@ -119,14 +119,14 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
     )//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
     
     // Instantiate the function once and cache it
-    cachedFn = new Function("data", "get", "formatNumber", "dayjs", code);
+    cachedFn = new Function("data", "get", "formatNumber", code);
 
     
     tplCache.set(templateText, cachedFn);
   }
 
   if (data) {
-    // data.dayjs = dayjs;
+    data.dayjs = dayjs;
 
     // const fn = new Function("data", "get", "formatNumber", code);
 
@@ -143,7 +143,7 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
 
     // let result = "";
     try {
-      let result = cachedFn.call(this, data, get, formatNumber, dayjs);
+      let result = cachedFn.call(this, data, get, formatNumber);
       return result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
     } catch (err) {
       throw err;
