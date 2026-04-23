@@ -212,14 +212,29 @@ export class FieldEditComponent extends ElementBase<any> {
     // !!! WHY use effect() to handle snap value? Value itself is not even a signal, so, this will not trigger when value change.
     // REASON TOK ARIYA SBB lookupList() often arrive late. So, engkah dlm effect supaya once it is arrive, snap the value.
     // REPLACE with this simple block reusing autoSnapValue function
+    // effect(() => {
+    //   if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null && this.VALUE_SNAP_TYPE.includes(this.field()?.type) && !this.field()?.x?.noSnap) {
+    //     untracked(() => {
+    //       queueMicrotask(() => {
+    //         this.value = this.autoSnapValue(this.value);
+    //       })
+    //     });
+    //   }
+    // });
     effect(() => {
-      if (this.lookupList() != null && this.lookupList().length > 0 && this.value != null && this.VALUE_SNAP_TYPE.includes(this.field()?.type) && !this.field()?.x?.noSnap) {
-        untracked(() => {
-          queueMicrotask(() => {
-            this.value = this.autoSnapValue(this.value);
-          })
+      const list = this.lookupList();
+      const field = this.field();
+
+      if (!list?.length || this.value == null || !field) return;
+
+      const needsSnap = this.VALUE_SNAP_TYPE.includes(field.type) && !field.x?.noSnap;
+      if (!needsSnap) return;
+
+      untracked(() => {
+        queueMicrotask(() => {
+          this.value = this.autoSnapValue(this.value);
         });
-      }
+      });
     });
 
     effect(() => {
@@ -278,12 +293,10 @@ export class FieldEditComponent extends ElementBase<any> {
 
     const type = field?.type;
     const isMultiple = field?.subType === 'multiple' || type === 'checkboxOption';
-
     const key = (type === 'modelPicker') ? '$id' : 'code';
 
     const snap = (val: any) => {
       if (!val || typeof val !== 'object') return val;
-      // console.log(`Auto-snapping value for type ${type}:`, val);
       return list.find(option => option[key] === val[key]) ?? val;
     };
 
@@ -404,7 +417,8 @@ export class FieldEditComponent extends ElementBase<any> {
       this.value = [this.value];
     }
 
-    return this.value ? this.value?.filter(v => v.code == c.code).length > 0 : false;
+    // return this.value ? this.value?.filter(v => v.code == c.code).length > 0 : false;
+    return this.value?.some(v => v.code === c.code) ?? false;
   }
 
   toggleValue(c) {
