@@ -1,4 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, signal } from '@angular/core';
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// 
+// LEAP is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// LEAP is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RunService } from '../_service/run.service';
 
@@ -11,43 +29,49 @@ import { RunService } from '../_service/run.service';
 })
 export class RegisterComponent implements OnInit {
 
-  single:any;
   user = input<any>();
   app = input<any>();
+  
   done = output<any>();
-  cancel = output<any>()
+  cancel = output<any>();
 
   groupList = signal<any[]>([]);
-  selectedRoles:any[]=[];
+  
+  // Converted to a signal to ensure OnPush triggers view updates perfectly
+  selectedRoles = signal<any[]>([]);
 
   public runService = inject(RunService);
+  private destroyRef = inject(DestroyRef);
   
-  constructor() { }
-
   ngOnInit(): void {
-    this.runService.getGroupRegList({appId:this.app()?.id})
-    .subscribe(res=>{
-      this.groupList.set(res);
-    })
+    this.runService.getGroupRegList({ appId: this.app()?.id })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.groupList.set(res);
+      });
   }
 
-  checkValue(cId) {
-    return this.selectedRoles ? this.selectedRoles?.filter(v => v == cId).length > 0 : false;
+  checkValue(cId: any) {
+    return this.selectedRoles().includes(cId);
   }
 
-  toggleValue(cId, regType) {
+  toggleValue(cId: any, regType: string) {
     if (this.checkValue(cId)) {
-      this.selectedRoles = this.selectedRoles?.filter(v => v != cId);
+      // Remove the item from the array
+      this.selectedRoles.update(roles => roles.filter(v => v !== cId));
     } else {
-      if (!this.selectedRoles || regType=='one') {
-        this.selectedRoles = [];
+      // Add the item, clearing previous if regType is 'one'
+      if (regType === 'one') {
+        this.selectedRoles.set([cId]);
+      } else {
+        this.selectedRoles.update(roles => [...roles, cId]);
       }
-      this.selectedRoles = this.selectedRoles.concat([cId]);
     }
   }
 
   save(event) {
-    this.done.emit(event);
+    // Emit the actual selected data to the parent component, not the DOM event
+    this.done.emit(this.selectedRoles());
   }
 
   logout(event) {

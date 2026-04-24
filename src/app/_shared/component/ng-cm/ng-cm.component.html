@@ -9,11 +9,14 @@
       <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="undo()">Undo</button>
     </div>
   }
+  
   <div #codemirrorhost class="codemirrorhost"></div>
+  
   @if (!skipCheck() && codeStatus) {
     <div class="text-white small p-1 bg-danger">{{codeStatus}}</div>
   }
-  @if (this.subType() == 'passive' && isAssignmentExpression()) {
+  
+  @if (isAssignmentError) {
     <div class="text-white small p-1 bg-danger">Value assignment is not allowed here</div>
   }
 </div>

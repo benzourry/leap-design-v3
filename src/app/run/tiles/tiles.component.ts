@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, effect, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -58,6 +59,7 @@ export class TilesComponent implements OnInit, OnDestroy {
 
   private cdr = inject(ChangeDetectorRef)
   private toastService = inject(ToastService)
+  private destroyRef = inject(DestroyRef); // Used for modern subscription cleanup
 
   baseApi: string = baseApi;
   base: string = base;
@@ -76,7 +78,10 @@ export class TilesComponent implements OnInit, OnDestroy {
   
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+    
+    this.utilityService.testOnline$()
+      .pipe(takeUntilDestroyed())
+      .subscribe(online => this.offline.set(!online));
 
     effect(() => {
       this.runService.$startTimestamp();
@@ -101,7 +106,9 @@ export class TilesComponent implements OnInit, OnDestroy {
 
     this.init();
     this.getStart(this.app()?.id);
+    
     this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params: Params) => {
         this.$param$ = params;
       });
@@ -114,6 +121,7 @@ export class TilesComponent implements OnInit, OnDestroy {
   getStart(id) {
     if (id) {
       this.runService.getStartBadge(id, this.user().email)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(res => {
           this.badge.set(res);
         })
@@ -140,7 +148,7 @@ export class TilesComponent implements OnInit, OnDestroy {
         let pre = f.pre.trim();
         res = this._eval(pre);
       }
-    } catch (e) { this.logService.log(`{tiles-${f.code}-precheck}-${e}`) }
+    } catch (e) { this.logService.log(`{tiles-${f.code}-precheck}-${e.message}`) }
     return !f.pre || res;
   }
 
@@ -164,16 +172,62 @@ export class TilesComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges()
   }
 
+  // --- DRY Caching and Context Engine ---
 
-  _eval = (v) => new Function('$app$', '$navi$', '$badge$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$param$', 'ServerDate', '$log$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', '$token$', `return ${v}`)
-    (this.app(), this.naviData(), this.badge(), this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$param$, ServerDate, this.log, this.$toast$, this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate, this.accessToken);
+  private compiledEvalCache = new Map<string, Function>();
+
+  private executeEval(code: string, bindings: Record<string, any>, cache: Map<string, Function>) {
+    if (!code) return undefined;
+    
+    const argNames = Object.keys(bindings);
+    const cacheKey = `${argNames.join(',')}_${code}`;
+    
+    let fn = cache.get(cacheKey);
+    if (!fn) {
+      fn = new Function(...argNames, `return ${code}`);
+      cache.set(cacheKey, fn);
+    }
+    
+    return fn(...Object.values(bindings));
+  }
+
+  getEvalContext = () => {
+    return {
+      $app$: this.app(),
+      $navi$: this.naviData(),
+      $badge$: this.badge(),
+      $user$: this.user(),
+      $conf$: this.runService?.appConfig,
+      $http$: this.httpGet,
+      $post$: this.httpPost,
+      $endpoint$: this.endpointGet,
+      $this$: this._this,
+      $loadjs$: this.loadScript,
+      $param$: this.$param$,
+      $log$: this.log,
+      $toast$: this.$toast$,
+      $base$: this.base,
+      $baseUrl$: this.baseUrl(),
+      $baseApi$: this.baseApi,
+      dayjs,
+      ServerDate,
+      $token$: this.accessToken
+    };
+  }
+
+  _eval = (v: string) => {
+    const bindings = this.getEvalContext();
+    return this.executeEval(v, bindings, this.compiledEvalCache);
+  }
+
+  // --- End DRY Engine ---
 
   httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
   endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
 
   ngOnDestroy(): void {    
-    delete window['_this_tiles'];
+    delete (window as any)._this_tiles;
   }
 
 }

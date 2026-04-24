@@ -1,8 +1,14 @@
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// ... (Standard License Header)
+
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, computed, inject, input, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { map } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { LogService } from '../../../_shared/service/log.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { UtilityService } from '../../../_shared/service/utility.service';
@@ -23,15 +29,17 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
 })
 export class ChatbotComponent implements OnInit {
 
-
   public runService = inject(RunService);
   private toastService = inject(ToastService);
   private logService = inject(LogService);
   private utilityService = inject(UtilityService);
   private voiceRecognition = inject(VoiceRecognitionService);
+  private destroyRef = inject(DestroyRef); // Modern subscription cleanup
   
   constructor() {
-    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+    this.utilityService.testOnline$()
+      .pipe(takeUntilDestroyed())
+      .subscribe(online => this.offline.set(!online));
   }
 
   offline = signal<boolean>(false);
@@ -70,17 +78,21 @@ export class ChatbotComponent implements OnInit {
 
   initVoiceInput() {
     // Subscription for initializing and this will call when user stopped speaking.
-    this.voiceRecognition.init(this.chatPromptText(), 'en-US').subscribe(() => {
-      // User has stopped recording
-      // Do whatever when mic finished listening
-    });
+    this.voiceRecognition.init(this.chatPromptText(), 'en-US')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        // User has stopped recording
+        // Do whatever when mic finished listening
+      });
 
     // Subscription to detect user input from voice to text.
-    this.voiceRecognition.speechInput().subscribe((input) => {
-      // Set voice text output to
-      // this.speechText = input;
-      this.chatPromptText.set(input);
-    });
+    this.voiceRecognition.speechInput()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((input) => {
+        // Set voice text output to
+        // this.speechText = input;
+        this.chatPromptText.set(input);
+      });
   }
 
   stopListen() {
@@ -98,6 +110,7 @@ export class ChatbotComponent implements OnInit {
   chatPromptLoading = signal<boolean>(false);
   streamTyping = signal<boolean>(false);
   streamResult = signal<string>("");
+
   chatPrompt(cogna, prompt) {
     if (prompt?.trim() || this.fileList().length > 0) {
       this.scrollBottom();
@@ -115,6 +128,7 @@ export class ChatbotComponent implements OnInit {
       if (cogna.streamSupport) {
         this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), param, true, this.user().email)
           .pipe(
+            takeUntilDestroyed(this.destroyRef),
             map(res => {
               if (res['type'] == 4) {
                 this.chatPromptLoading.set(false);
@@ -137,20 +151,23 @@ export class ChatbotComponent implements OnInit {
               }
             })
           )
-          .subscribe(res => {
-          }, err => {
-            this.chatPromptLoading.set(false);
-            this.streamTyping.set(false);
-            this.chatResponseList.update((currentList) => [
-              ...currentList,
-              { type: 'system', text: 'Error loading response: ' + err.message, timestamp: Date.now() },
-            ]);
-            this.toastService.show("Cogna response failed", { classname: 'bg-danger text-light' });
+          .subscribe({
+            next: () => {}, 
+            error: err => {
+              this.chatPromptLoading.set(false);
+              this.streamTyping.set(false);
+              this.chatResponseList.update((currentList) => [
+                ...currentList,
+                { type: 'system', text: 'Error loading response: ' + err.message, timestamp: Date.now() },
+              ]);
+              this.toastService.show("Cogna response failed", { classname: 'bg-danger text-light' });
+            }
           });
 
       } else {
 
         this.runService.cognaPrompt(cogna.id, prompt, this.fileList().map(f => f.path), param, true, this.user().email)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: res => {
               this.chatPromptLoading.set(false);
@@ -180,19 +197,22 @@ export class ChatbotComponent implements OnInit {
   }
 
   scrollBottom() {
-    setTimeout(() => {
-      var elemChatViewPort = document.getElementById("_viewport");
-      elemChatViewPort.scrollTo({
-        top: elemChatViewPort.scrollHeight + 200,
-        left: 0,
-        behavior: "smooth",
-      })
-    }, 0)
+    requestAnimationFrame(() => {
+      const elemChatViewPort = document.getElementById("_viewport");
+      if (elemChatViewPort) {
+        elemChatViewPort.scrollTo({
+          top: elemChatViewPort.scrollHeight + 200,
+          left: 0,
+          behavior: "smooth",
+        });
+      }
+    });
   }
 
 
   clearCognaMemory(cogna) {
     this.runService.clearCognaMemoryByIdAndEmail(cogna.id, this.user().email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
           this.toastService.show("Memory successfully cleared ", { classname: 'bg-success text-light' });
@@ -235,11 +255,13 @@ export class ChatbotComponent implements OnInit {
     try {
       f = compileTpl(html, data, this.scopeId());
     } catch (e) {
-      this.logService.log(`{screen-${this.screen().title}-compiletpl}-${e}`)
+      this.logService.log(`{screen-${this.screen().title}-compiletpl}-${e.message}`)
     }
     return f;
   }
 
+  // Caching engine for _eval
+  private evalCache = new Map<string, Function>();
   
   _eval = (data:any, v:string) => { 
     const bindings = this.compileTplData();
@@ -247,9 +269,17 @@ export class ChatbotComponent implements OnInit {
     bindings.$ = data;
     // bindings.$conf$ = this.appConfig; // only binding that allow write
     const argNames  = Object.keys(bindings);
+    
+    const cacheKey = `${argNames.join(',')}_${v}`;
+    let fn = this.evalCache.get(cacheKey);
+    
+    if (!fn) {
+        fn = new Function(...argNames, `return ${v}`);
+        this.evalCache.set(cacheKey, fn);
+    }
+
     const argValues = Object.values(bindings);
-    return new Function(...argNames,
-    `return ${v}`)(...argValues);
+    return fn(...argValues);
   }
 
 
@@ -277,91 +307,60 @@ export class ChatbotComponent implements OnInit {
   uploadProgress = signal<any>({});
   filesMap: any = {};
   fileList = signal<any[]>([]);
+
   onUpload($event) {
     if ($event.target.files && $event.target.files.length) {
       var totalSize = 0;
       for (var i = 0; i < $event.target.files.length; i++) {
-        var file = $event.target.files[i];
-        totalSize = totalSize + file.size;
+        totalSize += $event.target.files[i].size;
       }
-      // var totalSize = $event.target.files.reduce((total, i) => total + i.size, 0);
-      var progressSize = 0;
-
-      // optimize image file here (ie: resize, compress)
-      // files = compressImage(files, 300, 300)
-      // const resizedImage = await resizeImage(config)
-      // if (f.subType == 'imagemulti') {
-
+      
       var list = [];
+      
+      // Helper function to handle the actual upload request cleanly
+      const processUpload = (uploadFile: Blob | File, originalFile: File, isImage: boolean) => {
+        this.runService.uploadCognaFile(uploadFile, this.cogna.id, originalFile.name)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: res => {
+              if (res.type === HttpEventType.UploadProgress) {
+                let progressSize = res.loaded;
+                this.uploadProgress.update((currentProgress) => ({
+                  ...currentProgress,
+                  [originalFile.name]: Math.round(100 * progressSize / totalSize)
+                }));
+              } else if (res instanceof HttpResponse) {
+                list.push(res.body.fileUrl);
+                this.filesMap[res.body.fileUrl] = res.body;
+                this.fileList.update((currentList) => [
+                  ...currentList,
+                  { path: res.body.filePath, mime: originalFile.type, isImage: isImage }
+                ]);
+              }
+            }, 
+            error: err => {
+              console.error(err);
+            }
+          });
+      };
+
       for (var i = 0; i < $event.target.files.length; i++) {
         let file = $event.target.files[i];
+        
         if (file.type.includes("image")) {
           resizeImage({
             file: file,
             maxSize: 640
-          }).then(resizedImage => {
-            this.runService.uploadCognaFile(resizedImage, this.cogna.id, file.name)
-              .subscribe({
-                next: res => {
-                  if (res.type === HttpEventType.UploadProgress) {
-                    progressSize = res.loaded;
-                    this.uploadProgress.update((currentProgress) => ({
-                      ...currentProgress,
-                      [file.name]: Math.round(100 * progressSize / totalSize)
-                    }));
-                    // this.uploadProgress[file.name] = Math.round(100 * progressSize / totalSize);
-                  } else if (res instanceof HttpResponse) {
-                    list.push(res.body.fileUrl);
-                    this.filesMap[res.body.fileUrl] = res.body;
-                    // this.fileList.push(res.body.filePath);
-                    // this.fileList.push({ path: res.body.filePath, mime: file.type, isImage: true });
-                    this.fileList.update((currentList) => [
-                      ...currentList,
-                      { path: res.body.filePath, mime: file.type, isImage: true }
-                    ]);
-                  }
-                  // $event.target.value='';
-                }, error: err => {
-                  console.error(err);
-                  // $event.target.value='';
-                }
-              })
+          }).then((resizedImage: any) => {
+            processUpload(resizedImage, file, true);
           }).catch(function (err) {
             console.error(err);
-            // $event.target.value='';
           });
         } else {
-          this.runService.uploadCognaFile(file, this.cogna.id, file.name)
-            .subscribe({
-              next: res => {
-                if (res.type === HttpEventType.UploadProgress) {
-                  progressSize = res.loaded;
-                  this.uploadProgress.update((currentProgress) => ({
-                    ...currentProgress,
-                    [file.name]: Math.round(100 * progressSize / totalSize)
-                  }));
-                  // this.uploadProgress[file.name] = Math.round(100 * progressSize / totalSize);
-                } else if (res instanceof HttpResponse) {
-                  list.push(res.body.fileUrl);
-                  this.filesMap[res.body.fileUrl] = res.body;
-                  // this.fileList.push(res.body.filePath);
-                  // this.fileList.push({ path: res.body.filePath, mime: file.type, isImage: false });
-                  this.fileList.update((currentList) => [
-                    ...currentList,
-                    { path: res.body.filePath, mime: file.type, isImage: false }
-                  ]);
-                }
-                // $event.target.value='';
-              }, error: err => {
-                console.error(err);
-                // $event.target.value='';
-              }
-            })
+          processUpload(file, file, false);
         }
       }
       $event.target.value = '';
     }
   }
-
-
 }

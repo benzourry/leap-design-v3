@@ -1,5 +1,23 @@
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// 
+// LEAP is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// LEAP is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+
 import { PlatformLocation, NgClass, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, input, model, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Params } from '@fortawesome/fontawesome-svg-core';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
@@ -13,6 +31,8 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { RunService } from '../_service/run.service';
+import { switchMap, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
     selector: 'app-user',
@@ -23,6 +43,8 @@ import { RunService } from '../_service/run.service';
       NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgSelectModule, AngularEditorModule, DatePipe]
 })
 export class UserComponent implements OnInit {
+
+  private destroyRef = inject(DestroyRef); // Injected for modern memory leak prevention
 
   offline = signal<boolean>(false);
 
@@ -62,7 +84,10 @@ export class UserComponent implements OnInit {
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+    
+    this.utilityService.testOnline$()
+      .pipe(takeUntilDestroyed())
+      .subscribe(online => this.offline.set(!online));
   }
 
   status: string[] = ['pending'];
@@ -146,43 +171,46 @@ export class UserComponent implements OnInit {
 
   ngOnInit() {
     if (this.groupId()) {
-      // console.log("DA groupId()", this.groupId())
       this.cs = this.groupId();
       this.hasGroupId.set(true);
       this.runService.getGroup(this.groupId())
-      .subscribe(res=>{
-        this.group = res;
-        this.getGroupList(this.group);
-      })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(res => {
+          this.group = res;
+          this.getGroupList(this.group);
+        });
     } else {
+      // Flattened the double-subscription bug using standard if/else logic
       this.route.params
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((params: Params) => {
-          this.route.params
-          .subscribe((params: Params) => {
-            const groupId = params['groupId'];
-            if (groupId) {
-              this.cs = groupId;
-              this.hasGroupId.set(true);
-              this.runService.getGroup(groupId)
-              .subscribe(res=>{
+          const groupId = params['groupId'];
+          
+          if (groupId) {
+            this.cs = groupId;
+            this.hasGroupId.set(true);
+            this.runService.getGroup(groupId)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe(res => {
                 this.group = res;
                 this.getGroupList(this.group);
-              })
-            }else{
-              this.runService.getGroupAllList({ appId: this.app()?.id })
+              });
+          } else {
+            this.runService.getGroupAllList({ appId: this.app()?.id })
+              .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe(res => {
                 this.groupList.set(res);
                 this.groupMap = res.reduce((map, obj) => { map[obj.id] = obj; return map }, {});
-              })
-              this.getPendingList();
-            }
+              });
+            this.getPendingList();
+          }
 
-            this.runService.getMailerList({ appId: this.app()?.id })
+          // Independently fetch mailer list whenever params change
+          this.runService.getMailerList({ appId: this.app()?.id })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
               this.mailerList = res.content;
-            })
-
-          })
+            });
         });
     }
   }
@@ -191,14 +219,17 @@ export class UserComponent implements OnInit {
   loadTemplate(template) {
     this.blastData = template;
   }
+  
   blastData: any = {};
+  
   blastEmail(tpl, data) {
     this.blastData = data;
     this.selectedUsersArray =  Array.from(this.selectedUsers.values());
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
-        this.runService.blastUser(this.app()?.id,Array.from(this.selectedUsers.keys()),res)
+        this.runService.blastUser(this.app()?.id, Array.from(this.selectedUsers.keys()), res)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: res=>{
             this.toastService.show(`Successfully blast mail to ${res.rows} user(s)`, { classname: 'bg-success text-light' });
@@ -233,9 +264,8 @@ export class UserComponent implements OnInit {
     } else {
       let intercept = this.group?.accessList?.filter(v => Object.keys(this.user().groups).includes(v + ""));
       if (this.group?.accessList?.length > 0 && intercept.length == 0) {
-        // && !this.app?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
         this.userUnauthorized.set(true);
-      }else{
+      } else {
         this.userUnauthorized.set(false);
       }
       this.groupId.set(group.id);
@@ -258,7 +288,7 @@ export class UserComponent implements OnInit {
       .result.then(data => {
         var payload = {
           email: data.email,
-          groups: this.hasGroupId()?[this.group.id]:this.editAppUserData().group,
+          groups: this.hasGroupId() ? [this.group.id] : this.editAppUserData().group,
           name: data.name,
           autoReg: true,
           tags: data.tags
@@ -266,12 +296,14 @@ export class UserComponent implements OnInit {
 
         if (data.bulkReg) {
           this.runService.saveAppUserBulk(this.app().id, payload)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(user => {
               this.toastService.show("Users successfully registered", { classname: 'bg-success text-light' });
               this.getAppUserList(this.pageNumber(), this.params);
             })
         } else {
           this.runService.saveAppUser(this.app().id, payload)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(user => {
               this.toastService.show("User successfully registered", { classname: 'bg-success text-light' });
               this.getAppUserList(this.pageNumber(), this.params);
@@ -291,6 +323,7 @@ export class UserComponent implements OnInit {
     this.pageNumber.set(pageNumber);
     this.params = params;
     this.runService.getAppUserList(this.app()?.id, params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.appUserList.set(res.content);
         this.appUserTotal.set(res.page?.totalElements);        
@@ -322,17 +355,20 @@ export class UserComponent implements OnInit {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
+        
+        const successHandler = () => {
+          this.toastService.show("User status changed", { classname: 'bg-success text-light' });
+        };
+
         if (data.id){
           this.runService.saveAppUserApproval(data.id, data.status, data)
-            .subscribe(res => { 
-              this.toastService.show("User status changed", { classname: 'bg-success text-light' });
-            });
-        }else{
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(successHandler);
+        } else {
           if (data.user?.id){
             this.runService.saveUserApproval(data.user?.id, data.status)
-            .subscribe(res => { 
-              this.toastService.show("User status changed", { classname: 'bg-success text-light' });
-            });
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(successHandler);
           }
         }
       }, res => { })
@@ -345,6 +381,7 @@ export class UserComponent implements OnInit {
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.runService.removeAppUser(data.id, data.user?.id, this.user().email)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe(res => {
             this.toastService.show("User successfully removed", { classname: 'bg-success text-light' });
             this.getAppUserList(this.pageNumber(), this.params);
@@ -356,10 +393,10 @@ export class UserComponent implements OnInit {
     this.appUserList.set(this.reorder(this.appUserList(),index,op))
     setTimeout(() => {
       this.appUserList.update((currentList) => {
-      const updatedList = [...currentList];
-      updatedList[index + op].altClass = 'swapEnd';
-      updatedList[index].altClass = 'swapEnd';
-      return updatedList;
+        const updatedList = [...currentList];
+        updatedList[index + op].altClass = 'swapEnd';
+        updatedList[index].altClass = 'swapEnd';
+        return updatedList;
       });
     }, 500);
     this.saveItemOrder();
@@ -370,10 +407,11 @@ export class UserComponent implements OnInit {
       .map((val, $index) => {
         return { id: val.id, sortOrder: $index  + ((this.pageNumber()-1) * this.pageSize) }
       });
-    return this.runService.saveUserOrder(list)
-      .subscribe(res => {
-        return res;
-      });
+      
+    // Execute and clean up internally, rather than returning the Subscription
+    this.runService.saveUserOrder(list)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
   reorder(items, index, op) {
@@ -391,16 +429,16 @@ export class UserComponent implements OnInit {
 
     items[index].sortOrder = tempSortOrder;
     items[index] = temp;
-    // this.swapPositions(items,index,index+op);
     
-
     return items;
   }
 
   selectedUsers = new Map<number, any>();
+  
   checkSelect(i) {
     return this.selectedUsers.has(i.user?.id);
   }
+  
   toggleSelect(i) {
     if (this.selectedUsers.has(i.user?.id)) {
       this.selectedUsers.delete(i.user?.id);
@@ -427,6 +465,7 @@ export class UserComponent implements OnInit {
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.runService.updateUser(data.id, data)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
             this.getAppUserList(this.pageNumber(), this.params);
@@ -435,16 +474,18 @@ export class UserComponent implements OnInit {
   }
 
   bulkRemoveUser(){
-    if (prompt("Are you sure you want to remove selected users?\nType 'remove-bulk-users' to proceed")=='remove-bulk-users'){
+    if (prompt("Are you sure you want to remove selected users?\nType 'remove-bulk-users' to proceed") == 'remove-bulk-users') {
       this.runService.bulkRemoveUser(Array.from(this.selectedUsers.keys()))
-      .subscribe(res=>{
-        this.getAppUserList(1, this.params);
-      })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(res => {
+          this.getAppUserList(1, this.params);
+        });
     }
   }
   
   selectedUsersArray:any[];
   changeProviderData: any;
+  
   changeProvider(content) {
     this.selectedUsersArray =  Array.from(this.selectedUsers.values());
     this.changeProviderData = {};
@@ -452,13 +493,12 @@ export class UserComponent implements OnInit {
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.runService.bulkChangeProvider(data.provider, Array.from(this.selectedUsers.keys()))
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe(res => {
             this.toastService.show("User provider successfully changed", { classname: 'bg-success text-light' });
             this.getAppUserList(this.pageNumber(), this.params);
           })
       }, res => { });
   }
-
-
 
 }

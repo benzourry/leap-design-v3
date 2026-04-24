@@ -5,8 +5,8 @@
   <a class="bar-link text-dark" routerLink="/design" title="Back to Home Page" routerLinkActive="active">
     <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon>
   </a>
-  @if (app?.id) {
-    @if (authorized){
+  @if (app()?.id) {
+    @if (authorized()){
       <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
         <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-light border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
           [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
@@ -17,21 +17,21 @@
         <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
       </ng-template>
       <div class="me-auto d-flex align-items-center text-truncate py-3" style="font-size:1.1em">
-        @if (app?.logo) {
-          <img src="{{baseApi}}/app/logo/{{app?.logo}}" alt="Logo"
-            onError="this.src='assets/icons/logo.svg'" width="30" height="30" class="me-2">
+        @if (app()?.logo) {
+          <img [src]="baseApi + '/app/logo/' + app()?.logo" alt="Logo"
+            (error)="handleImageError($event)" width="30" height="30" class="me-2">
         }
-        {{app?.title}}
+        {{app()?.title}}
       </div>
       <div class="p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
-          <a type="button" class="btn btn-round btn-light ms-1" routerLink="/design/{{app?.id}}/summary" routerLinkActive="active">
+          <a type="button" class="btn btn-round btn-light ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
             <fa-icon [icon]="['fas','chart-bar']" [fixedWidth]="true"></fa-icon>
           </a>
-          <button type="button" class="btn btn-round btn-light ms-1" (click)="popShare(app?.id)">
+          <button type="button" class="btn btn-round btn-light ms-1" (click)="popShare(app()?.id)">
             <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
           </button>
-          <button type="button" class="btn btn-round btn-light ms-1" (click)="editApp(appEditTpl, app)">
+          <button type="button" class="btn btn-round btn-light ms-1" (click)="editApp(appEditTpl, app())">
             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
           </button>
           <button type="button" class="btn btn-round btn-success ms-1 px-2" (click)="runApp()">
@@ -44,8 +44,8 @@
   }
 </div>
 
-@if (app?.id) {
-  @if (authorized){
+@if (app()?.id) {
+  @if (authorized()){
     <div class="sb">
       <div class="bar bg-reka" [ngClass]="bgClassName">
         <div class="bar-1">
@@ -73,9 +73,6 @@
           <a class="bar-link" routerLink="cogna" routerLinkActive="active">
             <fa-icon [icon]="['fas', 'robot']" [fixedWidth]="true"></fa-icon>
           </a>
-          <!-- <a class="bar-link" routerLink="jalin" routerLinkActive="active">
-            <fa-icon [icon]="['fas', 'hexagon-nodes']" [fixedWidth]="true"></fa-icon>
-          </a> -->
           <a class="bar-link" routerLink="krypta" routerLinkActive="active">
             <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon>
           </a>
@@ -89,17 +86,17 @@
       </div>
     </div>
   } @else {
-    <div class="p-3 text-center text-muted"><h4>You are not authorized to access <strong>{{app?.title}}</strong> app design</h4></div>
+    <div class="p-3 text-center text-muted"><h4>You are not authorized to access <strong>{{app()?.title}}</strong> app design</h4></div>
   }
 } @else {
-  @if (!loading) {
+  @if (!loading()) {
     <div class="p-3 text-center text-muted"><h4>No app found with ID: {{appId}}</h4></div>
   }
 }
 
 <ng-template #appEditTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
-    <app-app-edit [(data)]="editAppData" [offline]="offline" [user]="user"
+    <app-app-edit [(data)]="editAppData" [offline]="offline()" [user]="user()"
     [dismiss]="d" [close]="c"></app-app-edit>
   }@loading {
     <div class="text-center m-5">

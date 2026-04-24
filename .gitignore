@@ -71,3 +71,14 @@ ngsw-config_kborneo.json
 ngsw-config_lbas.json
 ngsw-config_leap.json
 
+src/app/run/lookup/lookup-old.component.ts
+src/app/run/start/start-old.component.ts
+src/app/run/screen/bucket/bucket-old.component.ts
+src/app/run/screen/chatbot/chatbot-old.component.ts
+src/app/run/screen/screen-old.component.ts
+src/app/run/register/register-old.component.ts
+src/app/run/form/form-old.component.ts
+src/app/run/chart/chart-old.component.ts
+src/app/run/_service/run-old.service.ts
+src/app/design/editor/ui-editor/form-editor/form-editor-old.component.ts
+src/app/run/form/form-asyncflag.component.ts

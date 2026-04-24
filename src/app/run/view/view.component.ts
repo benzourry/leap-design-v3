@@ -24,7 +24,7 @@ import { UtilityService } from '../../_shared/service/utility.service';
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
-import { first, map, share, tap } from 'rxjs/operators';
+import { catchError, first, map, share, switchMap, tap } from 'rxjs/operators';
 import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
@@ -444,6 +444,7 @@ export class ViewComponent implements OnInit, OnDestroy {
       $: data,
       $$_: appr,
       $$: appr?.data,
+      $prev$_: this.prevEntry,
       $prev$: entry?.prev,
       $user$: this.user(),
       $conf$: this.appConfig,
@@ -636,7 +637,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   trails = signal<any[]>([]);
   prevLoading = signal<boolean>(false);
-  getData(id, form) {
+  getDataOld(id, form) {
     this.loading.set(true);
     this.getDataObs(id, form)
       .subscribe({
@@ -653,6 +654,7 @@ export class ViewComponent implements OnInit, OnDestroy {
                 this.getDataFiles('prev', res.prev?.$id);
                 this.initForm(form.prev?.onView, this.prevEntry, form.prev);
                 this.prevLoading.set(false);
+                this.onView(); // to re-render with prev data, if prev exist
               }, error: (err) => {
                 this.prevLoading.set(false);
               }
@@ -684,6 +686,61 @@ export class ViewComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         }
       })
+  }
+
+
+  getData(id, form) {
+    this.loading.set(true);
+
+    this.getDataObs(id, form).pipe(
+      // tap() allows us to run side-effects with the first response
+      tap((res) => {
+        this.entry = res;
+        this.loading.set(false);
+        this.runCheckTier();
+        this.getDataFiles('data', res.id);
+
+        // Define functions
+        this.onInit = () => this.initForm(form.f, this.entry, form);
+        this.onView = () => this.initForm(form.onView, this.entry, form);
+        this.onSave = () => this.initForm(form.onSave, this.entry, form);
+        this.onSubmit = () => this.initForm(form.onSubmit, this.entry, form);
+
+        this.entryService.getEntryApprovalTrail(res.id)
+          .subscribe(trail => { this.trails.set(trail.content); });
+      }),
+      // switchMap handles chaining the next API call
+      switchMap((res) => {
+        if (form.prev) {
+          this.prevLoading.set(true);
+          return this.getDataObs(res.prev?.$id, form.prev).pipe(
+            tap((prevEntry) => {
+              this.prevEntry = prevEntry;
+              this.getDataFiles('prev', res.prev?.$id);
+              this.initForm(form.prev?.onView, this.prevEntry, form.prev);
+              this.prevLoading.set(false);
+            }),
+            // If prev entry fails, catch it, turn off loading, and pass an empty observable to continue the flow
+            catchError((err) => {
+              this.prevLoading.set(false);
+              return of(null); 
+            })
+          );
+        } else {
+          this.prevEntry = undefined;
+          delete this.entry.prev;
+          return of(null); // No prev entry, just pass along
+        }
+      })
+    ).subscribe({
+      // This next block ONLY fires once the entire chain (main entry + prev entry) is completely resolved.
+      next: () => {
+        this.onView(); 
+      },
+      error: (err) => {
+        this.loading.set(false);
+      }
+    });
   }
   
   isAuthorized = computed<boolean>(()=>this.checkAuthorized(this.form(),this.user(), this.entry));

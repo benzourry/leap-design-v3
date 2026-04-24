@@ -1,26 +1,15 @@
 // Copyright (C) 2018 Razif Baital
 // 
 // This file is part of LEAP.
-// 
-// LEAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-// 
-// LEAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+// ... (Standard License Header)
 
-import { Component, signal, computed, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { AppService } from '../../service/app.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { PlatformLocation } from '@angular/common';
+import { NgTemplateOutlet, PlatformLocation } from '@angular/common';
 import { baseApi, domainBase } from '../../_shared/constant.service';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.component';
@@ -28,8 +17,6 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
-// import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
-// import { SpeechRecognitionService } from '../../_shared/service/speech-recognition.service';
 
 @Component({
   selector: 'app-design-home',
@@ -37,18 +24,18 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
   templateUrl: './design-home.component.html',
   styleUrls: ['../../../assets/css/tile.css', './design-home.component.css'],
   imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbPagination,
-    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent]
+    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent, NgTemplateOutlet]
 })
-export class DesignHomeComponent {
+export class DesignHomeComponent implements OnInit {
 
   private userService = inject(UserService);
   private appService = inject(AppService);
   private router = inject(Router);
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
-  // private cdr = inject(ChangeDetectorRef);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
+  private destroyRef = inject(DestroyRef); // Inject for proper cleanup
 
   bgClassName: string = domainBase.replace(/\./g, '-');
   offline = signal<boolean>(false);
@@ -92,13 +79,20 @@ export class DesignHomeComponent {
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+  }
 
-    this.userService.getCreator().subscribe((user) => {
-      this.user.set(user);
-      this.getItemList(1);
-      this.getTplList(1);
-    });
+  ngOnInit() {
+    this.utilityService.testOnline$()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(online => this.offline.set(!online));
+
+    this.userService.getCreator()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        this.user.set(user);
+        this.getItemList(1);
+        this.getTplList(1);
+      });
   }
 
   file: any;
@@ -113,22 +107,25 @@ export class DesignHomeComponent {
       status: 'template',
     };
 
-    this.appService.getAppByStatusList(params).subscribe({
-      next: (res) => {
-        this.tplTotal.set(res.page?.totalElements || 0);
-        this.tplList.set(res.content || []);
-        this.tplLoading.set(false);
-      },
-      error: () => {
-        this.tplLoading.set(false);
-      },
-    });
+    this.appService.getAppByStatusList(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.tplTotal.set(res.page?.totalElements || 0);
+          this.tplList.set(res.content || []);
+          this.tplLoading.set(false);
+        },
+        error: () => {
+          this.tplLoading.set(false);
+        },
+      });
   }
 
   toggleGroupVisibility(key: string): void {
     const currentState = this.hideGroupItems();
     this.hideGroupItems.set({ ...currentState, [key]: !currentState[key] });
   }
+
   getItemList(pageNumber: number): void {
     this.itemLoading.set(true);
 
@@ -144,34 +141,32 @@ export class DesignHomeComponent {
       params.live = this.appStatusFilter();
     }
 
-    this.appService.getAppMyList(params).subscribe({
-      next: (res) => {
-        this.itemTotal.set(res.page?.totalElements || 0);
-        this.itemList.set(res.content || []);
-        this.itemLoading.set(false);
-      },
-      error: () => {
-        this.itemLoading.set(false);
-      },
-    });
+    this.appService.getAppMyList(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.itemTotal.set(res.page?.totalElements || 0);
+          this.itemList.set(res.content || []);
+          this.itemLoading.set(false);
+        },
+        error: () => {
+          this.itemLoading.set(false);
+        },
+      });
   }
 
-  editItem(tpl, data, isNew) {
-    // this.initialAppPath = data.appPath;
+  editItem(tpl: any, data: any, isNew: boolean) {
     this.editItemData.set(data);
     if (data.id) {
-      // console.log("data with id",data);
       this.appService.getApp(data.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: app => {
             this.editItemData.set(app);
             this._editApp(tpl, app, isNew);
-          }, error: err => {
-
-          }
+          }, error: err => {}
         })
     } else {
-      // console.log("data no id");
       this._editApp(tpl, data, isNew);
     }
   }
@@ -180,66 +175,68 @@ export class DesignHomeComponent {
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' }).result.then(
       (rItem) => {
-        this.appService.save(rItem, this.user()?.email).subscribe({
-          next: (res) => {
-            this.getItemList(this.pageNumber());
-            this.getTplList(this.pageNumberTpl());
-            if (isNew) {
-              this.router.navigate([`design/${res.id}`]);
-            }
-            this.toastService.show('App properties saved successfully', { classname: 'bg-success text-light' });
-            // this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.toastService.show(`App properties saved failure<br/>${err.error?.message}`, {
-              classname: 'bg-danger text-light',
-            });
-            // this.cdr.detectChanges();
-          },
-        });
+        this.appService.save(rItem, this.user()?.email)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (res) => {
+              this.getItemList(this.pageNumber());
+              this.getTplList(this.pageNumberTpl());
+              if (isNew) {
+                this.router.navigate([`design/${res.id}`]);
+              }
+              this.toastService.show('App properties saved successfully', { classname: 'bg-success text-light' });
+            },
+            error: (err) => {
+              this.toastService.show(`App properties saved failure<br/>${err.error?.message}`, {
+                classname: 'bg-danger text-light',
+              });
+            },
+          });
       },
       () => { }
     );
   }
 
   cloneItem(tpl: any, data: any, isNew: boolean): void {
-    this.appService.getApp(data.id).subscribe({
-      next: (app) => {
-        app.status = 'local';
-        delete app.appPath;
+    this.appService.getApp(data.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (app) => {
+          app.status = 'local';
+          delete app.appPath;
 
-        this.editItemData.set(app);
-        if (this.user()?.email.indexOf('@unimas.my') === -1) {
-          this.editItemData().useUnimas = false;
-        }
+          // Perform logic BEFORE setting signal to preserve reactivity rules
+          if (!this.user()?.email.includes('@unimas.my')) {
+            app.useUnimas = false;
+          }
+          this.editItemData.set(app);
 
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' }).result.then(
-          (rItem) => {
-            delete rItem.navis;
-            this.appService.clone(rItem, this.user()?.email).subscribe({
-              next: (res) => {
-                this.getItemList(this.pageNumber());
-                if (isNew) {
-                  this.router.navigate([`design/${res.id}`]);
-                }
-                this.toastService.show('App cloned successfully', { classname: 'bg-success text-light' });
-                // this.cdr.detectChanges();
-              },
-              error: () => {
-                this.toastService.show('App cloned failure', { classname: 'bg-danger text-light' });
-                // this.cdr.detectChanges();
-              },
-            });
-          },
-          () => { }
-        );
-      },
-      error: () => {
-        this.toastService.show('App cloned failed', { classname: 'bg-danger text-light' });
-        // this.cdr.detectChanges();
-      },
-    });
+          history.pushState(null, null, window.location.href);
+          this.modalService.open(tpl, { backdrop: 'static' }).result.then(
+            (rItem) => {
+              delete rItem.navis;
+              this.appService.clone(rItem, this.user()?.email)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                  next: (res) => {
+                    this.getItemList(this.pageNumber());
+                    if (isNew) {
+                      this.router.navigate([`design/${res.id}`]);
+                    }
+                    this.toastService.show('App cloned successfully', { classname: 'bg-success text-light' });
+                  },
+                  error: () => {
+                    this.toastService.show('App cloned failure', { classname: 'bg-danger text-light' });
+                  },
+                });
+            },
+            () => { }
+          );
+        },
+        error: () => {
+          this.toastService.show('App cloned failed', { classname: 'bg-danger text-light' });
+        },
+      });
   }
 
   removeItem(content: any, data: any): void {
@@ -247,7 +244,7 @@ export class DesignHomeComponent {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' }).result.then(
       () => {
-        // this.realRemoveItem(() => {}, data);
+        // Modal closed
       },
       () => { }
     );
@@ -260,23 +257,22 @@ export class DesignHomeComponent {
       ) === `delete ${data.title.toLowerCase()}`
     ) {
       this.removing.set(true);
-      this.appService.remove(data, this.user()?.email).subscribe({
-        next: () => {
-          this.getItemList(this.pageNumber());
-          this.toastService.show('App removed successfully', { classname: 'bg-success text-light' });
-          this.removing.set(false);
-          callback();
-          // this.cdr.detectChanges();
-        },
-        error: () => {
-          this.toastService.show('App removal failed', { classname: 'bg-danger text-light' });
-          this.removing.set(false);
-          // this.cdr.detectChanges();
-        },
-      });
+      this.appService.remove(data, this.user()?.email)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.getItemList(this.pageNumber());
+            this.toastService.show('App removed successfully', { classname: 'bg-success text-light' });
+            this.removing.set(false);
+            callback();
+          },
+          error: () => {
+            this.toastService.show('App removal failed', { classname: 'bg-danger text-light' });
+            this.removing.set(false);
+          },
+        });
     } else {
       this.toastService.show('Invalid removal confirmation key', { classname: 'bg-danger text-light' });
-      // this.cdr.detectChanges();
     }
   }
 

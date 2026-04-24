@@ -1,5 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, computed, inject, input, model, signal, viewChild } from '@angular/core';
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// ... (Standard License Header)
+
+import { ChangeDetectorRef, Component, OnInit, computed, inject, input, model, signal, viewChild, DestroyRef, effect } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbDateAdapter, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
 import { UtilityService } from '../../_shared/service/utility.service';
@@ -59,25 +65,34 @@ export class LookupComponent implements OnInit {
     private location = inject(PlatformLocation)
     private utilityService = inject(UtilityService)
     private cdr = inject(ChangeDetectorRef);
+    private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
 
     constructor() {
         this.location.onPopState(() => this.modalService.dismissAll(''));
-        this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+        
+        this.utilityService.testOnline$()
+            .pipe(takeUntilDestroyed())
+            .subscribe(online => this.offline.set(!online));
+            
+        // Use effect to reactively watch the lookupId model input if it changes
+        effect(() => {
+            const currentId = this.lookupId();
+            if (currentId) {
+                this.loadLookup(currentId);
+            }
+        });
     }
 
     ngOnInit() {
-        if (this.lookupId()) {
-            this.loadLookup(this.lookupId());        
-        } else {
-            this.route.params
+        // Fallback to listening for route parameters if lookupId is not provided
+        this.route.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
                 const id = +params['lookupId'];
-                this.lookupId.set(id)
-                if (id) {
-                    this.loadLookup(id);
+                if (id && this.lookupId() !== id) {
+                    this.lookupId.set(id);
                 }
-            })
-        }
+            });
     }
 
 
@@ -101,6 +116,7 @@ export class LookupComponent implements OnInit {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.lookupService.saveEntry(this.lookupId(), data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             if (isNew) {
@@ -146,7 +162,9 @@ export class LookupComponent implements OnInit {
 
             if (g.length > 2 && isLookupType){
                 let lookupId = +g[2].trim();
-                this.lookupService.getEntryList(lookupId, {size:9999}).subscribe({
+                this.lookupService.getEntryList(lookupId, {size:9999})
+                  .pipe(takeUntilDestroyed(this.destroyRef))
+                  .subscribe({
                     next: (res) => {            
                         this.lookupListMap[lookupId] = res.content;
                         this.cdr.detectChanges();
@@ -182,6 +200,7 @@ export class LookupComponent implements OnInit {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.lookupService.removeEntry(obj.id, data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.loadLookup(this.lookupId());
@@ -200,7 +219,7 @@ export class LookupComponent implements OnInit {
     userUnauthorized = computed(() => {
         const accessList = this.lookup().accessList;
         const userGroups = Object.keys(this.user()?.groups||{});
-      
+        
         if (accessList?.length > 0) {
           const intercept = accessList.filter((v) => userGroups.includes(v + ""));
           return intercept.length === 0; // Unauthorized if no matching groups
@@ -215,9 +234,11 @@ export class LookupComponent implements OnInit {
     
     requestParams = signal<any>({});
     params = signal<string[]>([]);
+    
     loadLookup(id:number) {
         // this.lookupId = id;
         this.lookupService.getLookup(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(lookup => {
                 this.requestParams.set({});
                 this.lookup.set(lookup);
@@ -238,7 +259,7 @@ export class LookupComponent implements OnInit {
                 if (lookup.sourceType=='db'){
                     this.getLookupEntryList(this.entryPageNumber());
                 }       
-      
+        
             })
 
     }
@@ -256,6 +277,7 @@ export class LookupComponent implements OnInit {
 
         const run = (p)=>{
             this.lookupService.getEntryListFull(this.lookupId(), p)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (response) => {
                     this.loading.set(false);
@@ -345,10 +367,10 @@ export class LookupComponent implements OnInit {
             .map((val, $index) => {
                 return { id: val.id, sortOrder: $index + ((this.entryPageNumber() - 1) * this.pageSize) }
             });
-        return this.runService.saveLookupOrder(list)
-            .subscribe(res => {
-                return res;
-            });
+            
+        this.runService.saveLookupOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe();
     }
 
 
@@ -356,6 +378,7 @@ export class LookupComponent implements OnInit {
     uploadFile($event, data, key) {
         if ($event.target.files && $event.target.files.length) {
             this.lookupService.uploadFile(this.lookup().id, $event.target.files[0])
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
                         data[key]= res.fileUrl;
@@ -377,6 +400,7 @@ export class LookupComponent implements OnInit {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.lookupService.updateLookupData(lookupId,this.syncLookupData.refCol, this.requestParams())
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.toastService.show("Lookup successfully sync", { classname: 'bg-success text-light' });

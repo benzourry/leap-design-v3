@@ -1,4 +1,22 @@
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, effect, inject, ChangeDetectionStrategy } from '@angular/core';
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// 
+// LEAP is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// LEAP is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, effect, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbDateAdapter, NgbTimeAdapter, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, NgbInputDatepicker, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -21,7 +39,7 @@ import { btoaUTF, cleanText, extractVariables, hashObject, splitAsList, tblToExc
 import { baseApi } from '../../../../_shared/constant.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { ScreenService } from '../../../../service/screen.service';
-import { Observable, first, map, shareReplay, tap } from 'rxjs';
+import { Observable, first, map, shareReplay, tap, switchMap } from 'rxjs';
 import { SafePipe } from '../../../../_shared/pipe/safe.pipe';
 import { GroupByPipe } from '../../../../_shared/pipe/group-by.pipe';
 import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
@@ -304,6 +322,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     private modalService = inject(NgbModal);
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
+    private destroyRef = inject(DestroyRef); // <-- Used for subscription cleanup
 
     // Business services
     private userService = inject(UserService);
@@ -342,28 +361,57 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     ngOnInit() {
 
         this.location.onPopState(() => this.modalService.dismissAll(''));
-        this.utilityService.testOnline$().subscribe(online => this.offline = !online);
-        this.commService.changeEmitted$.subscribe(data => {
-            if (data.value == 'import') {
-                this.getFormList(1);
-            }
-            if (data.value == 'form-add') {
-                this.editForm(this.editFormTpl(), {}, true);
-            }
-        });
+        
+        this.utilityService.testOnline$()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(online => this.offline = !online);
+            
+        this.commService.changeEmitted$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(data => {
+                if (data.value == 'import') {
+                    this.getFormList(1);
+                }
+                if (data.value == 'form-add') {
+                    this.editForm(this.editFormTpl(), {}, true);
+                }
+            });
 
-        this.userService.getCreator().subscribe((user) => {
-            this.user = user;
-            this.cdr.detectChanges(); // <--- Add here if user is used in template
+        // Flat the heavily nested initialization using switchMap
+        this.userService.getCreator()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                tap((user) => {
+                    this.user = user;
+                    this.cdr.detectChanges();
 
-            this.route.parent.parent.parent.params.subscribe(params => {
+                    // Initialize parallel flows that depend on user
+                    this.appService.getAppMyList({
+                        email: this.user.email,
+                        size: 999,
+                        sort: 'id,desc'
+                    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
+                        this.otherAppList = res.content;
+                    });
+
+                    // Listen to query parameters for specific form loading
+                    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((queryParams: Params) => {
+                        const id = queryParams['id'];
+                        if (id) {
+                            this.getFormData(id);
+                        }
+                    });
+                }),
+                switchMap(() => this.route.parent.parent.parent.params)
+            )
+            .subscribe(params => {
                 const appId = params['appId'];
-
                 this.buildPalettes();
 
                 if (appId) {
-                    let appParams = { email: user.email }
+                    let appParams = { email: this.user.email }
                     this.appService.getApp(appId, appParams)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
                         .subscribe(res => {
                             this.app = res;
                             this.getFormList(1);
@@ -376,30 +424,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getDatasetList(this.app.id);
                             this.getScreenList(this.app.id);
                             this.getEndpointList();
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         });
                 }
-            })
-
-            this.route.queryParams
-                .subscribe((queryParams: Params) => {
-
-                    const id = queryParams['id'];
-                    if (id) {
-                        this.getFormData(id);
-                    }
-
-                });
-
-            this.appService.getAppMyList({
-                email: this.user.email,
-                size: 999,
-                sort: 'id,desc'
-            }).subscribe(res => {
-                this.otherAppList = res.content;
-            })
-
-        });
+            });
 
         if (window.matchMedia("(max-width: 768px)").matches) {
             // The viewport is less than 576px wide
@@ -411,6 +439,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     bucketList: any[] = [];
     getBucketList() {
         this.bucketService.getBucketList({ appId: this.app.id })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.bucketList = res.content;
             });
@@ -420,6 +449,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     cognaList: any[] = [];
     getCognaList() {
         this.cognaService.getCognaList({ appId: this.app.id })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.cognaList = res.content;
             });
@@ -428,6 +458,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     walletList: any[] = [];
     getWalletList() {
         this.kryptaService.getWalletList({ appId: this.app.id })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.walletList = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -439,6 +470,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     getAccessList() {
         this.accessMap = {};
         this.groupService.getGroupList({ appId: this.app.id, size: 999 })
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.accessList = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -454,6 +486,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     getEndpointList() {
         let params = { appId: this.app.id }
         this.endpointService.getEndpointList(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.endpointList = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -463,6 +496,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     getLookupList(appId) {
         let params = { appId: appId }
         this.lookupService.getFullLookupList(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.lookupList = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -473,6 +507,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     getMailerList() {
         let params = { appId: this.app.id, size: 9999 }
         this.mailerService.getMailerList(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.mailerList = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -482,6 +517,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     getDatasetList(appId) {
         this.datasetService.getDatasetList(appId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.datasetList = res;
                 this.cdr.detectChanges(); // <--- Add here
@@ -490,6 +526,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     getScreenList(appId) {
         this.screenService.getScreenList(appId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.screenList = res;
                 this.cdr.detectChanges(); // <--- Add here
@@ -516,6 +553,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     dataset: any;
     loadDataset(id) {
         this.datasetService.getDataset(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.dataset = res;
                 this.cdr.detectChanges(); // <--- Add here
@@ -545,6 +583,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     moreAutocomplete() {
         this.formService.moreAutocompleteJs()
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 if (res?.list) {
                     this.extraAutoCompleteJs.push(...res.list);
@@ -552,6 +591,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.cdr.detectChanges(); // <--- Add here        
             })
         this.formService.moreAutocompleteHtml()
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 if (res?.list) {
                     this.extraAutoCompleteHtml.push(...res.list);
@@ -572,6 +612,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
 
         this.formService.getListBasic(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.formList = res.content;
                 this.formTotal = res.page?.totalElements;
@@ -595,6 +636,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.superItems = [];
         this.curFormId = id;
         this.formService.getForm(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.curForm = res;
                 this.cdr.detectChanges(); // <--- Add here
@@ -626,6 +668,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 }
                 if (res?.x?.extended) {
                     this.formService.getForm(res?.x?.extended)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
                         .subscribe(r1 => {
                             this.superForm = r1;
                             this.buildSuper();
@@ -661,6 +704,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     getLookupIdList(id) {
         this.lookupService.getInForm(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.lookupIds = res;
                 this.lookupIds.forEach(key => {
@@ -686,13 +730,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         if (!this.lookupMapCache[key.dataSource]) {
                             this.lookupMapCache[key.dataSource] = this.lookupService.getLookup(key.dataSource).pipe(shareReplay(1));
                         }
-                        this.lookupMapCache[key.dataSource].subscribe({
-                            next: res => {
-                                this.lookupMap[key.dataSource] = res;
-                                this.cdr.detectChanges();
-                            },
-                            error: err => { }
-                        });
+                        this.lookupMapCache[key.dataSource]
+                            .pipe(takeUntilDestroyed(this.destroyRef))
+                            .subscribe({
+                                next: res => {
+                                    this.lookupMap[key.dataSource] = res;
+                                    this.cdr.detectChanges();
+                                },
+                                error: err => { }
+                            });
                     }
 
                 });
@@ -739,6 +785,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     _getLookup = (code, param, cb?, err?) => {
         if (code) {
             this._getLookupObs(code, param, cb, err)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: res => {
                         this.lookup[code] = res;
@@ -757,7 +804,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
         // bleh consider cache observable instead of result.
         // tp bila pake observable.. request dipolah on subscribe();
-        // settle with share()
+        // settle with shareReplay(1)
         if (this.lookupDataObs[cacheId]) {
             return this.lookupDataObs[cacheId]
         }
@@ -784,6 +831,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     editForm(content, data, isNew) {
         if (!isNew) {
             this.formService.getForm(data.id)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe(r1 => {
                     this.editFormData = r1;
                 });
@@ -800,6 +848,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     delete form.x.extended;
                 }
                 this.formService.saveForm(form.appId ?? this.app.id, form)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getFormList(this.formPageNo);
@@ -822,6 +871,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(cloneFormData => {
                 this.formService.cloneForm(cloneFormData.formId, this.app.id)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getFormList(1);
@@ -837,6 +887,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     unlinkPrevForm(formId) {
         if (confirm('Are you sure you want to unlink previous form')) {
             this.formService.unlinkPrevForm(formId)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe(res => {
                     this.getFormData(formId);
                     this.toastService.show("Previous form successfully unlinked", { classname: 'bg-success text-light' });
@@ -853,6 +904,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.formService.removeForm(data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.getFormList(1);
                         delete this.curForm;
@@ -918,6 +970,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         aa.x.rcognaFields = extractVariables(["$"], aa.x?.rcognaTpl)?.["$"]||[];
                     }
                     this.formService.saveItem(this.curForm.id, section.id, aa, sortOrder + index)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
                         .subscribe({
                             next: (e) => {
                                 this.getFormData(this.curForm.id);
@@ -1076,9 +1129,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     rItem.orgMapParam = JSON.parse(rItem.orgMapParamStr);
                 }
                 this.formService.saveTier(this.curForm.id, rItem)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.formService.getForm(this.curForm.id)
+                                .pipe(takeUntilDestroyed(this.destroyRef))
                                 .subscribe(res => {
                                     this.curForm = res;
                                     this.reorderAllTier();
@@ -1112,6 +1167,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
                 this.formService.saveTierAction(tier.id, rItem)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getFormData(this.curForm.id);
@@ -1159,6 +1215,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     removeTierAction(ta) {
         if (confirm('Are you sure you want to remove this action:' + ta.label)) {
             this.formService.removeTierAction(ta.id)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
                         this.getFormData(this.curForm.id);
@@ -1178,9 +1235,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
                 this.formService.removeTier(tier.id)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.formService.getForm(this.curForm.id)
+                                .pipe(takeUntilDestroyed(this.destroyRef))
                                 .subscribe(res => {
                                     this.curForm = res;
                                     this.reorderAllTier();
@@ -1212,6 +1271,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 return { id: val.id, sortOrder: index }
             });
         return this.formService.saveTierOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 return res;
             });
@@ -1223,6 +1283,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
         return this.formService.saveTierOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 this.drawTierLines();
                 this.cdr.detectChanges();
@@ -1238,10 +1299,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     saveTierActionOrder(tierIndex, orderList) {
         var list = orderList
-            .map((val) => {
+            .map((val: any) => {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
         return this.formService.saveTierActionOrder(this.curForm.tiers[tierIndex].id, list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 this.curForm.tiers[tierIndex].actions = res;
                 this.cdr.detectChanges(); // <--- Add here
@@ -1260,6 +1322,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
                 this.formService.removeItem(this.curForm.id, rItem.id)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getFormData(this.curForm.id)
@@ -1275,6 +1338,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     removeItemSource(formId, id) {
         this.formService.removeItemSource(formId, id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: res => {
                     this.getFormData(this.curForm.id)
@@ -1308,6 +1372,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 return { id: val.id, sortOrder: $index }
             });
         return this.formService.saveItemOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.cdr.detectChanges(); // <--- Add here
                 return res;
@@ -1333,6 +1398,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             } else {
                 if (!this.curForm.items[item.code]) {
                     this.formService.saveItem(this.curForm.id, parent.id, item, event.currentIndex - 1)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
                         .subscribe({
                             next: (e) => {
                                 this.getFormData(this.curForm.id);
@@ -1357,6 +1423,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     event.currentIndex);
 
                 this.formService.moveItem(this.curForm.id, event.container.data[event.currentIndex].id, parent.id, event.currentIndex)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.cdr.detectChanges(); // <--- Add here
                     });
@@ -1367,6 +1434,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     getTabList(pageNumber) {
         this.formService.getTabList(this.curForm.id, pageNumber)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.curForm.tabs = res.content;
                 this.cdr.detectChanges(); // <--- Add here
@@ -1387,6 +1455,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(section => {
                 this.formService.saveSection(this.curForm.id, section)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.getFormData(this.curForm.id)
                         this.toastService.show("Section saved successfully", { classname: 'bg-success text-light' });
@@ -1456,6 +1525,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             sectionCode = section.code;
         }
         this.formService.saveItemOnly(this.curForm.id, item)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (e) => {
                     this.backendEf(item, sectionCode, force);
@@ -1475,6 +1545,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.efLoading[item.code] = true;
         this.cdr.detectChanges(); 
         this.formService.backendEf(this.curForm.id, item.code, section, force == true)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 let result = `<table width="100%">
                             <tr><td>Success</td><td>: ${res.successCount}</td></tr>
@@ -1501,6 +1572,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
 
         this.formService.saveTier(this.curForm.id, tier)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (res) => {
                     this.getFormData(this.curForm.id);
@@ -1509,6 +1581,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                     this.apfLoading[tier.id] = true;
                     this.formService.backendApf(this.curForm.id, tier.id, force == true)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
                         .subscribe(res => {
                             let result = `<table width="100%">
                                 <tr><td>Success</td><td>: ${res.successCount}</td></tr>
@@ -1534,6 +1607,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if (prompt("Are you sure you want to update the approver for all tiers in this form?\n Type 'update-all-tier' and press OK to proceed") == 'update-all-tier') {
             this.efLoading["all"] = true;
             this.formService.reconApprover(this.curForm.id)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
                         this.efLoading["all"] = false;
@@ -1556,6 +1630,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then((data) => {
                 this.formService.removeSection(data.id)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getFormData(this.curForm.id);
@@ -1580,6 +1655,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             });
 
         return this.formService.saveSectionOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 return res;
             });
@@ -1598,6 +1674,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(tab => {
                 this.formService.saveTab(this.curForm.id, tab)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.getTabList(1)
                         this.toastService.show("Tab saved successfully", { classname: 'bg-success text-light' });
@@ -1614,6 +1691,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then((data) => {
                 this.formService.removeTab(data.id)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             this.getTabList(1);
@@ -1647,6 +1725,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
         return this.formService.saveTabOrder(list)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 return res;
             });
@@ -1751,7 +1830,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         ]
     }
 
-    getLoopCode = (section) => "<x-foreach $=\"i of $." + section.code + "\">\n" + this.getItems(section) + "\n\t${<!--More codes-->}\n<\/x-foreach>"
+    getLoopCode = (section) => "<x-foreach $=\"i of $." + section.code + "\">\n" + this.getItems(section) + "\n\t${}\n<\/x-foreach>"
     getLoopCodeJs = (section) => "$." + section.code + ".forEach(i=>{\n" + this.getItemsJs(section) + "\n\t${//More codes}\n})";
 
     getItems(section) {
@@ -1825,6 +1904,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     formRelatedComps: any = {};
     moveFormToApp(content) {
         this.formService.getRelatedComps(this.curFormId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.formRelatedComps = res;
                 history.pushState(null, null, window.location.href);
@@ -1833,6 +1913,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.moveFormToAppData.datasetIds = this.formRelatedComps.dataset.filter(e => e.isChecked).map(e => e.id);
                         this.moveFormToAppData.screenIds = this.formRelatedComps.screen.filter(e => e.isChecked).map(e => e.id);
                         this.formService.moveToApp(this.curFormId, this.moveFormToAppData)
+                            .pipe(takeUntilDestroyed(this.destroyRef))
                             .subscribe(data => {
                                 this.commService.emitChange({ key: 'form', value: 0 });
                                 this.commService.emitChange({ key: 'dataset', value: 0 });
@@ -1852,6 +1933,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     viewJsonSchema(content) {
         // this.importExcelData = null;
         this.cognaService.getFormatter(this.curFormId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: res => {
 
@@ -1904,6 +1986,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if ($event.target.files && $event.target.files.length) {
             this.importLoading = true;
             this.formService.uploadExcel(this.curForm.id, $event.target.files[0], this.user.email, createField, createDataset, createDashboard, importToLive)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
                         this.importExcelData = res;
@@ -1930,6 +2013,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if (prompt("Are you sure you want to permanently delete entries of this form?\n Type 'delete' and press OK to proceed") == 'delete') {
             if (confirm("Are you sure? This action is not reversible. The entries will be permanently removed.")) {
                 this.formService.clearData(this.curFormId)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: res => {
                             this.toastService.show("Entry removed: " + res.rows + ", Attachment removed: " + res.files, { classname: 'bg-success text-light' });
@@ -1961,12 +2045,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     editDatasetData: any;
     editDataset(content, datasetId) {
         this.datasetService.getDataset(datasetId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(dataset => {
                 this.editDatasetData = dataset;
                 history.pushState(null, null, window.location.href);
                 this.modalService.open(content, { backdrop: 'static' })
                     .result.then(data => {
                         this.datasetService.saveDataset(this.app.id, data)
+                            .pipe(takeUntilDestroyed(this.destroyRef))
                             .subscribe(res => {
                                 this.toastService.show("Dataset successfully saved");
                                 this.cdr.detectChanges(); // <--- Add here
@@ -2001,6 +2087,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             params['dateTo'] = this.trailTo;
         }
         this.formService.getEntryTrailByFormId(id, params)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(trail => { 
                 this.trails = trail.content; 
                 this.trailsTotal = trail.page?.totalElements ;
@@ -2018,6 +2105,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     undelete(entryId, trailId) {
         if (confirm('Are you sure you want to restore this entry?')) {
             this.formService.undeleteEntry(entryId, trailId)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: res => {
                         this.loadTrails(this.curForm.id, this.trailsPageNumber);
@@ -2032,6 +2120,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     undo(entryId, trailId) {
         if (confirm("Are you sure you want to undo this action?")) {
             this.formService.undoEntry(entryId, trailId)
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: res => {
                         this.loadTrails(this.curForm.id, this.trailsPageNumber);
@@ -2082,6 +2171,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     genView(formId) {
         this.formService.genView(formId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({ next: res => this.toastService.show("RDB view successfully created/updated") })
     }
 
@@ -2093,6 +2183,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.lookupService.save(this.user.email, this.app.id, data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
                             // this.loadLookupList(this.pageNumber);
@@ -2113,6 +2204,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     editLookupEntryData: any = {};
     editLookupEntry(content, field, dsId, data) {
         this.lookupService.getLookup(dsId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(lookup => {
                 this.editLookupItem = lookup;
                 this.editLookupEntryData = { enabled: 1 };
@@ -2123,6 +2215,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             data.code = data.name
                         }
                         this.lookupService.saveEntry(lookup.id, data)
+                            .pipe(takeUntilDestroyed(this.destroyRef))
                             .subscribe({
                                 next: (res) => {
                                     // everytime an entry is saved, we need to clear the cache observable to force reload
@@ -2148,6 +2241,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
                 this.groupService.save(this.app.id, data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.getAccessList();
                         if (multi) {
@@ -2174,6 +2268,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(data => {
                 this.mailerService.save(this.user.email, this.app.id, data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
                         this.getMailerList();
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });

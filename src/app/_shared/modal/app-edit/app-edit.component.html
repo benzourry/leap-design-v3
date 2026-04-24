@@ -4,10 +4,10 @@
     <div class="form-check form-switch d-inline-block ms-auto m-0">
       <input class="form-check-input" type="checkbox" role="switch"
         [(ngModel)]="_data.live" name="appXLive" id="appXLive">
-        <label class="form-check-label" for="appXLive">{{_data.live?'Live':'Dev'}}</label>
+        <label class="form-check-label" for="appXLive">{{_data.live ? 'Live' : 'Dev'}}</label>
     </div>
   </div>
-  <div class="" [class.disabled]="offline()">
+  <div [class.disabled]="offline()">
     <div class="tab-simple">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">
         <li ngbNavItem>
@@ -17,14 +17,14 @@
               <div class="m-a" style="max-width:10em;">
                 <div class="img-thumbnail mb-2">
                   <input type="file" style="display:none" (change)="uploadLogo($event)" id="logo" [(ngModel)]="file"
-                    name="logo" accept="image/**" />
+                    name="logo" accept="image/*" />
                   <label class="mb-0 d-block" for="logo">
                     @if (_data.logo) {
-                      <img src="{{baseApi}}/app/logo/{{_data.logo}}" alt="Image preview..."
-                        onError="this.src='assets/img/blank_product.png'" style="max-width:100%">
+                      <img src="{{baseApi}}/app/logo/{{_data.logo}}" alt="App Logo"
+                        (error)="handleImageError($event)" style="max-width:100%">
                       <button class="mt-2 btn btn-xs btn-light mx-auto" (click)="clearLogo()">Clear Logo</button>
                     }@else{
-                      <img style="background: #aaa" src="assets/img/blank_product.png" width="100%">
+                      <img style="background: #aaa" src="assets/img/blank_product.png" alt="Blank logo" width="100%">
                     }
                   </label>
                 </div>
@@ -49,7 +49,7 @@
                         value="sidemenu" required>
                       <label for="sidemenu" class="form-check-label">Side Menu
                         <div class="ms-0 my-1">
-                          <img src="assets/img/side-menu.svg" [class.selected]="_data.layout=='sidemenu'" width="80%">
+                          <img src="assets/img/side-menu.svg" alt="Side Menu Layout" [class.selected]="_data.layout=='sidemenu'" width="80%">
                         </div>
                       </label>
                     </div>
@@ -60,7 +60,7 @@
                         value="topnav" required>
                       <label for="topnav" class="form-check-label">Top Nav
                         <div class="ms-0 my-1">
-                          <img src="assets/img/top-nav.svg" [class.selected]="_data.layout=='topnav'" width="80%">
+                          <img src="assets/img/top-nav.svg" alt="Top Nav Layout" [class.selected]="_data.layout=='topnav'" width="80%">
                         </div>
                       </label>
                     </div>
@@ -70,9 +70,8 @@
               <div class="form-group mb-3">
                 <label class="form-label">App Theme</label>
                 <div>
-                  <!-- {{data.theme}} -->
                   <div class="btn-group-toggle" role="group" name="appTheme">
-                    @for (c of themes; track c) {
+                    @for (c of themes; track c.color) {
                       <input type="radio" name="colorpicker" #formField="ngModel" [(ngModel)]="_data.theme"
                         [value]="c.color" class="btn-check" id="colorp_{{$index}}" autocomplete="off">
                       <label class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="c.color==_data.theme"
@@ -270,7 +269,6 @@
                   }
                 </select>
                 @if(_data.x.userFromApp){
-                  <!-- <div class="small text-muted mt-2">User groups from this app will be merged with groups from the above app</div> -->
                   <div class="small text-muted mt-2">Merge user's groups from this app with groups from the above app</div>
                 }
               </div>
@@ -387,7 +385,7 @@
                   <label class="form-label">Default start page</label>
                   <select class="form-select" name="startPage" [(ngModel)]="_data.startPage">
                     <option [ngValue]="undefined">Tiles Home Page</option>
-                    @for (p of pages(); track $index) {
+                    @for (p of pages(); track p.path) {
                       <option [ngValue]="p.path">{{p.title}}</option>
                     }
                   </select>

@@ -1,10 +1,28 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// 
+// LEAP is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// LEAP is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, inject, input, output, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbDateAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 // import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
-import { ServerDate, compileTpl, deepMerge, tblToExcel } from '../../_shared/utils';
+import { ServerDate, compileTpl, deepMerge, tblToExcel, btoaUTF, hashObject } from '../../_shared/utils';
 // import { UserEntryFilterComponent } from '../../_shared/component/user-entry-filter/user-entry-filter.component';
 import { NgxEchartsDirective, provideEcharts } from 'ngx-echarts';
 import { DecimalPipe, JsonPipe, NgClass, NgStyle, SlicePipe } from '@angular/common';
@@ -13,7 +31,8 @@ import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-e
 import { EntryService } from '../_service/entry.service';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
-
+import { Observable } from 'rxjs';
+import { first, map, shareReplay } from 'rxjs/operators';
 
 @Component({
     selector: 'app-chart',
@@ -29,12 +48,12 @@ import { RunService } from '../_service/run.service';
 })
 export class ChartComponent implements OnInit {
 
-
   private entryService = inject(EntryService);
   private lookupService = inject(LookupService);
   private runService = inject(RunService);
   private modalService = inject(NgbModal);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef); // <-- Added for subscription cleanup
 
 
   chart = input<any>();
@@ -74,6 +93,7 @@ export class ChartComponent implements OnInit {
   ngOnInit() {
     if (this.chart().formId) {
       this.runService.getRunForm(this.chart().formId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (res) => {
             this.form.set({
@@ -83,7 +103,7 @@ export class ChartComponent implements OnInit {
             this.getLookupInFilter();
           },
           error: (err) => {
-            console.error(`Error fetching form data: ${err}`);
+            console.error(`Error fetching form data: ${err.message}`);
           },
       })
     }
@@ -103,13 +123,14 @@ export class ChartComponent implements OnInit {
     }
 
     this.entryService.getChartData(this.chart().id, params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.chartDataset.set(res);
         let rv = res.data;
         if (this.chart().f) {
           try {
             rv = this._eval(this.chart(), res.data, this.chart().f);
-          } catch (e) { console.log(`{chart-${this.chart().title}-transformFn}-${e}`) }
+          } catch (e) { console.log(`{chart-${this.chart().title}-transformFn}-${e.message}`) }
           // this.chartDataset.data = rv;
           this.chartDataset.set({...res, data: rv});
         }
@@ -306,8 +327,38 @@ export class ChartComponent implements OnInit {
 
   checkFilter = () => Object.keys(this.filtersData).length === 0 && this.filtersData.constructor === Object
 
-  _eval = (chart, dataset, v) => new Function('$app$', '$chart$', '$dataset$', '$eachValue$', '$eachName$', '$user$', '$conf$', '$this$', '$param$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', `return ${v}`)
-    (this.app(), chart, dataset, (fn) => this.eachValue(chart, dataset, fn), (fn) => this.eachName(chart, dataset, fn), this.user(), this.runService?.appConfig, this._this, this.param(), this.base, this.baseUrl(), this.baseApi, dayjs, ServerDate);
+  // --- DRY Caching Engine for _eval ---
+  private evalCache = new Map<string, Function>();
+
+  _eval = (chart, dataset, v) => {
+    const bindings = {
+      $app$: this.app(),
+      $chart$: chart,
+      $dataset$: dataset,
+      $eachValue$: (fn) => this.eachValue(chart, dataset, fn),
+      $eachName$: (fn) => this.eachName(chart, dataset, fn),
+      $user$: this.user(),
+      $conf$: this.runService?.appConfig,
+      $this$: this._this,
+      $param$: this.param(),
+      $base$: this.base,
+      $baseUrl$: this.baseUrl(),
+      $baseApi$: this.baseApi,
+      dayjs,
+      ServerDate
+    };
+
+    const argNames = Object.keys(bindings);
+    const cacheKey = `${argNames.join(',')}_${v}`;
+    
+    let fn = this.evalCache.get(cacheKey);
+    if (!fn) {
+      fn = new Function(...argNames, `return ${v}`);
+      this.evalCache.set(cacheKey, fn);
+    }
+    
+    return fn(...Object.values(bindings));
+  }
 
   eachValue = ($chart$, $dataset$, fn) => { // $eachValue$($chart$,$dataset$, function(res){})
     if ($chart$.series) {
@@ -349,35 +400,48 @@ export class ChartComponent implements OnInit {
         var param = null;
         try {
           param = new Function('$user$', 'return ' + dsInit)(this.user())
-        } catch (e) { console.log(`{list-${f.code}-dataSourceInit}-${e}`) }
+        } catch (e) { console.log(`{list-${f.code}-dataSourceInit}-${e.message}`) }
         this.getLookup(f.code, dsInit ? param : null);
       }
     })
   }
 
+  // Use shareReplay caching for duplicate lookup requests
+  private lookupDataObs: { [key: string]: Observable<any> } = {};
+
   getLookup = (code, dsInit?: any) => {
     // console.log("#######getLookup");
-    var param = null;
-    if (code) {
-      if (this.lookupKey[code].type == 'modelPicker') {
-        param = { email: this.user()?.email }
-        this.entryService.getListByDatasetData(this.lookupKey[code].ds, dsInit || param)
-          .subscribe(res => {
-            this.lookup[code] = res;
-            this.cdr.detectChanges();
-            // console.log("============", res);
-          })
+    if (!code) return;
+
+    let param = dsInit;
+    const type = this.lookupKey[code].type;
+    const ds = this.lookupKey[code].ds;
+
+    if (type === 'modelPicker') {
+      param = dsInit || { email: this.user()?.email };
+    } else {
+      param = param ? { ...param } : {}; // Safely clone or initialize
+    }
+
+    const cacheId = 'key_' + btoaUTF(ds + hashObject(param), null);
+
+    if (!this.lookupDataObs[cacheId]) {
+      if (type === 'modelPicker') {
+        this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(ds, param)
+          .pipe(first(), shareReplay(1));
       } else {
-        // param = Object.assign(param || {}, { sort: 'id,asc' });
-        param = Object.assign(param || {}, {}); // <- this is weird
-        this.lookupService.getByKey(this.lookupKey[code].ds, dsInit || param)
-          .subscribe(res => {
-            this.lookup[code] = res.content;
-            this.cdr.detectChanges();
-            // console.log("============", res);
-          });
+        this.lookupDataObs[cacheId] = this.lookupService.getByKey(ds, param)
+          .pipe(first(), map(res => res.content), shareReplay(1));
       }
     }
+
+    this.lookupDataObs[cacheId]
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        // Because map() already unrolls .content for non-modelPickers above, we can just assign the raw result
+        this.lookup[code] = res;
+        this.cdr.detectChanges();
+      });
   }
 
   enterMaxState() {

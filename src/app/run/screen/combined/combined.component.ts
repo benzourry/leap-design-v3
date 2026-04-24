@@ -1,7 +1,19 @@
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// ... (Standard License Header)
+
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, forwardRef, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, input } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
+import { 
+  NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, 
+  NgbAccordionToggle, NgbAccordionButton, NgbCollapse, 
+  NgbAccordionCollapse, NgbAccordionBody, NgbNav, 
+  NgbNavItem, NgbNavItemRole, NgbNavLink, 
+  NgbNavLinkBase, NgbNavContent, NgbNavOutlet 
+} from '@ng-bootstrap/ng-bootstrap';
+
 import { ListComponent } from '../../list/list.component';
 import { FormComponent } from '../../form/form.component';
 import { ViewComponent } from '../../view/view.component';
@@ -15,35 +27,43 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
 @Component({
     selector: 'app-combined',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,
-        NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgTemplateOutlet, NgbNav,
-        NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
-        FaIconComponent, forwardRef(() => ListComponent), forwardRef(() => DashboardComponent),
-        forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => UserComponent),
-        forwardRef(() => LookupComponent), IconSplitPipe],
     templateUrl: './combined.component.html',
-    styleUrl: './combined.component.scss'
+    styleUrl: './combined.component.scss',
+    imports: [
+        // Angular Core & Utilities
+        NgTemplateOutlet,
+        FaIconComponent,
+        IconSplitPipe,
+        
+        // NgBootstrap Accordion & Nav Elements
+        NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, 
+        NgbAccordionToggle, NgbAccordionButton, NgbCollapse, 
+        NgbAccordionCollapse, NgbAccordionBody, NgbNav, 
+        NgbNavItem, NgbNavItemRole, NgbNavLink, 
+        NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
+        
+        // Dynamic Sub-Components (forwardRef prevents circular dependency crashes)
+        forwardRef(() => ListComponent), 
+        forwardRef(() => DashboardComponent),
+        forwardRef(() => FormComponent), 
+        forwardRef(() => ViewComponent), 
+        forwardRef(() => ScreenComponent), 
+        forwardRef(() => UserComponent),
+        forwardRef(() => LookupComponent)
+    ]
 })
 export class CombinedComponent {
     
-    appId = computed<number>(()=>this.runService.$app()?.id || null);
-
-    email = computed(()=>this.user()?.email || '');
-
-    screen = input<any>();
-
-    param = input<any>();
-
-    user = computed<any>(()=>this.runService.$user());
-
     private runService = inject(RunService);
 
-    // ngOnInit(): void {
-      
-    // }
+    screen = input<any>();
+    param = input<any>();
 
-    activeTab:any = {};
+    user = computed<any>(() => this.runService.$user());
+    appId = computed<number | null>(() => this.runService.$app()?.id || null);
+    email = computed<string>(() => this.user()?.email || '');
 
-    // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
+    // Strictly typed state for tracking NgBootstrap Nav/Accordion active tabs
+    activeTab: Record<string, any> = {};
 
 }

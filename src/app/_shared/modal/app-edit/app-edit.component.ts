@@ -1,4 +1,5 @@
-import { Component, OnInit, input, model, ChangeDetectorRef, inject, signal } from '@angular/core';
+import { Component, OnInit, input, model, ChangeDetectorRef, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppService } from '../../../service/app.service';
 import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
 import { baseApi, domainBase, OAUTH } from '../../constant.service';
@@ -22,16 +23,14 @@ import { ChangeDetectionStrategy } from '@angular/core';
 })
 export class AppEditComponent implements OnInit {
 
-  // Remove constructor entirely
   private appService = inject(AppService);
   private screenService = inject(ScreenService);
   private platformService = inject(PlatformService);
   private cdr = inject(ChangeDetectorRef);
-
-  constructor() { }
+  private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
 
   data = model<any>();
-  _data:any = {};
+  _data: any = {};
   offline = input<boolean>(false);
   initialAppPath: string = "";
   user = input<any>();
@@ -39,7 +38,7 @@ export class AppEditComponent implements OnInit {
   close = input<any>();
   dismiss = input<any>();
   otherAppList = signal<any[]>([]);
-  checkLogin = (login) => OAUTH.SIGNIN_OPT.includes(login);
+  checkLogin = (login: string) => OAUTH.SIGNIN_OPT.includes(login);
 
   themes: any[] = [
     { name: "BarBlue", color: "#0747a6" },
@@ -65,82 +64,102 @@ export class AppEditComponent implements OnInit {
 
   file: any;
 
-  isPathTaken = (path) => ['io', 'create', 'design', 'core'].indexOf(path) > -1 ? of(true) : this.appService.isPathTaken(path);
+  // Modernized array checking with .includes()
+  isPathTaken = (path: string) => 
+    ['io', 'create', 'design', 'core'].includes(path) ? of(true) : this.appService.isPathTaken(path);
 
   appGroups = signal<any[]>([]);
 
   ngOnInit() {
-    this._data = {...this.data()};
+    // DEEP COPY to prevent bleeding mutations to the parent model before "Save" is clicked
+    this._data = this.data() ? JSON.parse(JSON.stringify(this.data())) : {};
+    
     this.initialAppPath = this._data.appPath;
-    this.loadPages();
-    this.loadScreen();
+    
     if (!this._data.x) {
       this._data.x = {};
     }
+
+    this.loadPages();
+    this.loadScreen();
+    
     this.appService.getAppMyList({
       email: this.user().email,
       size: 999,
       sort: 'id,desc'
-    }).subscribe(res => {
-      this.otherAppList.set(res.content);
     })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(res => {
+      this.otherAppList.set(res.content);
+    });
 
     this.platformService.listAppGroup({ size: 9999, email: this.user().email })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.appGroups.set(res.content);
-      })
+      });
   }
 
-
   pages = signal<any[]>([]);
+  
   loadPages() {
     if (!this._data.id) return;
     this.appService.getPages(this._data.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.pages.set(res);
       });
   }
+  
   screens = signal<any>([]);
+  
   loadScreen() {
     if (!this._data.id) return;
     this.screenService.getScreenList(this._data.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.screens.set(res);
       });
   }
 
-  uploadLogo($event) {
+  uploadLogo($event: any) {
     if ($event.target.files && $event.target.files.length) {
       this.appService.uploadLogo($event.target.files[0], this._data.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(res => {
           this._data.logo = res.fileUrl;
-          this.cdr.detectChanges();
-        })
-
+          this.cdr.markForCheck();
+        });
     }
   }
 
   clearLogo() {
     if (confirm("Are you sure you want to clear the app logo?")) {
       this.appService.clearLogo(this._data.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(res => {
           this._data.logo = null;
-          this.cdr.detectChanges();
-        })
+          this.cdr.markForCheck();
+        });
     }
   }
 
-  done(data) {
+  handleImageError(event: Event) {
+    // Angular-safe fallback logic for broken images
+    (event.target as HTMLImageElement).src = 'assets/img/blank_product.png';
+  }
+
+  done(data: any) {
     this.data.set(data);
     this.close()?.(data);
   }
 
-  toHyphen = toHyphen; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
-  toSpaceCase = toSpaceCase; // (string)=> string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
+  toHyphen = toHyphen; 
+  toSpaceCase = toSpaceCase; 
   getHost = () => window.location.host;
 
   domainBase = domainBase;
 
-  compareByIdFn = (a, b): boolean => (a && a.id) === (b && b.id);
+  compareByIdFn = (a: any, b: any): boolean => (a && a.id) === (b && b.id);
 
 }

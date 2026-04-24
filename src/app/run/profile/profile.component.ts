@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../_shared/service/toast-service';
@@ -58,12 +59,17 @@ export class ProfileComponent implements OnInit {
   private pushService = inject(PushService)
   private modalService = inject(NgbModal)
   private toastService = inject(ToastService)
+  private destroyRef = inject(DestroyRef) // <-- Used for modern subscription cleanup
 
   constructor() { 
+    // The effect reactively handles data loading; no need to duplicate this in ngOnInit
     effect(() => {
-      if (this.app()?.id && this.user()?.email) {
-      this.loadNotif(this.app()?.id, this.user()?.email);
-      this.loadSubscription();
+      const currentApp = this.app();
+      const currentUser = this.user();
+      
+      if (currentApp?.id && currentUser?.email) {
+        this.loadNotif(currentApp.id, currentUser.email);
+        this.loadSubscription();
       }
     });
   }
@@ -75,13 +81,11 @@ export class ProfileComponent implements OnInit {
   lang = computed(() => this.app().x?.lang);
 
   ngOnInit() {
-    if (this.app()?.id && this.user()?.email) {
-      this.loadNotif(this.app()?.id, this.user()?.email);
-      this.loadSubscription();
-      }
-
     this.swPush.subscription
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe(sub => {
         this.actualSub = sub;
       })
@@ -94,6 +98,7 @@ export class ProfileComponent implements OnInit {
     this.modalService.open(tpl, { backdrop: 'static' })
       .result.then(res => {
         this.runService.markNotification(res.id, this.user().email)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: (res2) => {
               this.loadNotif(this.app()?.id, this.user().email);
@@ -108,6 +113,7 @@ export class ProfileComponent implements OnInit {
   notifList = signal<any>([]);
   loadNotif(appId, email) {
     this.runService.getNotification(appId, email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.notifList.set(res.content);
       })
@@ -117,6 +123,7 @@ export class ProfileComponent implements OnInit {
 
   revokeTerm() {
     this.runService.onceDone(this.app()?.id, this.user().email, false)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(user => {
         this.userService.setUser(user);
         this.runService.$user.set(user);
@@ -126,6 +133,7 @@ export class ProfileComponent implements OnInit {
 
   removeAcc() {
     this.runService.removeAcc(-1, this.user().email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(user => {
         this.toastService.show("Your account has been successfully removed", { classname: 'bg-success text-light' });
         this.logout();
@@ -135,31 +143,31 @@ export class ProfileComponent implements OnInit {
   pushSubs = signal<any>([]);
   loadSubscription() {
     this.pushService.getSubscription(this.user().id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(subs => {
         this.pushSubs.set(subs);
       })
   }
 
   unsubscribeToNotifications(endpoint) {
-
     this.pushService.unsubscribePush(endpoint)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.loadSubscription()
 
         this.swPush.subscription
-          .pipe(take(1))
+          .pipe(
+            take(1),
+            takeUntilDestroyed(this.destroyRef)
+          )
           .subscribe(pushSubscription => {
-
-            if (pushSubscription.endpoint == endpoint) {
+            if (pushSubscription && pushSubscription.endpoint == endpoint) {
               pushSubscription.unsubscribe()
                 .then(sub => { })
                 .catch(err => console.error("Could not unsubscribe to notifications", err));
             }
           });
-
       });
-
-
   }
 
   changePwdData: any = {};
@@ -170,6 +178,7 @@ export class ProfileComponent implements OnInit {
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {
         this.userService.changePwd(res)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: (res) => {
               this.toastService.show(res.message, { classname: 'bg-success text-light' });

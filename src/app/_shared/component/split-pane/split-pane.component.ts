@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, contentChild } from '@angular/core';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { ChangeDetectionStrategy, Component, ElementRef, contentChild, signal } from '@angular/core';
+import { CdkDrag, CdkDragMove } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: '[split-pane]',
@@ -10,25 +10,48 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 })
 export class SplitPaneComponent {
 
-  sidebar = contentChild<ElementRef>('sidebar')
+    // Content child for the projected sidebar element
+    sidebar = contentChild<ElementRef>('sidebar');
 
-  dragPosition = { x: 0, y: 0 };
-  sidebarWidth: number = 240;
-  sidebarResize($event, sidebarMenu) {
-      let x = $event.event.clientX ?? $event.event.changedTouches[0].clientX;
-      let half = ($event.event.view.innerWidth / 2) - 23;
-      if (x - 46 >= half) {
-          this.dragPosition = { x: half - 240, y: 0 };
-          this.sidebarWidth = half;
-      } else if (x <= 46) {
-          this.dragPosition = { x: 0 - 240, y: 0 };
-          this.sidebarWidth = 0;
-      } else {
-          this.dragPosition = { x: x - 240 - 46, y: 0 };
-          this.sidebarWidth = x - 46;
-      }
-      this.sidebar().nativeElement.style.maxWidth = this.sidebarWidth + 'px';
-  }
+    // Signal-based state for OnPush performance
+    dragPosition = signal({ x: 0, y: 0 });
+    
+    // Extracted constants for layout math
+    private readonly DEFAULT_WIDTH = 240;
+    private readonly LEFT_NAV_OFFSET = 46;
+    private readonly HANDLE_OFFSET = 23;
 
+    sidebarResize(event: CdkDragMove) {
+        // CDK automatically normalizes mouse vs touch events via pointerPosition
+        const x = event.pointerPosition.x; 
+        
+        const halfScreen = (window.innerWidth / 2) - this.HANDLE_OFFSET;
+        
+        let newWidth: number;
+        let newX: number;
 
+        if (x - this.LEFT_NAV_OFFSET >= halfScreen) {
+            // Max width constraint (half screen)
+            newWidth = halfScreen;
+            newX = halfScreen - this.DEFAULT_WIDTH;
+        } else if (x <= this.LEFT_NAV_OFFSET) {
+            // Min width constraint (collapsed)
+            newWidth = 0;
+            newX = -this.DEFAULT_WIDTH;
+        } else {
+            // Free dragging
+            newWidth = x - this.LEFT_NAV_OFFSET;
+            newX = x - this.DEFAULT_WIDTH - this.LEFT_NAV_OFFSET;
+        }
+
+        // Update handle position reactively
+        this.dragPosition.set({ x: newX, y: 0 });
+
+        // Direct DOM manipulation during drag events is actually best-practice 
+        // to avoid triggering Angular Change Detection at 60fps and causing lag.
+        const sidebarEl = this.sidebar()?.nativeElement;
+        if (sidebarEl) {
+            sidebarEl.style.maxWidth = `${newWidth}px`;
+        }
+    }
 }

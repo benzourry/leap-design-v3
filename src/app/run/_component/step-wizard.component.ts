@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgClass } from '@angular/common';
@@ -28,11 +28,11 @@ import { NgClass } from '@angular/common';
     @for (tier of tiers(); track tier.id) {
       @if (preCheck(tier.pre)) {
         <div class="step" [ngbTooltip]="createTooltip(tier,approval())" container="body">
-          <span [style.background-color]="tier?.actions[approval()[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry().currentTier">
+          <span [style.background-color]="tier?.actions[approval()[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry()?.currentTier">
             @if (!entry()?.approval[tier.id]) {
               <fa-icon [icon]="['fas','question']"></fa-icon>
             } @else {
-              @if (tier?.actions[approval()[tier.id]?.status] && ['submitted','resubmitted'].indexOf(approval()[tier.id]?.status)==-1) {
+              @if (tier?.actions[approval()[tier.id]?.status] && !['submitted','resubmitted'].includes(approval()[tier.id]?.status)) {
                 <fa-icon
                   [icon]="['fas',tier.actions[approval()[tier.id].status]?.icon]">
                 </fa-icon>
@@ -138,43 +138,54 @@ import { NgClass } from '@angular/common';
   }`],
     imports: [NgClass, NgbTooltip, FaIconComponent]
 })
-export class StepWizardComponent implements OnInit {
+export class StepWizardComponent {
 
-    constructor() { }
-
-    // @Input() tiers: any;
     tiers = input<any>();
-    // @Input() approval: any;
     approval = input<any>();
-    // @Input() entry: any;
     entry = input<any>();
-    // @Input() user: any;
     user = input<any>();
-    // @Input() type: string;
     type = input<string>();
 
-    ngOnInit() {
-    }
+    private preCache = new Map<string, Function>();
 
-    _eval = (data, v) => new Function('$_', '$', '$prev$','$user$', `return ${v}`)(this.entry(), this.entry()?.data, this.entry()?.prev, this.user());
+    _eval = (dataV: any, v: string) => {
+        if (!v) return undefined;
+        
+        const bindings = {
+            $_: this.entry(),
+            $: dataV,
+            $prev$: this.entry()?.prev,
+            $user$: this.user()
+        };
 
-    preCheck(pre, dataV?: any) {
+        const argNames = Object.keys(bindings);
+        let fn = this.preCache.get(v);
+        
+        if (!fn) {
+            fn = new Function(...argNames, `return ${v}`);
+            this.preCache.set(v, fn);
+        }
+        
+        return fn(...Object.values(bindings));
+    };
+
+    preCheck(pre: string, dataV?: any) {
         let res = undefined;
-        // if (pre) {
-            try {
-                if (!dataV) {
-                    dataV = this.entry().data;
-                }
-                res = this._eval(dataV, pre);
-            } catch (e) { }
-        // }
+        try {
+            if (!dataV) {
+                dataV = this.entry()?.data;
+            }
+            res = this._eval(dataV, pre);
+        } catch (e) { 
+            console.warn(`[StepWizard] preCheck failed for expression: ${pre}`, e);
+        }
         return !pre || res;
     }
 
-    createTooltip(tier,approval){
-        var tt = tier.name;
-        if (approval[tier.id]){
-            tt+='\n'+new Date(approval[tier.id]?.timestamp).toLocaleString() ;
+    createTooltip(tier: any, approval: any) {
+        let tt = tier.name;
+        if (approval && approval[tier.id] && approval[tier.id].timestamp) {
+            tt += '\n' + new Date(approval[tier.id].timestamp).toLocaleString();
         }
         return tt;
     }

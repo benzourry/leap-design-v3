@@ -26,11 +26,11 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
-import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap, takeUntil, catchError } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
-import { Observable, Subject, lastValueFrom, throwError } from 'rxjs';
+import { Observable, Subject, lastValueFrom, throwError, of } from 'rxjs';
 import { ComponentCanDeactivate } from '../../_shared/service/can-deactivate-guard.service';
 import { NgForm, FormsModule } from '@angular/forms';
 import { ScreenComponent } from '../screen/screen.component';
@@ -119,6 +119,11 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   param = input<any>({});
   _param: any = {};
   formLoaded = output<any>();
+
+  prevId = signal<number>(null);
+  prevEntry: any = null;
+  prevLoading = signal<boolean>(false);
+
 
   isEmpty = inputObject => inputObject && Object.keys(inputObject).length === 0;
 
@@ -232,130 +237,267 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.reactiveCognaList = {};
 
     this.loading.set(true);
-    this.runService.getRunForm(formId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: form => {
 
-          if (this.windowKey) {
-            delete window[this.windowKey];
-          }
-          this.windowKey = '_this_' + this.scopeId();
-          Object.defineProperty(window, this.windowKey, {
-            get: () => this._this,
-            configurable: true,   // so you can delete it later 
-            // writable: true,
-          });
-
-          this.formLoaded.emit(form);
-          this.form.set(form);
-          let formTab = form.nav != 'simple' ? form.tabs : [{}]
-
-          // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
-          if (form.nav != 'simple') {
-            this.sectionMap.update(sm => ({
-              ...sm,
-              [-1]: this.filterSection(form.sections, ['section', 'list'], -1),
-              [-999]: this.filterSection(form.sections, ['section', 'list'], -999)
-            }));
-          }
-
-          formTab.forEach(tab => {
-            this.sectionMap.update(sm => ({
-              ...sm,
-              [tab?.id]: this.filterSection(form.sections, ['section', 'list'], tab?.id)
-            }));
-          });
-
-          // this.entry.update(c => ({ ...c, currentStatus: 'drafted', data: {} })); // reset entry 
-          this.entry = {
-            currentStatus: 'drafted',
-            data: {}
-          }
-          // this.entry.currentStatus = 'drafted'; // reset entry 
-          // this.entry.data = {}; // reset entry 
-          this.onInit = () => this.initForm(form.f, this.entry.data, form);
-          this.onView = () => this.initForm(form.onView, this.entry.data, form);
-          this.onSave = () => this.initForm(form.onSave, this.entry.data, form);
-          this.onSubmit = () => this.initForm(form.onSubmit, this.entry.data, form);
-
-          this.loading.set(false);
-
-          if (action == 'edit') {
-            if (entryId || !this.isEmpty(this._param || {})) {
-              this.getData(entryId, form);
-            } else {
-              if (form.single) {
-                this.getDataSingle(form);
-              } else {
-                this.editWithoutId.set(true);
-              }
-            }
-          } else if (action == 'edit-single') {
-            this.getDataSingle(form);
-            // this.formInactive.set((form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now()))
-          } else if (action == 'prev') {
-            // this.formInactive.set((form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now()))
-            this.getPrevData(entryId, this._param, form.prev);
-          } else if (action == 'add') {
-            // this.formInactive.set((form.startDate && form.startDate > Date.now()) || (form.endDate && form.endDate < Date.now()))
-            this.initForm(form.f, this.entry.data, form);
-          } else if (form.x?.facet?.includes(action)) {
-            if (entryId || !this.isEmpty(this._param || {})) {
-              this.getData(entryId, form);
-            } else {
-              this.initForm(form.f, this.entry.data, form);
-            }
-            // this.initForm(this.form().f); //comment after change initform receive data parameter
-          } else {
-            this.invalidFacet.set(true);
-            this.invalidFacetKey.set(action);
-          }
-
-          // make sure order of eval field is followed
-          form.sections.forEach(s => {
-            if (['section'].indexOf(s.type) > -1) { // watch for section eval. previously section+approval
-              s.items.forEach(item => {
-                let field = form.items[item.code];
-                if (field.type == 'eval') {
-                  this.watchList.set(item.code, field.f)
-                }
-                if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                  let extracted = extractVariables(["$"], field.x?.rcognaTpl)
-                  this.reactiveCognaList[item.code] = { sources: extracted?.["$"], data: this.entry?.data };
-                }
-              });
-            } else if (s.type == 'list') { // watch for section in list
-              this.watchListSection[s.code] = new Map();
-              s.items.forEach(item => {
-                let field = form.items[item.code];
-                if (field.type == 'eval') {
-                  this.watchListSection[s.code].set(item.code, field.f)
-                }
-                if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                  let extracted: any = extractVariables(["$"], field.x?.rcognaTpl)
-                  this.reactiveCognaList[item.code] = { sources: extracted?.$, data: this.entry?.data?.[s.code] };
-                }
-              });
-            }
-          })
-
-          this.evalAll(this.entry.data);
-          this.filterTabs();
-          this.filterItems();
-
-          // perlu engkah lepas filterTabs(); Tp knak nya run twice??!!
-          this.tabPostAction(this._navIndex());
-
-          this.runAllCognaField();
-
-        },
-        error: err => {
-          this.logService.log(`Error fetching form: ${err.message}`);
-          this.loading.set(false);
+    this.runService.getRunForm(formId).pipe(
+      takeUntil(this.destroy$),
+      tap(form => {
+        if (this.windowKey) {
+          delete window[this.windowKey];
         }
-      });
+        this.windowKey = '_this_' + this.scopeId();
+        Object.defineProperty(window, this.windowKey, {
+          get: () => this._this,
+          configurable: true,   // so you can delete it later 
+          // writable: true,
+        });
+
+        this.formLoaded.emit(form);
+        this.form.set(form);
+        let formTab = form.nav != 'simple' ? form.tabs : [{}]
+
+        // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
+        if (form.nav != 'simple') {
+          this.sectionMap.update(sm => ({
+            ...sm,
+            [-1]: this.filterSection(form.sections, ['section', 'list'], -1),
+            [-999]: this.filterSection(form.sections, ['section', 'list'], -999)
+          }));
+        }
+
+        formTab.forEach(tab => {
+          this.sectionMap.update(sm => ({
+            ...sm,
+            [tab?.id]: this.filterSection(form.sections, ['section', 'list'], tab?.id)
+          }));
+        });
+
+        // this.entry.update(c => ({ ...c, currentStatus: 'drafted', data: {} })); // reset entry 
+        this.entry = { currentStatus: 'drafted', data: {} }
+        // this.entry.currentStatus = 'drafted'; // reset entry 
+        // this.entry.data = {}; // reset entry 
+        
+        this.onInit = () => this.initForm(form.f, this.entry.data, form);
+        this.onView = () => this.initForm(form.onView, this.entry.data, form);
+        this.onSave = () => this.initForm(form.onSave, this.entry.data, form);
+        this.onSubmit = () => this.initForm(form.onSubmit, this.entry.data, form);
+
+        // make sure order of eval field is followed
+        form.sections.forEach(s => {
+          if (['section'].indexOf(s.type) > -1) { // watch for section eval. previously section+approval
+            s.items.forEach(item => {
+              let field = form.items[item.code];
+              if (field.type == 'eval') {
+                this.watchList.set(item.code, field.f)
+              }
+              if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
+                let extracted = extractVariables(["$"], field.x?.rcognaTpl)
+                this.reactiveCognaList[item.code] = { sources: extracted?.["$"], data: this.entry?.data };
+              }
+            });
+          } else if (s.type == 'list') { // watch for section in list
+            this.watchListSection[s.code] = new Map();
+            s.items.forEach(item => {
+              let field = form.items[item.code];
+              if (field.type == 'eval') {
+                this.watchListSection[s.code].set(item.code, field.f)
+              }
+              if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
+                let extracted: any = extractVariables(["$"], field.x?.rcognaTpl)
+                this.reactiveCognaList[item.code] = { sources: extracted?.$, data: this.entry?.data?.[s.code] };
+              }
+            });
+          }
+        });
+      }),
+      switchMap(form => {
+        // Evaluate condition and return the appropriate observable stream
+        let dataStream$: Observable<any> = of(null);
+
+        if (action == 'edit') {
+          if (entryId || !this.isEmpty(this._param || {})) {
+            dataStream$ = this.getDataObs(entryId, form);
+          } else {
+            if (form.single) {
+              dataStream$ = this.getDataSingleObs(form);
+            } else {
+              this.editWithoutId.set(true); // inform template to show error message about missing entry ID
+            }
+          }
+        } else if (action == 'edit-single') {
+          dataStream$ = this.getDataSingleObs(form);
+        } else if (action == 'prev') {
+          dataStream$ = this.getPrevDataObs(entryId, this._param, form.prev);
+        } else if (action == 'add') {
+          // No fetch needed
+        } else if (form.x?.facet?.includes(action)) {
+          if (entryId || !this.isEmpty(this._param || {})) {
+            dataStream$ = this.getDataObs(entryId, form);
+          }
+        } else {
+          this.invalidFacet.set(true); // inform template to show error message about invalid facet
+          this.invalidFacetKey.set(action); // for debugging purposes, to show which facet key is invalid
+        }
+
+        // Wait for whichever data stream was chosen, then pass the form object along
+        return dataStream$.pipe(map(() => form));
+      })
+    ).subscribe({
+      next: (form) => {
+        // This fires EXACTLY once, when all dependent Main/Prev data is completely loaded.
+        this.evalAll(this.entry.data);
+        this.initForm(form.f, this.entry.data, form);
+        this.filterTabs();
+        this.filterItems();
+
+        // perlu engkah lepas filterTabs(); Tp knak nya run twice??!!
+        this.tabPostAction(this._navIndex());
+
+        this.runAllCognaField();
+
+        this.loading.set(false);
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.logService.log(`Error fetching form: ${err.message}`);
+        this.loading.set(false);
+        this.cdr.detectChanges();
+      }
+    });
   }
+
+  // --- RxJS Data Fetch Observables ---
+
+  getDataObs(id: number, form: any): Observable<any> {
+    let fetch$: Observable<any>;
+    if (id) {
+      fetch$ = this.entryService.getEntry(id, form.id);
+    } else {
+      fetch$ = this.entryService.getFirstEntryByParam(this._param, form.id);
+    }
+
+    return fetch$.pipe(
+      switchMap(res => {
+        this.entry = res;
+        this.getDataFiles('data', res.id);
+
+        if (form.prev) { // && res.prev?.$id xpat pake prev.$id sbb prev mungkin pake param
+          // Chain previous data explicitly if present
+          return this.getPrevDataObs(res.prev?.$id, {}, form.prev).pipe(
+            catchError(() => of(null)) // Fallback gracefully if prev fails
+          );
+        } else {
+          this.prevId.set(null);
+          this.prevEntry = null;
+          delete this.entry.prev;
+          return of(null);
+        }
+      })
+    );
+  }
+
+  getDataSingleObs(form: any): Observable<any> {
+    const singleQuery = this._eval({}, form.singleQ, form);
+    return this.entryService.getFirstEntryByParam(singleQuery, form.id).pipe(
+      switchMap(res => {
+        // this.entry.set(res); // Object.assign(this.entry, res); 
+        this.entry = res;
+        // ADDED: Fetch previous data on success too!
+        if (form.prev) { // xpat pake  && res.prev?.$id sbb mungkin prev nya cuma based on param, bukan ID langsung. Jadi kita cek di getPrevDataObs nya aja, kalau prev ID nya ada pakai itu, kalau enggak pakai param.
+          // Use res.prev?.$id here if it exists,
+          // otherwise fallback to the prevQuery approach.
+          const prevId = res.prev?.$id;
+          const prevQuery = prevId ? {} : this.getPrevParam(singleQuery);
+          
+          return this.getPrevDataObs(prevId, prevQuery, form.prev).pipe(
+            catchError(() => of(null))
+          );
+        }
+        return of(res);
+      }),
+      catchError(err => {
+        if (form.prev) {
+          const prevQuery = this.getPrevParam(singleQuery);
+          return this.getPrevDataObs(null, prevQuery, form.prev).pipe(
+            catchError(() => of(null))
+          );
+        }
+        return of(null); 
+      })
+    );
+  }
+
+  getPrevDataObs(id: number, params: any, form: any): Observable<any> {
+    this.prevLoading.set(true);
+    let fetch$: Observable<any> = id 
+      ? this.entryService.getEntry(id, form?.id) 
+      : this.entryService.getFirstEntryByParam(params, form?.id);
+
+    return fetch$.pipe(
+      tap(res => {
+        if (res) {
+          this.prevId.set(res.id);
+          this.prevEntry = res;
+          this.entry.prev = res.data;
+          this.getDataFiles('prev', res.id);
+          this.initForm(form?.onView, res.data, form);
+        }
+        this.prevLoading.set(false);
+      }),
+      catchError(err => {
+        this.prevLoading.set(false);
+        this.prevId.set(null);
+        this.prevEntry = null;
+        delete this.entry.prev;
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // --- Wrapper Methods ---
+  // Preserving legacy endpoints just in case they are triggered directly by templates
+
+  // getDataSingle(form: any): void {
+  //   this.loading.set(true);
+  //   this.getDataSingleObs(form).subscribe({
+  //     next: () => {
+  //       this.evalAll(this.entry.data);
+  //       this.initForm(form.f, this.entry.data, form);
+  //       this.loading.set(false);
+  //       this.tabPostAction(this._navIndex());
+  //       this.runAllCognaField();
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: () => this.loading.set(false)
+  //   });
+  // }
+
+  // getData(id: number, form: any): void {
+  //   this.loading.set(true);
+  //   this.getDataObs(id, form).subscribe({
+  //     next: () => {
+  //       this.evalAll(this.entry.data);
+  //       this.initForm(form.f, this.entry.data, form);
+  //       this.loading.set(false);
+  //       this.tabPostAction(this._navIndex());
+  //       this.runAllCognaField();
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: () => this.loading.set(false)
+  //   });
+  // }
+
+  // getPrevData(id: number, params: any, form: any): void {
+  //   this.getPrevDataObs(id, params, form).subscribe({
+  //     next: () => {
+  //       this.evalAll(this.entry.data);
+  //       this.initForm(this.form().f, this.entry.data, this.form()); // evaluate current form
+  //       this.tabPostAction(this._navIndex());
+  //       this.runAllCognaField();
+  //       this.cdr.detectChanges();
+  //     }
+  //   });
+  // }
+
 
   private rcognaLoading = signal<any>({});
   private rcognaSubject = new Subject<any>();
@@ -645,56 +787,81 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   preCompFilter = signal<any>({})
   groupedChildList = signal<any>({})
   filterItems() {
-    let preItem = {};
-    let dynDefaultValue = {};
-    let preSection = {};
-    let classSection = {};
-    let preCompFilter = {};
-    let groupedChildList = {};
-    this.form().sections.forEach(s => {
-      preSection[s.id] = this.preCheckStr(s.pre);
-      classSection[s.id] = this.compileTpl(s.style ?? '', {})
-      if (preSection[s.id]) {
-        // only evaluate items pre when section is available. If not, no need.
-        if (s.type != 'list') {
-          s.items.forEach(i => {
-            preItem[i.code] = this.preCheckStr(this.form().items[i.code].pre);
-            try {
-              dynDefaultValue[i.code] = this._eval(this.entry?.data, this.form().items[i.code]?.x?.dyn_default, this.form());
-            } catch (e) { }
-            if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
+    requestAnimationFrame(() => {
+      let preItem = {};
+      let dynDefaultValue = {};
+      let preSection = {};
+      let classSection = {};
+      let preCompFilter = {};
+      let groupedChildList = {};
+      this.form().sections.forEach(s => {
+        preSection[s.id] = this.preCheckStr(s.pre);
+        classSection[s.id] = this.compileTpl(s.style ?? '', {})
+        if (preSection[s.id]) {
+          // only evaluate items pre when section is available. If not, no need.
+          if (s.type != 'list') {
+            s.items.forEach(i => {
+              preItem[i.code] = this.preCheckStr(this.form().items[i.code].pre);
               try {
-                preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam);
+                dynDefaultValue[i.code] = this._eval(this.entry?.data, this.form().items[i.code]?.x?.dyn_default, this.form());
               } catch (e) { }
+              if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
+                try {
+                  preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam);
+                } catch (e) { }
+              }
+              if (['checkboxOption', 'radio'].indexOf(this.form().items[i.code].type) > -1) {
+                try {
+                  this.getLookup(i.code, this.form().items[i.code].dataSourceInit, this.entry?.data);
+                  // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                } catch (e) { }
+              }
+            })
+          } else {
+            preItem[s.code] = [];
+            dynDefaultValue[s.code] = [];
+            if (this.sectionSort()[s.code] || s.x?.sortable) {
+              let sort = this.sectionSort()[s.code] ?? (s.x?.defSort ? {
+                label: this.form().items[s.x?.defSort].label,
+                field: s.x?.defSort,
+                dir: s.x?.defSortDir
+              } : {});
+              // if ada section sort
+              this.sortChild(s.code, sort.field, sort.label, sort.dir);
             }
-            if (['checkboxOption', 'radio'].indexOf(this.form().items[i.code].type) > -1) {
-              try {
-                this.getLookup(i.code, this.form().items[i.code].dataSourceInit, this.entry?.data);
-                // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
-              } catch (e) { }
-            }
-          })
-        } else {
-          preItem[s.code] = [];
-          dynDefaultValue[s.code] = [];
-          if (this.sectionSort()[s.code] || s.x?.sortable) {
-            let sort = this.sectionSort()[s.code] ?? (s.x?.defSort ? {
-              label: this.form().items[s.x?.defSort].label,
-              field: s.x?.defSort,
-              dir: s.x?.defSortDir
-            } : {});
-            // if ada section sort
-            this.sortChild(s.code, sort.field, sort.label, sort.dir);
-          }
-          if (this.entry.data && Array.isArray(this.entry.data[s.code])) {
-            // var groupedEntryList = this.groupByPipe.transform(this.entry.data[s.code], this.getPathForGrouping(s.x?.defGroupField));
-            groupedChildList[s.code] = this.groupByPipe.transform(this.entry.data[s.code], this.getPathForGrouping(s.x?.defGroupField));
+            if (this.entry.data && Array.isArray(this.entry.data[s.code])) {
+              // var groupedEntryList = this.groupByPipe.transform(this.entry.data[s.code], this.getPathForGrouping(s.x?.defGroupField));
+              groupedChildList[s.code] = this.groupByPipe.transform(this.entry.data[s.code], this.getPathForGrouping(s.x?.defGroupField));
 
-            var idx = 0;
-            groupedChildList[s.code].forEach((ge, index_g) => {
-              ge.value.forEach((child, index_c) => {
-                child.$index = idx++; // re-assign index
-                var index = index_g + '-' + index_c;
+              var idx = 0;
+              groupedChildList[s.code].forEach((ge, index_g) => {
+                ge.value.forEach((child, index_c) => {
+                  child.$index = idx++; // re-assign index
+                  var index = index_g + '-' + index_c;
+                  preItem[s.code][index] = {}
+                  dynDefaultValue[s.code][index] = {}
+                  s.items.forEach(i => {
+                    preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
+                    try {
+                      dynDefaultValue[s.code][index][i.code] = this._eval(this.entry?.data, this.form().items[i.code]?.x?.dyn_default, this.form());
+                    } catch (e) { }
+                    if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
+                      try {
+                        preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                      } catch (e) { }
+                    }
+                    if (['checkboxOption', 'radio'].indexOf(this.form().items[i.code].type) > -1) {
+                      try {
+                        this.getLookup(i.code, this.form().items[i.code].dataSourceInit, child);
+                        // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
+                      } catch (e) { }
+                    }
+                  })
+                })
+              })
+
+              this.entry.data[s.code]?.forEach((child, index) => {
+                child.$index = index; // re-assign index
                 preItem[s.code][index] = {}
                 dynDefaultValue[s.code][index] = {}
                 s.items.forEach(i => {
@@ -715,41 +882,18 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   }
                 })
               })
-            })
-
-            this.entry.data[s.code]?.forEach((child, index) => {
-              child.$index = index; // re-assign index
-              preItem[s.code][index] = {}
-              dynDefaultValue[s.code][index] = {}
-              s.items.forEach(i => {
-                preItem[s.code][index][i.code] = this.preCheckStr(this.form().items[i.code].pre, child);
-                try {
-                  dynDefaultValue[s.code][index][i.code] = this._eval(this.entry?.data, this.form().items[i.code]?.x?.dyn_default, this.form());
-                } catch (e) { }
-                if (['dataset', 'screen'].indexOf(this.form().items[i.code].type) > -1) {
-                  try {
-                    preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
-                  } catch (e) { }
-                }
-                if (['checkboxOption', 'radio'].indexOf(this.form().items[i.code].type) > -1) {
-                  try {
-                    this.getLookup(i.code, this.form().items[i.code].dataSourceInit, child);
-                    // this.preCompFilter[i.code] = this._prePassive(this.entry?.data, this.form().items[i.code].dataSourceInit || this.defaultParam)
-                  } catch (e) { }
-                }
-              })
-            })
+            }
           }
         }
-      }
+      })
+      this.preItem.set(preItem);
+      this.dynDefaultValue.set(dynDefaultValue);
+      this.preSection.set(preSection);
+      this.classSection.set(classSection);
+      this.preCompFilter.set(preCompFilter);
+      this.groupedChildList.set(groupedChildList);
+      this.timestamp = Date.now();
     })
-    this.preItem.set(preItem);
-    this.dynDefaultValue.set(dynDefaultValue);
-    this.preSection.set(preSection);
-    this.classSection.set(classSection);
-    this.preCompFilter.set(preCompFilter);
-    this.groupedChildList.set(groupedChildList);
-    this.timestamp = Date.now();
   }
 
   preChildItem = signal<any>({})
@@ -877,31 +1021,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       })
   }
 
-
-  getDataSingle(form) {
-    this.entryService.getFirstEntryByParam(this._eval({}, form.singleQ, form), form.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: res => {
-          // this.entry.set(res); //
-          // Object.assign(this.entry, res); // why object assign?
-          this.entry = res; //Object.assign(this.entry, res);
-          this.evalAll(this.entry.data);
-          this.initForm(form.f, this.entry.data, form);
-          this.loading.set(false);
-          this.cdr.detectChanges();
-        }, error: err => {
-          // consider getPrevData() but need to add support for prevParam;
-          if (form.prev) {
-            this.getPrevData(null, this.getPrevParam(this._eval({}, form.singleQ, form)), form.prev);
-          } else {
-            this.initForm(form.f, this.entry.data, form);
-            this.loading.set(false);
-          }
-        }
-      })
-  }
-
   getPrevParam = (p: any) => {
     let obj = {};
     Object.keys(p).forEach(k => {
@@ -926,100 +1045,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
 
-  getData(id: number, form: any): void {
-    this.loading.set(true);
-
-    const handleResponse = (res: any): void => {
-      this.entry = res;
-      this.getDataFiles('data', res.id);
-      this.evalAll(this.entry.data);
-      this.initForm(form.f, res.data, form);
-      this.loading.set(false);
-      // this.isAuthorized = this.checkAuthorized(this.form(), this.user(), this.entry);
-
-      if (form.prev) {
-        this.getPrevData(res.prev?.$id, {}, form.prev);
-      } else {
-        this.prevId.set(null);
-        this.prevEntry = null;
-        delete this.entry.prev;
-      }
-    };
-
-    const handleError = (): void => {
-      this.loading.set(false);
-    };
-
-    if (form) {
-      if (id) {
-        // Fetch entry by ID
-        this.entryService.getEntry(id, form.id)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: handleResponse,
-            error: handleError,
-          });
-      } else if (!this.isEmpty(this._param)) {
-        // Fetch entry by parameters
-        this.entryService.getFirstEntryByParam(this._param, form.id)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: handleResponse,
-            error: handleError,
-          });
-      } else if (form.single) {
-        // Fetch single entry
-        const singleQuery = this._eval({}, form.singleQ, form);
-        this.entryService.getFirstEntryByParam(singleQuery, form.id)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: handleResponse,
-            error: handleError,
-          });
-      }
-    }
-  }
-
-
-  prevId = signal<number>(null);
-  prevEntry: any = null;
-  prevLoading = signal<boolean>(false);
-  getPrevData(id: number, params: any, form: any): void {
-    this.prevLoading.set(true);
-
-    const handleResponse = (res: any): void => {
-      this.prevId.set(res.id);
-      this.prevEntry = res;
-      // this.entry.prev = res.data;
-      // this.entry.update(e=>({...e, prev: res.data}))
-      this.entry.prev = res.data;
-      this.getDataFiles('prev', res.id);
-      this.evalAll(this.entry.data);
-      this.initForm(form?.onView, res.data, form);
-      this.initForm(this.form().f, this.entry.data, this.form()); // evaluate current form
-      this.prevLoading.set(false);
-    };
-
-    const handleError = (): void => {
-      this.prevLoading.set(false);
-    };
-
-    if (id) {
-      this.entryService.getEntry(id, form?.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: handleResponse,
-          error: handleError,
-        });
-    } else {
-      this.entryService.getFirstEntryByParam(params, form?.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: handleResponse,
-          error: handleError,
-        });
-    }
-  }
 
   progBack(index) {
     this.saving.set(true);
@@ -1264,6 +1289,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       $: data,
       $$_: approval,
       $$: Object.values(approval || {}).map((appr: any) => appr?.data),
+      $prev$_: this.prevEntry,
       $prev$: entry?.prev,
       $user$: this.user(),
       $conf$: this.appConfig,
@@ -1324,14 +1350,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     return includeActive ? { ...passive, ...active, ...additionalData } : { ...passive, ...additionalData };
   }
 
-  // _eval = (data: any, v: string, form: any) => {
-  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
-  //   const argNames = Object.keys(bindings);
-  //   const argValues = Object.values(bindings);
-  //   return new Function(...argNames,
-  //     `return ${v}`)(...argValues);
-  // }
-
   private compiledEvalCache = new Map<string, Function>();
   _eval = (data: any, v: string, form: any) => {
     const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
@@ -1347,17 +1365,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }  
     return fn(...Object.values(bindings));
   }
-  
-
-  // _prePassive = (data: any, v: string) => {
-  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
-  //   const argNames = Object.keys(bindings);
-  //   const argValues = Object.values(bindings);
-  //   return new Function(...argNames,
-  //     `return ${v}`)(...argValues);
-  // }
-
-  
+    
   private prePassiveCache = new Map<string, Function>();
   _prePassive = (data: any, v: string): any => {
     // Guard against empty expressions 
@@ -1377,29 +1385,6 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
     return fn(...argValues); 
   }
-
-  // _prePassive = (data: any, v: string): any => {
-  //   if (!v) return undefined;
-
-  //   // 1. Check cache FIRST. Don't compute bindings yet.
-  //   let fn = this.prePassiveCache.get(v);
-    
-  //   if (!fn) {
-  //       // 2. Compile a function that accepts ONE context object.
-  //       // This is much faster than re-compiling for every variation of keys.
-  //       // We use destructuring in the arguments to make keys available as variables.
-  //       fn = new Function("ctx", `with(ctx) { return (${v}) }`);
-  //       this.prePassiveCache.set(v, fn);
-  //   }
-
-  //   // 3. Only now compute the data needed for execution.
-  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, this.form(), false, {});
-
-
-  //   // 4. Execute with the single context object.
-  //   return fn(bindings);
-  // }
-
 
   setAction = (action) => this._action = action;
 
@@ -1801,7 +1786,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       i.sortOrder = $index;
     }); // ensure current sortorder using index, to prevent jumping ordering
 
-    var temp = Object.assign({}, items[index + op]);
+    const temp = { ...items[index + op] };
     var tempSortOrder = items[index + op].sortOrder;
     items[index + op].sortOrder = items[index].sortOrder;
     items[index + op] = Object.assign({}, items[index]); // consider deepMerge

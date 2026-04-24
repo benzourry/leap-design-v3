@@ -1,145 +1,119 @@
-@if (screen()?.data?.nav=='accordions') {
-    <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
-      @for (tab of screen()?.data?.comps; track $index) {
-        <div class="acc-card" [ngbAccordionItem]="$index" [collapsed]="(activeTab[screen().id]??0)!=$index" (shown)="activeTab[screen().id]=$index" #accitem="ngbAccordionItem">
-          <div ngbAccordionHeader>
-            <div class="acc-btn-wrap centered" [class.limit-width]="!screen().wide" [class.border-bottom]="accitem.collapsed">
-              <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
-                @if (screen()?.data?.showIndex) {
-                  <div style="float:left;height:25px; width:25px;background:#666; color:white;
-                    padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
-                    border-radius:20px;">{{$index+1}}</div>
-                }
-                @if (tab.icon){
-                  <fa-icon [icon]="tab.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                }
-                <h5 class="m-0">
-                  {{tab.title}}
-                </h5>
-              </button>
-            </div>
-          </div>
-          <div ngbAccordionCollapse>
-            <div ngbAccordionBody>
-                <ng-template>
-                    <ng-container *ngTemplateOutlet="compRender;context:{tab:tab, sId: tab.screenId, compType: tab.type,tabidx:$index, tabids:$index, tabfirst:$first, tablast:$last}"></ng-container>
-                </ng-template>
-            </div>
+@if (screen()?.data?.nav == 'accordions') {
+  <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
+    @for (tab of screen()?.data?.comps; track $index) {
+      <div class="acc-card" [ngbAccordionItem]="$index" [collapsed]="(activeTab[screen().id] ?? 0) != $index" (shown)="activeTab[screen().id] = $index" #accitem="ngbAccordionItem">
+        <div ngbAccordionHeader>
+          <div class="acc-btn-wrap centered" [class.limit-width]="!screen().wide" [class.border-bottom]="accitem.collapsed">
+            <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
+              @if (screen()?.data?.showIndex) {
+                <div style="float:left; height:25px; width:25px; background:#666; color:white; padding:0; margin-left:3px; line-height:25px; text-align:center; margin-right:0.8em; border-radius:20px;">
+                  {{ $index + 1 }}
+                </div>
+              }
+              @if (tab.icon) {
+                <fa-icon [icon]="tab.icon | iconSplit" [fixedWidth]="true"></fa-icon>
+              }
+              <h5 class="m-0">{{ tab.title }}</h5>
+            </button>
           </div>
         </div>
-      }
-    </div>
+        <div ngbAccordionCollapse>
+          <div ngbAccordionBody>
+            <ng-template>
+              <ng-container *ngTemplateOutlet="compRender; context: { tab: tab, sId: tab.screenId, compType: tab.type, tabidx: $index, tabids: $index, tabfirst: $first, tablast: $last }"></ng-container>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
 }
-<!-- {{activeTab|json}} -->
-@if (['tabs','pills','underline'].indexOf(screen()?.data?.nav)>-1) {
+
+@if (['tabs', 'pills', 'underline'].includes(screen()?.data?.nav)) {
   <div class="tab-simple">
-    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="activeTab[screen().id]??0"
+    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="activeTab[screen().id] ?? 0"
       class="nav-{{screen()?.data?.nav}} justify-content-center" [class.limit-width]="!screen().wide">
       @for (tab of screen()?.data?.comps; track $index) {
-          <li [ngbNavItem]="$index">
-            <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" (click)="activeTab[screen().id]=$index" queryParamsHandling="preserve">
-              @if (screen()?.data?.showIndex) {
-                <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
-                  padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
-                  border-radius:20px;">{{$index+1}}</div>
-              }
-              @if (tab.icon){
-                <fa-icon [icon]="tab.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-              }
-              {{tab.title}}
-            </a>
-            <ng-template ngbNavContent>
-                <ng-container *ngTemplateOutlet="compRender;context:{tab:tab,sId:tab.screenId, compType: tab.type, tabidx:$index, tabids:$index, tabfirst:$first, tablast:$last}"></ng-container>
-            </ng-template>
-          </li>
+        <li [ngbNavItem]="$index">
+          <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="activeTab[screen().id] = $index" queryParamsHandling="preserve">
+            @if (screen()?.data?.showIndex) {
+              <div style="float:left; height:20px; width:20px; background:#666; color:white; font-size:.8em; padding:0; margin-left:-5px; margin-top:1px; line-height:20px; text-align:center; margin-right:0.3em; border-radius:20px;">
+                {{ $index + 1 }}
+              </div>
+            }
+            @if (tab.icon) {
+              <fa-icon [icon]="tab.icon | iconSplit" [fixedWidth]="true"></fa-icon>
+            }
+            {{ tab.title }}
+          </a>
+          <ng-template ngbNavContent>
+            <ng-container *ngTemplateOutlet="compRender; context: { tab: tab, sId: tab.screenId, compType: tab.type, tabidx: $index, tabids: $index, tabfirst: $first, tablast: $last }"></ng-container>
+          </ng-template>
+        </li>
       }
     </ul>
     <div [ngbNavOutlet]="nav"></div>
   </div>
 }
 
-  <ng-template #compRender let-compType="compType" let-sId="sId">
-    <div class="mt-2">
-
-    @if (['add','edit-single'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-form  [formId]="sId"
-            [action]="compType" [asComp]="true"  [hideTitle]="true" ></app-form>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        } 
-      }@else if (['view-single'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-view 
-            [formId]="sId" [action]="compType"
-            [hideTitle]="true" ></app-view>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
-      }@else if (['screen'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <!-- screen
-          {{param()|json}} -->
-          <app-screen [screenId]="sId" [hideTitle]="true" [param]="param()"></app-screen>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
-      }@else if (['dataset'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-list [datasetId]="sId" [hideTitle]="true" [param]="param()">
-          </app-list>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
-      }@else if (['dashboard'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-dashboard [hideTitle]="true" [dashboardId]="sId">
-          </app-dashboard>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
-      }@else if (['lookup'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-lookup [hideTitle]="true" [lookupId]="sId">
-          </app-lookup>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
-      }@else if (['user'].indexOf(compType)>-1) {
-        @defer(prefetch on idle){
-          <app-user [screen]="screen()" [hideTitle]="true" [groupId]="sId">
-          </app-user>
-        }@loading {
-          <div class="text-center m-5">
-            <div class="spinner-grow text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        }
+<ng-template #compRender let-compType="compType" let-sId="sId">
+  <div class="mt-2">
+    @if (['add', 'edit-single'].includes(compType)) {
+      @defer (prefetch on idle) {
+        <app-form [formId]="sId" [action]="compType" [asComp]="true" [hideTitle]="true"></app-form>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
       }
+    } 
+    @else if (compType === 'view-single') {
+      @defer (prefetch on idle) {
+        <app-view [formId]="sId" [action]="compType" [hideTitle]="true"></app-view>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    } 
+    @else if (compType === 'screen') {
+      @defer (prefetch on idle) {
+        <app-screen [screenId]="sId" [hideTitle]="true" [param]="param()"></app-screen>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    } 
+    @else if (compType === 'dataset') {
+      @defer (prefetch on idle) {
+        <app-list [datasetId]="sId" [hideTitle]="true" [param]="param()"></app-list>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    } 
+    @else if (compType === 'dashboard') {
+      @defer (prefetch on idle) {
+        <app-dashboard [hideTitle]="true" [dashboardId]="sId"></app-dashboard>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    } 
+    @else if (compType === 'lookup') {
+      @defer (prefetch on idle) {
+        <app-lookup [hideTitle]="true" [lookupId]="sId"></app-lookup>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    } 
+    @else if (compType === 'user') {
+      @defer (prefetch on idle) {
+        <app-user [screen]="screen()" [hideTitle]="true" [groupId]="sId"></app-user>
+      } @loading {
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #loadingSpinner>
+  <div class="text-center m-5">
+    <div class="spinner-grow text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
-  </ng-template>
+  </div>
+</ng-template>

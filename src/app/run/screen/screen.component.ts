@@ -1,4 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, computed, effect, forwardRef, inject, input, output, signal, viewChild } from '@angular/core';
+// Copyright (C) 2018 Razif Baital
+// 
+// This file is part of LEAP.
+// 
+// LEAP is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// LEAP is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, computed, effect, forwardRef, inject, input, output, signal, viewChild, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { NavigationExtras, Router, RouterLink } from '@angular/router';
@@ -10,12 +28,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { base, baseApi } from '../../_shared/constant.service';
 import { LogService } from '../../_shared/service/log.service';
-import { first, map, share, tap } from 'rxjs/operators';
+import { first, map, shareReplay, switchMap, tap, catchError } from 'rxjs/operators';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
-import { Observable, lastValueFrom } from 'rxjs';
+import { Observable, lastValueFrom, of } from 'rxjs';
 import { ScanComponent } from './scan/scan.component';
 import { PageTitleService } from '../../_shared/service/page-title-service';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
@@ -39,7 +57,6 @@ import { RunService } from '../_service/run.service';
 import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
 import { ListComponent } from '../list/list.component';
 
-
 @Component({
   selector: 'app-screen',
   templateUrl: './screen.component.html',
@@ -56,6 +73,7 @@ import { ListComponent } from '../list/list.component';
 })
 export class ScreenComponent implements OnInit, OnDestroy {
 
+  private destroyRef = inject(DestroyRef);
 
   private userService = inject(UserService);
   public runService = inject(RunService);
@@ -111,7 +129,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   constructor() {
 
-    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
+    this.utilityService.testOnline$()
+      .pipe(takeUntilDestroyed())
+      .subscribe(online => this.offline.set(!online));
 
     effect(() => {
 
@@ -224,6 +244,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         var ac = this.screen().actions[0];
 
         this.entryService.getListByDataset(ds.id, params)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe(res => {
             this.entryList.set(res.content);
             var events = this.entryList().filter(e => e.data[this.screen().data.start])
@@ -255,7 +276,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       // this is flexible, but it will remove make default event styling (like rectangle color background)
       // eventContent: function( info ) {
       //   return {html: info.event.title};
-      // },    
+      // },
       eventClick: this.eventClick.bind(this)
     }
 
@@ -270,6 +291,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.loading.set(true);
 
     this.runService.getRunScreen(screenId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.screen.set(res);
         this.dataset.set({});
@@ -385,66 +407,73 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   _this = createProxy({}, () => this.cdr.markForCheck());
 
-  // private $this$ = this.createProxy(this.$privthis$);
-  // _eval = (data, v) => new Function('setTimeout', 'setInterval', '$app$', '$screen$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$upload$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$el$', '$form$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$popup', '$q$', '$showNav$',
-  //   `return ${v}`)(this._setTimeout, this._setInterval, this.app, this.screen, this.entry(), this.entry && this.entry().data, this.entry && this.entry().prev, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.uploadFile, this.endpointGet, this._this, this.loadScript, this.$digest$, this._param, this.log, this.updateField, this.updateLookup, this.form()?.data?.items, this.form().data, this.$toast$, this.base, this.baseUrl, this.baseApi, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.goObj, this.popObj, this.$q, this.openNav);
-  _eval = (data, v) => {
-    const bindings = this.getEvalContext(this.entry()?.data);
+  // --- DRY Caching and Context Engine ---
+
+  private compiledEvalCache = new Map<string, Function>();
+  private compiledQrEvalCache = new Map<string, Function>();
+  private preCache = new Map<string, Function>();
+
+  private executeEval(code: string, bindings: Record<string, any>, cache: Map<string, Function>) {
+    if (!code) return undefined;
+    
     const argNames = Object.keys(bindings);
-    const argValues = Object.values(bindings);
-    return new Function(...argNames,
-      `return ${v}`)(...argValues);
+    const cacheKey = `${argNames.join(',')}_${code}`;
+    
+    let fn = cache.get(cacheKey);
+    if (!fn) {
+      fn = new Function(...argNames, `return ${code}`);
+      cache.set(cacheKey, fn);
+    }
+    
+    return fn(...Object.values(bindings));
   }
 
-  getEvalContext = (data) => {
-    return {
-      setTimeout: this._setTimeout,
-      setInterval: this._setInterval,
+  getEvalContext = (entry: any, data: any, isPassive: boolean = false, additionalParams: any = {}) => {
+    // Properties shared across ALL evaluations (_pre, _eval, _qrEval)
+    const passive = {
       $app$: this.app,
       $screen$: this.screen,
-      $_: this.entry(),
+      $_: entry,
       $: data,
-      // $$_: appr,
-      // $$: appr?.data,
-      $prev$: this.entry()?.prev,
+      $prev$: entry?.prev,
       $user$: this.user(),
-      $conf$: this.appConfig,
-      // $action$: this.action(),
-      // $lookup$: this._getLookup,
-      $http$: this.httpGet,
-      $post$: this.httpPost,
-      $upload$: this.uploadFile,
-      $endpoint$: this.endpointGet,
-      // $save$: () => this._save(this.entry(), form || this.form()),
-      // $submit$: (resubmit: boolean) => this.submit(resubmit, this.entry(), form || this.form()),
-      $el$: this.form()?.data?.items,
-      $reload$: this.refreshScreen.bind(this),
-      $form$: this.form().data,
+      $conf$: this.runService?.appConfig,
       $this$: this._this,
-      $loadjs$: this.loadScript,
-      $digest$: this.$digest$,
       $param$: this._param,
       $log$: this.log,
-      // $activate$: this.setActive,
-      // $activeIndex$: this._navIndex(),
-      $toast$: this.$toast$,
-      $update$: this.updateField,
-      $updateLookup$: this.updateLookup,
       $base$: this.base,
       $baseUrl$: this.baseUrl,
       $baseApi$: this.baseApi,
       dayjs,
       ServerDate,
+      $token$: this.accessToken,
+      ...additionalParams
+    };
+
+    if (isPassive) return passive;
+
+    // Properties only needed for active evaluations (_eval, _qrEval)
+    return {
+      ...passive,
+      setTimeout: this._setTimeout,
+      setInterval: this._setInterval,
+      $prev$_: this.prevEntry(),
+      $http$: this.httpGet,
+      $post$: this.httpPost,
+      $upload$: this.uploadFile,
+      $endpoint$: this.endpointGet,
+      $reload$: this.refreshScreen.bind(this),
+      $el$: this.form()?.data?.items,
+      $form$: this.form().data,
+      $loadjs$: this.loadScript,
+      $digest$: this.$digest$,
+      $toast$: this.$toast$,
+      $update$: this.updateField,
+      $updateLookup$: this.updateLookup,
       echarts,
       $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
-      $token$: this.accessToken,
       $merge$: deepMerge,
       $web$: this.http,
-      // $file$: this.filesMap,
-      // onInit: this.onInit,
-      // onSave: this.onSave,
-      // onSubmit: this.onSubmit,
-      // onView: this.onView,
       $go: this.goObj,
       $popup: this.popObj,
       $q$: this.$q,
@@ -452,19 +481,27 @@ export class ScreenComponent implements OnInit, OnDestroy {
     };
   }
 
-  _qrEval = (code, v) => new Function('setTimeout', 'setInterval', '$app$', '$code$', '$screen$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$update$', '$updateLookup$', '$el$', '$form$', '$toast$', '$base$', '$baseUrl$', '$baseApi$', 'dayjs', 'ServerDate', 'echarts', '$live$', '$token$', '$merge$', '$web$', '$go', '$popup', '$q$', '$showNav$',
-    `return ${v}`)(this._setTimeout, this._setInterval, this.app, code, this.screen, this.entry(), this.entry && this.entry().data, this.entry && this.entry().prev, this.user(), this.runService?.appConfig, this.httpGet, this.httpPost, this.endpointGet, this._this, this.loadScript, this.$digest$, this._param, this.log, this.updateField, this.updateLookup, this.form()?.data?.items, this.form().data, this.$toast$, this.base, this.baseUrl, this.baseApi, dayjs, ServerDate, echarts, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, this.goObj, this.popObj, this.$q, this.openNav);
+  _eval = (data: any, v: string) => {
+    // Note: Parameter 'data' is passed by original code but logic expects this.entry() details
+    const bindings = this.getEvalContext(this.entry(), this.entry()?.data, false);
+    return this.executeEval(v, bindings, this.compiledEvalCache);
+  }
 
-  // httpGet = this.runService.httpGet;
-  // httpPost = this.runService.httpPost;
-  // endpointGet = (code, params, callback, error) => this.runService.endpointGet(code, this.screen().appId, params, callback, error)
+  _qrEval = (code: string, v: string) => {
+    const bindings = this.getEvalContext(this.entry(), this.entry()?.data, false, { $code$: code });
+    return this.executeEval(v, bindings, this.compiledQrEvalCache);
+  }
 
-  // httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error));
-  // httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error));
-  // endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.screen().appId, params, callback, error))
+  _pre = (entry: any, code: string, bulk: any) => {
+    const bindings = this.getEvalContext(entry, entry?.data, true, { 
+      $maps$: this.mapList, 
+      $lookupList$: this.lookup, 
+      $bulk$: bulk 
+    });
+    return this.executeEval(code, bindings, this.preCache);
+  }
 
-  // uploadFile = (obj, callback, error)=> lastValueFrom(this.entryService.uploadAttachmentOnce(obj.file, obj.itemId, obj.bucketId, this.app()?.id, obj.file.name)
-  //   .pipe( tap({ next: callback, error: error }), first() ));
+  // --- End DRY Engine ---
 
   httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
@@ -473,12 +510,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
   uploadFile = (obj, callback, error) => lastValueFrom(this.entryService.uploadAttachmentOnce(obj.file, obj.itemId, obj.bucketId, this.app()?.id, obj.file.name)
     .pipe(tap({ next: callback, error: error }), first()));
 
-
-
   $digest$ = () => {
     this.cdr.detectChanges()
   }
-
 
   updateField = (entryId, value, callback, error) => {
     return lastValueFrom(this.entryService.updateField(entryId, value, this.screen()?.appId)
@@ -523,99 +557,143 @@ export class ScreenComponent implements OnInit, OnDestroy {
   // Perlu called directly dlm template supaya dpt replace per entry
   // mn include ?entryId= tkt da problem utk yg xperlu entryId cth yg just pass param
   // mn x include, banyak yg sediaada problem
-  buildGo(entryId, noParam?) {
-    let obj: any = {}
-    let hash = "#";
-    this.screen().actions.forEach(ac => {
-      if (ac.nextType == 'form') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/add`;
+  buildGo(entryId: any, noParam?: boolean) {
+    const obj: any = {};
+    
+    // 1. Calculate repeated strings ONCE at the top
+    const basePath = `#${this.preurl}`;
+    const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
+
+    this.screen().actions?.forEach(ac => {
+      const next = ac.next;
+      let path = '';
+
+      // 2. Use a switch statement to group identical routing patterns
+      switch (ac.nextType) {
+        
+        // --- Form Routes WITH query parameters ---
+        case 'view':
+        case 'edit':
+        case 'prev':
+          path = `/form/${next}/${ac.nextType}${queryStr}`;
+          break;
+        case 'facet':
+          path = `/form/${next}/${ac.x?.nextFacet}${queryStr}`;
+          break;
+
+        // --- Form Routes WITHOUT query parameters ---
+        case 'form':
+          path = `/form/${next}/add`;
+          break;
+        case 'view-single':
+        case 'edit-single':
+          path = `/form/${next}/${ac.nextType}`;
+          break;
+
+        // --- Screen Routes ---
+        case 'screen':
+          path = `/screen/${next}${queryStr}`;
+          break;
+        case 'static':
+          path = `/screen/${next}`;
+          break;
+
+        // --- Direct Resource Routes (dataset, dashboard, lookup, user) ---
+        case 'dataset':
+        case 'dashboard':
+        case 'lookup':
+        case 'user':
+          path = `/${ac.nextType}/${next}`;
+          break;
       }
-      if (ac.nextType == 'view') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/view${noParam ? '' : '?entryId=' + (entryId || '')}`
-      }
-      if (ac.nextType == 'view-single') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/view-single`
-      }
-      if (ac.nextType == 'edit') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/edit${noParam ? '' : '?entryId=' + (entryId || '')}`
-      }
-      if (ac.nextType == 'facet') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/${ac.x?.nextFacet}${noParam ? '' : '?entryId=' + (entryId || '')}`
-      }
-      if (ac.nextType == 'edit-single') {
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/edit-single`
-      }
-      if (ac.nextType == 'prev') {
-        // utk static page spatutnya prev no param;
-        obj[ac.id] = `${hash}${this.preurl}/form/${ac.next}/prev${noParam ? '' : '?entryId=' + (entryId || '')}`
-        // console.log(obj[ac.id]);
-      }
-      if (ac.nextType == 'static') {
-        obj[ac.id] = `${hash}${this.preurl}/screen/${ac.next}`
-      }
-      if (ac.nextType == 'screen') {
-        obj[ac.id] = `${hash}${this.preurl}/screen/${ac.next}${noParam ? '' : '?entryId=' + (entryId || '')}`
-      }
-      if (ac.nextType == 'dataset') {
-        obj[ac.id] = `${hash}${this.preurl}/dataset/${ac.next}`
-      }
-      if (ac.nextType == 'dashboard') {
-        obj[ac.id] = `${hash}${this.preurl}/dashboard/${ac.next}`
-      }
-      if (ac.nextType == 'lookup') {
-        obj[ac.id] = `${hash}${this.preurl}/lookup/${ac.next}`
-      }
-      if (ac.nextType == 'user') {
-        obj[ac.id] = `${hash}${this.preurl}/user/${ac.next}`
+
+      // 3. Assign to the object if a valid path was generated
+      if (path) {
+        obj[ac.id] = `${basePath}${path}`;
       }
     });
+
     return obj;
   }
 
-  buildPop(eId, noHash?, noParam?) {
-    var pop: any = {}
-    this.screen().actions.forEach(ac => {
-      if (ac.nextType == 'form') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'form', 'add', {})
+  buildPop(eId: any, noHash?: boolean, noParam?: boolean) {
+    const pop: any = {};
+
+    // Use optional chaining in case actions is undefined
+    this.screen().actions?.forEach(ac => {
+      
+      let type: string;
+      let facet: string | null = null;
+      let requiresParam = false;
+
+      // 1. Group the actions to determine their type, facet, and parameter needs
+      switch (ac.nextType) {
+        
+        // --- Form/View Routes WITH Parameters ---
+        case 'view':
+          type = 'view';
+          facet = 'view';
+          requiresParam = true;
+          break;
+        case 'edit':
+        case 'prev':
+          type = 'form';
+          facet = ac.nextType; // 'edit' or 'prev'
+          requiresParam = true;
+          break;
+        case 'facet':
+          type = 'form';
+          facet = ac.x?.nextFacet;
+          requiresParam = true;
+          break;
+
+        // --- Form/View Routes WITHOUT Parameters ---
+        case 'form':
+          type = 'form';
+          facet = 'add';
+          break;
+        case 'view-single':
+          type = 'view';
+          facet = 'view-single';
+          break;
+        case 'edit-single':
+          type = 'form';
+          facet = 'edit-single';
+          break;
+
+        // --- Screen Routes ---
+        case 'screen':
+          type = 'screen';
+          requiresParam = true;
+          break;
+        case 'static':
+          type = 'screen';
+          break;
+
+        // --- Direct Resources (No params, Null facet) ---
+        case 'dataset':
+        case 'dashboard':
+        case 'lookup':
+        case 'user':
+          type = ac.nextType;
+          break;
+
+        default:
+          return; // Skip unknown action types
       }
-      if (ac.nextType == 'view') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'view', 'view', noParam ? {} : { entryId: entryId ?? eId })
-      }
-      if (ac.nextType == 'view-single') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'view', 'view-single', {})
-      }
-      if (ac.nextType == 'edit') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'form', 'edit', noParam ? {} : { entryId: entryId ?? eId })
-      }
-      if (ac.nextType == 'facet') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'form', ac.x?.nextFacet, noParam ? {} : { entryId: entryId ?? eId })
-      }
-      if (ac.nextType == 'edit-single') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'form', 'edit-single', {})
-      }
-      if (ac.nextType == 'prev') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'form', 'prev', noParam ? {} : { entryId: entryId ?? eId })
-      }
-      if (ac.nextType == 'static') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'screen', null, {})
-      }
-      if (ac.nextType == 'screen') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'screen', null, noParam ? {} : { entryId: entryId ?? eId })
-      }
-      if (ac.nextType == 'dataset') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'dataset', null, {})
-      }
-      if (ac.nextType == 'dashboard') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'dashboard', null, {})
-      }
-      if (ac.nextType == 'lookup') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'lookup', null, {})
-      }
-      if (ac.nextType == 'user') {
-        pop[ac.id] = (entryId?) => this.inPop(this.inPopTpl(), entryId, ac, 'user', null, {})
-      }
+
+      // 2. Define the popup function ONCE using the variables resolved above
+      pop[ac.id] = (entryId?: any) => {
+        // Resolve params lazily when the user actually clicks the popup
+        const params = requiresParam && !noParam 
+            ? { entryId: entryId ?? eId } 
+            : {};
+
+        this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
+      };
     });
-    return pop;// {go:obj,pop:pop};
+
+    return pop;
   }
 
   //// store param ->
@@ -670,33 +748,41 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   entry = signal<any>({});
+  prevEntry = signal<any>({});
   entryParams: any;
   loading = signal<boolean>(false);
+
   loadFormEntry(fId) {
     if (this._entryId) {
       this.loading.set(true);
-      this.entryService.getEntry(this._entryId, fId)
-        .subscribe(res => {
+      // Flatted Nested Subscription
+      this.entryService.getEntry(this._entryId, fId).pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(res => {
           this.entry.set(res);
-          this.loading.set(false);
-          this.initScreen(this.screen().data.f);
 
-          // RE-CHECK AUTHORIZATION BILA DH ADA ENTRY DATA
-          // this.isAuthorized = this.checkAuthorized(this.screen, this.user, this.entry);
+          if (this.form().prev && res.prev) {
+            return this.entryService.getEntry(res.prev?.$id, this.form().prev?.id).pipe(
+              tap(resPrev => this.prevEntry.set(resPrev)),
+              map(() => res)
+            );
+          }
+          return of(res);
         })
+      ).subscribe(res => {
+        this.loading.set(false);
+        this.initScreen(this.screen().data.f);
+      });
     } else {
-      // console.log("with param", this.entryParams)
       this.loading.set(true);
-      this.entryService.getFirstEntryByParam(this.entryParams, fId)
-        .subscribe(res => {
-          this._entryId = res.id;
-          this.entry.set(res);
-          this.loading.set(false);
-          this.initScreen(this.screen().data.f);
-
-          // RE-CHECK AUTHORIZATION BILA DH ADA ENTRY DATA
-          // this.isAuthorized = this.checkAuthorized(this.screen, this.user, this.entry);
-        })
+      this.entryService.getFirstEntryByParam(this.entryParams, fId).pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(res => {
+        this._entryId = res.id;
+        this.entry.set(res);
+        this.loading.set(false);
+        this.initScreen(this.screen().data.f);
+      });
     }
   }
 
@@ -760,8 +846,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return dataset?.presetFilters && Object.keys(dataset.presetFilters).some(k => String(dataset.presetFilters[k]).includes('$conf$'));
   });
 
-
-
   prevId: number;
 
   // searchTextEncoded: string = "";
@@ -819,6 +903,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.populateCalendarEvent();
       } else {
         this.entryService.getListByDataset(ds.id, params)
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: res => {
               this.entryList.set(res.content);
@@ -1009,14 +1094,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return f;
   }
 
-  _pre = (entry, code, bulk) => !code || new Function('$app$', '$screen$', '$_', '$', '$prev$', '$maps$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$',
-    `return ${code}`)(this.app, this.screen, entry, entry?.data, entry && entry?.prev, this.mapList, this.user(), this.runService?.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
-
   preCheck(entry, code, bulk) {
     let res = undefined;
     try {
       res = this._pre(entry, code, bulk);
-    } catch (e) { this.logService.log(`{list}-${e}`) }
+    } catch (e) { this.logService.log(`{list}-${e.message}`) }
     return !code || res;
   }
 
@@ -1047,7 +1129,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         var param = null;
         try {
           param = new Function('$user$', 'return ' + dsInit)(this.user())
-        } catch (e) { this.logService.log(`{list-${f.code}-dataSourceInit}-${e}`) }
+        } catch (e) { this.logService.log(`{list-${f.code}-dataSourceInit}-${e.message}`) }
         this._getLookup(f.code, dsInit ? param : null);
       }
     })
@@ -1056,6 +1138,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   _getLookup = (code, param, cb?, err?) => {
     if (code) {
       this._getLookupObs(code, param, cb, err)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: res => {
             this.lookup[code] = res;
@@ -1072,7 +1155,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
     // bleh consider cache observable instead of result.
     // tp bila pake observable.. request dipolah on subscribe();
-    // settle with share()
+    // settle with shareReplay(1) -> keeps memory cache for late subscribers
     if (this.lookupDataObs[cacheId]) {
       return this.lookupDataObs[cacheId]
     }
@@ -1082,7 +1165,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       param = Object.assign(param || {}, { email: this.user().email });
       this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
         .pipe(
-          tap({ next: cb, error: err }), first(), share()
+          tap({ next: cb, error: err }), first(), shareReplay(1)
         )
     } else {
       // param = Object.assign(param || {}, { sort: 'id,asc' });
@@ -1090,7 +1173,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
         .pipe(
           tap({ next: cb, error: err }), first(),
-          map((res: any) => res.content), share()
+          map((res: any) => res.content), shareReplay(1)
         )
     }
     return this.lookupDataObs[cacheId];

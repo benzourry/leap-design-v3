@@ -1,4 +1,10 @@
 <ng-content select="[sidebar]"></ng-content>
-<div class="resize-handle" cdkDrag cdkDragLockAxis="x" [cdkDragFreeDragPosition]="dragPosition"
-    (cdkDragMoved)="sidebarResize($event, sidebar)"></div>
+
+<div class="resize-handle" 
+     cdkDrag 
+     cdkDragLockAxis="x" 
+     [cdkDragFreeDragPosition]="dragPosition()"
+     (cdkDragMoved)="sidebarResize($event)">
+</div>
+
 <ng-content select="[content]"></ng-content>

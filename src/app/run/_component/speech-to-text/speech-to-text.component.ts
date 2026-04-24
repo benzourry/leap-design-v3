@@ -1,106 +1,99 @@
-import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal } from '@angular/core';
-// import { VoiceRecognitionService } from '../../../_shared/service/speech-recognition.service';
+import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, signal, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { VoiceRecognitionService } from '../../_service/speech-recognition.service';
 import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-    selector: 'app-speech-to-text',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [FaIconComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem],
-    templateUrl: './speech-to-text.component.html',
-    styleUrl: './speech-to-text.component.scss'
+  selector: 'app-speech-to-text',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FaIconComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem],
+  templateUrl: './speech-to-text.component.html',
+  styleUrl: './speech-to-text.component.scss'
 })
-export class SpeechToTextComponent {
-    public isUserSpeaking = signal<boolean>(false);
+export class SpeechToTextComponent implements OnInit {
+  
+  public isUserSpeaking = signal<boolean>(false);
 
-    field = input<any>();
+  field = input<any>();
+  lblLang = input<string>('en');
+  defaultLang = input<string>();
+  value = input<string>('');
+  extractLoading = input<boolean>(false);
+  
+  // Added to fix template `formField?.invalid` reference errors
+  formField = input<any>(); 
 
-    lblLang = input<string>('en');
+  valueChange = output<string>();
+  
+  model = model<string>(''); 
+  speechLang = signal<string>('en-US');
+  valueText = signal<string>('');
 
-    voiceRecognition = inject(VoiceRecognitionService)
+  private voiceRecognition = inject(VoiceRecognitionService);
+  private destroyRef = inject(DestroyRef); // Handles memory cleanup
 
-    constructor() {
+  constructor() {
+    effect(() => {
+      const defLang = this.defaultLang();
+      if (defLang) {
+        this.speechLang.set(defLang);
+      }
+    }, { allowSignalWrites: true });
 
-      effect(()=>{
-        if (this.defaultLang()){
-          this.speechLang.set(this.defaultLang());
-        } 
-      })
+    effect(() => {
+      this.valueText.set(this.value());  
+    }, { allowSignalWrites: true });
+  }
 
-      effect(()=>{
-        this.valueText.set(this.value());  
-      })
-    }
+  ngOnInit(): void {
+    this.initVoiceInput();
+  }
 
-    // speechText:string = "";
-
-    model=model<string>('');
-    speechLang= signal<string>('en-US');
-    defaultLang = input<string>();
-
-    value=input<string>('');
-    valueChange=output<string>();
-    valueText = signal<string>('');
-
-    extractLoading = input<boolean>();
-
-
-    ngOnInit(): void {
-      // if (this.defaultLang()){
-      //   this.lang.set(this.defaultLang());
-      // } 
-      // this.valueText.set(this.value());     
-      // init after setting value n lang
-      this.initVoiceInput();
-    }
-
-    /**
+  /**
    * @description Function to stop recording.
    */
-    stopRecording() {
-      this.voiceRecognition.stop();
-      this.isUserSpeaking.set(false);
-    }
-  
-    /**
-     * @description Function for initializing voice input so user can chat with machine.
-     */
-    initVoiceInput() {
-      // Subscription for initializing and this will call when user stopped speaking.
-      this.voiceRecognition.init(this.valueText(), this.speechLang()).subscribe(() => {
+  stopRecording() {
+    this.voiceRecognition.stop();
+    this.isUserSpeaking.set(false);
+  }
+
+  /**
+   * @description Function for initializing voice input so user can chat with machine.
+   */
+  initVoiceInput() {
+    // Subscription for initializing; takeUntilDestroyed prevents memory leaks
+    this.voiceRecognition.init(this.valueText(), this.speechLang())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
         // User has stopped recording
-        // Do whatever when mic finished listening
       });
-  
-      // Subscription to detect user input from voice to text.
-      this.voiceRecognition.speechInput().subscribe((input) => {
-        // Set voice text output to
-        if (this.field().x?.stopWord && input?.toLowerCase().includes(this.field().x?.stopWord?.toLowerCase())){
+
+    // Subscription to detect user input from voice to text.
+    this.voiceRecognition.speechInput()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((inputVal: string) => {
+        const stopWord = this.field()?.x?.stopWord;
+        
+        if (stopWord && inputVal?.toLowerCase().includes(stopWord.toLowerCase())) {
           this.stopRecording();  
         }
-        // this.speechText = input;
-        this.valueText.set(input);
-        this.valueChange.emit(input);
-        // this.model.set(input);
-        // this.searchForm.controls.searchText.setValue(input);
+        
+        this.valueText.set(inputVal);
+        this.valueChange.emit(inputVal);
       });
-    }
+  }
 
-    setSpeechLang(lang){
-      this.speechLang.set(lang);
-      this.voiceRecognition.updateLang(lang);
-    }
-  
-    /**
-     * @description Function to enable voice input.
-     */
-    startRecording() {
-      this.isUserSpeaking.set(true);
-      this.voiceRecognition.start();
-      // this.speechText = "";
-      // this.searchForm.controls.searchText.reset();
-    }
+  setSpeechLang(lang: string) {
+    this.speechLang.set(lang);
+    this.voiceRecognition.updateLang(lang);
+  }
 
+  /**
+   * @description Function to enable voice input.
+   */
+  startRecording() {
+    this.isUserSpeaking.set(true);
+    this.voiceRecognition.start();
+  }
 }

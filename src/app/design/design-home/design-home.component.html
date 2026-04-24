@@ -32,7 +32,7 @@
       </div>
       <div class="tile-wrap tile-center touch-overfow">
         <div class="tile border-2 shadow-none border border-primary text-primary" style="text-overflow: ellipsis; height:100px;"
-          [class.disabled]="offline()" onclick="">
+          [class.disabled]="offline()">
           <div class="tile-mid" style="padding:10px;padding-left:30px;">
             <div class="tile-content">
               <h6 class="list-group-item-heading">Blank</h6>
@@ -40,7 +40,7 @@
             </div>
             <div class="tile-action">
               <div class="p-2">
-                <button type="button" class="btn btn-primary btn-round stack" onclick="" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
+                <button type="button" class="btn btn-primary btn-round stack" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
                   <fa-icon class="mb-3" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                   Create
                 </button>
@@ -74,7 +74,7 @@
                       <button type="button" class="btn btn-primary btn-round mb-2 stack" (click)="cloneItem(appEditTpl, item, true)">
                         <fa-icon class="icon" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Create
                       </button>
-                      @if (item.email.indexOf(user()?.email) > -1) {
+                      @if (item.email.includes(user()?.email)) {
                         <div class="d-flex justify-content-between">
                           <button type="button" class="btn btn-light btn-round me-1" [disabled]="offline()" routerLink="/design/{{item.id}}" title="Edit Template">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
@@ -94,14 +94,7 @@
             }
           }
         } @else {
-          <div class="text-muted text-center d-flex" style="width: 160px;margin: 8px;">
-            <div class="lds-ellipsis">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </div>
+          <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
         }
       </div>
       @if (tplTotal() > pageSizeTpl()) {
@@ -112,7 +105,7 @@
             [(page)]="pageNumberTpl" 
             [maxSize]="4" 
             [rotate]="true" 
-            (pageChange)="getTplList(pageNumberTpl)" 
+            (pageChange)="getTplList(pageNumberTpl())" 
             [boundaryLinks]="true" 
             [directionLinks]="false">
             <ng-template ngbPaginationFirst>
@@ -166,7 +159,7 @@
                 (click)="groupFilter.set(null)">
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
               </button>
-              @for (gf of groupedItemList(); track $index) {
+              @for (gf of groupedItemList(); track gf.key) {
                 <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
                   [class.bg-info-subtle]="groupFilter() === gf.key" 
                   [class.text-primary]="groupFilter() === gf.key" 
@@ -183,7 +176,7 @@
           </div>
     
           <div class="d-flex flex-wrap flex-row align-content-center">
-            @for (dsKv of groupedItemList(); track $index) {
+            @for (dsKv of groupedItemList(); track dsKv.key) {
               @if (!groupFilter() || groupFilter() === dsKv.key) {
                 <div style="flex-grow: 1;">
                   <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
@@ -196,7 +189,7 @@
     
                   @if (!hideGroupItems()[dsKv.key]) {
                     <div class="tile-wrap tile-center">
-                      @for (item of dsKv.value; track $index) {
+                      @for (item of dsKv.value; track item.id) {
                         <div class="tile" style="text-overflow: ellipsis">
                           <div class="notch" [style.background-color]="item.theme"></div>
                           <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
@@ -237,14 +230,7 @@
           </div>
         }
       } @else {
-        <div class="p-4 text-muted text-center">
-          <div class="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
+        <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
       }
     
       @if (itemTotal() > pageSize()) {
@@ -282,13 +268,13 @@
         <div class="form-group row">
           <label class="col-form-label col-md-3">App Title</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().title}}">
+            <input type="text" readonly class="form-control-plaintext" [value]="removeItemData()?.title">
           </div>
         </div>
         <div class="form-group row">
           <label class="col-form-label col-md-3">Description</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" value="{{removeItemData().description}}">
+            <input type="text" readonly class="form-control-plaintext" [value]="removeItemData()?.description">
           </div>
         </div>
         @if(removing()){
@@ -316,4 +302,15 @@
       </div>
     </div>
   }
+</ng-template>
+
+<ng-template #loadingSpinner>
+  <div class="text-muted text-center d-flex" style="width: 160px;margin: 8px;">
+    <div class="lds-ellipsis">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
 </ng-template>

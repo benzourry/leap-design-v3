@@ -27,285 +27,275 @@ import { compileTpl, nl2br } from '../../_shared/utils';
 import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
 
 @Component({
-    selector: 'field-view',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-@if (value()===undefined || value()===null) {
-  <span>
-    @if (['static','file','btn','checkbox'].indexOf(field()?.type)==-1) {
-      <span style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
-    }
-    @if (['file'].indexOf(field()?.type)>-1) {
+  selector: 'field-view',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, DecimalPipe, SecurePipe, NgLeafletComponent],
+  template: `
+    @if (value() === undefined || value() === null) {
       <span>
-        @if (['image','imagemulti'].indexOf(field()?.subType)>-1) {
-          <img loading="lazy" style="background: #aaa;max-height:250px;object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
+        @if (!['static', 'file', 'btn', 'checkbox'].includes(field()?.type)) {
+          <span style="color:#aaa">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
         }
-        @if (['other','othermulti'].indexOf(field()?.subType)>-1) {
-          <span style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
-        }
-      </span>
-    }
-    @if (['static'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (field()?.subType=='html') {
-          <!-- <span [innerHtml]="compileTpl(field()?.placeholder,data())|safe:'html'"></span> -->
-          <span [morphHtml]="compiledTpl()|safe:'html'"></span>
-        }
-        @if (field()?.subType=='clearfix') {
-          <div class="clearfix"></div>
-        }
-      </span>
-    }
-    @if (['checkbox'].indexOf(field()?.type)>-1) {
-      <span>
-        <fa-icon [icon]="['far','square']"></fa-icon>
-        &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder||field()?.label,data())|safe:'html'"> {{field()?.placeholder}}</span>
-        <!-- &nbsp;<span [innerHtml]="compiledTpl()|safe:'html'"> {{field()?.placeholder}}</span> -->
-      </span>
-    }
-  </span>
-} @else {
-  @if (['static'].indexOf(field()?.type)>-1) {
-    <span>
-      @if (field()?.subType=='htmlSave') {
-        <span [morphHtml]="updatedValue()|safe:'html'"></span>
-      }
-    </span>
-  }
-  @if (['text','simpleOption','speech'].indexOf(field()?.type)>-1) {
-    <div>
-      <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore?'unset':'236px')}" >
-        <!-- <div [morphHtml]="nl2br(value())" [class.pb-5]="isReadMore" ></div> -->
-        <div [class.pb-5]="isReadMore" >
-          @if (field().x?.prefix) {
-            <span class="text-muted me-05">{{field().x?.prefix}}</span>
-          }
-          <span [morphHtml]="nl2br(value())"></span>
-          @if (field().x?.suffix) {
-            <span class="text-muted ms-05">{{field().x?.suffix}}</span>
-          }
-        </div>
-        <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top':isReadMore?'calc(100% - 35px)':'205px'}" >
-          <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore=!isReadMore">
-            {{isReadMore?'Less...':'More...'}}
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-  @if (['checkboxOption'].indexOf(field()?.type)>-1) {
-    <span>
-      @if (isArray(value())){
-        @for (c of value(); track $index) {
-          <div>
-            <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
-            <div class="ms-4"><span [innerHtml]="c.name">{{c.name}}</span></div>
-          </div>
-        }
-      }@else {
-        <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
-        <div class="ms-4"><span [innerHtml]="value().name">{{value().name}}</span></div>
-      }
-    </span>
-  }
-  @if (['qr'].indexOf(field()?.type)>-1) {
-    <span [innerHtml]="value()"></span>
-  }
-  @if (['eval'].indexOf(field()?.type)>-1) {
-    <span>
-      @if (field().subType=='text') {
-        @if (field().x?.prefix) {
-          <span class="text-muted me-05">{{field().x?.prefix}}</span>
-        }
-        <span>
-          <!-- @if (field().placeholder) {
-            <span>{{field().placeholder}} </span>
-          } -->
-          @if(field()?.format){<span [innerHtml]="value()|number:field()?.format"></span>}@else{<span [innerHtml]="value()"></span>}
-        </span>
-        @if (field().x?.suffix) {
-          <span class="text-muted ms-05">{{field().x?.suffix}}</span>
-        }
-      }
-      @if (field()?.subType=='qr') {
-        <span>
-          <img loading="lazy" [src]="value()?baseApi+'/form/qr?code='+value():'assets/img/blank-qr.svg'" width="100%">
-          </span>
-        }
-      </span>
-    }
-    @if (['checkbox'].indexOf(field()?.type)>-1) {
-      <span>
-        <fa-icon [icon]="['far', value()?'check-square':'square']"></fa-icon>
-        &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder||field()?.label,data())|safe:'html'"> {{field()?.placeholder}}</span>
-        <!-- &nbsp;<span [innerHtml]="compiledTpl()|safe:'html'"> {{field()?.placeholder}}</span> -->
-      </span>
-    }
-    @if (['number','scaleTo5','scaleTo10','scale'].indexOf(field()?.type)>-1) {
-      @if (field().x?.prefix) {
-        <span class="text-muted me-05">{{field().x?.prefix}}</span>
-      }
-      <span>@if(field()?.format){{{value()|number:field()?.format}}}@else{{{value()}}}@switch (field()?.type) {
-        @case ('scale') { <sup>/{{field()?.v?.max}}</sup> }
-        @case ('scaleTo5') { <sup>/5</sup> }
-        @case ('scaleTo10') { <sup>/10</sup> }
-      }</span>
-      @if (field().x?.suffix) {
-        <span class="text-muted ms-05">{{field().x?.suffix}}</span>
-      }
-    }
-    @if (['date'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (validateDate(value())) {
+        
+        @if (['file'].includes(field()?.type)) {
           <span>
-            @if (['datetime','datetime-inline','date','date-inline'].indexOf(field().subType)>-1){
-              <span>{{value()|date:field()?.format||'dd-MMM-yyyy'}}</span>
+            @if (['image', 'imagemulti'].includes(field()?.subType)) {
+              <img loading="lazy" style="background: #aaa; max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
             }
-            @if (['datetime','datetime-inline','time'].indexOf(field().subType)>-1 && !field()?.format) {
-              <span> {{value()|date:'hh:mm'+(field().x?.seconds?':ss':'')+' a'}}</span>
+            @if (['other', 'othermulti'].includes(field()?.subType)) {
+              <span style="color:#aaa">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
             }
           </span>
-        } @else {
-          @if (!validateDate(value())) {
-            <span style="color:#aaa">{{value()}}</span>
-          }
+        }
+        
+        @if (['static'].includes(field()?.type)) {
+          <span>
+            @if (field()?.subType === 'html') {
+              <span [morphHtml]="compiledTpl() | safe:'html'"></span>
+            }
+            @if (field()?.subType === 'clearfix') {
+              <div class="clearfix"></div>
+            }
+          </span>
+        }
+        
+        @if (['checkbox'].includes(field()?.type)) {
+          <span>
+            <fa-icon [icon]="['far', 'square']"></fa-icon>
+            &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"> {{ field()?.placeholder }}</span>
+          </span>
         }
       </span>
-    }
-    @if (['radio'].indexOf(field()?.type)>-1) {
-      <span>{{value()?.name}}</span>
-    }
-    @if (['color'].indexOf(field()?.type)>-1) {
-      <div class="d-inline-block w-100" style="border-radius:3px; background:{{value()}}; height:24px;"></div>
-    }
-    @if (['select'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (field().subType=='multiple' && isArray(value())) {
-          <div>
-            @for (sv of value(); track $index) {
-              @if (!field()?.placeholder) {
-                <div>{{sv?.name}}</div>
-              }@else{
-                <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$':sv})|safe:'html'"></div>
+    } @else {
+      @if (['static'].includes(field()?.type)) {
+        <span>
+          @if (field()?.subType === 'htmlSave') {
+            <span [morphHtml]="updatedValue() | safe:'html'"></span>
+          }
+          @if (field()?.subType === 'html') {
+            <span [morphHtml]="compiledTpl() | safe:'html'"></span>
+          }
+          @if (field()?.subType === 'clearfix') {
+            <div class="clearfix"></div>
+          }
+        </span>
+      }
+
+      @if (['text', 'simpleOption', 'speech'].includes(field()?.type)) {
+        <div>
+          <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore ? 'unset' : '236px')}">
+            <div [class.pb-5]="isReadMore">
+              @if (field().x?.prefix) {
+                <span class="text-muted me-05">{{ field().x?.prefix }}</span>
               }
-            }
-          </div>
-        } @else {
-          @if (!field()?.placeholder) {
-            <div>{{value()?.name}}</div>
-          }@else{
-            <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$':value()})|safe:'html'"></div>
-          }
-        }
-      </span>
-    }
-    @if (['modelPicker'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (field().subType=='multiple' && isArray(value())) {
-          <div>
-            @for (sv of value(); track $index) {
-              <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder?compileTpl(field()?.placeholder, {'$':sv}):sv[field()?.bindLabel])|safe:'html'"></div>
-            }
-          </div>
-        } @else {
-          <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder?compileTpl(field()?.placeholder, {'$':value()}):value()[field()?.bindLabel])|safe:'html'"></div>
-        }
-      </span>
-    }
-    @if (['file'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (field().subType=='image') {
-          @if (field().x?.secure){
-            <a class="thumbnail" [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
-              <img loading="lazy" [src]="getUrl('/entry/file/inline/',value())|secure|async" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-            </a>
-          }@else{
-            <a class="thumbnail" [href]="getUrl('/entry/file/inline/',value())" target="_blank">
-              <img loading="lazy" [src]="getUrl('/entry/file/inline/',value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-            </a>
-          }
-        }@else if (field().subType=='imagemulti') {
-          <div class="img-grid-cont">
-            @if (field().x?.secure){
-            @for (vf of value(); track $index) {
-              <a class="img-grid-item" [href]="getUrl('/entry/file/',vf)|secure|async" target="_blank">
-                <img loading="lazy" [src]="getUrl('/entry/file/inline/',vf)|secure|async" onError="this.src='./assets/img/placeholder-128.png'">
-              </a>
-            }
-          }@else{
-            @for (vf of value(); track $index) {
-              <a class="img-grid-item" [href]="getUrl('/entry/file/inline/',vf)" target="_blank">
-                <img loading="lazy" [src]="getUrl('/entry/file/inline/',vf)" onError="this.src='./assets/img/placeholder-128.png'">
-              </a>
-            }
-          }
-          </div>
-        }@else if (field().subType=='other'||!field().subType) {
-          @if (field().x?.secure){
-            <a [href]="getUrl('/entry/file/',value())|secure|async" target="_blank">
-              {{value()}}
-            </a>
-          }@else {
-            <a [href]="getUrl('/entry/file/inline/',value())" target="_blank">
-              {{value()}}
-            </a>
-          }
-          
-        }@else if (field().subType=='othermulti') {
-          @if (field().x?.secure){
-            @for (vf of value(); track $index) {
-              <div>
-                <a [href]="getUrl('/entry/file/',vf)|secure|async" target="_blank">
-                  {{vf}}
-                </a>
-              </div>
-            }
-          }@else {
-            @for (vf of value(); track $index) {
-              <div>
-                <a [href]="getUrl('/entry/file/inline/',vf)" target="_blank">
-                  {{vf}}
-                </a>
-              </div>
-            }
-          }
-        }
-      </span>
-    }
-    @if (['imagePreview'].indexOf(field()?.type)>-1) {
-      <span>
-        <a class="thumbnail" href="{{value()}}" target="_blank">
-          <img loading="lazy" src="{{value()}}" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-        </a>
-      </span>
-    }
-    @if (['static'].indexOf(field()?.type)>-1) {
-      <span>
-        @if (field()?.subType=='html') {
-          <!-- <span [innerHtml]="compileTpl(field()?.placeholder,data())|safe:'html'"></span> -->
-          <span [morphHtml]="compiledTpl()|safe:'html'"></span>
-        }
-        @if (field()?.subType=='clearfix') {
-          <div class="clearfix"></div>
-        }
-      </span>
-    }
-    @if (['map'].indexOf(field()?.type)>-1) {
-      @defer(prefetch on idle){
-        <app-ng-leaflet [readOnly]="true" [value]="value()"
-          [useCurrentPos]="false"  [baseMapServerUri]="field().x?.customMapServer" [multiple]="field()?.subType=='multiple'">
-        </app-ng-leaflet>
-      }@loading {
-        <div class="text-center m-5">
-          <div class="spinner-grow text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+              <span [morphHtml]="nl2brSafe(value())"></span>
+              @if (field().x?.suffix) {
+                <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+              }
+            </div>
+            
+            <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top': isReadMore ? 'calc(100% - 35px)' : '205px'}">
+              <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore = !isReadMore">
+                {{ isReadMore ? 'Less...' : 'More...' }}
+              </button>
+            </div>
           </div>
         </div>
       }
+
+      @if (['checkboxOption'].includes(field()?.type)) {
+        <span>
+          @if (isArray(value())) {
+            @for (c of value(); track $index) {
+              <div>
+                <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
+                <div class="ms-4"><span [innerHtml]="c.name">{{ c.name }}</span></div>
+              </div>
+            }
+          } @else {
+            <div>
+              <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
+              <div class="ms-4"><span [innerHtml]="value()?.name">{{ value()?.name }}</span></div>
+            </div>
+          }
+        </span>
+      }
+
+      @if (['qr'].includes(field()?.type)) {
+        <span [innerHtml]="value()"></span>
+      }
+
+      @if (['eval'].includes(field()?.type)) {
+        <span>
+          @if (field().subType === 'text') {
+            @if (field().x?.prefix) {
+              <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+            }
+            <span>
+              @if(field()?.format) {
+                <span [innerHtml]="value() | number:field()?.format"></span>
+              } @else {
+                <span [innerHtml]="value()"></span>
+              }
+            </span>
+            @if (field().x?.suffix) {
+              <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+            }
+          }
+          @if (field()?.subType === 'qr') {
+            <span>
+              <img loading="lazy" [src]="value() ? baseApi + '/form/qr?code=' + value() : 'assets/img/blank-qr.svg'" width="100%">
+            </span>
+          }
+        </span>
+      }
+
+      @if (['checkbox'].includes(field()?.type)) {
+        <span>
+          <fa-icon [icon]="['far', value() ? 'check-square' : 'square']"></fa-icon>
+          &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"> {{ field()?.placeholder }}</span>
+        </span>
+      }
+
+      @if (['number', 'scaleTo5', 'scaleTo10', 'scale'].includes(field()?.type)) {
+        <span>
+          @if (field().x?.prefix) {
+            <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+          }
+          <span>
+            @if(field()?.format) {
+              {{ value() | number:field()?.format }}
+            } @else {
+              {{ value() }}
+            }
+            @switch (field()?.type) {
+              @case ('scale') { <sup>/{{ field()?.v?.max }}</sup> }
+              @case ('scaleTo5') { <sup>/5</sup> }
+              @case ('scaleTo10') { <sup>/10</sup> }
+            }
+          </span>
+          @if (field().x?.suffix) {
+            <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+          }
+        </span>
+      }
+
+      @if (['date'].includes(field()?.type)) {
+        <span>
+          @if (validateDate(value())) {
+            <span>
+              @if (['datetime', 'datetime-inline', 'date', 'date-inline'].includes(field().subType)) {
+                <span>{{ value() | date:(field()?.format || 'dd-MMM-yyyy') }}</span>
+              }
+              @if (['datetime', 'datetime-inline', 'time'].includes(field().subType) && !field()?.format) {
+                <span> {{ value() | date:'hh:mm' + (field().x?.seconds ? ':ss' : '') + ' a' }}</span>
+              }
+            </span>
+          } @else {
+            <span style="color:#aaa">{{ value() }}</span>
+          }
+        </span>
+      }
+
+      @if (['radio'].includes(field()?.type)) {
+        <span>{{ value()?.name }}</span>
+      }
+
+      @if (['color'].includes(field()?.type)) {
+        <div class="d-inline-block w-100" [ngStyle]="{'background': value()}" style="border-radius:3px; height:24px;"></div>
+      }
+
+      @if (['select'].includes(field()?.type)) {
+        <span>
+          @if (field().subType === 'multiple' && isArray(value())) {
+            <div>
+              @for (sv of value(); track $index) {
+                @if (!field()?.placeholder) {
+                  <div>{{ sv?.name }}</div>
+                } @else {
+                  <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$': sv}) | safe:'html'"></div>
+                }
+              }
+            </div>
+          } @else {
+            @if (!field()?.placeholder) {
+              <div>{{ value()?.name }}</div>
+            } @else {
+              <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$': value()}) | safe:'html'"></div>
+            }
+          }
+        </span>
+      }
+
+      @if (['modelPicker'].includes(field()?.type)) {
+        <span>
+          @if (field().subType === 'multiple' && isArray(value())) {
+            <div>
+              @for (sv of value(); track $index) {
+                <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': sv}) : sv[field()?.bindLabel]) | safe:'html'"></div>
+              }
+            </div>
+          } @else {
+            <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': value()}) : value()[field()?.bindLabel]) | safe:'html'"></div>
+          }
+        </span>
+      }
+
+      @if (['file'].includes(field()?.type)) {
+        <span>
+          @if (field().subType === 'image') {
+            <a class="thumbnail" [href]="field().x?.secure ? (getUrl('/entry/file/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" target="_blank">
+              <img loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+            </a>
+          } @else if (field().subType === 'imagemulti') {
+            <div class="img-grid-cont">
+              @for (vf of value(); track $index) {
+                <a class="img-grid-item" [href]="field().x?.secure ? (getUrl('/entry/file/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" target="_blank">
+                  <img loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" onError="this.src='./assets/img/placeholder-128.png'">
+                </a>
+              }
+            </div>
+          } @else if (field().subType === 'othermulti') {
+            @for (vf of value(); track $index) {
+              <div>
+                <a [href]="field().x?.secure ? (getUrl('/entry/file/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" target="_blank">
+                  {{ vf }}
+                </a>
+              </div>
+            }
+          } @else {
+            <a [href]="field().x?.secure ? (getUrl('/entry/file/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" target="_blank">
+              {{ value() }}
+            </a>
+          }
+        </span>
+      }
+
+      @if (['imagePreview'].includes(field()?.type)) {
+        <span>
+          <a class="thumbnail" [href]="value()" target="_blank">
+            <img loading="lazy" [src]="value()" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+          </a>
+        </span>
+      }
+
+      @if (['map'].includes(field()?.type)) {
+        @defer (prefetch on idle) {
+          <app-ng-leaflet [readOnly]="true" [value]="value()"
+            [useCurrentPos]="false" [baseMapServerUri]="field().x?.customMapServer" [multiple]="field()?.subType === 'multiple'">
+          </app-ng-leaflet>
+        } @loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      }
     }
-  }
-        `,
-    styles: [`.line-clamp {
+  `,
+  styles: [`
+    .line-clamp {
       display: -webkit-box;
       -webkit-line-clamp: 6;
       overflow: hidden;
@@ -314,9 +304,9 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     .img-grid-cont {
       display: flex;
       flex-wrap: wrap;
-      gap:3px;
+      gap: 3px;
       list-style: none;
-      margin:0px; padding:0px;
+      margin: 0px; padding: 0px;
     }
 
     .img-grid-item {
@@ -336,13 +326,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         height: 30vh;
       }
     }
-    // Short screens
+    /* Short screens */
     @media (max-height: 480px) {
       .img-grid-item {
         height: 80vh;
       }
     }
-    // Smaller screens in portrait
+    /* Smaller screens in portrait */
     @media (max-aspect-ratio: 1/1) and (max-width: 480px) {
       .img-grid-cont {
         flex-direction: row;
@@ -357,79 +347,58 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         min-width: 0;
       }
     }
-  
-  `],
-    imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, DecimalPipe, SecurePipe, NgLeafletComponent]
+  `]
 })
 export class FieldViewComponent implements OnInit {
 
-  private logService = inject(LogService)
-
-  constructor() { }
+  private logService = inject(LogService);
 
   value = input<any>();
   field = input<any>();
   data = input<any>();
-
   scopeId = input<any>();
-
   lang = input<string>('en');
-
-
   timestamp = input<number>();
 
-  isReadMore: boolean;
-
+  isReadMore: boolean = false;
   baseApi: string = baseApi;
 
-  // compiledTpl = computed(()=>{
-  //   this.timestamp();
-  //   console.log("data",this.data())
-  //   return this.compileTpl(this.field()?.placeholder ?? this.field()?.label,this.data())
-  // })
+  // Uses Angular's modern computed() to correctly cache based on signal dependencies
+  compiledTpl = computed(() => {
+    this.timestamp(); // trigger recalculation if timestamp changes
+    const fData = this.field();
+    const labelTpl = fData?.placeholder ?? (fData?.type !== 'static' ? fData?.label : '');
+    return this.compileTpl(labelTpl, this.data());
+  });
 
-  compiledTpl = () => {
-    this.timestamp();
-    const compiled = this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
-    // console.log(this.field().code,"compiled",compiled, this.data)
-    return compiled;
-  }
-
-  updatedValue = computed(()=>{
-    const compiled = this.compileTpl(this.field()?.placeholder ?? (this.field().type!='static'?this.field()?.label:''),this.data())
-    if (this.value()!=compiled){
-      return compiled;
-    }else{
-      return this.value();
-    }
+  updatedValue = computed(() => {
+    const fData = this.field();
+    const labelTpl = fData?.placeholder ?? (fData?.type !== 'static' ? fData?.label : '');
+    const compiled = this.compileTpl(labelTpl, this.data());
     
-  })
+    return this.value() !== compiled ? compiled : this.value();
+  });
 
-  ngOnInit() {
-    // console.log(this.value);
-    
-    // this.compileTpl(this.field()?.placeholder ?? this.field()?.label,this.data())
-  }
+  ngOnInit() {}
 
-  validateDate = (date) => Number.isInteger(date);
+  validateDate = (date: any) => Number.isInteger(date);
 
-  // compileTpl = compileTpl;
-  compileTpl=(html, data)=>{
-    var f = "";
+  compileTpl = (html: string, data: any) => {
+    let f = "";
     try {
       f = compileTpl(html, data, this.scopeId());
     } catch (e) {
-      this.logService.log(`{fieldview-${this.field().code}-compiletpl}-${e}`)
+      this.logService.log(`{fieldview-${this.field()?.code}-compiletpl}-${e}`);
     }
     return f;
   }
 
-  getUrl(pre, path) {
+  getUrl(pre: string, path: string) {
     return this.baseApi + pre + encodeURIComponent(path);
   }
 
-  isArray = (value) => Array.isArray(value)
+  isArray = (value: any) => Array.isArray(value);
 
-  nl2br = nl2br
-  // (text) => text ? String(text).replace(/\n/g, "<br/>") : text;
+  // Safe wrapper for nl2br
+  nl2brSafe = (val: any) => nl2br(val ?? '');
 }
