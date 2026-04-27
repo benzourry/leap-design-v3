@@ -30,6 +30,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   selector: 'field-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, DecimalPipe, SecurePipe, NgLeafletComponent],
+  providers: [DecimalPipe],
   template: `
     @if (value() === undefined || value() === null) {
       <span>
@@ -163,11 +164,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             <span class="text-muted me-05">{{ field().x?.prefix }}</span>
           }
           <span>
-            @if(field()?.format) {
-              {{ value() | number:field()?.format }}
-            } @else {
-              {{ value() }}
-            }
+            {{ formattedValue() }}
             @switch (field()?.type) {
               @case ('scale') { <sup>/{{ field()?.v?.max }}</sup> }
               @case ('scaleTo5') { <sup>/5</sup> }
@@ -352,6 +349,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 export class FieldViewComponent implements OnInit {
 
   private logService = inject(LogService);
+  private decimalPipe = inject(DecimalPipe);
 
   value = input<any>();
   field = input<any>();
@@ -377,6 +375,24 @@ export class FieldViewComponent implements OnInit {
     const compiled = this.compileTpl(labelTpl, this.data());
     
     return this.value() !== compiled ? compiled : this.value();
+  });
+
+  // 4. Safe formatting signal
+  formattedValue = computed(() => {
+    const val = this.value();
+    const format = this.field()?.format;
+
+    // If no format is provided, just return the raw value
+    if (!format) return val;
+
+    try {
+      // Attempt to format. If val is null/undefined, transform returns null, so fallback to val.
+      return this.decimalPipe.transform(val, format) ?? val;
+    } catch (e) {
+      // Gracefully catch NG02100 (or if the value isn't a number) and return raw value
+      this.logService.log(`{fieldview-${this.field()?.code}-format} Invalid format '${format}' for value '${val}'.`);
+      return val;
+    }
   });
 
   ngOnInit() {}
