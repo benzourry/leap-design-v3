@@ -28,13 +28,13 @@ import { NgClass } from '@angular/common';
     @for (tier of tiers(); track tier.id) {
       @if (preCheck(tier.pre)) {
         <div class="step" [ngbTooltip]="createTooltip(tier,approval())" container="body">
-          <span [style.background-color]="tier?.actions[approval()[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry()?.currentTier">
+          <span [style.background-color]="tier?.actions?.[approval()[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry()?.currentTier">
             @if (!entry()?.approval[tier.id]) {
               <fa-icon [icon]="['fas','question']"></fa-icon>
             } @else {
               @if (tier?.actions[approval()[tier.id]?.status] && !['submitted','resubmitted'].includes(approval()[tier.id]?.status)) {
                 <fa-icon
-                  [icon]="['fas',tier.actions[approval()[tier.id].status]?.icon]">
+                  [icon]="['fas',tier.actions?.[approval()[tier.id].status]?.icon]">
                 </fa-icon>
               } @else {
                 <fa-icon [icon]="['fas','reply']" flip="horizontal">

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, forwardRef, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, forwardRef, inject, input, model, signal } from '@angular/core';
 import { ScreenComponent } from '../../run/screen/screen.component';
 import { ListComponent } from '../../run/list/list.component';
 import { FieldViewComponent } from './field-view.component';
@@ -370,18 +370,21 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 })
 export class FormViewComponent implements OnInit {
 
-  constructor(private runService: RunService, private logService: LogService) {
+  private runService = inject(RunService);
+  private logService = inject(LogService);
+
+  constructor() {
     effect(() => {
       this.filterTabs();
       this.filterItems();
       this.timestamp(); 
-    }, { allowSignalWrites: true });
+    });
 
     effect(() => {
       if (this.data()) {
         this.filterItems();
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   timestamp = input<number>();
@@ -550,15 +553,40 @@ export class FormViewComponent implements OnInit {
     return !code || res;
   }
 
+  // _eval = (data: any, v: string, includeActive: boolean) => { 
+  //   const bindings = this.evalContextFn()(this.entry(), data, {}, this.form(), includeActive);
+  //   bindings.$ = data;
+  //   bindings.$this$ = this.$this$();
+  //   bindings.$conf$ = this.appConfig; 
+    
+  //   const argNames  = Object.keys(bindings);
+  //   const argValues = Object.values(bindings);
+    
+  //   return new Function(...argNames, `return ${v}`)(...argValues);
+  // }
+
+  // --- DRY Caching Engine for Eval ---
+  private evalCache = new Map<string, Function>();
+
   _eval = (data: any, v: string, includeActive: boolean) => { 
+    if (!v) return undefined;
+
     const bindings = this.evalContextFn()(this.entry(), data, {}, this.form(), includeActive);
     bindings.$ = data;
     bindings.$this$ = this.$this$();
     bindings.$conf$ = this.appConfig; 
     
     const argNames  = Object.keys(bindings);
-    const argValues = Object.values(bindings);
+    const cacheKey = `${argNames.join(',')}_${v}`;
     
-    return new Function(...argNames, `return ${v}`)(...argValues);
+    let fn = this.evalCache.get(cacheKey);
+    if (!fn) {
+      // Only compile the function once per unique execution string
+      fn = new Function(...argNames, `return ${v}`);
+      this.evalCache.set(cacheKey, fn);
+    }
+    
+    const argValues = Object.values(bindings);
+    return fn(...argValues);
   }
 }

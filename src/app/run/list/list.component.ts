@@ -883,6 +883,120 @@ export class ListComponent implements OnInit, OnDestroy {
     return !f || res;
   }
 
+  hasVisibleActions = computed(() => {
+    // 1. If actions are globally disabled for the dataset, hide the column immediately
+    if (!this.dataset()?.showAction) return false;
+
+    // 2. Safely grab the current page's entries and actions
+    const entries = this.entryList() || [];
+    const inline = this.actionsInline || [];
+    const dropdown = this.actionsDropdown || [];
+
+    // 3. Scan the current page's rows
+    for (const entry of entries) {
+      
+      // Check if any inline action is visible for this row
+      for (const ac of inline) {
+        if (this.preCheck(entry, ac.pre, false)) {
+          return true; // Found a visible action, show the column!
+        }
+      }
+      
+      // Check if any dropdown action is visible for this row
+      if (dropdown.length > 0) {
+        for (const ac of dropdown) {
+          if (this.preCheck(entry, ac.pre, false)) {
+            return true; // Found a visible action, show the column!
+          }
+        }
+      }
+    }
+
+    // 4. If the loop finishes without returning true, no actions are visible
+    return false; 
+  });
+
+
+// 1. Helper to determine if an action should be disabled while offline
+  isActionOfflineDisabled(actionType: string): boolean {
+    if (!this.offline()) return false;
+    // Added 'prev-prev' to perfectly match your original HTML rules
+    const offlineRestricted = [
+      'approve', 'screen', 'prev-screen', 'prev', 'extend', 
+      'facet', 'prev-facet', 'prev-prev', 'url', 'function', 'retract', 'delete'
+    ];
+    return offlineRestricted.includes(actionType);
+  }
+
+  // 2. Centralized Action Router (Safely handles undefined properties)
+  executeRowAction(ac: any, i: any, inPopTpl: any, openUrlTpl: any) {
+    // Better than the original: Actively prevents the click execution if forced via DevTools
+    if (this.isActionOfflineDisabled(ac.action)) return;
+
+    // Safely fetch form data
+    const fData = this.form()?.data;
+    const fPrev = this.form()?.prev;
+    const evalParams = this._eval(i.data, i, ac.params);
+
+    switch (ac.action) {
+      case 'view':
+        this.runAction('/form/' + fData?.id + '/' + ac.action, ac.inpop, inPopTpl, i.id, fData?.id, 'view', ac.action, evalParams);
+        break;
+      case 'view-single':
+        this.runAction('/form/' + ac.next + '/' + ac.action, ac.inpop, inPopTpl, i.id, ac.next, 'view', ac.action, evalParams);
+        break;
+      case 'prev-view':
+        this.runAction('/form/' + fPrev?.id + '/view', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'view', 'view', evalParams);
+        break;
+      case 'edit':
+        this.runAction('/form/' + fData?.id + '/edit', ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.action, evalParams);
+        break;
+      case 'edit-single':
+        this.runAction('/form/' + ac.next + '/edit-single', ac.inpop, inPopTpl, i.id, ac.next, 'form', ac.action, evalParams);
+        break;
+      case 'prev-edit':
+        this.runAction('/form/' + fPrev?.id + '/edit', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', 'edit', evalParams);
+        break;
+      case 'approve':
+        this.runAction('/form/' + fData?.id + '/view', ac.inpop, inPopTpl, i.id, fData?.id, 'approve', 'view', evalParams);
+        break;
+      case 'screen':
+        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.id, ac.next, 'screen', 'screen', evalParams);
+        break;
+      case 'prev-screen':
+        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'screen', 'screen', evalParams);
+        break;
+      case 'prev':
+        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'prev', evalParams);
+        break;
+      case 'extend':
+        this.runAction('/form/' + ac.next + '/edit', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'edit', evalParams);
+        break;
+      case 'facet':
+        this.runAction('/form/' + fData?.id + '/' + ac.next, ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.next, evalParams);
+        break;
+      case 'prev-facet':
+        this.runAction('/form/' + fPrev?.id + '/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', ac.next, evalParams);
+        break;
+      case 'prev-prev':
+        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'form', 'prev', evalParams);
+        break;
+      case 'url':
+        const url = this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev });
+        this.openUrl(openUrlTpl, url, ac.label);
+        break;
+      case 'function':
+        this._evalRun(i, ac.f, false);
+        break;
+      case 'retract':
+        if (i.currentStatus !== 'drafted') this.cancelEntry(i.id);
+        break;
+      case 'delete':
+        this.deleteEntry(i.id);
+        break;
+    }
+  }
+
   $digest$ = () => {
     this.cdr.detectChanges()
   }
