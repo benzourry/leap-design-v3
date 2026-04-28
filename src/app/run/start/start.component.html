@@ -141,7 +141,7 @@
                                 @if (['external', 'internal'].includes(item.type)) {
                                   <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
                                      [target]="item.type === 'external' ? '_blank' : ''">
-                                    <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                    <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
                                   </a>
                                 } @else {
@@ -161,7 +161,7 @@
                                      [class.disabled]="offline() || naviDataItem?.inactive"
                                      (click)="hideSb()" 
                                      routerLinkActive="active">
-                                    <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                    <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
                                   </a>
                                 }

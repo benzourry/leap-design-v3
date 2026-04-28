@@ -122,7 +122,6 @@ export class StartComponent implements OnInit, OnDestroy {
 
   preurl = signal<string>('');
   appId: number;
-  // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
   $param$: any = {};
   accessToken: string = '';
   pushSub: any;
