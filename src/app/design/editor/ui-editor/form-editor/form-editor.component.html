@@ -2716,14 +2716,14 @@
               }
               @if (['date'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
-                  <label class="form-label">Format</label>
+                  <label class="form-label">View Format (using <a href="https://angular.dev/api/common/DatePipe#usage-notes" target="_blank">Angular DatePipe format</a>)</label>
                   <input type="text" class="form-control" [(ngModel)]="editItemData.format" name="format"
                     placeholder="ie: dd/MM/yyyy">
                 </div>
               }              
               @if (['number','eval'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
-                  <label class="form-label">Format (using <a href="https://angular.dev/api/common/DecimalPipe#usage-notes" target="_blank">Angular digitsInfo</a>)</label>
+                  <label class="form-label">View Format (using <a href="https://angular.dev/api/common/DecimalPipe#usage-notes" target="_blank">Angular DecimalPipe format</a>)</label>
                   <input type="text" class="form-control" [(ngModel)]="editItemData.format" name="format"
                     placeholder="ie: 1.2-2">
                 </div>

@@ -1,41 +1,53 @@
-@if (app()?.canPush && ((pushSubError || !pushSub)) && !pushDismissed()) {
-  @if (!pushSub) {
-    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
-      <div class="float-start p-1" style="padding:0.4em">{{lang()=='ms'?'Terima Pemberitahuan':'Subscribe to Notification'}}</div>
-      <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
-      <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">{{lang()=='ms'?'Terima':'Subscribe'}}</button>
-      <div class="clearfix"></div>
+<ng-template #statusScreen let-msg="msg">
+  <div class="d-flex justify-content-center align-items-center flex-column wrapper" style="height:100%; text-align: center;">
+    <div class="p-3 text-muted">
+      <h4>{{ msg }}</h4>
     </div>
-  }
-  @if (pushSubError) {
-    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
-      <div class="p-1" style="padding:0.4em">{{pushSubError.err}}</div>
+    <button type="button" class="btn btn-round btn-secondary" (click)="logout()">
+      {{app()?.x?.lang == 'ms' ? 'Log keluar' : 'Logout'}}
+    </button>
+  </div>
+</ng-template>
+
+@if (app()?.canPush && !pushSub && !pushDismissed()) {
+  <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+    <div class="float-start p-1" style="padding:0.4em">
+      {{lang() == 'ms' ? 'Terima Pemberitahuan' : 'Subscribe to Notification'}}
     </div>
-  }
+    <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
+    <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">
+      {{lang() == 'ms' ? 'Terima' : 'Subscribe'}}
+    </button>
+    <div class="clearfix"></div>
+  </div>
 }
+@if (app()?.canPush && pushSubError && !pushDismissed()) {
+  <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+    <div class="p-1" style="padding:0.4em">{{pushSubError.err}}</div>
+  </div>
+}
+
 @if (isDev() && editMode) {
   <a class="edit-mode btn btn-round btn-sm btn-success m-2" [routerLink]="designUrl().url"
     [queryParams]="designUrl().query"  (click)="dismissAllModal()">
     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
   </a>
 }
+
 @if (appLoading()) {
   <div class="p-5 text-center">
     <div class="lds-ellipsis">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+      <div></div><div></div><div></div><div></div>
     </div>
   </div>
-}@else{
-  <!-- IF APP REQUIRE REG -->
-  @if (app()?.reg && user()?.status!='approved') {
-    @if (!user().status) {
+} @else {
+  
+  @if (app()?.reg && user()?.status !== 'approved') {
+    @if (!user()?.status) {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper p-4" style="height:100%;">
-        @defer(prefetch on idle){
+        @defer(prefetch on idle) {
           <app-register [app]="app()" [user]="user()" (cancel)="logout()" (done)="saveAppUser($event)"></app-register>
-        }@loading {
+        } @loading {
           <div class="text-center m-5">
             <div class="spinner-grow text-primary" role="status">
               <span class="visually-hidden">Loading...</span>
@@ -43,241 +55,144 @@
           </div>
         }
       </div>
+    } @else if (user()?.status === 'pending') {
+      <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Permohonan akses masih menunggu kelulusan' : 'Your access request still pending' }"></ng-container>
+    } @else if (user()?.status === 'rejected') {
+      <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Permohonan akses anda telah ditolak' : 'Your access request has been rejected' }"></ng-container>
     }
-    @if (user()?.status=='pending') {
-      <div class="d-flex justify-content-center align-items-center flex-column wrapper"
-        style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
-          <h4>{{app().x?.lang=='ms'?'Permohonan akses masih menunggu kelulusan':'Your access request still pending'}}</h4>
+  } @else if (user()?.status === 'rejected') {
+    <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Akses anda telah dihentikan' : 'Your access has been blocked' }"></ng-container>
+  } @else {
+    
+    @if (!maintenance()) {
+      
+      @if (app()?.once && !user()?.once && screen()?.id) {
+        <div class="nomod">
+          <page-title>
+            <h4 class="m-0" [innerHtml]="screen().title">{{screen().title}}</h4>
+            @if (screen().description) {
+              <div class="mt-1" [innerHtml]="screen().description">{{screen().description}}</div>
+            }
+          </page-title>
+          <div class="single-pane section-to-print" style="padding-bottom: 5em;">
+            <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
+              @if (screen()?.data?.pretext) {
+                <div [innerHtml]="compileTpl(screen()?.data?.pretext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'"></div>
+              }
+              <div [ngClass]="screen()?.data?.parentclass"
+                [innerHtml]="compileTpl(screen()?.data?.content, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'">
+              </div>
+              @if (screen()?.data?.posttext) {
+                <div [innerHtml]="compileTpl(screen()?.data?.posttext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'"></div>
+              }
+            </div>
+          </div>
+          <div class="text-center fixed-bottom p-3" style="z-index:12;background:linear-gradient(rgba(245,245,245, 0),rgba(245,245,245, .8),rgba(245,245,245, 1));">
+            <button type="button" class="btn btn-primary btn-round px-3" (click)="onceDone()">{{app()?.x?.lang == 'ms' ? 'Ya, saya terima' : 'Yes, I accept'}}</button>
+          </div>
         </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
-      </div>
-    }
-    @if (user()?.status=='rejected') {
-      <div class="d-flex justify-content-center align-items-center flex-column wrapper"
-        style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
-          <h4>{{app().x?.lang=='ms'?'Permohonan akses anda telah ditolak':'Your access request has been rejected'}}</h4>
-        </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
-      </div>
-    }
-  }@else {
-    <!-- if not require reg -->
-    @if(user()?.status=='rejected'){
-      <div class="d-flex justify-content-center align-items-center flex-column wrapper"
-        style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
-          <h4>{{app().x?.lang=='ms'?'Akses anda telah dihentikan':'Your access has been blocked'}}</h4>
-        </div>
-        <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
-      </div>
-    }@else {
-      @if (!maintenance()) {
-        @if (app()?.once && !user()?.once && screen()?.id) {
-          @if (screen()) {
-            <div class="nomod">
-              <page-title>
-                <h4 class="m-0" [innerHtml]="screen().title">{{screen().title}}</h4>
-                @if (screen().description) {
-                  <div class="mt-1" [innerHtml]="screen().description">{{screen().description}}</div>
-                }
-              </page-title>
-              <div class="single-pane section-to-print" style="padding-bottom: 5em;">
-                <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
-                  @if (screen()?.data?.pretext) {
-                    <div
-                      [innerHtml]="compileTpl(screen()?.data?.pretext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
-                    </div>
-                  }
-                  <div [ngClass]="screen()?.data?.parentclass"
-                    [innerHtml]="compileTpl(screen()?.data?.content, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
-                  </div>
-                  @if (screen()?.data?.posttext) {
-                    <div
-                      [innerHtml]="compileTpl(screen()?.data?.posttext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
-                    </div>
+        
+      } @else {
+        <div class="wrapper" [ngClass]="app()?.layout || 'sidemenu'"
+          [class.noframe]="frameless() || app()?.x?.noframe" 
+          [class.nomod]="navis().length == 0"
+          [class.topgap]="app()?.x?.topgap"
+          [class.active]="sidebarActive()">
+          
+          @if (navis().length > 0) {
+            <div class="app-nav" [ngStyle]="{'background-color':app()?.theme}" [style]="app()?.x?.menuCss" [class.dark-mode-nav]="darkMode()">
+              
+              <div class="app-info p-3">
+                <div class="app-title">
+                  <a class="text-white" [routerLink]="[preurl(), startPage()]">
+                    <h4 class="mb-0">{{app()?.title}}</h4>
+                  </a>
+                  @if (app()?.description) {
+                    <div class="mt-2">{{app()?.description}}</div>
                   }
                 </div>
+                <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()" [routerLink]="['/', preurl(), 'profile']">
+                  <img [src]="user().imageUrl" (error)="$any($event.target).src='assets/img/avatar-big.png'"
+                    class="rounded-circle me-2 float-start" style="width:36px;height:36px;">
+                  <div class="nobreak" style="margin-left:40px;padding-top:5px;">{{user()?.email}}</div>
+                  <div class="clearfix"></div>
+                </a>
               </div>
-              <div class="text-center fixed-bottom p-3"
-                style="z-index:12;background:linear-gradient(rgba(245,245,245, 0),rgba(245,245,245, .8),rgba(245,245,245, 1));">
-                <button type="button" class="btn btn-primary btn-round px-3" (click)="onceDone()">{{app().x?.lang=='ms'?"Ya, saya terima":"Yes, I accept"}}</button>
-              </div>
-            </div>
-          }
-        } @else {
-          <!-- @if ((!app?.reg) || user?.status=='approved') { -->
-            <div class="wrapper" [ngClass]="app()?.layout||'sidemenu'"
-              [class.noframe]="frameless() || app()?.x?.noframe" 
-              [class.nomod]="navis().length==0"
-              [class.topgap]="app()?.x?.topgap"
-              [class.active]="sidebarActive()">
-              @if (navis().length>0) {
-                <div class="app-nav" [ngStyle]="{'background-color':app()?.theme}" [style]="app()?.x?.menuCss"
-                  [class.dark-mode-nav]="darkMode()">
-                  <div class="app-info p-3">
-                    <div class="app-title">
-                      <a class="text-white" routerLink="{{preurl()}}/{{startPage()}}">
-                        <h4 class="mb-0">{{app()?.title}}</h4>
-                      </a>
-                      @if (app()?.description) {
-                        <div class="mt-2">{{app()?.description}}</div>
-                      }
-                    </div>
-                    <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()"
-                      [routerLink]="['/'+preurl()+'/profile']">
-                      <img src="{{user().imageUrl}}" onError="this.src='assets/img/avatar-big.png'"
-                        class="rounded-circle me-2 float-start" style="width:36px;height:36px;">
-                      <div class="nobreak" style="margin-left:40px;padding-top:5px;">
-                      {{user()?.email}}</div>
-                      <div class="clearfix"></div>
-                    </a>
-                  </div>
-                  <div class="app-menu">
-                    @for (group of navis(); track $index) {
-                      @if (preGroup()[group.id]) {
-                        <div class="menu">
-                          <div class="menu-heading d-flex justify-content-between align-items-center px-3"
-                            (click)="toggleNav($index)"
-                            [class.active]="navToggle()?.[$index]">
-                            {{group.title}}
-                            <fa-icon class="ms-1"
-                              [icon]="['fas',navToggle()?.[$index]?'angle-up':'angle-down']"
-                            [fixedWidth]="true"></fa-icon>
-                          </div>
-                          @if (navToggle()[$index]) {
-                            <div class="menu-items mb-1">
-                              @for (item of group.items; track $index) {
-                                @let naviDataItem = naviData()?.[item.type+'-'+item.screenId];
-                                @if ((naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) && preItem()[item.id]) {
-                                  <div>
-                                    @if (item.type=='form') {
-                                      <!-- @if (naviDataItem?.access?.users?.indexOf(user.email)>-1) { -->
-                                        <a routerLink="{{preurl()}}/form/{{item.screenId}}/add"
-                                          [skipLocationChange]="item.x?.slc"
-                                          (click)="hideSb()"
-                                          [class.disabled]="offline() || naviDataItem?.inactive"
-                                          routerLinkActive="active">
-                                          <fa-icon [icon]="item.icon|iconSplit"
-                                          [fixedWidth]="true"></fa-icon>
-                                          <div class="menu-text">{{item.title}}</div>
-                                        </a>
-                                      <!-- } -->
-                                    }
-                                    @if (item.type=='form-single') {
-                                      <!-- @if (naviDataItem?.access?.users?.indexOf(user.email)>-1) { -->
-                                      <a routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()"
-                                        [class.disabled]="offline() || naviDataItem?.inactive"
-                                        routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit"
-                                        [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                      <!-- } -->
-                                    }
-                                    @if (item.type=='view-single') {
-                                      <!-- @if (naviDataItem?.access?.users?.indexOf(user.email)>-1) { -->
-                                      <a routerLink="{{preurl()}}/form/{{item.screenId}}/view"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()"
-                                        [class.disabled]="offline() || naviDataItem?.inactive"
-                                        routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit"
-                                        [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                      <!-- } -->
-                                    }
-                                    @if (item.type=='dataset') {
-                                      <a routerLink="{{preurl()}}/dataset/{{item.screenId}}"
-                                        [routerLinkActiveOptions]="{exact: true}"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                    @if (item.type=='dashboard') {
-                                      <a routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
-                                        [routerLinkActiveOptions]="{exact: true}"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                    @if (item.type=='lookup') {
-                                      <a routerLink="{{preurl()}}/lookup/{{item.screenId}}"
-                                        [routerLinkActiveOptions]="{exact: true}"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                    @if (item.type=='screen') {
-                                      <a routerLink="{{preurl()}}/screen/{{item.screenId}}"
-                                        [routerLinkActiveOptions]="{exact: true}"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                    @if (item.type=='user') {
-                                      <a routerLink="{{preurl()}}/user/{{item.screenId}}"
-                                        [routerLinkActiveOptions]="{exact: true}"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }                                    
-                                    @if (item.type=='external' || item.type=='internal') {
-                                      <a [href]="compileTpl(item.url,{$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi,$showNav$:openNav})"
-                                        [target]="item.type=='external'?'_blank':''">
-                                        <fa-icon [icon]="item.icon|iconSplit"
-                                        [fixedWidth]="true"></fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                    @if (item.type=='start') {
-                                      <a routerLink="{{preurl()}}/start"
-                                        [skipLocationChange]="item.x?.slc"
-                                        (click)="hideSb()" routerLinkActive="active">
-                                        <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true">
-                                        </fa-icon>
-                                        <div class="menu-text">{{item.title}}</div>
-                                      </a>
-                                    }
-                                  </div>
+              
+              <div class="app-menu">
+                @for (group of navis(); track $index) {
+                  @if (preGroup()[group.id]) {
+                    <div class="menu">
+                      <div class="menu-heading d-flex justify-content-between align-items-center px-3"
+                        (click)="toggleNav($index)"
+                        [class.active]="navToggle()?.[$index]">
+                        {{group.title}}
+                        <fa-icon class="ms-1" [icon]="['fas', navToggle()?.[$index] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
+                      </div>
+                      
+                      @if (navToggle()[$index]) {
+                        <div class="menu-items mb-1">
+                          @for (item of group.items; track item.id) {
+                            @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                            
+                            @if ((naviDataItem || ['external','internal','user','start'].includes(item.type)) && preItem()[item.id]) {
+                              <div>
+                                
+                                @if (['external', 'internal'].includes(item.type)) {
+                                  <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                     [target]="item.type === 'external' ? '_blank' : ''">
+                                    <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                    <div class="menu-text">{{item.title}}</div>
+                                  </a>
+                                } @else {
+                                  
+                                  @let linkPath = 
+                                    item.type === 'form' ? [preurl(), 'form', item.screenId, 'add'] :
+                                    item.type === 'form-single' ? [preurl(), 'form', item.screenId, 'edit-single'] :
+                                    item.type === 'view-single' ? [preurl(), 'form', item.screenId, 'view'] :
+                                    item.type === 'start' ? [preurl(), 'start'] :
+                                    [preurl(), item.type, item.screenId];
+                                    
+                                  @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+
+                                  <a [routerLink]="linkPath"
+                                     [skipLocationChange]="item.x?.slc"
+                                     [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                     [class.disabled]="offline() || naviDataItem?.inactive"
+                                     (click)="hideSb()" 
+                                     routerLinkActive="active">
+                                    <fa-icon [icon]="getIcon(item.icon)" [fixedWidth]="true"></fa-icon>
+                                    <div class="menu-text">{{item.title}}</div>
+                                  </a>
                                 }
-                              }
-                            </div>
+                              </div>
+                            }
                           }
                         </div>
                       }
-                    }
-                    <div class="clearfix"></div>
-                  </div>
-                </div>
-              }
-              <div class="offcanvas-overlay" (click)="sidebarActive.set(false)">
-                <fa-icon class="overlay-close" [icon]="['fas','times']"></fa-icon>
-              </div>
-              <div id="_viewport" class="content" [class.dark-mode]="darkMode()"
-                (click)="app()?.layout=='sidemenu' || navToggle.set({})">
-                <router-outlet></router-outlet>
+                    </div>
+                  }
+                }
+                <div class="clearfix"></div>
               </div>
             </div>
-          <!-- } -->
-        }
-      } @else {
-        {{lang()=='ms'?'Aplikasi ini sedang diselenggara':'This app is under maintenance'}}
+          }
+          
+          <div class="offcanvas-overlay" (click)="sidebarActive.set(false)">
+            <fa-icon class="overlay-close" [icon]="['fas','times']"></fa-icon>
+          </div>
+          
+          <div id="_viewport" class="content" [class.dark-mode]="darkMode()" (click)="app()?.layout === 'sidemenu' || navToggle.set({})">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
       }
-    }
+    } @else {
+      <div class="d-flex justify-content-center align-items-center flex-column wrapper m-a p-3">
+        <div class="text-center text-muted mt-5">
+          <h4>{{lang() == 'ms' ? 'Aplikasi ini sedang diselenggara' : 'This app is under maintenance'}}</h4>
+        </div>
+      </div>
+    }  
   }
 }

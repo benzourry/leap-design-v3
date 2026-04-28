@@ -84,3 +84,4 @@ src/app/design/editor/ui-editor/form-editor/form-editor-old.component.ts
 src/app/run/form/form-asyncflag.component.ts
 src/app/run/screen/mailbox/mailbox-old.component.html
 src/app/run/_service/run-new.service.ts
+src/app/run/start/start-old.component.html

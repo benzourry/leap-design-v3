@@ -52,7 +52,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 })
 export class StartComponent implements OnInit, OnDestroy {
 
-  
+
   private userService = inject(UserService);
   private swPush = inject(SwPush);
   private pushService = inject(PushService);
@@ -76,7 +76,6 @@ export class StartComponent implements OnInit, OnDestroy {
   validPath = computed(() => !!this.app());
   offline = signal<boolean>(false);
   sidebarActive = signal<boolean>(false);
-  // frameless = signal<boolean>(false);
   frameless = computed(() => (getQuery('noframe') || localStorage.getItem('noframe')) === 'true');
   pushDismissed = signal(localStorage.getItem('pushDismissed') === '1');
   maintenance = computed(() => {
@@ -95,7 +94,7 @@ export class StartComponent implements OnInit, OnDestroy {
   preGroup = signal<Record<string, boolean>>({});
   preItem = signal<Record<string, boolean>>({});
   navToggle = signal<Record<number, boolean>>({});
-  appConfig:any = this.runService.appConfig;
+  appConfig: any = this.runService.appConfig;
   baseUrl = computed(() => {
     return (
       location.protocol +
@@ -106,7 +105,6 @@ export class StartComponent implements OnInit, OnDestroy {
       this.preurl()
     );
   });
-
   startPage = computed(() => this.app()?.startPage ?? 'start');
   isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
   screen = signal<any>(null);
@@ -132,7 +130,7 @@ export class StartComponent implements OnInit, OnDestroy {
   pushSubError: any;
   appUrl: string = '';
 
-  _this = createProxy({},()=>this.cdr.markForCheck());
+  _this = createProxy({}, () => this.cdr.markForCheck());
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -179,6 +177,7 @@ export class StartComponent implements OnInit, OnDestroy {
       takeUntilDestroyed(this.destroyRef),
       tap((user) => {
         this.user.set(user);
+        this.userService.setUser(user); // Preserving V2 specific setting
         this.runService.$user.set(user);
         // console.log("loaded user", user)
       }),
@@ -226,7 +225,7 @@ export class StartComponent implements OnInit, OnDestroy {
             });
           }
         }
-      });    
+      });
   }
 
 
@@ -251,8 +250,8 @@ export class StartComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.user.set(res.user);
-        this.runService.$user.set(res.user);
         this.userService.setUser(res.user);
+        this.runService.$user.set(res.user);
         if (!this.frameless()) {
           this.getNavis(this.app().id, this.user().email);
           this.getNaviData(this.app().id, this.user().email);
@@ -329,7 +328,7 @@ export class StartComponent implements OnInit, OnDestroy {
     this.runService.getRunAppByPath(path, { email: this.user().email })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: async (res) => {
           this.app.set(res);
           this.runService.$app.set(res);
           if (!this.frameless()) {
@@ -363,7 +362,7 @@ export class StartComponent implements OnInit, OnDestroy {
 
           this.appLoading.set(false);
           this.checkPush(this.app());
-          this.initScreen(this.app().f);
+          await this.initScreen(this.app().f);
         },
         error: (err) => {
           // this.validPath.set(false);
