@@ -249,7 +249,6 @@ export class FieldEditComponent extends ElementBase<any> {
 
   scales: Signal<number[]> = computed(() => this.createRange(this.field()));
 
-  selectGroupBy = (item) => this.field() ? this.compileTpl(this.field()?.x?.groupBy, { '$': item }) : undefined;
 
   createRange = (f: any) => {
     if (f.type == 'scaleTo5') {
@@ -266,9 +265,6 @@ export class FieldEditComponent extends ElementBase<any> {
     return timestamp ? { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() } : null;
   }
 
-  fileclick(input) {
-    input.value = null;
-  }
 
   clear(native?) {
     this.fileValueClear.emit(this.value);
@@ -308,10 +304,6 @@ export class FieldEditComponent extends ElementBase<any> {
   }
 
   compareFn = (val1: any, val2: any) => val1 && val1.code == val2.code;
-
-  valueBlured(event) {
-    this.valueBlur.emit(event);
-  }
 
   private previousEmitted: any;
 
@@ -357,24 +349,8 @@ export class FieldEditComponent extends ElementBase<any> {
     }
   }
 
-  checkValueChanged(event) {
-    this.value = event ? true : undefined;
-    this.valueChange.emit(this.value);
-    //   this.onChangeCallback(event); 
-  }
 
-  valueSearched(event) {
-    this.valueSearch.emit(event);
-    //   this.onChangeCallback(event);
-  }
 
-  selectFocused(event) {
-    this.selectFocus.emit(event);
-    this.hasFocus = true;
-    // if (this.field() && this.field().type == 'simpleOption') {
-    //   this.list = this.getAsList(this.field().options);
-    // }
-  }
 
   simpleList = computed(() => this.getAsList(this.field().options))
 
@@ -480,18 +456,6 @@ export class FieldEditComponent extends ElementBase<any> {
 
   getAsList = splitAsList;
 
-
-  triggerAddAction = (addValue) => { // using lambda supaya this <- refer to class
-    this.addAction.emit(addValue);
-  }
-
-  lookupSearchFn = (term: string, item: any) => {
-    term = term.toLocaleLowerCase();
-    return JSON.stringify(Object.values(item)).toLocaleLowerCase().includes(term);
-  }
-
-  encodeURIComponent = encodeURIComponent;
-
   // use this instead of effect to set default value
   // using effect, the issue is when actual value arrived late, the value will be set with default value
   override writeValue(value: any): void {
@@ -530,6 +494,40 @@ export class FieldEditComponent extends ElementBase<any> {
     // Otherwise, set the provided value
     super.writeValue(value);
   }
+
+  fileclick(input) {
+    input.value = null;
+  }
+    valueBlured(event) {
+    this.valueBlur.emit(event);
+  }
+
+  valueSearched(event) {
+    this.valueSearch.emit(event);
+    //   this.onChangeCallback(event);
+  }
+
+  selectFocused(event) {
+    this.selectFocus.emit(event);
+    this.hasFocus = true;
+  }
+  checkValueChanged(event) {
+    this.value = event ? true : undefined;
+    this.valueChange.emit(this.value);
+  }
+
+
+  triggerAddAction = (addValue) => { // using lambda supaya this <- refer to class
+    this.addAction.emit(addValue);
+  }
+  selectGroupBy = (item) => this.field() ? this.compileTpl(this.field()?.x?.groupBy, { '$': item }) : undefined;
+
+  lookupSearchFn = (term: string, item: any) => {
+    term = term.toLocaleLowerCase();
+    return JSON.stringify(Object.values(item)).toLocaleLowerCase().includes(term);
+  }
+
+  encodeURIComponent = encodeURIComponent;
 
 }
 

@@ -85,3 +85,11 @@ src/app/run/form/form-asyncflag.component.ts
 src/app/run/screen/mailbox/mailbox-old.component.html
 src/app/run/_service/run-new.service.ts
 src/app/run/start/start-old.component.html
+src/app/_shared/component/entry-filter/entry-filter-old.component.html
+src/app/_shared/component/entry-filter/entry-filter-old.component.ts
+src/styles-old.scss
+src/app/run/view/view-old.component.html
+src/app/run/view/view-old.component.ts
+src/app/run/view/view-half.component.ts
+src/app/run/_component/user-entry-filter/user-entry-filter-old.component.html
+src/app/run/_component/user-entry-filter/user-entry-filter-old.component.ts

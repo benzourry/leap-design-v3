@@ -104,7 +104,7 @@
               
               <div class="app-info p-3">
                 <div class="app-title">
-                  <a class="text-white" [routerLink]="[preurl(), startPage()]">
+                  <a class="text-white" routerLink="{{preurl()}}/{{startPage()}}">
                     <h4 class="mb-0">{{app()?.title}}</h4>
                   </a>
                   @if (app()?.description) {
@@ -151,7 +151,7 @@
                                     item.type === 'form-single' ? [preurl(), 'form', item.screenId, 'edit-single'] :
                                     item.type === 'view-single' ? [preurl(), 'form', item.screenId, 'view'] :
                                     item.type === 'start' ? [preurl(), 'start'] :
-                                    [preurl(), item.type, item.screenId];
+                                    [preurl(), item.type, item.screenId??''];
                                     
                                   @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
 
