@@ -392,39 +392,6 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   _this: any = createProxy({}, () => this.cdr.markForCheck());
 
-  // passiveCtx = {
-  //   // READ ONLY CONTEXT
-  //   // CAN BE USED IN TEMPLATE
-  //   $app$: this.app(),
-  //   // $screen$: this.screen,
-  //   $_: this.entry,
-  //   $: {},
-  //   $$_: {},
-  //   $$: {},
-  //   $prev$: this.entry?.prev,
-  //   $user$: this.user(),
-  //   $conf$: this.appConfig,
-
-  //   $action$: this.action(),
-
-  //   $el$: this.form()?.items,
-  //   $form$: this.form(),
-  //   $this$: this._this,
-
-  //   $param$: this.param(),
-
-  //   $base$: this.base,
-  //   $baseUrl$: this.baseUrl(),
-  //   $baseApi$: this.baseApi,        
-  //   $lookupList$: this.lookup,
-
-  //   dayjs,
-  //   ServerDate,
-  //   $token$: this.accessToken(),
-  //   $file$: this.filesMap,
-  //   $activeIndex$: this._navIndex(),
-  // }
-
   getEvalContext = (entry: any, data: any, appr: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
 
     let passive = {

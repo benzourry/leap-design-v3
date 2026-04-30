@@ -111,7 +111,7 @@
                     <div class="mt-2">{{app()?.description}}</div>
                   }
                 </div>
-                <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()" [routerLink]="['/', preurl(), 'profile']">
+                <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()" [routerLink]="preurl() + '/profile'">
                   <img [src]="user().imageUrl" (error)="$any($event.target).src='assets/img/avatar-big.png'"
                     class="rounded-circle me-2 float-start" style="width:36px;height:36px;">
                   <div class="nobreak" style="margin-left:40px;padding-top:5px;">{{user()?.email}}</div>
@@ -147,11 +147,11 @@
                                 } @else {
                                   
                                   @let linkPath = 
-                                    item.type === 'form' ? [preurl(), 'form', item.screenId, 'add'] :
-                                    item.type === 'form-single' ? [preurl(), 'form', item.screenId, 'edit-single'] :
-                                    item.type === 'view-single' ? [preurl(), 'form', item.screenId, 'view'] :
-                                    item.type === 'start' ? [preurl(), 'start'] :
-                                    [preurl(), item.type, item.screenId??''];
+                                    item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                    item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                    item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                    item.type === 'start' ? preurl() + '/start' :
+                                    preurl() + '/' + item.type + '/' + (item.screenId ?? '');
                                     
                                   @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
 
