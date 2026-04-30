@@ -1,179 +1,153 @@
+@let appVal = app();
+
 <page-title>
-  <h4 class="m-0">{{app()?.title}}</h4>
-  @if (app()?.description) {
-    <div class="mt-1">{{app()?.description}}</div>
+  <h4 class="m-0">{{appVal?.title}}</h4>
+  @if (appVal?.description) {
+    <div class="mt-1">{{appVal?.description}}</div>
   }
 </page-title>
+
+<ng-template #navIconContent let-item="item" let-naviDataItem="naviDataItem">
+  <fa-icon [icon]="item.icon | iconSplit" size="4x" [fixedWidth]="true"></fa-icon>
+  <div class="title">{{item.title}}</div>
+  
+  @if (!naviDataItem?.inactive && !item.x?.hideDesc) {
+    <div class="sub" [innerHtml]="naviDataItem?.description"></div>
+  }
+  
+  @if (naviDataItem?.inactive) {
+    <span class="sub text-danger">
+      {{lang() === 'ms' ? 'Dibuka' : 'Open'}}
+      @if (naviDataItem?.startDate) {
+        <span> {{lang() === 'ms' ? 'dari' : 'from'}} {{naviDataItem?.startDate | date:'mediumDate'}}</span>
+      }
+      @if (naviDataItem?.endDate) {
+        <span> {{lang() === 'ms' ? 'hingga' : 'until'}} {{naviDataItem?.endDate | date:'mediumDate'}}</span>
+      }
+    </span>
+  }
+
+  @if (item.type === 'dataset' && badge() && badge()[item.screenId]) {
+    <div class="badge">{{badge()[item.screenId]}}</div>
+  }
+  @if (item.type === 'screen' && badge() && badge()['screen_' + item.screenId]) {
+    <div class="badge">{{badge()['screen_' + item.screenId]}}</div>
+  }
+</ng-template>
+
 <div class="single-content">
-  @if (app()) {
-    <div style="max-width:680px;margin:0 auto;overflow: hidden;">
-      @if (navis()?.length>0) {
+  @if (appVal) {
+    <div style="max-width:680px; margin:0 auto; overflow: hidden;">
+      
+      @if (navis()?.length > 0) {
         <div class="pb-3 text-center">
           <input type="search" autocapitalize="none" class="rounded" placeholder="Filter list" [(ngModel)]="searchText">
         </div>
+        
         <div class="d-flex flex-wrap flex-row align-content-center">
-          @for (group of navis()|filter:searchText; track $index) {
+          @for (group of navis() | filter:searchText; track group.id || $index) {
             @if (preGroup()[group.id]) {
+              
               <div class="s-icon-group">
-                <div class="s-icon-heading">
-                  {{group.title}}
-                </div>
-                <div class="s-icon-wrap" [ngStyle]="{'color':app()?.theme}">
-                  @for (item of group.items|filter:searchText; track $index) {
-                    @let naviDataItem = naviData()[item.type+'-'+item.screenId];
-                    @if ((naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) && preItem()[item.id]) {
-                      @if (item.type=='form') {
-                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/add"
-                          [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline() || naviDataItem?.inactive"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!naviDataItem?.inactive) {
-                            @if (!item.x?.hideDesc) {
-                              <div class="sub" [innerHtml]="naviDataItem?.description"></div>    
-                            }
-                          }
-                          @if (naviDataItem?.inactive) {
-                            <span class="sub text-danger">{{lang()=='ms'?'Dibuka':'Open'}}
-                              @if (naviDataItem?.startDate) {
-                                <span>
-                                  {{lang()=='ms'?'dari':'from'}}
-                                  {{naviDataItem?.startDate|date:'mediumDate'}}
-                                </span>
-                              }
-                              @if (naviDataItem?.endDate) {
-                                <span>
-                                  {{lang()=='ms'?'hingga':'until'}}
-                                  {{naviDataItem?.endDate|date:'mediumDate'}}
-                                </span>
-                              }
-                            </span>
-                          }
-                        </a>
-                      }@else if (item.type=='form-single') {
-                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
-                          [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline() || naviDataItem?.inactive"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!naviDataItem?.inactive) {
-                            @if (!item.x?.hideDesc) {
-                              <div class="sub" [innerHtml]="naviDataItem?.description"></div>                    
-                            }
-                          }
-                          @if (naviDataItem?.inactive) {
-                            <span class="sub text-danger">{{lang()=='ms'?'Dibuka':'Open'}}
-                              @if (naviDataItem?.startDate) {
-                                <span>
-                                  {{lang()=='ms'?'dari':'from'}}
-                                  {{naviDataItem?.startDate|date:'mediumDate'}}
-                                </span>
-                              }
-                              @if (naviDataItem?.endDate) {
-                                <span>
-                                  {{lang()=='ms'?'hingga':'until'}}
-                                  {{naviDataItem?.endDate|date:'mediumDate'}}
-                                </span>
-                              }
-                            </span>
-                          }
-                        </a>
-                      }@else if (item.type=='view-single') {
-                        <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/view"
-                          [skipLocationChange]="item.x?.slc"
-                          [class.disabled]="offline() || naviDataItem?.inactive"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                       
-                          }
-                        </a>
-                      }@else if (item.type=='dataset') {
-                        <a class="s-icon" routerLink="{{preurl()}}/dataset/{{item.screenId}}"
-                          [skipLocationChange]="item.x?.slc">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                         
-                          }
-                          @if (badge() && badge()[item.screenId]) {
-                            <div class="badge">{{badge() && badge()[item.screenId]}}</div>
-                          }
-                        </a>
-                      }@else if (item.type=='dashboard') {
-                        <a class="s-icon" routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
-                          [skipLocationChange]="item.x?.slc"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                          
-                          }
-                        </a>
-                      }@else if (item.type=='lookup') {
-                        <a class="s-icon" routerLink="{{preurl()}}/lookup/{{item.screenId}}"
-                          [skipLocationChange]="item.x?.slc"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                          
-                          }
-                        </a>
-                      }@else if (item.type=='user') {
-                        <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
-                          [skipLocationChange]="item.x?.slc"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                            
-                          }
-                        </a>
-                      }@else if (item.type=='start') {
-                        <a class="s-icon disabled" routerLink="{{preurl()}}/start"
-                          [skipLocationChange]="item.x?.slc"
-                          routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                           
-                          }
-                        </a>
-                      }@else if (item.type=='external'||item.type=='internal') {
-                        <a class="s-icon"
-                          [href]="compileTpl(item.url,{$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
-                          [target]="item.type=='external'?'_blank':''" routerLinkActive="active">
-                          <fa-icon [icon]="item.icon|iconSplit" size="4x" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                        </a>
-                      }@else if (item.type=='screen') {
-                        <a class="s-icon" routerLink="{{preurl()}}/screen/{{item.screenId}}"
-                          [skipLocationChange]="item.x?.slc"
-                          routerLinkActive="active">
-                          <fa-icon size="4x" [icon]="item.icon|iconSplit" [fixedWidth]="true">
-                          </fa-icon>
-                          <div class="title">{{item.title}}</div>
-                          @if (!item.x?.hideDesc) {
-                            <div class="sub" [innerHtml]="naviDataItem?.description"></div>                           
-                          }
-                          @if (badge() && badge()['screen_'+item.screenId]) {
-                            <div class="badge">{{badge() && badge()['screen_'+item.screenId]}}</div>
-                          }
-                        </a>
+                <div class="s-icon-heading">{{group.title}}</div>
+                <div class="s-icon-wrap" [ngStyle]="{'color': appVal?.theme}">
+                  
+                  @for (item of group.items | filter:searchText; track item.id || $index) {
+                    @let naviDataItem = naviData()[item.type + '-' + item.screenId];
+                    @let isPermittedType = naviDataItem || ['external', 'internal', 'user', 'start'].includes(item.type);
+                    
+                    @if (isPermittedType && preItem()[item.id]) {
+                      
+                      @switch (item.type) {
+                        @case ('form') {
+                          <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/add"
+                            [skipLocationChange]="item.x?.slc"
+                            [class.disabled]="offline() || naviDataItem?.inactive"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('form-single') {
+                          <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/edit-single"
+                            [skipLocationChange]="item.x?.slc"
+                            [class.disabled]="offline() || naviDataItem?.inactive"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('view-single') {
+                          <a class="s-icon" routerLink="{{preurl()}}/form/{{item.screenId}}/view"
+                            [skipLocationChange]="item.x?.slc"
+                            [class.disabled]="offline() || naviDataItem?.inactive"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('dataset') {
+                          <a class="s-icon" routerLink="{{preurl()}}/dataset/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('dashboard') {
+                          <a class="s-icon" routerLink="{{preurl()}}/dashboard/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('lookup') {
+                          <a class="s-icon" routerLink="{{preurl()}}/lookup/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('user') {
+                          <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('start') {
+                          <a class="s-icon disabled" routerLink="{{preurl()}}/start"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('external') {
+                          <a class="s-icon" target="_blank" routerLinkActive="active"
+                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('internal') {
+                          <a class="s-icon" routerLinkActive="active"
+                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+
+                        @case ('screen') {
+                          <a class="s-icon" routerLink="{{preurl()}}/screen/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
                       }
+
                     }
                   }
                 </div>
@@ -181,9 +155,9 @@
             }
           }
         </div>
-      }@else{
+      } @else {
         <div class="p-20 text-muted text-center">
-          <h3>{{lang()=='ms'?'Tiada modul tersedia buat masa ini':'No modules currently available'}}</h3>
+          <h3>{{lang() === 'ms' ? 'Tiada modul tersedia buat masa ini' : 'No modules currently available'}}</h3>
         </div>
       }
     </div>

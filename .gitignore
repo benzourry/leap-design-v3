@@ -93,3 +93,5 @@ src/app/run/view/view-old.component.ts
 src/app/run/view/view-half.component.ts
 src/app/run/_component/user-entry-filter/user-entry-filter-old.component.html
 src/app/run/_component/user-entry-filter/user-entry-filter-old.component.ts
+src/app/run/tiles/tiles-old.component.ts
+src/app/run/tiles/tiles.component-old.html

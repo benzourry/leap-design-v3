@@ -233,9 +233,23 @@ export class StartComponent implements OnInit, OnDestroy {
     this.pushDismissed.set(true);
   }
 
-  toggleNav(index: number): void {
-    const currentState = this.navToggle();
-    this.navToggle.set({ ...currentState, [index]: !currentState[index] });
+  // toggleNav(index: number): void {
+  //   const currentState = this.navToggle();
+  //   this.navToggle.set({ ...currentState, [index]: !currentState[index] });
+  // }
+
+  toggleNav(index: number) {
+    if (this.app()?.layout === 'topnav') {
+      // Top Nav Mode: Exclusive dropdown behavior (closes others)
+      const isCurrentlyOpen = this.navToggle()[index];
+      this.navToggle.set(isCurrentlyOpen ? {} : { [index]: true });
+    } else {
+      // Side Menu Mode: Independent accordion behavior
+      this.navToggle.update(state => ({
+        ...state,
+        [index]: !state[index]
+      }));
+    }
   }
 
   saveAppUser(selectedRoles) {
