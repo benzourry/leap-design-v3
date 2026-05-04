@@ -144,7 +144,8 @@
         <div [class.disabled]="f.readOnly">
           @if (f?.subType=='btn') {
             <div role="group">
-              @for (i of lookupList(); track $index) {
+              @for (n of lookupList(); track $index) {
+                @let i = {...n};
                 <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
                   [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" autocomplete="off">
                 <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="checkValue(i)">
@@ -158,7 +159,8 @@
             </div>
           } @else {
             <div>
-              @for (c of lookupList(); track $index) {
+              @for (n of lookupList(); track $index) {
+                @let c = {...n};
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline">
                   <input type="checkbox" class="form-check-input smyds" [value]="c" id="{{uid}}-{{c?.code}}"
                     [checked]="checkValue(c)" [name]="uid" (change)="toggleValue(c);" />
@@ -265,7 +267,8 @@
         <div>
           @if (f?.subType=='btn') {
             <div role="group">
-              @for (i of lookupList(); track $index) {
+              @for (n of lookupList(); track $index) {
+                @let i = {...n};
                 <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
                   (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
                   id="{{uid}}-{{$index}}" autocomplete="off" />
@@ -280,7 +283,8 @@
             </div>
           } @else {
             <div>
-              @for (c of lookupList(); track $index) {
+              @for (n of lookupList(); track $index) {
+                @let c = {...n};
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
                   <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="{{uid}}-{{c?.code}}"
                     [checked]="value?.code === c?.code" [name]="uid" [required]="f.v?.required"
