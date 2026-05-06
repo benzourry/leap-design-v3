@@ -210,13 +210,18 @@ angular-editor.is-invalid .angular-editor {
 .img-grid-item {
     height: 20vh;
     flex-grow: 1;
+    overflow: hidden;
+    display:flex;
+    align-items: center;
 }
 
 .img-grid-item img {
     max-height: 100%;
     min-width: 100%;
     object-fit: cover;
+    object-position: center;
     vertical-align: bottom;
+    // max-width:250px; !cannot, dont know why
 }
 
 @media (max-aspect-ratio: 1/1) {

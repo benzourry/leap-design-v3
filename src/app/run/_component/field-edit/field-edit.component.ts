@@ -249,7 +249,9 @@ export class FieldEditComponent extends ElementBase<any> {
 
     const snap = (val: any) => {
       if (!val || typeof val !== 'object') return val;
-      return list.find(option => option[key] === val[key]) ?? val;
+      const match = list.find(option => option[key] === val[key]);
+
+      return match ? {...match} : {...val};
     };
 
     return (isMultiple && Array.isArray(oldValue)) ? oldValue.map(v => snap(v)) : snap(oldValue);

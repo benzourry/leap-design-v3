@@ -36,7 +36,7 @@
           </div>
           @if (hasFocus) {
             <datalist id="datalist-{{uid}}">
-              @for (c of lookupList(); track $index) { <option>{{c.name}}</option> }
+              @for (i of lookupList(); track $index) { <option>{{i.name}}</option> }
             </datalist>
           }
         }
@@ -144,8 +144,8 @@
         <div [class.disabled]="f.readOnly">
           @if (f?.subType=='btn') {
             <div role="group">
-              @for (n of lookupList(); track $index) {
-                @let i = {...n};
+              @for (i of lookupList(); track $index) {
+                <!-- @let i = {...n}; -->
                 <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
                   [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" autocomplete="off">
                 <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="checkValue(i)">
@@ -159,16 +159,16 @@
             </div>
           } @else {
             <div>
-              @for (n of lookupList(); track $index) {
-                @let c = {...n};
+              @for (i of lookupList(); track $index) {
+                <!-- @let i = {...n}; -->
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline">
-                  <input type="checkbox" class="form-check-input smyds" [value]="c" id="{{uid}}-{{c?.code}}"
-                    [checked]="checkValue(c)" [name]="uid" (change)="toggleValue(c);" />
-                  <label class="form-check-label" for="{{uid}}-{{c?.code}}">
+                  <input type="checkbox" class="form-check-input smyds" [value]="i" id="{{uid}}-{{i?.code}}"
+                    [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);" />
+                  <label class="form-check-label" for="{{uid}}-{{i?.code}}">
                     @if (f?.placeholder) {
-                      <div [innerHtml]="compileTpl(f.placeholder,{'$':c})|safe:'html'"></div>
+                      <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                     } @else {
-                      <span [innerHtml]="c?.name">{{c?.name}}</span>
+                      <span [innerHtml]="i?.name">{{i?.name}}</span>
                     }
                   </label>
                 </div>
@@ -267,8 +267,8 @@
         <div>
           @if (f?.subType=='btn') {
             <div role="group">
-              @for (n of lookupList(); track $index) {
-                @let i = {...n};
+              @for (i of lookupList(); track $index) {
+                <!-- @let i = {...n}; -->
                 <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
                   (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
                   id="{{uid}}-{{$index}}" autocomplete="off" />
@@ -283,17 +283,17 @@
             </div>
           } @else {
             <div>
-              @for (n of lookupList(); track $index) {
-                @let c = {...n};
+              @for (i of lookupList(); track $index) {
+                <!-- @let i = {...n}; -->
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
-                  <input type="radio" class="form-check-input smyds" #fieldValue [value]="c" id="{{uid}}-{{c?.code}}"
-                    [checked]="value?.code === c?.code" [name]="uid" [required]="f.v?.required"
-                    (change)="value=c;valueChanged(c);" />
-                  <label class="form-check-label d-block" for="{{uid}}-{{c?.code}}">
+                  <input type="radio" class="form-check-input smyds" #fieldValue [value]="i" id="{{uid}}-{{i?.code}}"
+                    [checked]="value?.code === i?.code" [name]="uid" [required]="f.v?.required"
+                    (change)="value=i;valueChanged(i);" />
+                  <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}">
                     @if (f?.placeholder) {
-                      <div [innerHtml]="compileTpl(f.placeholder,{'$':c})|safe:'html'"></div>
+                      <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                     } @else {
-                      <span [innerHtml]="c?.name">{{c?.name}}</span>
+                      <span [innerHtml]="i?.name">{{i?.name}}</span>
                     }
                   </label>
                 </div>

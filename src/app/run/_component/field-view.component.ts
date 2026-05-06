@@ -298,24 +298,33 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       overflow: hidden;
       -webkit-box-orient: vertical;  
     }
+
     .img-grid-cont {
       display: flex;
       flex-wrap: wrap;
       gap: 3px;
       list-style: none;
-      margin: 0px; padding: 0px;
+      margin: 0; 
+      padding: 0;
+      border-radius: var(--bs-border-radius);
+      overflow: hidden;
     }
 
     .img-grid-item {
       height: 20vh;
       flex-grow: 1;
+      overflow: hidden;
+      display:flex;
+      align-items: center;
     }
 
     .img-grid-item img {
-      max-height: 100%;
+      min-height: 100%;
       min-width: 100%;
       object-fit: cover;
+      object-position: center;
       vertical-align: bottom;
+      max-width:250px; // nedded for grid
     }
 
     @media (max-aspect-ratio: 1/1) {
