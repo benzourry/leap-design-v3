@@ -484,7 +484,7 @@
             </table>
           }
         </div>
-        @if (dataset().x?.bulkAction && entryList()?.length>0 && selectedEntries().size>0) {
+        @if (dataset().x?.bulkAction && (selectedEntries() | keyvalue).length > 0) {
           <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
             &#8627; {{lang()=='ms'?'Dengan yang dipilih':'With Selected'}}
             @if (dataset()?.canBlast) {
@@ -492,7 +492,32 @@
                 (click)="bulkEmail(blastTpl,blastData())"><fa-icon [icon]="['far','envelope']"
               [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Hantar Emel':'Send Email'}}</button>
             }
-            @for (ac of dataset().actions; track ac.id) {
+            @for (ac of actionsBulk; track ac.id){
+              @if (preCheck({}, ac.pre, true)) {
+                @if (ac.action=='delete') {
+                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
+                    (click)="bulkRemoveEntries()">
+                    <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                  {{ac.label}}</button>
+                }@else if (ac.action=='function') {
+                  <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
+                    [ngClass]="ac.style" [class.disabled]="offline()" (click)="bulkEvalRun(ac.f)">
+                    <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true">
+                    </fa-icon>
+                    {{ac.label}}
+                  </button>
+                }@else if (ac.action=='retract') {
+                  <button type="button" [class.disabled]="offline()" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap"
+                    [ngClass]="ac.style" (click)="bulkCancelEntry()">
+                    <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true">
+                    </fa-icon>
+                    {{ac.label}}
+                  </button>
+                }
+              }
+            }
+
+            <!-- @for (ac of dataset().actions; track ac.id) {
               @if (ac.action=='delete') {
                 <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
                   (click)="bulkRemoveEntries()">
@@ -513,7 +538,7 @@
                   {{ac.label}}
                 </button>
               }
-            }
+            } -->
           </div>
         }
         @if (entryList()?.length==0) {
@@ -613,7 +638,7 @@
     <p>
       {{lang()=='ms'?'Emel akan dihantar mengikut medan':'Email will be sent to field'}} 
       <strong>{{form().data?.items[dataset().blastTo].label}}</strong> {{lang()=='ms'?'dalam':'in'}}
-      <strong>{{blastData().bulk? selectedEntries().size: entryTotal()}}</strong> {{lang()=='ms'?'rekod':'record(s)'}}
+      <strong>{{blastData().bulk ? (selectedEntries() | keyvalue).length : entryTotal()}}</strong> {{lang()=='ms'?'rekod':'record(s)'}}
     </p>
     @if (mailerList().length>0) {
       <div class="form-group mb-3">

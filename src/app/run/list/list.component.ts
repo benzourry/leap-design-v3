@@ -27,7 +27,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
 import { LogService } from '../../_shared/service/log.service';
-import { combineLatest, first, lastValueFrom, map, Observable, share, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import { catchError, combineLatest, first, forkJoin, lastValueFrom, map, Observable, of, share, shareReplay, Subject, takeUntil, tap } from 'rxjs';
 import dayjs from 'dayjs';
 import { HttpClient } from '@angular/common/http';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
@@ -223,6 +223,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   actionsInline: any[] = [];
   actionsDropdown: any[] = [];
+  actionsBulk: any[] = [];
 
   hideGroup: any = {}
 
@@ -273,8 +274,10 @@ export class ListComponent implements OnInit, OnDestroy {
           this.pageSize.set(res.x?.defPageSize || 25);
           this.actionsInline = res.actions.filter(f => f.type == 'inline');
           this.actionsDropdown = res.actions.filter(f => f.type == 'dropdown');
+          this.actionsBulk = res.actions.filter(f => f.type == 'bulk');
           this.loading.set(false); 
 
+          this.selectedEntries.set({});
 
           this.form.set({
             data: {
@@ -748,49 +751,57 @@ export class ListComponent implements OnInit, OnDestroy {
   nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
   br2nl = br2nl;// (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
 
-  selectedEntries = signal<Map<number, any>>(new Map());
+  selectedEntries = signal<Record<number, any>>({});
 
-  checkAllEntry(checked) {
-    if (checked) {
-      this.entryList()
-        .forEach(e => this.selectedEntries().set(e.id, e));
-    } else {
-      this.entryList()
-        .forEach(e => this.selectedEntries().delete(e.id));
-    }
+  checkAllEntry(checked: boolean) {
+    this.selectedEntries.update(current => {
+      const newSelection = { ...current }; 
+      if (checked) {
+        this.entryList().forEach(e => newSelection[e.id] = e);
+      } else {
+        this.entryList().forEach(e => delete newSelection[e.id]);
+      }
+      return newSelection;
+    });
   }
 
-  toggleSelect(i) {
-    if (this.selectedEntries().has(i.id)) {
-      this.selectedEntries().delete(i.id);
-    } else {
-      this.selectedEntries().set(i.id, i);
-    }
+  toggleSelect(i: any) {
+    this.selectedEntries.update(current => {
+      const newSelection = { ...current };
+      if (newSelection[i.id]) {
+        delete newSelection[i.id];
+      } else {
+        newSelection[i.id] = i;
+      }
+      return newSelection;
+    });
   }
 
   checkAllInput = signal<boolean>(false);
+
   bulkRemoveEntries() {
-    if (confirm(this.lang()=='ms'?"Anda pasti untuk membuang semua entri ini?":"Remove all " + this.selectedEntries().size + " entries?")) {
-      this.entryService.bulkDelete(Array.from(this.selectedEntries().keys()), this.user().email)
+    const selectedKeys = Object.keys(this.selectedEntries()).map(Number);
+    
+    if (confirm(this.lang()=='ms'?"Anda pasti untuk membuang semua entri ini?":"Remove all " + selectedKeys.length + " entries?")) {
+      this.entryService.bulkDelete(selectedKeys, this.user().email)
         .subscribe({
           next: res => {
-            this.selectedEntries().clear();
+            this.selectedEntries.set({}); // Changed to object
             this.checkAllInput.set(false);
             this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
-            // this.pageNumber = (this.numberOfElements == 1 && !this.first) ? this.pageNumber - 1 : this.pageNumber;
             this.getEntryList(this.pageNumber());
             this.toastService.show(this.lang()=='ms'?"Entri berjaya dibuang":"Entries removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
             this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya dibuang":"Entries removal failed", { classname: 'bg-danger text-light' });
-            this.selectedEntries().clear();
+            this.selectedEntries.set({}); // Changed to object
             this.checkAllInput.set(false);
           }
         });
     }
   }
 
-  checkSelect(i) {
-    return this.selectedEntries().has(i.id);
+  checkSelect(i: any) {
+    return !!this.selectedEntries()[i.id]; // Returns true if the key exists
   }
 
   bulkEmail(content, data) {
@@ -799,7 +810,8 @@ export class ListComponent implements OnInit, OnDestroy {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
-        this.blastList(res, Array.from(this.selectedEntries().keys()));
+        // Extract keys from object
+        this.blastList(res, Object.keys(this.selectedEntries()).map(Number));
       }, res => { });
   }
 
@@ -813,29 +825,85 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   bulkEvalRun(f) {
-    this.selectedEntries().forEach(e => {
-      this._evalRun(e, f, true);
-    })
+    this._evalRun({},f, true);
+    // this.selectedEntries().forEach(e => {
+    //   this._evalRun(e, f, true);
+    // })
   }
 
+  // bulkCancelEntry() {
+  //   if (confirm(this.lang()=='ms'?"Batalkan semua entri?":"Cancel selected entry submission?")) {
+  //     const list: Observable<any>[] = [];
+  //     this.selectedEntries().forEach(e => {
+  //       if (e.currentStatus != 'drafted') {
+  //         list.push(this.entryService.cancel(e.id, this.user().email));
+  //       }
+  //     });
+  //     if (list.length === 0) {
+  //       this.toastService.show(this.lang()=='ms'?'Tiada entri untuk dibatalkan':'No entries to cancel.', { classname: 'bg-warning text-dark' });
+  //       return;
+  //     }
+  //     combineLatest(list)
+  //       .subscribe(res => {
+  //         this.toastService.show(this.lang()=='ms'?`${res.length} entri berjaya dibatalkan`:`${res.length} entries successfully retracted`, { classname: 'bg-success text-light' });
+  //         this.getEntryList(this.pageNumber());
+  //       });
+  //   }
+  // }
+
   bulkCancelEntry() {
-    if (confirm(this.lang()=='ms'?"Batalkan semua entri?":"Cancel selected entry submission?")) {
-      const list: Observable<any>[] = [];
-      this.selectedEntries().forEach(e => {
-        if (e.currentStatus != 'drafted') {
-          list.push(this.entryService.cancel(e.id, this.user().email));
-        }
-      });
-      if (list.length === 0) {
-        this.toastService.show(this.lang()=='ms'?'Tiada entri untuk dibatalkan':'No entries to cancel.', { classname: 'bg-warning text-dark' });
-        return;
+    const isMs = this.lang() === 'ms';
+    
+    if (!confirm(isMs ? "Batalkan semua entri?" : "Cancel selected entry submission?"))  return;
+
+    const list: Observable<any>[] = [];
+    const entriesToCancel = Object.values(this.selectedEntries()); // Get array of items
+    
+    entriesToCancel.forEach((e: any) => {
+      if (e.currentStatus !== 'drafted') {
+        const cancelReq = this.entryService.cancel(e.id, this.user().email).pipe(
+          catchError(err => {
+            console.error(`Failed to cancel entry ${e.id}`, err);
+            return of(null); 
+          })
+        );
+        list.push(cancelReq);
       }
-      combineLatest(list)
-        .subscribe(res => {
-          this.toastService.show(this.lang()=='ms'?`${res.length} entri berjaya dibatalkan`:`${res.length} entries successfully retracted`, { classname: 'bg-success text-light' });
-          this.getEntryList(this.pageNumber());
-        });
+    });
+
+    if (list.length === 0) {
+      this.toastService.show( isMs ? 'Tiada entri untuk dibatalkan' : 'No entries to cancel.',  { classname: 'bg-warning text-dark' });
+      return;
     }
+
+    forkJoin(list).subscribe({
+      next: (results) => {
+        const successCount = results.filter(res => res !== null).length;
+        const failCount = results.length - successCount;
+
+        if (successCount > 0) {
+          this.toastService.show(
+            isMs ? `${successCount} entri berjaya dibatalkan` : `${successCount} entries successfully retracted`, 
+            { classname: 'bg-success text-light' }
+          );
+        }
+
+        if (failCount > 0) {
+          this.toastService.show(
+            isMs ? `${failCount} entri gagal dibatalkan` : `Failed to retract ${failCount} entries`, 
+            { classname: 'bg-danger text-light' }
+          );
+        }
+        this.selectedEntries.set({}); // Changed to object
+        this.getEntryList(this.pageNumber());
+      },
+      error: (err) => {
+        this.toastService.show(
+          isMs ? 'Ralat pelayan berlaku.' : 'A server error occurred.',
+          { classname: 'bg-danger text-light' }
+        );
+      }
+    });
   }
 
   _eval = (data, entry, v) => this._evalRun(entry, v, false);// new Function('$_', '$', '$prev$', `return ${v}`)(entry, data, entry && entry.prev);
@@ -853,12 +921,12 @@ export class ListComponent implements OnInit, OnDestroy {
     let fn = this.evalCache.get(f);
     if (!fn) {
       // Compile ONLY once per unique script string
-      fn = new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
+      fn = new Function('$app$', '$_', '$', '$prev$', '$selected$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
       this.evalCache.set(f, fn);
     }
     
     // Execute at native speed
-    return fn(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, bulk);
+    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, this.selectedEntries(), this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.http, bulk);
   };
 
   private preCache = new Map<string, Function>();
@@ -867,11 +935,11 @@ export class ListComponent implements OnInit, OnDestroy {
 
     let fn = this.preCache.get(f);
     if (!fn) {
-      fn = new Function('$app$', '$_', '$', '$prev$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
+      fn = new Function('$app$', '$_', '$', '$prev$', '$selected$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
       this.preCache.set(f, fn);
     }
     
-    return fn(this.runService.$app(), entry, entry?.data, entry && entry?.prev, this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, this.selectedEntries(), this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
   };
 
 

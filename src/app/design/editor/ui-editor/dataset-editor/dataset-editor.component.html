@@ -248,6 +248,10 @@
                             </fa-icon>
                           }
                           {{a.label}}
+                          @if (a.type=='bulk') {
+                            <span  style="font-size: 0.7em;"
+                              class="border-secondary small pointer border rounded d-inline-block px-1 py-0 ms-1">BULK</span>
+                          }
                           @if (a.pre) {
                             <div [title]="a.pre" style="font-size: 0.7em;"
                               class="border-info small pointer border rounded d-inline-block px-1 py-0 ms-1">
@@ -652,6 +656,11 @@
                           [(ngModel)]="editActionData.type" required>
                         <label for="type-dropdown" class="btn btn-outline-secondary">
                         Dropdown</label>
+                        <input class="btn-check" type="radio" value="bulk"
+                          id="type-bulk" name="type-bulk"
+                          [(ngModel)]="editActionData.type" required>
+                        <label for="type-bulk" class="btn btn-outline-secondary">
+                        Bulk</label>
                       </div>
                     </div>
                   </div>

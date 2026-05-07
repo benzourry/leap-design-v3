@@ -700,6 +700,7 @@ export class DatasetEditorComponent implements OnInit {
 
     editActionData: any;
     editAction(content, data) {
+        if (!data.x) data.x={};
         this.editActionData = data;
         this.editActionData.appId = this.app.id;
         history.pushState(null, null, window.location.href);

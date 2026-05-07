@@ -9,39 +9,40 @@
   </div>
 </ng-template>
 
-@if (app()?.canPush && !pushSub && !pushDismissed()) {
-  <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
-    <div class="float-start p-1" style="padding:0.4em">
-      {{lang() == 'ms' ? 'Terima Pemberitahuan' : 'Subscribe to Notification'}}
-    </div>
-    <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
-    <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">
-      {{lang() == 'ms' ? 'Terima' : 'Subscribe'}}
-    </button>
-    <div class="clearfix"></div>
-  </div>
-}
-@if (app()?.canPush && pushSubError && !pushDismissed()) {
-  <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
-    <div class="p-1" style="padding:0.4em">{{pushSubError.err}}</div>
-  </div>
-}
-
-@if (isDev() && editMode) {
-  <a class="edit-mode btn btn-round btn-sm btn-success m-2" [routerLink]="designUrl().url"
-    [queryParams]="designUrl().query"  (click)="dismissAllModal()">
-    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-  </a>
-}
-
-@if (appLoading()) {
-  <div class="p-5 text-center">
+@if (!user() || appLoading()) {
+  <div class="p-5 text-center d-flex justify-content-center align-items-center" style="height: 100vh;">
     <div class="lds-ellipsis">
       <div></div><div></div><div></div><div></div>
     </div>
   </div>
 } @else {
+
+  @if (app()?.canPush && !pushSub && !pushDismissed()) {
+    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+      <div class="float-start p-1" style="padding:0.4em">
+        {{lang() == 'ms' ? 'Terima Pemberitahuan' : 'Subscribe to Notification'}}
+      </div>
+      <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
+      <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">
+        {{lang() == 'ms' ? 'Terima' : 'Subscribe'}}
+      </button>
+      <div class="clearfix"></div>
+    </div>
+  }
   
+  @if (app()?.canPush && pushSubError && !pushDismissed()) {
+    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+      <div class="p-1" style="padding:0.4em">{{pushSubError.err}}</div>
+    </div>
+  }
+
+  @if (isDev() && editMode) {
+    <a class="edit-mode btn btn-round btn-sm btn-success m-2" [routerLink]="designUrl().url"
+      [queryParams]="designUrl().query"  (click)="dismissAllModal()">
+      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+    </a>
+  }
+
   @if (app()?.reg && user()?.status !== 'approved') {
     @if (!user()?.status) {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper p-4" style="height:100%;">
@@ -65,7 +66,7 @@
   } @else {
     
     @if (!maintenance()) {
-      
+    
       @if (app()?.once && !user()?.once && screen()?.id) {
         <div class="nomod">
           <page-title>
@@ -140,7 +141,7 @@
                                 
                                 @if (['external', 'internal'].includes(item.type)) {
                                   <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
-                                     [target]="item.type === 'external' ? '_blank' : ''">
+                                    [target]="item.type === 'external' ? '_blank' : ''">
                                     <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
                                   </a>
@@ -156,11 +157,11 @@
                                   @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
 
                                   <a [routerLink]="linkPath"
-                                     [skipLocationChange]="item.x?.slc"
-                                     [routerLinkActiveOptions]="{ exact: isExactMatch }"
-                                     [class.disabled]="offline() || naviDataItem?.inactive"
-                                     (click)="hideSb()" 
-                                     routerLinkActive="active">
+                                    [skipLocationChange]="item.x?.slc"
+                                    [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                    [class.disabled]="offline() || naviDataItem?.inactive"
+                                    (click)="hideSb()" 
+                                    routerLinkActive="active">
                                     <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
                                   </a>
