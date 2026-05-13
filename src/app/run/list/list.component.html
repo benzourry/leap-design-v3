@@ -2,9 +2,9 @@
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>
-        <h4 class="m-0" [innerHtml]="compileTpl(dataset()?.title,{})|safe:'html'">{{dataset()?.title}}</h4>
+        <h4 class="m-0" [innerHtml]="compileTpl(dataset()?.title,{})|safe:'html'"></h4>
         @if (dataset()?.description) {
-          <div class="mt-1" [innerHtml]="compileTpl(dataset()?.description,{})|safe:'html'">{{dataset()?.description}}</div>
+          <div class="mt-1" [innerHtml]="compileTpl(dataset()?.description,{})|safe:'html'"></div>
         }
       </page-title>
     }
@@ -185,7 +185,7 @@
                 @if (gf?.key=='undefined'){
                   <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                 }@else {
-                  <span [innerHtml]="gf?.key">{{gf?.key}}</span>
+                  <span [innerHtml]="gf?.key"></span>
                 }
               </button>
             }
@@ -273,7 +273,7 @@
                             @if (listKv?.key=='undefined'){
                               <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                             }@else {
-                              <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
+                              <span [innerHtml]="listKv?.key"></span>
                             }
                           </div>
                           <div class="bg-secondary px-1 text-white ms-2 mb-auto" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>

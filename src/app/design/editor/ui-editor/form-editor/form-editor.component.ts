@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, effect, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -78,7 +78,7 @@ import { KryptaService } from '../../../../service/krypta.service';
     imports: [CdkDropListGroup, FaIconComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
         FormsModule, RouterLink, NgClass, NgStyle, CdkDropList, CdkDrag, FieldViewComponent, FieldEditComponent, CdkDragHandle,
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
-        EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent,
+        EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, 
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
         KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe]
 })

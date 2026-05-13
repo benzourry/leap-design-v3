@@ -1,0 +1,26 @@
+<div class="table-responsive">
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            @for(field of items(); track $index){
+                <th>{{ field.label }}</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (i of entryList; track $index) {
+            <tr>
+                @for(fField of items(); track $index){
+                    <td>
+                        <field-view [field]="fField"
+                                    [value]="getVal(fField, i, i.data)"
+                                    [data]="{$:i.data,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi}">
+                                  </field-view>
+
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

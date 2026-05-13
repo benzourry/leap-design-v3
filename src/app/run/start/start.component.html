@@ -70,21 +70,35 @@
       @if (app()?.once && !user()?.once && screen()?.id) {
         <div class="nomod">
           <page-title>
-            <h4 class="m-0" [innerHtml]="screen().title">{{screen().title}}</h4>
+            <h4 class="m-0" [innerHtml]="screen().title"></h4>
             @if (screen().description) {
-              <div class="mt-1" [innerHtml]="screen().description">{{screen().description}}</div>
+              <div class="mt-1" [innerHtml]="screen().description"></div>
             }
           </page-title>
           <div class="single-pane section-to-print" style="padding-bottom: 5em;">
+            @let data = screen()?.data;
+            @let tplContext = {
+              $param$: $param$,
+              $this$: _this,
+              $user$: user(),
+              $conf$: appConfig,
+              $base$: base,
+              $baseUrl$: baseUrl(),
+              $baseApi$: baseApi,
+              $showNav$: openNav
+            };
+
             <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
-              @if (screen()?.data?.pretext) {
-                <div [innerHtml]="compileTpl(screen()?.data?.pretext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'"></div>
+              @if (data?.pretext) {
+                <div [innerHtml]="compileTpl(data.pretext, tplContext) | safe:'html'"></div>
               }
-              <div [ngClass]="screen()?.data?.parentclass"
-                [innerHtml]="compileTpl(screen()?.data?.content, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'">
+              
+              <div [ngClass]="data?.parentclass" 
+                  [innerHtml]="compileTpl(data?.content, tplContext) | safe:'html'">
               </div>
-              @if (screen()?.data?.posttext) {
-                <div [innerHtml]="compileTpl(screen()?.data?.posttext, {$param$:$param$,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi, $showNav$:openNav})|safe:'html'"></div>
+              
+              @if (data?.posttext) {
+                <div [innerHtml]="compileTpl(data.posttext, tplContext) | safe:'html'"></div>
               }
             </div>
           </div>

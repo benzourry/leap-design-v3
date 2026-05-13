@@ -2,7 +2,7 @@
   <div class="card-header p-3">
     <h6 class="card-title m-0">{{chart().title}}</h6>
     @if (chart().description) {
-      <p class="card-subtitle mt-1" [innerHtml]="chart().description">{{chart().description}}</p>
+      <p class="card-subtitle mt-1" [innerHtml]="chart().description"></p>
     }
     <div class="print-hide" style="position:absolute;top:5px;right:5px;">
       @if (chart().formId && chart()?.filters && chart()?.filters.length>0) {

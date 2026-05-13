@@ -63,7 +63,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         @if (['checkbox'].includes(field()?.type)) {
           <span>
             <fa-icon [icon]="['far', 'square']"></fa-icon>
-            &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"> {{ field()?.placeholder }}</span>
+            &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></span>
           </span>
         }
       </span>
@@ -110,13 +110,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             @for (c of value(); track $index) {
               <div>
                 <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
-                <div class="ms-4"><span [innerHtml]="c.name">{{ c.name }}</span></div>
+                <div class="ms-4"><span [innerHtml]="c.name"></span></div>
               </div>
             }
           } @else {
             <div>
               <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
-              <div class="ms-4"><span [innerHtml]="value()?.name">{{ value()?.name }}</span></div>
+              <div class="ms-4"><span [innerHtml]="value()?.name"></span></div>
             </div>
           }
         </span>
@@ -154,7 +154,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       @if (['checkbox'].includes(field()?.type)) {
         <span>
           <fa-icon [icon]="['far', value() ? 'check-square' : 'square']"></fa-icon>
-          &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"> {{ field()?.placeholder }}</span>
+          &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></span>
         </span>
       }
 

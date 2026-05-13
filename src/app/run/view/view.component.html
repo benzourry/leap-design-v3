@@ -7,9 +7,9 @@
       @if (formVal?.x?.showEntryId) {
         <div class="id-label">{{entry?.id}}</div>
       }
-      <h4 class="m-0" [innerHtml]="formVal?.title">{{formVal?.title}}</h4>
+      <h4 class="m-0" [innerHtml]="formVal?.title"></h4>
       @if (formVal?.description) {
-        <div class="mt-1" [innerHtml]="formVal?.description">{{formVal?.description}}</div>
+        <div class="mt-1" [innerHtml]="formVal?.description"></div>
       }
     </page-title>
   }

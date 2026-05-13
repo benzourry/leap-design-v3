@@ -62,9 +62,9 @@ export class EntryService {
   // getList(type: string, formId: number, params: any): any {
   //   return this.http.get(`${this.baseApi}/entry/list/${type}?formId=${formId}`,{params:params});
   // }
-  // getListData(formId: number, params: any): any {
-  //   return this.http.get(`${this.baseApi}/entry/list-all?formId=${formId}`,{params:params});
-  // }
+  getListByForm(formId: number, params: any): any {
+    return this.http.get(`${this.baseApi}/entry/list-all?formId=${formId}`,{params:params});
+  }
   getListByDataset(datasetId: number, params: any){
     return this.http.get<any>(`${this.baseApi}/entry/list?datasetId=${datasetId}`,{params:params});
   }

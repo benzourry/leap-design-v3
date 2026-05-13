@@ -4,8 +4,6 @@
 @let isInvalid = m?.touched && m?.invalid;
 @let placeholder = f.placeholder||' ';
 
-{{uid}}
-
 <ng-template #errorIcon>
   <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='#dc3545' viewBox='0 0 12 12'>
     <circle cx='6' cy='6' r='4.5' />
@@ -17,7 +15,7 @@
 <div class="field-edit form-group position-relative" [ngClass]="f.altClass">
   @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
     <label class="label-span me-1" for="{{uid}}">
-      <span [innerHtml]="f.label">{{f.label}} </span>
+      <span [innerHtml]="f.label"></span>
       @if (f?.v?.required) { <span> *</span> }
     </label>
   }
@@ -129,12 +127,12 @@
             @if (f.placeholder) {
               <label class="form-check-label" for="{{uid}}">
                 @if (f?.v?.required && f.hideLabel) { <span>* </span> }
-                <span [innerHtml]="compileTpl(f.placeholder,data())|safe:'html'">{{f.placeholder}}</span>
+                <span [innerHtml]="compileTpl(f.placeholder,data())|safe:'html'"></span>
               </label>
             } @else {
               <label class="form-check-label" for="{{uid}}">
                 @if (f?.v?.required && f.hideLabel) { <span>* </span> }
-                <span [innerHtml]="compileTpl(f.label,data())|safe:'html'">{{f.label}}</span>
+                <span [innerHtml]="compileTpl(f.label,data())|safe:'html'"></span>
               </label>
             }
           </div>
@@ -154,7 +152,7 @@
                   @if (f?.placeholder) {
                     <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                   } @else {
-                    <span [innerHtml]="i?.name">{{i?.name}}</span>
+                    <span [innerHtml]="i?.name"></span>
                   }
                 </label>
               }
@@ -170,7 +168,7 @@
                     @if (f?.placeholder) {
                       <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                     } @else {
-                      <span [innerHtml]="i?.name">{{i?.name}}</span>
+                      <span [innerHtml]="i?.name"></span>
                     }
                   </label>
                 </div>
@@ -278,7 +276,7 @@
                   @if (f?.placeholder) {
                     <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                   } @else {
-                    <span [innerHtml]="i?.name">{{i?.name}}</span>
+                    <span [innerHtml]="i?.name"></span>
                   }
                 </label>
               }
@@ -295,7 +293,7 @@
                     @if (f?.placeholder) {
                       <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
                     } @else {
-                      <span [innerHtml]="i?.name">{{i?.name}}</span>
+                      <span [innerHtml]="i?.name"></span>
                     }
                   </label>
                 </div>
@@ -556,4 +554,5 @@
       </small>
     }
     
-  } </div>
+  } 
+</div>

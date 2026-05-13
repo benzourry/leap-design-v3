@@ -5,9 +5,9 @@
         @if (form()?.x?.showEntryId){
           <div class="id-label">{{entry?.id}}</div>
         }
-        <h4 class="m-0" [innerHtml]="form()?.title">{{form()?.title}}</h4>
+        <h4 class="m-0" [innerHtml]="form()?.title"></h4>
         @if (form()?.description) {
-          <div class="mt-1" [innerHtml]="form()?.description">{{form()?.description}}</div>
+          <div class="mt-1" [innerHtml]="form()?.description"></div>
         }
       </page-title>
     }
@@ -427,7 +427,7 @@
                                                 @if (listKv?.key=='undefined'){
                                                   <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                                                 }@else {
-                                                  <span [innerHtml]="listKv?.key">{{listKv?.key}}</span> 
+                                                  <span [innerHtml]="listKv?.key"></span> 
                                                 }
                                               </div>
                                               <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
@@ -534,7 +534,7 @@
                                       @if (listKv?.key=='undefined'){
                                         <span class="text-muted fst-italic"> {{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                                       }@else {
-                                        <span [innerHtml]="listKv?.key">{{listKv?.key}}</span>
+                                        <span [innerHtml]="listKv?.key"></span>
                                       }
                                     </div>
                                   <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>

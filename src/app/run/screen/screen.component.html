@@ -1,13 +1,33 @@
 @if (screen()) {
   <div id="screen-{{screen()?.id}}" #screenviewport class="viewport position-relative" [class.map-fullscreen]="screen()?.data?.fullscreen" [class.full-viewport-page]="['chatbot'].indexOf(screen().type)>-1">
     @if (!asComp() && !screen().data?.hideTitle && !hideTitle()) {
+      @let tplContext = {
+        $_: entry(),
+        $: entry()?.data,
+        $prev$: entry()?.prev,
+        $$_: entry()?.approval,
+        $maps$: mapList,
+        $go: goObjWParam,
+        $popup: popObj,
+        $param$: _param,
+        $this$: _this,
+        $user$: user(),
+        $conf$: appConfig,
+        $base$: base,
+        $baseUrl$: baseUrl,
+        $baseApi$: baseApi,
+        $showNav$: openNav
+      };
+
       <page-title [asComp]="asComp()" (closed)="closed.emit(true)">
-        @if (form()?.data?.x?.showEntryId){
-          <div class="id-label">{{entry()?.id}}</div>
+        @if (form()?.data?.x?.showEntryId) {
+          <div class="id-label">{{ entry()?.id }}</div>
         }
-        <h4 class="m-0" [innerHtml]="compileTpl(screen().title, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">{{screen().title}}</h4>
+        
+        <h4 class="m-0" [innerHtml]="compileTpl(screen().title, tplContext) | safe:'html'"></h4>
+        
         @if (screen().description) {
-          <div class="mt-1" [innerHtml]="compileTpl(screen().description, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">{{screen().description}}</div>
+          <div class="mt-1" [innerHtml]="compileTpl(screen().description, tplContext) | safe:'html'"></div>
         }
       </page-title>
     }
