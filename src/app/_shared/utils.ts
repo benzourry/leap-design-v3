@@ -244,13 +244,13 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   }
 }
 
-function safeAccessOld(expr: string): string {
+function safeAccess(expr: string): string {
   // Ignore function calls, expressions with operators, or already chained expressions
   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.") || expr.includes("[")) return expr;
   // Transform `a.b.c` -> `a?.b?.c`
   return expr.split('.').filter(Boolean).join('?.');
 }
-function safeAccess(expr: string): string {
+function safeAccessNew(expr: string): string {
   // 1. Quick exit for complex expressions
   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.")) return expr;
 
