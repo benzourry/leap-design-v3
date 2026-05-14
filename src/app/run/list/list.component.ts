@@ -98,6 +98,25 @@ export class ListComponent implements OnInit, OnDestroy {
   itemLoading = signal<boolean>(false);
   offline = signal<boolean>(false);
   filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({...this.filtersData(), ...this._param})));
+  confValueEncoded = computed(() => {
+    const filters = this.dataset()?.presetFilters;
+    
+    // 1. Early return to flatten the code (removes unnecessary indentation)
+    if (!filters) return '';
+
+    const scopeId = this.scopeId();
+    const params: Record<string, string> = {}; 
+
+    for (const [k, v] of Object.entries(filters)) {
+      // 2. Stricter type-checking instead of casting
+      if (typeof v === 'string' && v.includes("$conf$")) {
+        // 3. Removed redundant `(v as string) ?? ''` because we just verified it's a string
+        params[k] = compileTpl(v, {}, scopeId);
+      }
+    }
+
+    return new URLSearchParams(params).toString();
+  });
   searchText = signal<string>('');
   searchTextEncoded = computed(() => encodeURIComponent(this.searchText()));
   sort = signal<string | null>(null);
