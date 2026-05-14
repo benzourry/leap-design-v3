@@ -244,37 +244,36 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   }
 }
 
+// function safeAccessOld(expr: string): string {
+//   // Ignore function calls, expressions with operators, or already chained expressions
+//   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.") || expr.includes("[")) return expr;
+//   // Transform `a.b.c` -> `a?.b?.c`
+//   return expr.split('.').filter(Boolean).join('?.');
+// }
+
 function safeAccess(expr: string): string {
-  // Ignore function calls, expressions with operators, or already chained expressions
-  if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.") || expr.includes("[")) return expr;
-  // Transform `a.b.c` -> `a?.b?.c`
-  return expr.split('.').filter(Boolean).join('?.');
-}
-function safeAccessNew(expr: string): string {
   // 1. Quick exit for complex expressions
   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.")) return expr;
 
-  // 2. Extract parts of the path safely
-  // Matches: 
-  // - Alphanumeric/underscore words: \w+
-  // - Things inside brackets: \['[^']*'\] or \["[^"]*"\] or \[\d+\]
-  const pathRegex = /(\w+)|(\[[^\]]+\])/g;
-  const matches = expr.match(pathRegex);
+  // 2. Match entire bracket groups `[...]` OR literal dots `.`
+  const pathRegex = /(\[[^\]]+\])|(\.)/g;
 
-  if (!matches) return expr;
+  let str = expr.replace(pathRegex, (match, isBracket, isDot, offset) => {
+    // If the expression starts with a bracket (e.g., "[0].id"), leave the first bracket alone
+    if (offset === 0 && isBracket) return match; 
+    
+    // If it matches a full bracket group, prefix it: `['key']` -> `?.['key']`
+    if (isBracket) return `?.${match}`;
+    
+    // If it matches a dot, replace it: `.` -> `?.`
+    if (isDot) return '?.';
+    
+    return match;
+  });
 
-  // 3. Rebuild the string with optional chaining
-  return matches.reduce((acc, part, index) => {
-    if (index === 0) return part; // First item doesn't need ?.
-    
-    // If it's a bracket notation, prefix with ?.[...
-    if (part.startsWith('[')) {
-      return `${acc}?.${part}`;
-    }
-    
-    // Standard dot notation
-    return `${acc}?.${part}`;
-  }, "");
+  console.log(`${expr} -> ${str}`);
+
+  return str;
 }
 
 export function mobileAndTabletCheck() {
