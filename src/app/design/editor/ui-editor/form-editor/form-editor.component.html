@@ -1285,10 +1285,7 @@
                     id="defGroup">
                   <label class="form-check-label" for="defGroup">Data Grouping</label>
                 </div>
-                @if(editSectionData.x.defGroup){  
-
-                  <!-- {{editSectionData|json}} -->
-                  
+                @if(editSectionData.x.defGroup){                    
                   <div class="form-group mt-3 mb-3">
                     <label class="form-label">Default data grouping field</label>
                     <select class="form-select" name="defGroupField"
@@ -1692,8 +1689,6 @@
                 </label>
               }
             </div>
-            <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.icon"
-            name="icon">         -->
           </div>
         </div>
         <div class="col-6">
@@ -2166,7 +2161,6 @@
                     <span>(Optional. Used for text auto-complete)</span>
                     }
                   </label>
-                  <!-- {{lookupMap|json}} -->
                   <div class="input-group">
                     <select class="form-select" name="dataSource"
                       [(ngModel)]="editItemData.dataSource">

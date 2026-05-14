@@ -108,7 +108,7 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
         .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
         .replace(/<\/x-if>/ig, '";}\noutput+="')
         // .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
-        .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+p1.replace(/\\[rnt]+/gm, '')+'){\noutput+="')
+        .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
         .replace(/<\/x-for>/ig, '";}\noutput+="')
         .replace(/<x-foreach\s*\$\=\\\"(.+?)\\\"\s*>/ig, r$foreach)
         .replace(/<\/x-foreach>/ig, '";})\noutput+="')
@@ -244,11 +244,37 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   }
 }
 
-function safeAccess(expr: string): string {
+function safeAccessOld(expr: string): string {
   // Ignore function calls, expressions with operators, or already chained expressions
   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.") || expr.includes("[")) return expr;
   // Transform `a.b.c` -> `a?.b?.c`
   return expr.split('.').filter(Boolean).join('?.');
+}
+function safeAccess(expr: string): string {
+  // 1. Quick exit for complex expressions
+  if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.")) return expr;
+
+  // 2. Extract parts of the path safely
+  // Matches: 
+  // - Alphanumeric/underscore words: \w+
+  // - Things inside brackets: \['[^']*'\] or \["[^"]*"\] or \[\d+\]
+  const pathRegex = /(\w+)|(\[[^\]]+\])/g;
+  const matches = expr.match(pathRegex);
+
+  if (!matches) return expr;
+
+  // 3. Rebuild the string with optional chaining
+  return matches.reduce((acc, part, index) => {
+    if (index === 0) return part; // First item doesn't need ?.
+    
+    // If it's a bracket notation, prefix with ?.[...
+    if (part.startsWith('[')) {
+      return `${acc}?.${part}`;
+    }
+    
+    // Standard dot notation
+    return `${acc}?.${part}`;
+  }, "");
 }
 
 export function mobileAndTabletCheck() {
