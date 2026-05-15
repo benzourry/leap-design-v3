@@ -351,6 +351,13 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_live.publish", type: "function", apply: "_live.publish(#{channel-list},'#{url}')", detail: "Publish notification for live subscription" }
         );
       }
+      if (b.type == '_log') {
+        this.extraAutoComplete.push(
+          { label: "_log.error", type: "function", apply: "_log.error(#{text})", detail: "Error log to AppLog" },
+          { label: "_log.success", type: "function", apply: "_log.success(#{text})", detail: "Success log to AppLog" },
+          { label: "_log.info", type: "function", apply: "_log.info(#{text})", detail: "Info log to AppLog" },
+        );
+      }
       if (b.type == '_user') {
         this.extraAutoComplete.push(
           { label: "_user.name", type: "property", apply: "_user.name", detail: "Name of logged in user" },
@@ -630,6 +637,7 @@ export class LambdaEditorComponent implements OnInit {
     this.bindingSrcs.push({ name: "⚙ Jsoup", type: '_jsoup' })
     this.bindingSrcs.push({ name: "⚙ Krypta", type: '_krypta' })
     this.bindingSrcs.push({ name: "⚙ Live", type: '_live' })
+    this.bindingSrcs.push({ name: "⚙ Log", type: '_log' })
     this.bindingSrcs.push({ name: "⚙ Token", type: '_token' })
     this.bindingSrcs.push({ name: "⚙ SQL", type: '_sql' })
     this.bindingSrcs.push({ name: "⚙ IO/File", type: '_io' })
