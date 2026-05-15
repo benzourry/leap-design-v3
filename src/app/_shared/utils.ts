@@ -48,9 +48,11 @@ const tplCache = new Map<string, Function>();
 export function compileTpl(templateText: string, data: any, scopeId: string): string {
   if (!templateText) return "";
 
-  let cachedFn = tplCache.get(templateText);
-  // let code = tplCache[tplHash];
+  if (!scopeId) return templateText; // dont process tpl without scopeId, most probably from form-builder preview
 
+  // Map keys require `scopeId` to prevent different form contexts ('add', 'edit', 'view') from caching and sharing the wrong $this$ references.
+  let cachedFn = tplCache.get(templateText+scopeId); // need this
+  // let code = tplCache[tplHash];
 
   if (!cachedFn) {
     let fullTpl = multiReplace(templateText, tag2sym);
@@ -120,9 +122,8 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
     
     // Instantiate the function once and cache it
     cachedFn = new Function("data", "get", "formatNumber", code);
-
     
-    tplCache.set(templateText, cachedFn);
+    tplCache.set(templateText+scopeId, cachedFn);
   }
 
   if (data) {

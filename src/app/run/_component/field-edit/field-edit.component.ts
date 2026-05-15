@@ -102,7 +102,8 @@ export class FieldEditComponent extends ElementBase<any> {
   readonly model = viewChild<NgModel>('formField');
 
   // Computed Values
-  compiledData = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
+  compiledDataPlaceholder = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
+  compiledDataLabel = computed(() => this.compileTpl(this.field()?.label, this.data(), this.field()?.subType === 'htmlSave'));
   simpleList = computed(() => splitAsList(this.field()?.options));
   scales: Signal<number[]> = computed(() => {
     const f = this.field();
