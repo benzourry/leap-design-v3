@@ -144,7 +144,8 @@
                   [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" autocomplete="off">
                 <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="checkValue(i)">
                   @if (f?.placeholder) {
-                    <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
+                    <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
+                    <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
                   }
@@ -160,7 +161,8 @@
                     [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);" />
                   <label class="form-check-label" for="{{uid}}-{{i?.code}}">
                     @if (f?.placeholder) {
-                      <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
+                      <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
+                      <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
                     }
@@ -190,7 +192,8 @@
             [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
             @if (f?.placeholder) {
               <ng-template ng-option-tmp let-item="item">
-                <div [innerHtml]="compileTpl(f.placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'"></div>
+                <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'"></div> -->
+                <div [innerHtml]="compiledLookupMap().get(item) | safe:'html'"></div>
               </ng-template>
             }
           </ng-select>
@@ -223,7 +226,8 @@
             [searchFn]="lookupSearchFn">
             @if (f?.placeholder) {
               <ng-template ng-option-tmp let-item="item">
-                <div [innerHtml]="compileTpl(f.placeholder,{'$':item})|safe:'html'"></div>
+                <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item})|safe:'html'"></div> -->
+                <div [innerHtml]="compiledLookupMap().get(item) | safe:'html'"></div>
               </ng-template>
             }
             @if (f?.x?.groupBy) {
@@ -243,12 +247,14 @@
               @if (value?.length>0) {
                 <div class="list-group">
                   @for (sv of value; track $index) {
+                    <!-- <div class="list-group-item" [innerHtml]="compiledLookupMap().get(sv) | safe:'html'"></div> -->
                     <div class="list-group-item" [innerHtml]="compileTpl(f.placeholder,{'$':sv})|safe:'html'"></div>
                   }
                 </div>
               }
             } @else {
               @if (value) {
+                <!-- <div class="card card-body single-pane" [innerHtml]="compiledLookupMap().get(value) | safe:'html'"></div> -->
                 <div class="card card-body single-pane" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
               }
             }
@@ -268,7 +274,8 @@
                   id="{{uid}}-{{$index}}" autocomplete="off" />
                 <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="value?.code === i?.code">
                   @if (f?.placeholder) {
-                    <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
+                    <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
+                    <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
                   }
@@ -285,7 +292,8 @@
                     (change)="value=i;valueChanged(i);" />
                   <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}">
                     @if (f?.placeholder) {
-                      <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div>
+                      <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
+                      <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
                     }

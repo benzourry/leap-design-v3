@@ -105,6 +105,55 @@ export class FieldEditComponent extends ElementBase<any> {
   compiledDataPlaceholder = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
   compiledDataLabel = computed(() => this.compileTpl(this.field()?.label, this.data(), this.field()?.subType === 'htmlSave'));
   simpleList = computed(() => splitAsList(this.field()?.options));
+
+  compiledLookupMap = computed(() => {
+    const list = this.lookupList();
+    const f = this.field();
+    
+    // Initialize a Map instead of a standard Record object
+    const map = new WeakMap<any, string>();
+
+    if (!list || !f?.placeholder) return map;
+
+    for (const item of list) {
+      // We pass the raw `item` object as the key! 
+      // Even if two items have the exact same name/data, they occupy 
+      // different memory spaces, so the Map treats them as unique keys.
+      map.set(item, this.compileTpl(f.placeholder, { '$': item, '$prev$': item.$prev }));
+    }
+
+    return map;
+  });
+
+  // compiledGroupByMap = computed(() => {
+  //   const list = this.lookupList();
+  //   const f = this.field();
+  //   const weakMap = new WeakMap<any, string>();
+
+  //   // If there's no groupBy template, exit early
+  //   if (!f?.x?.groupBy) return weakMap;
+
+  //   // 1. Pre-compile all items in the dropdown list
+  //   if (list) {
+  //     for (const item of list) {
+  //       weakMap.set(item, this.compileTpl(f.x.groupBy, { '$': item }));
+  //     }
+  //   }
+
+  //   // 2. SAFETY CATCH: Also compile the currently selected value(s)
+  //   const currentValue = this.value; 
+  //   if (currentValue) {
+  //     const valArray = Array.isArray(currentValue) ? currentValue : [currentValue];
+  //     for (const sv of valArray) {
+  //       if (!weakMap.has(sv)) {
+  //         weakMap.set(sv, this.compileTpl(f.x.groupBy, { '$': sv }));
+  //       }
+  //     }
+  //   }
+
+  //   return weakMap;
+  // });
+
   scales: Signal<number[]> = computed(() => {
     const f = this.field();
     if (!f) return [];
