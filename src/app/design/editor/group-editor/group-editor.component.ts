@@ -506,12 +506,9 @@ export class GroupEditorComponent implements OnInit {
     return this.selectedUsers.has(i.user?.id);
   }
   toggleSelect(i) {
-    // console.log(i);
     if (this.selectedUsers.has(i.user?.id)) {
-      // console.log("ada")
       this.selectedUsers.delete(i.user?.id);
     } else {
-      // console.log("xda")
       this.selectedUsers.set(i.user?.id, i);
     }
   }

@@ -38,7 +38,6 @@ marked.use({
   extensions: [{
      name: 'code',
      renderer({lang, raw, text}) {
-      // console.log({lang, raw, text})
       if (lang=='mermaid') {
         return `
           <pre class="mermaid">${text}</pre>
@@ -458,7 +457,6 @@ export class CognaEditorComponent implements OnInit {
   editCode: boolean;
   editCognaData: any;
   editCogna(content, cogna, isNew) {
-    // console.log(cogna);
     cogna.content = this.br2nl(cogna.content);
     this.editCognaData = cogna;
     this.editCognaData.email = cogna.email || this.user.email;
@@ -864,7 +862,6 @@ export class CognaEditorComponent implements OnInit {
   }
 
   loadLookupEntries(lookupId){
-    // console.log(lookupId)
     this.lookupService.getEntryList(lookupId,{})
     .subscribe(res=>{
       this.lookupEntries = res.content;
@@ -1089,7 +1086,6 @@ export class CognaEditorComponent implements OnInit {
         this.runService.streamCognaPrompt(cogna.id, prompt, this.fileList.map(f=>f.path),param, true, this.user?.email)
         .pipe(
           map(res => {
-            // console.log(res);
             if (res['type'] == 4) {
               this.chatPromptLoading.set(false);
               this.streamResult.set(marked.parse(res['body'])+"");

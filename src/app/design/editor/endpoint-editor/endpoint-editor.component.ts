@@ -151,27 +151,9 @@ export class EndpointEditorComponent implements OnInit {
             })
     }
 
-    // loadSharedList(pageNumber) {
-    //     this.pageNumber = pageNumber;
-    //     this.sharedLoading = true;
-
-    //     let params = {
-    //         searchText: this.searchText,
-    //         page: pageNumber - 1,
-    //         size: this.itemsPerPage
-    //     }
-    //     this.endpointService.getSharedEndpointList(params)
-    //         .subscribe(res => {
-    //             this.sharedList = res.content;
-    //             this.sharedTotal = res.page?.totalElements;
-    //             this.sharedLoading = false;
-    //         }, res => this.sharedLoading = false)
-    // }
-
     editCode: boolean;
     editEndpointData: any;
     editEndpoint(content, endpoint, isNew) {
-        // console.log(endpoint);
         endpoint.content = this.br2nl(endpoint.content);
         this.editEndpointData = endpoint;
         history.pushState(null, null, window.location.href);

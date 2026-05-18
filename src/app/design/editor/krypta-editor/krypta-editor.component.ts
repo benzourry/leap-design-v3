@@ -244,15 +244,10 @@ export class KryptaEditorComponent implements OnInit {
     loadContract(id) {
         this.krypta=null;
         this.cdr.markForCheck(); 
-        console.log("Loading contract", id);
         this.kryptaService.getContract(id)
             .subscribe(contract => {
-                console.log("Contract loaded", id);
                 this.contract = contract;
                 this.cdr.markForCheck();
-                // setTimeout(()=>{    
-                //     this.cdr.detectChanges();
-                // });
             })
     }
 

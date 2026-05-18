@@ -272,7 +272,7 @@
                 </div>
                 <div class="mt-2">
                   <button type="button" class="btn btn-secondary btn-sm"
-                    (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file'})">
+                    (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file', style:'btn-secondary'})">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
                     </fa-icon>
                   New Action</button>
@@ -642,7 +642,7 @@
               </div>
               <div class="row">
                 <div class="col-sm-6">
-                  <div class="form-group mb-3">
+                  <!-- <div class="form-group mb-3">
                     <label class="form-label">Button Type *</label>
                     <div>
                       <div class="btn-group">
@@ -662,6 +662,35 @@
                         <label for="type-bulk" class="btn btn-outline-secondary">
                         Bulk</label>
                       </div>
+                    </div>
+                  </div> -->
+                  <div class="form-group mb-3">
+                    <label class="form-label">Button Type *</label>
+                    
+                    <div class="d-flex gap-1">
+                      
+                      <div class="btn-group">
+                        <input class="btn-check" type="radio" value="inline" id="type-inline"
+                          name="buttonType" [(ngModel)]="editActionData.type" required>
+                        <label for="type-inline" class="btn btn-outline-secondary">
+                          Inline
+                        </label>
+
+                        <input class="btn-check" type="radio" value="dropdown" id="type-dropdown"
+                          name="buttonType" [(ngModel)]="editActionData.type" required>
+                        <label for="type-dropdown" class="btn btn-outline-secondary">
+                          Dropdown
+                        </label>
+                      </div>
+
+                      <div>
+                        <input class="btn-check" type="radio" value="bulk" id="type-bulk"
+                          name="buttonType" [(ngModel)]="editActionData.type" required>
+                        <label for="type-bulk" class="btn btn-outline-secondary">
+                          Bulk
+                        </label>
+                      </div>
+
                     </div>
                   </div>
                 </div>

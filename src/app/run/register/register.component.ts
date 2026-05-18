@@ -36,9 +36,7 @@ export class RegisterComponent implements OnInit {
   cancel = output<any>();
 
   groupList = signal<any[]>([]);
-  
-  // Converted to a signal to ensure OnPush triggers view updates perfectly
-  selectedRoles = signal<any[]>([]);
+  selectedRoles = signal<any[]>([]); 
 
   public runService = inject(RunService);
   private destroyRef = inject(DestroyRef);
@@ -69,12 +67,13 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  save(event) {
-    // Emit the actual selected data to the parent component, not the DOM event
+  save() {
+    // Emit the actual selected data to the parent component
     this.done.emit(this.selectedRoles());
   }
 
-  logout(event) {
+  logout(event: any = {}) {
+    // Passes the event object safely to preserve original component contract
     this.cancel.emit(event);
   }
 

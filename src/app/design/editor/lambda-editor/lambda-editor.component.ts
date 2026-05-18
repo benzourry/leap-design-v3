@@ -353,9 +353,9 @@ export class LambdaEditorComponent implements OnInit {
       }
       if (b.type == '_log') {
         this.extraAutoComplete.push(
-          { label: "_log.error", type: "function", apply: "_log.error(#{text})", detail: "Error log to AppLog" },
-          { label: "_log.success", type: "function", apply: "_log.success(#{text})", detail: "Success log to AppLog" },
-          { label: "_log.info", type: "function", apply: "_log.info(#{text})", detail: "Info log to AppLog" },
+          { label: "_log.error", type: "function", apply: "_log.error(#{text})", detail: "Log Error message to AppLog" },
+          { label: "_log.success", type: "function", apply: "_log.success(#{text})", detail: "Log Success message to AppLog" },
+          { label: "_log.info", type: "function", apply: "_log.info(#{text})", detail: "Log Info message to AppLog" },
         );
       }
       if (b.type == '_user') {
