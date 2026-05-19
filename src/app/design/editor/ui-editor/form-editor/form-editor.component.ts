@@ -340,16 +340,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     constructor() {
 
-
-        // effect(() => {
-        //     let data = commService.changeEmitted();
-        //     if (data?.value == 'import') {
-        //         this.getFormList(1);
-        //     }
-        //     if (data?.value == 'form-add') {
-        //         this.editForm(this.editFormTpl(), {}, true);
-        //     }
-        // });
     }
 
     ngAfterViewChecked() {
@@ -717,15 +707,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     // }
 
                     if (key.type != 'modelPicker') {
-                        // this.lookupService.getLookup(key.dataSource)
-                        //     .subscribe({
-                        //         next: res => {
-                        //             this.lookupMap[key.dataSource] = res;
-                        //             this.cdr.detectChanges(); // <--- Add here
-                        //         },
-                        //         error: err => { }
-                        //     })
-
                         // Use cache to avoid duplicate requests
                         if (!this.lookupMapCache[key.dataSource]) {
                             this.lookupMapCache[key.dataSource] = this.lookupService.getLookup(key.dataSource).pipe(shareReplay(1));
@@ -758,29 +739,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         cm.insertText("{{" + text + "}}");
     }
 
-    // getItemText(pre,item){
-    //     var type = item.type;
-    //     var bindLabel = item.bindLabel;
-    //     var pipe = ''
-    //     if (type == 'date') {
-    //       pipe = '|date';
-    //     } else if (['select', 'radio'].indexOf(type) > -1) {
-    //       pipe = '.name';
-    //     } else if (['modelPicker'].indexOf(type) > -1) {
-    //       pipe = '.'+bindLabel;
-    //     } else if (type == 'qr') {
-    //       pipe = '|qr';
-    //     } else if (type == 'file') {
-    //       pipe = '|src';
-    //     }
-    //     return pre +'.'+ item.code + pipe;
-    // }
-
-
     getLookup = (code, params?: any) => {
         this._getLookup(code, params);
     }
-
 
     _getLookup = (code, param, cb?, err?) => {
         if (code) {

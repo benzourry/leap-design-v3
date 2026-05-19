@@ -49,10 +49,14 @@
         }
         @else if (f.subType == 'richtext') {
           <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="!!value" [class.pe-none]="f.readOnly">
-            <angular-editor class="clean" [config]="editorConfig()" [class.is-invalid]="isInvalid" [id]="uid"
-              [name]="uid" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
-              [required]="f.v?.required" [placeholder]="placeholder">
-            </angular-editor>
+            @defer (prefetch on idle) {
+              <angular-editor class="clean" [config]="editorConfig()" [class.is-invalid]="isInvalid" [id]="uid"
+                [name]="uid" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
+                [required]="f.v?.required" [placeholder]="placeholder">
+              </angular-editor>
+            } @loading {
+              <div class="text-center p-3 text-muted">Loading editor...</div>
+            }
           </div>
         }
       }

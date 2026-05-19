@@ -43,6 +43,7 @@ export class EntryService {
     return this.http.get(`${this.baseApi}/entry/chart/${chartId}`, {params:params});
     // return this.http.get(`${this.baseApi}/entry/dashboard-echarts/${dashboardId}`);
   }
+  
 
   // getActionList(id: number, email: string, params: any): any {
   //   return this.http.get(`${this.baseApi}/entry/action-list`,{params: params});
