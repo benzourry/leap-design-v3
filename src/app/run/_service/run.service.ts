@@ -186,12 +186,27 @@ export class RunService {
       })
     );
   }  
+  // getRunScreen(id: number) {
+  //   return this.http.get<any>(`${this.baseApi}/run/screen/${id}`)
+  //   .pipe(map(res => ({
+  //     ...res, 
+  //     data: JSON.parse(atobUTF(res._data,'@'))
+  //   })))
+  // }
+
   getRunScreen(id: number) {
     return this.http.get<any>(`${this.baseApi}/run/screen/${id}`)
-    .pipe(map(res => ({
-      ...res, 
-      data: JSON.parse(atobUTF(res._data,'@'))
-    })))
+      .pipe(map(res => ({
+        ...res,
+        // Decode the main data object
+        data: res._data ? JSON.parse(atobUTF(res._data, '@')) : res.data,
+        
+        // Map through actions and decode _f into f
+        actions: res.actions ? res.actions.map((action: any) => ({
+          ...action,
+          f: action._f ? atobUTF(action._f, '@') : action.f
+        })) : []
+      })));
   }
 
   getMailerList(params?: any) {
