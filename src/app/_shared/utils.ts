@@ -272,8 +272,6 @@ function safeAccess(expr: string): string {
     return match;
   });
 
-  console.log(`${expr} -> ${str}`);
-
   return str;
 }
 
