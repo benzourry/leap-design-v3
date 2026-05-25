@@ -307,9 +307,9 @@ export class LookupComponent implements OnInit {
             }else{
                 run({});
             }
+        }else{
+            run(params);
         }
-
-
     }
 
     duplicatedCodes: string[] = [];

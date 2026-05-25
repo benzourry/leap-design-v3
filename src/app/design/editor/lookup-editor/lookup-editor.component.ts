@@ -397,6 +397,8 @@ export class LookupEditorComponent implements OnInit {
             }else{
                 run({});
             }
+        }else{
+            run(params);
         }
     }
 
