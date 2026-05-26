@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, effect, forwardRef, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, effect, forwardRef, inject, input, output, signal, untracked } from '@angular/core';
 import { UserService } from '../../_shared/service/user.service';
 import { NavigationExtras, Router } from '@angular/router';
 import { base, baseApi } from '../../_shared/constant.service';
@@ -94,7 +94,8 @@ export class ListComponent implements OnInit, OnDestroy {
   );
   entryTotal = signal<number>(0);
   pageNumber = signal<number>(1);
-  preCount = computed(() => this.pageSize() * (this.pageNumber() - 1));
+  // preCount = computed(() => this.pageSize() * (this.pageNumber() - 1));
+  preCount = computed(() => this.pageSize() * Math.max(0, this.pageNumber() - 1));
   itemLoading = signal<boolean>(false);
   offline = signal<boolean>(false);
   filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({...this.filtersData(), ...this._param})));
@@ -198,7 +199,10 @@ export class ListComponent implements OnInit, OnDestroy {
   private destroyed = false;
 
   constructor() {
-    this.utilityService.testOnline$().subscribe((online) => this.offline.set(!online));
+    this.utilityService
+    .testOnline$()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((online) => this.offline.set(!online));
 
     effect(() => {
       const currentDatasetId = this.datasetId();
@@ -211,18 +215,21 @@ export class ListComponent implements OnInit, OnDestroy {
     effect(() => {
       const startTimestamp = this.runService.$startTimestamp();
       const param = this.param();
-      if (!deepEqual(this._param, param) || 
-          (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
+      
+      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
         this._param = param;
         this._startTimestamp = startTimestamp;
-        if (this._param){
-          if (this._param['$prev$.$id']) {
-            this.prevId = this._param['$prev$.$id'];
-          }
+        
+        if (this._param?.['$prev$.$id']) {
+          this.prevId = this._param['$prev$.$id'];
         }
-        this.getEntryList(this.pageNumber(), this.sort());
+        
+        // Safely fire the API call without accidentally tracking search text or page size!
+        untracked(() => {
+          this.getEntryList(this.pageNumber(), this.sort());
+        });
       }
-    })
+    });
 
     // effect(() => {
     //   if (this.filtersData()) {
@@ -271,6 +278,7 @@ export class ListComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   mailerList = signal<any[]>([]);
   totalColumn: number = 0;
+  columnVisible: Record<string, boolean> = {};
   getDataset(id) {
     this.loading.set(true);
     this.runService.getRunDataset(id)
@@ -294,6 +302,13 @@ export class ListComponent implements OnInit, OnDestroy {
           this.actionsInline = res.actions.filter(f => f.type == 'inline');
           this.actionsDropdown = res.actions.filter(f => f.type == 'dropdown');
           this.actionsBulk = res.actions.filter(f => f.type == 'bulk');
+
+          this.columnVisible = {};
+          res.items?.forEach(item => {
+            this.columnVisible[item.id] = this.preCheck({}, item.pre, false);
+          });
+
+
           this.loading.set(false); 
 
           this.selectedEntries.set({});
@@ -326,20 +341,6 @@ export class ListComponent implements OnInit, OnDestroy {
     this.blastData.set(template);
     this.cdr.detectChanges();
   }
-
-  // Computed signal for processed preset filters
-  // readonly processedPresetFilters = computed<Record<string, string>>(() => {
-  //   const dataset = this.dataset();
-  //   const scopeId = this.scopeId();
-  //   if (!dataset?.presetFilters) return {};
-
-  //   return Object.keys(dataset.presetFilters)
-  //     .filter(k => String(dataset.presetFilters[k]).includes('$conf$'))
-  //     .reduce((acc, k) => {
-  //       acc[k] = compileTpl(dataset.presetFilters[k] ?? '', {}, scopeId);
-  //       return acc;
-  //     }, {} as Record<string, string>);
-  // });
 
   readonly hasConfPresetFilters = computed(() =>{
     const dataset = this.dataset();
@@ -396,8 +397,8 @@ export class ListComponent implements OnInit, OnDestroy {
 
         // Batch set signals
         this.rawList.set(res);
-        this.entryList.set(content);
         this.entryTotal.set(res.page?.totalElements);
+        this.pageSize.set(res.page?.size || this.pageSize());
         this.itemLoading.set(false);
         this.numberOfElements.set(contentLength);
         this.entryPages.set(res.page?.totalPages);
@@ -441,6 +442,56 @@ export class ListComponent implements OnInit, OnDestroy {
           
           this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
 
+
+          // NEW TO PRE-CALC VALUES
+          e._isVisible = {};
+          e._computedValues = {};
+          e._actionVisible = {}; // 👇 Add this new dictionary!
+
+          // Pre-calculate Inline Actions
+          this.actionsInline.forEach(ac => {
+            e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+          });
+
+          // Pre-calculate Dropdown Actions
+          this.actionsDropdown.forEach(ac => {
+            e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+          });
+
+          dataset.items?.forEach(item => {
+            // 👇 Create a unique key to prevent data/prev collisions
+            const uniqueKey = `${item.root}.${item.code}`;
+
+            // 1. Pre-calculate visibility using the unique key
+            e._isVisible[uniqueKey] = this.preCheck(e, item.pre, false);
+
+            // 2. Determine the correct field and data root
+            const isBaseRoot = ['data', 'prev'].indexOf(item.root) > -1;
+            const fField = isBaseRoot 
+              ? this.form()[item.root]?.items[item.code] 
+              : this.form().data?.items[item.code];
+            
+            const rootData = isBaseRoot 
+              ? e[item.root] 
+              : e.approval?.[item.root]?.data;
+
+            // 3. Pre-calculate the display value using the unique key
+            e._computedValues[uniqueKey] = this.getVal(fField, e, rootData);
+            
+            // (Optional) Child list logic with unique keys
+            if (item.type == 'list' && e[item.root]?.[item.code]) {
+              e[item.root][item.code].forEach(ch => {
+                ch._computedValues = {};
+                item.subs?.forEach(fq => {
+                  const chUniqueKey = `${item.root}.${fq.code}`; // unique key for child
+                  const chField = this.form()[item.root]?.items[fq.code];
+                  ch._computedValues[chUniqueKey] = this.getVal(chField, e, ch);
+                });
+              });
+            }
+          });
+          // END CALC
+
           // Process math fields dynamically (O(1) branchless access)
           mathField.forEach(element => {
             const key = `${element.root}.${element.code}`;
@@ -455,6 +506,8 @@ export class ListComponent implements OnInit, OnDestroy {
           });
 
         });
+        
+        this.entryList.set(content);
 
         // Calculate averages only if we have rows
         if (contentLength > 0) {
@@ -532,10 +585,13 @@ export class ListComponent implements OnInit, OnDestroy {
   deleteEntry(id) {
     if (confirm("Remove this entry?")) {
       this.entryService.delete(id, this.user().email)
-        .pipe(takeUntil(this.destroy$)) // PREVENTS LEAK
+        .pipe(takeUntil(this.destroy$)) 
         .subscribe({
           next: res => {
-            this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
+            // Calculate the new page, but enforce a minimum of 1
+            const newPage = (this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber();
+            this.pageNumber.set(Math.max(1, newPage));
+            
             this.getEntryList(this.pageNumber());
             this.toastService.show(this.lang()=='ms'?"Entri berjaya dibuang":"Entry removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
@@ -798,6 +854,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   checkAllInput = signal<boolean>(false);
 
+
   bulkRemoveEntries() {
     const selectedKeys = Object.keys(this.selectedEntries()).map(Number);
     
@@ -805,15 +862,17 @@ export class ListComponent implements OnInit, OnDestroy {
       this.entryService.bulkDelete(selectedKeys, this.user().email)
         .subscribe({
           next: res => {
-            this.selectedEntries.set({}); // Changed to object
+            this.selectedEntries.set({});
             this.checkAllInput.set(false);
-            this.pageNumber.set((this.numberOfElements() == 1 && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber());
+            
+            // Calculate the new page, but enforce a minimum of 1
+            const newPage = (this.numberOfElements() == selectedKeys.length && this.pageNumber() == this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber();
+            this.pageNumber.set(Math.max(1, newPage));
+            
             this.getEntryList(this.pageNumber());
             this.toastService.show(this.lang()=='ms'?"Entri berjaya dibuang":"Entries removed successfully", { classname: 'bg-success text-light' });
           }, error: err => {
-            this.toastService.show(this.lang()=='ms'?"Entri tidak berjaya dibuang":"Entries removal failed", { classname: 'bg-danger text-light' });
-            this.selectedEntries.set({}); // Changed to object
-            this.checkAllInput.set(false);
+            // ... error handling
           }
         });
     }
@@ -845,30 +904,7 @@ export class ListComponent implements OnInit, OnDestroy {
 
   bulkEvalRun(f) {
     this._evalRun({},f, true);
-    // this.selectedEntries().forEach(e => {
-    //   this._evalRun(e, f, true);
-    // })
   }
-
-  // bulkCancelEntry() {
-  //   if (confirm(this.lang()=='ms'?"Batalkan semua entri?":"Cancel selected entry submission?")) {
-  //     const list: Observable<any>[] = [];
-  //     this.selectedEntries().forEach(e => {
-  //       if (e.currentStatus != 'drafted') {
-  //         list.push(this.entryService.cancel(e.id, this.user().email));
-  //       }
-  //     });
-  //     if (list.length === 0) {
-  //       this.toastService.show(this.lang()=='ms'?'Tiada entri untuk dibatalkan':'No entries to cancel.', { classname: 'bg-warning text-dark' });
-  //       return;
-  //     }
-  //     combineLatest(list)
-  //       .subscribe(res => {
-  //         this.toastService.show(this.lang()=='ms'?`${res.length} entri berjaya dibatalkan`:`${res.length} entries successfully retracted`, { classname: 'bg-success text-light' });
-  //         this.getEntryList(this.pageNumber());
-  //       });
-  //   }
-  // }
 
   bulkCancelEntry() {
     const isMs = this.lang() === 'ms';
@@ -971,35 +1007,23 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   hasVisibleActions = computed(() => {
-    // 1. If actions are globally disabled for the dataset, hide the column immediately
-    if (!this.dataset()?.showAction) return false;
+    if (!this.dataset()?.showAction) return false; // early return
 
-    // 2. Safely grab the current page's entries and actions
     const entries = this.entryList() || [];
     const inline = this.actionsInline || [];
     const dropdown = this.actionsDropdown || [];
 
-    // 3. Scan the current page's rows
     for (const entry of entries) {
-      
-      // Check if any inline action is visible for this row
+      // Check pre-calculated inline actions
       for (const ac of inline) {
-        if (this.preCheck(entry, ac.pre, false)) {
-          return true; // Found a visible action, show the column!
-        }
+        if (entry._actionVisible?.[ac.id]) return true; // early return
       }
-      
-      // Check if any dropdown action is visible for this row
-      if (dropdown.length > 0) {
-        for (const ac of dropdown) {
-          if (this.preCheck(entry, ac.pre, false)) {
-            return true; // Found a visible action, show the column!
-          }
-        }
+      // Check pre-calculated dropdown actions
+      for (const ac of dropdown) {
+        if (entry._actionVisible?.[ac.id]) return true;  // early return
       }
     }
 
-    // 4. If the loop finishes without returning true, no actions are visible
     return false; 
   });
 

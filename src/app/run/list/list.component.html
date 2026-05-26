@@ -116,11 +116,11 @@
               </button>
               <div ngbDropdownMenu aria-labelledby="dropdownSort">
                 @for (item of dataset()?.items; track item.id) {
-                  <button type="button" class="pointer" [class.text-primary]="sortField==item.id"
+                  <button type="button" class="pointer" [class.text-primary]="sortField()==item.id"
                     ngbDropdownItem
                     (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
                     {{item.label}}&nbsp;
-                    @if (sortField==item.id && sortDir[item.id]!=null) {
+                    @if (sortField()==item.id && sortDir[item.id]!=null) {
                       <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
                     }
                   </button>
@@ -225,7 +225,8 @@
                     <th class="ds-index" style="width: 1%">#</th>
                   }
                   @for (item of dataset()?.items; track item.id) {
-                    @if (preCheck({}, item.pre, false)) {
+                    <!-- @if (preCheck({}, item.pre, false)) { -->
+                    @if (columnVisible[item.id]) {
                       @if (item.type=='list'){
                         <th class="ds-item {{item.code}}">
                           <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-black-50"></fa-icon>&nbsp;{{item.label}}
@@ -239,7 +240,7 @@
                           [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type)>-1"
                           (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].indexOf(fField.type)>-1?'.name':''),sortDir[item.id]=!sortDir[item.id])">
                           {{item.label}}&nbsp;
-                          @if (sortField==item.id && sortDir[item.id]!=null) {
+                          @if (sortField()==item.id && sortDir[item.id]!=null) {
                             <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
                           }
                         </th>
@@ -299,7 +300,8 @@
                           </td>
                         }
                         @for (item of dataset().items; track item.id) {
-                          @if (preCheck(i, item.pre, false)) {
+                          <!-- @if (preCheck(i, item.pre, false)) { -->
+                          @if (i._isVisible[item.root + '.' + item.code]) {
                             @let fField = (['data','prev'].indexOf(item.root)>-1)?
                             form()[item.root]?.items[item.code]
                             :form().data?.items[item.code];
@@ -310,7 +312,7 @@
                               @if (['data','prev'].indexOf(item.root)>-1) { 
                                 <!-- @let fField = form()[item.root]?.items[item.code]; -->
                                 @if (item.type=='list'){
-                                  @if(i[item.root][item.code]){
+                                  @if(i[item.root][item.code] && i[item.root][item.code].length>0){
                                     <table class="table tbl-child m-0 table-flush small">
                                       <thead>
                                         <tr>
@@ -326,8 +328,12 @@
                                               @let chField = form()[item.root]?.items[fq.code];
                                               <td class="bg-transparent">
                                                 @if(ch[fq.code]){
-                                                  <field-view [field]="chField" [scopeId]="scopeId()"
+                                                  <!-- <field-view [field]="chField" [scopeId]="scopeId()"
                                                     [value]="getVal(chField, i, ch)"
+                                                    [data]="{$:ch,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
+                                                  </field-view> -->
+                                                  <field-view [field]="chField" [scopeId]="scopeId()"
+                                                    [value]="ch._computedValues?.[item.root + '.' + fq.code]" 
                                                     [data]="{$:ch,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                                   </field-view>
                                                 }
@@ -341,15 +347,21 @@
                                     <div class="p-2" style="color:#aaa">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
                                   }
                                 }@else {
-                                  <field-view [field]="fField" [scopeId]="scopeId()"
+                                  <!-- <field-view [field]="fField" [scopeId]="scopeId()"
                                     [value]="getVal(fField, i, i[item.root])"
+                                    [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
+                                  </field-view> -->
+                                  <field-view [field]="fField" [scopeId]="scopeId()"
+                                    [value]="i._computedValues?.[item.root + '.' + item.code]"
                                     [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                   </field-view>
                                 }
                               } @else {
-                                <!-- @let fField = form().data?.items[item.code]; -->
-                                <field-view [field]="fField" [scopeId]="scopeId()"
+                                <!-- <field-view [field]="fField" [scopeId]="scopeId()"
                                   [value]="getVal(fField, i.approval?.[item.root], i.approval?.[item.root]?.data)">
+                                </field-view> -->
+                                <field-view [field]="fField" [scopeId]="scopeId()"
+                                  [value]="i._computedValues?.[item.root + '.' + item.code]">
                                 </field-view>
                               }
                               <div class="clearfix"></div>
@@ -377,7 +389,8 @@
                             <div class="d-flex flex-row justify-content-end">
                               
                               @for (ac of actionsInline; track ac.id) {
-                                @if (preCheck(i, ac.pre, false)) {
+                                <!-- @if (preCheck(i, ac.pre, false)) { -->
+                                @if (i._actionVisible[ac.id]) {
                                   @if (ac.action == 'url' && !ac.inpop) {
                                     <a class="btn btn-sm bg-gradient ms-1 text-nowrap" 
                                       [ngClass]="ac.style"
@@ -406,7 +419,8 @@
                                   
                                   <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
                                     @for (ac of actionsDropdown; track ac.id) {
-                                      @if (preCheck(i, ac.pre, false)) {
+                                      <!-- @if (preCheck(i, ac.pre, false)) { -->
+                                      @if (i._actionVisible[ac.id]) {
                                         @if (ac.action == 'url' && !ac.inpop) {
                                           <a ngbDropdownItem 
                                             [class.disabled]="isActionOfflineDisabled(ac.action)"
@@ -555,10 +569,20 @@
 
 
       </div>
-      @if (entryTotal()>pageSize()) {
+      <!-- @if (entryTotal()>pageSize()) { -->
+      @if (entryPages()>1) {
         <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
-          <ngb-pagination [collectionSize]="entryTotal()" [pageSize]="pageSize()" [(page)]="pageNumber" [maxSize]="10"
+          <!-- <ngb-pagination [collectionSize]="entryTotal()" [pageSize]="pageSize()" [(page)]="pageNumber" [maxSize]="10"
             [rotate]="true" (pageChange)="getEntryList(pageNumber(),sort())" [boundaryLinks]="true"
+            [directionLinks]="true"> -->
+          <ngb-pagination 
+            [collectionSize]="entryTotal()" 
+            [pageSize]="pageSize()" 
+            [page]="pageNumber()" 
+            [maxSize]="10"
+            [rotate]="true" 
+            (pageChange)="pageNumber.set($event); getEntryList(pageNumber(), sort())" 
+            [boundaryLinks]="true"
             [directionLinks]="true">
             <ng-template ngbPaginationFirst>
               <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
