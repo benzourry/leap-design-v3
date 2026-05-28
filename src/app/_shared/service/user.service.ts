@@ -122,41 +122,6 @@ export class UserService {
     }
   }
 
-  // getUser(): Observable<any> {
-  //   // let rt: Observable<any>;
-  //   let server = localStorage.getItem('server');
-
-  //   if (localStorage.getItem("user") && !localStorage.getItem("userexp")) {
-  //     var userStr = atobUTF(localStorage.getItem("user"));
-  //     var access_token = this.getToken();
-  //     this.user = of(JSON.parse(userStr));
-  //     return this.user;
-  //   } else {
-
-  //     if (!localStorage.getItem("auth")) {
-  //       // this.router.navigate(['/login']);
-  //       window.location.href = OAUTH.AUTH_URI + "/" + server + "?redirect_uri=" + OAUTH.CALLBACK;
-  //       return of();
-  //       // location.href = OAUTH[server].AUTH_URI+"?client_id=" + OAUTH[server].CLIENT_ID + "&response_type=token&scope="+OAUTH[server].SCOPE+"&redirect_uri="+OAUTH.CALLBACK;
-  //     } else {
-  //       // this.router.navigate(['/login']);
-  //       var access_token = this.getToken();
-  //       return this.http.get<any>(OAUTH.USER_URI + "?access_token=" + access_token)
-  //         .pipe(
-  //           tap({
-  //             next: (res) => {
-  //               window.localStorage.setItem("user", btoaUTF(JSON.stringify(res)));
-  //               this.user = of(res);
-  //               window.localStorage.removeItem("userexp");
-  //             }, error: () => {
-  //               window.location.href = OAUTH.AUTH_URI + "/" + server + "?redirect_uri=" + OAUTH.CALLBACK;
-  //             }
-  //           }), first()
-  //         );
-  //     }
-  //   }
-  // }
-
   getUserProd(): Observable<any> {
     const server = localStorage.getItem('server');
     const user = localStorage.getItem('user');
@@ -205,8 +170,8 @@ export class UserService {
    */
   getUser(): Observable<any> {
     const server = localStorage.getItem('server');
-    const user = localStorage.getItem('user')??localStorage.getItem('creator');
     const debugAppId = +localStorage.getItem('debugAppId');
+    const user = localStorage.getItem('user-'+debugAppId)??localStorage.getItem('creator');
     const userStr = atobUTF(user,null);
     let userObj = JSON.parse(userStr);
 
@@ -234,7 +199,7 @@ export class UserService {
         .pipe(
           tap({
             next: (res) => {
-              window.localStorage.setItem("user", btoaUTF(JSON.stringify(res),null));
+              window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res),null));
               this.user = of(res);
               // window.localStorage.removeItem("userexp");
             }, error: () => {
@@ -245,36 +210,40 @@ export class UserService {
     }
   }
 
-  getToken = () => {
-    // #####TO-DO need to change to atob later when the time is ready;
-    var authStr = atobUTF(localStorage.getItem("auth"),null);
-    return JSON.parse(authStr).accessToken;
-  };
+  getToken() {
+    return this.getAuth()?.accessToken || null;
+  }
 
-  getAuth = () => {
-    // #####TO-DO need to change to atob later when the time is ready;
-    // if (!localStorage.getItem("auth")) this.router.navigate(['/login']);    
-    var authStr = atobUTF(localStorage.getItem("auth"),null);
-    return JSON.parse(authStr);
-  };
+  getAuth() {
+    try {
+      return JSON.parse(atobUTF(localStorage.getItem("auth"), null));
+    } catch {
+      // Optional: If you want to restore your router redirect, do it here!
+      // this.router.navigate(['/login']);
+      return null;
+    }
+  }
 
-  getActualUser = () => {
-    var d_user = localStorage.getItem("creator");
-    return JSON.parse(atobUTF(d_user ? d_user : localStorage.getItem("user"),null));
+  getActualUser() {
+    try {
+      return JSON.parse(atobUTF(localStorage.getItem("creator"), null));
+    } catch {
+      return null;
+    }
   }
 
   public clearStorage(attr) {
     attr.split(',').forEach(att => {
       localStorage.removeItem(att);
     });
-    // localStorage.removeItem("auth");
-    // localStorage.removeItem("user");
-    // localStorage.removeItem("server");
   }
+
   public logout() {
     this.clearStorage('auth,user,d_user,server,pushDismissed');
-    this.http.post(`${base}/oauth2/logout`, {})
-      .subscribe({});
-    this.router.navigate(['/login']);
+
+    this.http.post(`${base}/oauth2/logout`, {}).subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']) // Still navigate on error
+    });
   }
 }

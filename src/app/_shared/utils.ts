@@ -464,14 +464,16 @@ export function tblToExcel(title, html) {
   link.click();
 }
 
-// export function getQuery(e) {
-//   var n = new RegExp("[\\?&]" + e + "=([^&#]*)").exec(location.href);
-//   return null === n ? "" : decodeURIComponent(n[1].replace(/\+/g, " "))
-// }
-export function getQuery(e: string): string {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(e) || "";
+export function getQuery(e) {
+  var n = new RegExp("[\\?&]" + e + "=([^&#]*)").exec(location.href);
+  return null === n ? "" : decodeURIComponent(n[1].replace(/\+/g, " "))
 }
+
+// ! issue: doesnt check hash for query parameters, back to regex above.
+// export function getQuery(e: string): string {
+//   const params = new URLSearchParams(window.location.search);
+//   return params.get(e) || "";
+// }
 
 export function cleanText(str) { return str ? str.replace(/<\/?[^>]+(>|$)/g, " ") : str; }
 

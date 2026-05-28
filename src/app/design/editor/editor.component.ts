@@ -92,7 +92,7 @@ export class EditorComponent implements OnInit {
 
     formatter = (result: any) => result.name;
 
-selectItem(event: any) {
+    selectItem(event: any) {
         // 1. Prevent NgBootstrap from auto-filling the input with the selected item's name
         event.preventDefault();
         
@@ -183,8 +183,8 @@ selectItem(event: any) {
 
     runApp() {
         let runas = this.user().email;
-        if (localStorage.getItem("user")) {
-            runas = JSON.parse(atobUTF(localStorage.getItem("user"), null)).email;
+        if (localStorage.getItem("user-"+this.appId)) {
+            runas = JSON.parse(atobUTF(localStorage.getItem("user-"+this.appId), null)).email;
         }
 
         runas = prompt("Run preview as (email): ", runas);
