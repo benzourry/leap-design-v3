@@ -108,10 +108,10 @@
                                     <div class="btn-group-toggle" style="flex-wrap: wrap">
                                       @for (o of tier.actions | keyvalue:sortOrder; track $index) {
                                         <input type="radio" class="btn-check" [value]="o.value.code"
-                                          id="radioBasic-{{o.value.code}}" name="radioBasic-{{o.value.code}}"
+                                          id="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}" name="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}"
                                           [(ngModel)]="tierAppr.status" required>
                                         @if (preCheckStr(o.value?.pre)) {
-                                          <label for="radioBasic-{{o.value.code}}" style="font-size:14px" [style.--tabg]="o.value.color" class="ta-btn btn btn-round btn-outline-secondary mt-1 me-1">
+                                          <label for="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}" style="font-size:14px" [style.--tabg]="o.value.color" class="ta-btn btn btn-round btn-outline-secondary mt-1 me-1">
                                             {{o.value.label}}
                                           </label>
                                         }
