@@ -689,7 +689,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
             ? { entryId: entryId ?? eId } 
             : {};
 
-        this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
+        return this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
       };
     });
 
@@ -719,18 +719,21 @@ export class ScreenComponent implements OnInit, OnDestroy {
     }
 
     history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static', size: 'lg' })
+
+    return this.modalService.open(content, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
+
+        console.log("lde: inPop result", res);
         // this.getScreen(this.screen().id);
         // this.getEntryList(this.pageNumber(),this.sort);
+        return res;
       }, err => {
+
+        console.log("lde: inPop dismissed", err);
         // this.getScreen(this.screen().id);
+        throw err;
       }).finally(() => {
-        // console.log("delete $popup and $this$ from global")
-        // delete (window as any).$popup;
-        // delete (window as any).$this;
-        // this.getScreen(this.screen().id);
-        this.refreshScreen();
+        // this.refreshScreen();
       });
 
   }
@@ -838,7 +841,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   onSavedInit() {
-    this.loadDatasetEntry(this.dataset(), this.pageNumber(), this.sort());
+    if (this.dataset().id) {
+      this.loadDatasetEntry(this.dataset(), this.pageNumber(), this.sort());
+    }
   }
 
   readonly hasConfPresetFilters = computed(() => {
@@ -1121,19 +1126,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return !code || res;
   }
 
-  modalClose(d) {
-    // console.log("modalClosed")
-
-    // if (['list', 'map'].indexOf(this.screen().type) > -1) {
-    //   this.loadDatasetEntry(this.dataset(), this.pageNumber());
-    // } else if (this.screen().type == 'calendar') {
-    //   this.populateCalendarEvent();
-    // }
-
-
-    // this.refreshScreen()
-    d();
-  }
+  // modalClose(c) {
+  //   c();
+  // }
 
   getLookupInFilter() {
     this.dataset().filters.forEach(f => {
