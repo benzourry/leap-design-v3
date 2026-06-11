@@ -55,75 +55,53 @@
               </div>
             }
             @for (e of curDashboard.charts; track e.id; let $c_index = $index; let $c_first = $first; let $c_last = $last) {
-              <div [ngClass]="e.size" cdkDrag
-                >
-                <div class="card element bg-secondary text-white border-secondary" [ngClass]="e.altClass"
-                  [ngStyle]="{'height.px':e.height?e.height-100:350}">
-                  <div
-                    class="card-body pointer element d-flex text-truncate justify-content-center around-0 position-absolute">
+              <div [ngClass]="e.size" cdkDrag>
+                
+                <div class="card element bg-secondary text-white border-secondary p-3" [ngClass]="e.altClass"
+                  [ngStyle]="{'min-height.px':e.height?e.height-100:350}">
+                  
+                  <div class="card-body pointer element d-flex justify-content-center around-0 w-100">
+                    
                     <div class="element-edit mt-1 cursor-move text-info position-absolute"
                       style="top:3px;left:10px;" cdkDragHandle>
-                      <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
-                      </fa-icon>
+                      <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true"></fa-icon>
                     </div>
-                    <div class="text-center" style="align-self:center">
+
+                    <div class="text-center w-100" style="align-self:center">
                       @if (!e.form && e.source=='db') {
-                        <div class="text-light bg-danger p-3">
+                        <div class="text-light bg-danger p-3 mb-2">
                           <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                          No form found associated with this chart. It might has been removed.
+                          No form found associated with this chart. It might have been removed.
                         </div>
                       }
                       <div class="element-item">
                         <h6 class="card-title">{{e.title}} <sup>{{e.id}}</sup></h6>
                         @if (e.description) {
-                          <p class="card-subtitle">
-                          {{e.description}}</p>
+                          <p class="card-subtitle">{{e.description}}</p>
                         }
                         <div style="color:#eee; text-align: center">
-                          @if (e.type=='pie') {
-                            <fa-icon [icon]="['fas','chart-pie']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='rose') {
-                            <fa-icon [icon]="['fas','chart-pie']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='doughnut') {
-                            <fa-icon [icon]="['far','circle']" size="5x"
-                            [fixedWidth]="true"></fa-icon>
-                          }@else if (e.type=='bar') {
-                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-bar']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='hbar') {
-                            <fa-icon [icon]="['fas','chart-bar']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='line') {
-                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-line']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='hline') {
-                            <fa-icon [icon]="['fas','chart-line']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='area') {
-                            <fa-icon [icon]="['fas','chart-area']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='gauge') {
-                            <fa-icon [icon]="['fas','tachometer-alt']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }@else if (e.type=='radar') {
-                            <fa-icon [icon]="['fas','circle-nodes']" size="5x"
-                              [fixedWidth]="true">
-                            </fa-icon>
+                          @if (e.type=='pie' || e.type=='rose') {
+                            <fa-icon [icon]="['fas','chart-pie']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='doughnut') {
+                            <fa-icon [icon]="['far','circle']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='bar') {
+                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-bar']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='hbar') {
+                            <fa-icon [icon]="['fas','chart-bar']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='line') {
+                            <fa-icon transform="rotate-90 flip-v" [icon]="['fas','chart-line']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='hline') {
+                            <fa-icon [icon]="['fas','chart-line']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='area') {
+                            <fa-icon [icon]="['fas','chart-area']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='gauge') {
+                            <fa-icon [icon]="['fas','tachometer-alt']" size="5x" [fixedWidth]="true"></fa-icon>
+                          } @else if (e.type=='radar') {
+                            <fa-icon [icon]="['fas','circle-nodes']" size="5x" [fixedWidth]="true"></fa-icon>
                           }
-                          <!-- <div class="p-3 small">{{baseApi}}/entry/chart/{{e.id}}</div> -->
                         </div>
                       </div>
-                      
+
                       <div class="p-3">
                         <div class="m-2 text-start">
                           <div class="form-check small">
@@ -145,7 +123,6 @@
                             <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}{{publicEp[e.id]?'/public':''}}/entry/chart/{{e.id}}" 
                               onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
                           </div>
-                          
                         </div>
                         <div class="m-2 text-start">
                           <div class="small">Endpoint (as map)</div>
@@ -159,9 +136,30 @@
                             </span>
                             <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}/entry/{{publicEp[e.id]?'public/':''}}chart-map/{{e.id}}" 
                               onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-                            </div>
+                          </div>
                         </div>
                       </div>
+
+                      @if (!isEmptyObject(e?.presetFilters)) {
+                        <div class="p-3">
+                          <div class="small text-start">Preset Condition</div>
+                          @for (c of e.presetFilters|keyvalue; track $index) {
+                            @if (c.key.startsWith('$')||c.key.startsWith('@')) {
+                              <div>
+                                <div class="input-group input-group-sm mb-1 border-1 border-dark">
+                                  <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                                  (click)="editPresetKey(e,c)">{{c.key}}</span>
+                                  <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                                  (click)="editPresetValue(e,c)">{{c.value}}</span>
+                                  <button type="button" class="btn btn-light" (click)="removePreset(e,c.key)">
+                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                </div>
+                              </div>
+                            }
+                          }
+                        </div>
+                      }
                     </div>
                     
                     <div class="element-edit" style="position:absolute;top:5px;right:10px;">
@@ -317,7 +315,7 @@
                       <select class="form-select" name="fieldCode" multiple
                         [(ngModel)]="editChartData.fieldCode" required>
                         <option value="" disabled>Select field...</option>
-                        @for (fm of ['prev','data']; track fm) {
+                        @for (fm of ['data','prev']; track fm) {
                           @if (editHolderFormSig()[fm]) {
                             <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
@@ -352,7 +350,7 @@
                       <select class="form-select" name="fieldValue"
                         [(ngModel)]="editChartData.fieldValue" required>
                         <option value="" disabled>Select field...</option>
-                        @for (fm of ['prev','data']; track fm) {
+                        @for (fm of ['data','prev']; track fm) {
                           @if (editHolderFormSig()[fm]) {
                             <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
@@ -406,7 +404,7 @@
                       <select class="form-select" name="fieldSeries"
                         [(ngModel)]="editChartData.fieldSeries" required>
                         <option value="" disabled>Select field...</option>
-                        @for (fm of ['prev','data']; track fm) {
+                        @for (fm of ['data','prev']; track fm) {
                           @if (editHolderFormSig()[fm]) {
                             <optgroup [label]="editHolderFormSig()[fm].title">
                               <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>

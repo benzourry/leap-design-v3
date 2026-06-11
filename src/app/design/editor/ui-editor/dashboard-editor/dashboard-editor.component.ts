@@ -311,6 +311,48 @@ checkAllStatus(checked){
     }
   }
 
+  isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;
+
+  
+    editPresetValue(chart,c) {
+        var value = prompt('Edit value for :' + c.key + ' (old value: ' + c.value + ')', c.value);
+        if (value) {
+            chart.presetFilters[c.key] = value;
+            this.dashboardService.saveChart(this.curDashboard.id, chart)
+            .subscribe((res) => {
+              this.toastService.show("Preset value saved successfully", { classname: 'bg-success text-light' });
+            });
+            this.cdr.detectChanges(); // <--- Add here
+        }
+    }
+
+    editPresetKey(chart,c) {
+        var key = prompt('Edit key for :' + c.key + ' (old key: ' + c.key + ')\n\nOperator supported (appended to key, ie: $.gender~in): ~in, ~notin, ~contain, ~notcontain, ~from, ~to, ~between', c.key); 
+        if (key) {
+            chart.presetFilters[key] = c.value;
+            if (c.key != key) {
+                delete chart.presetFilters[c.key]
+            }
+            this.dashboardService.saveChart(this.curDashboard.id, chart)
+            .subscribe((res) => {
+              this.toastService.show("Preset key saved successfully", { classname: 'bg-success text-light' });
+            });
+            this.cdr.detectChanges(); // <--- Add here
+        }
+
+    }
+
+    
+    removePreset(chart,key) {
+        delete chart.presetFilters[key];
+        this.dashboardService.saveChart(this.curDashboard.id, chart)
+            .subscribe((res) => {
+              this.toastService.show("Preset key removed successfully", { classname: 'bg-success text-light' });
+            });
+        this.cdr.detectChanges(); // <--- Add here
+    }
+
+
   editChart(content, dashboardId, data, isNew) {
     if (!data['presetFilters']) {
       data['presetFilters'] = {};

@@ -6,12 +6,12 @@
     }
     <div class="print-hide" style="position:absolute;top:5px;right:5px;">
       @if (chart().formId && chart()?.filters && chart()?.filters.length>0) {
-        <button type="button" class="btn btn-outline-secondary border-0 btn-round ms-1" title="Filter Chart"
+        <button type="button" class="btn btn-outline-secondary border-0 btn-round ms-1" [title]="lang()=='ms'?'Tapis Carta':'Filter Chart'"
           (click)="editFilter(editFilterTpl,filtersData)" [class.blue]="!checkFilter()">
           <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
         </button>
       }
-      <button type="button" class="btn btn-outline-secondary border-0 btn-round ms-1" title="Export to Excel"
+      <button type="button" class="btn btn-outline-secondary border-0 btn-round ms-1" [title]="lang()=='ms'?'Eksport ke Excel':'Export to Excel'"
         (click)="exportExcel()">
         <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
       </button>
@@ -49,8 +49,8 @@
             <table id="chart_{{chart().id}}" class="table table-striped table-flush position-relative" >
               <thead>
                 <tr>
-                  <th class="border-top-0 position-sticky sticky-top">Name</th>
-                  <th class="border-top-0 position-sticky sticky-top text-end">Value</th>
+                  <th class="border-top-0 position-sticky sticky-top">{{lang()=='ms'?'Butiran':'Name'}}</th>
+                  <th class="border-top-0 position-sticky sticky-top text-end">{{lang()=='ms'?'Nilai':'Value'}}</th>
                   @if (chart().showAgg && chart().x?.percentage) {
                     <th class="border-top-0 position-sticky sticky-top text-end">%</th>
                   }
@@ -68,7 +68,7 @@
                 }
                 @if (chart().showAgg) {
                   <tr>
-                    <td class="bg-dark text-white">Total</td>
+                    <td class="bg-dark text-white">{{lang()=='ms'?'Keseluruhan':'Total'}}</td>
                     <td class="bg-dark text-white text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">100.00</td>

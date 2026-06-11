@@ -378,7 +378,7 @@
 
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Filter {{dataset()?.title}}</h4>
+    <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} {{dataset()?.title}}</h4>
   </div>
   <div class="modal-body">
     @defer(prefetch on idle){

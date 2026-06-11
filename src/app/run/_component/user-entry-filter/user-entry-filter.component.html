@@ -9,13 +9,14 @@
     <div class="form-group mb-3">
       <label class="form-label">{{fil.label}} 
         @if (['eval', 'qr'].includes(field.type)) {
-          <span class="small">(Use '%' as wildcard)</span>
+          <span class="small">@if(lang()=='ms'){(Guna '%' sebagai <i>wildcard</i>)}@else{(Use '%' as wildcard)}</span>
         }
       </label>
 
       @if (['text', 'textarea', 'eval', 'qr'].includes(field.type)) {
         <input class="form-control" type="text"
           [class.disabled]="presetFilters()[bindKey]"
+          [placeholder]="field.placeholder"
           [(ngModel)]="filtersData()[bindKey]" />
       }
 

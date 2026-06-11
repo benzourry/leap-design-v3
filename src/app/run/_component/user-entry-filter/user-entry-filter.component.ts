@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbInputDatepicker, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
 import { splitAsList, compileTpl } from '../../../_shared/utils';
+import { RunService } from '../../_service/run.service';
 
 @Component({
   selector: 'app-user-entry-filter',
@@ -14,12 +15,17 @@ import { splitAsList, compileTpl } from '../../../_shared/utils';
 })
 export class UserEntryFilterComponent {
 
+  
+  private runService = inject(RunService);
+
   filtersConfig = input<any[]>([]);
   presetFilters = model<any>({});
   formHolder = input<any>({});
   filtersData = model<any>({});
   scopeId = input<string>();
   lookup = input<any>({});
+  app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
 
   // Helper arrays to clean up HTML logic
   excludedTypes = ['static', 'file', 'imagePreview', 'btn', 'dataset', 'screen', 'map'];
