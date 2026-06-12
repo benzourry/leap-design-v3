@@ -296,7 +296,7 @@ export class ChatbotComponent implements OnInit {
       }).then((resizedImage: Blob) => {
         this.uploadPromptImg = URL.createObjectURL(resizedImage);
         this.uploadPromptImgMimeType = file.type;
-      }).catch(function (err) {
+      }).catch((err) => {
         console.error(err);
       });
     }
@@ -353,7 +353,7 @@ export class ChatbotComponent implements OnInit {
             maxSize: 640
           }).then((resizedImage: any) => {
             processUpload(resizedImage, file, true);
-          }).catch(function (err) {
+          }).catch((err) => {
             console.error(err);
           });
         } else {

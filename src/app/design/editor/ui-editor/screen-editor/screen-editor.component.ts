@@ -978,7 +978,7 @@ defaultMapStyle:string = `height: 600px;`
   dropSubs(event: CdkDragDrop<number[]>, parent) {
     moveItemInArray(parent, event.previousIndex, event.currentIndex);
     parent = parent
-        .map(function (val, $index) {
+        .map((val, $index) => {
             val.sortOrder = $index;
             return val;
         });

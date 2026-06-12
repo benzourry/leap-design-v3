@@ -1534,7 +1534,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                     console.error(err);
                   }
                 })
-            }).catch(function (err) {
+            }).catch((err) => {
               console.error(err);
             });
           }
@@ -1558,7 +1558,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                   this.toastService.show(this.lang() == 'ms' ? "File tidak berjaya dimuatnaik" : "File upload failed", { classname: 'bg-danger text-light' }); //"File upload failed: " + err.error?.message, { classname: 'bg-danger text-light' });
                 }
               })
-          }).catch(function (err) {
+          }).catch((err) => {
             console.error(err);
           });
         }

@@ -205,7 +205,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       },
       height: 640,
       plugins: [dayGridPlugin, timeGridPlugin],
-      events: (function (info, success, failure) {
+      events: (info, success, failure) => {
         var ds = this.screen().dataset;
 
         let filtersAll: any = {};
@@ -272,7 +272,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
             this.loading.set(false);
           })
-      }).bind(this),
+      },
       // this is flexible, but it will remove make default event styling (like rectangle color background)
       // eventContent: function( info ) {
       //   return {html: info.event.title};

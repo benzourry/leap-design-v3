@@ -175,7 +175,7 @@ async function createMermaidSvg(id: string, text: string): Promise<string> {
 
 function r$foreach(m: string, p1: string): string {
   const [iterator, list] = p1.split(" of ").map(s => s.trim());
-  return `";${list} && Array.isArray(${list}) && ${list}.forEach(function(${iterator}, $index){\noutput+="`;
+  return `";${list} && Array.isArray(${list}) && ${list}.forEach((${iterator}, $index)=>{\noutput+="`;
 }
 
 function r$script(m: string, p1: string): string {

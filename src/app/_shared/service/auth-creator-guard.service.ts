@@ -70,8 +70,8 @@ export class CreatorGuardService {
           })
       }else if (accessToken) {
         fetch(`${OAUTH.TOKEN_GET}?access_token=${accessToken}&provider=${provider}&appId=${appId}`)
-          .then(function (d) {
-            d.json().then(function (f) {
+          .then((d)=>{
+            d.json().then((f) => {
               if (f.auth) {
                 window.localStorage.setItem("auth", btoaUTF(JSON.stringify(f.auth),null)),
                 window.localStorage.setItem("creator", btoaUTF(JSON.stringify(f.user),null));

@@ -473,10 +473,10 @@ export class DatasetEditorComponent implements OnInit {
     dropAction(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         this.curDataset.actions = parent
-        .map(function (val, $index) {
-            val.sortOrder = $index;
-            return val;
-        });
+            .map((val, $index) => {
+                val.sortOrder = $index;
+                return val;
+            });
         this.saveDataset();
         this.cdr.detectChanges(); // <--- Add here
     }
@@ -484,7 +484,7 @@ export class DatasetEditorComponent implements OnInit {
     dropFilter(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         this.curDataset.filters = parent
-            .map(function (val, $index) {
+            .map((val, $index) => {
                 val.sortOrder = $index;
                 return val;
             });
@@ -495,7 +495,7 @@ export class DatasetEditorComponent implements OnInit {
     dropSubs(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
         parent = parent
-            .map(function (val, $index) {
+            .map((val, $index) => {
                 val.sortOrder = $index;
                 return val;
             });
@@ -522,7 +522,7 @@ export class DatasetEditorComponent implements OnInit {
 
     saveDsOrder(ds) {
         var list = ds.items
-            .map(function (val, $index) {
+            .map((val, $index) => {
                 return { id: val.id, sortOrder: $index }
             });
         return this.datasetService.saveDsOrder(list)

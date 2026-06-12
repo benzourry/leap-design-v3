@@ -860,7 +860,7 @@ export class ViewComponent implements OnInit, OnDestroy {
                   }                 
                   this.cdr.markForCheck();
                 })
-            }).catch(function (err) { console.error(err); });
+            }).catch((err) => { console.error(err); });
           }
         } else {
           resizeImage({
@@ -879,7 +879,7 @@ export class ViewComponent implements OnInit, OnDestroy {
                 }
                 this.cdr.markForCheck();
               })
-          }).catch(function (err) { console.error(err); });
+          }).catch((err) => { console.error(err); });
         }
       } else {
         if (f.subType == 'othermulti') {

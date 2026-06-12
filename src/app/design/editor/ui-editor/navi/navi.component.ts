@@ -532,7 +532,7 @@ export class NaviComponent implements OnInit {
 
   saveGroupOrder() {
     var list = this.navis
-      .map(function (val, $index) {
+      .map((val, $index) => {
         return { id: val.id, sortOrder: $index }
       });
 

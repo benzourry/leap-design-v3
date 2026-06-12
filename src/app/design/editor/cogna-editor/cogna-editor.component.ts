@@ -1411,7 +1411,7 @@ export class CognaEditorComponent implements OnInit {
         //       console.error(err);
         //     }
         //   })
-      }).catch(function (err) {
+      }).catch((err) => {
         console.error(err);
       });      
     }
@@ -1467,7 +1467,7 @@ export class CognaEditorComponent implements OnInit {
                   this.cdr.detectChanges();
                 }
               })
-          }).catch(function (err) {
+          }).catch((err) => {
             console.error(err);
           });          
         }else{

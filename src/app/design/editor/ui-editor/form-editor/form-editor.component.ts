@@ -1082,7 +1082,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if (this.editTierData.orgMapParam) {
             this.editTierData.orgMapParamStr = JSON.stringify(this.editTierData.orgMapParam);
         }
-        this.editTierItems = { sections: this.curForm.sections.filter(function (res) { return res.type == 'approval' }) };
+        this.editTierItems = { sections: this.curForm.sections.filter((res) => res.type == 'approval') };
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
@@ -1611,7 +1611,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     saveSectionOrder(form) {
         var list = form.sections
-            .map(function (val, $index) {
+            .map((val, $index) => {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
 
@@ -1682,7 +1682,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     saveTabOrder() {
         var list = this.curForm.tabs
-            .map(function (val) {
+            .map((val) => {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
         return this.formService.saveTabOrder(list)
