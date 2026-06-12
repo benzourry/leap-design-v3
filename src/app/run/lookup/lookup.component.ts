@@ -115,6 +115,11 @@ export class LookupComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
+
+                if (this.lookup().x?.codeHidden){
+                    data.code = data.name
+                }
+
                 this.lookupService.saveEntry(this.lookupId(), data)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
