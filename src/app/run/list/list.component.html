@@ -162,13 +162,13 @@
                 <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
               </div>
               <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
-                <div class="d-sm-inline">{{entryTotal()}}</div>
+                <div>{{entryTotal()}}</div>
               </div>
               <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
-                <div class="d-sm-inline">{{numberOfElements()}}</div>
+                <div>{{numberOfElements()}}</div>
               </div>
               <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
-                <div class="d-sm-inline">{{entryPages()}}</div>
+                <div>{{entryPages()}}</div>
               </div>
             </div>
           </div>
@@ -333,6 +333,7 @@
                                                     [data]="{$:ch,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                                   </field-view> -->
                                                   <field-view [field]="chField" [scopeId]="scopeId()"
+                                                    [lang]="lang()"
                                                     [value]="ch._computedValues?.[item.root + '.' + fq.code]" 
                                                     [data]="{$:ch,$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                                   </field-view>
@@ -352,6 +353,7 @@
                                     [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                   </field-view> -->
                                   <field-view [field]="fField" [scopeId]="scopeId()"
+                                    [lang]="lang()"
                                     [value]="i._computedValues?.[item.root + '.' + item.code]"
                                     [data]="{$:i[item.root],$_:i,$prev$:i.prev,$base$:base, $baseUrl$:baseUrl, $baseApi$: baseApi, $this$:_this,$param$:_param,$user$:user(), $conf$:appConfig}">
                                   </field-view>
@@ -361,6 +363,7 @@
                                   [value]="getVal(fField, i.approval?.[item.root], i.approval?.[item.root]?.data)">
                                 </field-view> -->
                                 <field-view [field]="fField" [scopeId]="scopeId()"
+                                  [lang]="lang()"
                                   [value]="i._computedValues?.[item.root + '.' + item.code]">
                                 </field-view>
                               }

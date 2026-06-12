@@ -264,12 +264,12 @@
                                                 <label class="label-span form-label">{{field?.label}}</label>
                                               }
                                               <p class="form-control-static mb-0">                                                        
-                                                <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()">
+                                                <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()">
                                                 </field-view>
                                               </p>
                                             </div>
                                           } @else {
-                                            <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()"
+                                            <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()"
                                               [data]="compileDataWithTimestamp"></field-view>
                                           }
                                         </div>
@@ -445,7 +445,7 @@
                                               @if (field && field.subType!='clearfix'){
                                                 <td>
                                                   @if (field.type!='static') {
-                                                    <field-view [field]="field" [value]="child[f]" [scopeId]="scopeId()"></field-view>
+                                                    <field-view [field]="field" [lang]="lang()" [value]="child[f]" [scopeId]="scopeId()"></field-view>
                                                   } @else {
                                                     @let compileChildData = {
                                                       $app$: app(),
@@ -473,7 +473,7 @@
                                                       $activeIndex$: _navIndex(),
                                                       timestamp: timestamp
                                                     };
-                                                    <field-view [field]="field" [value]="child[f]" [scopeId]="scopeId()"
+                                                    <field-view [field]="field" [lang]="lang()" [value]="child[f]" [scopeId]="scopeId()"
                                                       [data]="compileChildData"></field-view>
                                                   }
                                                 </td>
@@ -591,12 +591,12 @@
                                                           <label class="label-span form-label">{{field?.label}}</label>
                                                         }
                                                         <p class="form-control-static mb-0">                                                        
-                                                          <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()">
+                                                          <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()">
                                                           </field-view>
                                                         </p>
                                                       </div>
                                                     } @else {
-                                                      <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()"
+                                                      <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()"
                                                         [data]="compileData"></field-view>
                                                     }
                                                   </div>
@@ -869,13 +869,13 @@
                           <label class="label-span form-label">{{field?.label}}</label>
                         }
                         <p class="form-control-static mb-0">                                                        
-                          <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()">
+                          <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()">
                           </field-view>
                         </p>
                       </div>
                     } @else {
                       
-                      <field-view [field]="field" [value]="data[field.code]" [scopeId]="scopeId()"
+                      <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()"
                         [data]="compileData"></field-view>
                         <!-- [data]="{$user$:user(), $conf$:appConfig,$_:entry,$:data,$prev$:entry?.prev,$base$:base, 
                           $baseUrl$:baseUrl(), $baseApi$:baseApi, $this$:_this, $param$:_param, $ngForm$:entryForm,

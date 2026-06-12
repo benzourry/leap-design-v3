@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, AfterViewInit, computed, inject, input, signal, viewChild } from '@angular/core';
 import { baseApi } from '../../_shared/constant.service';
 import { NgStyle, AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -83,7 +83,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       }
 
       @if (['text', 'simpleOption', 'speech'].includes(field()?.type)) {
-        <div>
+        <!-- <div>
           <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore ? 'unset' : '236px')}">
             <div [class.pb-5]="isReadMore">
               @if (field().x?.prefix) {
@@ -101,6 +101,38 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               </button>
             </div>
           </div>
+        </div> -->
+
+
+        <div>
+          <div #textContainer 
+              style="overflow:hidden; transition: max-height 0.2s ease-out;" 
+              [ngStyle]="{'max-height': isReadMore ? 'unset' : '100px'}"
+              [class.fade-bottom]="!isReadMore && isOverflowing()">
+              
+            <div>
+              @if (field().x?.prefix) {
+                <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+              }
+              <span [morphHtml]="nl2brSafe(value())"></span>
+              @if (field().x?.suffix) {
+                <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+              }
+            </div>
+          </div>
+
+          @if (isOverflowing()) {
+            <div class="text-start">
+              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore = !isReadMore">
+                <!-- {{ isReadMore ? 'Less...' : 'More...' }} -->
+                {{ 
+                  lang() === 'ms' 
+                    ? (isReadMore ? 'Kurang...' : 'Lebih...') 
+                    : (isReadMore ? 'Less...' : 'More...') 
+                }}
+              </button>
+            </div>
+          }
         </div>
       }
 
@@ -353,9 +385,14 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         min-width: 0;
       }
     }
+
+    .fade-bottom {
+      -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    }
   `]
 })
-export class FieldViewComponent implements OnInit {
+export class FieldViewComponent implements OnInit, AfterViewInit {
 
   private logService = inject(LogService);
   private decimalPipe = inject(DecimalPipe);
@@ -369,6 +406,32 @@ export class FieldViewComponent implements OnInit {
 
   isReadMore: boolean = false;
   baseApi: string = baseApi;
+
+
+  // -- handle long text --
+  isOverflowing = signal<boolean>(false);
+
+  // 1. Declare the signal-based viewChild
+  textContainer = viewChild<ElementRef<HTMLElement>>('textContainer');
+
+  ngAfterViewInit() {
+    // 2. We still use setTimeout so Angular finishes painting the DOM
+    // before we calculate the pixel height of the text.
+    setTimeout(() => {
+      this.checkOverflow();
+    }, 0);
+  }
+
+  checkOverflow() {
+    // 3. Access the viewChild by calling it like a signal: this.textContainer()
+    const el = this.textContainer()?.nativeElement;
+    
+    if (el) {
+      // If the actual content height is greater than the max-height, it's overflowing
+      this.isOverflowing.set(el.scrollHeight > 100);
+    }
+  }
+  // -- end handle long text --
 
   // Uses Angular's modern computed() to correctly cache based on signal dependencies
   compiledTpl = computed(() => {
