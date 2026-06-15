@@ -102,7 +102,9 @@ export class DashboardEditorComponent implements OnInit {
   heightList: any[] = [
     { name: "Normal", value: 450 },
     { name: "High", value: 650 },
-    { name: "Double (2x)", value: 900 }
+    { name: "Double (2x)", value: 900 },
+    { name: "Triple (3x)", value: 1350 },
+    { name: "Quadruple (4x)", value: 1800 }
   ]
 
   publicEp:any={}
@@ -370,6 +372,7 @@ checkAllStatus(checked){
       this.statusFilterForm[-1] = {};
     }
     data.fieldCode = data.fieldCode?.split(",");
+    data.fieldValue = data.fieldValue?.split(",");
 
     this.editChartData = data;
 
@@ -383,6 +386,7 @@ checkAllStatus(checked){
       .result.then(ch => {
 
         ch.fieldCode = ch.fieldCode?.join(",");
+        ch.fieldValue = ch.fieldValue?.join(",");
 
         ch.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
 

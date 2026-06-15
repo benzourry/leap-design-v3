@@ -134,7 +134,7 @@
                                 <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
                               }
                             </span>
-                            <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}/entry/{{publicEp[e.id]?'public/':''}}chart-map/{{e.id}}" 
+                            <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10" value="{{baseApi}}{{publicEp[e.id]?'/public':''}}/entry/chart-map/{{e.id}}" 
                               onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
                           </div>
                         </div>
@@ -312,7 +312,7 @@
                   <div class="col-md-6">
                     <div class="form-group mb-3">
                       <label class="form-label">Plottable Category *</label>
-                      <select class="form-select" name="fieldCode" multiple
+                      <select class="form-select" name="fieldCode" multiple size="8"
                         [(ngModel)]="editChartData.fieldCode" required>
                         <option value="" disabled>Select field...</option>
                         @for (fm of ['data','prev']; track fm) {
@@ -347,7 +347,7 @@
                   <div class="col-md-6">
                     <div class="form-group mb-3">
                       <label class="form-label">Plottable Value *</label>
-                      <select class="form-select" name="fieldValue"
+                      <select class="form-select" name="fieldValue" multiple size="8"
                         [(ngModel)]="editChartData.fieldValue" required>
                         <option value="" disabled>Select field...</option>
                         @for (fm of ['data','prev']; track fm) {
@@ -480,8 +480,8 @@
                 <label class="col-form-label">Chart Type *</label>
                 <div class="row">
                   @for (type of chartTypeList; track $index) {
-                    <div class="col-6 col-sm-4"
-                      [class.disabled-more]="(editChartData.series||forceArray(editChartData.fieldCode).length>1) && type.noseries">
+                    <div class="col-6 col-sm-4">
+                      <!-- [class.disabled-more]="(editChartData.series||forceArray(editChartData.fieldCode).length>1) && type.noseries" -->
                       <div class="form-check nobreak">
                         <input type="radio" class="form-check-input" id="ct-{{type.code}}"
                           name="layout" [(ngModel)]="editChartData.type" [value]="type.code"
@@ -523,7 +523,7 @@
                     </label>
                   </div>
                 }
-                @if (forceArray(editChartData.fieldCode).length>1) {
+                @if (forceArray(editChartData.fieldCode).length>1 || forceArray(editChartData.fieldValue).length>1) {
                   <div class="form-check form-switch">
                     <input type="checkbox" class="form-check-input" id="swap"
                       [(ngModel)]="editChartData.x.swap" name="swap">

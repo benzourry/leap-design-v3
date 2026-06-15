@@ -166,70 +166,225 @@ export class ChartComponent implements OnInit {
         }
       ]
     };
+    
     if (['line', 'bar', 'area'].indexOf(c.type) > -1) {
       ecOption.xAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
       ecOption.yAxis = {};
 
-      if (c.series) {
-        var series = []
+      if (cd.series) {
+        ecOption.tooltip = {
+          trigger: 'axis', 
+          axisPointer: { type: 'shadow' } 
+        };
+        
+        var series = [];
+        var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+
         for (var i = 1; i < cd.data[0].length; i++) {
           var stack = c.x && c.x.stack;
-          series.push({
+          
+          var seriesItem: any = {
             type: this.typeMapping[c.type],
             stack: stack ? 'Stack 1' : undefined,
             smooth: c.x && c.x.smooth,
             label: { 
-              // normal: { http://localhost:4200/#/run/1115/form/3092/edit?entryId=169507
-                show: true, 
-                position: stack ? 'inside' : 'top', 
-                formatter: stack ? this.hideZero() : undefined 
-              // } 
+              show: false, 
+              position: stack ? 'inside' : 'top', 
+              formatter: stack ? this.hideZero() : undefined 
             }
-          })
+          };
+
+          // Apply colorful bars if it's a bar chart and only has one series
+          if (c.type === 'bar' && isSingleSeries) {
+            seriesItem.colorBy = 'data';
+          }
+
+          series.push(seriesItem);
         }
         ecOption.series = series;
+      }else{
+        // --- ADD THIS ELSE BLOCK FOR "series": false ---
+        if (c.type === 'bar') {
+          ecOption.series[0].colorBy = 'data';
+        }
+        // Add tooltip for single series too
+        ecOption.tooltip = {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' }
+        };
+
+        ecOption.legend.show = false; // Hide legend if no series defined
       }
     }
+
     if (['hline', 'hbar'].indexOf(c.type) > -1) {
       ecOption.xAxis = {};
       ecOption.yAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
 
-      if (c.series) {
+      if (cd.series) {
+        ecOption.tooltip = {
+          trigger: 'axis', 
+          axisPointer: { type: 'shadow' } 
+        };
+
         var series = [];
         var stack = c.x && c.x.stack;
+        var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+
         for (var i = 1; i < cd.data[0].length; i++) {
-          series.push({
+          var seriesItem: any = {
             type: this.typeMapping[c.type],
             stack: stack ? 'Stack 1' : undefined,
             smooth: c.x && c.x.smooth,
             label: { 
-              // normal: { http://localhost:4200/#/run/1115/form/3092/edit?entryId=169507
-                show: true, 
-                position: c.x && c.x.stack ? 'inside' : 'right', 
-                formatter: stack ? this.hideZero() : undefined 
-              // } 
+              show: true, 
+              position: stack ? 'inside' : 'right', 
+              formatter: stack ? this.hideZero() : undefined 
             }
-          })
+          };
+
+          // Apply colorful bars if it's a horizontal bar chart and only has one series
+          if (c.type === 'hbar' && isSingleSeries) {
+            seriesItem.colorBy = 'data';
+          }
+
+          series.push(seriesItem);
         }
         ecOption.series = series;
+      }else{
+        // --- ADD THIS ELSE BLOCK FOR "series": false ---
+        if (c.type === 'bar') {
+          ecOption.series[0].colorBy = 'data';
+        }
+        // Add tooltip for single series too
+        ecOption.tooltip = {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' }
+        };
+
+        ecOption.legend.show = false; // Hide legend if no series defined
+      }
+    }
+
+
+  // --- Multiple Pie / Doughnut / Rose Logic ---
+    if (['pie', 'doughnut', 'rose'].includes(c.type)) {
+      if (cd.series && cd.data[0].length > 2) {
+        // MULTIPLE PIES: Auto-Arranging Grid Layout
+        var series = [];
+        var titles = []; 
+        var numberOfSeries = cd.data[0].length - 1;
+        
+        var cols = Math.ceil(Math.sqrt(numberOfSeries)); 
+        var rows = Math.ceil(numberOfSeries / cols); 
+
+        var topLegendOffset = 5; 
+        var usableGridHeight = 95; // Give the remaining space back to the grid
+
+        var cellWidth = 100 / cols;
+        var cellHeight = usableGridHeight / rows;
+
+        // FIX 1: Massively increase the radius multiplier. 
+        // By using (100 / max(cols,rows)), we allow the pie to consume up to 80% of its total cell space!
+        var maxRadius = (100 / Math.max(cols, rows)) * 0.80; 
+
+        for (var i = 1; i <= numberOfSeries; i++) {
+          var layoutIdx = i - 1; 
+          var colIdx = layoutIdx % cols; 
+          var rowIdx = Math.floor(layoutIdx / cols); 
+
+          var centerX = (colIdx + 0.5) * cellWidth + '%'; 
+          // Push the pie center down slightly so it sits comfortably in the lower half of its cell
+          var centerY = (rowIdx + 0.5) * cellHeight + topLegendOffset + 3 + '%'; 
+
+          var pieSeries: any = {
+            type: 'pie',
+            center: [centerX, centerY], 
+            name: cd.data[0][i], 
+            encode: {
+              itemName: 0, 
+              value: i     
+            },
+            label: {
+              show: true,
+              position: 'inside',
+              formatter: '{d}%',
+              // Made the inner percentage text slightly larger and bolder to match the huge pies
+              fontSize: 13, 
+              fontWeight: 'bold',
+              color: '#fff' 
+            },
+            labelLine: {
+              show: false
+            }
+          };
+
+          if (c.type === 'rose') {
+            pieSeries.radius = [15, `${maxRadius}%`]; 
+            pieSeries.roseType = 'radius';
+          } else if (c.type === 'doughnut') {
+            pieSeries.radius = [`${maxRadius * 0.4}%`, `${maxRadius}%`];
+          } else {
+            pieSeries.radius = `${maxRadius}%`; 
+          }
+
+          series.push(pieSeries);
+
+          titles.push({
+            text: cd.data[0][i], 
+            left: centerX,
+            // FIX 2: Bring the title much closer to the top edge of the grid cell
+            top: (rowIdx * cellHeight) + topLegendOffset + 2 + '%', 
+            textAlign: 'center',
+            textStyle: { 
+              fontSize: 13, 
+              fontWeight: 'bold', 
+              width: 180, 
+              overflow: 'break',
+              lineHeight: 16 
+            } 
+          });
+        }
+        
+        ecOption.series = series;
+        ecOption.title = titles; 
+        
+        if (!ecOption.legend) ecOption.legend = {};
+        ecOption.legend.top = '0%';
+        ecOption.legend.type = 'scroll';
+      } else {
+        // SINGLE PIE: Original fallback logic
+        if (c.type == 'rose') {
+          ecOption.series[0].radius = [20, 110];
+          ecOption.series[0].roseType = 'radius';
+        }
+        if (c.type == 'doughnut') {
+          ecOption.series[0].radius = ['50%', '70%'];
+        }
+        
+        ecOption.series[0].label.formatter = function(params) {
+           let val = Array.isArray(params.value) ? params.value[1] : params.value.value;
+           let name = Array.isArray(params.value) ? params.value[0] : params.value.name;
+           return `${name}: ${val} (${params.percent}%)`;
+        };
       }
     }
     
-    if (c.type == 'rose') {
-      ecOption.series[0].radius = [20, 110];
-      ecOption.series[0].roseType = 'radius';
-      ecOption.series[0].label.formatter = function(params){
-          return `${params.value.name}: ${params.value.value} (${params.percent}%)`
-      };
-    }
-    if (['pie', 'gauge'].includes(c.type)) {
+    // if (c.type == 'rose') {
+    //   ecOption.series[0].radius = [20, 110];
+    //   ecOption.series[0].roseType = 'radius';
+    //   ecOption.series[0].label.formatter = function(params){
+    //       return `${params.value.name}: ${params.value.value} (${params.percent}%)`
+    //   };
+    // }
+    if (['gauge'].includes(c.type)) {
       ecOption.series[0].label.formatter = function(params){
         return `${params.value.name}: ${params.value.value} (${params.percent}%)`
       };
     }
-    if (c.type == 'doughnut') {
-      ecOption.series[0].radius = ['50%', '70%'];
-    }
+    // if (c.type == 'doughnut') {
+    //   ecOption.series[0].radius = ['50%', '70%'];
+    // }
 
     if (c.type == 'area') {
       // var series = []
@@ -255,6 +410,7 @@ export class ChartComponent implements OnInit {
       var rdata = [];
       var indicator = [];
       var overallMax = 0;
+
       if (cd.series) {
         for (var i = 1; i < cd.data.length; i++) {
           var obj = {
