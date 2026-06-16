@@ -135,6 +135,9 @@ export class RunService {
           action.pre = atobUTF(action._pre, '@');
         });
       }
+      if (tier.section){
+        tier.section.pre = atobUTF(tier.section._pre, '@');
+      }
       tier.pre = atobUTF(tier._pre, '@');
       tier.post = atobUTF(tier._post, '@');
     });

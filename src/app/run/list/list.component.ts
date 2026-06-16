@@ -635,6 +635,7 @@ export class ListComponent implements OnInit, OnDestroy {
         queryParams: deepMerge({ entryId: entryId }, params),
       };
       this.router.navigate([this.preurl + url], navigationExtras);
+      this.modalService.dismissAll();
     }
   }
 
