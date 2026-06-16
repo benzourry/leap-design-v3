@@ -3580,8 +3580,8 @@
           @if (!importExcelData) {
             <label class="form-label">
               <input type="file" [hidden]="true"
-                (change)="uploadExcel($event, createField, createDataset, createDashboard)" name="file"
-                required accept=".xlsx" />
+                (change)="uploadExcel($event, createField, createDataset, createDashboard, importFileType)" name="file"
+                required accept=".{{importFileType}}" />
               @if (!importLoading) {
                 <div class="form-control" style="background: white">
                   <fa-icon [icon]="['fas','upload']"></fa-icon>
