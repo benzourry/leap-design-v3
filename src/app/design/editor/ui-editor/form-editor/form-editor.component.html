@@ -915,10 +915,10 @@
                         <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon> Form's
                         Entry trails
                       </button>
-                      <button type="button" title="Import from Excel" [class.disabled]="offline"
+                      <button type="button" title="Import from File" [class.disabled]="offline"
                         (click)="importExcel(importExcelTpl)" ngbDropdownItem>
-                        <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import
-                        Excel data
+                        <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import Entry
+                        from file
                       </button>
                       
                       <button type="button" title="Get data JSON Schema" [class.disabled]="offline"
@@ -3514,44 +3514,68 @@
 <ng-template #importExcelTpl let-c="close" let-d="dismiss">
   <div #importExcelForm="ngForm" ngForm>
     <div class="modal-header">
-      <h4 class="modal-title">Import data from Excel</h4>
+      <h4 class="modal-title">Import data from file</h4>
     </div>
     <div class="modal-body">
       <div class="form">
-        <p>You can import entry data from Excel file and automatically create fields</p>
-        <ul class="small">
-          <li>The Excel file should contained a normalized tabular dataset</li>
-          <li>Only the first worksheet will be imported</li>
-          <li>The first row should be the header</li>
-          <li>For simple option field, you can append <code>:simpleOption</code> in the field code</li>
-          <li>For lookup field, you can append <code>:code</code>, <code>:name</code> in the field code</li>
-          <li>For model field, you can append <code>:<i>[model field code]</i></code> in the field code</li>
-          <li>To store as json object, you can append <code>:<i>json</i></code> in the field code</li>
-          <li>Use <code>_:email</code> for entry email, <code>_:current_status</code> for entry status</li>
-          <li>Email will be defaulted to uploaders email if not specified in excel</li>
-        </ul>
         <div class="form-group mb-3">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="createField" [(ngModel)]="createField"
-              name="createField">
-            <label class="form-check-label" for="createField">Create field if not exist</label>
+          <label class="form-label">Data file type</label>          
+          <div class="d-flex gap-1">            
+            <div class="btn-group">
+              <input class="btn-check" type="radio" value="xlsx" id="importtype-excel"
+                name="buttonType" [(ngModel)]="importFileType" required>
+              <label for="importtype-excel" class="btn btn-outline-secondary">
+                Excel
+              </label>
+
+              <input class="btn-check" type="radio" value="json" id="importtype-json"
+                name="buttonType" [(ngModel)]="importFileType" required>
+              <label for="importtype-json" class="btn btn-outline-secondary">
+                JSON
+              </label>
+            </div>
           </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="createDataset" [(ngModel)]="createDataset"
-              name="createDataset">
-            <label class="form-check-label" for="createDataset">Create dataset automatically</label>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="createDashboard"
-              [(ngModel)]="createDashboard" name="createDashboard">
-            <label class="form-check-label" for="createDashboard">Create dashboard automatically</label>
-          </div>
+        </div>
+        <div class="form-group mb-3">
+          @if(importFileType=='xlsx'){
+            <p>You can import entry data from Excel file and automatically create fields</p>
+            <ul class="small">
+              <li>The Excel file should contained a normalized tabular dataset</li>
+              <li>Only the first worksheet will be imported</li>
+              <li>The first row should be the header</li>
+              <li>For simple option field, you can append <code>:simpleOption</code> in the field code</li>
+              <li>For lookup field, you can append <code>:code</code>, <code>:name</code> in the field code</li>
+              <li>For model field, you can append <code>:<i>[model field code]</i></code> in the field code</li>
+              <li>To store as json object, you can append <code>:<i>json</i></code> in the field code</li>
+              <li>Use <code>_:email</code> for entry email, <code>_:current_status</code> for entry status</li>
+              <li>Email will be defaulted to uploaders email if not specified in excel</li>
+            </ul>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="createField" [(ngModel)]="createField"
+                name="createField">
+              <label class="form-check-label" for="createField">Create field if not exist</label>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="createDataset" [(ngModel)]="createDataset"
+                name="createDataset">
+              <label class="form-check-label" for="createDataset">Create dataset automatically</label>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="createDashboard"
+                [(ngModel)]="createDashboard" name="createDashboard">
+              <label class="form-check-label" for="createDashboard">Create dashboard automatically</label>
+            </div>
+          }
+          @if(importFileType=='json'){
+            <p>You can import entry data from JSON file (usually exported from the same application)</p>
+          }
           <div class="form-check form-switch mt-1">
             <input type="checkbox" class="form-check-input" id="importToLive" [(ngModel)]="importToLive"
               name="importToLive">
             <label class="form-check-label" for="importToLive">Import to Live data</label>
           </div>
         </div>
+
         <div class="form-group mb-3">
           @if (!importExcelData) {
             <label class="form-label">

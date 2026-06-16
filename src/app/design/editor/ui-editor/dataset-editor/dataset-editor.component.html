@@ -53,6 +53,11 @@
                 }
               </div>
               <div>
+                <a type="button" class="btn btn-sm border border-2 ms-1"
+                 title="Download Entry JSON" [class.disabled]="offline"
+                  href="{{base}}/report/export-data/{{curDataset.id}}/json" target="_blank">
+                    <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
+                </a>
                 <button type="button" class="btn btn-sm border border-2 ms-1"
                  title="Resync Dataset" [class.disabled]="offline"
                   (click)="resyncDataset(curDataset?.id)">

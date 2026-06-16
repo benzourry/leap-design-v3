@@ -33,11 +33,17 @@ export class FormService {
   constructor(private http: HttpClient) { }
 
 
-  uploadExcel(lookupId: number, file: any, email: string, createField: boolean, createDataset: boolean, createDashboard: boolean, importToLive: boolean) {
+  uploadData(formId: number, file: any, email: string, createField: boolean, createDataset: boolean, createDashboard: boolean, importToLive: boolean, format: string) {
     let f = new FormData();
     f.append('file', file);
-    return this.http.post<any>(`${this.baseApi}/import/entry/${lookupId}?email=${email}&create-field=${createField || false}&create-dataset=${createDataset || false}&create-dashboard=${createDashboard || false}&import-live=${importToLive || false}`, f);
+    return this.http.post<any>(`${this.baseApi}/import/entry/${formId}/${format}?email=${email}&create-field=${createField || false}&create-dataset=${createDataset || false}&create-dashboard=${createDashboard || false}&import-live=${importToLive || false}`, f);
   }
+
+  // uploadJson(formId: number, file: any, email: string, createField: boolean, createDataset: boolean, createDashboard: boolean, importToLive: boolean) {
+  //   let f = new FormData();
+  //   f.append('file', file);
+  //   return this.http.post<any>(`${this.baseApi}/import/entry-json/${formId}?email=${email}&create-field=${createField || false}&create-dataset=${createDataset || false}&create-dashboard=${createDashboard || false}&import-live=${importToLive || false}`, f);
+  // }
 
   saveElement(formId: any, sectionId: any, rElement: any, sortOrder: any): any {
     return this.http.post<any>(`${this.baseApi}/form/${formId}/elements?parentId=${sectionId || ''}&sortOrder=${sortOrder}`, rElement);

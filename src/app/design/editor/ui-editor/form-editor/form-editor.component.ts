@@ -1941,20 +1941,21 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     createDataset: boolean;
     createDashboard: boolean;
     importToLive: boolean;
+    importFileType: string = 'xlsx';
     file: any;
     importLoading: boolean = false;
-    uploadExcel($event, createField, createDataset, createDashboard, importToLive) {
+    uploadExcel($event, createField, createDataset, createDashboard, importToLive, format) {
         if ($event.target.files && $event.target.files.length) {
             this.importLoading = true;
-            this.formService.uploadExcel(this.curForm.id, $event.target.files[0], this.user.email, createField, createDataset, createDashboard, importToLive)
-                .pipe(takeUntilDestroyed(this.destroyRef))
+            this.formService.uploadData(this.curForm.id, $event.target.files[0], this.user.email, createField, createDataset, createDashboard, importToLive, format)
+                .pipe(takeUntilDestroyed(this.destroyRef)) 
                 .subscribe({
                     next: (res) => {
                         this.importExcelData = res;
                         this.importLoading = false;
                         this.getFormData(this.curFormId);
                         this.commService.emitChange({ key: 'form', value: "import" });
-                        this.toastService.show("Excel successfully imported", { classname: 'bg-success text-light' });
+                        this.toastService.show("Data "+ format+" successfully imported", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges(); // <--- Add here
 
                     }, error: (error) => {

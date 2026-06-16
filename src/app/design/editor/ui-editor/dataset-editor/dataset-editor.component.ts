@@ -16,7 +16,7 @@ import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } fro
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
 import { ScreenService } from '../../../../service/screen.service';
-import { baseApi } from '../../../../_shared/constant.service';
+import { base, baseApi } from '../../../../_shared/constant.service';
 import { cleanText, splitAsList, toSnakeCase, toSpaceCase } from '../../../../_shared/utils';
 import { IconPickerComponent } from '../../../../_shared/component/icon-picker/icon-picker.component';
 import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.component';
@@ -91,6 +91,7 @@ export class DatasetEditorComponent implements OnInit {
     datasetLoading: boolean;
     formLoading: boolean;
     baseApi = baseApi;
+    base = base;
     dynamic: any = {};
 
     filterField: string = "";

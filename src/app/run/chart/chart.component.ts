@@ -278,8 +278,16 @@ export class ChartComponent implements OnInit {
         var cols = Math.ceil(Math.sqrt(numberOfSeries)); 
         var rows = Math.ceil(numberOfSeries / cols); 
 
-        var topLegendOffset = 5; 
-        var usableGridHeight = 95; // Give the remaining space back to the grid
+
+        var containerHeight = c.height || 450; // The physical pixel height of your container
+        var fixedLegendHeightPx = 35; // <-- Define your exact pixel height here!
+        
+        var topLegendOffset = (fixedLegendHeightPx / containerHeight) * 100; 
+        var usableGridHeight = 100 - topLegendOffset;
+
+
+        // var topLegendOffset = 5; 
+        // var usableGridHeight = 95; // Give the remaining space back to the grid
 
         var cellWidth = 100 / cols;
         var cellHeight = usableGridHeight / rows;
