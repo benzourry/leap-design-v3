@@ -3580,7 +3580,7 @@
           @if (!importExcelData) {
             <label class="form-label">
               <input type="file" [hidden]="true"
-                (change)="uploadExcel($event, createField, createDataset, createDashboard, importFileType)" name="file"
+                (change)="uploadExcel($event, createField, createDataset, createDashboard, importToLive, importFileType)" name="file"
                 required accept=".{{importFileType}}" />
               @if (!importLoading) {
                 <div class="form-control" style="background: white">
