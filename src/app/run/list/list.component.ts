@@ -142,7 +142,7 @@ export class ListComponent implements OnInit, OnDestroy {
   _param: any = {};
   _startTimestamp: number = 0;
   app = computed(() => this.runService.$app());
-  lang = computed(() => this.app().x?.lang);
+  lang = computed(() => this.app().x?.lang || 'en');
   accessToken: string = '';
   scopeId = computed<string>(() => "list_"+this.datasetId());
 
@@ -273,6 +273,12 @@ export class ListComponent implements OnInit, OnDestroy {
 
   aggColumnAvgField:any = {};
   aggColumnAvgValue:any = {};
+
+  statusMap = {
+    'drafted': { ms: 'Didraf', en: 'Drafted' },
+    'submitted': { ms: 'Dihantar', en: 'Submitted' },
+    'resubmitted': { ms: 'Dihantar semula', en: 'Resubmitted' },
+  }
 
 
   loading = signal<boolean>(false);

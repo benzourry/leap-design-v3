@@ -303,6 +303,8 @@ checkAllStatus(checked){
     return true; // If we survive the loops, everything was false
   }
 
+  splitAsList = splitAsList;
+
   forceArray(obj){
     return Array.isArray(obj)?obj:[obj];
   }
@@ -398,6 +400,7 @@ checkAllStatus(checked){
           });
       }, res => {
         data.fieldCode = data.fieldCode?.join(",");
+        data.fieldValue = data.fieldValue?.join(",");
        });
   }
 

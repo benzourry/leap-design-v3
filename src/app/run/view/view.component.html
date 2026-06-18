@@ -438,7 +438,7 @@
 </ng-template>
 <ng-template #viewTrailTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">{{lang() === 'ms' ? 'Jejak Kelulusan' : 'Approval Trails'}}</h4>
+    <h4 class="modal-title">{{lang() === 'ms' ? 'Jejak' : 'Trails'}}</h4>
   </div>
   <div class="list-group list-group-flush">
     @for (trail of trails(); track trail.id) {

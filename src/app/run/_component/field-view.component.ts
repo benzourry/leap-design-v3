@@ -107,7 +107,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         <div>
           <div #textContainer 
               style="overflow:hidden; transition: max-height 0.2s ease-out;" 
-              [ngStyle]="{'max-height': isReadMore ? 'unset' : '100px'}"
+              [ngStyle]="{'max-height': isReadMore ? 'unset' : '150px'}"
               [class.fade-bottom]="!isReadMore && isOverflowing()">
               
             <div>
@@ -428,7 +428,7 @@ export class FieldViewComponent implements OnInit, AfterViewInit {
     
     if (el) {
       // If the actual content height is greater than the max-height, it's overflowing
-      this.isOverflowing.set(el.scrollHeight > 100);
+      this.isOverflowing.set(el.scrollHeight > 150);
     }
   }
   // -- end handle long text --

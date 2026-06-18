@@ -382,7 +382,7 @@
                               @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]){
                                 {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
                               }@else {
-                                {{i.currentStatus}}
+                                {{statusMap[i.currentStatus]?.[lang()] || i.currentStatus}}
                               }
                             </div>
                           </td>

@@ -98,7 +98,7 @@
                   <tr>
                     <td>{{d[0]}}</td>
                     @for (dv of d|slice:1; track $index) {
-                      <td><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
+                      <td class="text-end"><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
                     }
                     @if (chart().showAgg) {
                       <td class="bg-dark text-white text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._arow[$idx+1] | number: chart().x.format) : chartDataset()?._arow[$idx+1]}}<span class="ms-05">{{chart().x?.suffix}}</span></td>

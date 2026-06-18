@@ -100,17 +100,33 @@
                             <fa-icon [icon]="['fas','circle-nodes']" size="5x" [fixedWidth]="true"></fa-icon>
                           }
                         </div>
+
+                        @if (e.form && e.agg && e.fieldValue && e.fieldCode) {
+                          <p class="my-3 small">
+                          <strong>{{e.agg}}</strong>(@if(e.agg=='count') {distinct }
+                            <strong>@for (h of forceArray(splitAsList(e.fieldValue)); track $index) {
+                                <div class="d-inline-block me-1 border bg-outline-light rounded px-1 mb-1">{{h}}</div>
+                            }</strong>) by
+                          <strong>@for (h of forceArray(splitAsList(e.fieldCode)); track $index) {
+                            <div class="d-inline-block me-2 border bg-outline-light rounded px-1 mb-1">{{h}}</div>
+                          }</strong>
+                          @if (e.fieldSeries) {
+                            <span> by
+                              <strong>{{e.fieldSeries}}</strong></span>
+                            }
+                          </p>
+                        }
                       </div>
 
-                      <div class="p-3">
-                        <div class="m-2 text-start">
+                      <div class="">
+                        <div class="my-2 text-start">
                           <div class="form-check small">
                             <input type="checkbox" class="form-check-input" id="publicEp_{{e.id}}"
                               [(ngModel)]="publicEp[e.id]" name="hideHeader_{{e.id}}">
                             <label class="form-check-label" for="publicEp_{{e.id}}"> Show public endpoint</label>
                           </div>
                         </div>
-                        <div class="m-2 text-start">
+                        <div class="my-2 text-start">
                           <div class="small">Endpoint (as array)</div>
                           <div class="input-group input-group-sm w-100">
                             <span class="input-group-text bg-secondary text-white">
@@ -124,7 +140,7 @@
                               onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
                           </div>
                         </div>
-                        <div class="m-2 text-start">
+                        <div class="my-2 text-start">
                           <div class="small">Endpoint (as map)</div>
                           <div class="input-group input-group-sm w-100">
                             <span class="input-group-text bg-secondary text-white">
@@ -141,7 +157,7 @@
                       </div>
 
                       @if (!isEmptyObject(e?.presetFilters)) {
-                        <div class="p-3">
+                        <div class="pt-3">
                           <div class="small text-start">Preset Condition</div>
                           @for (c of e.presetFilters|keyvalue; track $index) {
                             @if (c.key.startsWith('$')||c.key.startsWith('@')) {
@@ -163,10 +179,10 @@
                     </div>
                     
                     <div class="element-edit" style="position:absolute;top:5px;right:10px;">
-                      <a class="btn btn-round btn-light btn-sm ms-1" target="_blank"
+                      <!-- <a class="btn btn-round btn-light btn-sm ms-1" target="_blank"
                         href="{{baseApi}}/entry/chart/{{e.id}}">
                         <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
-                      </a>
+                      </a> -->
                       @if (!$c_first) {
                         <button type="button" class="btn btn-round btn-info btn-sm"
                           (click)="reorderChart(curDashboard,$c_index, -1)">
@@ -296,7 +312,12 @@
               }
               @if (editChartData.form && editChartData.agg&&editChartData.fieldValue&&editChartData.fieldCode) {
                 <p class="">
-                {{editChartData.agg}}(<strong>{{editChartData.fieldValue}}</strong>) by
+                <strong>{{editChartData.agg}}</strong>(@if(editChartData.agg=='count') {distinct }
+                  <strong>
+                    @for (h of forceArray(editChartData.fieldValue); track $index) {
+                      <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1">{{h}}</div>
+                    }
+                  </strong>) by
                 <strong>@for (h of forceArray(editChartData.fieldCode); track $index) {
                   <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">{{h}}</div>
                 }</strong>
