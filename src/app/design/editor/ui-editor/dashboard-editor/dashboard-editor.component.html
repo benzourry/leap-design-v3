@@ -666,6 +666,71 @@
                     placeholder="ie: 1.2-2">
                 </div>
 
+                @if (editChartData.agg=='count'){
+                  <div class="text-danger mb-3">Top N will be <strong>disabled</strong> for count aggregation</div>
+                }
+                <div class="form-group mb-3" [class.disabled]="editChartData.agg=='count'">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="topN"
+                      [(ngModel)]="editChartData.x.topN" name="topN">
+                    <label class="form-check-label" for="topN">
+                      Query top N items
+                    </label>
+                  </div>
+
+                  @if (editChartData.x.topN){
+                    <div class="ms-4">
+                      <div class="input-group input-group-sm mt-2">
+                        <span class="input-group-text">Top *</span>
+                        <input type="number" class="form-control" [(ngModel)]="editChartData.x.topNLimit" name="topNLimit"
+                          min="1" max="100" required>
+                        <span class="input-group-text">Sort by *</span>
+                        <select class="form-select" name="fieldSeries"
+                          [(ngModel)]="editChartData.x.topNField" required>
+                          <option value="" disabled>Select field...</option>
+                          @for (fm of ['data','prev']; track fm) {
+                            @if (editHolderFormSig()[fm]) {
+                              <optgroup [label]="editHolderFormSig()[fm].title">
+                                <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
+                                @for (s of sectionItems[fm]; track $index) {
+                                  <!-- @if (s.tier!=null) { -->
+                                    @for (f of s.items; track f.id) {
+                                      @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                                      {{f.type}}
+                                      @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
+                                        <option
+                                          [ngValue]="prefixedField">
+                                          {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                          @if(s.tier){^}
+                                        </option>
+                                      }
+                                    }
+                                }
+                                @if (fm == 'data') {
+                                  <option value="$_.created_date">Created Date</option>
+                                  <option value="$_.modified_date">Modified Date</option>
+                                }
+                              </optgroup>
+                            }
+                          }
+                        </select>
+                        <input type="radio" class="btn-check" id="def-sort-asc" name="def-sort-asc" value="asc" #defSortAsc="ngModel"
+                          [(ngModel)]="editChartData.x.topNFieldDir" [required]="editChartData.x.topNFieldDir">
+                        <label for="def-sort-asc" class="btn btn-outline-secondary">
+                          ASC
+                        </label>
+                        <input type="radio" class="btn-check" id="def-sort-desc" name="def-sort-desc" value="desc" #defSortDesc="ngModel"
+                          [(ngModel)]="editChartData.x.topNFieldDir" [required]="editChartData.x.topNFieldDir">
+                        <label for="def-sort-desc" class="btn btn-outline-secondary">
+                          DESC
+                        </label>
+                      </div>
+                    </div>
+                  }
+
+
+                </div>
+
                 <div class="form-group mb-3">
                   <label class="form-label">Additional options for chart (Echarts)</label>
                   <div class="mx-n2">
