@@ -358,6 +358,7 @@
                           }
                         }
                         @if (editHolderFormSig().data?.tiers?.length>0) {
+                          <option value="$.$statusText"># Current Status Text</option>
                           <option value="$_.current_status"># Current Status</option>
                           <option value="$_.current_tier"># Current Tier Level</option>
                           <option value="$_.current_tier_id"># Current Tier ID</option>
@@ -445,6 +446,13 @@
                               }
                             </optgroup>
                           }
+                        }
+                        
+                        @if (editHolderFormSig().data?.tiers?.length>0) {
+                          <option value="$.$statusText"># Current Status Text</option>
+                          <option value="$_.current_status"># Current Status</option>
+                          <option value="$_.current_tier"># Current Tier Level</option>
+                          <option value="$_.current_tier_id"># Current Tier ID</option>
                         }
                       </select>
                     </div>
