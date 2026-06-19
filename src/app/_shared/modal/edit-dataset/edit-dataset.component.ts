@@ -358,10 +358,11 @@ export class EditDatasetComponent implements OnInit {
   builtInItems = {
     $id:{label:"System ID",code:'$id',type:'number',subType:'number'},
     $code:{label:"System Code",code:'$code',type:'text',subType:'input'},
-    $counter:{label:"System Counter",code:'$counter',type:'number',subType:'number'}
+    $counter:{label:"System Counter",code:'$counter',type:'number',subType:'number'},
+    $statusText:{label:"Current Status Text",code:'$statusText',type:'text',subType:'input'}
   }
 
-  builtInSectionItem = [{code:'$id'},{code:'$code'},{code:'$counter'}];
+  builtInSectionItem = [{code:'$id'},{code:'$code'},{code:'$counter'},{code:'$statusText'}];
 
   getForm(id, ds) {
     this.formLoading = true;

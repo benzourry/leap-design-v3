@@ -189,7 +189,8 @@ export class ListComponent implements OnInit, OnDestroy {
   builtInItems = {
     $id: { label: "System ID", code: '$id', type: 'number', subType: 'number' },
     $code: { label: "System Code", code: '$code', type: 'text', subType: 'input' },
-    $counter: { label: "System Counter", code: '$counter', type: 'number', subType: 'number' }
+    $counter: { label: "System Counter", code: '$counter', type: 'number', subType: 'number' },
+    $statusText: { label: "Current Status Text", code: '$statusText', type: 'text', subType: 'input' }
   }
 
   _this = createProxy({},()=>this.cdr.markForCheck());
