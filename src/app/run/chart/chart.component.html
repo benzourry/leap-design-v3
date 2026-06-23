@@ -41,7 +41,8 @@
         <div class="fc-front" [class.print-hide]="flipped() && !maxState()">
           @if (chartOption()) {
             <div class="demo-chart" [ngStyle]="{'height.px':(chart().height||450)}" echarts
-            [options]="chartOption()"></div>
+              (chartClick)="onChartClick($event)" 
+              [options]="chartOption()"></div>
           }
         </div>
         <div class="fc-back justify-content-center overflow-auto" [class.print-hide]="!flipped() && !maxState()">
@@ -60,7 +61,23 @@
                 @for (d of chartDataset()?.data; track $index) {
                   <tr>
                     <td>{{d.name}}</td>
-                    <td class="text-end"><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
+                    
+                    <!-- <td class="text-end" 
+                        [class.cursor-pointer]="chart().x?.drill" 
+                        [class.text-primary]="chart().x?.drill" 
+                        [class.text-decoration-underline]="chart().x?.drill"
+                        (click)="chart().x?.drill ? onChartClick({name: d.name}) : null">
+                      <span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span>
+                    </td> -->
+
+                    <td class="text-end" 
+                        [class.cursor-pointer]="chart().x?.drill && d.value != 0" 
+                        [class.text-primary]="chart().x?.drill && d.value != 0" 
+                        [class.text-decoration-underline]="chart().x?.drill && d.value != 0"
+                        (click)="chart().x?.drill && d.value != 0 ? onChartClick({name: d.name, value: d.value}) : null">
+                      <span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span>
+                    </td>
+
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">{{((d.value/chartDataset()?._a)*100).toFixed(2)}}</td>
                     }
@@ -82,8 +99,7 @@
               <thead>
                 <tr>
                   @for (header of chartDataset()?.data[0]; track $index) {
-                    <th class="border-top-0 position-sticky sticky-top"
-                    >{{header}}</th>
+                    <th class="border-top-0 position-sticky sticky-top">{{header}}</th>
                   }
                   @if (chartDataset()?._arow) {
                     <th class="bg-dark text-white position-sticky sticky-top text-end">{{chartDataset()?._arow[0]}}</th>
@@ -97,9 +113,17 @@
                 @for (d of chartDataset()?.data|slice:1; track $index; let $idx = $index) {
                   <tr>
                     <td>{{d[0]}}</td>
+
                     @for (dv of d|slice:1; track $index) {
-                      <td class="text-end"><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></td>
+                      <td class="text-end" 
+                          [class.cursor-pointer]="chart().x?.drill && dv != 0" 
+                          [class.text-primary]="chart().x?.drill && dv != 0" 
+                          [class.text-decoration-underline]="chart().x?.drill && dv != 0"
+                          (click)="chart().x?.drill && dv != 0 ? onChartClick({name: chartDataset()?.data[0][$index+1], seriesName: d[0], value: dv}) : null">
+                        <span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span>
+                      </td>
                     }
+
                     @if (chart().showAgg) {
                       <td class="bg-dark text-white text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._arow[$idx+1] | number: chart().x.format) : chartDataset()?._arow[$idx+1]}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     }
@@ -181,5 +205,118 @@
         {{lang()=='ms'?'Tapis':'Filter'}}
       </button>
     </div>
+  </div>
+</ng-template>
+
+
+<ng-template #drillTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">{{chart()?.title}}</h4>
+  </div>
+  <div class="p-2">
+    <div class="px-2 pb-2">
+      <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
+        <div class="row">
+          <div class="col d-flex align-items-center">
+            <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
+          </div>
+          <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
+            <div>{{entryTotal}}</div>
+          </div>
+          <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
+            <div>{{entryElements}}</div>
+          </div>
+          <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
+            <div>{{entryPages}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @if (!entryLoading()){
+    <div class="table-responsive">
+      <table id="drill_{{chart().id}}" class="table table-striped table-flush position-relative" >
+        <thead>
+          <tr>
+            @for (item of chart().x?.drillFields; track $index){
+              <th class="border-top-0 position-sticky sticky-top">{{item.label}}</th>
+            }
+            @if (chart().x?.drillView){
+              <th class="border-top-0 position-sticky sticky-top text-end">{{lang()=='ms'?'Papar':'View'}}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of entryList(); track $index) {
+            <tr>
+              @for (item of chart().x?.drillFields; track $index){
+                <td>
+                  <field-view [field]="form()[item.root]?.items?.[item.code]" [scopeId]="scopeId()"
+                    [lang]="lang()"
+                    [value]="d[item.root]?.[item.code]"
+                    [data]="{}">
+                  </field-view>
+                </td>
+              }
+              @if (chart().x?.drillView){
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-secondary" (click)="openDrillView(drillViewTpl,d)">
+                    <fa-icon [icon]="['fas','file']"></fa-icon>
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }@else {
+    <div class="text-center m-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+  @if (entryTotal > 0) {
+    <div class="text-center d-flex justify-content-center  pagination-rounded">
+      @if (entryTotal>pageSize) {
+        <ngb-pagination [collectionSize]="entryTotal"
+          [pageSize]="pageSize" [(page)]="entryPageNumber" [maxSize]="10"
+          (pageChange)="getEntryList(entryPageNumber)" boundaryLinks="false"
+          directionLinks="false">
+          <ng-template ngbPaginationFirst>
+            <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+          </ng-template>
+          <ng-template ngbPaginationPrevious>
+            <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationNext>
+            <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+          </ng-template>
+          <ng-template ngbPaginationLast>              
+            <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+          </ng-template>
+        </ngb-pagination>
+      }
+    </div>
+  }
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="d()">{{app().x?.lang=='ms'?'Tutup':'Close'}}</button>
+  </div>
+</ng-template>
+
+<ng-template #drillViewTpl let-c="close" let-d="dismiss">
+  <div style="background: whitesmoke;" [style.margin-bottom.px]="-68">
+    @defer(prefetch on idle){
+      <app-view (closed)="c()" 
+        [formId]="chart()?.formId" [entryId]="inPopEntryId()"
+        [asComp]="true"></app-view>
+    }@loading {
+      <div class="text-center m-5">
+        <div class="spinner-grow text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    }
   </div>
 </ng-template>

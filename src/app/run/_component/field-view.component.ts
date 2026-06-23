@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, AfterViewInit, computed, inject, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, AfterViewInit, computed, inject, input, signal, viewChild, effect } from '@angular/core';
 import { baseApi } from '../../_shared/constant.service';
 import { NgStyle, AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -105,10 +105,10 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 
 
         <div>
-          <div #textContainer 
-              style="overflow:hidden; transition: max-height 0.2s ease-out;" 
-              [ngStyle]="{'max-height': isReadMore ? 'unset' : '150px'}"
-              [class.fade-bottom]="!isReadMore && isOverflowing()">
+            <div #textContainer class="print-expand"
+              style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
+              [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '150px'}"
+              [class.fade-bottom]="!isReadMore() && isOverflowing()">
               
             <div>
               @if (field().x?.prefix) {
@@ -122,13 +122,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           </div>
 
           @if (isOverflowing()) {
-            <div class="text-start">
-              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore = !isReadMore">
+            <div class="text-start print-hide">
+              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())">
                 <!-- {{ isReadMore ? 'Less...' : 'More...' }} -->
                 {{ 
                   lang() === 'ms' 
-                    ? (isReadMore ? 'Kurang...' : 'Lebih...') 
-                    : (isReadMore ? 'Less...' : 'More...') 
+                    ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
+                    : (isReadMore() ? 'Less...' : 'More...') 
                 }}
               </button>
             </div>
@@ -390,9 +390,28 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
       mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     }
+
+    @media print {
+      /* 1. Force the container to expand fully and override the inline [ngStyle] */
+      .print-expand {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      /* 2. Remove the faded bottom effect so text is readable */
+      .fade-bottom {
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+      }
+      
+      /* 3. Hide the More/Less button */
+      .print-hide {
+        display: none !important;
+      }
+    }
   `]
 })
-export class FieldViewComponent implements OnInit, AfterViewInit {
+export class FieldViewComponent implements OnInit {
 
   private logService = inject(LogService);
   private decimalPipe = inject(DecimalPipe);
@@ -404,34 +423,44 @@ export class FieldViewComponent implements OnInit, AfterViewInit {
   lang = input<string>('en');
   timestamp = input<number>();
 
-  isReadMore: boolean = false;
+  isReadMore = signal<boolean>(false);
   baseApi: string = baseApi;
 
 
   // -- handle long text --
   isOverflowing = signal<boolean>(false);
+  contentHeight = signal<number>(2000); // Default fallback
 
   // 1. Declare the signal-based viewChild
   textContainer = viewChild<ElementRef<HTMLElement>>('textContainer');
 
-  ngAfterViewInit() {
-    // 2. We still use setTimeout so Angular finishes painting the DOM
-    // before we calculate the pixel height of the text.
-    setTimeout(() => {
-      this.checkOverflow();
-    }, 0);
+  constructor() {
+    // We use an effect so that we can react the moment the @if block creates the textContainer
+    effect((onCleanup) => {
+      const el = this.textContainer()?.nativeElement;
+
+      if (el) {
+        // 1. Create a ResizeObserver. The browser will fire this automatically 
+        // the millisecond the morphHtml directive paints the text into the div!
+        const observer = new ResizeObserver(() => {
+          // 2. Check the real scrollHeight once the browser has rendered it
+          // console.log('Real height:', el.scrollHeight);
+          const exactHeight = el.scrollHeight;
+          this.isOverflowing.set(exactHeight > 150);
+          this.contentHeight.set(exactHeight);
+        });
+
+        // 3. Start watching the div
+        observer.observe(el);
+
+        // 4. Cleanup the observer if the element is destroyed (prevents memory leaks)
+        onCleanup(() => {
+          observer.disconnect();
+        });
+      }
+    });
   }
 
-  checkOverflow() {
-    // 3. Access the viewChild by calling it like a signal: this.textContainer()
-    const el = this.textContainer()?.nativeElement;
-    
-    if (el) {
-      // If the actual content height is greater than the max-height, it's overflowing
-      this.isOverflowing.set(el.scrollHeight > 150);
-    }
-  }
-  // -- end handle long text --
 
   // Uses Angular's modern computed() to correctly cache based on signal dependencies
   compiledTpl = computed(() => {

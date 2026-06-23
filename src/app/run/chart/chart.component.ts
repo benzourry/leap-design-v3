@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, inject, input, output, signal, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, computed, inject, input, output, signal, DestroyRef, forwardRef, viewChild, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NgbDateAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 // import * as dayjs from 'dayjs';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../_shared/constant.service';
@@ -33,6 +33,8 @@ import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 import { Observable } from 'rxjs';
 import { first, map, shareReplay } from 'rxjs/operators';
+import { FieldViewComponent } from '../_component/field-view.component';
+import { ViewComponent } from '../view/view.component';
 
 @Component({
     selector: 'app-chart',
@@ -44,7 +46,10 @@ import { first, map, shareReplay } from 'rxjs/operators';
         provideEcharts(),
         // provideEchartsCore({ echarts })
     ],
-    imports: [FaIconComponent, NgClass, NgStyle, NgxEchartsDirective, UserEntryFilterComponent, SlicePipe, DecimalPipe]
+    imports: [FaIconComponent, NgClass, NgStyle, NgxEchartsDirective, UserEntryFilterComponent, SlicePipe,
+       NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
+       DecimalPipe, FieldViewComponent, ViewComponent
+    ]
 })
 export class ChartComponent implements OnInit {
 
@@ -72,6 +77,11 @@ export class ChartComponent implements OnInit {
   lang = computed(() => this.app().x?.lang);
   scopeId = input<any>();
 
+  drillTpl = viewChild<TemplateRef<any>>('drillTpl');
+
+  inPopParams: any = {};
+  drillDatasetId: any;
+
   base: string = base;
   baseApi: string = baseApi;
 
@@ -90,16 +100,33 @@ export class ChartComponent implements OnInit {
 
   constructor() {}
 
+  builtInItems = {
+    $id: { label: "System ID", code: '$id', type: 'number', subType: 'number' },
+    $code: { label: "System Code", code: '$code', type: 'text', subType: 'input' },
+    $counter: { label: "System Counter", code: '$counter', type: 'number', subType: 'number' },
+    $statusText: { label: "Current Status Text", code: '$statusText', type: 'text', subType: 'input' }
+  }
+
   ngOnInit() {
     if (this.chart().formId) {
       this.runService.getRunForm(this.chart().formId)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (res) => {
+            // this.form.set({
+            //   data: res,
+            //   prev: res.prev || null
+            // });
+
             this.form.set({
-              data: res,
+              data: {
+                ...res,
+                items: deepMerge(this.builtInItems, res.items),
+              },
               prev: res.prev || null
             });
+
+            
             this.getLookupInFilter();
           },
           error: (err) => {
@@ -178,13 +205,39 @@ export class ChartComponent implements OnInit {
         };
         
         var series = [];
-        var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+        // var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+        var isSingleSeries = cd.data.length === 2;
 
-        for (var i = 1; i < cd.data[0].length; i++) {
+        // for (var i = 1; i < cd.data[0].length; i++) {
+        //   var stack = c.x && c.x.stack;
+          
+        //   var seriesItem: any = {
+        //     type: this.typeMapping[c.type],
+        //     stack: stack ? 'Stack 1' : undefined,
+        //     smooth: c.x && c.x.smooth,
+        //     label: { 
+        //       show: false, 
+        //       position: stack ? 'inside' : 'top', 
+        //       formatter: stack ? this.hideZero() : undefined 
+        //     }
+        //   };
+
+        //   // Apply colorful bars if it's a bar chart and only has one series
+        //   if (c.type === 'bar' && isSingleSeries) {
+        //     seriesItem.colorBy = 'data';
+        //   }
+
+        //   series.push(seriesItem);
+        // }
+
+
+        // 1. Loop through the total ROWS, not the columns
+        for (var i = 1; i < cd.data.length; i++) {
           var stack = c.x && c.x.stack;
           
           var seriesItem: any = {
             type: this.typeMapping[c.type],
+            seriesLayoutBy: 'row', // <-- ADD THIS: Tells ECharts the Legend is on the Y-Axis
             stack: stack ? 'Stack 1' : undefined,
             smooth: c.x && c.x.smooth,
             label: { 
@@ -194,11 +247,9 @@ export class ChartComponent implements OnInit {
             }
           };
 
-          // Apply colorful bars if it's a bar chart and only has one series
           if (c.type === 'bar' && isSingleSeries) {
             seriesItem.colorBy = 'data';
           }
-
           series.push(seriesItem);
         }
         ecOption.series = series;
@@ -229,25 +280,48 @@ export class ChartComponent implements OnInit {
 
         var series = [];
         var stack = c.x && c.x.stack;
-        var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+        // var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
+        var isSingleSeries = cd.data.length === 2;
 
-        for (var i = 1; i < cd.data[0].length; i++) {
+        // for (var i = 1; i < cd.data[0].length; i++) {
+        //   var seriesItem: any = {
+        //     type: this.typeMapping[c.type],
+        //     stack: stack ? 'Stack 1' : undefined,
+        //     smooth: c.x && c.x.smooth,
+        //     label: { 
+        //       show: true, 
+        //       position: stack ? 'inside' : 'right', 
+        //       formatter: stack ? this.hideZero() : undefined 
+        //     }
+        //   };
+
+        //   // Apply colorful bars if it's a horizontal bar chart and only has one series
+        //   if (c.type === 'hbar' && isSingleSeries) {
+        //     seriesItem.colorBy = 'data';
+        //   }
+
+        //   series.push(seriesItem);
+        // }
+
+        // 1. Loop through the total ROWS, not the columns
+        for (var i = 1; i < cd.data.length; i++) {
+          var stack = c.x && c.x.stack;
+          
           var seriesItem: any = {
             type: this.typeMapping[c.type],
+            seriesLayoutBy: 'row', // <-- ADD THIS: Tells ECharts the Legend is on the Y-Axis
             stack: stack ? 'Stack 1' : undefined,
             smooth: c.x && c.x.smooth,
             label: { 
-              show: true, 
-              position: stack ? 'inside' : 'right', 
+              show: false, 
+              position: stack ? 'inside' : 'top', 
               formatter: stack ? this.hideZero() : undefined 
             }
           };
 
-          // Apply colorful bars if it's a horizontal bar chart and only has one series
           if (c.type === 'hbar' && isSingleSeries) {
             seriesItem.colorBy = 'data';
           }
-
           series.push(seriesItem);
         }
         ecOption.series = series;
@@ -269,31 +343,25 @@ export class ChartComponent implements OnInit {
 
   // --- Multiple Pie / Doughnut / Rose Logic ---
     if (['pie', 'doughnut', 'rose'].includes(c.type)) {
-      if (cd.series && cd.data[0].length > 2) {
+      if (cd.series && cd.data.length > 2) {
         // MULTIPLE PIES: Auto-Arranging Grid Layout
         var series = [];
         var titles = []; 
-        var numberOfSeries = cd.data[0].length - 1;
+        
+        // FIX 1: Loop through the ROWS (Series), not the columns!
+        var numberOfSeries = cd.data.length - 1; 
         
         var cols = Math.ceil(Math.sqrt(numberOfSeries)); 
         var rows = Math.ceil(numberOfSeries / cols); 
 
-
-        var containerHeight = c.height || 450; // The physical pixel height of your container
-        var fixedLegendHeightPx = 35; // <-- Define your exact pixel height here!
+        var containerHeight = c.height || 450;
+        var fixedLegendHeightPx = 35; 
         
         var topLegendOffset = (fixedLegendHeightPx / containerHeight) * 100; 
         var usableGridHeight = 100 - topLegendOffset;
 
-
-        // var topLegendOffset = 5; 
-        // var usableGridHeight = 95; // Give the remaining space back to the grid
-
         var cellWidth = 100 / cols;
         var cellHeight = usableGridHeight / rows;
-
-        // FIX 1: Massively increase the radius multiplier. 
-        // By using (100 / max(cols,rows)), we allow the pie to consume up to 80% of its total cell space!
         var maxRadius = (100 / Math.max(cols, rows)) * 0.80; 
 
         for (var i = 1; i <= numberOfSeries; i++) {
@@ -302,29 +370,31 @@ export class ChartComponent implements OnInit {
           var rowIdx = Math.floor(layoutIdx / cols); 
 
           var centerX = (colIdx + 0.5) * cellWidth + '%'; 
-          // Push the pie center down slightly so it sits comfortably in the lower half of its cell
           var centerY = (rowIdx + 0.5) * cellHeight + topLegendOffset + 3 + '%'; 
 
           var pieSeries: any = {
             type: 'pie',
             center: [centerX, centerY], 
-            name: cd.data[0][i], 
+            
+            // FIX 2: Map the name to the Row Header (e.g., "Lelaki")
+            name: cd.data[i][0], 
+            
+            // FIX 3: Tell ECharts to read this pie across the row!
+            seriesLayoutBy: 'row',
+            
             encode: {
-              itemName: 0, 
-              value: i     
+              itemName: 0, // Slice Labels come from the Column Headers ("Johor", "Kedah")
+              value: i     // Slice Values come from the current Row (38, 12)
             },
             label: {
               show: true,
               position: 'inside',
               formatter: '{d}%',
-              // Made the inner percentage text slightly larger and bolder to match the huge pies
               fontSize: 13, 
               fontWeight: 'bold',
               color: '#fff' 
             },
-            labelLine: {
-              show: false
-            }
+            labelLine: { show: false }
           };
 
           if (c.type === 'rose') {
@@ -339,17 +409,13 @@ export class ChartComponent implements OnInit {
           series.push(pieSeries);
 
           titles.push({
-            text: cd.data[0][i], 
+            // FIX 4: Update title to match the Row Header
+            text: cd.data[i][0], 
             left: centerX,
-            // FIX 2: Bring the title much closer to the top edge of the grid cell
             top: (rowIdx * cellHeight) + topLegendOffset + 2 + '%', 
             textAlign: 'center',
             textStyle: { 
-              fontSize: 13, 
-              fontWeight: 'bold', 
-              width: 180, 
-              overflow: 'break',
-              lineHeight: 16 
+              fontSize: 13, fontWeight: 'bold', width: 180, overflow: 'break', lineHeight: 16 
             } 
           });
         }
@@ -360,6 +426,7 @@ export class ChartComponent implements OnInit {
         if (!ecOption.legend) ecOption.legend = {};
         ecOption.legend.top = '0%';
         ecOption.legend.type = 'scroll';
+
       } else {
         // SINGLE PIE: Original fallback logic
         if (c.type == 'rose') {
@@ -394,15 +461,20 @@ export class ChartComponent implements OnInit {
     //   ecOption.series[0].radius = ['50%', '70%'];
     // }
 
+    // if (c.type == 'area') {
+    //   // var series = []
+    //   for (var i = 1; i < cd.data[0].length; i++) {
+    //     ecOption.series[i - 1].areaStyle = {};
+    //   }
+    // }
+
     if (c.type == 'area') {
-      // var series = []
-      for (var i = 1; i < cd.data[0].length; i++) {
-        ecOption.series[i - 1].areaStyle = {};
-        // series.push({ type: this.typeMapping[c.type], label: { normal: { show: true, position: 'top' } } })
+      // Loop safely over the generated series array
+      for (var i = 0; i < ecOption.series.length; i++) {
+        ecOption.series[i].areaStyle = {};
       }
-      // this.ecOption[c.id].series = series;
-      // this.ecOption[c.id].series[0].areaStyle = {};
     }
+
     if (c.type == 'gauge') {
       ecOption.series[0].data = ecOption.dataset.source;
       ecOption.series[0].title = { show: false };
@@ -614,6 +686,171 @@ export class ChartComponent implements OnInit {
 
   exitMaxState() {
     this.onExitMaxState.emit(false);
+  }
+
+  entryList = signal<any[]>([]);
+  entryTotal: number = 0;
+  entryPages:number = 0;
+  entryElements:number = 0;
+  entryPageNumber:number = 1;
+  pageSize: number = 25;
+
+  entryLoading = signal<boolean>(false)
+
+  onChartClick(event: any) {
+    this.entryPageNumber = 1;
+    if (!this.chart().x?.drill) {
+      return; 
+    }
+
+    // --- MISSING FIX 1: ZERO-VALUE GUARD FOR ECHARTS CANVAS CLICKS ---
+    let clickedValue = event.value;
+
+    // A. Matrix Array format (Bar/Line Series)
+    if (Array.isArray(event.value)) {
+        clickedValue = event.value[event.dataIndex + 1];
+    } 
+    // B. Table mock click or standard Pie chart
+    else if (event.value !== undefined) {
+        clickedValue = event.value;
+    } else if (event.data && event.data.value !== undefined) {
+        clickedValue = event.data.value;
+    }
+
+    // Guard Clause: Stop execution immediately if the value is 0
+    if (clickedValue === 0 || 
+        clickedValue === '0' || 
+        clickedValue === null || 
+        clickedValue === '' || 
+        clickedValue === '-') {
+        console.log("Drill-down aborted: Value is 0");
+        return; 
+    }
+
+    // 1. Determine which form fields to filter
+    let drillCodeField = this.chart().fieldCode;
+    let drillSeriesField = this.chart().fieldSeries;
+
+    if (this.chart().x?.swap) {
+        const temp = drillCodeField;
+        drillCodeField = drillSeriesField;
+        drillSeriesField = temp;
+    }
+
+    // 2. Keep any existing global filters (Date ranges, User Dropdowns, etc.)
+    this.inPopParams = { ...this.filtersData };
+
+    // 3. Extract the clicked data from the ECharts event
+    let xCategory = event.name;         // e.g., "Pengesahan: Lulus" or "Johor" (X-Axis)
+    let legendSeries = event.seriesName; // e.g., "Lelaki" (Legend)
+
+    // 4. Recover the raw values using the dictionary from the backend (if translated)
+    // Optional chaining (?.) prevents errors if _dict is missing on normal charts
+    let dict = this.chartDataset()?._dict || {}; 
+    
+    // If the category/series exists in the dict, map it back to the raw string (e.g. "0_##_approved")
+    // Otherwise, keep the original string.
+    let rawCategoryCode = dict[xCategory] || xCategory;
+    let rawSeriesCode = dict[legendSeries] || legendSeries;
+
+    // --- NEW: Handle 'n/a' null translations ---
+    if (rawCategoryCode === 'n/a') {
+        rawCategoryCode = '~null';
+    }
+    if (rawSeriesCode === 'n/a') {
+        rawSeriesCode = '~null';
+    }
+
+    // 5. Helper function to properly assign filters, specifically handling virtual fields
+    const applyDrillFilter = (field: string, rawValue: string) => {
+      if (field && field.includes(',')) {
+          console.warn(`Drill-down ignored for Cartesian field [${field}]. Please define 'drillCodeField' or 'drillSeriesField' in chart settings.`);
+          return;
+      }
+      // If it's our virtual status text, split it into ACTUAL database columns!
+      if (field === '$.$statusText' && typeof rawValue === 'string' && rawValue.includes('_##_')) {
+          let parts = rawValue.split('_##_');
+          let tier = parts[0];
+          let status = parts[1];
+
+          // Drop the tier filter completely for drafted/submitted to prevent NULL vs 0 database mismatches
+          if (['drafted', 'submitted'].includes(status.toLowerCase())) {
+              this.inPopParams['$_.currentStatus'] = status;
+          } else {
+              this.inPopParams['$_.currentTier'] = tier;
+              this.inPopParams['$_.currentStatus'] = status;
+          }
+      } else {
+          // Standard fields proceed normally
+          this.inPopParams[field] = rawValue;
+      }
+    };
+
+    // 6. Apply Category (X-Axis) filter
+    if (drillCodeField && xCategory) {
+      applyDrillFilter(drillCodeField, rawCategoryCode);
+    }
+
+    // 7. Apply Series (Legend / Stacked segment) filter
+    if (drillSeriesField && legendSeries) {
+      applyDrillFilter(drillSeriesField, rawSeriesCode);
+    }
+
+    // 8. Open the modal!
+    const tpl = this.drillTpl(); 
+    
+    if (tpl) {      
+      this.getEntryList(1); // Load the first page of entries
+
+      history.pushState(null, null, window.location.href);
+      this.modalService.open(tpl, { backdrop: 'static', size: 'lg' });
+    }
+  }
+
+  inPopEntryId = signal<number>(null);
+  openDrillView(content, entry: any) {
+    if (!this.chart().x?.drill) {
+      return; 
+    }
+
+    this.inPopEntryId.set(entry.id);
+
+
+    history.pushState(null, null, window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' });
+  }
+
+  getEntryList(pageNumber: number) {
+
+    this.entryLoading.set(true);
+    this.entryList.set([]);
+    this.entryTotal = 0; // <-- Add this
+    this.entryPages = 0; // <-- Add this
+    this.cdr.detectChanges();
+
+
+    this.entryService.getListByChart(this.chart().id, { filters: JSON.stringify(this.inPopParams), email: this.user()?.email, page: pageNumber-1, size: this.pageSize  })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res=>{
+          this.entryLoading.set(false);
+        
+          this.entryPages = res.page?.totalPages;
+          this.entryElements = res.content?.length;
+
+          this.entryTotal = res.page?.totalElements;
+
+          this.entryList.set(res.content);
+          this.cdr.detectChanges();
+        },
+        error: err=>{
+          this.entryLoading.set(false);
+        }
+      });
+  }
+
+  closeAll(){
+    this.modalService.dismissAll();
   }
 
 }

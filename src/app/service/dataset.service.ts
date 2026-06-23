@@ -27,6 +27,10 @@ export class DatasetService {
   getDatasetList(appId:number){
     return this.http.get<any>(`${this.baseApi}/dataset?appId=${appId}&sort=sortOrder,asc&sort=id,asc`)
   }
+  
+  getDatasetListByFormId(formId:number){
+    return this.http.get<any>(`${this.baseApi}/dataset?formId=${formId}&sort=sortOrder,asc&sort=id,asc`)
+  }
 
   removeDataset(datasetId: number) {
     return this.http.post<any>(`${this.baseApi}/dataset/${datasetId}/delete`, {})

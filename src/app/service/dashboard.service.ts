@@ -14,8 +14,8 @@ export class DashboardService {
   saveChartOrder(list: any): any {
     return this.http.post<any>(`${this.baseApi}/dashboard/save-chart-order`, list);
   }
-  saveChart(formId: any, chart: any): any {
-    return this.http.post<any>(`${this.baseApi}/dashboard/${formId}/chart`, chart)
+  saveChart(dashboardId: any, chart: any): any {
+    return this.http.post<any>(`${this.baseApi}/dashboard/${dashboardId}/chart`, chart)
   }
 
   

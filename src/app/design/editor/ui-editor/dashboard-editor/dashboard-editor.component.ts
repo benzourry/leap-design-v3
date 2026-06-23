@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 // import { LookupService } from '../../../../service/lookup.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
@@ -8,7 +8,7 @@ import { AppService } from '../../../../service/app.service';
 // import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgClass, NgStyle, KeyValuePipe, JsonPipe } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, KeyValuePipe } from '@angular/common';
 // import { HttpParams } from '@angular/common/http';
 import { DashboardService } from '../../../../service/dashboard.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -24,14 +24,15 @@ import { EditDashboardComponent } from '../../../../_shared/modal/edit-dashboard
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { EntryService } from '../../../../run/_service/entry.service';
+import { DatasetService } from '../../../../service/dataset.service';
 
 @Component({
-    selector: 'app-dashboard-editor',
-    templateUrl: './dashboard-editor.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./dashboard-editor.component.scss',
-        '../../../../../assets/css/element-action.css'],
-    imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
+  selector: 'app-dashboard-editor',
+  templateUrl: './dashboard-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./dashboard-editor.component.scss',
+    '../../../../../assets/css/element-action.css'],
+  imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
 })
 export class DashboardEditorComponent implements OnInit {
 
@@ -43,6 +44,7 @@ export class DashboardEditorComponent implements OnInit {
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private appService = inject(AppService);
+  private datasetService = inject(DatasetService);
   private entryService = inject(EntryService);
   private utilityService = inject(UtilityService);
   private toastService = inject(ToastService);
@@ -78,7 +80,7 @@ export class DashboardEditorComponent implements OnInit {
     { code: 'hbar', name: 'Horizontal Bar', parent: 'chart', icon: ['fas', 'chart-bar'] },
     { code: 'hline', name: 'Horizontal Line', parent: 'chart', icon: ['fas', 'chart-line'] },
     { code: 'area', name: 'Area', parent: 'chart', icon: ['fas', 'chart-area'] },
-    { code: 'radar', name: 'Radar', parent: 'chart', icon: ['fas', 'circle-nodes'] }, 
+    { code: 'radar', name: 'Radar', parent: 'chart', icon: ['fas', 'circle-nodes'] },
     { code: 'gauge', name: 'Gauge', parent: 'chart', icon: ['fas', 'tachometer-alt'], noseries: true }
   ]
 
@@ -107,7 +109,8 @@ export class DashboardEditorComponent implements OnInit {
     { name: "Quadruple (4x)", value: 1800 }
   ]
 
-  publicEp:any={}
+  publicEp: any = {}
+  editDrillFields: any = {}
 
   ngOnInit() {
     this.userService.getCreator().subscribe((user) => {
@@ -155,7 +158,7 @@ export class DashboardEditorComponent implements OnInit {
 
   accessList: any[] = [];
   getAccessList() {
-    this.groupService.getGroupList({ appId: this.app.id, size:999 })
+    this.groupService.getGroupList({ appId: this.app.id, size: 999 })
       .subscribe(res => {
         this.accessList = res.content;
         this.cdr.detectChanges(); // ✅ Good: after async update
@@ -171,13 +174,14 @@ export class DashboardEditorComponent implements OnInit {
     })
   }
 
+  datasetList: any[] = [];
   form: any = {};
   // editHolderForm: any = {}
   editHolderFormSig = signal<any>({})
   loadForm(id, holderSig, chart) {
     this.formService.getForm(id)
       .subscribe(res => {
-        holderSig.set({data:res, prev:res.prev})
+        holderSig.set({ data: res, prev: res.prev })
 
         this.sectionItems['data'] = this.getSectionItemsNew(holderSig().data, ['section', 'approval', 'list']);
         this.sectionItems['prev'] = this.getSectionItemsNew(holderSig().prev, ['section', 'approval', 'list']);
@@ -216,7 +220,7 @@ export class DashboardEditorComponent implements OnInit {
       })
   }
 
-  sectionItems:any={};
+  sectionItems: any = {};
   getSectionItemsNew(form, types: any[]) {
     let items = [];
     if (form) {
@@ -228,7 +232,7 @@ export class DashboardEditorComponent implements OnInit {
     }
     return items;
   }
-  
+
   getTierFromSection = (sectionId, form) => form.tiers.filter(t => t.section && t.section.id == sectionId)[0];
 
 
@@ -239,122 +243,178 @@ export class DashboardEditorComponent implements OnInit {
     var mapFm = { 'data': '$', 'prev': '$prev$', 'approval': '$$' };
     var tier = this.getTierFromSection(section && section.id, this.editHolderFormSig()[fm]);
     if (section && section.type == 'approval') {
-        if (tier) {
-            return '$$.' + tier.id;
-        } else {
-            return mapFm[fm];
-        }
-    } else if (section && section.type == 'list') {
-        return mapFm[fm] + '.' + section.code + '*';
-    } else {
+      if (tier) {
+        return '$$.' + tier.id;
+      } else {
         return mapFm[fm];
+      }
+    } else if (section && section.type == 'list') {
+      return mapFm[fm] + '.' + section.code + '*';
+    } else {
+      return mapFm[fm];
     }
   }
 
-  getPostfix = (field) =>{
-    if (['select', 'radio'].indexOf(field.type)>-1) {
-      if (field.subType=='multiple'){
+  getPostfix = (field) => {
+    if (['select', 'radio'].indexOf(field.type) > -1) {
+      if (field.subType == 'multiple') {
         return "*.name";
-      }else{
+      } else {
         return ".name";
       }
-      
-    }else if (['checkboxOption'].indexOf(field.type)>-1){
+
+    } else if (['checkboxOption'].indexOf(field.type) > -1) {
       return "*.name";
 
-    }else if (['modelPicker'].indexOf(field.type)>-1){
-      if (field.subType=='multiple'){
-        return "*."+field.bindLabel;
-      }else{
-        return "."+field.bindLabel;
+    } else if (['modelPicker'].indexOf(field.type) > -1) {
+      if (field.subType == 'multiple') {
+        return "*." + field.bindLabel;
+      } else {
+        return "." + field.bindLabel;
       }
-    }else{
+    } else {
       return "";
     }
   }
 
-getFilterPath(fm, section,f){
-  return this.getPrefix(fm,section)+'.'+f.code+(this.editHolderFormSig()[fm].items[f.code].subType=='multiple'?'*':'')+'.code';
-}
+  getFilterPath(fm, section, f) {
+    return this.getPrefix(fm, section) + '.' + f.code + (this.editHolderFormSig()[fm].items[f.code].subType == 'multiple' ? '*' : '') + '.code';
+  }
 
 
-checkAllStatus(checked){
-  this.statusFilterForm['-1'].drafted = checked;
-  this.statusFilterForm['-1'].submitted = checked;
-  this.editHolderFormSig().data?.tiers?.forEach(tier=>{
-    for (const action in tier.actions){
-      this.statusFilterForm[tier.id][action] = checked;
-    }
-    this.statusFilterForm[tier.id].resubmitted = checked;
-  })
-}
+  checkAllStatus(checked) {
+    this.statusFilterForm['-1'].drafted = checked;
+    this.statusFilterForm['-1'].submitted = checked;
+    this.editHolderFormSig().data?.tiers?.forEach(tier => {
+      for (const action in tier.actions) {
+        this.statusFilterForm[tier.id][action] = checked;
+      }
+      this.statusFilterForm[tier.id].resubmitted = checked;
+    })
+  }
 
 
   isStatusAllFalse(filter) {
     for (const tierKey in filter) {
-        const tierObj = filter[tierKey];
-        for (const statusKey in tierObj) {
-            // If we find even one true value, we stop and return false immediately
-            if (tierObj[statusKey] === true) { 
-                return false; 
-            }
+      const tierObj = filter[tierKey];
+      for (const statusKey in tierObj) {
+        // If we find even one true value, we stop and return false immediately
+        if (tierObj[statusKey] === true) {
+          return false;
         }
+      }
     }
     return true; // If we survive the loops, everything was false
   }
 
   splitAsList = splitAsList;
 
-  forceArray(obj){
-    return Array.isArray(obj)?obj:[obj];
+  forceArray(obj) {
+    return Array.isArray(obj) ? obj : [obj];
   }
 
-  seriesChange(isEnabled){
-    if (!isEnabled){
+  seriesChange(isEnabled) {
+    if (!isEnabled) {
       delete this.editChartData.fieldSeries;
     }
   }
 
   isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;
 
-  
-    editPresetValue(chart,c) {
-        var value = prompt('Edit value for :' + c.key + ' (old value: ' + c.value + ')', c.value);
-        if (value) {
-            chart.presetFilters[c.key] = value;
-            this.dashboardService.saveChart(this.curDashboard.id, chart)
-            .subscribe((res) => {
-              this.toastService.show("Preset value saved successfully", { classname: 'bg-success text-light' });
-            });
-            this.cdr.detectChanges(); // <--- Add here
-        }
+
+  editPresetValue(chart, c) {
+    var value = prompt('Edit value for :' + c.key + ' (old value: ' + c.value + ')', c.value);
+    if (value) {
+      chart.presetFilters[c.key] = value;
+      this.dashboardService.saveChart(this.curDashboard.id, chart)
+        .subscribe((res) => {
+          this.toastService.show("Preset value saved successfully", { classname: 'bg-success text-light' });
+        });
+      this.cdr.detectChanges(); // <--- Add here
+    }
+  }
+
+  editPresetKey(chart, c) {
+    var key = prompt('Edit key for :' + c.key + ' (old key: ' + c.key + ')\n\nOperator supported (appended to key, ie: $.gender~in): ~in, ~notin, ~contain, ~notcontain, ~from, ~to, ~between', c.key);
+    if (key) {
+      chart.presetFilters[key] = c.value;
+      if (c.key != key) {
+        delete chart.presetFilters[c.key]
+      }
+      this.dashboardService.saveChart(this.curDashboard.id, chart)
+        .subscribe((res) => {
+          this.toastService.show("Preset key saved successfully", { classname: 'bg-success text-light' });
+        });
+      this.cdr.detectChanges(); // <--- Add here
     }
 
-    editPresetKey(chart,c) {
-        var key = prompt('Edit key for :' + c.key + ' (old key: ' + c.key + ')\n\nOperator supported (appended to key, ie: $.gender~in): ~in, ~notin, ~contain, ~notcontain, ~from, ~to, ~between', c.key); 
-        if (key) {
-            chart.presetFilters[key] = c.value;
-            if (c.key != key) {
-                delete chart.presetFilters[c.key]
-            }
-            this.dashboardService.saveChart(this.curDashboard.id, chart)
-            .subscribe((res) => {
-              this.toastService.show("Preset key saved successfully", { classname: 'bg-success text-light' });
-            });
-            this.cdr.detectChanges(); // <--- Add here
-        }
+  }
 
+  enableChartDrill: boolean = false;
+  checkCartesanForDrill() {
+    if (this.editChartData.fieldCode.length > 1 || this.editChartData.fieldValue.length > 1) {
+      this.editChartData.x.drill = false;
+      this.enableChartDrill = false;
+    } else {
+      this.enableChartDrill = true;
+    }
+  }
+
+
+  removePreset(chart, key) {
+    delete chart.presetFilters[key];
+    this.dashboardService.saveChart(this.curDashboard.id, chart)
+      .subscribe((res) => {
+        this.toastService.show("Preset key removed successfully", { classname: 'bg-success text-light' });
+      });
+    this.cdr.detectChanges(); // <--- Add here
+  }
+
+
+  // // 1. GETTER: Uses flatMap to instantly map prefixes to their array of codes
+  // get fieldMapFlat(): string[] {
+  //   return Object.entries(this.editChartData.x.drillFields || {}).flatMap(
+  //     ([prefix, codes]: [string, any]) => codes.map((code: string) => `${prefix}.${code}`)
+  //   );
+  // }
+
+  // // 2. SETTER: Uses reduce and the logical assignment operator (||=) to auto-group
+  // set fieldMapFlat(values: string[]) {
+  //   this.editChartData.fieldMap = (values || []).reduce((acc: any, val: string) => {
+  //     const dotIdx = val.indexOf('.');
+  //     if (dotIdx > -1) {
+  //       const prefix = val.substring(0, dotIdx);
+  //       // If acc[prefix] doesn't exist, initialize it as [], then push the code
+  //       (acc[prefix] ||= []).push(val.substring(dotIdx + 1)); 
+  //     }
+  //     return acc;
+  //   }, {});
+  // }
+
+
+  // Checks if the object exists in the array (only needs root and code to check)
+  isFieldSelected(root: string, code: string): boolean {
+    const list = this.editChartData.x.drillFields || [];
+    return list.some((item: any) => item.root === root && item.code === code);
+  }
+
+  // Adds or removes the object directly, now saving the label too!
+  toggleFieldSelection(root: string, code: string, label: string, event: any) {
+    const isChecked = event.target.checked;
+    let list = this.editChartData.x.drillFields || [];
+
+    if (isChecked) {
+      if (!this.isFieldSelected(root, code)) {
+        // Push the new object with root, code, AND label
+        list = [...list, { root, code, label }];
+      }
+    } else {
+      list = list.filter((item: any) => !(item.root === root && item.code === code));
     }
 
-    
-    removePreset(chart,key) {
-        delete chart.presetFilters[key];
-        this.dashboardService.saveChart(this.curDashboard.id, chart)
-            .subscribe((res) => {
-              this.toastService.show("Preset key removed successfully", { classname: 'bg-success text-light' });
-            });
-        this.cdr.detectChanges(); // <--- Add here
-    }
+    // Save the array of objects directly to the model!
+    this.editChartData.x.drillFields = list;
+  }
 
 
   editChart(content, dashboardId, data, isNew) {
@@ -367,16 +427,21 @@ checkAllStatus(checked){
       data['status'] = "";
       data['statusFilter'] = {};
     }
-    if (!data.x){
+    if (!data.x) {
       data.x = {};
     }
-    if (!this.statusFilterForm[-1]){
+    if (!data.x.drillFields) {
+      data.x.drillFields = [];
+    }
+    if (!this.statusFilterForm[-1]) {
       this.statusFilterForm[-1] = {};
     }
     data.fieldCode = data.fieldCode?.split(",");
     data.fieldValue = data.fieldValue?.split(",");
 
     this.editChartData = data;
+
+    this.checkCartesanForDrill()
 
     if (data.form) {
       this.loadForm(data.form.id, this.editHolderFormSig, data);
@@ -401,7 +466,7 @@ checkAllStatus(checked){
       }, res => {
         data.fieldCode = data.fieldCode?.join(",");
         data.fieldValue = data.fieldValue?.join(",");
-       });
+      });
   }
 
   statusFilterForm: any = {};
@@ -454,15 +519,17 @@ checkAllStatus(checked){
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.dashboardService.removeChart(data.id)
-        .subscribe({next:(res)=>{
-            this.getDashboard(this.curDashboard.id);
-            this.toastService.show("Chart removed successfully", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges(); // ✅ Good: after async update
+          .subscribe({
+            next: (res) => {
+              this.getDashboard(this.curDashboard.id);
+              this.toastService.show("Chart removed successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // ✅ Good: after async update
 
-        },error:(err)=>{
-            this.toastService.show("Chart removal failed", { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges(); // ✅ Good: after async update
-        }})
+            }, error: (err) => {
+              this.toastService.show("Chart removal failed", { classname: 'bg-danger text-light' });
+              this.cdr.detectChanges(); // ✅ Good: after async update
+            }
+          })
       }, res => { });
   }
 
@@ -478,7 +545,7 @@ checkAllStatus(checked){
     if (!data.x) {
       data['x'] = {};
     }
-    
+
     this.editDashboardData = data;
 
     // var items = {sizeList: this.sizeList, toSnakeCase: toSnakeCase};
@@ -503,15 +570,17 @@ checkAllStatus(checked){
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
         this.dashboardService.removeDashboard(data.id)
-        .subscribe({next:(res)=>{
-          this.getDashboardList(this.app.id);
-          delete this.curDashboard;
-          this.toastService.show("Dashboard removed successfully", { classname: 'bg-success text-light' });
-          this.cdr.detectChanges(); // ✅ Good: after async update
-        },error:(err)=>{
-          this.toastService.show("Dashboard removal failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges(); // ✅ Good: after async update
-        }})
+          .subscribe({
+            next: (res) => {
+              this.getDashboardList(this.app.id);
+              delete this.curDashboard;
+              this.toastService.show("Dashboard removed successfully", { classname: 'bg-success text-light' });
+              this.cdr.detectChanges(); // ✅ Good: after async update
+            }, error: (err) => {
+              this.toastService.show("Dashboard removal failed", { classname: 'bg-danger text-light' });
+              this.cdr.detectChanges(); // ✅ Good: after async update
+            }
+          })
       }, res => { });
   }
 
@@ -626,50 +695,78 @@ checkAllStatus(checked){
   _getLookup = (code, param, cb?, err?) => {
     if (code) {
       this._getLookupObs(code, param, cb, err)
-      .subscribe({
-        next:res=>{
-          this.lookup[code] = res;
-        }, error:err=>{
-        }
-      })
+        .subscribe({
+          next: res => {
+            this.lookup[code] = res;
+          }, error: err => {
+          }
+        })
     }
   }
 
-  lookupDataObs:any={}
-  _getLookupObs(code, param, cb?, err?):Observable<any>{
+  lookupDataObs: any = {}
+  _getLookupObs(code, param, cb?, err?): Observable<any> {
 
-      var cacheId =  'key_'+btoaUTF(this.lookupKey[code].ds + hashObject(param??{}),null);
-      // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
-      // bleh consider cache observable instead of result.
-      // tp bila pake observable.. request dipolah on subscribe();
-      // settle with share()
-      if (this.lookupDataObs[cacheId]){
-        return this.lookupDataObs[cacheId]
-      }
-      // start loading
-      // console.log('loading '+this.lookupKey[code],code);
-      if (this.lookupKey[code].type == 'modelPicker') {
-        param = Object.assign(param || {}, { email: this.user.email });
-        this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
-          .pipe(
-            tap({ next: cb, error: err }), first(), share()
-          )
-      } else {
-        // param = Object.assign(param || {}, { sort: 'id,asc' });
-        param = Object.assign(param || {}, {});
-        this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
-          .pipe(
-            tap({ next: cb, error: err }), first(),
-            map(res=>res.content), share()
-          )
-      }
-      return this.lookupDataObs[cacheId];
+    var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
+    // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
+    // bleh consider cache observable instead of result.
+    // tp bila pake observable.. request dipolah on subscribe();
+    // settle with share()
+    if (this.lookupDataObs[cacheId]) {
+      return this.lookupDataObs[cacheId]
+    }
+    // start loading
+    // console.log('loading '+this.lookupKey[code],code);
+    if (this.lookupKey[code].type == 'modelPicker') {
+      param = Object.assign(param || {}, { email: this.user.email });
+      this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
+        .pipe(
+          tap({ next: cb, error: err }), first(), share()
+        )
+    } else {
+      // param = Object.assign(param || {}, { sort: 'id,asc' });
+      param = Object.assign(param || {}, {});
+      this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
+        .pipe(
+          tap({ next: cb, error: err }), first(),
+          map(res => res.content), share()
+        )
+    }
+    return this.lookupDataObs[cacheId];
   }
 
   parseJson(str) {
     var g = {};
     try { g = JSON.parse(str) } catch (e) { };
     return g;
+  }
+
+  clearDrillFields(){
+    this.editChartData.x.drillFields = [];
+  }
+
+  curField:any={};
+
+  dropField(event: CdkDragDrop<number[]>, chart) {
+    moveItemInArray(chart.x.drillFields, event.previousIndex, event.currentIndex);
+    this.dashboardService.saveChart(this.curDashboard.id, chart)
+      .subscribe({
+        next: res => { }
+      })
+    this.cdr.detectChanges(); // <--- Add here
+  }
+
+  editFieldLabel(chart, a) {
+    var value = prompt('Edit label for :' + a.code + ' (old value: ' + a.label + ')', a.label);
+    if (value) {
+      a.label = value;
+      // this.curDataset.presetFilters[c.key] = value;
+      this.dashboardService.saveChart(this.curDashboard.id, chart)
+        .subscribe({
+          next: res => { }
+        })
+      this.cdr.detectChanges(); // <--- Add here
+    }
   }
 
   getAsList = splitAsList;

@@ -69,6 +69,11 @@ export class EntryService {
   getListByDataset(datasetId: number, params: any){
     return this.http.get<any>(`${this.baseApi}/entry/list?datasetId=${datasetId}`,{params:params});
   }
+  
+  getListByChart(chartId: number, params: any){
+    return this.http.get<any>(`${this.baseApi}/entry/list-chartdrill?chartId=${chartId}`,{params:params});
+  }
+
   blastByDataset(datasetId: number, data: any,params: any){
     return this.http.post<any>(`${this.baseApi}/entry/list-blast?datasetId=${datasetId}`,data,{params:params});
   }

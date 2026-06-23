@@ -1024,6 +1024,10 @@ export class ViewComponent implements OnInit, OnDestroy {
     this.getData(this.entry.id, this.form());
   }
 
+  dismissAll(){
+    this.modalService.dismissAll();
+  }
+
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));

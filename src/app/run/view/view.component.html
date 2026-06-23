@@ -369,7 +369,7 @@
               <div class="limit-width centered print-hide">
                   @if ((entry?.currentStatus === 'drafted' || entry?.currentEdit) && formVal?.canEdit) {
                     <button type="button" class="btn btn-round btn-primary" [class.disabled]="offline()"
-                      routerLink="{{preurl()}}/form/{{formVal.id}}/edit" (click)="closed.emit({})" [queryParams]="{entryId:entry?.id}">
+                      routerLink="{{preurl()}}/form/{{formVal.id}}/edit" (click)="dismissAll()" [queryParams]="{entryId:entry?.id}">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                       Edit {{formVal.title}}
                     </button>
