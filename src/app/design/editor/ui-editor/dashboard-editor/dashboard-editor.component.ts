@@ -165,11 +165,15 @@ export class DashboardEditorComponent implements OnInit {
       });
   }
 
+  formMap:any = {};
+
   getFormList() {
+    this.formMap = {};
     this.formService.getListBasic({
       appId: this.app.id
     }).subscribe(res => {
       this.formList = res.content;
+      res.content.forEach(f=>this.formMap[f.id]=f.title);
       this.cdr.detectChanges(); // ✅ Good: after async update
     })
   }

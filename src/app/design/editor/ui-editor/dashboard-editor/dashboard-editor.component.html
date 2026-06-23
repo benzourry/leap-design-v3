@@ -58,7 +58,7 @@
           {
           <div [ngClass]="e.size" cdkDrag>
 
-            <div class="card element bg-secondary text-white border-secondary overflow-hidden" [ngClass]="e.altClass"
+            <div class="card element bg-secondary text-white border-secondary border-2 overflow-hidden" [ngClass]="e.altClass"
               [ngStyle]="{'min-height.px':e.height?e.height-100:350}">
 
               <div class="card-body pointer element d-flex justify-content-center around-0 w-100">
@@ -119,6 +119,7 @@
                       <span> by
                         <strong>{{e.fieldSeries}}</strong></span>
                       }
+                      from <strong>{{formMap[e.formId]}} [{{e.formId}}]</strong>
                     </p>
                     }
                   </div>
@@ -167,19 +168,19 @@
                   <div class="pt-3">
                     <div class="small text-start">Preset Condition</div>
                     @for (c of e.presetFilters|keyvalue; track $index) {
-                    @if (c.key.startsWith('$')||c.key.startsWith('@')) {
-                    <div>
-                      <div class="input-group input-group-sm mb-1 border-1 border-dark">
-                        <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
-                          (click)="editPresetKey(e,c)">{{c.key}}</span>
-                        <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
-                          (click)="editPresetValue(e,c)">{{c.value}}</span>
-                        <button type="button" class="btn btn-light" (click)="removePreset(e,c.key)">
-                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                        </button>
+                      @if (c.key.startsWith('$')||c.key.startsWith('@')) {
+                      <div>
+                        <div class="input-group input-group-sm mb-1 border-1 border-dark">
+                          <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                            (click)="editPresetKey(e,c)">{{c.key}}</span>
+                          <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                            (click)="editPresetValue(e,c)">{{c.value}}</span>
+                          <button type="button" class="btn btn-light" (click)="removePreset(e,c.key)">
+                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    }
+                      }
                     }
                   </div>
                   }
@@ -216,19 +217,21 @@
 
               @if (e.x?.drill && e?.x?.drillFields?.length>0) {
               <div class="p-3 bg-light text-dark">
-                <div class="small">Drill-down list fields 
-
+                <div class="small">
                   <div class="form-check small float-end">
-                        <input type="checkbox" class="form-check-input" id="editDrillFields_{{e.id}}"
-                          [(ngModel)]="editDrillFields[e.id]" name="editDrillFields_{{e.id}}">
-                        <label class="form-check-label" for="editDrillFields_{{e.id}}"> Edit Drill-down fields</label>
-                      </div>
+                    <input type="checkbox" class="form-check-input" id="editDrillFields_{{e.id}}"
+                      [(ngModel)]="editDrillFields[e.id]" name="editDrillFields_{{e.id}}">
+                    <label class="form-check-label" for="editDrillFields_{{e.id}}"> Edit Drill-down fields</label>
+                  </div>
+                  
+                  Drill-down list fields 
+
                 </div>
                 <div class="py-2">
                   <div class="row width-auto align-items-center" cdkDropList cdkDropListOrientation="mixed"
                     (cdkDropListDropped)="dropField($event, e)">
                     @for (a of e?.x?.drillFields; track $index) {
-                    <div class="col-auto pe-0 position-relative cursor-move" [class.cursor-move]="editDrillFields[e.id]" cdkDrag
+                    <div class="col-auto pe-0 position-relative cursor-move gy-2" [class.cursor-move]="editDrillFields[e.id]" cdkDrag
                       [cdkDragDisabled]="!editDrillFields[e.id] && curField[e.id]!=a.code" (click)="curField[e.id]=a.code">
                       <div class="input-group input-group-sm border border-2 rounded"
                         [class.border-primary]="curField[e.id]==a.code">

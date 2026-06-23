@@ -213,22 +213,20 @@
   <div class="modal-header">
     <h4 class="modal-title">{{chart()?.title}}</h4>
   </div>
-  <div class="p-2">
-    <div class="px-2 pb-2">
-      <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
-        <div class="row">
-          <div class="col d-flex align-items-center">
-            <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
-          </div>
-          <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
-            <div>{{entryTotal}}</div>
-          </div>
-          <div class="col">{{lang()=='ms'?'Dipaparkan':'Shown'}}:
-            <div>{{entryElements}}</div>
-          </div>
-          <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
-            <div>{{entryPages}}</div>
-          </div>
+  <div class="px-2 pb-2">
+    <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
+      <div class="row">
+        <div class="col d-flex align-items-center">
+          <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
+        </div>
+        <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
+          <div>{{entryTotal}}</div>
+        </div>
+        <div class="col">{{lang()=='ms'?'Dipapar':'Shown'}}:
+          <div>{{entryElements}}</div>
+        </div>
+        <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
+          <div>{{entryPages}}</div>
         </div>
       </div>
     </div>
@@ -259,7 +257,7 @@
                 </td>
               }
               @if (chart().x?.drillView){
-                <td class="text-end">
+                <td class="text-end p-1">
                   <button class="btn btn-sm btn-outline-secondary" (click)="openDrillView(drillViewTpl,d)">
                     <fa-icon [icon]="['fas','file']"></fa-icon>
                   </button>
