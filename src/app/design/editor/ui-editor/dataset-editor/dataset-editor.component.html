@@ -496,7 +496,7 @@
                     }
                   </div>
 
-                  @if (curDataset.prevStatusFilter) {
+                  @if (curDataset.prevStatusFilter && form['prev']) {
                     <div class="mt-2">{{form['prev']?.title}}</div>
                     <div class="small">
                       <ng-container>
