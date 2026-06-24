@@ -328,9 +328,9 @@
                       <select class="form-select" name="defSortField"
                         [(ngModel)]="_editDatasetData.defSortField">
                         <option [ngValue]="null">Default</option>
-                        <option value="createdDate">{{formHolder['data'].title}} - Date
+                        <option value="createdDate">{{formHolder['data']?.title}} - Date
                         Added</option>
-                        <option value="modifiedDate">{{formHolder['data'].title}} - Date
+                        <option value="modifiedDate">{{formHolder['data']?.title}} - Date
                         Modified</option>
                         @for (fm of ['data','prev']; track fm) {
                           @if (formHolder[fm]) {

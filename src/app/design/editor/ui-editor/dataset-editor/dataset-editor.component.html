@@ -449,7 +449,7 @@
                 <div class="mb-3">
                   <h6>List entry with the following status</h6>
 
-                  <div>{{form['data'].title}}</div>
+                  <div>{{form['data']?.title}}</div>
                   <div class="small">
                     <ng-container>
                       <div>
@@ -497,7 +497,7 @@
                   </div>
 
                   @if (curDataset.prevStatusFilter) {
-                    <div class="mt-2">{{form['prev'].title}}</div>
+                    <div class="mt-2">{{form['prev']?.title}}</div>
                     <div class="small">
                       <ng-container>
                         <div>
