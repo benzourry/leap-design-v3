@@ -176,11 +176,15 @@
               
               @if (formHolder['data']) {
                 <div class="form-group mb-3">
-                  <div class="btn-group float-end">
-                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
-                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
-                  </div>
+                  
                   <label class="form-label">List entry with status</label>
+                  <div>
+                    <div class="btn-group float-end">
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
+                    </div>
+                    <h6 class="mt-3">{{formHolder['data']?.title}}</h6>
+                  </div>
                   <div class="form-check">
                     <input [(ngModel)]="statusFilterForm['-1'].drafted"
                       class="form-check-input" name="draftedFilter" id="draftedFilter11"
@@ -237,26 +241,25 @@
                     </div>
                   }
 
-                </div>
-
-                @if (formHolder['prev']){
-                  <div class="form-group mb-3">
-                    <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
-                      @if(showPrevStatus){
-                        Hide
-                      }@else {
-                        Show
+                  @if (formHolder['prev']){
+                    <div class="mt-2">
+                      <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
+                        @if(showPrevStatus){
+                          Hide
+                        }@else {
+                          Show
+                        }
+                      </button>
+                      @if (showPrevStatus){
+                        <div class="btn-group float-end">
+                          <button type="button" class="btn btn-outline-secondary btn-xs"
+                            (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
+                          <button type="button" class="btn btn-outline-secondary btn-xs"
+                            (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
+                        </div>
                       }
-                    </button>
-                    @if (showPrevStatus){
-                      <div class="btn-group float-end">
-                        <button type="button" class="btn btn-outline-secondary btn-xs"
-                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
-                        <button type="button" class="btn btn-outline-secondary btn-xs"
-                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
-                      </div>
-                    }
-                    <label class="form-label">List previous entry with status</label>
+                      <h6 class="mt-3">{{formHolder['prev']?.title}}</h6>
+                    </div>
                     @if (showPrevStatus){
                       <div>
                         <div class="form-check">
@@ -304,8 +307,14 @@
                         }
                       </div>
                     }
-                  </div>
-                }
+                  }
+
+
+
+
+                </div>
+
+                
 
 
 
