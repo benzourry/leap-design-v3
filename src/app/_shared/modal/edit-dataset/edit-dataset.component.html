@@ -88,10 +88,7 @@
             @if (_editDatasetData.form?.id) {
               <input type="text" class="w-100 form-control my-2" [(ngModel)]="filterField"
                 name="filterField" placeholder="Type to filter fields">
-              <div class="btn-group float-end">
-                <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAll('items',_editDatasetData)">All</button>
-                <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAll('items',_editDatasetData)">None</button>
-              </div>
+              
               @for (fm of ['data','prev']; track fm) {
                 @if (formLoading) {
                   <div class="form-group mb-3 text-center clear-both p-4">
@@ -103,8 +100,13 @@
                 } @else {
                   @if (formHolder[fm]) {
                     <div class="form-group mb-3">
-                      <label class="form-label">Included Fields
-                      ({{formHolder[fm]?.title}})</label>
+                      <div class="fw-bold mt-3 mb-2">
+                        <div class="btn-group float-end">
+                          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAll('items',_editDatasetData, fm)">All</button>
+                          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAll('items',_editDatasetData, fm)">None</button>
+                        </div>
+                        Included Fields
+                      ({{formHolder[fm]?.title}})</div>
                       @for (s of sectionItems[fm]; track $index) {
                         @if (s.section.type!='list') {
                           @for (f of s.items|filter:filterField; track $index) {
@@ -178,12 +180,12 @@
                 <div class="form-group mb-3">
                   
                   <label class="form-label">List entry with status</label>
-                  <div>
+                  <div class="fw-bold mt-3 mb-2">
                     <div class="btn-group float-end">
                       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
                       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
                     </div>
-                    <h6 class="mt-3">{{formHolder['data']?.title}}</h6>
+                    <div>{{formHolder['data']?.title}}</div>
                   </div>
                   <div class="form-check">
                     <input [(ngModel)]="statusFilterForm['-1'].drafted"
@@ -242,7 +244,7 @@
                   }
 
                   @if (formHolder['prev']){
-                    <div class="mt-2">
+                    <div class="fw-bold mt-3 mb-2">
                       <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
                         @if(showPrevStatus){
                           Hide
@@ -258,7 +260,7 @@
                             (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
                         </div>
                       }
-                      <h6 class="mt-3">{{formHolder['prev']?.title}}</h6>
+                      <div>{{formHolder['prev']?.title}}</div>
                     </div>
                     @if (showPrevStatus){
                       <div>
@@ -302,24 +304,13 @@
                         </div>
                         @if(isStatusAllFalse(prevStatusFilterForm)){
                         <div class="p-3 bg-white blink_me">
-                          No previous status selected. Counting results for <strong>all previous statuses</strong>.
+                          No previous entry status selected. Showing results for <strong>all previous entry statuses</strong>.
                         </div>
                         }
                       </div>
                     }
                   }
-
-
-
-
                 </div>
-
-                
-
-
-
-
-
 
                 <div class="row g-3">
                   <div class="col-sm-8">

@@ -219,11 +219,11 @@ export class EditDatasetComponent implements OnInit {
 
   getTierFromSection = (sectionId, form) => form && form.tiers.filter(t => t.section && t.section.id == sectionId)[0];
 
-  checkAll(prop, datasetData) {
-    ['data', 'prev'].forEach(fm => {
+  checkAll(prop, datasetData, root) {
+    [root].forEach(fm => {
       if (this.formHolder[fm]){
         var form = this.formHolder[fm];
-        this.sectionItems.data.forEach(s => {
+        this.sectionItems[root].forEach(s => {
           if (s.section.type != 'list') {
             s.items.forEach(i => {
               if (s.section.type != 'approval') {
@@ -240,8 +240,32 @@ export class EditDatasetComponent implements OnInit {
     })
   }
 
-  uncheckAll(prop, datasetData){
-    datasetData[prop] = [];
+  uncheckAll(prop, datasetData, root) {
+    if (!datasetData[prop]) return;
+
+    // 1. Gather the main root (e.g., 'data' or 'prev')
+    let rootsToRemove = [root];
+    
+    // 2. Gather any approval tier IDs associated with this specific form
+    if (this.sectionItems[root]) {
+      this.sectionItems[root].forEach(s => {
+        if (s.section.type === 'approval' && s.tier) {
+          rootsToRemove.push(s.tier.id);
+        }
+      });
+    }
+
+    // 3. Keep only the items that DO NOT match the roots we want to remove
+    datasetData[prop] = datasetData[prop].filter(item => !rootsToRemove.includes(item.root));
+
+    // 4. Clean up the itemMap dictionary so toggling works properly afterwards
+    rootsToRemove.forEach(r => {
+      Object.keys(this.itemMap).forEach(key => {
+        if (key.startsWith(r + '-')) {
+          delete this.itemMap[key];
+        }
+      });
+    });
   }
 
   checkAllStatus(statusFilter, root, checked){

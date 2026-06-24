@@ -623,17 +623,17 @@
               </div>
               <!-- Status Filter -->
               @if (editChartData.form) {
-                <div class="form-group mb-3">
+                <div class="form-group">
 
-                  <label class="form-label">List entry with status</label>
-                  <div>
+                  <div>Count entry with status</div>
+                  <div class="fw-bold mt-3 mb-2">
                     <div class="btn-group float-end">
                       <button type="button" class="btn btn-outline-secondary btn-xs"
                         (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
                       <button type="button" class="btn btn-outline-secondary btn-xs"
                         (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
                     </div>
-                    <h6 class="mt-3">{{editHolderFormSig()['data']?.title}}</h6>
+                    <div>{{editHolderFormSig()['data']?.title}}</div>
                   </div>
                   <div>
                     <div class="form-check">
@@ -684,7 +684,7 @@
                   </div>
 
                @if (editHolderFormSig()['prev']){
-                  <div class="mt-2">
+                  <div class="fw-bold mt-3 mb-2">
                     <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
                       @if(showPrevStatus){
                         Hide
@@ -700,7 +700,7 @@
                           (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
                       </div>
                     }
-                    <h6 class="mt-3">{{editHolderFormSig()['prev']?.title}}</h6>
+                    <div>{{editHolderFormSig()['prev']?.title}}</div>
                   </div>
                   @if (showPrevStatus){
                     <div>
@@ -744,7 +744,7 @@
                       </div>
                       @if(isStatusAllFalse(prevStatusFilterForm)){
                       <div class="p-3 bg-white blink_me">
-                        No previous status selected. Counting results for <strong>all previous statuses</strong>.
+                        No previous entry status selected. Counting results for <strong>all previous entry statuses</strong>.
                       </div>
                       }
                     </div>
