@@ -58,6 +58,8 @@ export class EditDatasetComponent implements OnInit {
 
   extraAutoComplete:any=[];
 
+  showPrevStatus:boolean=false;
+
   placeholder: string= `<!-- HTML, support templating -->
   <style>
     .ds-thead {}
@@ -91,8 +93,9 @@ export class EditDatasetComponent implements OnInit {
       this._editDatasetData.filters = [];
       this._editDatasetData.presetFilters = {};
       this._editDatasetData.next = {};
-      this._editDatasetData.status = "";
+      // this._editDatasetData.status = "";
       this._editDatasetData.statusFilter = {};
+      this._editDatasetData.prevStatusFilter = {};
     }
 
     this._editDatasetData.appId = this.app().id;
@@ -241,14 +244,14 @@ export class EditDatasetComponent implements OnInit {
     datasetData[prop] = [];
   }
 
-  checkAllStatus(checked){
-    this.statusFilterForm['-1'].drafted = checked;
-    this.statusFilterForm['-1'].submitted = checked;
-    this.formHolder['data']?.tiers?.forEach(tier=>{
+  checkAllStatus(statusFilter, root, checked){
+    statusFilter['-1'].drafted = checked;
+    statusFilter['-1'].submitted = checked;
+    this.formHolder[root]?.tiers?.forEach(tier=>{
       for (const action in tier.actions){
-        this.statusFilterForm[tier.id][action] = checked;
+        statusFilter[tier.id][action] = checked;
       }
-      this.statusFilterForm[tier.id].resubmitted = checked;
+      statusFilter[tier.id].resubmitted = checked;
     })
   }
 
@@ -266,8 +269,9 @@ export class EditDatasetComponent implements OnInit {
   }
 
   statusFilterForm: any = {};
+  prevStatusFilterForm: any = {};
   // statusFilterData:any={};
-  convertStatusToDisplay(status, form) {
+  convertStatusToDisplay(status, form, root) {
     var statusFilterForm: any = {}
     // var editDatasetStatusFilterList = {};
     // convert { "121":"submitted,approved"} to {"121":{submitted:true, approved:true}}
@@ -276,7 +280,7 @@ export class EditDatasetComponent implements OnInit {
     draftedFilter.forEach(element => {
       statusFilterForm[-1][element] = true;
     });
-    form['data'] && form['data'].tiers.forEach(t => {
+    form[root] && form[root].tiers.forEach(t => {
       statusFilterForm[t.id] = {};
       var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
       splittedFilter.forEach(element => {
@@ -382,7 +386,10 @@ export class EditDatasetComponent implements OnInit {
             this.sectionItems['data'] = this.getSectionItemsNew(this.formHolder['data'], ['section', 'approval', 'list']);
             this.sectionItems['prev'] = this.getSectionItemsNew(this.formHolder['prev'], ['section', 'approval', 'list']);
 
-            this.statusFilterForm = this.convertStatusToDisplay(ds.statusFilter, this.formHolder);
+            this.statusFilterForm = this.convertStatusToDisplay(ds.statusFilter, this.formHolder, 'data');
+            this.prevStatusFilterForm = this.convertStatusToDisplay(ds.prevStatusFilter, this.formHolder, 'prev');
+
+            this.showPrevStatus = !this.isStatusAllFalse(this.prevStatusFilterForm);
 
             this.formLoading = false;
             this.cdr.detectChanges();
@@ -504,6 +511,7 @@ export class EditDatasetComponent implements OnInit {
 
   done(data) {
     data.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
+    data.prevStatusFilter = this.convertDisplayToStatus(this.prevStatusFilterForm);
     this.editDatasetData.set(data);
     this.close()?.(data);
   }

@@ -383,31 +383,30 @@
                       (ngModelChange)="checkCartesanForDrill()" [(ngModel)]="editChartData.fieldCode" required>
                       <option value="" disabled>Select field...</option>
                       @for (fm of ['data','prev']; track fm) {
-                      @if (editHolderFormSig()[fm]) {
-                      <optgroup [label]="editHolderFormSig()[fm].title">
-                        <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
-                        @for (s of sectionItems[fm]; track $index) {
-                        @for (f of s.items; track f.id) {
-                        @let prefixedField =
-                        getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
-                        @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
-                        @if (true){
-                        <option [ngValue]="prefixedField">
-                          {{editHolderFormSig()[fm].items[f.code]?.label}}
-                          @if(s.tier){^}
-                        </option>
+                        @if (editHolderFormSig()[fm]) {
+                        <optgroup [label]="editHolderFormSig()[fm].title">
+                          <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
+                          @for (s of sectionItems[fm]; track $index) {
+                            @for (f of s.items; track f.id) {
+                              @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                              @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
+                                @if (true){
+                                  <option [ngValue]="prefixedField">
+                                    {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                    @if(s.tier){^}
+                                  </option>
+                                }
+                              }
+                            }
+                          }
+                        </optgroup>
                         }
-                        }
-                        }
-                        }
-                      </optgroup>
-                      }
                       }
                       @if (editHolderFormSig().data?.tiers?.length>0) {
-                      <option value="$.$statusText"># Current Status Text</option>
-                      <option value="$_.current_status"># Current Status</option>
-                      <option value="$_.current_tier"># Current Tier Level</option>
-                      <option value="$_.current_tier_id"># Current Tier ID</option>
+                        <option value="$.$statusText"># Current Status Text</option>
+                        <option value="$_.current_status"># Current Status</option>
+                        <option value="$_.current_tier"># Current Tier Level</option>
+                        <option value="$_.current_tier_id"># Current Tier ID</option>
                       }
                     </select>
                   </div>
@@ -419,24 +418,23 @@
                       (ngModelChange)="checkCartesanForDrill()" [(ngModel)]="editChartData.fieldValue" required>
                       <option value="" disabled>Select field...</option>
                       @for (fm of ['data','prev']; track fm) {
-                      @if (editHolderFormSig()[fm]) {
-                      <optgroup [label]="editHolderFormSig()[fm].title">
-                        <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
-                        @for (s of sectionItems[fm]; track $index) {
-                        <!-- @if (s.tier!=null) { -->
-                        @for (f of s.items; track f.id) {
-                        @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+
-                        getPostfix(editHolderFormSig()[fm].items[f.code]);
-                        @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
-                        <option [ngValue]="prefixedField">
-                          {{editHolderFormSig()[fm].items[f.code]?.label}}
-                          @if(s.tier){^}
-                        </option>
+                        @if (editHolderFormSig()[fm]) {
+                        <optgroup [label]="editHolderFormSig()[fm].title">
+                          <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
+                          @for (s of sectionItems[fm]; track $index) {
+                            <!-- @if (s.tier!=null) { -->
+                            @for (f of s.items; track f.id) {
+                              @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                              @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
+                              <option [ngValue]="prefixedField">
+                                {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                @if(s.tier){^}
+                              </option>
+                              }
+                            }
+                          }
+                        </optgroup>
                         }
-                        }
-                        }
-                      </optgroup>
-                      }
                       }
                       @if (editHolderFormSig().data?.tiers?.length>0) {
                       <option value="$_.current_status"># Current Status</option>
@@ -472,25 +470,24 @@
                     <select class="form-select" name="fieldSeries" [(ngModel)]="editChartData.fieldSeries" required>
                       <option value="" disabled>Select field...</option>
                       @for (fm of ['data','prev']; track fm) {
-                      @if (editHolderFormSig()[fm]) {
-                      <optgroup [label]="editHolderFormSig()[fm].title">
-                        <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
-                        @for (s of sectionItems[fm]; track $index) {
-                        <!-- @if (s.tier!=null) { -->
-                        @for (f of s.items; track f.id) {
-                        @let prefixedField =
-                        getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
-                        {{f.type}}
-                        @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
-                        <option [ngValue]="prefixedField">
-                          {{editHolderFormSig()[fm].items[f.code]?.label}}
-                          @if(s.tier){^}
-                        </option>
+                        @if (editHolderFormSig()[fm]) {
+                        <optgroup [label]="editHolderFormSig()[fm].title">
+                          <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
+                          @for (s of sectionItems[fm]; track $index) {
+                          <!-- @if (s.tier!=null) { -->
+                            @for (f of s.items; track f.id) {
+                              @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                              {{f.type}}
+                              @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
+                                <option [ngValue]="prefixedField">
+                                  {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                  @if(s.tier){^}
+                                </option>
+                              }
+                            }
+                          }
+                        </optgroup>
                         }
-                        }
-                        }
-                      </optgroup>
-                      }
                       }
 
                       @if (editHolderFormSig().data?.tiers?.length>0) {
@@ -626,57 +623,128 @@
               </div>
               <!-- Status Filter -->
               @if (editChartData.form) {
-              <div class="form-group mb-3">
-                <div class="btn-group float-end">
-                  <button type="button" class="btn btn-outline-secondary btn-xs"
-                    (click)="checkAllStatus(true)">All</button>
-                  <button type="button" class="btn btn-outline-secondary btn-xs"
-                    (click)="checkAllStatus(false)">None</button>
-                </div>
-                <label class="form-label">List entry with status</label>
-                <div class="form-check">
-                  <input [(ngModel)]="statusFilterForm['-1'].drafted" class="form-check-input" name="draftedFilter"
-                    id="draftedFilter11" type="checkbox">
-                  <label class="form-check-label" for="draftedFilter11">Drafted</label>
-                </div>
-                <div class="form-check">
-                  <input [(ngModel)]="statusFilterForm['-1'].submitted" class="form-check-input" name="submittedFilter"
-                    id="submittedFilter11" type="checkbox">
-                  <label class="form-check-label" for="submittedFilter11">Submitted</label>
-                </div>
-                <div>
-                  @for (tier of editHolderFormSig()['data']?.tiers; track tier.id) {
-                  <div class="p-2">
-                    <h6>{{tier.name}}</h6>
-                    @for (action of tier.actions|keyvalue; track $index) {
+                <div class="form-group mb-3">
+                  <div class="btn-group float-end">
+                    <button type="button" class="btn btn-outline-secondary btn-xs"
+                      (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
+                    <button type="button" class="btn btn-outline-secondary btn-xs"
+                      (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
+                  </div>
+                  <label class="form-label">List entry with status</label>
+                  <div>
                     <div class="form-check">
-                      <input [(ngModel)]="statusFilterForm[tier.id][action.key]" class="form-check-input"
-                        name="{{action.key+'_'+tier.id}}" id="{{action.key+'_'+tier.id}}" type="checkbox">
-                      <label class="form-check-label" for="{{action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                      <input [(ngModel)]="statusFilterForm['-1'].drafted" class="form-check-input" name="draftedFilter"
+                        id="draftedFilter11" type="checkbox">
+                      <label class="form-check-label" for="draftedFilter11">Drafted</label>
                     </div>
-                    }
                     <div class="form-check">
-                      <input [(ngModel)]="statusFilterForm[tier.id].resubmitted" class="form-check-input"
-                        name="resubmitted{{tier.id}}" id="resubmitted11{{tier.id}}" type="checkbox">
-                      <label class="form-check-label" for="resubmitted11{{tier.id}}">Resubmitted</label>
+                      <input [(ngModel)]="statusFilterForm['-1'].submitted" class="form-check-input" name="submittedFilter"
+                        id="submittedFilter11" type="checkbox">
+                      <label class="form-check-label" for="submittedFilter11">Submitted</label>
                     </div>
-                    @if (tier.alwaysApprove) {
-                    <div class="form-check">
-                      <input [(ngModel)]="statusFilterForm[tier.id].always_approve" class="form-check-input"
-                        name="resubmitted{{tier.id}}" id="resubmitted11{{tier.id}}" type="checkbox">
-                      <label class="form-check-label" for="resubmitted11{{tier.id}}">Always
-                        Approve</label>
+                    <div>
+                      @for (tier of editHolderFormSig()['data']?.tiers; track tier.id) {
+                      <div class="p-2">
+                        <h6>{{tier.name}}</h6>
+                        @for (action of tier.actions|keyvalue; track $index) {
+                        <div class="form-check">
+                          <input [(ngModel)]="statusFilterForm[tier.id][action.key]" class="form-check-input"
+                            name="{{action.key+'_'+tier.id}}" id="{{action.key+'_'+tier.id}}" type="checkbox">
+                          <label class="form-check-label" for="{{action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                        </div>
+                        }
+                        <div class="form-check">
+                          <input [(ngModel)]="statusFilterForm[tier.id].resubmitted" class="form-check-input"
+                            name="resubmitted{{tier.id}}" id="resubmitted11{{tier.id}}" type="checkbox">
+                          <label class="form-check-label" for="resubmitted11{{tier.id}}">Resubmitted</label>
+                        </div>
+                        @if (tier.alwaysApprove) {
+                        <div class="form-check">
+                          <input [(ngModel)]="statusFilterForm[tier.id].always_approve" class="form-check-input"
+                            name="resubmitted{{tier.id}}" id="resubmitted11{{tier.id}}" type="checkbox">
+                          <label class="form-check-label" for="resubmitted11{{tier.id}}">Always
+                            Approve</label>
+                        </div>
+                        }
+                      </div>
+                      }
+                    </div>
+                    @if(isStatusAllFalse(statusFilterForm)){
+                    <div class="p-3 bg-white blink_me">
+                      No status selected. Counting results for <strong>all statuses</strong>.
                     </div>
                     }
                   </div>
-                  }
                 </div>
-                @if(isStatusAllFalse(statusFilterForm)){
-                <div class="p-3 bg-white blink_me">
-                  No status selected. Counting results for <strong>all statuses</strong>.
-                </div>
+
+                @if (editHolderFormSig()['prev']){
+                  <div class="form-group mb-3">
+                    <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
+                      @if(showPrevStatus){
+                        Hide
+                      }@else {
+                        Show
+                      }
+                    </button>
+                    @if (showPrevStatus){
+                      <div class="btn-group float-end">
+                        <button type="button" class="btn btn-outline-secondary btn-xs"
+                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
+                        <button type="button" class="btn btn-outline-secondary btn-xs"
+                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
+                      </div>
+                    }
+                    <label class="form-label">List previous entry with status</label>
+                    @if (showPrevStatus){
+                      <div>
+                        <div class="form-check">
+                          <input [(ngModel)]="prevStatusFilterForm['-1'].drafted" class="form-check-input" name="prevDraftedFilter"
+                            id="prevDraftedFilter11" type="checkbox">
+                          <label class="form-check-label" for="prevDraftedFilter11">Drafted</label>
+                        </div>
+                        <div class="form-check">
+                          <input [(ngModel)]="prevStatusFilterForm['-1'].submitted" class="form-check-input" name="prevSubmittedFilter"
+                            id="prevSubmittedFilter11" type="checkbox">
+                          <label class="form-check-label" for="prevSubmittedFilter11">Submitted</label>
+                        </div>
+                        <div>
+                          @for (tier of editHolderFormSig()['prev']?.tiers; track tier.id) {
+                          <div class="p-2">
+                            <h6>{{tier.name}}</h6>
+                            @for (action of tier.actions|keyvalue; track $index) {
+                              <!-- {{action.value|json}} -->
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id][action.key]" class="form-check-input"
+                                name="{{'prev_'+action.key+'_'+tier.id}}" id="{{'prev_'+action.key+'_'+tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="{{'prev_'+action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                            </div>
+                            }
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id].resubmitted" class="form-check-input"
+                                name="prevResubmitted{{tier.id}}" id="prevResubmitted11{{tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="prevResubmitted11{{tier.id}}">Resubmitted</label>
+                            </div>
+                            @if (tier.alwaysApprove) {
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id].always_approve" class="form-check-input"
+                                name="prevAlwaysApprove{{tier.id}}" id="prevAlwaysApprove11{{tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="prevAlwaysApprove11{{tier.id}}">Always
+                                Approve</label>
+                            </div>
+                            }
+                          </div>
+                          }
+                        </div>
+                        @if(isStatusAllFalse(prevStatusFilterForm)){
+                        <div class="p-3 bg-white blink_me">
+                          No previous status selected. Counting results for <strong>all previous statuses</strong>.
+                        </div>
+                        }
+                      </div>
+                    }
+                  </div>
                 }
-              </div>
+
               }
             </div>
           </ng-template>
@@ -731,29 +799,29 @@
                     <select class="form-select" name="fieldSeries" [(ngModel)]="editChartData.x.topNField" required>
                       <option value="" disabled>Select field...</option>
                       @for (fm of ['data','prev']; track fm) {
-                      @if (editHolderFormSig()[fm]) {
-                      <optgroup [label]="editHolderFormSig()[fm].title">
-                        <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
-                        @for (s of sectionItems[fm]; track $index) {
-                        <!-- @if (s.tier!=null) { -->
-                        @for (f of s.items; track f.id) {
-                        @let prefixedField =
-                        getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
-                        {{f.type}}
-                        @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
-                        <option [ngValue]="prefixedField">
-                          {{editHolderFormSig()[fm].items[f.code]?.label}}
-                          @if(s.tier){^}
-                        </option>
+                        @if (editHolderFormSig()[fm]) {
+                        <optgroup [label]="editHolderFormSig()[fm].title">
+                          <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
+                          @for (s of sectionItems[fm]; track $index) {
+                            <!-- @if (s.tier!=null) { -->
+                            @for (f of s.items; track f.id) {
+                              @let prefixedField =
+                              getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
+                              {{f.type}}
+                              @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
+                                <option [ngValue]="prefixedField">
+                                  {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                  @if(s.tier){^}
+                                </option>
+                              }
+                            }
+                          }
+                          @if (fm == 'data') {
+                            <option value="$_.created_date">Created Date</option>
+                            <option value="$_.modified_date">Modified Date</option>
+                          }
+                        </optgroup>
                         }
-                        }
-                        }
-                        @if (fm == 'data') {
-                        <option value="$_.created_date">Created Date</option>
-                        <option value="$_.modified_date">Modified Date</option>
-                        }
-                      </optgroup>
-                      }
                       }
                     </select>
                     <input type="radio" class="btn-check" id="def-sort-asc" name="def-sort-asc" value="asc"

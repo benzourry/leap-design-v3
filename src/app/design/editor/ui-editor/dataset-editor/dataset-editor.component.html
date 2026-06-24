@@ -448,6 +448,8 @@
               @if (curDataset.statusFilter) {
                 <div class="mb-3">
                   <h6>List entry with the following status</h6>
+
+                  <div>{{form['data'].title}}</div>
                   <div class="small">
                     <ng-container>
                       <div>
@@ -493,8 +495,60 @@
                       </div>
                     }
                   </div>
+
+                  @if (curDataset.prevStatusFilter) {
+                    <div class="mt-2">{{form['prev'].title}}</div>
+                    <div class="small">
+                      <ng-container>
+                        <div>
+                          <fa-icon
+                            [icon]="['far',curDataset.prevStatusFilter[-1]?.indexOf('drafted')>-1?'check-square':'square']"
+                          [fixedWidth]="true"></fa-icon>
+                          Drafted
+                        </div>
+                        @if (form['data']?.tiers?.length>0) {
+                          <div>
+                            <fa-icon
+                              [icon]="['far',curDataset.prevStatusFilter[-1]?.indexOf('submitted')>-1?'check-square':'square']"
+                            [fixedWidth]="true"></fa-icon>
+                            Submitted
+                          </div>
+                        }
+                      </ng-container>
+                      @for (tier of form['prev']?.tiers; track tier.id) {
+                        <div class="mt-1 ms-4">
+                          <div>{{tier.name}}</div>
+                          @for (action of tier.actions|keyvalue; track $index) {
+                            <div class="d-inline-block me-2">
+                              <fa-icon
+                                [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf(action.key)>-1?'check-square':'square']"
+                              [fixedWidth]="true"></fa-icon>
+                              {{action.value.label}}
+                            </div>
+                          }
+                          <div class="d-inline-block me-2">
+                            <fa-icon
+                              [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('resubmitted')>-1?'check-square':'square']"
+                            [fixedWidth]="true"></fa-icon>
+                            Resubmitted
+                          </div>
+                          @if (tier.alwaysApprove) {
+                            <div class="d-inline-block me-2">
+                              <fa-icon
+                                [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('always_approve')>-1?'check-square':'square']"
+                              [fixedWidth]="true"></fa-icon>
+                              Always Approve
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+
                 </div>
-              }
+              }              
+              
               <div class="mb-3">
                 <h6>RESTful Endpoints</h6>
                 <div>

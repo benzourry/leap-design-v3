@@ -177,8 +177,8 @@
               @if (formHolder['data']) {
                 <div class="form-group mb-3">
                   <div class="btn-group float-end">
-                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(true)">All</button>
-                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(false)">None</button>
+                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
+                    <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
                   </div>
                   <label class="form-label">List entry with status</label>
                   <div class="form-check">
@@ -238,6 +238,80 @@
                   }
 
                 </div>
+
+                @if (formHolder['prev']){
+                  <div class="form-group mb-3">
+                    <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
+                      @if(showPrevStatus){
+                        Hide
+                      }@else {
+                        Show
+                      }
+                    </button>
+                    @if (showPrevStatus){
+                      <div class="btn-group float-end">
+                        <button type="button" class="btn btn-outline-secondary btn-xs"
+                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
+                        <button type="button" class="btn btn-outline-secondary btn-xs"
+                          (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
+                      </div>
+                    }
+                    <label class="form-label">List previous entry with status</label>
+                    @if (showPrevStatus){
+                      <div>
+                        <div class="form-check">
+                          <input [(ngModel)]="prevStatusFilterForm['-1'].drafted" class="form-check-input" name="prevDraftedFilter"
+                            id="prevDraftedFilter11" type="checkbox">
+                          <label class="form-check-label" for="prevDraftedFilter11">Drafted</label>
+                        </div>
+                        <div class="form-check">
+                          <input [(ngModel)]="prevStatusFilterForm['-1'].submitted" class="form-check-input" name="prevSubmittedFilter"
+                            id="prevSubmittedFilter11" type="checkbox">
+                          <label class="form-check-label" for="prevSubmittedFilter11">Submitted</label>
+                        </div>
+                        <div>
+                          @for (tier of formHolder['prev']?.tiers; track tier.id) {
+                          <div class="p-2">
+                            <h6>{{tier.name}}</h6>
+                            @for (action of tier.actions|keyvalue; track $index) {
+                              <!-- {{action.value|json}} -->
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id][action.key]" class="form-check-input"
+                                name="{{'prev_'+action.key+'_'+tier.id}}" id="{{'prev_'+action.key+'_'+tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="{{'prev_'+action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                            </div>
+                            }
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id].resubmitted" class="form-check-input"
+                                name="prevResubmitted{{tier.id}}" id="prevResubmitted11{{tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="prevResubmitted11{{tier.id}}">Resubmitted</label>
+                            </div>
+                            @if (tier.alwaysApprove) {
+                            <div class="form-check">
+                              <input [(ngModel)]="prevStatusFilterForm[tier.id].always_approve" class="form-check-input"
+                                name="prevAlwaysApprove{{tier.id}}" id="prevAlwaysApprove11{{tier.id}}" type="checkbox">
+                              <label class="form-check-label" for="prevAlwaysApprove11{{tier.id}}">Always
+                                Approve</label>
+                            </div>
+                            }
+                          </div>
+                          }
+                        </div>
+                        @if(isStatusAllFalse(prevStatusFilterForm)){
+                        <div class="p-3 bg-white blink_me">
+                          No previous status selected. Counting results for <strong>all previous statuses</strong>.
+                        </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+
+
+
+
+
                 <div class="row g-3">
                   <div class="col-sm-8">
                     <div class="form-group mb-3">

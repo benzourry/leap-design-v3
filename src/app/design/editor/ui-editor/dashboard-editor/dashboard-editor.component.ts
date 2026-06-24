@@ -8,7 +8,7 @@ import { AppService } from '../../../../service/app.service';
 // import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgClass, NgStyle, KeyValuePipe } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, KeyValuePipe, JsonPipe } from '@angular/common';
 // import { HttpParams } from '@angular/common/http';
 import { DashboardService } from '../../../../service/dashboard.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -32,7 +32,7 @@ import { DatasetService } from '../../../../service/dataset.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-editor.component.scss',
     '../../../../../assets/css/element-action.css'],
-  imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
+  imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, JsonPipe, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
 })
 export class DashboardEditorComponent implements OnInit {
 
@@ -190,7 +190,10 @@ export class DashboardEditorComponent implements OnInit {
         this.sectionItems['data'] = this.getSectionItemsNew(holderSig().data, ['section', 'approval', 'list']);
         this.sectionItems['prev'] = this.getSectionItemsNew(holderSig().prev, ['section', 'approval', 'list']);
 
-        this.statusFilterForm = this.convertStatusToDisplay(chart.statusFilter, holderSig());
+        this.statusFilterForm = this.convertStatusToDisplay(chart.statusFilter, holderSig(), 'data');
+        this.prevStatusFilterForm = this.convertStatusToDisplay(chart.prevStatusFilter, holderSig(),'prev');
+        
+        this.showPrevStatus = !this.isStatusAllFalse(this.prevStatusFilterForm);
 
         this.cdr.detectChanges(); // ✅ Good: after async update
       });
@@ -285,15 +288,16 @@ export class DashboardEditorComponent implements OnInit {
     return this.getPrefix(fm, section) + '.' + f.code + (this.editHolderFormSig()[fm].items[f.code].subType == 'multiple' ? '*' : '') + '.code';
   }
 
+  showPrevStatus:boolean=false;
 
-  checkAllStatus(checked) {
-    this.statusFilterForm['-1'].drafted = checked;
-    this.statusFilterForm['-1'].submitted = checked;
-    this.editHolderFormSig().data?.tiers?.forEach(tier => {
+  checkAllStatus(statusFilter, root, checked) {
+    statusFilter['-1'].drafted = checked;
+    statusFilter['-1'].submitted = checked;
+    this.editHolderFormSig()[root]?.tiers?.forEach(tier => {
       for (const action in tier.actions) {
-        this.statusFilterForm[tier.id][action] = checked;
+        statusFilter[tier.id][action] = checked;
       }
-      this.statusFilterForm[tier.id].resubmitted = checked;
+      statusFilter[tier.id].resubmitted = checked;
     })
   }
 
@@ -428,8 +432,9 @@ export class DashboardEditorComponent implements OnInit {
     if (isNew) {
       data['filters'] = [];
       data['presetFilters'] = {};
-      data['status'] = "";
+      // data['status'] = "";
       data['statusFilter'] = {};
+      data['prevStatusFilter'] = {};
     }
     if (!data.x) {
       data.x = {};
@@ -460,6 +465,7 @@ export class DashboardEditorComponent implements OnInit {
         ch.fieldValue = ch.fieldValue?.join(",");
 
         ch.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
+        ch.prevStatusFilter = this.convertDisplayToStatus(this.prevStatusFilterForm);
 
 
         this.dashboardService.saveChart(dashboardId, ch)
@@ -474,15 +480,16 @@ export class DashboardEditorComponent implements OnInit {
   }
 
   statusFilterForm: any = {};
+  prevStatusFilterForm: any = {};
   // statusFilterData:any={};
-  convertStatusToDisplay(status, form) {
+  convertStatusToDisplay(status, form, root) {
     var statusFilterForm: any = {}
     statusFilterForm[-1] = {};
     var draftedFilter = (status && status[-1]) ? status[-1].split(",") : [];
     draftedFilter.forEach(element => {
       statusFilterForm[-1][element] = true;
     });
-    form['data'] && form['data'].tiers.forEach(t => {
+    form[root] && form[root].tiers.forEach(t => {
       statusFilterForm[t.id] = {};
       var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
       splittedFilter.forEach(element => {
