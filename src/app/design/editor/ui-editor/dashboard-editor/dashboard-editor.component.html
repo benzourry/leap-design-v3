@@ -106,7 +106,7 @@
 
                     @if (e.form && e.agg && e.fieldValue && e.fieldCode) {
                     <p class="my-3 small">
-                      <strong>{{e.agg}}</strong>(@if(e.agg=='count') {distinct }
+                      <strong>{{e.agg}}</strong>( @if(e.agg=='count') {distinct }
                       <strong>@for (h of forceArray(splitAsList(e.fieldValue)); track $index) {
                         <div class="d-inline-block me-1 border bg-outline-light rounded px-1 mb-1">{{h}}</div>
                         }
@@ -116,10 +116,9 @@
                         }
                       </strong>
                       @if (e.fieldSeries) {
-                      <span> by
-                        <strong>{{e.fieldSeries}}</strong></span>
-                      }
-                      from <strong>{{formMap[e.formId]}} [{{e.formId}}]</strong>
+                      <span>by
+                        <strong><div class="d-inline-block me-2 border bg-outline-light rounded px-1 mb-1">{{e.fieldSeries}}</div></strong></span>
+                      }from <strong>{{formMap[e.formId]}} [{{e.formId}}]</strong>
                     </p>
                     }
                   </div>

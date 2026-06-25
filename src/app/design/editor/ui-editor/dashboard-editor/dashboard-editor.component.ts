@@ -358,9 +358,13 @@ export class DashboardEditorComponent implements OnInit {
 
   }
 
-  enableChartDrill: boolean = false;
+  enableChartDrill: boolean = false;  
   checkCartesanForDrill() {
-    if (this.editChartData.fieldCode.length > 1 || this.editChartData.fieldValue.length > 1) {
+    // Safely check length, defaulting to 0 if null/undefined
+    const codeLen = this.editChartData.fieldCode?.length || 0;
+    const valLen = this.editChartData.fieldValue?.length || 0;
+
+    if (codeLen > 1 || valLen > 1) {
       this.editChartData.x.drill = false;
       this.enableChartDrill = false;
     } else {
@@ -450,7 +454,10 @@ export class DashboardEditorComponent implements OnInit {
 
     this.editChartData = data;
 
-    this.checkCartesanForDrill()
+    // console.log("fieldCode", this.editChartData.fieldCode, "fieldValue", this.editChartData.fieldValue)
+
+    // check first, because new chart dont have the field value
+    this.checkCartesanForDrill();
 
     if (data.form) {
       this.loadForm(data.form.id, this.editHolderFormSig, data);
