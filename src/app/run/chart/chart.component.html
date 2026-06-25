@@ -175,22 +175,6 @@
         </div>
       </div>
     }
-    <!-- {{filtersData|json}} -->
-    <!-- <div class="form-group mb-3">
-    <label class="form-label">Condition type</label>
-    <div>
-      <div class="btn-group">
-        <input class="btn-check" type="radio" value="AND" id="match-all"
-          name="match-all" [(ngModel)]="filtersCond" required>
-          <label for="match-all" class="btn btn-outline-secondary">
-          Match All</label>
-          <input class="btn-check" type="radio" value="OR" id="match-any"
-            name="match-any" [(ngModel)]="filtersCond" required>
-            <label for="match-any" class="btn btn-outline-secondary">
-            Match Any</label>
-          </div>
-        </div>
-      </div> -->
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round"
@@ -210,10 +194,14 @@
 
 
 <ng-template #drillTpl let-c="close" let-d="dismiss">
-  <div class="modal-header">
+  <div style="margin-bottom:-68px">
+  <!-- <div class="modal-header">
     <h4 class="modal-title">{{chart()?.title}}</h4>
-  </div>
-  <div class="px-2 pb-2">
+  </div> -->
+      <page-title  (closed)="d()" [asComp]="true">
+        <h4 class="m-0">{{chart()?.title}}</h4>
+      </page-title>
+  <div class="px-2 pb-2 mt-1">
     <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
       <div class="row">
         <div class="col d-flex align-items-center">
@@ -233,7 +221,7 @@
   </div>
   @if (!entryLoading()){
     <div class="table-responsive">
-      <table id="drill_{{chart().id}}" class="table table-striped table-flush position-relative" >
+      <table id="drill_{{chart().id}}" class="table table-striped table-flush position-relative mb-0" >
         <thead>
           <tr>
             @for (item of chart().x?.drillFields; track $index){
@@ -298,8 +286,9 @@
       }
     </div>
   }
-  <div class="modal-footer justify-content-between">
+  <!-- <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round" (click)="d()">{{app().x?.lang=='ms'?'Tutup':'Close'}}</button>
+  </div> -->
   </div>
 </ng-template>
 

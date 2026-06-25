@@ -35,6 +35,7 @@ import { Observable } from 'rxjs';
 import { first, map, shareReplay } from 'rxjs/operators';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { ViewComponent } from '../view/view.component';
+import { PageTitleComponent } from '../_component/page-title.component';
 
 @Component({
     selector: 'app-chart',
@@ -48,7 +49,7 @@ import { ViewComponent } from '../view/view.component';
     ],
     imports: [FaIconComponent, NgClass, NgStyle, NgxEchartsDirective, UserEntryFilterComponent, SlicePipe,
        NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
-       DecimalPipe, FieldViewComponent, ViewComponent
+       DecimalPipe, FieldViewComponent, ViewComponent, PageTitleComponent
     ]
 })
 export class ChartComponent implements OnInit {
