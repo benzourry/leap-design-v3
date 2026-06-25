@@ -173,19 +173,13 @@ export class ChartComponent implements OnInit {
   }
 
   plotChart(c, cd) {
-    // this.chartDataset[c.id] = cd;
     this.flipped.set(c.x && c.x.flipped);
-    let ecOption:any = {
+    
+    let ecOption: any = {
       tooltip: c.x && c.x.tooltip ? { trigger: 'axis', showContent: true, axisPointer: { type: 'shadow' } } : {},
-      legend: {
-        type: 'scroll',
-      },
-      grid: {
-        containLabel: true,
-      },
-      dataset: {
-        source: cd.data
-      },
+      legend: { type: 'scroll' },
+      grid: { containLabel: true },
+      dataset: { source: cd.data },
       series: [
         {
           type: this.typeMapping[c.type],
@@ -193,155 +187,61 @@ export class ChartComponent implements OnInit {
         }
       ]
     };
+
+    // --- MERGED CARTESIAN LOGIC (Bar, Line, Area, HBar, HLine) ---
+    const cartesianTypes = ['line', 'bar', 'area', 'hline', 'hbar'];
     
-    if (['line', 'bar', 'area'].indexOf(c.type) > -1) {
-      ecOption.xAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
-      ecOption.yAxis = {};
+    if (cartesianTypes.includes(c.type)) {
+      const isHorizontal = ['hline', 'hbar'].includes(c.type);
+
+      // 1. Swap Axes Dynamically based on orientation
+      const categoryAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
+      ecOption.xAxis = isHorizontal ? {} : categoryAxis;
+      ecOption.yAxis = isHorizontal ? categoryAxis : {};
 
       if (cd.series) {
-        ecOption.tooltip = {
-          trigger: 'axis', 
-          axisPointer: { type: 'shadow' } 
-        };
+        ecOption.tooltip = { trigger: 'axis', axisPointer: { type: 'shadow' } };
+
+        let series = [];
+        let isSingleSeries = cd.data.length === 2;
+
+        // 2. Loop through the total ROWS, not the columns
+        for (let i = 1; i < cd.data.length; i++) {
+          let stack = c.x && c.x.stack;
+
+          let seriesItem: any = {
+            type: this.typeMapping[c.type],
+            seriesLayoutBy: 'row', 
+            stack: stack ? 'Stack 1' : undefined,
+            smooth: c.x && c.x.smooth,
+            label: {
+              show: false,
+              position: stack ? 'inside' : 'top',
+              formatter: stack ? this.hideZero() : undefined
+            }
+          };
+
+          // Apply colorful bars if it's a bar/hbar chart and only has one series
+          if (['bar', 'hbar'].includes(c.type) && isSingleSeries) {
+            seriesItem.colorBy = 'data';
+          }
+          
+          series.push(seriesItem);
+        }
+        ecOption.series = series;
         
-        var series = [];
-        // var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
-        var isSingleSeries = cd.data.length === 2;
-
-        // for (var i = 1; i < cd.data[0].length; i++) {
-        //   var stack = c.x && c.x.stack;
-          
-        //   var seriesItem: any = {
-        //     type: this.typeMapping[c.type],
-        //     stack: stack ? 'Stack 1' : undefined,
-        //     smooth: c.x && c.x.smooth,
-        //     label: { 
-        //       show: false, 
-        //       position: stack ? 'inside' : 'top', 
-        //       formatter: stack ? this.hideZero() : undefined 
-        //     }
-        //   };
-
-        //   // Apply colorful bars if it's a bar chart and only has one series
-        //   if (c.type === 'bar' && isSingleSeries) {
-        //     seriesItem.colorBy = 'data';
-        //   }
-
-        //   series.push(seriesItem);
-        // }
-
-
-        // 1. Loop through the total ROWS, not the columns
-        for (var i = 1; i < cd.data.length; i++) {
-          var stack = c.x && c.x.stack;
-          
-          var seriesItem: any = {
-            type: this.typeMapping[c.type],
-            seriesLayoutBy: 'row', // <-- ADD THIS: Tells ECharts the Legend is on the Y-Axis
-            stack: stack ? 'Stack 1' : undefined,
-            smooth: c.x && c.x.smooth,
-            label: { 
-              show: false, 
-              position: stack ? 'inside' : 'top', 
-              formatter: stack ? this.hideZero() : undefined 
-            }
-          };
-
-          if (c.type === 'bar' && isSingleSeries) {
-            seriesItem.colorBy = 'data';
-          }
-          series.push(seriesItem);
-        }
-        ecOption.series = series;
-      }else{
-        // --- ADD THIS ELSE BLOCK FOR "series": false ---
-        if (c.type === 'bar') {
+      } else {
+        // --- FALLBACK FOR "series": false ---
+        if (['bar', 'hbar'].includes(c.type)) {
           ecOption.series[0].colorBy = 'data';
         }
         // Add tooltip for single series too
-        ecOption.tooltip = {
-          trigger: 'axis',
-          axisPointer: { type: 'shadow' }
-        };
-
+        ecOption.tooltip = { trigger: 'axis', axisPointer: { type: 'shadow' } };
         ecOption.legend.show = false; // Hide legend if no series defined
       }
     }
 
-    if (['hline', 'hbar'].indexOf(c.type) > -1) {
-      ecOption.xAxis = {};
-      ecOption.yAxis = { type: 'category', axisLabel: { interval: 0, rotate: 45 } };
-
-      if (cd.series) {
-        ecOption.tooltip = {
-          trigger: 'axis', 
-          axisPointer: { type: 'shadow' } 
-        };
-
-        var series = [];
-        var stack = c.x && c.x.stack;
-        // var isSingleSeries = cd.data[0].length === 2; // Category column + 1 Data column
-        var isSingleSeries = cd.data.length === 2;
-
-        // for (var i = 1; i < cd.data[0].length; i++) {
-        //   var seriesItem: any = {
-        //     type: this.typeMapping[c.type],
-        //     stack: stack ? 'Stack 1' : undefined,
-        //     smooth: c.x && c.x.smooth,
-        //     label: { 
-        //       show: true, 
-        //       position: stack ? 'inside' : 'right', 
-        //       formatter: stack ? this.hideZero() : undefined 
-        //     }
-        //   };
-
-        //   // Apply colorful bars if it's a horizontal bar chart and only has one series
-        //   if (c.type === 'hbar' && isSingleSeries) {
-        //     seriesItem.colorBy = 'data';
-        //   }
-
-        //   series.push(seriesItem);
-        // }
-
-        // 1. Loop through the total ROWS, not the columns
-        for (var i = 1; i < cd.data.length; i++) {
-          var stack = c.x && c.x.stack;
-          
-          var seriesItem: any = {
-            type: this.typeMapping[c.type],
-            seriesLayoutBy: 'row', // <-- ADD THIS: Tells ECharts the Legend is on the Y-Axis
-            stack: stack ? 'Stack 1' : undefined,
-            smooth: c.x && c.x.smooth,
-            label: { 
-              show: false, 
-              position: stack ? 'inside' : 'top', 
-              formatter: stack ? this.hideZero() : undefined 
-            }
-          };
-
-          if (c.type === 'hbar' && isSingleSeries) {
-            seriesItem.colorBy = 'data';
-          }
-          series.push(seriesItem);
-        }
-        ecOption.series = series;
-      }else{
-        // --- ADD THIS ELSE BLOCK FOR "series": false ---
-        if (c.type === 'bar') {
-          ecOption.series[0].colorBy = 'data';
-        }
-        // Add tooltip for single series too
-        ecOption.tooltip = {
-          trigger: 'axis',
-          axisPointer: { type: 'shadow' }
-        };
-
-        ecOption.legend.show = false; // Hide legend if no series defined
-      }
-    }
-
-
-  // --- Multiple Pie / Doughnut / Rose Logic ---
+    // --- Multiple Pie / Doughnut / Rose Logic ---
     if (['pie', 'doughnut', 'rose'].includes(c.type)) {
       if (cd.series && cd.data.length > 2) {
         // MULTIPLE PIES: Auto-Arranging Grid Layout
@@ -444,29 +344,12 @@ export class ChartComponent implements OnInit {
         };
       }
     }
-    
-    // if (c.type == 'rose') {
-    //   ecOption.series[0].radius = [20, 110];
-    //   ecOption.series[0].roseType = 'radius';
-    //   ecOption.series[0].label.formatter = function(params){
-    //       return `${params.value.name}: ${params.value.value} (${params.percent}%)`
-    //   };
-    // }
+
     if (['gauge'].includes(c.type)) {
       ecOption.series[0].label.formatter = function(params){
         return `${params.value.name}: ${params.value.value} (${params.percent}%)`
       };
     }
-    // if (c.type == 'doughnut') {
-    //   ecOption.series[0].radius = ['50%', '70%'];
-    // }
-
-    // if (c.type == 'area') {
-    //   // var series = []
-    //   for (var i = 1; i < cd.data[0].length; i++) {
-    //     ecOption.series[i - 1].areaStyle = {};
-    //   }
-    // }
 
     if (c.type == 'area') {
       // Loop safely over the generated series array
@@ -478,15 +361,12 @@ export class ChartComponent implements OnInit {
     if (c.type == 'gauge') {
       ecOption.series[0].data = ecOption.dataset.source;
       ecOption.series[0].title = { show: false };
-      // this.ecOption[c.id].series[0].max = 280;
     }
-    if (c.type == 'radar') {
 
+    if (c.type == 'radar') {
       ecOption.series[0].title = { show: false };
       ecOption.series[0].areaStyle = {opacity:0.3};
 
-      // radar require special data format/structure
-      // create data:[] for radar, refer https://echarts.apache.org/examples/en/editor.html?c=radar
       var rdata = [];
       var indicator = [];
       var overallMax = 0;
@@ -505,10 +385,8 @@ export class ChartComponent implements OnInit {
           }
           rdata.push(obj);
         }
-        // create indicator
         for (var i = 1; i < cd.data[0].length; i++) {
           var stack = c.x && c.x.stack;
-
           indicator.push({
             name: cd.data[0][i]
           })
@@ -530,9 +408,6 @@ export class ChartComponent implements OnInit {
 
       ecOption.radar = { indicator: indicator.map(i=>{i.max=overallMax;return i}) };
       ecOption.series[0].data = rdata;
-    }
-    if (c.x && c.x.stacked) {
-
     }
 
     if (c.x?.ecOpt) {

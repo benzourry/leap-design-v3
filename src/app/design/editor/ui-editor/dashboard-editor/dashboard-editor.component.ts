@@ -89,7 +89,10 @@ export class DashboardEditorComponent implements OnInit {
     { code: 'count', name: "Count" },
     { code: 'avg', name: "Average" },
     { code: 'max', name: "Max" },
-    { code: 'min', name: "Min" }
+    { code: 'min', name: "Min" },
+    { code: 'stddev', name: "Standard Deviation" },
+    { code: 'variance', name: "Variance" },
+    { code: 'median', name: "Median" },
   ]
 
   sizeList: any[] = [
