@@ -230,8 +230,8 @@
                   <div class="row width-auto align-items-center" cdkDropList cdkDropListOrientation="mixed"
                     (cdkDropListDropped)="dropField($event, e)">
                     @for (a of e?.x?.drillFields; track $index) {
-                    <div class="col-auto pe-0 position-relative cursor-move gy-2" [class.cursor-move]="editDrillFields[e.id]" cdkDrag
-                      [cdkDragDisabled]="!editDrillFields[e.id] && curField[e.id]!=a.code" (click)="curField[e.id]=a.code">
+                    <div class="col-auto pe-0 position-relative gy-2" [class.cursor-move]="editDrillFields[e.id]" cdkDrag
+                      [cdkDragDisabled]="!editDrillFields[e.id]" (click)="curField[e.id]=a.code">
                       <div class="input-group input-group-sm border border-2 rounded"
                         [class.border-primary]="curField[e.id]==a.code">
                         <span class="input-group-text border-0 bg-white">
@@ -242,7 +242,7 @@
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                             </fa-icon>
                           </button>
-                          <button type="button" class="btn" (click)="removeDrillField(e.x.drillFields, $index)">
+                          <button type="button" class="btn" (click)="removeDrillField(e, $index)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                             </fa-icon>
                           </button>
@@ -886,6 +886,7 @@
                         {{editHolderFormSig()[fm].title}}
                       </div>
 
+                      <!-- <div class="fw-bold text-primary mt-3 mb-1" style="font-size: 0.9em;">System Variables</div> -->
                       <div class="form-check ms-3 mb-1">
                         <input class="form-check-input" type="checkbox" [id]="'chk_entry_id_' + fm"
                           [checked]="isFieldSelected(fm, '$id')"
@@ -894,6 +895,50 @@
                           # Entry ID
                         </label>
                       </div>
+                      <div class="form-check ms-3 mb-1">
+                        <input class="form-check-input" type="checkbox" [id]="'chk_entry_code_' + fm"
+                          [checked]="isFieldSelected(fm, '$code')"
+                          (change)="toggleFieldSelection(fm, '$code', '# Entry Code', $event)">
+                        <label class="form-check-label text-muted" [for]="'chk_entry_code_' + fm">
+                          # Entry Code
+                        </label>
+                      </div>
+                      <div class="form-check ms-3 mb-1">
+                        <input class="form-check-input" type="checkbox" [id]="'chk_entry_counter_' + fm"
+                          [checked]="isFieldSelected(fm, '$counter')"
+                          (change)="toggleFieldSelection(fm, '$counter', '# Entry Counter', $event)">
+                        <label class="form-check-label text-muted" [for]="'chk_entry_counter_' + fm">
+                          # Entry Counter
+                        </label>
+                      </div>
+
+                      @if (editHolderFormSig()?.[fm]?.tiers?.length > 0) {                     
+
+                        <div class="form-check ms-3 mb-1">
+                          <input class="form-check-input" type="checkbox" [id]="'chk_statusText_' + fm"
+                            [checked]="isFieldSelected(fm, '$statusText')"
+                            (change)="toggleFieldSelection(fm, '$statusText', '# Current Status Text', $event)">
+                          <label class="form-check-label text-muted" [for]="'chk_statusText_' + fm"># Current Status Text</label>
+                        </div>
+                        <!-- <div class="form-check ms-3 mb-1">
+                          <input class="form-check-input" type="checkbox" id="chk_status"
+                            [checked]="isFieldSelected('system', 'current_status')"
+                            (change)="toggleFieldSelection('system', 'currentStatus', '# Current Status', $event)">
+                          <label class="form-check-label text-muted" for="chk_status"># Current Status</label>
+                        </div>
+                        <div class="form-check ms-3 mb-1">
+                          <input class="form-check-input" type="checkbox" id="chk_tier"
+                            [checked]="isFieldSelected('system', 'current_tier')"
+                            (change)="toggleFieldSelection('system', 'currentTier', '# Current Tier Level', $event)">
+                          <label class="form-check-label text-muted" for="chk_tier"># Current Tier Level</label>
+                        </div>
+                        <div class="form-check ms-3 mb-1">
+                          <input class="form-check-input" type="checkbox" id="chk_tier_id"
+                            [checked]="isFieldSelected('system', 'current_tier_id')"
+                            (change)="toggleFieldSelection('system', 'currentTierId', '# Current Tier ID', $event)">
+                          <label class="form-check-label text-muted" for="chk_tier_id"># Current Tier ID</label>
+                        </div> -->
+                      }
 
                       @for (s of sectionItems[fm]; track $index) {
                         @for (f of s.items; track f.id) {
@@ -913,34 +958,7 @@
                     }
                   }
 
-                  @if (editHolderFormSig().data?.tiers?.length > 0) {
-                  <div class="fw-bold text-primary mt-3 mb-1" style="font-size: 0.9em;">System Variables</div>
 
-                  <div class="form-check ms-3 mb-1">
-                    <input class="form-check-input" type="checkbox" id="chk_statusText"
-                      [checked]="isFieldSelected('data', '$statusText')"
-                      (change)="toggleFieldSelection('data', '$statusText', '# Current Status Text', $event)">
-                    <label class="form-check-label text-muted" for="chk_statusText"># Current Status Text</label>
-                  </div>
-                  <div class="form-check ms-3 mb-1">
-                    <input class="form-check-input" type="checkbox" id="chk_status"
-                      [checked]="isFieldSelected('system', 'current_status')"
-                      (change)="toggleFieldSelection('system', 'current_status', '# Current Status', $event)">
-                    <label class="form-check-label text-muted" for="chk_status"># Current Status</label>
-                  </div>
-                  <div class="form-check ms-3 mb-1">
-                    <input class="form-check-input" type="checkbox" id="chk_tier"
-                      [checked]="isFieldSelected('system', 'current_tier')"
-                      (change)="toggleFieldSelection('system', 'current_tier', '# Current Tier Level', $event)">
-                    <label class="form-check-label text-muted" for="chk_tier"># Current Tier Level</label>
-                  </div>
-                  <div class="form-check ms-3 mb-1">
-                    <input class="form-check-input" type="checkbox" id="chk_tier_id"
-                      [checked]="isFieldSelected('system', 'current_tier_id')"
-                      (change)="toggleFieldSelection('system', 'current_tier_id', '# Current Tier ID', $event)">
-                    <label class="form-check-label text-muted" for="chk_tier_id"># Current Tier ID</label>
-                  </div>
-                  }
 
                 </div>
               </div>

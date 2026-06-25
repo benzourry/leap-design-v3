@@ -790,6 +790,15 @@ export class DashboardEditorComponent implements OnInit {
     }
   }
 
+  removeDrillField(chart, index){
+    chart.x.drillFields.splice(index, 1);
+      this.dashboardService.saveChart(this.curDashboard.id, chart)
+        .subscribe({
+          next: res => { }
+        })
+      this.cdr.detectChanges(); // <--- Add here
+  }
+
   getAsList = splitAsList;
 
   cleanText = cleanText;
