@@ -8,7 +8,7 @@ import { AppService } from '../../../../service/app.service';
 // import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgClass, NgStyle, KeyValuePipe } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, KeyValuePipe, JsonPipe } from '@angular/common';
 // import { HttpParams } from '@angular/common/http';
 import { DashboardService } from '../../../../service/dashboard.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -32,7 +32,9 @@ import { DatasetService } from '../../../../service/dataset.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-editor.component.scss',
     '../../../../../assets/css/element-action.css'],
-  imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
+  imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, 
+    FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, 
+    EntryFilterComponent, NgbNavOutlet, KeyValuePipe, JsonPipe]
 })
 export class DashboardEditorComponent implements OnInit {
 

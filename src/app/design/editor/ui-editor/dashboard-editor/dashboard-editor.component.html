@@ -75,7 +75,7 @@
                     No form found associated with this chart. It might have been removed.
                   </div>
                   }
-                  <div class="element-item">
+                  <div class="element-item-old">
                     <h6 class="card-title">{{e.title}} <sup>{{e.id}}</sup></h6>
                     @if (e.description) {
                     <p class="card-subtitle">{{e.description}}</p>
@@ -118,10 +118,16 @@
                       @if (e.fieldSeries) {
                       <span>by
                         <strong><div class="d-inline-block me-2 border bg-outline-light rounded px-1 mb-1">{{e.fieldSeries}}</div></strong></span>
-                      }from <strong>{{formMap[e.formId]}} [{{e.formId}}]</strong>
+                      }from <a class="text-white"
+                      [routerLink]="['/design/'+app.id+'/ui/form']" [queryParams]="{id:e.formId}"><strong>{{formMap[e.formId]}} [{{e.formId}}]</strong></a>
+
+                      
                     </p>
                     }
+
                   </div>
+                  <!-- <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                      [routerLink]="['/design/'+app.id+'/ui/form']" [queryParams]="{id:e.formId}">View Form</a> -->
 
                   <div class="">
                     <div class="my-2 text-start">
@@ -183,7 +189,6 @@
                     }
                   </div>
                   }
-
 
                 </div>
 
@@ -920,45 +925,27 @@
                             (change)="toggleFieldSelection(fm, '$statusText', '# Current Status Text', $event)">
                           <label class="form-check-label text-muted" [for]="'chk_statusText_' + fm"># Current Status Text</label>
                         </div>
-                        <!-- <div class="form-check ms-3 mb-1">
-                          <input class="form-check-input" type="checkbox" id="chk_status"
-                            [checked]="isFieldSelected('system', 'current_status')"
-                            (change)="toggleFieldSelection('system', 'currentStatus', '# Current Status', $event)">
-                          <label class="form-check-label text-muted" for="chk_status"># Current Status</label>
-                        </div>
-                        <div class="form-check ms-3 mb-1">
-                          <input class="form-check-input" type="checkbox" id="chk_tier"
-                            [checked]="isFieldSelected('system', 'current_tier')"
-                            (change)="toggleFieldSelection('system', 'currentTier', '# Current Tier Level', $event)">
-                          <label class="form-check-label text-muted" for="chk_tier"># Current Tier Level</label>
-                        </div>
-                        <div class="form-check ms-3 mb-1">
-                          <input class="form-check-input" type="checkbox" id="chk_tier_id"
-                            [checked]="isFieldSelected('system', 'current_tier_id')"
-                            (change)="toggleFieldSelection('system', 'currentTierId', '# Current Tier ID', $event)">
-                          <label class="form-check-label text-muted" for="chk_tier_id"># Current Tier ID</label>
-                        </div> -->
                       }
 
                       @for (s of sectionItems[fm]; track $index) {
-                        @for (f of s.items; track f.id) {
-                          @if (editHolderFormSig()[fm].items[f.code]?.type != 'static') {
-                            <div class="form-check ms-3 mb-1">
-                              <input class="form-check-input" type="checkbox" [id]="'chk_' + fm + '_' + f.code"
-                                [checked]="isFieldSelected(fm, f.code)"
-                                (change)="toggleFieldSelection(fm, f.code, editHolderFormSig()[fm].items[f.code]?.label || f.code, $event)">
-                              <label class="form-check-label" [for]="'chk_' + fm + '_' + f.code">
-                                {{editHolderFormSig()[fm].items[f.code]?.label}}
-                                @if(s.tier){^}
-                              </label>
-                            </div>
+                        @if (s.section?.type=='section'){
+                          @for (f of s.items; track f.id) {
+                            @if (editHolderFormSig()[fm].items[f.code]?.type != 'static') {
+                              <div class="form-check ms-3 mb-1">
+                                <input class="form-check-input" type="checkbox" [id]="'chk_' + fm + '_' + f.code"
+                                  [checked]="isFieldSelected(fm, f.code)"
+                                  (change)="toggleFieldSelection(fm, f.code, editHolderFormSig()[fm].items[f.code]?.label || f.code, $event)">
+                                <label class="form-check-label" [for]="'chk_' + fm + '_' + f.code">
+                                  {{editHolderFormSig()[fm].items[f.code]?.label}}
+                                  @if(s.tier){^}
+                                </label>
+                              </div>
+                            }
                           }
                         }
                       }
                     }
                   }
-
-
 
                 </div>
               </div>
