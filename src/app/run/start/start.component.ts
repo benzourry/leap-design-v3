@@ -26,7 +26,7 @@ import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.s
 import { Title } from '@angular/platform-browser';
 import { Observable, firstValueFrom, lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../_shared/service/page-title-service';
-import { ServerDate, compileTpl, createProxy, deepMerge, getQuery, loadScript } from '../../_shared/utils';
+import { ServerDate, compileTpl, createProxy, deepMerge, getQuery, loadScript, safeAccess } from '../../_shared/utils';
 import { LogService } from '../../_shared/service/log.service';
 import { SwPush } from '@angular/service-worker';
 import { PushService } from '../../_shared/service/push.service';
@@ -547,6 +547,7 @@ export class StartComponent implements OnInit, OnDestroy {
 
   // --- DRY Caching and Context Engine ---
 
+
   private compiledEvalCache = new Map<string, Function>();
   private preCache = new Map<string, Function>();
 
@@ -558,7 +559,7 @@ export class StartComponent implements OnInit, OnDestroy {
     
     let fn = cache.get(cacheKey);
     if (!fn) {
-      fn = new Function(...argNames, `return ${code}`);
+      fn = new Function(...argNames, `return ${safeAccess(code)}`);
       cache.set(cacheKey, fn);
     }
     

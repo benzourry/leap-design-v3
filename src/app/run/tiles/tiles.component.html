@@ -127,14 +127,14 @@
 
                         @case ('external') {
                           <a class="s-icon" target="_blank" routerLinkActive="active"
-                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})">
+                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi},'tiles')">
                             <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
                           </a>
                         }
 
                         @case ('internal') {
                           <a class="s-icon" routerLinkActive="active"
-                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})">
+                            [href]="compileTpl(item.url, {$this$:_this, $user$:user(), $conf$:appConfig, $base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi},'tiles')">
                             <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
                           </a>
                         }

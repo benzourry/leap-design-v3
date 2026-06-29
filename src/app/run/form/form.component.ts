@@ -25,7 +25,7 @@ import { PlatformLocation, NgTemplateOutlet, NgStyle, DatePipe } from '@angular/
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage, safeAccess } from '../../_shared/utils';
 import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap, takeUntil, catchError } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
@@ -1379,7 +1379,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     let fn = this.prePassiveCache.get(v);
     
     if (!fn) {
-        fn = new Function(...argNames, `return ${v}`);
+        fn = new Function(...argNames, `return ${safeAccess(v)}`);
         this.prePassiveCache.set(v, fn);
     }
 

@@ -103,11 +103,12 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
         .replace(/<!--(.+?)-->/g, '')
         .replace(/\{\{(.+?)\}\}/g, r$val)
         .replace(/\[#(.+?)#\]/gm, r$script)
-        // .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, '";if($1){\noutput+="')
-        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+        // .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+        .replace(/<x-if\s*\$=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";if(get(()=>'+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+')){\noutput+="')
         .replace(/<x-else\s*\/?\s*>/ig, '";}else{\noutput+="')
-        // .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, '";}else if($1){\noutput+="')
-        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+        // .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
+        .replace(/<x-else-if\s*\$=\\\"(.+?)\\\"\s*\/?\s*>/ig, (m, p1) => '";}else if(get(()=>'+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+')){\noutput+="')
+        
         .replace(/<\/x-if>/ig, '";}\noutput+="')
         // .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, '";for($1){\noutput+="')
         .replace(/<x-for\s*\$\=\\\"(.+?)\\\"\s*>/ig, (m, p1) => '";for('+safeAccess(p1.replace(/\\[rnt]+/gm, ''))+'){\noutput+="')
@@ -173,9 +174,14 @@ async function createMermaidSvg(id: string, text: string): Promise<string> {
   return `<div class="text-danger">Invalid <strong>Mermaid</strong> syntax</div>`;
 }
 
+// function r$foreach(m: string, p1: string): string {
+//   const [iterator, list] = p1.split(" of ").map(s => s.trim());
+//   return `";${list} && Array.isArray(${list}) && ${list}.forEach((${iterator}, $index)=>{\noutput+="`;
+// }
 function r$foreach(m: string, p1: string): string {
   const [iterator, list] = p1.split(" of ").map(s => s.trim());
-  return `";${list} && Array.isArray(${list}) && ${list}.forEach((${iterator}, $index)=>{\noutput+="`;
+  const safeList = safeAccess(list); // Apply safeAccess here
+  return `";${safeList} && Array.isArray(${safeList}) && ${safeList}.forEach((${iterator}, $index)=>{\noutput+="`;
 }
 
 function r$script(m: string, p1: string): string {
@@ -228,7 +234,11 @@ function r$val(m: string, p1: string): string {
 }
 
 function key(expr: string, wrapFn?: string): string {
-  return `"+get(()=>${expr},"",${wrapFn || ''})+"`;
+  // Apply the new optional chaining logic to the expression
+  const safeExpr = safeAccess(expr);
+  
+  // Wrap it in get() as a final safety net for executing the function
+  return `"+get(()=>${safeExpr},"",${wrapFn || ''})+"`;
 }
 
 // function key(expr: string, wrapFn?: string): string {
@@ -252,27 +262,56 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
 //   return expr.split('.').filter(Boolean).join('?.');
 // }
 
-function safeAccess(expr: string): string {
-  // 1. Quick exit for complex expressions
-  if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.")) return expr;
+// function safeAccess(expr: string): string {
+//   // 1. Quick exit for complex expressions
+//   if (/[\(\)\+\-\*\/=><\?\:]/.test(expr) || expr.includes("?.")) return expr;
 
-  // 2. Match entire bracket groups `[...]` OR literal dots `.`
-  const pathRegex = /(\[[^\]]+\])|(\.)/g;
+//   // 2. Match entire bracket groups `[...]` OR literal dots `.`
+//   const pathRegex = /(\[[^\]]+\])|(\.)/g;
 
-  let str = expr.replace(pathRegex, (match, isBracket, isDot, offset) => {
-    // If the expression starts with a bracket (e.g., "[0].id"), leave the first bracket alone
+//   let str = expr.replace(pathRegex, (match, isBracket, isDot, offset) => {
+//     // If the expression starts with a bracket (e.g., "[0].id"), leave the first bracket alone
+//     if (offset === 0 && isBracket) return match; 
+    
+//     // If it matches a full bracket group, prefix it: `['key']` -> `?.['key']`
+//     if (isBracket) return `?.${match}`;
+    
+//     // If it matches a dot, replace it: `.` -> `?.`
+//     if (isDot) return '?.';
+    
+//     return match;
+//   });
+
+//   return str;
+// }
+
+export function safeAccess(expr: string): string {
+  // 1. Bail out immediately if they are already using optional chaining
+  if (expr.includes("?.")) return expr;
+
+  const strings: string[] = [];
+  
+  // 2. Extract and protect string literals (single, double, and backticks)
+  // This prevents changing "user.name" into "user?.name"
+  let safeStr = expr.replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, match => {
+    strings.push(match);
+    return `__STR_${strings.length - 1}__`;
+  });
+
+  // 3. Replace all object dots and brackets with optional chaining
+  // Matches `.prop` -> `?.prop` and `[0]` -> `?.[0]`
+  const pathRegex = /(\.[a-zA-Z_$][\w_$]*)|(\[[^\]]+\])/g;
+  safeStr = safeStr.replace(pathRegex, (match, isDot, isBracket, offset) => {
+    // If expression starts with a bracket (e.g., "[0]"), leave the first one alone
     if (offset === 0 && isBracket) return match; 
     
-    // If it matches a full bracket group, prefix it: `['key']` -> `?.['key']`
-    if (isBracket) return `?.${match}`;
-    
-    // If it matches a dot, replace it: `.` -> `?.`
-    if (isDot) return '?.';
-    
+    if (isDot) return `?${match}`;       // '.prop' -> '?.prop'
+    if (isBracket) return `?.${match}`;  // '[0]' -> '?.[0]'
     return match;
   });
 
-  return str;
+  // 4. Put the string literals back into the expression
+  return safeStr.replace(/__STR_(\d+)__/g, (m, i) => strings[parseInt(i, 10)]);
 }
 
 export function mobileAndTabletCheck() {
