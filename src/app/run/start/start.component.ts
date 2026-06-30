@@ -109,6 +109,21 @@ export class StartComponent implements OnInit, OnDestroy {
   isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
   screen = signal<any>(null);
 
+  // --- Cookie Banner Signals ---
+  private readonly cookieConsentName = 'app_cookie_consent';
+  
+  // Tracks if the user has already made a choice (either accepted or rejected)
+  cookieConsentStatus = signal<boolean>(false); 
+
+  // Automatically calculates if the banner should be shown based on app config AND user consent
+  showCookieBanner = computed(() => {
+    const hasBannerConfig = !!this.app()?.x?.cookieBanner;
+    const hasConsented = this.cookieConsentStatus();
+    return hasBannerConfig && !hasConsented;
+  });
+
+
+
   readonly baseApi = baseApi;
   readonly base = base;
   readonly VAPID_PUBLIC_KEY = 'BIRiQCpjtaORtlvwZ7FzFkf8V799iGvEX1kQtO86y-BdiGpAMvXN4UDU1DWEqrpPEAiDDVilG8WKk62NjFc1Opo';
@@ -151,6 +166,9 @@ export class StartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    // Check if the user already has the cookie set
+    this.cookieConsentStatus.set(!!this.getCookie(this.cookieConsentName));
 
     window.localStorage.setItem('noframe', String(this.frameless()));
 
@@ -748,6 +766,39 @@ export class StartComponent implements OnInit, OnDestroy {
 
   dismissAllModal() {
     this.modalService.dismissAll('');
+  }
+
+  // --- Cookie Management Methods ---
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+  }
+
+  private setCookie(name: string, value: string, days: number) {
+    let expires = '';
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = `; expires=${date.toUTCString()}`;
+    }
+    document.cookie = `${name}=${value}${expires}; path=/; SameSite=Lax`;
+  }
+
+  acceptCookies() {
+    this.setCookie(this.cookieConsentName, 'accepted', 365); 
+    this.cookieConsentStatus.set(true); 
+  }
+
+  rejectCookies() {
+    this.setCookie(this.cookieConsentName, 'rejected', 365);
+    this.cookieConsentStatus.set(true);
+  }
+
+  // Closes the banner without setting a cookie (it will reappear on next refresh)
+  dismissCookies() {
+    this.cookieConsentStatus.set(true); 
   }
 
   ngOnDestroy() {

@@ -211,3 +211,34 @@
     }  
   }
 }
+
+@if (showCookieBanner()) {
+    <div class="print-hide position-fixed bottom-0 end-0 m-3 m-md-4 bg-white shadow-lg rounded-3 border p-3 p-md-4" 
+         style="width: calc(100% - 2rem); max-width: 420px; z-index: 9999;">
+      
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h6 class="m-0 fw-bold text-dark fs-6">
+          {{ lang() == 'ms' ? 'Keutamaan Kuki' : 'Cookie Preferences' }}
+        </h6>
+        <button type="button" class="btn btn-sm btn-light border" style="padding: 0.15rem 0.4rem;" (click)="dismissCookies()" aria-label="Close">
+          <fa-icon [icon]="['fas', 'times']"></fa-icon>
+        </button>
+      </div>
+
+      <p class="text-secondary mb-3 small" style="line-height: 1.5;">
+        {{ lang() == 'ms' 
+          ? 'Laman web ini menggunakan kuki untuk meningkatkan pengalaman pengguna. Kami memerlukan persetujuan anda untuk menggunakan sesetengah kuki ini.' 
+          : 'This website uses cookies to improve user experience. We need your consent to use some of the cookies.' 
+        }}
+      </p>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm px-3 rounded-2 fw-medium" (click)="acceptCookies()">
+          {{ lang() == 'ms' ? 'Terima Semua' : 'Accept All' }}
+        </button>
+        <button type="button" class="btn btn-primary btn-sm px-3 rounded-2 fw-medium" (click)="rejectCookies()">
+          {{ lang() == 'ms' ? 'Tolak Semua' : 'Reject All' }}
+        </button>
+      </div>
+    </div>
+  }

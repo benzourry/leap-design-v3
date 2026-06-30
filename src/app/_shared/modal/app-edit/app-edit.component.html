@@ -354,6 +354,11 @@
                     name="devInData">
                   <label class="form-check-label" for="devInData">Enable access to Live data in Dev mode (for troubleshooting)</label>
                 </div>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="cookieBanner" [(ngModel)]="_data.x.cookieBanner"
+                    name="cookieBanner">
+                  <label class="form-check-label" for="cookieBanner">Enable cookie consent banner</label>
+                </div>
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">One-off Screen (display once after first login)</label>
