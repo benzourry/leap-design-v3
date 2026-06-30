@@ -285,34 +285,93 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
 //   return str;
 // }
 
+// function safeAccessOld300620261145(expr: string): string {
+//   // 1. Bail out immediately if they are already using optional chaining
+//   if (expr.includes("?.")) return expr;
+
+//   const strings: string[] = [];
+  
+//   // 2. Extract and protect string literals (single, double, and backticks)
+//   // This prevents changing "user.name" into "user?.name"
+//   let safeStr = expr.replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, match => {
+//     strings.push(match);
+//     return `__STR_${strings.length - 1}__`;
+//   });
+
+//   // 3. Replace all object dots and brackets with optional chaining
+//   // Matches `.prop` -> `?.prop` and `[0]` -> `?.[0]`
+//   const pathRegex = /(\.[a-zA-Z_$][\w_$]*)|(\[[^\]]+\])/g;
+//   safeStr = safeStr.replace(pathRegex, (match, isDot, isBracket, offset) => {
+//     // If expression starts with a bracket (e.g., "[0]"), leave the first one alone
+//     if (offset === 0 && isBracket) return match; 
+    
+//     if (isDot) return `?${match}`;       // '.prop' -> '?.prop'
+//     if (isBracket) return `?.${match}`;  // '[0]' -> '?.[0]'
+//     return match;
+//   });
+
+//   // 4. Put the string literals back into the expression
+//   return safeStr.replace(/__STR_(\d+)__/g, (m, i) => strings[parseInt(i, 10)]);
+// }
+
 function safeAccess(expr: string): string {
   // 1. Bail out immediately if they are already using optional chaining
   if (expr.includes("?.")) return expr;
 
   const strings: string[] = [];
   
-  // 2. Extract and protect string literals (single, double, and backticks)
-  // This prevents changing "user.name" into "user?.name"
+  // 2. Extract and protect string literals
   let safeStr = expr.replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, match => {
     strings.push(match);
     return `__STR_${strings.length - 1}__`;
   });
 
-  // 3. Replace all object dots and brackets with optional chaining
-  // Matches `.prop` -> `?.prop` and `[0]` -> `?.[0]`
+  // 3. Replace all object dots and valid brackets with optional chaining
   const pathRegex = /(\.[a-zA-Z_$][\w_$]*)|(\[[^\]]+\])/g;
-  safeStr = safeStr.replace(pathRegex, (match, isDot, isBracket, offset) => {
-    // If expression starts with a bracket (e.g., "[0]"), leave the first one alone
-    if (offset === 0 && isBracket) return match; 
+  safeStr = safeStr.replace(pathRegex, (match, isDot, isBracket, offset, fullString) => {
+    if (isDot) return `?${match}`; 
     
-    if (isDot) return `?${match}`;       // '.prop' -> '?.prop'
-    if (isBracket) return `?.${match}`;  // '[0]' -> '?.[0]'
+    if (isBracket) {
+      const prevChar = fullString[offset - 1];
+      
+      // If the bracket is preceded by a letter, number, $, _, or closing bracket/parenthesis,
+      // it is a property accessor (e.g., obj['key'], array[0]).
+      if (prevChar && /[a-zA-Z0-9_$\]\)]/.test(prevChar)) {
+        return `?.${match}`;
+      }
+      
+      // Otherwise, it's an array literal (e.g., ['M']), leave it alone.
+      return match;
+    }
+    
     return match;
   });
 
   // 4. Put the string literals back into the expression
   return safeStr.replace(/__STR_(\d+)__/g, (m, i) => strings[parseInt(i, 10)]);
 }
+
+
+// ###############  FOR FUTURE
+// function safeAccessLookbehind(expr: string): string {
+//   const strings: string[] = [];
+  
+//   // 1. Extract and protect string literals
+//   let safeStr = expr.replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, match => {
+//     strings.push(match);
+//     return `__STR_${strings.length - 1}__`;
+//   });
+
+//   // 2. Apply optional chaining using Lookarounds
+//   safeStr = safeStr
+//     // A. Protect object dots (e.g. obj.key -> obj?.key)
+//     .replace(/(?<![\?\.])\.(?=[a-zA-Z_$])/g, '?.')
+//     // B. Protect brackets (e.g. arr[0] -> arr?.[0])
+//     .replace(/(?<=[a-zA-Z0-9_$\]\)])\[/g, '?.[');
+
+//   // 3. Put the string literals back
+//   return safeStr.replace(/__STR_(\d+)__/g, (m, i) => strings[parseInt(i, 10)]);
+// }
 
 export function mobileAndTabletCheck() {
   return /Mobi|Android/i.test(navigator.userAgent);
