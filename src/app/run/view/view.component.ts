@@ -25,7 +25,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { catchError, first, map, share, switchMap, tap } from 'rxjs/operators';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, resizeImage, safeAccess } from '../../_shared/utils';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { KeyValue, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
@@ -493,7 +493,7 @@ export class ViewComponent implements OnInit, OnDestroy {
     const cacheKey = `${argNames.join(',')}_${v}`;
     let fn = this.compiledFuncCache.get(cacheKey);
     if (!fn) {
-      fn = new Function(...argNames, `return ${safeAccess(v)}`);
+      fn = new Function(...argNames, `return ${v}`);
       this.compiledFuncCache.set(cacheKey, fn);
     }
     
@@ -507,7 +507,7 @@ export class ViewComponent implements OnInit, OnDestroy {
     const cacheKey = `${argNames.join(',')}_${v}`;
     let fn = this.compiledFuncCache.get(cacheKey);
     if (!fn) {
-      fn = new Function(...argNames, `return ${safeAccess(v)}`);
+      fn = new Function(...argNames, `return ${v}`);
       this.compiledFuncCache.set(cacheKey, fn);
     }
     

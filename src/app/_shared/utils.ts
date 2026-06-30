@@ -285,7 +285,7 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
 //   return str;
 // }
 
-export function safeAccess(expr: string): string {
+function safeAccess(expr: string): string {
   // 1. Bail out immediately if they are already using optional chaining
   if (expr.includes("?.")) return expr;
 
