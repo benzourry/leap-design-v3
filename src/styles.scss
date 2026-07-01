@@ -17,7 +17,7 @@ html {
 }
 
 body {
-  background-color: whitesmoke;
+  background-color: transparent;
   font-family: 'Inter', sans-serif;
   direction: ltr;
   margin: 0;
@@ -47,6 +47,9 @@ a {
 /* ==========================================================================
    3. BRAND BACKGROUNDS
    ========================================================================== */
+.bg-plain{
+  background-color: #f5f5f5;
+}
 .bg-reka {
   &.leap-my,
   &.aw-sarawakskills-edu-my,

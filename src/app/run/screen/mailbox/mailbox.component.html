@@ -7,7 +7,7 @@
         <div class="mailbox-list-wrapper">
             <div>
                 @for (kv of list()|groupBy:'dateFmt'; track $index) {
-                    <button class="p-2 w-100 d-block bg-light border-0 d-flex justify-content-between fs-5 text-muted" (click)="toggleHideMail(kv.key)" >
+                    <button class="p-2 w-100 d-block bg-transparent border-0 d-flex justify-content-between fs-5 text-muted" (click)="toggleHideMail(kv.key)" >
                         {{kv.key}}
                         @if (hideMailOn()[kv.key]){                            
                             <fa-icon [icon]="['fas','angle-down']"></fa-icon>
