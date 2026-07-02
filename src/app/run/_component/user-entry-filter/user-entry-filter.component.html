@@ -16,7 +16,7 @@
       @if (['text', 'textarea', 'eval', 'qr'].includes(field.type)) {
         <input class="form-control" type="text"
           [class.disabled]="presetFilters()[bindKey]"
-          [placeholder]="field.placeholder"
+          [placeholder]="(field.placeholder??'')"
           [(ngModel)]="filtersData()[bindKey]" />
       }
 
