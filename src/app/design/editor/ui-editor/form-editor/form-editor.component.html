@@ -191,8 +191,11 @@
                           @for (e of t.value; track e.id; let $s_first = $first; let $s_last = $last; let $s_index = $index) {
                             <div [ngClass]="e?.size||'col-sm-12'">
                               @if (filterField.length==0 || (e?.items|filter:filterField).length>0) {
-                                <div class="position-relative d-flex flex-column" [ngClass]="e.style" [class.card-blank-style]="e.x?.blankStyle"
-                                  [ngClass]="{'card card-clean':!e.x?.blankStyle}"
+                                <div class="position-relative d-flex flex-column" 
+                                  [ngClass]="e.style" 
+                                  [class.card-blank-style]="e.x?.blankStyle"
+                                  [class.card]="!e.x?.blankStyle"
+                                  [class.card-clean]="!e.x?.blankStyle"
                                   [class.half]="e.hidden">
                                   @if (notEmptyObject(e.x?.facet)) {
                                     <div style="position:absolute;right:9px;height:5px; width:5px;font-size:12px;">&#9713;</div>
