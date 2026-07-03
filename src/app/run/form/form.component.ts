@@ -1412,6 +1412,13 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       ));
   }
 
+  collapseSection(section){
+    if (!section.x) {
+      section.x = {};
+    }
+    section.x.collapsed = !section.x.collapsed;
+  }
+
   // childPreItem:any = {};
   editChildData: any;
   editChildItems: any;

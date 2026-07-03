@@ -1205,38 +1205,32 @@
                         placeholder="ie: Save Item">
                     </div>
                   </div>
-
-                  <!-- @if (['approval-list','list'].indexOf(editSectionData?.type)>-1) { -->
-                    <div class="col-sm-6">
-                      <div class="form-group mb-3" [class.element]="!editSectionCode">
-                        <label class="form-label">Section Key *</label>
-                        <input type="text" class="form-control element-item"
-                          [ngModel]="editSectionData.code" name="code"                          
-                          (ngModelChange)="editSectionData.code=toSnakeCase($event)"
-                          placeholder="ie: personal_info" [readonly]="!editSectionCode" required>
-                        @if (!editSectionCode) {
-                          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
-                            style="position:absolute;top:10px;right:10px;"
-                            (click)="editSectionCode=true">
-                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                          </button>
-                        }@else {
-                          <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
-                            style="position:absolute;top:10px;right:10px;"
-                            (click)="editSectionCode=false">
-                            <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
-                          </button>
-                        }
-                        @if (itemExist(editSectionData)) {
-                          <small class="text-danger blink_me">Code already used by <strong>{{codeList[editSectionData.code]?.text}}</strong>! Please edit</small>
-                        }
-                      </div>
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3" [class.element]="!editSectionCode">
+                      <label class="form-label">Section Key *</label>
+                      <input type="text" class="form-control element-item"
+                        [ngModel]="editSectionData.code" name="code"                          
+                        (ngModelChange)="editSectionData.code=toSnakeCase($event)"
+                        placeholder="ie: personal_info" [readonly]="!editSectionCode" required>
+                      @if (!editSectionCode) {
+                        <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                          style="position:absolute;top:10px;right:10px;"
+                          (click)="editSectionCode=true">
+                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }@else {
+                        <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
+                          style="position:absolute;top:10px;right:10px;"
+                          (click)="editSectionCode=false">
+                          <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
+                        </button>
+                      }
+                      @if (itemExist(editSectionData)) {
+                        <small class="text-danger blink_me">Code already used by <strong>{{codeList[editSectionData.code]?.text}}</strong>! Please edit</small>
+                      }
                     </div>
-                  <!-- } -->
-
+                  </div>
                 </div>
-              <!-- }
-              @if (editSectionData.type=='list') { -->
                 <div class="form-check form-switch">
                   <input type="checkbox" class="form-check-input"
                     [(ngModel)]="editSectionData.orderable" name="orderable"
@@ -1381,7 +1375,23 @@
                     </div>
                   </div>
                 }
-              }
+              }              
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input"
+                  [(ngModel)]="editSectionData.x.collapsible" name="collapsible"
+                  id="collapsible">
+                <label class="form-check-label" for="collapsible">Collapsible section</label>
+              </div>
+              @if (editSectionData.x.collapsible){
+                  <div class="ms-4">
+                    <div class="form-check mb-3 mt-2">
+                      <input type="checkbox" class="form-check-input"
+                        [(ngModel)]="editSectionData.x.collapsed" name="collapsed"
+                        id="collapsed">
+                      <label class="form-check-label" for="collapsed">Initially collapsed</label>
+                    </div>
+                  </div>
+                }
               @if (['tabs','accordions','pills','underline'].indexOf(curForm.nav)>-1) {
                 <div class="form-group mt-3 mb-3">
                   <label class="form-label">Parent (Tab/Accordion)</label>
