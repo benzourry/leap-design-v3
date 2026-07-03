@@ -302,7 +302,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
                 this.watchListSection[s.code].set(item.code, field.f)
               }
               if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-                let extracted: any = extractVariables(["$"], field.x?.rcognaTpl)
+                let extracted: any = extractVariables(["$"], field.x?.rcognaTpl);
                 this.reactiveCognaList[item.code] = { sources: extracted?.$, data: this.entry?.data?.[s.code] };
               }
             });

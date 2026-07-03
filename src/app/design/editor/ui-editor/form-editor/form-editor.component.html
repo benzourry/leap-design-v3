@@ -213,7 +213,9 @@
                                           <fa-icon [icon]="e.icon|iconSplit"
                                           [fixedWidth]="true"></fa-icon>
                                         }
-                                        {{e.title}}
+                                        {{e.title}} @if(e.type=='list' && e.x?.required){
+                                          <span>*</span>
+                                        }
                                         <span class="float-end">
                                           @if (e.type=='list') {
                                             <fa-icon [icon]="['fas','sitemap']"
@@ -1253,6 +1255,12 @@
                     [(ngModel)]="editSectionData.x.sticky" name="sticky"
                     id="sticky">
                   <label class="form-check-label" for="sticky">Prevent removal of child data</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input"
+                    [(ngModel)]="editSectionData.x.required" name="required"
+                    id="required">
+                  <label class="form-check-label" for="required">Required section</label>
                 </div>
                 <div class="form-check form-switch" [class.disabled]="editSectionData.inline">
                   <input type="checkbox" class="form-check-input"
@@ -3027,7 +3035,7 @@
                   @if(editItemData.x?.rtxtcls){
                     <div class="form-group mb-3">
                       <label class="form-label">Text to classify (support template) *</label>
-                      <app-cm name="rtxtclsTpl" lang="javascript"
+                      <app-cm name="rtxtclsTpl" lang="html"
                           [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
                           subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
                       </app-cm>

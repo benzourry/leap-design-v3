@@ -350,7 +350,8 @@
                       <div [class]="e.size||'col-sm-12'"
                         [class.disabled]="e.enabledFor&&e.enabledFor.indexOf(user().email)==-1"
                         [hidden]="e.hidden||(e.x?.facet?.[_action]=='hidden')">
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]">
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]"
+                          #sForm="ngModelGroup" [ngModelGroup]="'section'+e.id">
                           @if (!e.hideHeader) {
                             <div class="card-header p-3 bordered">
                               <h6 class="card-title m-0">
@@ -380,12 +381,18 @@
                                     </div>
                                   }
                                   <span class="badge badge-pill bg-dark">{{entry?.data[e.code]?.length}}</span>    
+                                  @if (sForm.invalid) {
+                                    <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
+                                    title="This section is required"></fa-icon>
+                                  }
                                 </div>      
 
                                 @if (e.icon) {
                                   <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                 }
-                                {{e.title}}
+                                {{e.title}} @if(e.x?.required){
+                                  <span>*</span>
+                                }
                               </h6>
                               @if (e.description) {
                                 <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
@@ -678,16 +685,31 @@
                                   <span>Tiada data tersedia. Untuk menambah
                                   {{e.title}}, klik butang <i>{{e.addLabel||'Add'}}</i> di bawah</span>
                                 } @else {
-                                  No data available.
-                                  @if (!e.maxChild || entry?.data[e.code]?.length<e.maxChild) {
-                                    <span>
-                                      To add new {{e.title}}, click
-                                      <i>{{e.addLabel||'Add'}}</i> button below
-                                    </span>
-                                  }
+                                  <span>No data available. To add new 
+                                  {{e.title}}, click <i>{{e.addLabel||'Add'}}</i> button below</span>
                                 }
+
+                                <!-- @if (sForm.invalid) {
+                                  @if(lang()=='ms'){                                    
+                                    <div class="text-danger mt-2">
+                                      <fa-icon [icon]="['fas','exclamation-triangle']"
+                                      title="This section is required"></fa-icon> 
+                                      Sila lengkapkan bahagian ini
+                                    </div>
+                                  }@else{                                    
+                                    <div class="text-danger mt-2">
+                                      <fa-icon [icon]="['fas','exclamation-triangle']"
+                                      title="This section is required"></fa-icon> 
+                                      Please complete this section
+                                    </div>
+                                  }
+                                } -->
                               </p>
                             </div>
+                            <!--Hidden input for required validation-->
+                            @if (e.x?.required) {
+                              <input type="hidden" name="fn-{{e.code}}-section" id="section-{{e.code}}" ngModel [required]="true" />
+                            }
                           } 
                           <!-- Problem no add button if section facet == view. section view should just affect field state, not ability to add -->
                           @if (!e.maxChild || entry?.data[e.code]?.length < e.maxChild) {

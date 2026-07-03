@@ -414,116 +414,33 @@ export class ListComponent implements OnInit, OnDestroy {
           this.changed.emit(res);
         } catch (e) {}
 
-        const totalField = {};
-        const avgField = {};
-        const uniqueMap = {};
+        const totalField: any = {};
+        const avgField: any = {};
 
-        // Process dataset items
+        // Process dataset items to map which fields need math aggregations
         dataset.items?.forEach(i => {
           const key = `${i.root}.${i.code}`;
-          const isTotal = !!i.x?.showTotal;
-          const isAvg = !!i.x?.showAvg;
-
-          if (isTotal) totalField[key]= i;
-          if (isAvg) avgField[key] = i;
-
-          if (isTotal || isAvg) uniqueMap[key] = i;
+          if (i.x?.showTotal) totalField[key] = i;
+          if (i.x?.showAvg) avgField[key] = i;
         });
 
         this.aggColumnTotalField = totalField;
         this.aggColumnAvgField = avgField;
-        // Inside getEntryList after you populate the objects:
         this.hasAggColumn = Object.keys(totalField).length > 0 || Object.keys(avgField).length > 0;
-        const mathField:any = Object.values(uniqueMap);
 
-        this.aggColumnTotalValue = {};
-        this.aggColumnAvgValue = {};
-
-        // Hoist static values outside the loop for performance
-        const scopeId = this.scopeId();
-        const rowClassTemplate = dataset.x?.rowClass ?? '';
-
-        // Process entry rows
+        // Process entry rows (visibility, styles, values)
         content.forEach((e, index) => {
           this.entryIndex[e.id] = index;
           
-          this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
-
-
-          // NEW TO PRE-CALC VALUES
-          e._isVisible = {};
-          e._computedValues = {};
-          e._actionVisible = {}; // 👇 Add this new dictionary!
-
-          // Pre-calculate Inline Actions
-          this.actionsInline.forEach(ac => {
-            e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
-          });
-
-          // Pre-calculate Dropdown Actions
-          this.actionsDropdown.forEach(ac => {
-            e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
-          });
-
-          dataset.items?.forEach(item => {
-            // 👇 Create a unique key to prevent data/prev collisions
-            const uniqueKey = `${item.root}.${item.code}`;
-
-            // 1. Pre-calculate visibility using the unique key
-            e._isVisible[uniqueKey] = this.preCheck(e, item.pre, false);
-
-            // 2. Determine the correct field and data root
-            const isBaseRoot = ['data', 'prev'].indexOf(item.root) > -1;
-            const fField = isBaseRoot 
-              ? this.form()[item.root]?.items[item.code] 
-              : this.form().data?.items[item.code];
-            
-            const rootData = isBaseRoot 
-              ? e[item.root] 
-              : e.approval?.[item.root]?.data;
-
-            // 3. Pre-calculate the display value using the unique key
-            e._computedValues[uniqueKey] = this.getVal(fField, e, rootData);
-            
-            // (Optional) Child list logic with unique keys
-            if (item.type == 'list' && e[item.root]?.[item.code]) {
-              e[item.root][item.code].forEach(ch => {
-                ch._computedValues = {};
-                item.subs?.forEach(fq => {
-                  const chUniqueKey = `${item.root}.${fq.code}`; // unique key for child
-                  const chField = this.form()[item.root]?.items[fq.code];
-                  ch._computedValues[chUniqueKey] = this.getVal(chField, e, ch);
-                });
-              });
-            }
-          });
-          // END CALC
-
-          // Process math fields dynamically (O(1) branchless access)
-          mathField.forEach(element => {
-            const key = `${element.root}.${element.code}`;
-            
-            // 1. Determine where the data lives (branchless-style conditional)
-            const isBaseRoot = element.root === 'data' || element.root === 'prev';
-            const rootData = isBaseRoot ? e[element.root] : e.approval?.[element.root]?.data;
-            
-            // 2. Perform the math operation once
-            const value = rootData ? Number(rootData[element.code] || 0) : 0;
-            this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + value;
-          });
-
+          // Execute all pre-calculations for this specific row
+          this.calculateRowMetadata(e);
         });
         
+        // Update the main list signal
         this.entryList.set(content);
 
-        // Calculate averages only if we have rows
-        if (contentLength > 0) {
-          for (const code in this.aggColumnAvgField) {
-            const element = this.aggColumnAvgField[code];
-            const key = `${element.root}.${element.code}`; // Or `${element.root}.${code}`            
-            this.aggColumnAvgValue[key] = this.aggColumnTotalValue[key] / contentLength;
-          }
-        }
+        // Calculate math (totals/averages) once all rows are processed
+        this.calculateAggregations();
 
       }, 
       error: err => {
@@ -531,6 +448,269 @@ export class ListComponent implements OnInit, OnDestroy {
         this.itemLoading.set(false);
       }
     });
+  }
+
+  // getEntryListOld(pageNumber: number, sort?: any) {
+  //   const dataset = this.dataset();
+    
+  //   // Guard clauses for early exit
+  //   if (!dataset) return;
+  //   if (!dataset.id) return; 
+
+  //   this.sort.set(sort);
+  //   this.itemLoading.set(true);
+
+  //   // Use spread syntax for cleaner merging
+  //   const filtersAll = { ...this.filtersData(), ...this._param };
+
+  //   const params: any = {
+  //     email: this.user()?.email,
+  //     searchText: this.searchText(),
+  //     filters: JSON.stringify(filtersAll),
+  //     page: pageNumber - 1,
+  //     size: this.pageSize(),
+  //     ...this._pre({}, dataset.x?.initParam, false),
+  //     '@cond': this.filtersCond
+  //   };
+
+  //   if (this.sort()) {
+  //     params['sorts'] = this.sort();
+  //   }
+
+  //   // Handle $conf$ via single pass loop over entries
+  //   if (dataset.presetFilters) {
+  //     const scopeId = this.scopeId();
+  //     for (const [k, v] of Object.entries(dataset.presetFilters)) {
+  //       if (String(v).includes("$conf$")) {
+  //         params[k] = compileTpl((v as string) ?? '', {}, scopeId);
+  //       }
+  //     }
+  //   }
+
+  //   this.entryService.getListByDataset(dataset.id, params).subscribe({
+  //     next: res => {
+  //       if (this.destroyed) return;
+
+  //       const content = res.content || [];
+  //       const contentLength = content.length;
+
+  //       // Batch set signals
+  //       this.rawList.set(res);
+  //       this.entryTotal.set(res.page?.totalElements);
+  //       this.pageSize.set(res.page?.size || this.pageSize());
+  //       this.itemLoading.set(false);
+  //       this.numberOfElements.set(contentLength);
+  //       this.entryPages.set(res.page?.totalPages);
+
+  //       try {
+  //         this.changed.emit(res);
+  //       } catch (e) {}
+
+  //       const totalField = {};
+  //       const avgField = {};
+  //       const uniqueMap = {};
+
+  //       // Process dataset items
+  //       dataset.items?.forEach(i => {
+  //         const key = `${i.root}.${i.code}`;
+  //         const isTotal = !!i.x?.showTotal;
+  //         const isAvg = !!i.x?.showAvg;
+
+  //         if (isTotal) totalField[key]= i;
+  //         if (isAvg) avgField[key] = i;
+
+  //         if (isTotal || isAvg) uniqueMap[key] = i;
+  //       });
+
+  //       this.aggColumnTotalField = totalField;
+  //       this.aggColumnAvgField = avgField;
+  //       // Inside getEntryList after you populate the objects:
+  //       this.hasAggColumn = Object.keys(totalField).length > 0 || Object.keys(avgField).length > 0;
+  //       const mathField:any = Object.values(uniqueMap);
+
+  //       this.aggColumnTotalValue = {};
+  //       this.aggColumnAvgValue = {};
+
+  //       // Hoist static values outside the loop for performance
+  //       const scopeId = this.scopeId();
+  //       const rowClassTemplate = dataset.x?.rowClass ?? '';
+
+  //       // Process entry rows
+  //       content.forEach((e, index) => {
+  //         this.entryIndex[e.id] = index;
+          
+  //         this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
+
+
+  //         this.calculateRowMetadata(e);
+  //         // // NEW TO PRE-CALC VALUES
+  //         // e._isVisible = {};
+  //         // e._computedValues = {};
+  //         // e._actionVisible = {}; // 👇 Add this new dictionary!
+
+  //         // // Pre-calculate Inline Actions
+  //         // this.actionsInline.forEach(ac => {
+  //         //   e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+  //         // });
+
+  //         // // Pre-calculate Dropdown Actions
+  //         // this.actionsDropdown.forEach(ac => {
+  //         //   e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+  //         // });
+
+  //         // dataset.items?.forEach(item => {
+  //         //   // 👇 Create a unique key to prevent data/prev collisions
+  //         //   const uniqueKey = `${item.root}.${item.code}`;
+
+  //         //   // 1. Pre-calculate visibility using the unique key
+  //         //   e._isVisible[uniqueKey] = this.preCheck(e, item.pre, false);
+
+  //         //   // 2. Determine the correct field and data root
+  //         //   const isBaseRoot = ['data', 'prev'].indexOf(item.root) > -1;
+  //         //   const fField = isBaseRoot 
+  //         //     ? this.form()[item.root]?.items[item.code] 
+  //         //     : this.form().data?.items[item.code];
+            
+  //         //   const rootData = isBaseRoot 
+  //         //     ? e[item.root] 
+  //         //     : e.approval?.[item.root]?.data;
+
+  //         //   // 3. Pre-calculate the display value using the unique key
+  //         //   e._computedValues[uniqueKey] = this.getVal(fField, e, rootData);
+            
+  //         //   // (Optional) Child list logic with unique keys
+  //         //   if (item.type == 'list' && e[item.root]?.[item.code]) {
+  //         //     e[item.root][item.code].forEach(ch => {
+  //         //       ch._computedValues = {};
+  //         //       item.subs?.forEach(fq => {
+  //         //         const chUniqueKey = `${item.root}.${fq.code}`; // unique key for child
+  //         //         const chField = this.form()[item.root]?.items[fq.code];
+  //         //         ch._computedValues[chUniqueKey] = this.getVal(chField, e, ch);
+  //         //       });
+  //         //     });
+  //         //   }
+  //         // });
+  //         // // END CALC
+
+  //         // Process math fields dynamically (O(1) branchless access)
+  //         mathField.forEach(element => {
+  //           const key = `${element.root}.${element.code}`;
+            
+  //           // 1. Determine where the data lives (branchless-style conditional)
+  //           const isBaseRoot = element.root === 'data' || element.root === 'prev';
+  //           const rootData = isBaseRoot ? e[element.root] : e.approval?.[element.root]?.data;
+            
+  //           // 2. Perform the math operation once
+  //           const value = rootData ? Number(rootData[element.code] || 0) : 0;
+  //           this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + value;
+  //         });
+
+  //       });
+        
+  //       this.entryList.set(content);
+
+  //       // Calculate averages only if we have rows
+  //       if (contentLength > 0) {
+  //         for (const code in this.aggColumnAvgField) {
+  //           const element = this.aggColumnAvgField[code];
+  //           const key = `${element.root}.${element.code}`; // Or `${element.root}.${code}`            
+  //           this.aggColumnAvgValue[key] = this.aggColumnTotalValue[key] / contentLength;
+  //         }
+  //       }
+
+  //     }, 
+  //     error: err => {
+  //       if (this.destroyed) return;
+  //       this.itemLoading.set(false);
+  //     }
+  //   });
+  // }
+
+  calculateRowMetadata(e: any) {
+    const dataset = this.dataset();
+    if (!dataset) return;
+    const scopeId = this.scopeId();
+
+    e._isVisible = {};
+    e._computedValues = {};
+    e._actionVisible = {};
+
+    // 1. Re-calculate dynamic row CSS classes
+    const rowClassTemplate = dataset.x?.rowClass ?? '';
+    this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
+
+    // 2. Pre-calculate Inline Actions
+    this.actionsInline.forEach(ac => {
+      e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+    });
+
+    // 3. Pre-calculate Dropdown Actions
+    this.actionsDropdown.forEach(ac => {
+      e._actionVisible[ac.id] = this.preCheck(e, ac.pre, false);
+    });
+
+    // 4. Pre-calculate Column Visibilities and Values
+    dataset.items?.forEach(item => {
+      const uniqueKey = `${item.root}.${item.code}`;
+
+      e._isVisible[uniqueKey] = this.preCheck(e, item.pre, false);
+
+      const isBaseRoot = ['data', 'prev'].indexOf(item.root) > -1;
+      const fField = isBaseRoot 
+        ? this.form()[item.root]?.items[item.code] 
+        : this.form().data?.items[item.code];
+      
+      const rootData = isBaseRoot 
+        ? e[item.root] 
+        : e.approval?.[item.root]?.data;
+
+      e._computedValues[uniqueKey] = this.getVal(fField, e, rootData);
+      
+      if (item.type == 'list' && e[item.root]?.[item.code]) {
+        e[item.root][item.code].forEach(ch => {
+          ch._computedValues = {};
+          item.subs?.forEach(fq => {
+            const chUniqueKey = `${item.root}.${fq.code}`;
+            const chField = this.form()[item.root]?.items[fq.code];
+            ch._computedValues[chUniqueKey] = this.getVal(chField, e, ch);
+          });
+        });
+      }
+    });
+  }
+
+  calculateAggregations() {
+    const list = this.entryList();
+    if (!list || list.length === 0 || !this.hasAggColumn) return;
+
+    // Combine unique fields that need math
+    const uniqueMap = { ...this.aggColumnTotalField, ...this.aggColumnAvgField };
+    const mathFields = Object.values(uniqueMap);
+
+    if (mathFields.length === 0) return;
+
+    // Reset totals
+    this.aggColumnTotalValue = {};
+    this.aggColumnAvgValue = {};
+
+    // 1. Recalculate Totals
+    list.forEach(e => {
+      mathFields.forEach((element: any) => {
+        const key = `${element.root}.${element.code}`;
+        const isBaseRoot = element.root === 'data' || element.root === 'prev';
+        const rootData = isBaseRoot ? e[element.root] : e.approval?.[element.root]?.data;
+        
+        const value = rootData ? Number(rootData[element.code] || 0) : 0;
+        this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + value;
+      });
+    });
+
+    // 2. Recalculate Averages
+    for (const code in this.aggColumnAvgField) {
+      const element = this.aggColumnAvgField[code];
+      const key = `${element.root}.${element.code}`;
+      this.aggColumnAvgValue[key] = this.aggColumnTotalValue[key] / list.length;
+    }
   }
 
   insertTextAtCursor(text) {
@@ -1117,6 +1297,14 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   $digest$ = () => {
+    // 1. Re-evaluate action and field visibility for all rows with the mutated data
+    const list = this.entryList();
+    if (list && list.length > 0) {
+      list.forEach(e => this.calculateRowMetadata(e));
+      
+      // 👇 ADD THIS LINE so column totals/averages update dynamically
+      this.calculateAggregations();
+    }
     this.cdr.detectChanges()
   }
 
