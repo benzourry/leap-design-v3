@@ -20,7 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { ActivatedRoute, NavigationEnd, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCollapse, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, NgStyle } from '@angular/common';
 import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.service';
 import { Title } from '@angular/platform-browser';
@@ -47,7 +47,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   templateUrl: './start.component.html',
   styleUrls: ['./start.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, 
+  imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgbCollapse,
     NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe]
 })
 export class StartComponent implements OnInit, OnDestroy {

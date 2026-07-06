@@ -211,35 +211,40 @@
                                     </div>
                                     <div class="element-item"
                                       [style.opacity.%]="e.hideHeader?'30':'100'">
-                                      <h6 class="m-0">
-                                        @if (e.icon) {
-                                          <fa-icon [icon]="e.icon|iconSplit"
-                                          [fixedWidth]="true"></fa-icon>
-                                        }
-                                        {{e.title}} @if(e.type=='list' && e.x?.required){
-                                          <span>*</span>
-                                        }
-                                        <span class="float-end">
-                                          @if (e.type=='list') {
-                                            <fa-icon [icon]="['fas','sitemap']"
-                                              [fixedWidth]="true">
-                                            </fa-icon>
-                                          }@else if (e.type=='approval') {
-                                            <fa-icon [icon]="['fas','window-restore']"
-                                              [fixedWidth]="true">
-                                            </fa-icon>
-                                          }@else if (e.type=='dataset') {
-                                            <fa-icon [icon]="['fas','th']"
-                                              [fixedWidth]="true">
-                                            </fa-icon>
-                                          }
-                                        </span>
-                                      </h6>
-                                      @if (e.description) {
-                                        <div class="card-text"
-                                          [innerHtml]="e.description">
-                                        </div>
+                                      @if (e.icon) {
+                                        <fa-icon [icon]="e.icon|iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
                                       }
+                                      <div [class.ms-4]="e.icon">
+                                        <h6 class="m-0">
+                                          <!-- @if (e.icon) {
+                                            <fa-icon [icon]="e.icon|iconSplit"
+                                            [fixedWidth]="true"></fa-icon>
+                                          } -->
+                                          {{e.title}} @if(e.type=='list' && e.x?.required){
+                                            <span>*</span>
+                                          }
+                                          <span class="float-end">
+                                            @if (e.type=='list') {
+                                              <fa-icon [icon]="['fas','sitemap']"
+                                                [fixedWidth]="true">
+                                              </fa-icon>
+                                            }@else if (e.type=='approval') {
+                                              <fa-icon [icon]="['fas','window-restore']"
+                                                [fixedWidth]="true">
+                                              </fa-icon>
+                                            }@else if (e.type=='dataset') {
+                                              <fa-icon [icon]="['fas','th']"
+                                                [fixedWidth]="true">
+                                              </fa-icon>
+                                            }
+                                          </span>
+                                        </h6>
+                                        @if (e.description) {
+                                          <div class="card-text"
+                                            [innerHtml]="e.description">
+                                          </div>
+                                        }
+                                      </div>
                                     </div>
                                     <div class="element-edit mt-1"
                                       style="position:absolute;top:5px;right:10px;">

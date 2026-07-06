@@ -195,27 +195,32 @@
                         [class.disabled]="e.enabledFor&&e.enabledFor.indexOf(user().email)==-1"
                         [hidden]="e.hidden || (e.x?.facet?.[_action]=='hidden')">
                         <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]"
+                          [class.no-hr]="e.x?.collapsed"
                           #sForm="ngModelGroup" [ngModelGroup]="'section'+e.id">
                           @if (!e.hideHeader) {
                             <div class="card-header p-3" [class.px-0]="e.x?.blankStyle"
                               (click)="e.x?.collapsible ? collapseSection(e) : null" 
                               [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
-                              <h6 class="card-title m-0">
+
                                 @if (e.icon) {
-                                  <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  <fa-icon [icon]="e.icon|iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
                                 }
-                                {{e.title}}
-                                @if (e.x?.collapsible) {
-                                  <fa-icon class="float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                                }
-                                @if (sForm.invalid) {
-                                  <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
-                                  title="Section contains fields with invalid input"></fa-icon>
-                                }
-                              </h6>
-                              @if (e.description) {
-                                <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
-                              }
+                                <div [class.ms-4]="e.icon">
+                                  <h6 class="card-title m-0">
+                                    
+                                    {{e.title}}
+                                    @if (e.x?.collapsible) {
+                                      <fa-icon class="float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                                    }
+                                    @if (sForm.invalid) {
+                                      <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
+                                      title="Section contains fields with invalid input"></fa-icon>
+                                    }
+                                  </h6>
+                                  @if (e.description) {
+                                    <div class="mb-0 mt-1 small" [innerHtml]="e.description"></div>
+                                  }
+                              </div>
                             </div>
                           }
                           <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
@@ -359,56 +364,60 @@
                         [class.disabled]="e.enabledFor&&e.enabledFor.indexOf(user().email)==-1"
                         [hidden]="e.hidden||(e.x?.facet?.[_action]=='hidden')">
                         <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]"
+                          [class.no-hr]="e.x?.collapsed"
                           #sForm="ngModelGroup" [ngModelGroup]="'section'+e.id">
                           @if (!e.hideHeader) {
                             <div class="card-header p-3 bordered" (click)="e.x?.collapsible ? collapseSection(e) : null" 
                               [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
-                              <h6 class="card-title m-0">
-                                <div class="float-end d-flex">
-                                  @if(e.x?.sortable){
-                                    <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort">
-                                      <div type="button" class="p-0 me-3 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}"
-                                        ngbDropdownToggle>
-                                        <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> {{sectionSort()[e.code]?.label}} ({{sectionSort()[e.code]?.dir??'asc'}})
-                                      </div>
-                                      <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
-                                        @for (f of e.items; track $index) {
-                                          @let field = form().items[f.code];
-                                          @if(field){
-                                            @if (['static','file','imagePreview','btn','dataset','screen','map'].indexOf(field.type)==-1){
-                                              <div class="d-flex" [class.def-sort-field]="sectionSort()[e.code]?.field==f.code" title="{{field.label}}" ngbDropdownItem >
-                                                <div class="me-3 text-truncate">{{field.label}} </div>
-                                                <div class="btn-group btn-group-xs ms-auto">
-                                                  <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir=='asc'" (click)="sortChild(e.code, f.code,field.label, 'asc')">ASC</button>
-                                                  <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir=='desc'" (click)="sortChild(e.code, f.code,field.label, 'desc')">DESC</button>
+                              @if (e.icon) {
+                                <fa-icon [icon]="e.icon|iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
+                              }
+                              <div [class.ms-4]="e.icon">
+
+                                <h6 class="card-title m-0">
+                                  <div class="float-end d-flex">
+                                    @if(e.x?.sortable){
+                                      <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort">
+                                        <div type="button" class="p-0 me-3 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}"
+                                          ngbDropdownToggle>
+                                          <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> {{sectionSort()[e.code]?.label}} ({{sectionSort()[e.code]?.dir??'asc'}})
+                                        </div>
+                                        <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
+                                          @for (f of e.items; track $index) {
+                                            @let field = form().items[f.code];
+                                            @if(field){
+                                              @if (['static','file','imagePreview','btn','dataset','screen','map'].indexOf(field.type)==-1){
+                                                <div class="d-flex" [class.def-sort-field]="sectionSort()[e.code]?.field==f.code" title="{{field.label}}" ngbDropdownItem >
+                                                  <div class="me-3 text-truncate">{{field.label}} </div>
+                                                  <div class="btn-group btn-group-xs ms-auto">
+                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir=='asc'" (click)="sortChild(e.code, f.code,field.label, 'asc')">ASC</button>
+                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir=='desc'" (click)="sortChild(e.code, f.code,field.label, 'desc')">DESC</button>
+                                                  </div>
                                                 </div>
-                                              </div>
+                                              }
                                             }
                                           }
-                                        }
+                                        </div>
                                       </div>
-                                    </div>
-                                  }
-                                  <span class="badge badge-pill bg-dark">{{entry?.data[e.code]?.length}}</span>    
-                                  @if (e.x?.collapsible) {
-                                    <fa-icon class="ms-1 float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                                  }
-                                  @if (sForm.invalid) {
-                                    <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
-                                    title="This section is required"></fa-icon>
-                                  }
-                                </div>      
+                                    }
+                                    <span class="badge badge-pill bg-dark">{{entry?.data[e.code]?.length}}</span>    
+                                    @if (e.x?.collapsible) {
+                                      <fa-icon class="ms-1 float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                                    }
+                                    @if (sForm.invalid) {
+                                      <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']"
+                                      title="This section is required"></fa-icon>
+                                    }
+                                  </div>      
 
-                                @if (e.icon) {
-                                  <fa-icon [icon]="e.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  {{e.title}} @if(e.x?.required){
+                                    <span>*</span>
+                                  }
+                                </h6>
+                                @if (e.description) {
+                                  <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
                                 }
-                                {{e.title}} @if(e.x?.required){
-                                  <span>*</span>
-                                }
-                              </h6>
-                              @if (e.description) {
-                                <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
-                              }
+                              </div>
                             </div>
                           }
 

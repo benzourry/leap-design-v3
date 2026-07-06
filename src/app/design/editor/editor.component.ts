@@ -31,7 +31,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
         '../../../assets/css/side-menu.css',
         '../../../assets/css/element-action.css',
         '../../../assets/css/tile.css', 
-        './editor.component.css'
+        './editor.component.scss'
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, FormsModule, NgbTypeahead,

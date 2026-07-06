@@ -25,6 +25,10 @@ body {
   overflow-x: hidden;
 }
 
+body:has(app-editor),body:has(app-design-home) {
+  background-color: #f5f5f5;
+}
+
 html, body {
   overscroll-behavior-y: contain;
 }

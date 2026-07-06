@@ -683,13 +683,37 @@ export class ScreenComponent implements OnInit, OnDestroy {
       }
 
       // 2. Define the popup function ONCE using the variables resolved above
-      pop[ac.id] = (entryId?: any) => {
-        // Resolve params lazily when the user actually clicks the popup
-        const params = requiresParam && !noParam 
-            ? { entryId: entryId ?? eId } 
-            : {};
+      // pop[ac.id] = (entryId?: any) => {
+      //   // Resolve params lazily when the user actually clicks the popup
+      //   const params = requiresParam && !noParam 
+      //       ? { entryId: entryId ?? eId } 
+      //       : {};
 
-        return this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
+      //   return this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
+      // };
+
+
+      // 2. Define the popup function ONCE using the variables resolved above
+      pop[ac.id] = (param?: any) => {
+        let params: any = {};
+        let targetEntryId = eId; // Default fallback
+
+        // If the passed parameter is an object, use it directly as the params
+        if (param !== null && typeof param === 'object' && !Array.isArray(param)) {
+          params = param;
+          targetEntryId = param.entryId ?? eId; // Extract entryId if it exists inside the object
+        } 
+        // If the passed parameter is a primitive (like a number or string)
+        else if (param !== undefined) {
+          targetEntryId = param;
+          params = requiresParam && !noParam ? { entryId: param } : {};
+        } 
+        // If no parameter is passed at all
+        else {
+          params = requiresParam && !noParam ? { entryId: eId } : {};
+        }
+
+        return this.inPop(this.inPopTpl(), targetEntryId, ac, type, facet, params);
       };
     });
 
@@ -710,12 +734,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.inPopFacet.set(facet);
     this.inPopFormId.set(action.next);
 
-    params = action.params ? this._pre(this.entry(), action.params, false) : {};
+    params = action.params ? this._pre(this.entry(), action.params, false) : params;
     // console.log("params", params);
 
     if (params) {
       params.entryId = entryId;
-      this.inPopParams = params;
+      this.inPopParams.set(params);
     }
 
     history.pushState(null, null, window.location.href);
@@ -1126,10 +1150,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
     } catch (e) { this.logService.log(`{list}-${e.message}`) }
     return !code || res;
   }
-
-  // modalClose(c) {
-  //   c();
-  // }
 
   getLookupInFilter() {
     this.dataset().filters.forEach(f => {
