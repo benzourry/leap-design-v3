@@ -268,7 +268,8 @@
                     }
                   </div> -->
               <div class="list-group list-group-flush">
-                @for(i of extractJsonObj|keyvalue; track $index){
+                @let jsonObj = extractJsonObj?.properties;
+                @for(i of jsonObj|keyvalue; track $index){
                 <div class="list-group-item p-2">
                   @if(['object','array'].includes(i.value?.type)){
                   <button type="button" class="btn btn-xs btn-light float-end"
@@ -279,7 +280,7 @@
                   @if(['object','array'].includes(i.value?.type)){
                   @if (nestedProp[i.key]){
                   <div class="small list-group mt-2">
-                    @for(j of (extractJsonObj[i.key]?.properties||extractJsonObj[i.key]?.items?.properties)|keyvalue;
+                    @for(j of (jsonObj[i.key]?.properties||jsonObj[i.key]?.items?.properties)|keyvalue;
                     track $index){
                     <div class="list-group-item p-2">
                       <div>{{j.key}}</div>
