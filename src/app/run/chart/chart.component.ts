@@ -650,10 +650,10 @@ export class ChartComponent implements OnInit {
           let status = parts[1];
 
           // Drop the tier filter completely for drafted/submitted to prevent NULL vs 0 database mismatches
-          if (['drafted', 'submitted'].includes(status.toLowerCase())) {
+          if (tier=='0') {
               this.inPopParams['$_.currentStatus'] = status;
           } else {
-              this.inPopParams['$_.currentTier'] = tier;
+              this.inPopParams['$_.currentTierId'] = tier;
               this.inPopParams['$_.currentStatus'] = status;
           }
       } else {

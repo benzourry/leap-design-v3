@@ -99,7 +99,7 @@
               <thead>
                 <tr>
                   @for (header of chartDataset()?.data[0]; track $index) {
-                    <th class="border-top-0 position-sticky sticky-top">{{header}}</th>
+                    <th class="border-top-0 position-sticky sticky-top" [class.text-end]="!$first">{{header}}</th>
                   }
                   @if (chartDataset()?._arow) {
                     <th class="bg-dark text-white position-sticky sticky-top text-end">{{chartDataset()?._arow[0]}}</th>
