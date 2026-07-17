@@ -734,13 +734,22 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.inPopFacet.set(facet);
     this.inPopFormId.set(action.next);
 
-    params = action.params ? this._pre(this.entry(), action.params, false) : params;
-    // console.log("params", params);
+    // 1. Resolve parameters without mutating
+    const resolvedParams = action.params ? this._pre(this.entry(), action.params, false) : params;
 
-    if (params) {
-      params.entryId = entryId;
-      this.inPopParams.set(params);
+    // 2. ✅ Only set inPopParams if resolvedParams is NOT null and NOT undefined
+    if (resolvedParams !== null && resolvedParams !== undefined) {
+      const finalParams = { ...resolvedParams, entryId: entryId };
+      this.inPopParams.set(finalParams);
     }
+
+    // params = action.params ? this._pre(this.entry(), action.params, false) : params;
+    // // console.log("params", params);
+
+    // if (params) {
+    //   params.entryId = entryId;
+    //   this.inPopParams.set(params);
+    // }
 
     history.pushState(null, null, window.location.href);
 
