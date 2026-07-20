@@ -739,22 +739,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   //       && !this.entry.currentEdit //tier ccurrently pending edit from user
   //     );
   // }
-  // checkTier(tier) {
-  //   const userEmail = this.user().email?.trim().toLowerCase();
-
-  //   return this.entry && this.entry.approver[tier.id]
-  //     && (
-  //       (tier.type == 'ALL' || this.entry.approver[tier.id]?.some(email => email?.trim().toLowerCase() === userEmail))
-  //       // check if this tier is current tier
-  //       && tier.sortOrder == this.entry.currentTier
-  //       // check if this tier is not decided with action curTier (ie:stop)
-  //       && (!this.entry.approval[tier.id] || tier.actions[this.entry.approval[tier.id].status]?.action != 'curTier' || ["submitted", "resubmitted"].indexOf(this.entry.currentStatus) > -1)
-  //       // check if current allow user edit
-  //       && !this.entry.currentEdit // tier currently pending edit from user
-  //     );
-  // }
-
-  checkTier(tier) {
+checkTier(tier) {
     const userEmail = this.user().email?.trim().toLowerCase();
     const approval = this.entry?.approval?.[tier.id];
 
@@ -762,10 +747,23 @@ export class ViewComponent implements OnInit, OnDestroy {
       this.entry?.approver?.[tier.id] &&
       !this.entry.currentEdit &&
       tier.sortOrder == this.entry.currentTier &&
-      (tier.type == 'ALL' || this.entry.approver[tier.id].some(email => email?.trim().toLowerCase() === userEmail)) &&
+      (tier.type == 'ALL' || this.entry.approver[tier.id].split(',').some(email => email.trim().toLowerCase() === userEmail)) &&
       (!approval || tier.actions?.[approval.status]?.action != 'curTier' || ["submitted", "resubmitted"].includes(this.entry.currentStatus))
     );
   }
+
+  // checkTier(tier) {
+  //   const userEmail = this.user().email?.trim().toLowerCase();
+  //   const approval = this.entry?.approval?.[tier.id];
+
+  //   return Boolean(
+  //     this.entry?.approver?.[tier.id] &&
+  //     !this.entry.currentEdit &&
+  //     tier.sortOrder == this.entry.currentTier &&
+  //     (tier.type == 'ALL' || this.entry.approver[tier.id].some(email => email?.trim().toLowerCase() === userEmail)) &&
+  //     (!approval || tier.actions?.[approval.status]?.action != 'curTier' || ["submitted", "resubmitted"].includes(this.entry.currentStatus))
+  //   );
+  // }
 
   cancelEntry() {
     this.entryService.cancel(this.entry.id, this.user().email)
