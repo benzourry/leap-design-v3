@@ -263,7 +263,8 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                           <div>Gas Used: {{result[kryptaId].gasUsed}}</div>
                         }@else if(result[kryptaId].type=='read'){ 
                           @if(result[kryptaId].result){
-                            <pre class="m-0"><code class="language-js" [innerHtml]="result[kryptaId].result"></code></pre>
+                            <json-viewer [json]="result[kryptaId].result"></json-viewer>
+                            <!-- <pre class="m-0"><code class="language-js" [innerHtml]="result[kryptaId].result"></code></pre> -->
                           }@else{
                             <div>No data returned.</div>
                           }

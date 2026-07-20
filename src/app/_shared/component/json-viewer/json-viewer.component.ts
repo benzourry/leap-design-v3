@@ -6,39 +6,53 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
   standalone: true,
   template: `
     <div class="json-root">
+      @if (isExpandable(json())) {
+        @for (key of getKeys(json()); track key) {
+          @let value = json()[key];
+          @let path = key;
 
-      @for (key of getKeys(json()); track key) {
-        @let value = json()[key];
-        @let path = key;
-
-        @if (isExpandable(value)) {
-          <div class="json-node">
-            <div class="toggle" (click)="toggle(path)">
-              <span class="arrow">{{ isExpanded(path) ? '⏷' : '⏵' }}</span>
-              <span class="json-key">"{{ key }}"</span>:
-              <span class="json-bracket">{{ isArray(value) ? '[...]' : '{...}' }}</span>
-            </div>
-            @if (isExpanded(path)) {
-              <div class="json-children">
-                <json-viewer [json]="value" [basePath]="path"></json-viewer>
+          @if (isExpandable(value)) {
+            <div class="json-node">
+              <div class="toggle" (click)="toggle(path)">
+                <span class="arrow">{{ isExpanded(path) ? '⏷' : '⏵' }}</span>
+                <span class="json-key">"{{ key }}"</span>:
+                <span class="json-bracket">{{ isArray(value) ? '[...]' : '{...}' }}</span>
               </div>
-            }
-          </div>
-        } @else {
-          <div class="json-leaf">
-            <span class="json-key">"{{ key }}"</span>:
+              @if (isExpanded(path)) {
+                <div class="json-children">
+                  <json-viewer [json]="value" [basePath]="path"></json-viewer>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="json-leaf">
+              <span class="json-key">"{{ key }}"</span>:
 
-            <span class="json-value" [ngClass]="{ 'string': isString(value) }">
-              {{ isFormatted(path) ? '"' + formatValue(value) + '"': (isString(value) ? '"' + value + '"' : value)}}
-            </span>
+              <span class="json-value" [class.string]="isString(value)">
+                {{ isFormatted(path) ? '"' + formatValue(value) + '"': (isString(value) ? '"' + value + '"' : value)}}
+              </span>
 
-            @if (isFormatCandidate(value)){
-              <button class="format-toggle" (click)="toggleFormat(path)" title="Toggle format">
-                🪄
-              </button>
-            }
-          </div>
+              @if (isFormatCandidate(value)){
+                <button class="format-toggle" (click)="toggleFormat(path)" title="Toggle format">
+                  🪄
+                </button>
+              }
+            </div>
+          }
         }
+      } @else {
+        <!-- ✅ ROOT PRIMITIVE FALLBACK: Mirrors leaf behavior for strings, numbers, and timestamps -->
+        <div class="json-primitive">
+          <span class="json-value" [class.string]="isString(json())">
+            {{ isFormatted(basePath() || 'root') ? '"' + formatValue(json()) + '"': (isString(json()) ? '"' + json() + '"' : json())}}
+          </span>
+
+          @if (isFormatCandidate(json())){
+            <button class="format-toggle" (click)="toggleFormat(basePath() || 'root')" title="Toggle format">
+              🪄
+            </button>
+          }
+        </div>
       }
     </div>
   `,
@@ -69,6 +83,8 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
 
     .json-value {
       color: navy; 
+      white-space: pre-wrap; /* Essential for your IP disclosure paragraphs */
+      word-break: break-word; /* Prevents long txHashes from overflowing */
     }
 
     .json-value.string {
@@ -79,8 +95,8 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
       color: gray;
     }
 
-    // .json-node, 
-    .json-leaf {
+    .json-leaf,
+    .json-primitive {
       margin-left: 1rem;
     }
 
@@ -97,6 +113,7 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
     .json-children {
       margin-left: 1.5rem;
     }
+    
     .format-toggle {
       margin-left: 4px;
       font-size: 11px;
@@ -116,7 +133,6 @@ export class JsonViewerComponent {
   readonly basePath: Signal<string> = input('');
 
   private formatted: WritableSignal<Record<string, boolean>> = signal({});
-
   private expanded: WritableSignal<Record<string, boolean>> = signal({});
 
   private getPath(key: string): string {
@@ -152,7 +168,8 @@ export class JsonViewerComponent {
   }
 
   getKeys(obj: any): string[] {
-    return obj ? Object.keys(obj) : [];
+    // Defensive check: only extract keys if it is truly an object or array
+    return obj && typeof obj === 'object' ? Object.keys(obj) : [];
   }
 
   isExpandable(value: any): boolean {
@@ -196,9 +213,8 @@ export class JsonViewerComponent {
   }
 
   formatValue(value: any): any {
-    // Example: Unix timestamp formatting
     if (this.isFormatCandidate(value)) {
-      const date = new Date(value); // assume seconds
+      const date = new Date(value);
       return date.toISOString();
     }
     return value;
