@@ -749,16 +749,42 @@
                   </button>
                 }
                 @if (!tablast) {
-                  <!-- {{(form().x?.progression && form().x?.validateProgress)}}|tForm?.invalid:{{tForm?.invalid}} | saving():{{saving()}} | disabledTabs:{{!disabledTabs()[filteredTabs()[tabidx+1]?.id]}}| dt:{{disabledTabs()|json}} -->
-                  <button type="button" class="btn btn-round btn-primary text-truncate ms-auto" title="Save and proceed"
-                    [disabled]="(form().x?.progression && form().x?.validateProgress) && tForm?.invalid || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]" (click)="progNext(tabidx)">
-                    <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                    @if (saving()) {
-                      <div class="spinner-border spinner-border-sm" role="status"></div>
-                    }
-                    {{filteredTabs()[tabidx+1]?.title}} 
-                    <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
-                  </button>
+
+                  @if (form().x?.splitSave) {
+                    <div class="d-flex gap-2 ms-auto">
+                      <!-- 1. Dedicated Save Button -->
+                      <button type="button" class="btn btn-round btn-primary text-truncate" title="Save"
+                        [disabled]="(form().x?.validateProgress && tForm?.invalid) || saving()" 
+                        (click)="saveOnly()">
+                        <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                        @if (saving()) {
+                          <div class="spinner-border spinner-border-sm" role="status"></div>
+                        }
+                        {{form()?.x?.saveLbl??(lang()=='ms'?'Simpan':'Save')}}
+                      </button>
+
+                      <!-- 2. Dedicated Next Button -->
+                      <button type="button" class="btn btn-round bg-white text-truncate" title="Proceed to next tab"
+                        [disabled]="(form().x?.validateProgress && tForm?.invalid) || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]" 
+                        (click)="progNext(tabidx)">
+                        {{filteredTabs()[tabidx+1]?.title}} 
+                        <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                    </div>
+                  } @else {
+                    <!-- Original Combined Button -->
+                    <button type="button" class="btn btn-round btn-primary text-truncate ms-auto" title="Save and proceed"
+                      [disabled]="(form().x?.progression && form().x?.validateProgress && tForm?.invalid) || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]" 
+                      (click)="progNext(tabidx)">
+                      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                      @if (saving()) {
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                      }
+                      {{filteredTabs()[tabidx+1]?.title}} 
+                      <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                  }
+
                 }@else {
                   <div class="ms-auto d-flex text-truncate">
                     @if (form().canSave) {

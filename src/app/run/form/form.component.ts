@@ -1053,8 +1053,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .subscribe({
         next: res => {
           this.saving.set(false);
-          this.tabPostAction(index - 1);
-          this.setActive(index - 1); // utk tukar tab
+          this.progTo(index - 1);
         },
         error: err => {
           this._handleSavingError(err);
@@ -1069,13 +1068,17 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .subscribe({
         next: res => {
           this.saving.set(false);
-          this.tabPostAction(index + 1);
-          this.setActive(index + 1); // utk tukar tab
+          this.progTo(index + 1);
         },
         error: err => {
           this._handleSavingError(err);
         }
       })
+  }
+
+  progTo(index) {
+    this.tabPostAction(index);
+    this.setActive(index); // utk tukar tab
   }
 
   _handleSavingError(err) {
@@ -1108,6 +1111,23 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
 
   }
+
+  saveOnly = () => {
+    this.saving.set(true);
+    this._save(this.form())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {  
+          this.toastService.show(this.lang() == 'ms' ? "Entry berjaya disimpan" : "Entry saved successfully", { classname: 'bg-success text-light' });
+          this.saving.set(false);
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          this._handleSavingError(err);
+        }
+      })
+  }
+
 
   save = () => {
     this.saving.set(true);
@@ -1158,13 +1178,10 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .pipe(
         tap({
           next: (e) => {
-            // this.entry.set(e);
             this.entry = e;
-            // this.timestamp = Date.now();
             this.filterItems();
 
             this.linkFiles(e);
-            // this.$digest$(); // this prevent ask navigate to be displayed!! NOT-WORKING. Actual reason for dirty is html keep-value
             this.entryForm().form.markAsPristine();
             this.cdr.detectChanges();
           }
@@ -1429,9 +1446,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     // this.preItem[section.code]={}
 
     // $index perlu diset awal supaya dlm template bleh pass sbg index_child
-    if (!this.editChildData['$index']) {
-      this.editChildData['$index'] = this.entry.data[section.code] ? this.entry.data[section.code].length : 0;
-    }
+    this.editChildData['$index'] ??= this.entry.data[section.code] ? this.entry.data[section.code].length : 0;
 
     this.filterChildItems(data, section);
 

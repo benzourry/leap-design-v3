@@ -226,6 +226,14 @@
                 <label class="form-check-label" for="noPageSkip">Prevent page jumping/skipping</label>
               </div>
               }
+              @if (['tabs','pills','underline','accordions'].includes(_editFormData.nav) &&
+              _editFormData.x?.progression) {
+              <div class="form-check mt-1 ms-4">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="_editFormData.x.splitSave"
+                  name="splitSave" id="splitSave">
+                <label class="form-check-label" for="splitSave">Split Save and Next button</label>
+              </div>
+              }
               <div class="form-check form-switch mt-1">
                 <input type="checkbox" class="form-check-input" [(ngModel)]="_editFormData.validateSave"
                   name="validateSave" id="validateSave">
