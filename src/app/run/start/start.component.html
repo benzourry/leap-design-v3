@@ -176,9 +176,17 @@
                                     [routerLinkActiveOptions]="{ exact: isExactMatch }"
                                     [class.disabled]="offline() || naviDataItem?.inactive"
                                     (click)="hideSb()" 
-                                    routerLinkActive="active">
+                                    routerLinkActive="active"
+                                    class="position-relative" 
+                                    style="padding-right: 42px;">
                                     <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
+
+                                    @if (badge()[item.screenId]!==undefined) {
+                                      <span class="badge position-absolute fw-bold">
+                                        {{ badge()[item.screenId] }}
+                                      </span>
+                                    }
                                   </a>
                                 }
                               </div>

@@ -23,7 +23,13 @@
   position: relative;
 }
 .menu .badge {
-  margin-top: 3px;
+  top: 12px; right: 15px; 
+  background-color: rgba(255, 255, 255, 0.5); 
+  color: #000000; 
+  mix-blend-mode: screen; 
+  border-radius: 6px; 
+  font-size: 11px; 
+  padding: 3px 5px;
 }
 .menu a fa-icon {
   color: rgba(255, 255, 255, 0.5);
@@ -35,16 +41,16 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-.menu a.active::after {
-  content: "";
-  position: absolute;
-  right: 20px;
-  top: 12px;
-  width: 10px;
-  height: 10px;
-  background: rgba(255,255,255,0.5);
-  border-radius: 10px;
-}
+// .menu a.active::after {
+//   content: "";
+//   position: absolute;
+//   right: 20px;
+//   top: 12px;
+//   width: 10px;
+//   height: 10px;
+//   background: rgba(255,255,255,0.5);
+//   border-radius: 10px;
+// }
 
 .menu .menu-heading {
   font-size: 0.9rem; 
@@ -304,6 +310,12 @@
     /* float: left; */
     display: inline-block;
     position: relative;
+  }
+
+  .topnav .menu .badge {
+    background-color: rgba(0, 0, 0, 0.5); 
+    color: #fff; 
+    mix-blend-mode: unset; 
   }
 
   .topnav .menu a {
