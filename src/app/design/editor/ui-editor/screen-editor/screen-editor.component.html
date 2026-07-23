@@ -773,7 +773,24 @@
                                     </a>
                                   </div>
                                 </div>
-                              </div>                            
+                              </div>   
+                              
+                              <div class="form-group mt-3">
+                                <label class="form-label">Show count badge from</label>
+                                <select class="form-select" name="title"
+                                  [(ngModel)]="curScreen.data.badgeFrom">
+                                  <option [ngValue]="undefined">Do not show count badge</option>
+                                  @for (item of curScreen.data?.comps; track $index) {
+                                    @if (item?.type=='dataset' && item?.screenId) {
+                                      <option
+                                        [ngValue]="item.screenId">
+                                        {{item.title}} / {{item.type}} / {{item?.screenId}}
+                                      </option>
+                                    }
+                                  }
+                                </select>
+                              </div>
+
                             </div>
                           }
                           @if (['bucket'].indexOf(curScreen.type)>-1){                    
@@ -1212,14 +1229,13 @@
             </div>
           }
 
-          <!-- @if (editActionData.nextType && curScreen.type=='calendar'){
+          @if (editActionData.nextType && curScreen.type=='calendar'){
             <div class="form-check form-switch mb-1">
               <input class="form-check-input" type="checkbox" id="inpop"
-                [(ngModel)]="editActionData.inpop" name="inpop">
+                [(ngModel)]="editActionData.x.inpop" name="inpop">
               <label class="form-check-label" for="inpop">Open in Modal Dialog</label>
             </div>
-          } -->
-
+          }
         }
 
 

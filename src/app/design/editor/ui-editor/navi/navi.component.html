@@ -569,11 +569,18 @@
                   <label class="form-check-label" for="slc">Skip Location Change (hide URL change in address bar)</label>
                 </div>
               </div>
-              <div class="form-group mb-3">
+              <div class="form-group">
                 <div class="form-check">
                   <input type="checkbox" class="form-check-input" id="hideDesc"
                     [(ngModel)]="editItemData.x.hideDesc" name="hideDesc">
                   <label class="form-check-label" for="hideDesc">Hide description in Tiles page</label>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="menuBadge"
+                    [(ngModel)]="editItemData.x.menuBadge" name="menuBadge">
+                  <label class="form-check-label" for="menuBadge">Show Count Badge in Sidebar/Topnav</label>
                 </div>
               </div>
               <div class="form-group mb-3">

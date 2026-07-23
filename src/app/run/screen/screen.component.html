@@ -362,7 +362,7 @@
     }
   </div>
 }
-<ng-template #showOptTpl let-c="close" let-d="dismiss">
+<!-- <ng-template #showOptTpl let-c="close" let-d="dismiss">
   <div class="modal-body d-flex">
     <div class="d-flex justify-content-center flex-column align-items-center m-a">
       <div class="d-flex flex-column">
@@ -370,6 +370,33 @@
         @for (action of actionLinks(); track $index) {
           <a [routerLink]="action.url" [queryParams]="action.param"
           class="btn btn-secondary m-1 rounded-pill border-2" (click)="d(action.url)">{{action.label}}</a>
+        }
+      </div>
+    </div>
+  </div>
+</ng-template> -->
+
+<ng-template #showOptTpl let-c="close" let-d="dismiss">
+  <div class="modal-body d-flex">
+    <div class="d-flex justify-content-center flex-column align-items-center m-a">
+      <div class="d-flex flex-column">
+        <div class="py-3 text-center text-muted" style="font-weight: 1.2em;">{{lang()=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
+        @for (action of actionLinks(); track $index) {
+          
+          @if (action.inpop && popObj[action.action.id]) {
+            <!-- Trigger Popup directly -->
+            <button type="button" class="btn btn-secondary m-1 rounded-pill border-2" 
+              (click)="d(); popObj[action.action.id](action.param)">
+              {{action.label}}
+            </button>
+          } @else {
+            <!-- Fallback to standard anchor tag for absolute navigation -->
+            <a [href]="goObj[action.action.id] ? goObj[action.action.id] + (goObj[action.action.id].includes('?') ? '&' : '?') + 'entryId=' + action.param.entryId : action.url" 
+              class="btn btn-secondary m-1 rounded-pill border-2" 
+              (click)="d()">
+              {{action.label}}
+            </a>
+          }
         }
       </div>
     </div>

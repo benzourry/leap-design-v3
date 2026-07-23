@@ -1019,6 +1019,37 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   calOptions: any;
 
+  // eventClick(info) {
+  //   var event = info.event;
+  //   if (event?.id) {
+  //     var actions = this.screen()?.actions;
+  //     if (actions?.length > 0) {
+  //       this.actionLinks.set([]);
+  //       let actionLinks = [];
+  //       actions.forEach(action => {
+  //         let url = this.goObj[action.id]?.replace("#", "");
+  //         let param = action.params ? JSON.parse(action.params.replace("$code$", event?.id)) : {};
+  //         param.entryId = event?.id;
+  //         actionLinks.push({ url: url, param: param, label: action.label });
+  //       })
+  //       this.actionLinks.set(actionLinks);
+
+  //       if (actionLinks.length == 0) {
+  //         this.router.navigate([`${this.preurl}`, 'form', this.screen()?.dataset?.form?.id, 'view'], { queryParams: { entryId: event?.id } })
+  //       } else if (actionLinks.length == 1) {
+  //         // if only 1 action, immediately navigate
+  //         this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param })
+  //       } else {
+  //         // if more than 1, show options
+  //         this.showActionOptions()
+  //       }
+  //     } else {
+  //       this.toastService.show("No action specified for calendar");
+  //     }
+  //   }
+  // }
+
+
   eventClick(info) {
     var event = info.event;
     if (event?.id) {
@@ -1026,19 +1057,43 @@ export class ScreenComponent implements OnInit, OnDestroy {
       if (actions?.length > 0) {
         this.actionLinks.set([]);
         let actionLinks = [];
+        
         actions.forEach(action => {
           let url = this.goObj[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", event?.id)) : {};
           param.entryId = event?.id;
-          actionLinks.push({ url: url, param: param, label: action.label });
+          
+          // Added 'action' and 'inpop' flag to the array so we can reference them when clicked
+          actionLinks.push({ 
+            action: action,
+            inpop: action.x?.inpop,
+            url: url, 
+            param: param, 
+            label: action.label 
+          });
         })
         this.actionLinks.set(actionLinks);
 
         if (actionLinks.length == 0) {
           this.router.navigate([`${this.preurl}`, 'form', this.screen()?.dataset?.form?.id, 'view'], { queryParams: { entryId: event?.id } })
         } else if (actionLinks.length == 1) {
-          // if only 1 action, immediately navigate
-          this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param })
+          // If only 1 action, decide whether to open a popup or navigate based on inpop
+          let link = actionLinks[0];
+          
+          if (link.inpop && this.popObj[link.action.id]) {
+            // 1. Open via Popup using popObj
+            this.popObj[link.action.id](link.param);
+          } else if (this.goObj[link.action.id]) {
+            // 2. Navigate via goObj directly (bypassing router.navigate)
+            let queryParams = new URLSearchParams(link.param).toString();
+            let goUrl = this.goObj[link.action.id];
+            
+            // Append parameters securely handling whether a '?' already exists
+            window.location.href = goUrl + (goUrl.includes('?') ? '&' : '?') + queryParams;
+          } else {
+            // Fallback just in case goObj fails to generate
+            this.router.navigate([link.url], { queryParams: link.param });
+          }
         } else {
           // if more than 1, show options
           this.showActionOptions()

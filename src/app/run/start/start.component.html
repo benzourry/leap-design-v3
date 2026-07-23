@@ -182,9 +182,9 @@
                                     <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     <div class="menu-text">{{item.title}}</div>
 
-                                    @if (badge()[item.screenId]!==undefined) {
+                                    @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
                                       <span class="badge position-absolute fw-bold">
-                                        {{ badge()[item.screenId] }}
+                                        {{ badge()[item.type + '_' + item.screenId] }}
                                       </span>
                                     }
                                   </a>

@@ -114,7 +114,7 @@
   padding:3px;
   margin-left:-3px;
   border-radius:24px;  
-  max-width: 260px;
+  max-width: 270px;
   transition: all 350ms ease-in-out;
 }
 // .app-user:focus{
@@ -154,9 +154,9 @@
   position: fixed;
   bottom: 0px;
   top: 0px;
-  left: -260px;
+  left: -270px;
   z-index: 998;
-  width: 260px;
+  width: 270px;
   transition: left 250ms ease-in-out;
   overflow-y: auto;
   height: 100%;
@@ -228,7 +228,7 @@
   }
 
   .sidemenu .app-nav {
-    max-width: 260px;
+    max-width: 270px;
     overflow: auto;
     /* border-right: solid 1px #ddd; */
   }
@@ -275,7 +275,7 @@
   }
   .topnav .app-user:hover,
   .topnav .app-user:active{
-    width: 260px;
+    width: 270px;
   }
 
   .topnav .app-nav {

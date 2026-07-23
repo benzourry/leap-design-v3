@@ -27,12 +27,15 @@
     </span>
   }
 
-  @if (item.type === 'dataset' && badge() && badge()[item.screenId]) {
+  @if (badge()?.[item.type + '_' + item.screenId]) {
+    <div class="badge">{{badge()[item.type + '_' + item.screenId]}}</div>
+  }
+  <!-- @if (item.type === 'dataset' && badge() && badge()[item.screenId]) {
     <div class="badge">{{badge()[item.screenId]}}</div>
   }
   @if (item.type === 'screen' && badge() && badge()['screen_' + item.screenId]) {
     <div class="badge">{{badge()['screen_' + item.screenId]}}</div>
-  }
+  } -->
 </ng-template>
 
 <div class="single-content">
@@ -147,7 +150,6 @@
                           </a>
                         }
                       }
-
                     }
                   }
                 </div>
