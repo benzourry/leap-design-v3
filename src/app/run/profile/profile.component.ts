@@ -79,6 +79,7 @@ export class ProfileComponent implements OnInit {
   user = computed<any>(() => this.runService.$user());
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
 
   ngOnInit() {
     this.swPush.subscription

@@ -214,10 +214,10 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           @if (validateDate(value())) {
             <span>
               @if (['datetime', 'datetime-inline', 'date', 'date-inline'].includes(field().subType)) {
-                <span>{{ value() | date:(field()?.format || 'dd-MMM-yyyy') }}</span>
+                <span>{{value()|date:(field()?.format || 'dd-MMM-yyyy'):'':angularLocale()}}</span>
               }
               @if (['datetime', 'datetime-inline', 'time'].includes(field().subType) && !field()?.format) {
-                <span> {{ value() | date:'hh:mm' + (field().x?.seconds ? ':ss' : '') + ' a' }}</span>
+                <span> {{value()|date:'hh:mm' + (field().x?.seconds ? ':ss' : '') + ' a':'':angularLocale()}}</span>
               }
             </span>
           } @else {
@@ -421,6 +421,7 @@ export class FieldViewComponent implements OnInit {
   data = input<any>();
   scopeId = input<any>();
   lang = input<string>('en');
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   timestamp = input<number>();
 
   isReadMore = signal<boolean>(false);

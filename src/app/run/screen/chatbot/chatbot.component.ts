@@ -46,6 +46,7 @@ export class ChatbotComponent implements OnInit {
   screen = input<any>();
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   user = computed<any>(() => this.runService.$user());
   cogna: any;
   compileTplData = input<any>();

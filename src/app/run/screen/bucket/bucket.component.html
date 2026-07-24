@@ -120,7 +120,7 @@
                             {{bucketFile.fileUrl}}
                             }
                           </div>
-                          <div>{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}: {{bucketFile.timestamp|date:'medium'}}</div>
+                          <div>{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}: {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</div>
                           <div>{{lang()=='ms'?'Saiz Fail':'File size'}}: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
                           <div>{{lang()=='ms'?'Jenis Fail':'File type'}}: {{bucketFile.fileType}}</div>
                           @if (bucketFile.itemLabel) {
@@ -219,7 +219,7 @@
         </div>
         <div class="form-group mb-3">
           <label class="form-label">{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}</label>
-          <p class="form-control-static">{{removeBucketFileData.timestamp|date:'medium'}}</p>
+          <p class="form-control-static">{{removeBucketFileData.timestamp|date:'medium':'':angularLocale()}}</p>
         </div>
         <div class="form-group mb-3">
           <label class="form-label">{{lang()=='ms'?'Pemuatnaik':'Uploaded by'}}</label>
@@ -295,7 +295,7 @@
         </div>
         <div class="form-group mb-3">
           <label class="form-label">{{lang()=='ms'?'Mula mengarkib':'Start archiving'}}</label>
-          <p class="form-control-static">{{initZipData.timestamp|date:'medium'}}</p>
+          <p class="form-control-static">{{initZipData.timestamp|date:'medium':'':angularLocale()}}</p>
         </div>
         <div class="form-group mb-3">
           <label class="form-label">{{lang()=='ms'?'Keseluruhan':'Total'}}</label>

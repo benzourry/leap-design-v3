@@ -88,7 +88,7 @@
                   [class.list-group-item-info]="!n.receipt?.[user()?.email]" [class.text-muted]="n.receipt?.[user()?.email]"
                   (click)="openNotif(notifTpl,n)">
                   <span class="">{{cleanText(n.content)}}</span>
-                  <div class="small">{{n.timestamp|date}}</div>
+                  <div class="small">{{n.timestamp|date:'':angularLocale()}}</div>
                 </div>
               }
             </div>
@@ -107,7 +107,7 @@
                 role="button" (click)="unsubscribeToNotifications(sub.endpoint)">
                 <span>{{sub.client.userAgent.family}} on {{sub.client.os.family}} {{sub.client.os.major}} (Device:
                 {{sub.client.device.family}})</span>
-                <div class="small"><i>{{lang()=='ms'?'dari':'since'}} {{sub.timestamp|date}}</i></div>
+                <div class="small"><i>{{lang()=='ms'?'dari':'since'}} {{sub.timestamp|date:'':angularLocale()}}</i></div>
               </div>
             }
           </div>
@@ -124,7 +124,7 @@
     </div>
     <div class="list-group-item">
       <div class="label-span">{{lang()=='ms'?'Masa':'Timestamp'}}</div>
-      <div>{{notif().timestamp|date:'medium'}}</div>
+      <div>{{notif().timestamp|date:'medium':'':angularLocale()}}</div>
     </div>
     <div class="list-group-item">
       <span [innerHtml]="notif().content"></span>

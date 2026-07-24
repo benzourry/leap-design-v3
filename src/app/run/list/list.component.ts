@@ -143,6 +143,7 @@ export class ListComponent implements OnInit, OnDestroy {
   _startTimestamp: number = 0;
   app = computed(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang || 'en');
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   accessToken: string = '';
   scopeId = computed<string>(() => "list_"+this.datasetId());
 
@@ -1005,7 +1006,8 @@ export class ListComponent implements OnInit, OnDestroy {
       } else if (['modelPicker'].indexOf(field?.type) > -1) {
         fieldPath += '.' + field?.bindLabel;
       } else if (['date'].indexOf(field?.type) > -1) {
-        fieldPath += '|date:' + (field.format ?? 'yyyy-MM-dd');
+        // fieldPath += '|date:' + (field.format ?? 'yyyy-MM-dd');
+        fieldPath += `|date:${field.format || 'yyyy-MM-dd'}:'':${this.angularLocale()}`;
       }
     }
     return fieldPath;

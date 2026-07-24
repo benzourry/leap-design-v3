@@ -159,7 +159,7 @@
                                         }@else if (mapDataFields()[o.key]=='number') {
                                           <span>{{o.value}}</span>
                                         }@else if (mapDataFields()[o.key]=='date') {
-                                          <span>{{o.value|date:'medium'}}</span>
+                                          <span>{{o.value|date:'medium':'':angularLocale()}}</span>
                                         }@else if (mapDataFields()[o.key]=='file') {
                                           <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
                                         }@else {

@@ -49,6 +49,7 @@ export class TilesComponent implements OnInit, OnDestroy {
   badge = signal<any>({});
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   searchText: string = "";
 
   public runService = inject(RunService);

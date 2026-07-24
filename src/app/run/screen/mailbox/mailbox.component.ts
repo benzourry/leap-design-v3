@@ -21,7 +21,10 @@ import { RunService } from '../../_service/run.service';
 export class MailboxComponent implements OnInit {
 
   appId = computed<number | null>(() => this.runService.$app()?.id || null);
-  lang = input<string>('en');
+  app = computed<any>(() => this.runService.$app());
+  lang = computed(() => this.app().x?.lang);
+  // lang = input<string>('en');
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   user = computed<any>(() => this.runService.$user());
   email = computed<string>(() => this.user()?.email || '');
 
@@ -62,7 +65,7 @@ export class MailboxComponent implements OnInit {
       .subscribe(res => {
         let mappedList = res.content.map((n: any) => ({
             ...n,
-            dateFmt: this.datePipe.transform(n.timestamp, 'E, dd-MM-yyyy')
+            dateFmt: this.datePipe.transform(n.timestamp, 'E, dd-MM-yyyy', '', this.angularLocale()),
         }));
         
         this.list.set(mappedList);

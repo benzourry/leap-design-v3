@@ -272,7 +272,7 @@
                                         {{entryAppr?.remark}}</span>
                                       }
                                       <footer> updated by {{entryAppr?.email}} on
-                                        {{entryAppr?.timestamp | date:'medium'}}
+                                        {{entryAppr?.timestamp |date:'medium':'':angularLocale()}}
                                       </footer>
                                     </div>
                                     <div class="row display-flex mt-4">
@@ -443,7 +443,7 @@
   <div class="list-group list-group-flush">
     @for (trail of trails(); track trail.id) {
       <div class="list-group-item">
-        <div class="small">{{trail.timestamp | date:'medium'}}</div>
+        <div class="small">{{trail.timestamp |date:'medium':'':angularLocale()}}</div>
         @if (trail.tier) {
           <span>{{trail.tier?.name}} - </span>
         }

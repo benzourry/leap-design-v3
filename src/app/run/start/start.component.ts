@@ -21,7 +21,7 @@ import { UserService } from '../../_shared/service/user.service';
 import { ActivatedRoute, NavigationEnd, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbCollapse, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass, NgStyle } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, registerLocaleData } from '@angular/common';
 import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.service';
 import { Title } from '@angular/platform-browser';
 import { Observable, firstValueFrom, lastValueFrom } from 'rxjs';
@@ -374,6 +374,9 @@ export class StartComponent implements OnInit, OnDestroy {
       .subscribe({
         next: async (res) => {
           this.app.set(res);
+          const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
+          dayjs.locale(currentLang);
+
           this.runService.$app.set(res);
           if (!this.frameless()) {
             this.getNavis(res.id, this.user().email);
@@ -428,6 +431,9 @@ export class StartComponent implements OnInit, OnDestroy {
       .subscribe({
         next: async (res) => {
           this.app.set(res);
+          const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
+          dayjs.locale(currentLang);
+
           this.runService.$app.set(res);
 
           this.runService.getAppUserByEmail(id, { email: this.user().email })

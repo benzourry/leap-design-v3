@@ -44,6 +44,7 @@ export class BucketComponent {
   offline = signal<boolean>(false);
   app = computed(()=>this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
 
   loading = signal<boolean>(false);
   bucketList = signal<any[]>([]);

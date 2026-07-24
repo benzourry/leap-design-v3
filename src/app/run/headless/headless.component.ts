@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, signal, inject, ChangeDetectionStrategy, computed } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterOutlet } from '@angular/router';
 import { base, baseApi, domainBase, domainRegex } from '../../_shared/constant.service';
 import { UserService } from '../../_shared/service/user.service';
@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ms-my'; // <-- Add this import
 import { LogService } from '../../_shared/service/log.service';
 import { ToastService } from '../../_shared/service/toast-service';
 import { ServerDate, deepMerge, compileTpl, loadScript, createProxy } from '../../_shared/utils';
@@ -46,6 +47,7 @@ export class HeadlessComponent implements OnInit, OnDestroy {
   user = signal<any>({});
   badge: any;
   app = signal<any>(null);
+  lang = computed(() => this.app().x?.lang);
   active = false;
   path: string;
   pushDismissed: boolean;
@@ -161,6 +163,9 @@ export class HeadlessComponent implements OnInit, OnDestroy {
           if (res) {
             this.validPath = true;
             this.app.set(res);
+            const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
+            dayjs.locale(currentLang);
+
             this.runService.$app.set(res);
             this.titleService.setTitle(res.title);
             if (res.once) {
@@ -198,6 +203,9 @@ export class HeadlessComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.app.set(res);
+          const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
+          dayjs.locale(currentLang);
+
           this.runService.$app.set(res);        
 
           this.appLoading.set(false);

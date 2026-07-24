@@ -19,10 +19,10 @@
     <span class="sub text-danger">
       {{lang() === 'ms' ? 'Dibuka' : 'Open'}}
       @if (naviDataItem?.startDate) {
-        <span> {{lang() === 'ms' ? 'dari' : 'from'}} {{naviDataItem?.startDate | date:'mediumDate'}}</span>
+        <span> {{lang() === 'ms' ? 'dari' : 'from'}} {{naviDataItem?.startDate|date:'mediumDate':'':angularLocale()}}</span>
       }
       @if (naviDataItem?.endDate) {
-        <span> {{lang() === 'ms' ? 'hingga' : 'until'}} {{naviDataItem?.endDate | date:'mediumDate'}}</span>
+        <span> {{lang() === 'ms' ? 'hingga' : 'until'}} {{naviDataItem?.endDate|date:'mediumDate':'':angularLocale()}}</span>
       }
     </span>
   }

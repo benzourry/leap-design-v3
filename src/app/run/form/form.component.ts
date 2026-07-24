@@ -86,6 +86,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   user = computed<any>(() => this.runService.$user());
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   appConfig: any = this.runService.appConfig;
   Math: any = Math;
   form = signal<any>({});
@@ -773,7 +774,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       } else if (['modelPicker'].indexOf(field?.type) > -1) {
         fieldPath += '.' + field?.bindLabel;
       } else if (['date'].indexOf(field?.type) > -1) {
-        fieldPath += '|date:' + (field.format ?? 'yyyy-MM-dd');
+        fieldPath += `|date:${field.format || 'yyyy-MM-dd'}:'':${this.angularLocale()}`;
       }
     }
     return fieldPath;

@@ -26,7 +26,7 @@
                                     justify-content-center text-white" style="height:40px; width:40px; font-weight:bold">A</div>
                                     <div class="text-truncate text-start" [class.text-white]="n?.id == notif()?.id" style="margin-left:50px;">
                                         <span class="">{{cleanText(n.content)}}</span>
-                                        <div class="small">{{n.timestamp|date}}</div>
+                                        <div class="small">{{n.timestamp|date:'':angularLocale()}}</div>
                                     </div>
                                 </button>
                             }
@@ -74,7 +74,7 @@
                         </div>
                         <div class="list-group-item">
                             <div class="label-span">{{lang()=='ms'?'Masa':'Timestamp'}}</div>
-                            <div class="text-truncate">{{notif().timestamp|date:'medium'}}</div>
+                            <div class="text-truncate">{{notif().timestamp|date:'medium':'':angularLocale()}}</div>
                         </div>
                         <div class="list-group-item" style="border-left:solid 3px lightgray" >
                             <div style="overflow:hidden; position:relative;">

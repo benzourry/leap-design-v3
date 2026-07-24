@@ -836,12 +836,12 @@
             <p>{{lang()=='ms'?'Borang cuma boleh diakses':'Form can only be accessed'}}
               @if (form()?.startDate) {
                 <span>
-                  {{lang()=='ms'?'dari':'from'}} <strong>{{form()?.startDate|date:'medium'}}</strong>
+                  {{lang()=='ms'?'dari':'from'}} <strong>{{form()?.startDate|date:'medium':'':angularLocale()}}</strong>
                 </span>
               }
               @if (form()?.endDate) {
                 <span>
-                  {{lang()=='ms'?'sehingga':'until'}} <strong>{{form()?.endDate|date:'medium'}}</strong>
+                  {{lang()=='ms'?'sehingga':'until'}} <strong>{{form()?.endDate|date:'medium':'':angularLocale()}}</strong>
                 </span>
               }
             </p>

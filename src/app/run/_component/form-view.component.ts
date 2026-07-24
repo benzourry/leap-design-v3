@@ -398,6 +398,7 @@ export class FormViewComponent implements OnInit {
 
   $action$ = input<string>();
   lang = input<string>('en');
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
 
   defaultParam: string = "{'$prev$.$id':$.$id}";
   baseApi: string = baseApi;
@@ -466,7 +467,7 @@ export class FormViewComponent implements OnInit {
       } else if (field.type === 'modelPicker') {
         fieldPath += `.${field.bindLabel}`;
       } else if (field.type === 'date') {
-        fieldPath += `|date:${field.format || 'yyyy-MM-dd'}`;
+        fieldPath += `|date:${field.format || 'yyyy-MM-dd'}:'':${this.angularLocale()}`;
       }
     }
     return fieldPath;

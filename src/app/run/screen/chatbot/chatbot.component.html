@@ -58,7 +58,7 @@
                 <button type="button" class="btn btn-xs text-muted" title="Copy chat message" (click)="copyChatText(p.text)" ><fa-icon [icon]="['fas', 'copy']" [fixedWidth]="true"></fa-icon></button>
                 <button type="button" class="btn btn-xs text-muted" title="Report chat message" (click)="reportChat(p.text)" ><fa-icon [icon]="['fas', 'flag']" [fixedWidth]="true"></fa-icon></button>
                 <div class="ms-auto small p-1 opacity-50 text-end fst-italic" style="line-height:100%">
-                  {{p.timestamp|date:'medium'}}
+                  {{p.timestamp|date:'medium':'':angularLocale()}}
                 </div>
               </div>
             }            

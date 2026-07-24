@@ -148,7 +148,23 @@ export class LambdaEditorComponent implements OnInit {
   //     prompt('App URL (Press Ctrl+C to copy)', url);
   // }
 
-  // this.loadLambdaList = loadLambdaList;
+  // 1. Add new signals for separated lists
+  editableLambdas = signal<any[]>([]);
+  restrictedLambdas = signal<any[]>([]);
+  showRestrictedLambdas: boolean = false;
+
+  // 2. Add permission checker
+  canEditLambda(item: any): boolean {
+    if (!item || !item.email) return true;
+    if (item.email.trim() === '') return true;
+
+    const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
+    const allowedEmails = item.email.split(',').map((e: string) => e.trim());
+
+    return allowedEmails.includes(userEmail);
+  }
+
+  // 3. Update the load method to distribute the arrays
   loadLambdaList(pageNumber) {
     this.pageNumber.set(pageNumber);
     this.itemLoading.set(true);
@@ -159,13 +175,52 @@ export class LambdaEditorComponent implements OnInit {
       page: pageNumber - 1,
       size: this.itemsPerPage
     }
+    
     this.lambdaService.getLambdaList(params)
       .subscribe(res => {
-        this.lambdaList.set(res.content);
+        const eLambdas = [];
+        const rLambdas = [];
+
+        res.content.forEach((a: any) => {
+          if (a?.id) { // Shield against empty objects
+            if (this.canEditLambda(a)) {
+              eLambdas.push(a);
+            } else {
+              rLambdas.push(a);
+            }
+          }
+        });
+
+        this.editableLambdas.set(eLambdas);
+        this.restrictedLambdas.set(rLambdas);
+        this.lambdaList.set(res.content); // Kept in case you use it elsewhere
+        
         this.lambdaTotal.set(res.page?.totalElements);
         this.itemLoading.set(false);
-      }, res => this.itemLoading.set(false))
+        this.cdr.detectChanges();
+      }, res => {
+        this.itemLoading.set(false);
+        this.cdr.detectChanges();
+      });
   }
+
+  // loadLambdaList(pageNumber) {
+  //   this.pageNumber.set(pageNumber);
+  //   this.itemLoading.set(true);
+
+  //   let params = {
+  //     searchText: this.searchText,
+  //     appId: this.appId,
+  //     page: pageNumber - 1,
+  //     size: this.itemsPerPage
+  //   }
+  //   this.lambdaService.getLambdaList(params)
+  //     .subscribe(res => {
+  //       this.lambdaList.set(res.content);
+  //       this.lambdaTotal.set(res.page?.totalElements);
+  //       this.itemLoading.set(false);
+  //     }, res => this.itemLoading.set(false))
+  // }
 
   signaList: any[] = [];
   loadSignaList() {

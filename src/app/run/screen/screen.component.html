@@ -203,7 +203,7 @@
             </div> 
           }@else if (screen().type=='mailbox') {
             @defer(prefetch on idle){
-              <app-mailbox [lang]="lang()"></app-mailbox>
+              <app-mailbox></app-mailbox>
             }@loading {
               <div class="text-center m-5">
                 <div class="spinner-grow text-primary" role="status">

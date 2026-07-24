@@ -92,6 +92,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   _param: any = {};
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
+  angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   baseUrl = computed<string>(() => this.runService.$baseUrl());
   preurl = computed<string>(() => this.runService.$preurl());
   accessToken = computed<string>(() => this.userService.getToken());

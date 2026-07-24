@@ -114,7 +114,7 @@
                           <div>{{appUser.user.name}}</div>
                           <div class="small">
                             <div>{{appUser.user.email}}</div>
-                            <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium'}}
+                            <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium':'':angularLocale()}}
                               @if (!appUser.user.firstLogin) {
                                 <span class="text-muted">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
                               }

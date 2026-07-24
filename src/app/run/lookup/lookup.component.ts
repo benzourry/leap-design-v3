@@ -46,6 +46,7 @@ export class LookupComponent implements OnInit {
     app = computed(() => this.runService.$app());
 
     lang = computed(() => this.app().x?.lang);
+    angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
     
     lookupId = model<number>();
     
