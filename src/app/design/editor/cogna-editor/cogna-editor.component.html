@@ -1622,30 +1622,6 @@
               </select>
             </div>
 
-            <!-- <select class="form-select" name="inferModelName" [(ngModel)]="editCognaData.data && editCognaData.data.extractFormId"
-                    #inferModelName="ngModel" required>
-                  @for (item of inferModelNameList|filter:editCognaData.inferModelType; track item) {
-                    <option [value]="item.code">{{item.name}}
-                    </option>
-                  }
-                </select> -->
-
-            <!-- <div class="form-group mb-3">
-                  <label class="form-label">JSON Formatting (comma-separated) *</label>
-                  <textarea class="form-control" [(ngModel)]="editCognaData.data && editCognaData.data.extractFmt"
-                  placeholder="// create JSON format {}"
-                  rows="7"
-                  #extractFmt="ngModel" name="extractFmt" required></textarea>
-                </div> -->
-
-
-            <!-- <div class="mx-n2">
-                  <label class="form-label">JSON Formatting (comma-separated) *</label>
-                  <app-cm content="content" lang="javascript" #extractFmt="ngModel"
-                    name="extractFmt" subType="mailer" [(ngModel)]="editCognaData.data && editCognaData.data.extractFmt"
-                    [linenumber]="true" required>
-                  </app-cm>
-                </div> -->
             <div class="form-group mb-3">
               <label class="form-label">JSON Formatting (JSON Schema Properties) *</label>
               <div class="mx-n2">
@@ -1655,6 +1631,12 @@
                   [linenumber]="true" [skipCheck]="true" required></app-cm>
               </div>
               <a href="https://json-schema.org/" target="_blank">Learn more about JSON Schema</a>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Extract Additional Prompt (System Message)</label>
+              <textarea class="form-control" [ngModel]="editCognaData.data && editCognaData.data.extractPrompt"
+                (ngModelChange)="editCognaData.data && (editCognaData.data.extractPrompt = $event)" name="extractPrompt"
+                rows="4"></textarea>
             </div>
             <!-- <div class="form-group mb-3">
                   <label class="form-label">Fields to extract (comma-separated) *</label>
