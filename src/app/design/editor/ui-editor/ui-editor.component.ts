@@ -192,13 +192,29 @@ export class UiEditorComponent implements OnInit, OnDestroy {
 
         this.formService.getListBasic(params)
             .subscribe(res => {
+                // Reset arrays
+                this.editableForms = [];
+                this.restrictedForms = [];
+
+                // Distribute items once
+                res.content.forEach((f: any) => {
+                    if (f?.id) {
+                        if (this.canEdit(f)) {
+                            this.editableForms.push(f);
+                        } else {
+                            this.restrictedForms.push(f);
+                        }
+                        this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } });
+                    }
+                });
+
                 this.formList = res.content;
                 this.formTotal = res.page?.totalElements;
                 this.formLoading = false;
                 // this.commService.emitChange({ key: 'form', value: this.formTotal });
                 // this.counts['form'] = res.page?.totalElements;
                 this.counts.update(c=>({...c, form: res.page?.totalElements}));
-                this.formList.forEach(f => this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } }));
+                // this.formList.forEach(f => this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
             }, res => {
                 this.formLoading = false;
@@ -212,11 +228,25 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     getDatasetList() {
         this.datasetService.getDatasetList(this.app.id)
             .subscribe(res => {
+                // Reset arrays
+                this.editableDatasets = [];
+                this.restrictedDatasets = [];
+
+                // Distribute items once
+                res.forEach((f: any) => {
+                    if (this.canEditDataset(f)) {
+                        this.editableDatasets.push(f);
+                    } else {
+                        this.restrictedDatasets.push(f);
+                    }
+                    this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } });
+                });
+
                 this.datasetList = res;
                 // this.commService.emitChange({ key: 'dataset', value: res.length });
                 // this.counts['dataset'] = res.length;
                 this.counts.update(c=>({...c, dataset: res.length}));
-                this.datasetList.forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
+                // this.datasetList.forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
             })
     }
@@ -724,6 +754,57 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.datasetService.saveDatasetOrder(datasetList)
         .subscribe();
     }
+
+    // Replace formList and datasetList with these separated arrays
+    editableForms: any[] = [];
+    restrictedForms: any[] = [];
+    
+    editableDatasets: any[] = [];
+    restrictedDatasets: any[] = [];
+
+    // State for toggling the restricted forms accordion
+    showRestrictedForms: boolean = false;
+
+    // Helper to check if the current user can edit the form
+    canEdit(item: any): boolean {
+        if (!item || !item.email) return true;
+        if (item.email.trim() === '') return true;
+        
+        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
+        const allowedEmails = item.email.split(',').map((e: string) => e.trim());
+        return allowedEmails.includes(userEmail);
+    }
+
+    // Helper to filter out the restricted forms for the secondary list
+    // getRestrictedForms(filteredList: any[]): any[] {
+    //     if (!filteredList) return [];
+    //     return filteredList.filter(i => i?.id && !this.canEdit(i));
+    // }
+
+    // State for toggling the restricted datasets accordion
+    showRestrictedDatasets: boolean = false;
+
+    // Helper to check if the dataset's attached form is restricted
+    canEditDataset(item: any): boolean {
+        if (!item || !item.form || !item.form.email) return true;
+        if (item.form.email.trim() === '') return true;
+        
+        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
+        const allowedEmails = item.form.email.split(',').map((e: string) => e.trim());
+        return allowedEmails.includes(userEmail);
+    }
+
+    // Returns only editable datasets (used BEFORE the groupBy pipe)
+    // getEditableDatasets(filteredList: any[]): any[] {
+    //     if (!filteredList) return [];
+    //     return filteredList.filter(i => i?.id && this.canEditDataset(i));
+    // }
+
+    // Returns only restricted datasets
+    // getRestrictedDatasets(filteredList: any[]): any[] {
+    //     if (!filteredList) return [];
+    //     return filteredList.filter(i => i?.id && !this.canEditDataset(i));
+    // }
 
     ngOnDestroy() {
         // Remove popstate listener

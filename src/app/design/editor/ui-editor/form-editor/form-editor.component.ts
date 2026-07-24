@@ -36,7 +36,7 @@ import { NgbUnixTimestampAdapter } from '../../../../_shared/service/date-adapte
 import { NgbUnixTimestampTimeAdapter } from '../../../../_shared/service/time-adapter';
 import { EndpointService } from '../../../../service/endpoint.service';
 import { btoaUTF, cleanText, extractVariables, hashObject, splitAsList, tblToExcel, toSnakeCase, toSpaceCase } from '../../../../_shared/utils';
-import { baseApi } from '../../../../_shared/constant.service';
+import { base, baseApi } from '../../../../_shared/constant.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { ScreenService } from '../../../../service/screen.service';
 import { Observable, first, map, shareReplay, tap, switchMap } from 'rxjs';
@@ -109,6 +109,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     showPrevFormItem = false;
     showFunc: any = {};
     baseApi = baseApi;
+    base = base;
     filterField: string = "";
 
     sizeList: any[] = [
@@ -367,6 +368,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 }
             });
 
+        // Listen to query parameters for specific form loading
+        this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((queryParams: Params) => {
+            const id = queryParams['id'];
+            if (id) {
+                this.getFormData(id);
+            }
+        });
+
+
         // Flat the heavily nested initialization using switchMap
         this.userService.getCreator()
             .pipe(
@@ -382,14 +392,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         sort: 'id,desc'
                     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
                         this.otherAppList = res.content;
-                    });
-
-                    // Listen to query parameters for specific form loading
-                    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((queryParams: Params) => {
-                        const id = queryParams['id'];
-                        if (id) {
-                            this.getFormData(id);
-                        }
                     });
                 }),
                 switchMap(() => this.route.parent.parent.parent.params)
@@ -423,6 +425,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             // The viewport is less than 576px wide
             this.showPalette = false;
         }
+    }
+
+    canEditForm(): boolean {
+        if (!this.curForm || !this.curForm.email) return true; // allow if blank/null/undefined
+        if (this.curForm.email.trim() === '') return true; // allow if empty string
+
+        // Split by comma, trim spaces, and check if user's email exists in the array
+        const allowedEmails = this.curForm.email.split(',').map((e: string) => e.trim());
+        return allowedEmails.includes(this.user?.email);
     }
 
 

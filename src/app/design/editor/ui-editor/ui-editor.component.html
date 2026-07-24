@@ -11,7 +11,7 @@
                         Forms
                         <div class="badgeUi ms-auto">{{counts().form}}</div>
                     </button>
-                    <div ngbAccordionCollapse>
+                    <!-- <div ngbAccordionCollapse>
                         <div ngbAccordionBody 
                         cdkDropList cdkDropListOrientation="vertical"
                         (cdkDropListDropped)="reorderForm($event, formList)">
@@ -44,30 +44,110 @@
                                 <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Form
                             </a>
                         </div>
+                    </div> -->
+
+
+                    <div ngbAccordionCollapse>
+                      <div ngbAccordionBody>
+                        
+                        <!-- 1. EDITABLE FORMS (Draggable & Clickable) -->
+                        <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderForm($event, editableForms)">
+                          @for (i of (editableForms | filter:searchText); track i.id) {
+                            @if (i?.id) {
+                              <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                                routerLinkActive="active" [routerLink]="['/design',app?.id,'ui','form']"
+                                [queryParams]="{id:i?.id}" draggable="false" cdkDrag>
+                                
+                                @if(counts().form>1){
+                                  <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1" cdkDragHandle>
+                                    <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
+                                  </div>
+                                }
+
+                                @if (i?.title?.trim()) {
+                                  {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                } @else {
+                                  <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                }
+                              </a>
+                            }
+                          }
+                        </div>
+
+                        <!-- 2. RESTRICTED FORMS (Collapsible & Disabled) -->
+                        <!-- @let restrictedForms = getRestrictedForms(formList | filter:searchText); -->
+                        @if ((restrictedForms | filter:searchText).length > 0) {
+                          <div class="">
+                            <!-- Toggle Button -->
+                            <button type="button" class="btn btn-sm btn-light w-100 text-start text-muted d-flex align-items-center" 
+                              (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none; background: #f8f9fa;">
+                              <fa-icon [icon]="['fas', showRestrictedForms ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
+                              Restricted Forms ({{restrictedForms.length}})
+                            </button>
+                            
+                            <!-- Hidden/Disabled List -->
+                            @if (showRestrictedForms) {
+                              <div>
+                                @for (i of restrictedForms; track i.id) {
+                                  <!-- <a class="element text-truncate text-muted bg-light" 
+                                    title="Access Restricted: {{i?.title}} - {{i?.id}}" 
+                                    style="cursor: not-allowed; opacity: 0.65;"> -->
+
+                                  <a class="element text-truncate text-muted bg-light" 
+                                    title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
+                                    [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
+                                    [style.opacity]="user?.manager ? '1' : '0.65'"
+                                    [routerLink]="user?.manager ? ['/design', app?.id, 'ui', 'form'] : null"
+                                    [queryParams]="user?.manager ? {id: i?.id} : null"
+                                    [routerLinkActive]="user?.manager ? 'active' : ''"
+                                    draggable="false">
+                                    <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
+                                    @if (i?.title?.trim()) {
+                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    } @else {
+                                      <span class="font-italic">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    }
+                                  </a>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+
+                        <!-- 3. ACTIONS -->
+                        <a class="element pointer text-truncate mt-2" (click)="editForm(editFormTpl, newForm)">
+                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Form
+                        </a>
+                        <a class="element pointer text-truncate" (click)="cloneForm(cloneFormTpl)">
+                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Form
+                        </a>
+                        
+                      </div>
                     </div>
+
                 </div>
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dataset" [collapsed]="currentPath!='dataset'">
-                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
-                    </button>
-                    <div ngbAccordionCollapse>
-                      @if (counts().dataset>1){
-                        <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
-                          <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
-                          <div class="ms-auto btn-group-xs small group-by-toggle">
-                            <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
-                              name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
-                            <label for="dsgb-ungroup" class="btn px-1">None</label>
-                            <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
-                              name="dsgb-form" [(ngModel)]="datasetGroupBy">
-                            <label for="dsgb-form" class="btn px-1">Form</label>
-                            <input class="btn-check" type="radio" value="type" id="dsgb-type"
-                              name="dsgb-type" [(ngModel)]="datasetGroupBy">
-                            <label for="dsgb-type" class="btn px-1">Type</label>
-                          </div>
+                  <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                      Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
+                  </button>
+                  <div ngbAccordionCollapse>
+                    @if (counts().dataset>1){
+                      <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
+                        <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
+                        <div class="ms-auto btn-group-xs small group-by-toggle">
+                          <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
+                            name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
+                          <label for="dsgb-ungroup" class="btn px-1">None</label>
+                          <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
+                            name="dsgb-form" [(ngModel)]="datasetGroupBy">
+                          <label for="dsgb-form" class="btn px-1">Form</label>
+                          <input class="btn-check" type="radio" value="type" id="dsgb-type"
+                            name="dsgb-type" [(ngModel)]="datasetGroupBy">
+                          <label for="dsgb-type" class="btn px-1">Type</label>
                         </div>
-                      }
-                    <div ngbAccordionBody 
+                      </div>
+                    }
+                    <!-- <div ngbAccordionBody 
                       cdkDropList cdkDropListOrientation="vertical"
                       (cdkDropListDropped)="reorderDataset($event, datasetList)">
                       
@@ -103,9 +183,84 @@
                       <a class="element pointer text-truncate" (click)="cloneDataset(cloneDatasetTpl)">
                           <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dataset
                       </a>
+                    </div> -->
+                    <div ngbAccordionBody>
+                      
+                      <!-- 1. EDITABLE DATASETS (Draggable & Grouped) -->
+                      <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderDataset($event, datasetList)">
+                        <!-- Notice the getEditableDatasets filter wrapped around the search filter BEFORE the groupBy -->
+                        @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
+                          
+                          @if (datasetGroupBy && dsKv?.key) {
+                            <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
+                          }
+                          
+                          @for (i of dsKv?.value; track i.id) {
+                            <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                                routerLinkActive="active" [routerLink]="['/design',app.id,'ui','dataset']"
+                                draggable="false"
+                                [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts().dataset==1">
+                                
+                                @if(!datasetGroupBy && counts().dataset>1) {
+                                  <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1" cdkDragHandle>
+                                    <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
+                                  </div>
+                                }
+                                
+                                @if (i?.title?.trim()) {
+                                  {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                } @else {
+                                  <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                }
+                            </a>
+                          }
+                        }
+                      </div>
+
+                      <!-- 2. RESTRICTED DATASETS (Collapsible & Disabled) -->
+                      <!-- @let restrictedDatasets = getRestrictedDatasets(datasetList | filter:searchText); -->
+                      @if ((restrictedDatasets | filter:searchText).length > 0) {
+                        <div>
+                          <button type="button" class="btn btn-sm btn-light w-100 text-start text-muted d-flex align-items-center" 
+                            (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none; background: #f8f9fa;">
+                            <fa-icon [icon]="['fas', showRestrictedDatasets ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
+                            From Restricted Forms ({{restrictedDatasets.length}})
+                          </button>
+                          
+                          @if (showRestrictedDatasets) {
+                            <div>
+                              @for (i of restrictedDatasets; track i.id) {
+                                <a class="element pointer text-truncate text-muted bg-light" 
+                                  title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
+                                  routerLinkActive="active" 
+                                  [routerLink]="['/design', app.id, 'ui', 'dataset']" 
+                                  [queryParams]="{id: i?.id}" 
+                                  draggable="false">
+                                  <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
+                                  @if (i?.title?.trim()) {
+                                    {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                  } @else {
+                                    <span class="font-italic">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                  }
+                                </a>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      <!-- 3. ACTIONS -->
+                      <a class="element pointer text-truncate mt-2" (click)="editDataset(editDatasetTpl, newDataset)">
+                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dataset
+                      </a>
+                      <a class="element pointer text-truncate" (click)="cloneDataset(cloneDatasetTpl)">
+                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dataset
+                      </a>
+                      
                     </div>
                   </div>
                 </div>
+                
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dashboard" [collapsed]="currentPath!='dashboard'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
                         Dashboard

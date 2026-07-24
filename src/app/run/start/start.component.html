@@ -118,15 +118,37 @@
             <div class="app-nav" [ngStyle]="{'background-color':app()?.theme}" [style]="app()?.x?.menuCss" [class.dark-mode-nav]="darkMode()">
               
               <div class="app-info p-3">
-                <div class="app-title">
+                <!-- <div class="app-title">
                   <a class="text-white" routerLink="{{preurl()}}/{{startPage()}}">
                     <h4 class="mb-0">{{app()?.title}}</h4>
                   </a>
                   @if (app()?.description) {
                     <div class="mt-2">{{app()?.description}}</div>
                   }
+                </div> -->
+                <div class="app-title position-relative">
+                  
+                  <a class="text-white text-decoration-none" routerLink="{{preurl()}}/{{startPage()}}">
+                    <h4 class="mb-0 pe-4">{{app()?.title}}</h4>
+                  </a>
+                  
+                  @if (app()?.x.mailbox){
+                    <a class="text-white position-absolute top-0 end-0 mt-1" [class.disabled]="!mailboxBadge()" 
+                        [style.opacity]="!mailboxBadge()? '0.4' : '0.9'" 
+                        [routerLink]="preurl() + '/mailbox'" (click)="hideSb()" title="Inbox" style="opacity: 0.9;">
+                      <fa-icon [icon]="['fas', 'inbox']" size="lg"></fa-icon>
+                      
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25em 0.4em;">
+                        {{ mailboxBadge() }}
+                      </span>
+                    </a>
+                  }
+                  
+                  @if (app()?.description) {
+                    <div class="mt-2 pe-4">{{app()?.description}}</div>
+                  }
                 </div>
-                <a class="app-user mt-3 pointer d-block text-white" (click)="hideSb()" [routerLink]="preurl() + '/profile'">
+                <a class="app-user mt-3 pointer d-block text-white" [style.right.px]="app()?.x?.mailbox?55:20" (click)="hideSb()" [routerLink]="preurl() + '/profile'">
                   <img [src]="user().imageUrl" (error)="$any($event.target).src='assets/img/avatar-big.png'"
                     class="rounded-circle me-2 float-start" style="width:36px;height:36px;">
                   <div class="nobreak" style="margin-left:40px;padding-top:5px;">{{user()?.email}}</div>

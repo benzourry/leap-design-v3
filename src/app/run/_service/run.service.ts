@@ -68,6 +68,10 @@ export class RunService {
     return this.http.get<any>(`${this.baseApi}/app/${appId}/notification`, { params: { email } });
   }
 
+  countUnreadNotification(appId:number, email:string){
+    return this.http.get<any>(`${this.baseApi}/app/${appId}/notification/unread-count`, { params: { email } });
+  }
+
   getNotificationByParams(appId:number, params:any){
     return this.http.get<any>(`${this.baseApi}/app/${appId}/notification`, { params: params });
   }

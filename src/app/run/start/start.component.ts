@@ -109,6 +109,7 @@ export class StartComponent implements OnInit, OnDestroy {
   startPage = computed(() => this.app()?.startPage ?? 'start');
   isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
   screen = signal<any>(null);
+  mailboxBadge = signal<number>(0);
 
   // --- Cookie Banner Signals ---
   private readonly cookieConsentName = 'app_cookie_consent';
@@ -403,6 +404,12 @@ export class StartComponent implements OnInit, OnDestroy {
             });
           }
 
+          this.runService.countUnreadNotification(this.app().id, this.user().email)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(res => {
+              this.mailboxBadge.set(res);
+            });
+
           this.appLoading.set(false);
           this.checkPush(this.app());
           await this.initScreen(this.app().f);
@@ -463,6 +470,13 @@ export class StartComponent implements OnInit, OnDestroy {
             }
           }
 
+          this.runService.countUnreadNotification(this.app().id, this.user().email)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(res => {
+              this.mailboxBadge.set(res);
+          });
+
+
           this.appLoading.set(false);
 
         },
@@ -522,6 +536,11 @@ export class StartComponent implements OnInit, OnDestroy {
       } else if (['start'].includes(split[3])) {
         return {
           url: `/design/${appId}/ui/navi`,
+          query: undefined,
+        };
+      } else if (['mailbox'].includes(split[3])) {
+        return {
+          url: `/design/${appId}/`,
           query: undefined,
         };
       } else {

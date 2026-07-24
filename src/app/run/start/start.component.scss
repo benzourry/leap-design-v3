@@ -269,13 +269,15 @@
   .topnav .app-user{
     text-align: left;
     position: absolute;
-    right: 20px;
-    top: 0px; 
-    width:36px;
+    right: 55px;
+    top: -5px; 
+    width: max-content;
+    max-width:36px;
   }
   .topnav .app-user:hover,
   .topnav .app-user:active{
-    width: 270px;
+    max-width: 270px;
+    padding-right: 15px;
   }
 
   .topnav .app-nav {

@@ -65,7 +65,7 @@ import { ListComponent } from '../list/list.component';
   providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
   { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
   imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
-    ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule, RouterLink,
+    ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule,
     forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => ListComponent),
     NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle,
     MorphHtmlDirective,

@@ -605,6 +605,13 @@
               <input type="text" class="form-control" [(ngModel)]="_editFormData.x.facet" name="facet"
                 placeholder="ie: edit,view,admin-edit">
             </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Creator (email, comma separated)</label>
+              <input type="text" class="form-control" [(ngModel)]="_editFormData.email" name="email"
+                #email="ngModel">
+              <div class="form-text">Leave blank to allow all creator access</div>
+            </div>
+
           </div>
         </ng-template>
       </li>
