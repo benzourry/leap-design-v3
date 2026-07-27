@@ -102,7 +102,7 @@ import {
     faEye, faSquare as farSquare, faUser, faCaretSquareDown, faEnvelope, faCircleUser, faCommentDots, faFileCode, faMinusSquare, faPlusSquare as farPlusSquare, faMessage,
     faClock,
     faFileLines,
-    faEyeSlash
+    faEyeSlash, faFolder as farFolder
 } from '@fortawesome/free-regular-svg-icons';
 import {
     faGoogle, faFacebookF, faGithub, faLinkedin, faWpforms,faMicrosoft, faTwitter, faUncharted
@@ -133,6 +133,6 @@ export class SharedModule {
             faReply, faAlignLeft, faAlignCenter, faAlignRight, faAlignJustify, faQrcode, faShare, faTable, faList, farCircle, fasCircle, faMailBulk, faUsersCog, faFileExcel, faListAlt, faCircleNotch, faUpload, faDownload, faAngleDoubleRight, faAngleDoubleLeft, faWindowRestore, faSitemap, faGlobe, faSort, faShareAlt, faLock, faUsers,
             faFileArchive, faUserEdit, faFileExport, faUncharted, faCircleNodes, faFileWaveform, faStop, faRobot, faFlag, farFlag, faImage, faBolt, faEye, faEyeSlash, faFileImport,
             faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faMessage, faDiagramProject, faFileLines,
-        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faKey, faFolder);
+        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faKey, faFolder, farFolder);
     }
 }

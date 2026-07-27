@@ -3601,11 +3601,11 @@
           
           @if (filteredItems.length > 0) {
             <!-- Section Header -->
-            <div class="list-group-item bg-light fw-bold py-1 text-muted small border-top" 
+            <div class="list-group-item bg-light fw-bold py-1 small border-top" 
                  [class.text-danger]="group.isOrphan"
                  (click)="collapsibleItemGroup[group.sectionTitle] = !collapsibleItemGroup[group.sectionTitle]"
                  style="cursor: pointer;">
-              <fa-icon [icon]="group.isOrphan ? ['far','question-circle'] : ['fas','folder']" class="me-1"></fa-icon>
+              <fa-icon [icon]="group.isOrphan ? ['far','question-circle'] : ['far','folder']" class="me-1"></fa-icon>
               {{group.sectionTitle}}
               <fa-icon class="ms-1 float-end" 
                        [icon]="['fas', collapsibleItemGroup[group.sectionTitle] ? 'angle-down' : 'angle-up']" 
@@ -3723,12 +3723,12 @@
         @for (f of curForm.prev.items|keyvalue; track $index) {
           <div class="list-group-item element py-2">
             {{f.value.label}} - <code>$prev$.{{f.value.code}}</code>
-            <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
+            <!-- <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
               <button type="button" class="btn btn-round btn-sm btn-info"
                 (click)="removeItemSource(curForm.prev.id,f.value.id)">
                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
               </button>
-            </div>
+            </div> -->
           </div>
         }
       }
@@ -3737,47 +3737,61 @@
     @if (!curForm.items) {
       <h5 class="text-muted p-3">Source Item Not Available</h5>
     }
-    <div class="list-group-item element py-2">
-      <div class="small">Endpoint View by ID</div>
-      <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/entry/[entryId]?formId={{curForm.id}}" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+
+
+    <div class="list-group-item bg-light fw-bold py-1 small border-top" 
+          (click)="collapsibleItemGroup.ep = !collapsibleItemGroup.ep"
+          style="cursor: pointer;">
+      <fa-icon [icon]="['fas','link']" class="me-1"></fa-icon>
+      REST Endpoints
+      <fa-icon class="ms-1 float-end" 
+                [icon]="['fas', collapsibleItemGroup.ep ? 'angle-down' : 'angle-up']" 
+                [fixedWidth]="true"></fa-icon>
     </div>
-    <div class="list-group-item element py-2">
-      <div class="small">Endpoint View by params (first result only)</div>
-      <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/entry/by-params?formId={{curForm.id}}&[params]" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-    </div>
-    
-    @if (curForm.publicEp) {
+
+    @if (!collapsibleItemGroup.ep) {
       <div class="list-group-item element py-2">
-        <div class="small">Public Endpoint View by ID</div>
+        <div class="small">Endpoint View by ID</div>
         <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+          value="{{baseApi}}/entry/[entryId]?formId={{curForm.id}}" 
+          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
       </div>
-    }
-    @if (curForm.publicEp) {
       <div class="list-group-item element py-2">
-        <div class="small">Public Endpoint View by params (first result only)</div>
+        <div class="small">Endpoint View by params (first result only)</div>
         <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+          value="{{baseApi}}/entry/by-params?formId={{curForm.id}}&[params]" 
+          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
       </div>
-    }
-    
-    @if (!curForm.publicEp) {
-      <div class="bg-danger text-white p-3">
-        Access to Public Endpoint View by ID &amp; Endpoint View by params is disabled.
-        <div class="small">To enable, please toggle <b>Public endpoint access to entry data via Id or Params</b> in
-          Form Setting &rsaquo; Options</div>
-      </div>
+      
+      @if (curForm.publicEp) {
+        <div class="list-group-item element py-2">
+          <div class="small">Public Endpoint View by ID</div>
+          <input type="text" class="form-control form-control-sm mt-1" 
+          value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
+          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+        </div>
+      }
+      @if (curForm.publicEp) {
+        <div class="list-group-item element py-2">
+          <div class="small">Public Endpoint View by params (first result only)</div>
+          <input type="text" class="form-control form-control-sm mt-1" 
+          value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
+          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+        </div>
+      }
+      
+      @if (!curForm.publicEp) {
+        <div class="bg-danger text-white p-3">
+          Access to Public Endpoint View by ID &amp; Endpoint View by params is disabled.
+          <div class="small">To enable, please toggle <b>Public endpoint access to entry data via Id or Params</b> in
+            Form Setting &rsaquo; Options</div>
+        </div>
+      }
     }
     
     <div class="bg-danger text-white p-3">
       Clear entries for the form
-      <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all entry</button>
+      <button type="button" class="btn btn-round btn-light btn-sm float-end my-n1" (click)="clearEntry()">Clear all entry</button>
     </div>
   </div>
   <div class="modal-footer justify-content-between">
