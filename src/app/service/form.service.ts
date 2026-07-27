@@ -93,7 +93,7 @@ export class FormService {
   // }
 
   backendEf(formId: number, field: string, section:string, force: boolean, tierId?: number) {
-    return this.http.get<any>(`${this.baseApi}/entry/ef-exec?formId=${formId}&field=${field}&section=${section||''}&force=${force}&tierId=${tierId}`);
+    return this.http.get<any>(`${this.baseApi}/entry/ef-exec?formId=${formId}&field=${field}&section=${section||''}&force=${force}&tierId=${(tierId??'')}`);
   }
 
   backendApf(formId: any, tierId: any, force: boolean) {
