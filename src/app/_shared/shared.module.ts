@@ -16,18 +16,7 @@
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
 import { NgModule } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FilterPipe } from './pipe/filter.pipe';
-// import { NgSelectModule } from '@ng-select/ng-select';
-// import { NgxSliderModule } from '@m0t0r/ngx-slider';
-// import { FormsModule } from '@angular/forms';
-// import { HttpClientModule } from '@angular/common/http';
-// import { OrderByPipe } from './pipe/order-by.pipe';
-// import { PageTitleComponent } from '../_shared/component/page-title.component';
-
-// import { NgbPaginationModule, NgbModalModule, NgbNavModule, NgbDatepickerModule, NgbTooltipModule, NgbToastModule, NgbTimepickerModule, NgbAccordionModule, NgbTypeaheadModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-// import { library } from '@fortawesome/fontawesome-svg-core';
 import {
     faCheckSquare, faSquare, faQuidditch, faTh, faPlusCircle, faChartBar, faChartPie, faChartLine, faPencilAlt, faCog, faTrash, faPlus,
     faThLarge, faSignOutAlt, faSave, faAngleRight, faAngleLeft, faFile, faTimes, faPlay, faTachometerAlt, faPlusSquare,
@@ -37,28 +26,20 @@ import {
     faWindowRestore,
     faSitemap,
     faGlobe,
-    // faColumns,
-    
     faSort,
     faShareAlt,
     faCircleNotch,
     faLock,
-    // faReceipt,
     faListAlt,
     faFileExcel,
-    // faFileDownload,
     faMailBulk,
-    // faSlidersH,
     faUsersCog,
     faChartArea,
     faTable,
     faFilter,
-    // faMicrophone,
     faQrcode,
     faList,
     faShoppingBag,
-    // faShareAltSquare,
-    // faAsterisk, 
     faUniversity,
     faSearch,
     faEllipsisH,
@@ -76,12 +57,10 @@ import {
     faAngleDown,
     faAngleUp,
     faTerminal,
-    // faUndo,
     faTasks,
     faEdit,
     faFlag,
     faExpand, faCompress, faUserEdit, faFileExport, faImage, faBolt,
-    // faAdjust,
      faToggleOn, faToggleOff, faLink, faMapMarkedAlt, faUsers, faHistory, faBox, 
      faRocket, faSync, faShoppingCart, faInbox, faCircleNodes, faFileWaveform, faStop, faRobot, faAlignJustify, 
      faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, 
@@ -93,7 +72,8 @@ import {
      faHashtag,
      faSignature,
      faKey,
-     faFolder
+     faFolder,
+     faSliders
 } from '@fortawesome/free-solid-svg-icons';
 import {
     faThumbsUp,
@@ -109,7 +89,6 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { RxStompService } from './service/rx-stomp.service';
 import { rxStompServiceFactory } from './service/rx-stomp-service-factory';
-// import { UserEntryFilterComponent } from './component/user-entry-filter/user-entry-filter.component';
 
 // ### DI PAKE n REFERENCE DLM main.ts
 
@@ -133,6 +112,6 @@ export class SharedModule {
             faReply, faAlignLeft, faAlignCenter, faAlignRight, faAlignJustify, faQrcode, faShare, faTable, faList, farCircle, fasCircle, faMailBulk, faUsersCog, faFileExcel, faListAlt, faCircleNotch, faUpload, faDownload, faAngleDoubleRight, faAngleDoubleLeft, faWindowRestore, faSitemap, faGlobe, faSort, faShareAlt, faLock, faUsers,
             faFileArchive, faUserEdit, faFileExport, faUncharted, faCircleNodes, faFileWaveform, faStop, faRobot, faFlag, farFlag, faImage, faBolt, faEye, faEyeSlash, faFileImport,
             faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faMessage, faDiagramProject, faFileLines,
-        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faKey, faFolder, farFolder);
+        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faSliders, faKey, faFolder, farFolder);
     }
 }

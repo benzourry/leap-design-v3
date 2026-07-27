@@ -144,6 +144,7 @@ export class IconPickerComponent {
     { key: "far:folder", value: ["far", "folder"]},
     { key: "fas:link", value: ["fas", "link"]},
     { key: "fas:random", value: ["fas", "random"]},
+    { key: "fas:sliders", value: ["fas", "sliders"]},
   ];
 
   model= model<string>();
