@@ -140,6 +140,7 @@ export class IconPickerComponent {
     { key: "fas:signature", value: ["fas", "signature"]},
     { key: "fas:hashtag", value: ["fas", "hashtag"]},
     { key: "fas:key", value: ["fas", "key"]},
+    { key: "fas:folder", value: ["fas", "folder"]},
   ];
 
   model= model<string>();

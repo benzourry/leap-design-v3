@@ -640,6 +640,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.curForm = res;
+                this.buildGroupedItems(); // <--- ADD THIS HERE
                 this.cdr.detectChanges(); // <--- Add here
                 // this.curForm.sections
                 //     .map(s => s.parentObj = this.getTab(s.parent))
@@ -894,6 +895,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editItemData: any;
     editItemSection: any;
+    selectedTierForEf: any;
+    tierListForEf: any[] = [];
     editItemFromPalette: boolean = false;
     editItem(content, section, data, sortOrder, fromPalette: boolean = false) {
         if (!data.v) {
@@ -912,6 +915,21 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
 
         this.editItemSection = section;
+
+        // --- NEW: Populate Tier list if section is an approval form ---
+        this.selectedTierForEf = null;
+        this.tierListForEf = [];
+        if (section && section.type === 'approval') {
+            this.tierListForEf = this.curForm.tiers
+                .filter(t => t.section && t.section.id === section.id)
+                .map(t => ({ id: t.id, label: t.name }));
+                
+            // Auto-select the first tier if available
+            if (this.tierListForEf.length > 0) {
+                this.selectedTierForEf = this.tierListForEf[0].id;
+            }
+        }
+        // -------------------------------------------------------------
 
         this.loadOtherAppList(this.editItemData.type, this.editItemData.x.appId);
 
@@ -1485,13 +1503,15 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     }
 
+    collapsibleItemGroup: any = {};
     viewItems(content) {
+        this.buildGroupedItems(); // <--- ADD THIS HERE
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(res => { }, err => { });
     }
 
-    backendEfSave(item, section, force) {
+    backendEfSave(item, section, force, tierId?) {
         let sectionCode = '';
         if (section?.type=='list'){
             sectionCode = section.code;
@@ -1500,7 +1520,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (e) => {
-                    this.backendEf(item, sectionCode, force);
+                    this.backendEf(item, sectionCode, force, tierId);
                 }, error: (e) => {
                     this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
                     this.cdr.detectChanges(); // <--- Add here
@@ -1513,10 +1533,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     showlog: any = {};
     efResult: any = {};
     efLoading: any = {};
-    backendEf(item, section, force) {
+    backendEf(item, sectionCode, force, tierId?) {
         this.efLoading[item.code] = true;
         this.cdr.detectChanges(); 
-        this.formService.backendEf(this.curForm.id, item.code, section, force == true)
+        this.formService.backendEf(this.curForm.id, item.code, sectionCode, force == true, tierId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 let result = `<table width="100%">
@@ -2254,6 +2274,74 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
                     });
             }, res => { })
+    }
+
+    groupedItems: { sectionTitle: string, sectionCode: string, sectionType: string, tiers?: any[], items: any[], isOrphan?: boolean }[] = [];
+    selectedTierView: any = {}; // Tracks selected tier in viewItems modal
+
+    buildGroupedItems() {
+        this.groupedItems = [];
+        const seenCodes = new Set<string>();
+
+        // 1. Group fields by their sections
+        if (this.curForm && this.curForm.sections) {
+            this.curForm.sections.forEach(section => {
+                const sectionItems = [];
+                if (section.items) {
+                    section.items.forEach(itemRef => {
+                        seenCodes.add(itemRef.code);
+                        if (this.curForm.items && this.curForm.items[itemRef.code]) {
+                            sectionItems.push(this.curForm.items[itemRef.code]);
+                        }
+                    });
+                }
+                
+                // --- Extract tiers if this is an approval section ---
+                let tiers = [];
+                if (section.type === 'approval') {
+                    tiers = this.curForm.tiers
+                        .filter(t => t.section && t.section.id === section.id)
+                        .map(t => ({ id: t.id, label: t.name }));
+                        
+                    // Pre-select the first available tier for these fields
+                    if (tiers.length > 0) {
+                        sectionItems.forEach(f => {
+                            if (!this.selectedTierView[f.code]) {
+                                this.selectedTierView[f.code] = tiers[0].id;
+                            }
+                        });
+                    }
+                }
+
+                this.groupedItems.push({
+                    sectionTitle: section.title || '(No Title)',
+                    sectionCode: section.type === 'list' ? section.code : '', 
+                    sectionType: section.type,
+                    tiers: tiers,
+                    items: sectionItems
+                });
+            });
+        }
+
+        // 2. Find Orphaned fields
+        const orphanedItems = [];
+        if (this.curForm && this.curForm.items) {
+            Object.keys(this.curForm.items).forEach(code => {
+                if (!seenCodes.has(code)) {
+                    orphanedItems.push(this.curForm.items[code]);
+                }
+            });
+        }
+
+        if (orphanedItems.length > 0) {
+            this.groupedItems.push({
+                sectionTitle: 'Orphaned Fields',
+                sectionCode: '',
+                sectionType: '',
+                items: orphanedItems,
+                isOrphan: true
+            });
+        }
     }
 
     compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
