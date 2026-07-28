@@ -96,6 +96,16 @@
         }
       </div>
     </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Prerequisite</label>
+      <div class="mx-n2">
+        <app-cm content="content" lang="js" #codeeditorpre #pre="ngModel"
+          name="content"
+          [extraAutoComplete]="extraAutoCompleteJs" subType="mailer" [(ngModel)]="_editMailerData.pre"
+          [linenumber]="true">
+        </app-cm>
+      </div>
+    </div>
     <div class="form-group form-check">
       <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.pickable" 
         id="pickable" name="pickable">

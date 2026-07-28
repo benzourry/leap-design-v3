@@ -88,6 +88,7 @@ getItemText(pre,item){
 
   
   extraAutoCompleteHtml: any[] = [];
+  extraAutoCompleteJs: any[] = [];
   populateAutoComplete() {
 
       this.extraAutoCompleteHtml = [];
@@ -97,14 +98,19 @@ getItemText(pre,item){
               if (value.type != 'static') {
                   if (['select', 'radio'].indexOf(value?.type) > -1){
                       this.extraAutoCompleteHtml.push({ detail: `{{$.${key}.name}}`, type: "text", apply: `{{$.${key}.name}}`, label: value.label })
+                   this.extraAutoCompleteJs.push({ c: 1, detail: `$.${key}.name`, type: "text", apply: `$.${key}.name`, label: value.label })
                   }else if (['modelPicker'].indexOf(value?.type) > -1){
                       this.extraAutoCompleteHtml.push({ detail: `{{$.${key}.${value?.bindLabel}}}`, type: "text", apply: `{{$.${key}.${value?.bindLabel}}}`, label: value.label })
+                      this.extraAutoCompleteJs.push({ c: 1, detail: `$.${key}.${value?.bindLabel}`, type: "text", apply: `$.${key}.${value?.bindLabel}`, label: value.label })
                   }else if (['date'].indexOf(value?.type) > -1){
                       this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key};format="date:dd/MM/yyyy HH:mm"}}`, label: value.label })
+                      this.extraAutoCompleteJs.push({ c: 1, detail: `$.${key}`, type: "text", apply: `$.${key}`, label: value.label })
                   }else if (['file'].indexOf(value?.type) > -1){
                       this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key};format="src"}}`, label: value.label })
+                      this.extraAutoCompleteJs.push({ c: 1, detail: `$.${key}`, type: "text", apply: `$.${key}`, label: value.label })
                   }else{
                       this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key}}}`, label: value.label })
+                    this.extraAutoCompleteJs.push({ c: 1, detail: `$.${key}`, type: "text", apply: `$.${key}`, label: value.label })
                   }
               }
           });
@@ -114,15 +120,21 @@ getItemText(pre,item){
                   if (this.editHolderForm.prev?.items[key].type != 'static') {
                       if (['select', 'radio'].indexOf(value?.type) > -1){
                           this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, type: "text", apply: `{{$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, label: value.label })
+                          this.extraAutoCompleteJs.push({ c: 1, detail: `$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}`, type: "text", apply: `$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}`, label: value.label })
                       }else if (['modelPicker'].indexOf(value?.type) > -1){
                           this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}.${value?.bindLabel}}}`, type: "text", apply: `{{$prev$.${key}.${value?.bindLabel}}}`, label: value.label })
+                          this.extraAutoCompleteJs.push({ c: 1, detail: `$prev$.${key}.${value?.bindLabel}`, type: "text", apply: `$prev$.${key}.${value?.bindLabel}`, label: value.label })
                       }else if (['date'].indexOf(value?.type) > -1){
                           this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key};format="date:dd/MM/yyyy HH:mm"}}`, label: value.label })
+                          this.extraAutoCompleteJs.push({ c: 1, detail: `$prev$.${key}`, type: "text", apply: `$prev$.${key}`, label: value.label })
                       }else if (['file'].indexOf(value?.type) > -1){
                           this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key};format="src"}}`, label: value.label })
+                          this.extraAutoCompleteJs.push({ c: 1, detail: `$prev$.${key}`, type: "text", apply: `$prev$.${key}`, label: value.label })
                       }else{
                           this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key}}}`, label: value.label })
-                      }                    }
+                          this.extraAutoCompleteJs.push({ c: 1, detail: `$prev$.${key}`, type: "text", apply: `$prev$.${key}`, label: value.label })
+                      }                    
+                    }
               });
           }
 
