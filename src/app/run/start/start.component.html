@@ -173,7 +173,7 @@
                           @for (item of group.items; track item.id) {
                             @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
                             
-                            @if ((naviDataItem || ['external','internal','user','start'].includes(item.type)) && preItem()[item.id]) {
+                            @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
                               <div>
                                 
                                 @if (['external', 'internal'].includes(item.type)) {
@@ -189,6 +189,7 @@
                                     item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
                                     item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
                                     item.type === 'start' ? preurl() + '/start' :
+                                    item.type === 'lambda' ? preurl() + '/webui/' + item.url :
                                     preurl() + '/' + item.type + '/' + (item.screenId ?? '');
                                     
                                   @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);

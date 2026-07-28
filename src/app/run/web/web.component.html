@@ -1,1 +1,6 @@
-<div [morphHtml]="html()|safe:'html'"></div>
+<iframe 
+    [srcdoc]="html() | safe:'html'" 
+    style="width: 100%; min-height: 100vh; border: none; display: block;"
+    sandbox="allow-scripts allow-forms allow-popups"
+    title="Web Content">
+</iframe>

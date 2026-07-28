@@ -549,6 +549,11 @@ export class StartComponent implements OnInit, OnDestroy {
           url: `/design/${appId}/`,
           query: undefined,
         };
+      } else if (['webui','web'].includes(split[3])) {
+        return {
+          url: `/design/${appId}/lambda`,
+          query: undefined,
+        };
       } else {
         return {
           url: `/design/${appId}/${split[3]}`,

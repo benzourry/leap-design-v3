@@ -68,7 +68,7 @@
                     <div class="list-group-item icon element p-2 ps-3" cdkDrag
                       [ngClass]="item.altClass">
                       <span class="element-item"
-                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','user','start'].indexOf(item.type)==-1">
+                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','lambda','user','start'].indexOf(item.type)==-1">
                         <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit"
                           [fixedWidth]="true">
                         </fa-icon>
@@ -90,6 +90,8 @@
                             <small>/screen/{{item.screenId}}</small>
                           }@else if (item.type=='user') {
                             <small>/user/{{item.screenId}}</small>
+                          }@else if (item.type=='lambda') {
+                            <small>/~/{{item.url}}</small>
                           }@else if (item.type=='start') {
                             <small>/start</small>
                           }@else if (item.type=='external'||item.type=='internal') {
@@ -178,7 +180,7 @@
                     @for (item of group.items; track $index) {
                       @let naviDataItem = naviData[item.type+'-'+item.screenId];
                       @if (!naviDataItem?.access||naviDataItem?.access.users.indexOf(viewAs||'*')>-1) {
-                        @if (!naviDataItem && ['external','internal','user','start'].indexOf(item.type)==-1) {
+                        @if (!naviDataItem && ['external','internal','user','start', 'lambda'].indexOf(item.type)==-1) {
                           <div class="s-icon text-danger disabled"
                             >
                             <fa-icon [icon]="['fas','exclamation-triangle']" size="3x"
@@ -187,7 +189,7 @@
                             <div class="title">{{item.title}}</div>
                           </div>
                         }
-                        @if (naviDataItem || ['external','internal','user','start'].indexOf(item.type)>-1) {
+                        @if (naviDataItem || ['external','internal','user','start', 'lambda'].indexOf(item.type)>-1) {
                           @if (item.type=='form') {
                             <a class="s-icon"
                               [class.disabled]="naviDataItem?.inactive">
@@ -259,7 +261,7 @@
                               }
                             </a>
                           }
-                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start'].indexOf(item.type)>-1) {
+                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start','lambda'].indexOf(item.type)>-1) {
                             <ng-container>
                               <a class="s-icon">
                                 <fa-icon [icon]="item.icon|iconSplit" size="3x"
@@ -453,6 +455,11 @@
                     <label for="type-internal" class="form-check-label">Internal URL</label>
                   </div>
                   <div class="form-check">
+                    <input type="radio" class="form-check-input" id="type-internal" name="type"
+                      [(ngModel)]="editItemData.type" value="lambda" required>
+                    <label for="type-lambda" class="form-check-label">Lambda WebUI</label>
+                  </div>
+                  <div class="form-check">
                     <input type="radio" class="form-check-input" id="type-user" name="type"
                       [(ngModel)]="editItemData.type" value="user" required>
                     <label for="type-user" class="form-check-label">Manage User Group</label>
@@ -549,6 +556,20 @@
                     @for (access of accessList; track access.id) {
                       <option [value]="access.id">{{access.name}}
                         [{{access.id}}]
+                      </option>
+                    }
+                  </select>
+                </div>
+              }
+              @if (editItemData.type=='lambda') {
+                <div class="form-group mb-3">
+                  <label class="form-label">Select Lambda *</label>
+                  <select class="form-select" name="url"
+                    [(ngModel)]="editItemData.url" required>
+                    <option value="" disabled>Select lambda...</option>
+                    @for (lambda of lambdaList; track lambda.id) {
+                      <option [value]="lambda.code">{{lambda.name}}
+                        [{{lambda.id}}]
                       </option>
                     }
                   </select>

@@ -57,7 +57,7 @@
                   
                   @for (item of group.items | filter:searchText; track item.id || $index) {
                     @let naviDataItem = naviData()[item.type + '-' + item.screenId];
-                    @let isPermittedType = naviDataItem || ['external', 'internal', 'user', 'start'].includes(item.type);
+                    @let isPermittedType = naviDataItem || ['external', 'internal', 'user','lambda', 'start'].includes(item.type);
                     
                     @if (isPermittedType && preItem()[item.id]) {
                       
@@ -114,6 +114,13 @@
 
                         @case ('user') {
                           <a class="s-icon" routerLink="{{preurl()}}/user/{{item.screenId}}"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
+                        @case ('lambda') {
+                          <a class="s-icon" routerLink="{{preurl()}}/~/{{item.url}}"
                             [skipLocationChange]="item.x?.slc"
                             routerLinkActive="active">
                             <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>

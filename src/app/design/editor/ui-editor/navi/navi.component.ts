@@ -25,6 +25,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role.component';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
+import { LambdaService } from '../../../../service/lambda.service';
 
 @Component({
     selector: 'app-navi',
@@ -50,6 +51,7 @@ export class NaviComponent implements OnInit {
   private appService = inject(AppService);
   private toastService = inject(ToastService);
   private formService = inject(FormService);
+  private lambdaService = inject(LambdaService);
   private groupService = inject(GroupService);
   private datasetService = inject(DatasetService);
   private screenService = inject(ScreenService);
@@ -87,6 +89,7 @@ export class NaviComponent implements OnInit {
   datasetList: any[];
   dashboardList: any[];
   lookupList: any[];
+  lambdaList: any[];
   screenList: any[];
   palettes: any[] = [];
   viewAs: string;
@@ -219,6 +222,24 @@ export class NaviComponent implements OnInit {
             type: 'dataset',
             screenId: f.id,
             icon: this.datasetIcon[f.type]
+          }
+          this.palettes.push(obj);
+        });
+        this.cdr.detectChanges(); // <--- Add here
+      })
+  }
+
+  getLambdaList(appId) {
+    this.lambdaService.getLambdaList({appId:appId, size:9999})
+      .subscribe(res => {
+        this.lambdaList = res.content;
+        console.log("lambdaList", this.lambdaList);
+        this.lambdaList.forEach(f => {
+          var obj = {
+            title: f.name,
+            type: 'lambda',
+            url: f.code,
+            icon: 'fas:rocket'
           }
           this.palettes.push(obj);
         });
@@ -513,6 +534,7 @@ export class NaviComponent implements OnInit {
     this.getLookupList(appId);
     this.getScreenList(appId);
     this.getAccessList(appId);
+    this.getLambdaList(appId);
   }
 
   saveItemOrder(section) {
