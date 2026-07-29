@@ -1,9 +1,9 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass } from '@angular/common';
+import { PlatformLocation, NgClass, SlicePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
@@ -19,13 +19,14 @@ import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-
 import { NotiListComponent } from '../../../_shared/modal/noti-list/noti-list.component';
 import { EditMailerComponent } from '../../../_shared/modal/edit-mailer/edit-mailer.component';
 import { EditDatasetComponent } from '../../../_shared/modal/edit-dataset/edit-dataset.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'app-mailer-editor',
     templateUrl: './mailer-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
-        NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent,
+        NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent, SlicePipe,
         NotiListComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -43,7 +44,8 @@ export class MailerEditorComponent implements OnInit {
     private datasetService = inject(DatasetService);
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
-    private cdr = inject(ChangeDetectorRef);
+    private cdr = inject(ChangeDetectorRef);    
+    private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
 
     offline = false;
     app: any;
@@ -65,48 +67,49 @@ export class MailerEditorComponent implements OnInit {
     }
 
     ngOnInit() {
+        // 1. Fetch User (Independent Subscription)
         this.userService.getCreator()
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((user) => {
                 this.user = user;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
+            });
 
+        // 2. Listen to Parent Route (Independent Subscription)
+        this.route.parent.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params: Params) => {
+                this.appId = params['appId'];
 
-                // this.populateAutoComplete();
+                if (this.appId) {
+                    // Safe fallback if user loads slightly after the route
+                    let appParams = { email: this.user?.email }; 
+                    
+                    this.appService.getApp(this.appId, appParams)
+                        .pipe(takeUntilDestroyed(this.destroyRef))
+                        .subscribe(res => {
+                            this.app = res;
+                            this.cdr.markForCheck();
+                        });
+                        
+                    this.getFormList(this.appId);
+                }
 
-                this.route.parent.params
-                    // NOTE: I do not use switchMap here, but subscribe directly
-                    .subscribe((params: Params) => {
-                        this.appId = params['appId'];
+                this.loadMailerList(1);
+                this.loadAllMailerList();
+                this.loadSchedList(1);
+                this.getDatasetList();
+            });
 
-
-                        if (this.appId) {
-                            let params = { email: user.email }
-                            // new HttpParams()
-                            //     .set("email", user.email);
-
-                            this.appService.getApp(this.appId, params)
-                                .subscribe(res => {
-                                    this.app = res;
-                                    this.cdr.detectChanges();
-                                });
-                            this.getFormList(this.appId);
-                        }
-
-                        this.loadMailerList(1);
-                        this.loadAllMailerList();
-                        this.loadSchedList(1);
-                        this.getDatasetList();
-                    });
-
-
-
-                this.route.queryParams
-                    .subscribe((params: Params) => {
-                        const id = params['id'];
-                        if (id) {
-                            this.loadMailer(id);
-                        }
-                    })
+        // 3. Listen to Query Params (Independent Subscription)
+        this.route.queryParams
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params: Params) => {
+                const id = params['id'];
+                // Only load if the ID exists and is different from the currently loaded one
+                if (id && id !== this.mailerId) { 
+                    this.loadMailer(id);
+                }
             });
     }
 
@@ -135,6 +138,7 @@ export class MailerEditorComponent implements OnInit {
             size: this.itemsPerPage
         }
         this.mailerService.getMailerList(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))  
             .subscribe(res => {
                 this.mailerList = res.content;
                 this.mailerTotal = res.page?.totalElements;
@@ -155,6 +159,7 @@ export class MailerEditorComponent implements OnInit {
             size: 9999
         }
         this.mailerService.getMailerList(params)
+            .pipe(takeUntilDestroyed(this.destroyRef))  
             .subscribe(res => {
                 this.allMailerList = res.content;
                 this.cdr.detectChanges();
@@ -172,6 +177,7 @@ export class MailerEditorComponent implements OnInit {
             .result.then(data => {
                 // data.content = this.nl2br(data.content);
                 this.mailerService.save(this.user.email, this.appId, data)
+                    .pipe(takeUntilDestroyed(this.destroyRef))  
                     .subscribe(res => {
                         this.loadMailerList(this.pageNumber);
                         this.loadMailer(res.id);
@@ -217,13 +223,24 @@ export class MailerEditorComponent implements OnInit {
     viewType;
     loadMailer(id) {
         this.mailerId = id;
-        this.mailerService.getMailer(id)
-            .subscribe(mailer => {
-                this.mailer = mailer;
-                this.viewType = 'mailer';
-                this.cdr.detectChanges();
-            })
+        
+        // Mark for check IMMEDIATELY so the sidebar item highlights instantly 
+        // before the HTTP request even finishes.
+        this.cdr.markForCheck(); 
 
+        this.mailerService.getMailer(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: mailer => {
+                    this.mailer = mailer;
+                    this.viewType = 'mailer';
+                    this.cdr.markForCheck(); // Safely triggers UI update for OnPush
+                },
+                error: err => {
+                    console.error("Failed to load mailer", err);
+                    this.cdr.markForCheck();
+                }
+            });
     }
 
     schedId: number;

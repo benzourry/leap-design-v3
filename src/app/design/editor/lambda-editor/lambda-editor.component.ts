@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, viewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
@@ -15,7 +15,7 @@ import { base, baseApi, domainBase } from '../../../_shared/constant.service';
 // import { LookupService } from '../../../service/lookup.service';
 import { EndpointService } from '../../../service/endpoint.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
-import { map, withLatestFrom } from 'rxjs';
+import { map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs';
 import { br2nl, nl2br, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
 import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
@@ -28,6 +28,7 @@ import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-
 import { LookupService } from '../../../run/_service/lookup.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { SignaService } from '../../../service/signa.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -76,6 +77,7 @@ export class LambdaEditorComponent implements OnInit {
   private toastService = inject(ToastService)
   private endpointService = inject(EndpointService)
   private utilityService = inject(UtilityService)
+  private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
   cdr = inject(ChangeDetectorRef);
 
   constructor() {
@@ -85,54 +87,112 @@ export class LambdaEditorComponent implements OnInit {
 
   isCodeTaken = (code) => this.lambdaService.isCodeTaken(code);
 
+  // ngOnInit() {
+  //   this.userService.getCreator()
+  //     .subscribe((user) => {
+  //       this.user = user;
+  //       this.cdr.detectChanges();
+
+  //       this.route.parent.params
+  //         // NOTE: I do not use switchMap here, but subscribe directly
+  //         .subscribe((params: Params) => {
+  //           this.appId = params['appId'];
+
+
+  //           if (this.appId) {
+  //             let params = {
+  //               email: user.email
+  //             }
+  //             this.appService.getApp(this.appId, params)
+  //               .subscribe(res => {
+  //                 this.app = res;
+  //                 this.cdr.detectChanges();
+  //               });
+  //           }
+
+  //           this.loadLambdaList(1);
+  //           // this.loadSharedList(1);
+  //           this.loadBindingSrcs();
+  //           this.loadSignaList();
+  //           this.loadSecretList();
+
+  //         });
+
+  //       this.route.queryParams
+  //         .subscribe((params: Params) => {
+  //           const id = params['id'];
+  //           if (id) {
+  //             this.loadLambda(id);
+  //             this.showSecret = false;
+  //           }
+  //         })
+
+  //       this.route.queryParams
+  //         .subscribe((params: Params) => {
+  //           const key = params['key'];
+  //           if (key) {
+  //             this.showSecret = true;
+  //           }
+  //         })
+  //     });
+  // }
+
   ngOnInit() {
-    this.userService.getCreator()
-      .subscribe((user) => {
+    // 1. Create a SHARED User Stream
+    // shareReplay(1) ensures we only make ONE Http Request, 
+    // but any subsequent subscribers instantly get the cached user.
+    const user$ = this.userService.getCreator().pipe(
+      takeUntilDestroyed(this.destroyRef),
+      tap((user) => {
         this.user = user;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      }),
+      shareReplay(1)
+    );
 
-        this.route.parent.params
-          // NOTE: I do not use switchMap here, but subscribe directly
-          .subscribe((params: Params) => {
-            this.appId = params['appId'];
+    // 2. Parent Params Stream (Independent)
+    // Waits for the user, then listens to Parent route changes
+    user$.pipe(
+      switchMap(() => this.route.parent.params),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((params: Params) => {
+      const newAppId = params['appId'];
 
-
-            if (this.appId) {
-              let params = {
-                email: user.email
-              }
-              this.appService.getApp(this.appId, params)
-                .subscribe(res => {
-                  this.app = res;
-                  this.cdr.detectChanges();
-                });
-            }
-
-            this.loadLambdaList(1);
-            // this.loadSharedList(1);
-            this.loadBindingSrcs();
-            this.loadSignaList();
-            this.loadSecretList();
-
+      if (newAppId && newAppId !== this.appId) {
+        this.appId = newAppId;
+        
+        let appParams = { email: this.user.email };
+        this.appService.getApp(this.appId, appParams)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(res => {
+            this.app = res;
+            this.cdr.markForCheck();
           });
 
-        this.route.queryParams
-          .subscribe((params: Params) => {
-            const id = params['id'];
-            if (id) {
-              this.loadLambda(id);
-              this.showSecret = false;
-            }
-          })
+        this.loadLambdaList(1);
+        this.loadBindingSrcs();
+        this.loadSignaList();
+        this.loadSecretList();
+      }
+    });
 
-        this.route.queryParams
-          .subscribe((params: Params) => {
-            const key = params['key'];
-            if (key) {
-              this.showSecret = true;
-            }
-          })
-      });
+    // 3. Query Params Stream (Independent)
+    // Waits for the user, then listens to Query route changes
+    user$.pipe(
+      switchMap(() => this.route.queryParams),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((params: Params) => {
+      const id = params['id'];
+      const key = params['key'];
+
+      if (id && id !== this.lambdaId) {
+        this.loadLambda(id);
+      } else if (key) {
+        this.showSecret = true;
+        this.lambdaId = ''; // Clear lambdaId so the highlight moves
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   user: any;

@@ -73,7 +73,8 @@ import {
      faSignature,
      faKey,
      faFolder,
-     faSliders
+     faSliders,
+     faCodeBranch
 } from '@fortawesome/free-solid-svg-icons';
 import {
     faThumbsUp,
@@ -112,6 +113,6 @@ export class SharedModule {
             faReply, faAlignLeft, faAlignCenter, faAlignRight, faAlignJustify, faQrcode, faShare, faTable, faList, farCircle, fasCircle, faMailBulk, faUsersCog, faFileExcel, faListAlt, faCircleNotch, faUpload, faDownload, faAngleDoubleRight, faAngleDoubleLeft, faWindowRestore, faSitemap, faGlobe, faSort, faShareAlt, faLock, faUsers,
             faFileArchive, faUserEdit, faFileExport, faUncharted, faCircleNodes, faFileWaveform, faStop, faRobot, faFlag, farFlag, faImage, faBolt, faEye, faEyeSlash, faFileImport,
             faLocationCrosshairs, faLocationDot, faPlane, faMagnifyingGlassLocation, faLaptopMedical, faAddressBook, faFileInvoiceDollar, faPhotoFilm, faLayerGroup, faMessage, faDiagramProject, faFileLines,
-        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faSliders, faKey, faFolder, farFolder);
+        faMicrophone, faClock, faHexagonNodes, faHashtag, faSignature, faSliders, faKey, faFolder, farFolder, faCodeBranch);
     }
 }

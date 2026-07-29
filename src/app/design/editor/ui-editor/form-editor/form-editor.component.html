@@ -547,7 +547,7 @@
                             <!-- First line dari Submission kepada 1st Tier -->
                             <div id="line_-1" [class.selected-line]="selectedLine==-1"
                               [style.border-color]="selectedLine==-1?selectedColor:'#ccc'" style="border: 2px solid rgb(204, 204, 204);
-                              border-left: none rgb(204, 204, 204);
+                              border-left: none;
                               border-radius: 0px 4px 4px 0px; right: -10px;
                               position: absolute; top: 20px; width: 10px;
                               height: 59px; opacity: 0.5;">
@@ -556,7 +556,16 @@
                           @for (tier of  curForm.tiers; track tier.id) {
                             <div class="ballx"
                               [ngClass]="tier.altClass">
-                              <div style="margin-left: 0px; min-height:55px;  min-width:320px;">
+                              <div style="margin-left: 0px; min-height:55px;  min-width:320px;position: relative;">
+                                <!-- THE NEW LABEL -->
+              @if (tier.pre) {
+                <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
+                  <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
+                    <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
+                    IF: {{ tier.pre.length > 40 ? (tier.pre | slice:0:40) + '...' : tier.pre }}
+                  </span>
+                </div>
+              }
                                 <div class="card card-clean mb-3"
                                   [class.selected-tier]="selectedTier==tier.id"
                                   [ngStyle]="{'outline-color':selectedColor}">

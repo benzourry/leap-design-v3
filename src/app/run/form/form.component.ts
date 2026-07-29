@@ -30,7 +30,7 @@ import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap,
 
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
-import { Observable, Subject, lastValueFrom, throwError, of } from 'rxjs';
+import { Observable, Subject, lastValueFrom, throwError, of, Subscription } from 'rxjs';
 import { ComponentCanDeactivate } from '../../_shared/service/can-deactivate-guard.service';
 import { NgForm, FormsModule } from '@angular/forms';
 import { ScreenComponent } from '../screen/screen.component';
@@ -175,7 +175,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this._param = this.param();
       this._navIndex.set(this.navIndex());
 
-      const key = `${this.formId()}|${this.entryId()}|${this._action}|${this._param}`;
+      // FIX: Use JSON.stringify so changes to the object actually generate a new key
+      const key = `${this.formId()}|${this.entryId()}|${this._action}|${JSON.stringify(this._param)}`;
 
       if (this.formId() && this._param && this._action && this.user() && key != this.prevSignalKey) {
         this.prevSignalKey = key;
@@ -232,14 +233,22 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.cdr.detectChanges();
   }
 
+  private activeFormReq?: Subscription;
+
   getForm(formId, entryId, action) {
+
+    // This prevents older, slower HTTP responses from overwriting newer clicks.
+    if (this.activeFormReq) {
+      this.activeFormReq.unsubscribe();
+    }
+
     this.watchList.clear();
     this.watchListSection = {};
     this.reactiveCognaList = {};
 
     this.loading.set(true);
 
-    this.runService.getRunForm(formId).pipe(
+    this.activeFormReq = this.runService.getRunForm(formId).pipe(
       takeUntil(this.destroy$),
       tap(form => {
         if (this.windowKey) {
@@ -440,7 +449,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           this.prevEntry = res;
           this.entry.prev = res.data;
           this.getDataFiles('prev', res.id);
-          this.initForm(form?.onView, res.data, form);
+          // FIX: Pass 'res' as the 4th argument so the context is isolated!
+          this.initForm(form?.onView, res.data, form, res);
         }
         this.prevLoading.set(false);
       }),
@@ -521,6 +531,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     }
   }
 
+  private activeCognaSubs = new Map<string, Subscription>();
+
   runCognaField(fieldCode) {
     const item = this.form().items[fieldCode];
     const tpl = this.compileTpl(item.x?.rcognaTpl, {});
@@ -543,11 +555,17 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     const runCogna = (
       obs$: Observable<{ data: unknown }>
     ) => {
+      // 1. Kill any AI generation currently running for this field
+      if (this.activeCognaSubs.has(fieldCode)) {
+        this.activeCognaSubs.get(fieldCode).unsubscribe();
+      }
       this.rcognaLoading.update(l => ({ ...l, [fieldCode]: true }));
-      obs$.pipe(takeUntil(this.destroy$)).subscribe({
+      const sub = obs$.pipe(takeUntil(this.destroy$)).subscribe({
         next: res => handleCognaResponse(fieldCode, res),
         error: () => handleCognaError(fieldCode)
       });
+
+      this.activeCognaSubs.set(fieldCode, sub);
     };
 
     if (item.x?.rtxtcls) {
@@ -1256,18 +1274,29 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   // added data parameter because form with prev data, prev view initform will evaluate this.entry.data instead of with previous data
-  initForm(js, data, form) {
-    let res = undefined;
+  // initForm(js, data, form) {
+  //   let res = undefined;
 
+  //   let jsTxt = this.compileTpl(js, {})
+  //   // setTimeout(()=>{ // timeout utk flush DOM (utk markdown, mermaid n echarts)
+  //   try {
+  //     res = this._eval(data, jsTxt, form);
+  //   } catch (e) { this.logService.log(`{form-${this.form().title}-initForm}-${e}`) }
+  //   this.filterTabs();
+  //   this.filterItems();
+  //   // },0)
+
+  //   return res;
+  // }
+
+  initForm(js, data, form, entryWrapper = this.entry) {
+    let res = undefined;
     let jsTxt = this.compileTpl(js, {})
-    // setTimeout(()=>{ // timeout utk flush DOM (utk markdown, mermaid n echarts)
     try {
-      res = this._eval(data, jsTxt, form);
+      res = this._eval(data, jsTxt, form, entryWrapper); // Pass it down
     } catch (e) { this.logService.log(`{form-${this.form().title}-initForm}-${e}`) }
     this.filterTabs();
     this.filterItems();
-    // },0)
-
     return res;
   }
 
@@ -1339,9 +1368,22 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       setInterval: this._setInterval,
       $digest$: this.$digest$,
 
-      $saveAndView$: this.save,
-      $save$: () => this._save(form || this.form()),
-      $submit$: (resubmit: boolean) => this.submit(resubmit),
+      $saveAndView$: () => {
+        if (form && form.id !== this.form().id) return this.logService.log('Blocked $saveAndView$ from previous form context');
+        this.save();
+      },
+      $save$: () => {
+        if (form && form.id !== this.form().id) return this.logService.log('Blocked $save$ from previous form context');
+        return this._save(form || this.form());
+      },
+      $submit$: (resubmit: boolean) => {
+        if (form && form.id !== this.form().id) return this.logService.log('Blocked $submit$ from previous form context');
+        this.submit(resubmit);
+      },
+
+      // $saveAndView$: this.save,
+      // $save$: () => this._save(form || this.form()),
+      // $submit$: (resubmit: boolean) => this.submit(resubmit),
 
       $loadjs$: this.loadScript,
       $activate$: this.setActive,
@@ -1369,11 +1411,25 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   }
 
   private compiledEvalCache = new Map<string, Function>();
-  _eval = (data: any, v: string, form: any) => {
-    const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
+  // _eval = (data: any, v: string, form: any) => {
+  //   const bindings = this.getEvalContext(this.entry, data, this.entry?.approval, form, true, {});
+  //   const argNames = Object.keys(bindings);
+    
+  //   // Cache key based on the function string AND the argument names
+  //   const cacheKey = `${argNames.join(',')}_${v}`;
+    
+  //   let fn = this.compiledEvalCache.get(cacheKey);
+  //   if (!fn) {
+  //     fn = new Function(...argNames, `return ${v}`);
+  //     this.compiledEvalCache.set(cacheKey, fn);
+  //   }  
+  //   return fn(...Object.values(bindings));
+  // }
+  _eval = (data: any, v: string, form: any, entryWrapper = this.entry) => {
+    // Pass entryWrapper instead of this.entry!
+    const bindings = this.getEvalContext(entryWrapper, data, entryWrapper?.approval, form, true, {});
     const argNames = Object.keys(bindings);
     
-    // Cache key based on the function string AND the argument names
     const cacheKey = `${argNames.join(',')}_${v}`;
     
     let fn = this.compiledEvalCache.get(cacheKey);

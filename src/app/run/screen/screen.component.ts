@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, computed, effect, forwardRef, inject, input, output, signal, viewChild, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, computed, effect, forwardRef, inject, input, output, signal, viewChild, DestroyRef, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -33,7 +33,7 @@ import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
-import { Observable, lastValueFrom, of } from 'rxjs';
+import { Observable, Subscription, lastValueFrom, of } from 'rxjs';
 import { ScanComponent } from './scan/scan.component';
 import { PageTitleService } from '../../_shared/service/page-title-service';
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
@@ -168,9 +168,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
             }
           }
           
-          if (this.screen()?.dataset) {
-            this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
-          }
+          untracked(() => {
+            if (this.screen()?.dataset) {
+              this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
+            }
+          })
         }
       }
     })
@@ -187,6 +189,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.appConfig = this.runService.appConfig;
   }
 
+  private activeCalReq?: Subscription;
   populateCalendarEvent() {
     this.calOptions = {
       initialView: this.screen()?.data?.defaultView,
@@ -243,7 +246,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
         var ac = this.screen().actions[0];
 
-        this.entryService.getListByDataset(ds.id, params)
+        if (this.activeCalReq) this.activeCalReq.unsubscribe();
+
+        this.activeCalReq = this.entryService.getListByDataset(ds.id, params)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe(res => {
             this.entryList.set(res.content);
@@ -286,11 +291,13 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   options: any = {}
 
+  private activeScreenReq?: Subscription;
   getScreen(screenId: any) {
+    if (this.activeScreenReq) this.activeScreenReq.unsubscribe();
     // console.log("getScreen", screenId)
     this.loading.set(true);
 
-    this.runService.getRunScreen(screenId)
+    this.activeScreenReq = this.runService.getRunScreen(screenId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.screen.set(res);
@@ -789,11 +796,13 @@ export class ScreenComponent implements OnInit, OnDestroy {
   entryParams: any;
   loading = signal<boolean>(false);
 
+  private activeEntryReq?: Subscription;
   loadFormEntry(fId) {
+    if (this.activeEntryReq) this.activeEntryReq.unsubscribe();
     if (this._entryId) {
       this.loading.set(true);
       // Flatted Nested Subscription
-      this.entryService.getEntry(this._entryId, fId).pipe(
+      this.activeEntryReq = this.entryService.getEntry(this._entryId, fId).pipe(
         takeUntilDestroyed(this.destroyRef),
         switchMap(res => {
           this.entry.set(res);
@@ -812,7 +821,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       });
     } else {
       this.loading.set(true);
-      this.entryService.getFirstEntryByParam(this.entryParams, fId).pipe(
+      this.activeEntryReq = this.entryService.getFirstEntryByParam(this.entryParams, fId).pipe(
         takeUntilDestroyed(this.destroyRef)
       ).subscribe(res => {
         this._entryId = res.id;
@@ -923,8 +932,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
   filtersByUserAndStorage: any = {};
   // innerHTML:any = ""
   // dataset:any={}
+
+  private activeListReq?: Subscription;
   loadDatasetEntry(ds, pageNumber, sort?) {
     if (ds) {
+      if (this.activeListReq) this.activeListReq.unsubscribe();
       this.sort.set(sort);
       this.loading.set(true);
       let filtersAll: any = {};
@@ -960,16 +972,24 @@ export class ScreenComponent implements OnInit, OnDestroy {
       if (this.screen().type == 'calendar') {
         this.populateCalendarEvent();
       } else {
-        this.entryService.getListByDataset(ds.id, params)
+        this.activeListReq = this.entryService.getListByDataset(ds.id, params)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: res => {
-              this.entryList.set(res.content);
+
+              // Add this pre-calculation map:
+              const content = (res.content || []).map(e => {
+                  e._go = this.buildGo(e.id);
+                  e._pop = this.buildPop(e.id);
+                  return e;
+              });
+              
+              this.entryList.set(content);
               this.entryTotal.set(res.page?.totalElements);
               this.loading.set(false);
-              this.entry.set({ list: res.content });
-              this._this._list = res.content;
-              this.numberOfElements.set(res.content?.length);
+              this.entry.set({ list: content });
+              this._this._list = content;
+              this.numberOfElements.set(content?.length);
               this.entryPages.set(res.page?.totalPages);
 
               this.initScreen(this.screen().data.f);

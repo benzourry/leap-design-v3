@@ -1,20 +1,3 @@
-// Copyright (C) 2018 Razif Baital
-// 
-// This file is part of LEAP.
-// 
-// LEAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-// 
-// LEAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
-
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
@@ -28,13 +11,13 @@ import { NgClass } from '@angular/common';
     @for (tier of tiers(); track tier.id) {
       @if (preCheck(tier.pre)) {
         <div class="step" [ngbTooltip]="createTooltip(tier,approval())" container="body">
-          <span [style.background-color]="tier?.actions?.[approval()[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry()?.currentTier">
-            @if (!entry()?.approval[tier.id]) {
+          <span [style.background-color]="tier?.actions?.[approval()?.[tier.id]?.status]?.color"  [class.half]="tier.sortOrder>=entry()?.currentTier">
+            @if (!entry()?.approval?.[tier.id]) {
               <fa-icon [icon]="['fas','question']"></fa-icon>
             } @else {
-              @if (tier?.actions[approval()[tier.id]?.status] && !['submitted','resubmitted'].includes(approval()[tier.id]?.status)) {
+              @if (tier?.actions?.[approval()?.[tier.id]?.status] && !['submitted','resubmitted'].includes(approval()?.[tier.id]?.status)) {
                 <fa-icon
-                  [icon]="['fas',tier.actions?.[approval()[tier.id].status]?.icon]">
+                  [icon]="['fas',tier.actions?.[approval()?.[tier.id]?.status]?.icon]">
                 </fa-icon>
               } @else {
                 <fa-icon [icon]="['fas','reply']" flip="horizontal">
@@ -140,11 +123,12 @@ import { NgClass } from '@angular/common';
 })
 export class StepWizardComponent {
 
-    tiers = input<any>();
-    approval = input<any>();
-    entry = input<any>();
-    user = input<any>();
-    type = input<string>();
+    // FIX: Provide default empty structures so they never start strictly undefined
+    tiers = input<any[]>([]);
+    approval = input<any>({});
+    entry = input<any>({});
+    user = input<any>({});
+    type = input<string>('');
 
     private preCache = new Map<string, Function>();
 

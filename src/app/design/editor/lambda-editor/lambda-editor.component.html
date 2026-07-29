@@ -36,46 +36,6 @@
           </div>
         </div>
       } @else {
-        <!-- <div class="mb-3">
-          @for (a of lambdaList() | filter:searchText; track a.id) {
-            <a class="pointer element" [routerLink]="['/design',appId,'lambda']" [queryParams]="{id:a?.id}"
-              [class.active]="a.id==lambdaId"
-              routerLinkActive="active">
-              <div class="list-group-item-heading">
-                {{a.name}} <sup>{{a?.id}}</sup>
-              </div>
-              @if (a.description) {
-                <div class="list-group-item-text">{{a.description}}</div>
-              }
-            </a>
-          }
-          <a class="pointer element" (click)="editLambda(editLambdaTpl,{data:{}}, true)"
-            [class.disabled]="offline">
-            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-            Create Lambda
-          </a>
-          <div class="p-2 pagination-rounded">
-            @if (lambdaTotal()>itemsPerPage) {
-              <ngb-pagination [collectionSize]="lambdaTotal()"
-                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
-                (pageChange)="loadLambdaList(pageNumber())" [boundaryLinks]="false" [directionLinks]="false">
-                <ng-template ngbPaginationFirst>
-                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
-                </ng-template>
-                <ng-template ngbPaginationPrevious>
-                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
-                </ng-template>
-                <ng-template ngbPaginationNext>
-                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
-                </ng-template>
-                <ng-template ngbPaginationLast>              
-                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
-                </ng-template>
-              </ngb-pagination>
-            }
-            <div class="clearfix"></div>
-          </div>
-        </div> -->
 
         <div class="mb-3">
           

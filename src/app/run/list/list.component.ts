@@ -27,7 +27,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter';
 import { LogService } from '../../_shared/service/log.service';
-import { catchError, combineLatest, first, forkJoin, lastValueFrom, map, Observable, of, share, shareReplay, Subject, takeUntil, tap } from 'rxjs';
+import { catchError, combineLatest, first, forkJoin, lastValueFrom, map, Observable, of, share, shareReplay, Subject, Subscription, takeUntil, tap } from 'rxjs';
 import dayjs from 'dayjs';
 import { HttpClient } from '@angular/common/http';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
@@ -287,9 +287,15 @@ export class ListComponent implements OnInit, OnDestroy {
   mailerList = signal<any[]>([]);
   totalColumn: number = 0;
   columnVisible: Record<string, boolean> = {};
+  private activeDatasetReq?: Subscription; // Subscription
   getDataset(id) {
+    // FIX: Kill pending dataset request
+    if (this.activeDatasetReq) {
+      this.activeDatasetReq.unsubscribe();
+    }
+
     this.loading.set(true);
-    this.runService.getRunDataset(id)
+    this.activeDatasetReq = this.runService.getRunDataset(id)
       .subscribe({
         next: res => {
           Object.defineProperty(window, '_this_'+this.scopeId(), {
@@ -359,12 +365,18 @@ export class ListComponent implements OnInit, OnDestroy {
 
   hasAggColumn:boolean = false;
 
+  private activeListReq?: Subscription;    // Subscription
   getEntryList(pageNumber: number, sort?: any) {
     const dataset = this.dataset();
     
     // Guard clauses for early exit
     if (!dataset) return;
     if (!dataset.id) return; 
+
+    // FIX: Kill pending list requests to prevent pagination/filter races
+    if (this.activeListReq) {
+      this.activeListReq.unsubscribe();
+    }
 
     this.sort.set(sort);
     this.itemLoading.set(true);
@@ -396,7 +408,7 @@ export class ListComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.entryService.getListByDataset(dataset.id, params).subscribe({
+    this.activeListReq =this.entryService.getListByDataset(dataset.id, params).subscribe({
       next: res => {
         if (this.destroyed) return;
 

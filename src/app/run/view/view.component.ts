@@ -29,7 +29,7 @@ import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, has
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { KeyValue, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
-import { lastValueFrom, Observable, of } from 'rxjs';
+import { lastValueFrom, Observable, of, Subscription } from 'rxjs';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 import { FormsModule, NgModel } from '@angular/forms';
@@ -232,10 +232,16 @@ export class ViewComponent implements OnInit, OnDestroy {
   lookupLoading: any = {}
   lookupDataObs: any = {}
 
+  private activeLookupSubs = new Map<string, Subscription>();
   _getLookup = (code, param, cb?, err?) => {
     if (code) {
+      // 1. Cancel previous pending search for this specific dropdown
+      if (this.activeLookupSubs.has(code)) {
+        this.activeLookupSubs.get(code).unsubscribe();
+      }
+
       this.lookupLoading[code] = true;
-      this._getLookupObs(code, param, cb, err)
+      const sub = this._getLookupObs(code, param, cb, err)
         .subscribe({
           next: res => {
             this.lookup[code] = res;
@@ -244,6 +250,7 @@ export class ViewComponent implements OnInit, OnDestroy {
             this.lookupLoading[code] = false;
           }
         })
+      this.activeLookupSubs.set(code, sub);
     }
   }
 
@@ -442,8 +449,16 @@ export class ViewComponent implements OnInit, OnDestroy {
       $digest$: this.$digest$,
 
       // $saveAndView$: this.save,
-      $save$: () => this._save(this.entry, form || this.form()),
-      $submit$: (resubmit: boolean) => this.submit(resubmit, this.entry, form || this.form()),
+      // $save$: () => this._save(this.entry, form || this.form()),
+      // $submit$: (resubmit: boolean) => this.submit(resubmit, this.entry, form || this.form()),
+      $save$: () => {
+        if (entry !== this.entry) return this.logService.log('Blocked $save$ from historical context');
+        return this._save(this.entry, form || this.form());
+      },
+      $submit$: (resubmit: boolean) => {
+        if (entry !== this.entry) return this.logService.log('Blocked $submit$ from historical context');
+        this.submit(resubmit, this.entry, form || this.form());
+      },
       
       $loadjs$: this.loadScript,
       $activate$: this.setActive,
@@ -601,10 +616,15 @@ export class ViewComponent implements OnInit, OnDestroy {
   trails = signal<any[]>([]);
   prevLoading = signal<boolean>(false);
   
+  private activeDataReq?: Subscription;
   getData(id, form) {
+    if (this.activeDataReq) {
+      this.activeDataReq.unsubscribe();
+    }
+
     this.loading.set(true);
 
-    this.getDataObs(id, form).pipe(
+    this.activeDataReq = this.getDataObs(id, form).pipe(
       // tap() allows us to run side-effects with the first response
       tap((res) => {
         this.entry = res;
@@ -851,6 +871,9 @@ checkTier(tier) {
   onFileClear(event, data, f, e) {
     this.entryService.deleteAttachment(event)
       .subscribe(res => {
+        // FIX: Trigger the field change to update local state
+        this.fieldChange(event, data, f, e);
+        this.cdr.markForCheck();
       });
   }
 

@@ -186,6 +186,14 @@
                   {{mailer.subject}}
                 </div>
                 <div class="card-body pb-0">
+                  @if (mailer.pre) {
+                  <div class="mb-2">
+                    <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="mailer.pre">
+                      <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
+                      IF: {{ mailer.pre.length > 40 ? (mailer.pre | slice:0:40) + '...' : mailer.pre }}
+                    </span>
+                  </div>
+                }
                   <div class="form-group mb-3">
                     <label>Recipient</label>
                     <div>
