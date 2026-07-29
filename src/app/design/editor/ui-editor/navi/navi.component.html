@@ -455,7 +455,7 @@
                     <label for="type-internal" class="form-check-label">Internal URL</label>
                   </div>
                   <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-internal" name="type"
+                    <input type="radio" class="form-check-input" id="type-lambda" name="type"
                       [(ngModel)]="editItemData.type" value="lambda" required>
                     <label for="type-lambda" class="form-check-label">Lambda WebUI</label>
                   </div>
@@ -650,7 +650,7 @@
     </div>
     <div class="tab-simple fix-gutter" justify="center">
       <div class="single-pane">
-        <div class="form-group mb-3">
+        <div class="form-group">
           <label class="form-label">Init Function</label>
           <div class="mx-n2">
             <app-cm name="f" lang="javascript" subType="active"
@@ -664,7 +664,7 @@
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editNaviForm.invalid"
         (click)="c(editNaviData)">
-        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        <fa-icon [icon]="['fas','floppy-disk']" [fixedWidth]="true"></fa-icon>
         Save Setting
       </button>
     </div>
@@ -686,7 +686,7 @@
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="removeGroupForm.invalid"
         (click)="c(removeGroupData)">
-        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
         Remove Group
       </button>
     </div>
@@ -708,7 +708,7 @@
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="removeItemForm.invalid"
         (click)="c(removeItemData)">
-        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
         Remove Item
       </button>
     </div>
