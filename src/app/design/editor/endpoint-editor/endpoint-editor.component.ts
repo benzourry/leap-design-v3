@@ -132,6 +132,7 @@ export class EndpointEditorComponent implements OnInit {
     loadEndpointList(pageNumber) {
         this.pageNumber = pageNumber;
         this.itemLoading = true;
+        this.cdr.markForCheck();
 
         let params = {
             searchText: this.searchText,
@@ -144,10 +145,10 @@ export class EndpointEditorComponent implements OnInit {
                 this.endpointList = res.content;
                 this.endpointTotal = res.page?.totalElements;
                 this.itemLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }, res => {
                 this.itemLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             })
     }
 

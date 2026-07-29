@@ -25,6 +25,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
     <p>{{app?.description}}</p> -->
     <h5 class="mb-3">Endpoint Manager</h5>
     <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadEndpointList(1)"
+      (search)="loadEndpointList(1)"
       autocapitalize="none"
       [(ngModel)]="searchText">
     </div>
@@ -41,7 +42,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       }
       @if (!itemLoading) {
         <div class="mb-3">
-          @for (a of endpointList | filter:searchText; track a.id) {
+          @for (a of endpointList; track a.id) {
             <a class="pointer element" (click)="loadEndpoint(a?.id)" [routerLink]="['/design',appId,'endpoint']"
               [queryParams]="{id:a?.id}" [class.active]="a.id==endpointId"
               routerLinkActive="active"
@@ -164,8 +165,15 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                       {{endpoint.clientId}}
                     </div>
                     <div class="list-group-item">
+                      <button type="button" class="btn btn-sm btn-light float-end" (click)="endpoint.visible=!endpoint.visible">
+                        <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>
+                      </button>
                       <div class="small">Client Secret</div>
-                      {{endpoint.clientSecret}}
+                        @if (endpoint.visible){
+                          {{endpoint.clientSecret}} 
+                        }@else{
+                          ***************
+                        }
                     </div>
                   } @else {
                     <div class="list-group-item">
