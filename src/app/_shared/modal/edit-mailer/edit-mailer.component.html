@@ -99,8 +99,9 @@
     <div class="form-group mb-3">
       <label class="form-label">Prerequisite</label>
       <div class="mx-n2">
-        <app-cm content="content" lang="js" #codeeditorMailerPre #mailerPre="ngModel"
-          name="mailerPre"
+        <!-- ✅ FIXED: name changed to "pre" -->
+        <app-cm content="pre" lang="js" #codeeditorpre #pre="ngModel"
+          name="pre" 
           [extraAutoComplete]="extraAutoCompleteJs" [(ngModel)]="_editMailerData.pre"
           [linenumber]="true">
         </app-cm>
