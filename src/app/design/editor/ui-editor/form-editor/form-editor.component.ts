@@ -64,6 +64,7 @@ import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { KryptaService } from '../../../../service/krypta.service';
+import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
 // declare var LeaderLine: any;
 // import { combineLatest } from 'rxjs';
 
@@ -80,7 +81,7 @@ import { KryptaService } from '../../../../service/krypta.service';
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
         EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, SlicePipe,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
-        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe]
+        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe]
 })
 export class FormEditorComponent implements OnInit, AfterViewChecked {
 
@@ -283,7 +284,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     buildSuper() {
         this.superItems = Object.values(this.superForm?.items).map((i: any) => {
             delete i.id;
-            if (!i.x) i.x={};
+            if (!i.x) i.x = {};
             i.x.extended = true;
             return {
                 label: i.label,
@@ -352,11 +353,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     ngOnInit() {
 
         this.location.onPopState(() => this.modalService.dismissAll(''));
-        
+
         this.utilityService.testOnline$()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(online => this.offline = !online);
-            
+
         this.commService.changeEmitted$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(data => {
@@ -416,7 +417,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getDatasetList(this.app.id);
                             this.getScreenList(this.app.id);
                             this.getEndpointList();
-                            this.cdr.detectChanges(); 
+                            this.cdr.detectChanges();
                         });
                 }
             });
@@ -889,8 +890,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    rcognaExtractor(val){
-        this.editItemData.x.rcognaFields = extractVariables(["$"],val)?.["$"]||[];
+    rcognaExtractor(val) {
+        this.editItemData.x.rcognaFields = extractVariables(["$"], val)?.["$"] || [];
     }
 
     editItemData: any;
@@ -923,7 +924,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             this.tierListForEf = this.curForm.tiers
                 .filter(t => t.section && t.section.id === section.id)
                 .map(t => ({ id: t.id, label: t.name }));
-                
+
             // Auto-select the first tier if available
             if (this.tierListForEf.length > 0) {
                 this.selectedTierForEf = this.tierListForEf[0].id;
@@ -956,8 +957,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     fieldList.push(rItem);
                 }
                 fieldList.forEach((aa, index) => {
-                    if (aa.x?.rtxtcls||aa.x?.rtxtgen){
-                        aa.x.rcognaFields = extractVariables(["$"], aa.x?.rcognaTpl)?.["$"]||[];
+                    if (aa.x?.rtxtcls || aa.x?.rtxtgen) {
+                        aa.x.rcognaFields = extractVariables(["$"], aa.x?.rcognaTpl)?.["$"] || [];
                     }
                     this.formService.saveItem(this.curForm.id, section.id, aa, sortOrder + index)
                         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -991,9 +992,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.curForm?.tiers.forEach((t, indext) => {
             this.tierMap[t.id] = t;
 
-            let actionsObj:any[] = Object.values(t.actions);
-            if (t.alwaysApprove){
-                actionsObj = [{id:-2323, color:"rgb(0, 123, 255)", action:'nextTier'}]; // -2323 is just a random id that will never exist in db to represent alwaysApprove action
+            let actionsObj: any[] = Object.values(t.actions);
+            if (t.alwaysApprove) {
+                actionsObj = [{ id: -2323, color: "rgb(0, 123, 255)", action: 'nextTier' }]; // -2323 is just a random id that will never exist in db to represent alwaysApprove action
             }
 
             actionsObj.forEach((ta, indexta) => {
@@ -1057,7 +1058,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             this.cdr.detectChanges();
         })
     }
-    
+
     selectColor(number) {
         const hue = number * 137.508; // use golden angle approximation
         return `hsla(${hue},50%,75%)`;
@@ -1248,13 +1249,24 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    reorderTier(index, op) {
-        if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${this.curForm.tiers[index].name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
-            this.reorder(this.curForm.tiers, index, op);
-            this.saveTierOrder();
+    // // ISSUE REORDER
+    // reorderTier(index, op) {
+    //     if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${this.curForm.tiers[index].name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
+    //         this.reorder(this.curForm.tiers, index, op);
+    //         this.saveTierOrder();
+    //     }
+    // }
+    reorderTier(tier: any, op: number) {
+        if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${tier.name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
+            // let index = this.curForm.tiers.indexOf(tier);
+            let index = this.curForm.tiers.findIndex((t: any) => t.id === tier.id);
+
+            if (index > -1 && index + op >= 0 && index + op < this.curForm.tiers.length) {
+                this.reorder(this.curForm.tiers, index, op);
+                this.saveTierOrder();
+            }
         }
     }
-
     /** recalculate tierorder and save to database */
     reorderAllTier() {
         var list = this.curForm.tiers
@@ -1282,25 +1294,35 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    reorderTierAction(tierIndex, index, op) {
-        var orderList = Object.values(this.curForm.tiers[tierIndex].actions);
-        this.reorder(orderList, index, op);
-        this.saveTierActionOrder(tierIndex, orderList)
+    reorderTierAction(tier: any, actionRef: any, op: number) {
+        // Extract and sort actions safely to match the HTML pipe
+        var orderList = Object.values(tier.actions)
+            .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+
+        // Safely find the true index of the action
+        // let index = orderList.indexOf(actionRef);
+        let index = orderList.findIndex((a: any) => a.id === actionRef.id);
+
+        if (index > -1 && index + op >= 0 && index + op < orderList.length) {
+            this.reorder(orderList, index, op);
+            this.saveTierActionOrder(tier, orderList);
+        }
     }
 
-    saveTierActionOrder(tierIndex, orderList) {
-        var list = orderList
-            .map((val: any) => {
-                return { id: val.id, sortOrder: val.sortOrder }
-            });
-        return this.formService.saveTierActionOrder(this.curForm.tiers[tierIndex].id, list)
+    saveTierActionOrder(tier: any, orderList: any[]) {
+        var list = orderList.map((val: any) => {
+            return { id: val.id, sortOrder: val.sortOrder };
+        });
+
+        // Use the tier's ID directly from the object
+        return this.formService.saveTierActionOrder(tier.id, list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
-                this.curForm.tiers[tierIndex].actions = res;
-                this.cdr.detectChanges(); // <--- Add here
+                // Update the tier's actions directly
+                tier.actions = res;
+                this.cdr.detectChanges();
             });
     }
-
     // Order by descending property key
     sortOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
         return a.value.sortOrder - b.value.sortOrder;
@@ -1340,11 +1362,20 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             })
     }
 
-    reorderItem(section, index, op) {
-        this.reorder(section.items, index, op);
-        this.saveItemOrder(section);
-    }
+    // // ISSUE REORDER
+    // reorderItem(section, index, op) {
+    //     this.reorder(section.items, index, op);
+    //     this.saveItemOrder(section);
+    // }
+    reorderItem(section: any, itemRef: any, op: number) {
+        // let index = section.items.indexOf(itemRef);
+        let index = section.items.findIndex((i: any) => (i.id && i.id === itemRef.id) || (i.code && i.code === itemRef.code));
 
+        if (index > -1 && index + op >= 0 && index + op < section.items.length) {
+            this.reorder(section.items, index, op);
+            this.saveItemOrder(section);
+        }
+    }
     getTab = (id) => {
         // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
         if (id == "-1") {
@@ -1514,7 +1545,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     backendEfSave(item, section, force, tierId?) {
         let sectionCode = '';
-        if (section?.type=='list'){
+        if (section?.type == 'list') {
             sectionCode = section.code;
         }
         this.formService.saveItemOnly(this.curForm.id, item)
@@ -1536,7 +1567,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     efLoading: any = {};
     backendEf(item, sectionCode, force, tierId?) {
         this.efLoading[item.code] = true;
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges();
         this.formService.backendEf(this.curForm.id, item.code, sectionCode, force == true, tierId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
@@ -1636,10 +1667,22 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
+    // // ISSUE REORDER
     reorderSection(list, index, op) {
-        this.reorder(list, index, op);
-        this.saveSectionOrder(this.curForm)
+        if (index > -1 && index + op >= 0 && index + op < list.length) {
+            this.reorder(list, index, op);
+            this.saveSectionOrder(this.curForm)
+        }
     }
+    // reorderSection(section: any, op: number) {
+    //   let list = this.curForm.sections;
+    //   let index = list.indexOf(section);
+
+    //   if (index > -1 && index + op >= 0 && index + op < list.length) {
+    //       this.reorder(list, index, op);
+    //       this.saveSectionOrder(this.curForm);
+    //   }
+    // }    
 
     saveSectionOrder(form) {
         var list = form.sections
@@ -1707,11 +1750,20 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    reorderTab(index, op) {
-        this.reorder(this.curForm.tabs, index, op);
-        this.saveTabOrder();
-    }
+    // // ISSUE REORDER
+    // reorderTab(index, op) {
+    //     this.reorder(this.curForm.tabs, index, op);
+    //     this.saveTabOrder();
+    // }
+    reorderTab(tab: any, op: number) {
+        // let index = this.curForm.tabs.indexOf(tab);
+        let index = this.curForm.tabs.findIndex((t: any) => t.id === tab.id);
 
+        if (index > -1 && index + op >= 0 && index + op < this.curForm.tabs.length) {
+            this.reorder(this.curForm.tabs, index, op);
+            this.saveTabOrder();
+        }
+    }
     saveTabOrder() {
         var list = this.curForm.tabs
             .map((val) => {
@@ -1980,14 +2032,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         if ($event.target.files && $event.target.files.length) {
             this.importLoading = true;
             this.formService.uploadData(this.curForm.id, $event.target.files[0], this.user.email, createField, createDataset, createDashboard, importToLive, format)
-                .pipe(takeUntilDestroyed(this.destroyRef)) 
+                .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
                         this.importExcelData = res;
                         this.importLoading = false;
                         this.getFormData(this.curFormId);
                         this.commService.emitChange({ key: 'form', value: "import" });
-                        this.toastService.show("Data "+ format+" successfully imported", { classname: 'bg-success text-light' });
+                        this.toastService.show("Data " + format + " successfully imported", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges(); // <--- Add here
 
                     }, error: (error) => {
@@ -2082,9 +2134,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
         this.formService.getEntryTrailByFormId(id, params)
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(trail => { 
-                this.trails = trail.content; 
-                this.trailsTotal = trail.page?.totalElements ;
+            .subscribe(trail => {
+                this.trails = trail.content;
+                this.trailsTotal = trail.page?.totalElements;
                 this.cdr.detectChanges(); // <--- Add here
             });
     }
@@ -2296,14 +2348,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         }
                     });
                 }
-                
+
                 // --- Extract tiers if this is an approval section ---
                 let tiers = [];
                 if (section.type === 'approval') {
                     tiers = this.curForm.tiers
                         .filter(t => t.section && t.section.id === section.id)
                         .map(t => ({ id: t.id, label: t.name }));
-                        
+
                     // Pre-select the first available tier for these fields
                     if (tiers.length > 0) {
                         sectionItems.forEach(f => {
@@ -2316,7 +2368,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.groupedItems.push({
                     sectionTitle: section.title || '(No Title)',
-                    sectionCode: section.type === 'list' ? section.code : '', 
+                    sectionCode: section.type === 'list' ? section.code : '',
                     sectionType: section.type,
                     tiers: tiers,
                     items: sectionItems

@@ -6,6 +6,7 @@
     /* opacity: 0; */
     display:none;
     z-index: 4;
+    pointer-events: none;
 }
 
 .element .element-edit .btn {
@@ -16,6 +17,7 @@
 .element:active .element-edit {
     /* opacity: 1; */
     display:block;
+    pointer-events: auto;
 }
 
 .element.no-pointer:hover::after,

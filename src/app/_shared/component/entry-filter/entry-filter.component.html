@@ -67,7 +67,7 @@
                     @case('simpleOption') {
                       <select class="form-select" name="{{prefixedField}}" [(ngModel)]="presetFilters()[bindPath]">
                         <option value="" disabled></option>
-                        @for (item of getAsList(field.options); track $index) {
+                        @for (item of field.options|asList; track $index) {
                           <option [value]="item">{{item}}</option>
                         }
                       </select>

@@ -36,6 +36,7 @@ import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 import { ElementBase } from '../element-base';
 import { SpeechToTextComponent } from '../speech-to-text/speech-to-text.component';
 import { MorphHtmlDirective } from '../../../_shared/directive/morph-html.directive';
+import { AsListPipe } from '../../../_shared/pipe/as-list.pipe';
 
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
@@ -61,7 +62,7 @@ export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
     imports: [FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, AngularEditorModule,
         NgbTooltip, NgbDatepicker, NgbInputDatepicker, NgbTimepicker, NgSelectModule, NgStyle, AsyncPipe,
         MorphHtmlDirective,
-        SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent]
+        SafePipe, SecurePipe, NgLeafletComponent, SpeechToTextComponent, AsListPipe]
 })
 
 export class FieldEditComponent extends ElementBase<any> implements OnInit, AfterViewInit {

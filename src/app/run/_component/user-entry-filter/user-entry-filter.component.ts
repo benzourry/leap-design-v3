@@ -5,13 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
 import { splitAsList, compileTpl } from '../../../_shared/utils';
 import { RunService } from '../../_service/run.service';
+import { AsListPipe } from '../../../_shared/pipe/as-list.pipe';
 
 @Component({
   selector: 'app-user-entry-filter',
   templateUrl: './user-entry-filter.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./user-entry-filter.component.scss'],
-  imports: [FormsModule, NgbInputDatepicker, NgbTimepicker, NgSelectModule, SafePipe]
+  imports: [FormsModule, NgbInputDatepicker, NgbTimepicker, NgSelectModule, SafePipe, AsListPipe]
 })
 export class UserEntryFilterComponent {
 

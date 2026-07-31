@@ -46,7 +46,7 @@
               <h4>Access to form design is restricted.</h4>
               <div class="mt-3">
                 <div class="mb-2">Allowed creators:</div>
-                @for(splitted of getAsList(curForm.email); track $index){
+                @for(splitted of curForm.email|asList; track $index){
                     
                   <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
                       <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
@@ -177,15 +177,19 @@
                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                   </button>
                                   @if (!$first) {
+                                    <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                      (click)="reorderTab($index, -1)"> -->
                                     <button type="button" class="btn btn-info btn-round btn-sm"
-                                      (click)="reorderTab($index, -1)">
+                                      (click)="reorderTab(tab, -1)">
                                       <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true">
                                       </fa-icon>
                                     </button>
                                   }
                                   @if (!$last) {
+                                    <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                      (click)="reorderTab($index, 1)"> -->
                                     <button type="button" class="btn btn-info btn-round btn-sm"
-                                      (click)="reorderTab($index, 1)">
+                                      (click)="reorderTab(tab, 1)">
                                       <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true">
                                       </fa-icon>
                                     </button>
@@ -200,7 +204,7 @@
                           </div>
                         </div>
                       }
-                      @for (t of curForm.sections|groupBy:'parent':(curForm.nav!='simple'):'parentObj.sortOrder'; track $index) {
+                      @for (t of curForm.sections|groupBy:'parent':(curForm.nav!='simple'):'parentObj.sortOrder'; track t.key) {
                         <!-- {{curForm.sections|json}} -->
                         <div>
                           @if (curForm.nav!='simple') {
@@ -290,6 +294,8 @@
                                         @if (!$s_first) {
                                           <button type="button" class="btn btn-info btn-round btn-sm"
                                             (click)="reorderSection(curForm.sections,e.__index, -1)">
+                                          <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                            (click)="reorderSection(e, -1)"> -->
                                             <fa-icon [icon]="['fas','arrow-left']"
                                               [fixedWidth]="true">
                                             </fa-icon>
@@ -298,6 +304,8 @@
                                         @if (!$s_last) {
                                           <button type="button" class="btn btn-info btn-round btn-sm"
                                             (click)="reorderSection(curForm.sections,e.__index, 1)">
+                                          <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                            (click)="reorderSection(e, 1)"> -->
                                             <fa-icon [icon]="['fas','arrow-right']"
                                               [fixedWidth]="true">
                                             </fa-icon>
@@ -309,7 +317,7 @@
                                       <div class="card-body p-3">
                                         <div class="row g-4" [ngStyle]="{'justify-content':e.align}"
                                           cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="dropItem($event, e)"
-                                          [cdkDropListData]="e?.items">
+                                          [cdkDropListData]="e?.items" [cdkDropListSortingDisabled]="filterField.length > 0">
                                           @if (e?.items.length==0) {
                                             <div class="col-md-12">
                                               <div class="text-muted text-center">
@@ -318,7 +326,7 @@
                                               </div>
                                             </div>
                                           }
-                                          @for (f of e?.items|filter:filterField; track $index; let $f_index = $index; let $f_first = $first; let $f_last = $last) {
+                                          @for (f of e?.items|filter:filterField; track f.id || f.code; let $f_index = $index; let $f_first = $first; let $f_last = $last) {
                                             @let field = curForm?.items[f.code];
                                             <div class="element"
                                               cdkDrag
@@ -461,16 +469,20 @@
                                                   </fa-icon>
                                                 </button>
                                                 @if (!$f_first) {
+                                                  <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                                    (click)="reorderItem(e, e.items.indexOf(f) -1)"> -->
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderItem(e,$f_index, -1)">
+                                                    (click)="reorderItem(e, f, -1)">
                                                     <fa-icon [icon]="['fas','arrow-left']"
                                                       [fixedWidth]="true">
                                                     </fa-icon>
                                                   </button>
                                                 }
                                                 @if (!$f_last) {
+                                                  <!-- <button type="button" class="btn btn-info btn-round btn-sm"
+                                                    (click)="reorderItem(e, e.items.indexOf(f), 1)"> -->
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderItem(e,$f_index, 1)">
+                                                    (click)="reorderItem(e, f, 1)">
                                                     <fa-icon [icon]="['fas','arrow-right']"
                                                       [fixedWidth]="true">
                                                     </fa-icon>
@@ -553,19 +565,19 @@
                               height: 59px; opacity: 0.5;">
                             </div>
                           </div>
-                          @for (tier of  curForm.tiers; track tier.id) {
+                          @for (tier of curForm.tiers; track tier.id; let $t_index = $index) {
                             <div class="ballx"
                               [ngClass]="tier.altClass">
                               <div style="margin-left: 0px; min-height:55px;  min-width:320px;position: relative;">
                                 <!-- THE NEW LABEL -->
-              @if (tier.pre) {
-                <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
-                  <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
-                    <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
-                    IF: {{ tier.pre.length > 40 ? (tier.pre | slice:0:40) + '...' : tier.pre }}
-                  </span>
-                </div>
-              }
+                                @if (tier.pre) {
+                                  <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
+                                    <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
+                                      <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
+                                      IF: {{ tier.pre.length > 40 ? (tier.pre | slice:0:40) + '...' : tier.pre }}
+                                    </span>
+                                  </div>
+                                }
                                 <div class="card card-clean mb-3"
                                   [class.selected-tier]="selectedTier==tier.id"
                                   [ngStyle]="{'outline-color':selectedColor}">
@@ -573,16 +585,20 @@
                                     @if (!curForm.x?.extended){
                                       <div class="element-edit" style="position:absolute;top:6px;right:12px;">
                                         @if (!$first) {
+                                          <!-- <button type="button" class="btn btn-round btn-info btn-sm"
+                                            (click)="reorderTier($t_index, -1)"> -->
                                           <button type="button" class="btn btn-round btn-info btn-sm"
-                                            (click)="reorderTier($index, -1)">
+                                            (click)="reorderTier(tier, -1)">
                                             <fa-icon [icon]="['fas','arrow-up']"
                                               [fixedWidth]="true">
                                             </fa-icon>
                                           </button>
                                         }
                                         @if (!$last) {
+                                          <!-- <button type="button" class="btn btn-round btn-info btn-sm"
+                                            (click)="reorderTier($t_index, 1)"> -->
                                           <button type="button" class="btn btn-round btn-info btn-sm"
-                                            (click)="reorderTier($index, 1)">
+                                            (click)="reorderTier(tier, 1)">
                                             <fa-icon [icon]="['fas','arrow-down']"
                                               [fixedWidth]="true">
                                             </fa-icon>
@@ -605,7 +621,7 @@
                                     <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
                                       [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
                                       style="width:30px;right:14px;font-weight: bold;position:absolute;background: white; height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
-                                      {{$index+1}}
+                                      {{$t_index+1}}
                                     </div>
                                     <div class="element-item">
                                       {{tier.name}}<sup class="ms-2">{{tier.id}}</sup>
@@ -651,7 +667,7 @@
                                       @if (tier.type=='FIXED') {
                                         <div class="small mb-2">
                                           <span class="me-1 mb-2">Fixed approver to </span>
-                                          @for (i of getAsList(tier.approver); track $index) {
+                                          @for (i of tier.approver|asList; track $index) {
                                             <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">
                                               {{i}}
                                             </div>
@@ -737,6 +753,7 @@
                                             [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
                                             [style.color]="selectedLine==o.value.id?selectedColor:''"
                                             class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
+                                            [ngClass]="o.value.altClass"
                                             >
                                             @if (!simplifiedProcessView) {
                                               {{o.value.label}}
@@ -775,7 +792,7 @@
                                                 </button>
                                                 @if (!$a_first) {
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderTierAction($index,$a_index, -1)">
+                                                    (click)="reorderTierAction(tier, o.value, -1)">
                                                     <fa-icon [icon]="['fas','arrow-left']"
                                                       [fixedWidth]="true">
                                                     </fa-icon>
@@ -783,7 +800,7 @@
                                                 }
                                                 @if (!$a_last) {
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderTierAction($index,$a_index, 1)">
+                                                    (click)="reorderTierAction(tier, o.value, 1)">
                                                     <fa-icon [icon]="['fas','arrow-right']"
                                                       [fixedWidth]="true">
                                                     </fa-icon>
@@ -1500,7 +1517,7 @@
                       <span class="input-group-text">
                         {{f}}
                       </span>
-                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                      <select class="form-select form-select-sm" name="facet-{{f}}"
                         [(ngModel)]="editSectionData.x.facet[f]">
                         <option class="text-muted" [ngValue]="undefined">Select view mode</option>
                         @for (g of facetMode; track $index) {
@@ -2979,7 +2996,7 @@
                         <select class="form-select" name="defaultSimpleOption"
                           [(ngModel)]="editItemData.x.default" >
                           <option value="" disabled></option>
-                          @for (item of getAsList(editItemData.options); track $index) {
+                          @for (item of editItemData.options|asList; track $index) {
                             <option [value]="item">{{item}}</option>
                           }
                         </select>
@@ -3068,7 +3085,7 @@
                       <span class="input-group-text">
                         {{f}}
                       </span>
-                      <select class="form-select form-select-sm" name="facet-{{f}}{{g}}"
+                      <select class="form-select form-select-sm" name="facet-{{f}}"
                         [(ngModel)]="editItemData.x.facet[f]">
                         <option class="text-muted" [ngValue]="undefined">Select view mode</option>
                         @for (g of facetMode; track g) {

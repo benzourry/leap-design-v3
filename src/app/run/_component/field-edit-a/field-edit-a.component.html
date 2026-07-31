@@ -554,7 +554,7 @@
       }
       <div [class.disabled]="field().readOnly">
         <div class="btn-group1" role="group">
-          @for (i of getAsList(field()?.options); track $index) {
+          @for (i of field()?.options|asList; track $index) {
             <input type="radio" name="f-{{field().id}}-{{id()}}" #formField="ngModel" [(ngModel)]="value"
               (ngModelChange)="valueChanged($event)" [required]="field()?.v?.required" [value]="i" class="btn-check"
               id="f-{{field().id}}-{{id()}}-{{$index}}" autocomplete="off">

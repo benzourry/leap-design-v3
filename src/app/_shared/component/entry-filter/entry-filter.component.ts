@@ -5,13 +5,14 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
+import { AsListPipe } from '../../pipe/as-list.pipe';
 
 @Component({
   selector: 'app-entry-filter',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './entry-filter.component.html',
   styleUrls: ['./entry-filter.component.scss'],
-  imports: [FormsModule, NgbInputDatepicker, FaIconComponent, FilterPipe]
+  imports: [FormsModule, NgbInputDatepicker, FaIconComponent, FilterPipe, AsListPipe]
 })
 export class EntryFilterComponent {
 
