@@ -4,7 +4,7 @@
 // ... (Standard License Header)
 
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, forwardRef, inject, input, signal, untracked } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { 
   NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, 
@@ -55,6 +55,8 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
 export class CombinedComponent {
     
     private runService = inject(RunService);
+    // 👇 1. Inject the Change Detector
+    private cdr = inject(ChangeDetectorRef);
 
     screen = input<any>();
     param = input<any>();
@@ -63,7 +65,39 @@ export class CombinedComponent {
     appId = computed<number | null>(() => this.runService.$app()?.id || null);
     email = computed<string>(() => this.user()?.email || '');
 
-    // Strictly typed state for tracking NgBootstrap Nav/Accordion active tabs
-    activeTab: Record<string, any> = {};
+    // 1. Strictly typed Signal to replace the standard dictionary
+    activeTab = signal<Record<string, number>>({});
+
+    constructor() {
+        effect(() => {
+            const currentScreen = this.screen();
+            const urlTab = this.param()?.['tab'];
+            
+            if (currentScreen?.id) {
+                untracked(() => {
+                    if (urlTab !== undefined) {
+                        this.setActiveTab(currentScreen.id, Number(urlTab));
+                    }
+                });
+
+                // 👇 2. Force NgBootstrap to recognize the dynamic DOM insertion 
+                // shortly after the @defer block resolves and the @for loop runs.
+                untracked(() => {
+                    setTimeout(() => {
+                        this.cdr.detectChanges();
+                    }, 50);
+                });
+            }
+        });
+    }
+
+    // 3. Clean helper methods for the template to interact with the Signal
+    setActiveTab(screenId: string, index: number) {
+        this.activeTab.update(tabs => ({ ...tabs, [screenId]: index }));
+    }
+    
+    getActiveTab(screenId: string): number {
+        return this.activeTab()[screenId] ?? 0;
+    }
 
 }

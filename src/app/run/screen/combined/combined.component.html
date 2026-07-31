@@ -1,7 +1,7 @@
 @if (screen()?.data?.nav == 'accordions') {
   <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
     @for (tab of screen()?.data?.comps; track $index) {
-      <div class="acc-card" [ngbAccordionItem]="$index" [collapsed]="(activeTab[screen().id] ?? 0) != $index" (shown)="activeTab[screen().id] = $index" #accitem="ngbAccordionItem">
+      <div class="acc-card" [ngbAccordionItem]="$index" [collapsed]="getActiveTab(screen().id) != $index" (shown)="setActiveTab(screen().id, $index)" #accitem="ngbAccordionItem">
         <div ngbAccordionHeader>
           <div class="acc-btn-wrap centered" [class.limit-width]="!screen().wide" [class.border-bottom]="accitem.collapsed">
             <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
@@ -31,11 +31,11 @@
 
 @if (['tabs', 'pills', 'underline'].includes(screen()?.data?.nav)) {
   <div class="tab-simple">
-    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="activeTab[screen().id] ?? 0"
+    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
       class="nav-{{screen()?.data?.nav}} justify-content-center" [class.limit-width]="!screen().wide">
       @for (tab of screen()?.data?.comps; track $index) {
         <li [ngbNavItem]="$index">
-          <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="activeTab[screen().id] = $index" queryParamsHandling="preserve">
+          <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="setActiveTab(screen().id, $index)" queryParamsHandling="preserve">
             @if (screen()?.data?.showIndex) {
               <div style="float:left; height:20px; width:20px; background:#666; color:white; font-size:.8em; padding:0; margin-left:-5px; margin-top:1px; line-height:20px; text-align:center; margin-right:0.3em; border-radius:20px;">
                 {{ $index + 1 }}

@@ -345,6 +345,8 @@ export class ListComponent implements OnInit, OnDestroy {
 
           res.form.tiers.forEach(t => this.tiersMap[t.id] = t);
           this.getEntryList(this.pageNumber());
+
+          this.cdr.detectChanges();
         }, error: err => {
           this.loading.set(false);
         }
@@ -454,6 +456,8 @@ export class ListComponent implements OnInit, OnDestroy {
 
         // Calculate math (totals/averages) once all rows are processed
         this.calculateAggregations();
+        
+        this.cdr.detectChanges();
 
       }, 
       error: err => {
@@ -896,6 +900,8 @@ export class ListComponent implements OnInit, OnDestroy {
         .subscribe({
           next: res => {
             this.lookup[code] = res;
+
+            this.cdr.detectChanges();
           }, error: err => {
           }
         })

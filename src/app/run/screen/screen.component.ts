@@ -818,6 +818,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       ).subscribe(res => {
         this.loading.set(false);
         this.initScreen(this.screen().data.f);
+
+        this.cdr.detectChanges();
       });
     } else {
       this.loading.set(true);
@@ -828,6 +830,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.entry.set(res);
         this.loading.set(false);
         this.initScreen(this.screen().data.f);
+
+        this.cdr.detectChanges();
       });
     }
   }
@@ -1001,6 +1005,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
               if (this.screen().type == 'map') {
                 this.processForMap();
               }
+
+              this.cdr.detectChanges();
             },
             error: err => {
               this.loading.set(false);
@@ -1254,16 +1260,28 @@ export class ScreenComponent implements OnInit, OnDestroy {
     })
   }
 
+  private activeLookupSubs = new Map<string, Subscription>();
+
   _getLookup = (code, param, cb?, err?) => {
     if (code) {
-      this._getLookupObs(code, param, cb, err)
+      // 1. Kill pending lookups to prevent Typeahead race conditions
+      if (this.activeLookupSubs.has(code)) {
+        this.activeLookupSubs.get(code).unsubscribe();
+      }
+
+      const sub = this._getLookupObs(code, param, cb, err)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: res => {
             this.lookup[code] = res;
+            
+            // 2. Force the UI to update the dropdown list instantly
+            this.cdr.detectChanges();
           }, error: err => {
           }
-        })
+        });
+        
+      this.activeLookupSubs.set(code, sub);
     }
   }
 
