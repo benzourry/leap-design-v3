@@ -126,6 +126,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   scopeId = computed<string>(() => "screen_" + this.screenId());
 
+  private registeredScopeId: string | null = null;
+
 
   constructor() {
 
@@ -297,6 +299,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
     // console.log("getScreen", screenId)
     this.loading.set(true);
 
+    // ✅ FIX 1: Clear signals synchronously to prevent "ghost renders" of old screens
+    // using the new scopeId before the HTTP request returns.
+    this.screen.set(null);
+    this.dataset.set({});
+    this.entry.set({});
+
     this.activeScreenReq = this.runService.getRunScreen(screenId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
@@ -321,6 +329,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.goObj = this.buildGo(this._entryId, true);
         this.goObjWParam = this.buildGo(this._entryId);
         this.popObj = this.buildPop(this._entryId, true);
+
+        // ✅ FIX 2: Cleanup previous window variables to prevent memory leaks during routing
+        if (this.registeredScopeId) {
+          Reflect.deleteProperty(window, '_popup_' + this.registeredScopeId);
+          Reflect.deleteProperty(window, '_this_' + this.registeredScopeId);
+        }
+        
+        this.registeredScopeId = this.scopeId(); // Remember what we are about to register
 
         // console.log("sprinkle $popup and $this$ in global")
         Object.defineProperty(window, '_popup_' + this.scopeId(), {
@@ -1326,8 +1342,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
 
-    delete window['_popup_' + this.scopeId()];
-    delete window['_this_' + this.scopeId()];
+    // ✅ FIX 3: Use the tracker to delete the exact properties we registered
+    if (this.registeredScopeId) {
+      Reflect.deleteProperty(window, '_popup_' + this.registeredScopeId);
+      Reflect.deleteProperty(window, '_this_' + this.registeredScopeId);
+    }
+
+    // delete window['_popup_' + this.scopeId()];
+    // delete window['_this_' + this.scopeId()];
 
     this.elMap = {};
 

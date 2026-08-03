@@ -144,7 +144,7 @@
                                                   (fileValueChange)="onUpload($event, tierAppr.data, field, false)"
                                                   (fileValueClear)="onFileClear($event, tierAppr.data, field, false)"
                                                   (selectFocus)="getLookup(f.code, tierAppr, field.dataSourceInit)"
-                                                  [data]="getEvalContext(entry, entry?.data, tierAppr, formVal, false, {timestamp: timestamp()})"
+                                                  [data]="tierFieldContexts()['edit_' + tier.id]"
                                                   [required]="field?.v?.required"
                                                   [maxlength]="field?.v?.maxlength"
                                                   [minlength]="field?.v?.minlength"
@@ -158,7 +158,7 @@
                                                     @defer(prefetch on idle) {
                                                       <app-list [asComp]="true" (changed)="dsChanged($event, tierAppr, f.code)"
                                                         [datasetId]="field.dataSource"
-                                                        [param]="{readOnly:false, ...changeEval(entry, entry?.data, tierAppr, field.dataSourceInit)}"></app-list>
+                                                        [param]="listScreenParams()['edit_' + tier.id + '_' + f.code]"></app-list>
                                                     } @loading {
                                                       <div class="text-center m-5">
                                                         <div class="spinner-grow text-primary" role="status">
@@ -169,7 +169,7 @@
                                                   } @else if (field?.type === 'screen') {
                                                     @defer(prefetch on idle) {
                                                       <app-screen [asComp]="true" [screenId]="field.dataSource"
-                                                        [param]="{readOnly: false, ...changeEval(entry, entry?.data, tierAppr, field.dataSourceInit)}"></app-screen>
+                                                        [param]="listScreenParams()['edit_' + tier.id + '_' + f.code]"></app-screen>
                                                     } @loading {
                                                       <div class="text-center m-5">
                                                         <div class="spinner-grow text-primary" role="status">
@@ -290,7 +290,7 @@
                                                     <p class="form-control-static">
                                                       <field-view [field]="field" [scopeId]="scopeId()" [lang]="lang()"
                                                         [value]="getVal(field, entryAppr)"
-                                                        [data]="getEvalContext(entry, entry?.data, entryAppr, formVal, false, {timestamp: timestamp()})">
+                                                        [data]="tierFieldContexts()['view_' + tier.id]">
                                                       </field-view>
                                                     </p>
                                                   } @else {
@@ -299,7 +299,7 @@
                                                         @defer(prefetch on idle) {
                                                           <app-list [asComp]="true" (changed)="dsChanged($event, entryAppr, f.code)"
                                                             [datasetId]="field.dataSource"
-                                                            [param]="{readOnly:true, ...changeEval(entry, entry?.data, entryAppr, field.dataSourceInit)}"></app-list>
+                                                            [param]="listScreenParams()['view_' + tier.id + '_' + f.code]"></app-list>
                                                         } @loading {
                                                           <div class="text-center m-5">
                                                             <div class="spinner-grow text-primary" role="status">
@@ -310,7 +310,7 @@
                                                       } @else if (field?.type === 'screen') {
                                                         @defer(prefetch on idle) {
                                                           <app-screen [asComp]="true" [screenId]="field.dataSource"
-                                                            [param]="{readOnly:true, ...changeEval(entry, entry?.data, entryAppr, field.dataSourceInit)}"></app-screen>
+                                                            [param]="listScreenParams()['view_' + tier.id + '_' + f.code]"></app-screen>
                                                         } @loading {
                                                           <div class="text-center m-5">
                                                             <div class="spinner-grow text-primary" role="status">

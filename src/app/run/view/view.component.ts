@@ -156,6 +156,12 @@ export class ViewComponent implements OnInit, OnDestroy {
   appr: any = {}; // placeholder for approval form data
   loading = signal<boolean>(true);
 
+  // Caches parameters for <app-list> and <app-screen>
+  listScreenParams = signal<Record<string, any>>({});
+
+  // Caches context data for <field-edit> and <field-view>
+  tierFieldContexts = signal<Record<string, any>>({});
+
   filterSection = (sectionList, type, tab) => sectionList && sectionList.filter(s => type.indexOf(s.type) > -1 && (!tab || s.parent == tab));
 
   preCheckStr(code, dataV?: any) {
@@ -320,8 +326,11 @@ export class ViewComponent implements OnInit, OnDestroy {
   loadScript = loadScript;
 
   $digest$ = () => {
-    this.cdr.detectChanges()
     this.timestamp.set(Date.now()); // setting new value for timestamp will force effect in field-view
+    // 2. Pre-calculate all template objects
+    this.buildTemplateContexts();
+
+    this.cdr.detectChanges()
   }
 
   readonly navOutlet = viewChild<NgbNav | NgbAccordionDirective>('nav');
@@ -376,6 +385,7 @@ export class ViewComponent implements OnInit, OnDestroy {
     //   this.evalAll(this.entry)
     // }
     // this.evalAll(appr);
+    this.$digest$();
   }
 
   log = (log) => this.logService.log(JSON.stringify(log));
@@ -668,6 +678,8 @@ export class ViewComponent implements OnInit, OnDestroy {
       // This next block ONLY fires once the entire chain (main entry + prev entry) is completely resolved.
       next: () => {
         this.onView(); 
+
+        this.$digest$();
       },
       error: (err) => {
         this.loading.set(false);
@@ -1070,8 +1082,60 @@ checkTier(tier) {
     return compileTpl(code, obj, this.scopeId())
   }
 
+  buildTemplateContexts() {
+    const form = this.form();
+    if (!form || !form.tiers) return;
+
+    const newParams: Record<string, any> = {};
+    const newContexts: Record<string, any> = {};
+    const currentTs = this.timestamp();
+
+    form.tiers.forEach(tier => {
+      // 1. Get both the "editing" approval and "saved" approval states
+      const tierAppr = this.appr[tier.id];
+      const entryAppr = this.entry?.approval?.[tier.id];
+
+      // 2. Build Contexts for <field-edit> (edit) and <field-view> (view)
+      newContexts[`edit_${tier.id}`] = this.getEvalContext(
+        this.entry, this.entry?.data, tierAppr, form, false, { timestamp: currentTs }
+      );
+      
+      newContexts[`view_${tier.id}`] = this.getEvalContext(
+        this.entry, this.entry?.data, entryAppr, form, false, { timestamp: currentTs }
+      );
+
+      // 3. Build Parameters for <app-list> and <app-screen>
+      if (tier.section?.items) {
+        tier.section.items.forEach(f => {
+          const field = form.items[f.code];
+          
+          if (field && (field.type === 'screen' || field.type === 'dataset')) {
+            // Pre-calculate for Edit Mode (readOnly: false)
+            newParams[`edit_${tier.id}_${f.code}`] = {
+              readOnly: false,
+              ...this.changeEval(this.entry, this.entry?.data, tierAppr, field.dataSourceInit)
+            };
+
+            // Pre-calculate for View Mode (readOnly: true)
+            newParams[`view_${tier.id}_${f.code}`] = {
+              readOnly: true,
+              ...this.changeEval(this.entry, this.entry?.data, entryAppr, field.dataSourceInit)
+            };
+          }
+        });
+      }
+    });
+
+    // 4. Update the signals
+    this.tierFieldContexts.set(newContexts);
+    this.listScreenParams.set(newParams);
+  }
+
   refreshTxHash(){
-    this.getData(this.entry.id, this.form());
+    this.entryService.getTxHashOnly(this.entry.id).subscribe(hash => {
+      this.entry.txHash = hash;
+      this.cdr.markForCheck();
+    });
   }
 
   dismissAll(){

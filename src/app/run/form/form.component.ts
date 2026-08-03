@@ -1013,6 +1013,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             .pipe(takeUntil(this.destroy$))
             .subscribe({
               next: res => {
+                this.entry = res;
                 if (this.form().onSubmit) {
                   try {
                     this.onSubmit();

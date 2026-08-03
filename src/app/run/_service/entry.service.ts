@@ -96,6 +96,10 @@ export class EntryService {
   cancel(id: number, email: string) {
     return this.http.post<any>(`${this.baseApi}/entry/${id}/retract?email=${email}`,{})
   }
+
+  getTxHashOnly(entryId: number): Observable<any> {
+    return this.http.get(`${this.baseApi}/entry/${entryId}/txhash`);
+  }
  
   removeApproval(entryId: number, tierId: number){
     // console.log(id);
