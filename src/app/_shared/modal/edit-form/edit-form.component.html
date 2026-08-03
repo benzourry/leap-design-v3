@@ -307,6 +307,12 @@
                   View</label>
               </div>
               <div class="form-check form-switch mt-1">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="_editFormData.x.tierFlowPre" name="tierFlowPre"
+                  id="tierFlowPre">
+                <label class="form-check-label" for="tierFlowPre">Apply tier pre-requisite for workflow routing (make tier pre-requisite effective on workflow)</label>
+              </div>
+
+              <div class="form-check form-switch mt-1">
                 <input type="checkbox" class="form-check-input" [(ngModel)]="_editFormData.x.showEntryId"
                   name="showEntryId" id="showEntryId">
                 <label class="form-check-label" for="showEntryId">Show Entry ID in Form &amp;
