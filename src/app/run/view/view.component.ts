@@ -404,6 +404,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
     let passive = {
       // READ ONLY CONTEXT
+      $editable$: Boolean(appr?.$editable$ || additionalData?.$editable$),
       // CAN BE USED IN TEMPLATE
       $app$: this.app(),
       // $screen$: this.screen,
@@ -567,7 +568,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
           // just to initialize this.appr
           this.form().tiers.forEach(t => {
-            this.appr[t.id] = { data: {}, list: [], tierId: t.id }
+            this.appr[t.id] = { data: {}, list: [], tierId: t.id, $editable$: true }
           });
         }
       });
@@ -823,12 +824,12 @@ checkTier(tier) {
 
   editApproval(approval, tier) {
     this.editTier[tier.id] = true;
-    this.appr[tier.id] = approval;
+    this.appr[tier.id] = { ...approval, $editable$: true };
   }
 
   cancelApproval(approval, tier) {
     this.editTier[tier.id] = false;
-    this.appr[tier.id] = { data: {} };
+    this.appr[tier.id] = { data: {}, $editable$: true };
     if (this.action() == 'approve') {
       this.closed.emit(approval);
     }

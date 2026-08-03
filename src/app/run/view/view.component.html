@@ -156,9 +156,9 @@
                                                 <div class="form-group" [ngClass]="field.altClass">
                                                   @if (field?.type === 'dataset') {
                                                     @defer(prefetch on idle) {
-                                                      <app-list [asComp]="true" (changed)="dsChanged($event, entryAppr, f.code)"
+                                                      <app-list [asComp]="true" (changed)="dsChanged($event, tierAppr, f.code)"
                                                         [datasetId]="field.dataSource"
-                                                        [param]="{readOnly:false, ...changeEval(entry, entry?.data, entryAppr, field.dataSourceInit)}"></app-list>
+                                                        [param]="{readOnly:false, ...changeEval(entry, entry?.data, tierAppr, field.dataSourceInit)}"></app-list>
                                                     } @loading {
                                                       <div class="text-center m-5">
                                                         <div class="spinner-grow text-primary" role="status">
@@ -169,7 +169,7 @@
                                                   } @else if (field?.type === 'screen') {
                                                     @defer(prefetch on idle) {
                                                       <app-screen [asComp]="true" [screenId]="field.dataSource"
-                                                        [param]="{readOnly: false, ...changeEval(entry, entry?.data, entryAppr, field.dataSourceInit)}"></app-screen>
+                                                        [param]="{readOnly: false, ...changeEval(entry, entry?.data, tierAppr, field.dataSourceInit)}"></app-screen>
                                                     } @loading {
                                                       <div class="text-center m-5">
                                                         <div class="spinner-grow text-primary" role="status">
