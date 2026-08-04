@@ -6,11 +6,11 @@ import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 
 @Component({
-    selector: 'app-scan',
-    // changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './scan.component.html',
-    styleUrls: ['./scan.component.css'],
-    imports: [NgClass, FormsModule, FaIconComponent]
+  selector: 'app-scan',
+  // changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './scan.component.html',
+  styleUrls: ['./scan.component.css'],
+  imports: [NgClass, FormsModule, FaIconComponent]
 })
 export class ScanComponent implements OnInit, OnDestroy {
   errorMsg = signal<string>('');
@@ -20,7 +20,7 @@ export class ScanComponent implements OnInit, OnDestroy {
   }
 
   public video = viewChild<ElementRef>('video');
-  
+
   lang = input<string>('en');
 
   public canvas = viewChild<ElementRef>('canvas');
@@ -48,8 +48,12 @@ export class ScanComponent implements OnInit, OnDestroy {
 
   camSupport = signal<boolean>(false);
 
+  isProcessingScan = false;
 
-  resume(){
+
+  resume() {
+    this.isProcessingScan = false; // Unlock the scanner
+    this.pause.set(false);         // Make sure your UI overlay resets
     this.video()?.nativeElement.play();
   }
 
@@ -66,7 +70,7 @@ export class ScanComponent implements OnInit, OnDestroy {
 
         const cameras = devices.filter((device) => device.kind === 'videoinput');
 
-        
+
         if (cameras.length === 0) {
           // console.log("xda camera");
           this.camSupport.set(false);
@@ -82,10 +86,10 @@ export class ScanComponent implements OnInit, OnDestroy {
           }
         }).then(stream => {
           this.track = stream.getVideoTracks()[0];
-          
+
 
           // Create image capture object and get camera capabilities
-          try{
+          try {
             const imageCapture = new ImageCapture(this.track)
             const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
               // todo: check if camera has a torch
@@ -94,7 +98,7 @@ export class ScanComponent implements OnInit, OnDestroy {
               // console.log(cap);
               // this.track = track;
             });
-          }catch(e){            
+          } catch (e) {
             this.torchSupport.set(false);
           }
 
@@ -110,28 +114,25 @@ export class ScanComponent implements OnInit, OnDestroy {
           // this.video.nativeElement.play();
 
           this.codeReader
-            // .decodeOnceFromStream(stream)
-            .decodeFromStream(stream,this.video().nativeElement, (result, error, controls) => {
-              if (result){
+            .decodeFromStream(stream, this.video().nativeElement, (result, error, controls) => {
+              // 2. Check the lock before emitting!
+              if (result && !this.isProcessingScan) {
+
+                this.isProcessingScan = true; // Lock it instantly
+
                 this.pause.set(true);
                 this.video()?.nativeElement.pause();
-                this.valueChange.emit(result);
-                // console.log(result);
+
+                this.valueChange.emit(result); // This will now strictly fire ONLY ONCE
               }
-              // if (error){
-              //   console.error(error)
-              // }
-              // use the result and error values to choose your actions
-              // you can also use controls API in this scope like the controls
-              // returned from the method.
-            })
+            });
 
         }, error => {
           this.scError.set(error.message);
           this.camSupport.set(false);
           this.loading.set(false);
         });
-      }, error =>{
+      }, error => {
         this.scError.set(error.message);
         this.camSupport.set(false);
         this.loading.set(false);

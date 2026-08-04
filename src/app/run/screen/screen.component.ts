@@ -1158,40 +1158,46 @@ export class ScreenComponent implements OnInit, OnDestroy {
   readonly scanner = viewChild<ScanComponent>('scanner');
   showActions: boolean = false;
   actionLinks = signal<any[]>([]);
+  
   qrValueChange(code, screen) {
-
     if (code) {
       var actions = screen?.actions;
       if (actions?.length > 0) {
 
         this.actionLinks.set([]);
-
         let actionLinks = [];
+        
         actions.forEach(action => {
           let url = this.goObj[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", code)) : {};
+          
           if (action.nextType == 'function') {
             actionLinks.push({ type: 'fn', url: url, f: action.f, label: action.label });
           } else {
             actionLinks.push({ type: 'nav', url: url, param: param, label: action.label });
           }
-        })
+        });
+        
         this.actionLinks.set(actionLinks);
 
         if (actionLinks.length == 1) {
           // if only 1 action, immediately navigate
           if (actionLinks[0].type == 'fn') {
             this._qrEval(code, actionLinks[0].f);
-            this.scanner().resume();
+            this.scanner().resume(); // This unlocks the scanner and plays the video
           } else {
-            this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param })
+            // Safety check just in case goObj hasn't loaded properly
+            if (actionLinks[0].url) {
+              this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param });
+            }
           }
         } else {
-          this.showActionOptions()
+          this.showActionOptions();
         }
 
       } else {
         alert("No action found for QR scanner :" + screen.title);
+        this.scanner().resume(); // Unlock the scanner so they can try again
       }
     }
   }
