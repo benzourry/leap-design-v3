@@ -3,6 +3,7 @@ import { baseApi, domainBase, domainRegex } from './constant.service';
 import dayjs from 'dayjs';
 import { marked } from 'marked';
 import mermaid from 'mermaid';
+import { icon as faIcon, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core';
 
 // const tplCache: Record<number, string> = {};
 const hashCode = (s: string): number =>
@@ -122,7 +123,7 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
     )//.replace(/(?:^|<\/x-markdown>)[\s\S]*?(?:<x-markdown>|$)/g, m => m.replace(/(?:\\[rnt])+/gm, "")) 
     
     // Instantiate the function once and cache it
-    cachedFn = new Function("data", "get", "formatNumber", code);
+    cachedFn = new Function("data", "get", "formatNumber", "renderFaSvg", code);
     
     tplCache.set(templateText+scopeId, cachedFn);
   }
@@ -145,7 +146,7 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
 
     // let result = "";
     try {
-      let result = cachedFn.call(this, data, get, formatNumber);
+      let result = cachedFn.call(this, data, get, formatNumber, renderFaSvg);
       return result.replace(/<x-markdown>([\s\S]*?)<\/x-markdown>/ig, r$markdown)
     } catch (err) {
       throw err;
@@ -203,6 +204,12 @@ function r$val(m: string, p1: string): string {
         aVal = key(`(new Date(${parts[0]})).toDateString()`);
         if (parts[2]) aVal = key(`dayjs(new Date(${parts[0]})).format(${parts[2]})`);
         break;
+      case 'fa':
+        // parts[0] is the icon (e.g., 'fas:user' or $.icon)
+        // parts[2] is optional classes (e.g., 'text-primary')
+        const faClasses = parts[2] ? parts[2] : "''";
+        aVal = key(`renderFaSvg(${parts[0]}, ${faClasses})`);
+        break;
       case 'imgSrc':
       case 'src': {
         let pre = '";if('+parts[0]+'){output+="';
@@ -250,9 +257,35 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
   try {
     const val = wrapFn ? wrapFn(fn()) : fn();
     return val == null ? defaultVal : val;
-  } catch {
+  } catch(err) {
+    console.error("Template Engine Error:", err); // ADD THIS LINE!
     return defaultVal;
   }
+}
+
+export function renderFaSvg(iconStr: string, classes: string = ''): string {
+  if (!iconStr) return '';
+  
+  let prefix = 'fas';
+  let name = iconStr;
+
+  // Handle "fas:user" format
+  if (iconStr.includes(':')) {
+    const split = iconStr.split(':');
+    prefix = split[0];
+    name = split[1];
+  } 
+  // Handle legacy "fa-user" format
+  else if (iconStr.startsWith('fa-')) {
+    name = iconStr.replace(/^fa-/, '');
+  }
+
+  const cleanPrefix = prefix as IconPrefix;
+  const cleanName = name as IconName;
+  const customClasses = classes && typeof classes === 'string' && classes.trim() ? classes.trim().split(/\s+/) : [];
+
+  const i = faIcon({ prefix: cleanPrefix, iconName: cleanName }, { classes: customClasses });
+  return i ? i.html[0] : `<!-- FA icon ${cleanPrefix}-${cleanName} not found -->`;
 }
 
 // function safeAccessOld(expr: string): string {

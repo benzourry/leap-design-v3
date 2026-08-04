@@ -1,4 +1,47 @@
-// .active-outline{
-//     outline: 0;
-//     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.7) !important;
-//   }
+/* Limits the height and enables vertical scrolling */
+.icon-scroll-container {
+  max-height: 600px; /* Adjust this height based on your UI needs (e.g., if it's in a modal) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px; /* Prevents scrollbar from hugging the icons too tightly */
+}
+
+/* Makes the headers stick to the top of the scroll container */
+.category-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  
+  /* Use Bootstrap's background variable so it works in light/dark mode, defaulting to white */
+  background-color: var(--bs-body-bg, #ffffff); 
+  
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+  
+  font-weight: bold;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  text-align: left;
+}
+
+/* Optional: Make the scrollbar look a bit cleaner (Webkit browsers) */
+.icon-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.icon-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-radius: 4px;
+}
+
+.icon-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1; 
+  border-radius: 4px;
+}
+
+.icon-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8; 
+}

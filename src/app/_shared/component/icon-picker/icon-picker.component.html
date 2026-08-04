@@ -1,17 +1,37 @@
-<input class="form-control mb-3" placeholder="Type to search..." type="search" [(ngModel)]="searchText">
-<div class="btn-group-toggle d-flex flex-wrap justify-content-center">
+<!-- Search bar stays fixed at the top -->
+<div class="search-container mb-3">
+  <input class="form-control" placeholder="Type to search..." type="search" [(ngModel)]="searchText">
+</div>
+
+<!-- Scrollable area for the icons -->
+<div class="icon-scroll-container">
+  
   @if (showNone()) {
-    <button type="button" class="btn p-2 m-1" (click)="change(undefined)" [class.btn-primary]="model()==null">
-      <div style="min-width: 1.25em;padding:0.3em 0.5em;font-weight: bold;color:#aaa">NO
-      </div>
-    </button>
+    <div class="d-flex justify-content-center mb-3">
+      <button type="button" class="btn p-2 m-1" (click)="change(undefined)" [class.btn-primary]="model()==null">
+        <div style="min-width: 1.25em;padding:0.3em 0.5em;font-weight: bold;color:#aaa">NO</div>
+      </button>
+    </div>
   }
-  @for (c of iconList|filter:searchText; track $index) {
-    <button type="button" class="btn p-2 m-1" (click)="change(c.key)" 
-      [title]="c.value[1]"
-      [class.btn-primary]="model()==c.key">
-      <fa-icon [icon]="c.value" size="2x" [fixedWidth]="true">
-      </fa-icon>
-    </button>
+
+  @for (group of iconList | filter:searchText | groupBy:'category'; track group.key) {
+    
+    @if (group.value.length > 0) {
+      <!-- Sticky Header -->
+      <div class="category-header">
+        {{ group.key }}
+      </div>
+      
+      <div class="btn-group-toggle d-flex flex-wrap justify-content-start mb-2 px-1">
+        @for (c of group.value; track c.key) {
+          <button type="button" class="btn p-2 m-1" (click)="change(c.key)" 
+            [title]="c.key"
+            [class.btn-primary]="model()==c.key">
+            <fa-icon [icon]="c.value" size="2x" [fixedWidth]="true"></fa-icon>
+          </button>
+        }
+      </div>
+    }
+    
   }
 </div>
