@@ -1330,6 +1330,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
   getEvalContext = (entry: any, data: any, approval: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
     let passive = {
       // READ ONLY CONTEXT
+      $editable$: additionalData?.$editable$ ?? true,
       // CAN BE USED IN TEMPLATE
       $app$: this.app(),
       // $screen$: this.screen,
