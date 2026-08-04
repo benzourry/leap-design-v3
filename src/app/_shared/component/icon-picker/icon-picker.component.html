@@ -24,7 +24,7 @@
       
       <div class="btn-group-toggle d-flex flex-wrap justify-content-start mb-2 px-1">
         @for (c of group.value; track c.key) {
-          <button type="button" class="btn p-2 m-1" (click)="change(c.key)" 
+          <button type="button" class="btn p-2" (click)="change(c.key)" 
             [title]="c.key"
             [class.btn-primary]="model()==c.key">
             <fa-icon [icon]="c.value" size="2x" [fixedWidth]="true"></fa-icon>
