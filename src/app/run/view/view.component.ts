@@ -408,7 +408,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   }
 
 
-  _this: any = createProxy({}, () => this.cdr.markForCheck());
+  _this: any = createProxy({}, () => this.$digest$());
 
   getEvalContext = (entry: any, data: any, appr: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
 

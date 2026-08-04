@@ -469,14 +469,16 @@
   </div>
   <div class="list-group list-group-flush">
     @for (txHash of entry.txHash | keyvalue; track $index) {
-      @if (txHash.value === 'pending') {
+      @if (['pending','failed'].includes(txHash.value)) {
         <div class="list-group-item">
-          <button class="btn btn-sm btn-round btn-info ms-2 float-end" (click)="refreshTxHash()">
-            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Refresh
-          </button>
+          @if (txHash.value==='pending'){
+            <button class="btn btn-sm btn-round btn-info ms-2 float-end" (click)="refreshTxHash()">
+              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Refresh
+            </button>
+          }
           <div class="small">{{txHash.key}}</div>
-          <div class="text-break">
-            Pending 
+          <div class="text-break text-uppercase">
+            {{txHash.value}} 
           </div>
         </div>
        } @else {
