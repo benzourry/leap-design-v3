@@ -768,11 +768,13 @@
         @if (lambdaPromptsKeys.includes("_body")){
           <div class="form-group mb-3">
             <label class="form-label">Form Body (JSON Body)</label>
-            <app-cm name="body" #codeeditorbody lang="javascript" [skipCheck]="true"
-              [ngModel]="lambdaPromptsData['_body']" (ngModelChange)="lambdaPromptsData['_body'] = $event"
-              hideControl="true"
-              [linenumber]="true" [readOnly]="false">
-            </app-cm>
+            <div class="mx-n3">
+              <app-cm name="body" #codeeditorbody lang="javascript" [skipCheck]="true"
+                [ngModel]="lambdaPromptsData['_body']" (ngModelChange)="lambdaPromptsData['_body'] = $event"
+                hideControl="true"
+                [linenumber]="true" [readOnly]="false">
+              </app-cm>
+            </div>
           </div>
         }
       </div>

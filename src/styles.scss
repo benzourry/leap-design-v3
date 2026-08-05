@@ -74,7 +74,7 @@ a {
 /* ==========================================================================
    4. UTILITIES
    ========================================================================== */
-.single-pane { padding: 0.75rem; }
+.single-pane { padding: 1rem; }
 .clearfix { margin: 0; padding: 0; height: 0; clear: both; }
 .m-a { margin: 0 auto; }
 .pointer { cursor: pointer; }
@@ -265,11 +265,11 @@ ngb-pagination ul.pagination { justify-content: center; }
   
   &::before {
     content: "";
-    position: absolute; left: 18px;
-    width: 4px; top: 40px; bottom: 0px;
-    border: solid 2px #ccc;
+    position: absolute; left: 18px; /* Centers the 4px line perfectly under the 40px ball */
+    width: 0; top: 40px; bottom: 0px;
+    border-left: 4px solid #ccc; 
   }
-  &.current::before { border: dashed 2px #ccc; }
+  &.current::before { border-left: 4px dashed #ccc; }
   &:last-child::before { display: none; }
   
   .readonly .tier-head { font-size: 17.5px; }

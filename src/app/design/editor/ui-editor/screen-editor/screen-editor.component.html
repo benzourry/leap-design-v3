@@ -554,7 +554,7 @@
                                 <label class="form-label">Custom Map Panel Style</label>
                                 
                                 <app-cm name="codeeditormapstyle" lang="html" #codeeditormapstyle
-                                [placeholder]="defaultMapStyle" 
+                                  [placeholder]="defaultMapStyle" 
                                   (keydown)="onKeyDown($event)" subType="passive"
                                   [extraAutoComplete]="extraAutoCompleteJs"
                                   [(ngModel)]="curScreen.data.mapStyle" [linenumber]="true" required>
@@ -674,7 +674,7 @@
                               <div class="form-group mb-3">
                                 <label class="form-label">Custom Parameters</label>
                                 <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam
-                                [placeholder]="defaultCognaParam"
+                                  [placeholder]="defaultCognaParam"
                                   (keydown)="onKeyDown($event)" subType="active" [skipCheck]="true"
                                   [extraAutoComplete]="extraAutoCompleteJs"
                                   [(ngModel)]="curScreen.data.cognaParam" [linenumber]="true" required>
@@ -831,7 +831,7 @@
                                 <div class="form-group mb-3">
                                   <label class="form-label">Custom Parameters</label>
                                   <app-cm name="bucketparam" lang="javascript" #codeeditorbucketparam
-                                  [placeholder]="defaultBucketParam"
+                                    [placeholder]="defaultBucketParam"
                                     (keydown)="onKeyDown($event)" subType="active"
                                     [extraAutoComplete]="extraAutoCompleteJs"
                                     [(ngModel)]="curScreen.data.bucketParam" [linenumber]="true" required>
@@ -1123,7 +1123,7 @@
         @if (['function'].indexOf(editActionData.nextType)>-1) {
           <div class="form-group mb-3">
             <label class="form-label">Function</label>
-            <div class="mx-n2">
+            <div class="mx-n3">
               <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
                 [extraAutoComplete]="extraAutoCompleteJs" subType="active"
                 placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
@@ -1221,7 +1221,7 @@
           @if (editActionData.nextType){
             <div class="form-group mb-3">
               <label class="form-label">Parameters ($code$ as QR Code placeholder)</label>
-              <div class="mx-n2">
+              <div class="mx-n3">
                 <app-cm name="params" lang="javascript" hideControl="true" #paramseditor
                   [(ngModel)]="editActionData.params" [linenumber]="true">
                 </app-cm>
@@ -1237,21 +1237,6 @@
             </div>
           }
         }
-
-
-
-        
-        
-        <!-- @if (['function'].indexOf(editActionData.nextType)==-1){
-          <div class="form-group mb-3">
-            <label class="form-label">Function</label>
-            <div class="mx-n2">
-              <app-cm name="f" lang="javascript" hideControl="true" #feditor
-                [(ngModel)]="editActionData.f" [linenumber]="true">
-              </app-cm>
-            </div>
-          </div>          
-        } -->
     </div>
     <div class="modal-footer justify-content-between">
       <button type="button" class="btn btn-round" (click)="d()">Close</button>
@@ -1421,12 +1406,7 @@
                   <input type="radio" class="form-check-input" id="type-user" name="type"
                     [(ngModel)]="addCombineCompData.type" value="user" required>
                   <label for="type-user" class="form-check-label">User Group</label>
-                </div>
-      
-      
-      
-      
-      
+                </div>      
               </div>
             </div>
 

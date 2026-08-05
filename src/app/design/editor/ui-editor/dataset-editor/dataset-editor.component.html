@@ -651,7 +651,7 @@
       </div>
       <div class="form-group mb-3">
         <label class="form-label">Pre-requisite</label>
-        <div class="mx-n2">
+        <div class="mx-n3">
           <app-cm name="f" lang="javascript" [(ngModel)]="editItemData.pre"
             [extraAutoComplete]="extraAutoCompleteJs" subType="active"
             placeholder="ie: $user$.groups['1234']" [linenumber]="true">
@@ -909,7 +909,7 @@
               @if (['function'].indexOf(editActionData.action)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Function</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="active"
                       placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
@@ -921,7 +921,7 @@
               @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','route','url'].includes(editActionData.action)) {
                 <div class="form-group mb-3">
                   <label class="form-label">Params</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="params" lang="javascript" [(ngModel)]="editActionData.params"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
                       placeholder="ie: {'entryId':$.$id}" [linenumber]="true">
@@ -938,7 +938,7 @@
               }
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" hideControl="true"
                     [(ngModel)]="editActionData.pre" [linenumber]="true">
                   </app-cm>

@@ -97,7 +97,7 @@
                 <div>
                   <ngb-datepicker class="smyds" [class.is-invalid]="isInvalid" [id]="uid"
                     [name]="uid" #formField="ngModel" [(ngModel)]="value" [required]="f.v?.required"
-                    [minDate]="f.v?.minDate" [maxDate]="f.v?.maxDate" (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
+                    [minDate]="toNgbDateStruct(f.v?.minDate)" [maxDate]="toNgbDateStruct(f.v?.maxDate)" (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
                   </ngb-datepicker>
                 </div>
               } @else {
@@ -182,7 +182,7 @@
               </button>
             </div>
           }
-          <input type="hidden" id="{{uid}}-hid" name="{{uid}}-hid" [ngModel]="value" #formField="ngModel" [required]="value && f?.v?.required">
+          <input type="hidden" id="{{uid}}-hid" name="{{uid}}-hid" [ngModel]="value" #formField="ngModel" [required]="f?.v?.required">
         </div>
       }
 

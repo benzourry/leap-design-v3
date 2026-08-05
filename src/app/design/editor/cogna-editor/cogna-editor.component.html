@@ -649,10 +649,12 @@
               </div>
               <div>
                 <div class="bg-light p-2">Custom Parameters</div>
-                <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
-                  subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
-                  [(ngModel)]="chatPromptParam" [linenumber]="true" required>
-                </app-cm>
+                <div class="mx-n3">
+                  <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
+                    subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
+                    [(ngModel)]="chatPromptParam" [linenumber]="true" required>
+                  </app-cm>
+                </div>
               </div>
 
               <div class="bg-secondary bg-opacity-25">
@@ -1624,7 +1626,7 @@
 
             <div class="form-group mb-3">
               <label class="form-label">JSON Formatting (JSON Schema Properties) *</label>
-              <div class="mx-n2">
+              <div class="mx-n3">
                 <app-cm name="extractSchema" lang="javascript"
                   [ngModel]="editCognaData.data && editCognaData.data.extractSchema"
                   (ngModelChange)="editCognaData.data && (editCognaData.data.extractSchema = $event)"
@@ -1995,32 +1997,32 @@
       }
       }
     </div>
-    <div class="mx-n2 mb-3">
+    <div class="mx-n3 mb-3">
       <app-cm id="codeeditor" name="codeeditor" lang="html" #codeeditor [extraAutoComplete]="extraAutoCompleteHtml"
         [(ngModel)]="editSrcData.sentenceTpl" [linenumber]="true" subType="mailer"
         placeholder="Create a sentence using values in dataset">
       </app-cm>
     </div>
     @if (cogna.type=='txtcls'){
-    <div class="form-group mb-3">
-      <label class="form-label d-block">Category Template</label>
-      @for (k of dataset?.items; track k.id) {
-      <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
-        (click)="insertTextAtCursor('$.'+k.code, cateditor)">{{k.label}}</button>
-      }
-      @if (dataset?.items) {
-      @for (k of builtInVar; track $index) {
-      <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
-        (click)="insertTextAtCursor(k.var, cateditor)">{{k.label}}</button>
-      }
-      }
-    </div>
-    <div class="mx-n2 mb-3">
-      <app-cm id="cateditor" name="cateditor" lang="html" #cateditor [extraAutoComplete]="extraAutoCompleteHtml"
-        [(ngModel)]="editSrcData.categoryTpl" [linenumber]="true" subType="mailer"
-        placeholder="Create a category using values in dataset">
-      </app-cm>
-    </div>
+      <div class="form-group mb-3">
+        <label class="form-label d-block">Category Template</label>
+        @for (k of dataset?.items; track k.id) {
+        <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
+          (click)="insertTextAtCursor('$.'+k.code, cateditor)">{{k.label}}</button>
+        }
+        @if (dataset?.items) {
+          @for (k of builtInVar; track $index) {
+            <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-secondary"
+              (click)="insertTextAtCursor(k.var, cateditor)">{{k.label}}</button>
+          }
+        }
+      </div>
+      <div class="mx-n3 mb-3">
+        <app-cm id="cateditor" name="cateditor" lang="html" #cateditor [extraAutoComplete]="extraAutoCompleteHtml"
+          [(ngModel)]="editSrcData.categoryTpl" [linenumber]="true" subType="mailer"
+          placeholder="Create a category using values in dataset">
+        </app-cm>
+      </div>
     }
 
     }

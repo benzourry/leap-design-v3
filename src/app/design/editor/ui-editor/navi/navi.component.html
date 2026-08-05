@@ -372,7 +372,7 @@
         <div class="form-group mb-3">
           <label class="form-label">Pre-requisite (hide group if condition not
           satisfied)</label>
-          <div class="mx-n2">
+          <div class="mx-n3">
             <app-cm name="pre" lang="javascript" [(ngModel)]="editGroupData.pre"
               [linenumber]="true" placeholder="Expression (ie: $user$.attributes?.staff)">
             </app-cm>
@@ -607,7 +607,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite (hide item if condition not
                 satisfied)</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
                     [linenumber]="true" placeholder="Expression (ie: $user$.provider=='google')">
                   </app-cm>
@@ -652,7 +652,7 @@
       <div class="single-pane">
         <div class="form-group">
           <label class="form-label">Init Function</label>
-          <div class="mx-n2">
+          <div class="mx-n3">
             <app-cm name="f" lang="javascript" subType="active"
             [extraAutoComplete]="extraAutoCompleteJs"
              [(ngModel)]="editNaviData.f" [linenumber]="true"></app-cm>

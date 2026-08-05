@@ -1496,7 +1496,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite (hide field if condition not
                 satisfied)</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
                     subType="passive" [(ngModel)]="editSectionData.pre"
                     placeholder="Expression (ie: $.age > 18)" [linenumber]="true">
@@ -1580,7 +1580,7 @@
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editTabData.pre"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
@@ -1588,7 +1588,7 @@
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">On Tab Activate</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="post" lang="javascript" [(ngModel)]="editTabData.x.post"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="active" [linenumber]="true">
                   </app-cm>
@@ -1601,7 +1601,7 @@
               </div> -->
               <div class="form-group mb-3">
                 <label class="form-label">Enable condition</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="enableCond" lang="javascript" [(ngModel)]="editTabData.x.enableCond"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
@@ -1796,7 +1796,7 @@
         <!-- <app-codejar name="pre" lang="js" [(ngModel)]="editTierActionData && editTierActionData.pre"
         [linenumber]="true" [options]="{lineNumbers: true,mode: 'javascript'}">
       </app-codejar> -->
-        <div class="mx-n2">
+        <div class="mx-n3">
           <app-cm name="pre" lang="javascript" [(ngModel)]="editTierActionData.pre"
             [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
             placeholder="Expression (ie: $$_.status == 'approved')" [linenumber]="true">
@@ -1898,7 +1898,7 @@
               @if (editTierData.type=='DYNAMIC') {
                 <div class="form-group mb-3">
                   <label class="form-label">Parameter</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="orgMapParam" lang="javascript"
                       [(ngModel)]="editTierData.orgMapParamStr" [skipCheck]="true" subType="passive"
                       placeholder="ie: { extra: '$.$id'}" [linenumber]="true">
@@ -2062,7 +2062,7 @@
             <div class="single-pane fix-gutter">
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite (tier will be hidden if false)</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editTierData.pre"
                     [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
                     placeholder="ie: $user$.groups['213']" [linenumber]="true">
@@ -2071,7 +2071,7 @@
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Post-action</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="post" lang="javascript"
                     [(ngModel)]="editTierData.post"
                     [extraAutoComplete]="extraAutoCompleteTier" subType="active"
@@ -2313,7 +2313,7 @@
               @if (['select','radio','radioBtn','checkboxOption','modelPicker','text','dataset','screen'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Source Initial Parameter</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="dataSourceInit" lang="javascript"
                       [(ngModel)]="editItemData.dataSourceInit"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
@@ -2395,7 +2395,7 @@
               @if (editItemData.type=='eval') {
                 <div class="form-group mb-3">
                   <label class="form-label">Expression *</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="f" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
                       subType="passive" [(ngModel)]="editItemData.f" [linenumber]="true">
                     </app-cm>
@@ -2530,7 +2530,7 @@
                       [(ngModel)]="editItemData.placeholder" name="placeholder"
                     placeholder="Input placeholder"></textarea>
                   }
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     @if (['btn'].indexOf(editItemData.type)>-1) {
                       <app-cm name="placeholder" lang="html"
                         [(ngModel)]="editItemData.placeholder" [linenumber]="true"
@@ -2551,7 +2551,7 @@
                         }
                       }
                     </div>
-                    <div class="mx-n2">
+                    <div class="mx-n3">
                       <app-cm name="placeholder" lang="html" #codeeditor
                         [extraAutoComplete]="extraAutoCompleteHtml"
                         [(ngModel)]="editItemData.placeholder" [linenumber]="true"
@@ -2822,7 +2822,7 @@
               @if (['modelPicker','select'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Group by</label>
-                  <div class="mx-n2">
+                  <div class="mx-n3">
                     <app-cm name="groupBy" lang="javascript" [(ngModel)]="editItemData.x.groupBy"
                       [extraAutoComplete]="extraAutoCompleteHtml" subType="passive" [linenumber]="true">
                     </app-cm>
@@ -2831,7 +2831,7 @@
               }
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
@@ -2839,7 +2839,7 @@
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Post-action</label>
-                <div class="mx-n2">
+                <div class="mx-n3">
                   <app-cm name="post" lang="javascript"
                     [(ngModel)]="editItemData.post" [linenumber]="true"
                     subType="active" [extraAutoComplete]="extraAutoCompleteJs">
@@ -3046,7 +3046,7 @@
                     <div class="mb-3">
                       <label class="form-label">Dynamic Default Value *</label>
 
-                      <div class="mx-n2">
+                      <div class="mx-n3">
                         <app-cm name="dyn_default" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
                           subType="passive" [(ngModel)]="editItemData.x.dyn_default"
                           placeholder="Expression (ie: $.age>18?'Yes':'No')" [linenumber]="true">
@@ -3118,10 +3118,12 @@
                   @if(editItemData.x?.rtxtcls){
                     <div class="form-group mb-3">
                       <label class="form-label">Text to classify (support template) *</label>
-                      <app-cm name="rtxtclsTpl" lang="html"
-                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
-                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
-                      </app-cm>
+                      <div class="mx-n3">
+                        <app-cm name="rtxtclsTpl" lang="html"
+                            [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                            subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                        </app-cm>
+                      </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
                         <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }
@@ -3146,10 +3148,12 @@
                   @if (editItemData.x?.rtxtgen){
                     <div class="form-group mb-3">
                       <label class="form-label">Text to process (support template) *</label>
-                      <app-cm name="rtxtclsTpl" lang="html"
-                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
-                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
-                      </app-cm>
+                      <div class="mx-n3">
+                        <app-cm name="rtxtclsTpl" lang="html"
+                            [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                            subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                        </app-cm>
+                      </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
                         <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }
@@ -3222,10 +3226,12 @@
                   @if (editItemData.x?.rimggen){
                     <div class="form-group mb-3">
                       <label class="form-label">Image prompt (support template) *</label>
-                      <app-cm name="rcognaTpl" lang="html"
-                          [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
-                          subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
-                      </app-cm>
+                      <div class="mx-n3">
+                        <app-cm name="rcognaTpl" lang="html"
+                            [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
+                            subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
+                        </app-cm>
+                      </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
                         <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }

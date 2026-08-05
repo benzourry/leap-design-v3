@@ -149,9 +149,11 @@
         }
         <div class="form-group">
             <label class="form-check-label" for="accessByCond">Allow access by condition</label>
-            <app-cm name="accessByCond" lang="javascript" [(ngModel)]="_editScreenData.data.accessByCond"
-              [extraAutoComplete]="extraAutoCompleteJs()" placeholder="$user$.attributes.staff" subType="active" [linenumber]="true">
-            </app-cm>
+            <div class="mx-n3">
+              <app-cm name="accessByCond" lang="javascript" [(ngModel)]="_editScreenData.data.accessByCond"
+                [extraAutoComplete]="extraAutoCompleteJs()" placeholder="$user$.attributes.staff" subType="active" [linenumber]="true">
+              </app-cm>
+            </div>
         </div>
       </div>
     }
