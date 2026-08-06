@@ -135,7 +135,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         });
     }
 
-    private loadApp(appId: string) {
+    private loadApp(appId: number) {
         this.appService.getApp(appId, { email: this.user.email }).subscribe(res => {
             this.appService.searchInApp.clear();
             this.app = res;
@@ -275,7 +275,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     // 4. DRY MODAL HANDLING (EDIT & CLONE)
     // =========================================================================
 
-    private openEditModal(tpl: TemplateRef<any>, data: any, saveMethod: (appId: string, payload: any) => Observable<any>, routeName: string, refreshFn: () => void, modalSize?: string) {
+    private openEditModal(tpl: TemplateRef<any>, data: any, saveMethod: (appId: number, payload: any) => Observable<any>, routeName: string, refreshFn: () => void, modalSize?: string) {
         data.appId = this.app.id;
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static', size: modalSize }).result.then(res => {
