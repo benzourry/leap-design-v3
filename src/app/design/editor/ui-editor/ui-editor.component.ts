@@ -35,13 +35,13 @@ import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } fro
 import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
 import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/clone-dashboard.component';
 import { KryptaService } from '../../../service/krypta.service';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-ui-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './ui-editor.component.html',
-    styleUrls: ['./ui-editor.component.scss', '../../../../assets/css/side-menu.css',
-        '../../../../assets/css/element-action.css'],
+    styleUrls: ['./ui-editor.component.scss', '../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css'],
     imports: [SplitPaneComponent, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, RouterLinkActive, NgbCollapse,
         NgbAccordionCollapse, NgbAccordionBody, CdkDropList, CdkDrag, CdkDragHandle, RouterLink, FaIconComponent, RouterOutlet, FormsModule,
         EditFormComponent, CloneFormComponent, CloneDatasetComponent, CloneScreenComponent, EditDatasetComponent,
@@ -53,11 +53,8 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     app: any;
     path: string = "";
     offline: boolean = false;
-    designPane: boolean = false;
     counts = signal<any>({});
     searchText: string = "";
-
-    helpLink = "https://unimas-my.sharepoint.com/:w:/g/personal/blmrazif_unimas_my/EcX9YxrT4o5NtXnyF-j2dQgBR0rw7rgL8ab7sw3i9SgdyA?e=msJJtB";
 
     private formService = inject(FormService);
     private datasetService = inject(DatasetService);
@@ -90,603 +87,309 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     currentPath: string = "form";
     excelImportIsNext: boolean = false;
 
-    // Separated arrays for restricted access
-    editableForms: any[] = [];
-    restrictedForms: any[] = [];
-    showRestrictedForms: boolean = false;
+    editableForms: any[] = []; restrictedForms: any[] = []; showRestrictedForms: boolean = false;
+    editableDatasets: any[] = []; restrictedDatasets: any[] = []; showRestrictedDatasets: boolean = false;
+    editableScreens: any[] = []; restrictedScreens: any[] = []; showRestrictedScreens: boolean = false;
 
-    editableDatasets: any[] = [];
-    restrictedDatasets: any[] = [];
-    showRestrictedDatasets: boolean = false;
+    formLoading: boolean = false; formSearchText: string = ""; formList: any[] = []; formTotal: number = 0;
+    datasetList: any[] = []; datasetGroupBy: string = null;
+    screenLoading: boolean = false; screenList: any[] = []; screenGroupBy: string = null;
+    dashboardList: any[] = [];
+    
+    accessList: any[] = []; mailerList: any[] = []; lookupList: any[] = []; 
+    bucketList: any[] = []; lambdaList: any[] = []; cognaList: any[] = []; walletList: any[] = [];
 
-    editableScreens: any[] = [];
-    restrictedScreens: any[] = [];
-    showRestrictedScreens: boolean = false;
+    // Tpl Refs
+    @ViewChild("editFormTpl") editFormTpl: TemplateRef<any>;
+    @ViewChild("editDatasetTpl") editDatasetTpl: TemplateRef<any>;
+    @ViewChild("editDashboardTpl") editDashboardTpl: TemplateRef<any>;
+    @ViewChild("editScreenTpl") editScreenTpl: TemplateRef<any>;
 
     ngOnInit() {
         this.commService.changeEmitted$.subscribe(data => {
             this.counts.update(c=>({...c, [data.key]: data.value}));
             if (this.app?.id){
-                if (data.key == 'form') this.getFormList();
-                if (data.key == 'dataset') this.getDatasetList();
-                if (data.key == 'screen') this.getScreenList();
-                if (data.key == 'dashboard') this.getDashboardList();
+                if (data.key === 'form') this.getFormList();
+                if (data.key === 'dataset') this.getDatasetList();
+                if (data.key === 'screen') this.getScreenList();
+                if (data.key === 'dashboard') this.getDashboardList();
             }
         });
 
-        this.route.parent.url.subscribe(e => {
-            this.currentPath = this.route.firstChild.routeConfig.path;
-        });
+        this.route.parent.url.subscribe(() => this.currentPath = this.route.firstChild.routeConfig.path);
 
         this.userService.getCreator().subscribe((user) => {
             this.user = user;
             this.cdr.detectChanges();
 
-            this.route.parent.parent.params
-                .subscribe((params: Params) => {
-                    const appId = params['appId'];
-                    localStorage.setItem("debugAppId", appId);
-                    
-                    if (appId) {
-                        let params = { email: user.email };
+            this.route.parent.parent.params.subscribe((params: Params) => {
+                const appId = params['appId'];
+                localStorage.setItem("debugAppId", appId);
+                if (appId) this.loadApp(appId);
+            });
 
-                        this.appService.getApp(appId, params)
-                            .subscribe(res => {
-                                this.appService.searchInApp.clear();
-                                this.app = res;
-                                this.getCounts(res.id);
-
-                                this.getFormList();
-                                this.getDatasetList();
-                                this.getDashboardList();
-                                this.getScreenList();
-
-                                this.getCognaList(res.id);
-                                this.getWalletList(res.id);
-                                this.getMailerList(res.id);
-                                this.getAccessList(res.id);
-                                this.getLookupList(res.id);
-                                this.getBucketList(res.id);
-                                this.getLambdaList(res.id);
-                                this.cdr.detectChanges();
-                            });
-                    }
-                });
-
-            this.appService.getAppMyList({
-                email: this.user.email,
-                size: 999,
-                sort: 'id,desc'
-            }).subscribe(res => {
+            this.appService.getAppMyList({ email: this.user.email, size: 999, sort: 'id,desc' }).subscribe(res => {
                 this.otherAppList = res.content;
                 this.cdr.detectChanges();
             });
         });
     }
 
-    formLoading: boolean = false;
-    formSearchText: string = "";
-    formList: any[] = [];
-    formTotal: number = 0;
+    private loadApp(appId: string) {
+        this.appService.getApp(appId, { email: this.user.email }).subscribe(res => {
+            this.appService.searchInApp.clear();
+            this.app = res;
+            this.getCounts(res.id);
+            this.refreshPrimaryLists();
+            this.loadSecondaryLists(res.id);
+            this.cdr.detectChanges();
+        });
+    }
+
+    private refreshPrimaryLists() {
+        this.getFormList();
+        this.getDatasetList();
+        this.getDashboardList();
+        this.getScreenList();
+    }
+
+    // =========================================================================
+    // 1. DRY LIST FETCHING
+    // =========================================================================
+
     getFormList() {
         this.formLoading = true;
-        let params = {
-            appId: this.app.id,
-            size: 9999,
-            page: 0,
-            searchText: this.formSearchText,
-            sort: ['sortOrder,asc','id,asc']
-        };
-
-        this.formService.getListBasic(params)
-            .subscribe(res => {
-                this.editableForms = [];
-                this.restrictedForms = [];
-
-                res.content.forEach((f: any) => {
-                    if (f?.id) {
-                        if (this.canEdit(f)) {
-                            this.editableForms.push(f);
-                        } else {
-                            this.restrictedForms.push(f);
-                        }
-                        this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } });
-                    }
-                });
-
-                this.formList = res.content;
-                this.formTotal = res.page?.totalElements;
-                this.formLoading = false;
-                this.counts.update(c=>({...c, form: res.page?.totalElements}));
-                this.cdr.detectChanges();
-            }, res => {
-                this.formLoading = false;
-                this.cdr.detectChanges();
+        this.formService.getListBasic({ appId: this.app.id, size: 9999, page: 0, searchText: this.formSearchText, sort: ['sortOrder,asc','id,asc'] })
+            .subscribe({
+                next: res => {
+                    this.editableForms = []; this.restrictedForms = [];
+                    res.content.forEach((f: any) => {
+                        if (!f?.id) return;
+                        this.canEdit(f) ? this.editableForms.push(f) : this.restrictedForms.push(f);
+                        this.registerSearch('form', f.id, 'Form: ' + f.title, ['far', 'plus-square']);
+                    });
+                    this.formList = res.content;
+                    this.formTotal = res.page?.totalElements;
+                    this.formLoading = false;
+                    this.counts.update(c=>({...c, form: res.page?.totalElements}));
+                    this.cdr.detectChanges();
+                }, 
+                error: () => { this.formLoading = false; this.cdr.detectChanges(); }
             });
     }
 
-    datasetList: any[] = [];
-    datasetGroupBy: string = null;
     getDatasetList() {
-        this.datasetService.getDatasetList(this.app.id)
-            .subscribe(res => {
-                this.editableDatasets = [];
-                this.restrictedDatasets = [];
-
-                res.forEach((f: any) => {
-                    if (this.canEditDataset(f)) {
-                        this.editableDatasets.push(f);
-                    } else {
-                        this.restrictedDatasets.push(f);
-                    }
-                    this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } });
-                });
-
-                this.datasetList = res;
-                this.counts.update(c=>({...c, dataset: res.length}));
-                this.cdr.detectChanges();
+        this.datasetService.getDatasetList(this.app.id).subscribe(res => {
+            this.editableDatasets = []; this.restrictedDatasets = [];
+            res.forEach((f: any) => {
+                this.canEditDataset(f) ? this.editableDatasets.push(f) : this.restrictedDatasets.push(f);
+                this.registerSearch('dataset', f.id, 'Dataset: ' + f.title, ['fas', 'list']);
             });
+            this.datasetList = res;
+            this.counts.update(c=>({...c, dataset: res.length}));
+            this.cdr.detectChanges();
+        });
     }
 
-    screenLoading: boolean;
-    screenList: any[] = [];
-    screenGroupBy: string = null;
     getScreenList() {
         this.screenLoading = true;
-        this.screenService.getScreenList(this.app.id)
-            .subscribe(res => {
-                this.editableScreens = [];
-                this.restrictedScreens = [];
-
-                res.forEach((f: any) => {
-                    if (this.canEditScreen(f)) {
-                        this.editableScreens.push(f);
-                    } else {
-                        this.restrictedScreens.push(f);
-                    }
-                    this.appService.searchInApp.set('screen' + f.id, { icon: ['fas', 'file'], name: 'Screen: ' + f.title, route: ['ui', 'screen'], opt: { queryParams: { id: f.id } } });
-                });
-
-                this.screenList = res;
-                this.screenLoading = false;
-                this.counts.update(c=>({...c, screen: res.length}));
-                this.cdr.detectChanges();
+        this.screenService.getScreenList(this.app.id).subscribe(res => {
+            this.editableScreens = []; this.restrictedScreens = [];
+            res.forEach((f: any) => {
+                this.canEditScreen(f) ? this.editableScreens.push(f) : this.restrictedScreens.push(f);
+                this.registerSearch('screen', f.id, 'Screen: ' + f.title, ['fas', 'file']);
             });
+            this.screenList = res;
+            this.screenLoading = false;
+            this.counts.update(c=>({...c, screen: res.length}));
+            this.cdr.detectChanges();
+        });
     }
 
-    dashboardList: any[] = [];
     getDashboardList() {
-        this.dashboardService.getDashboardList(this.app.id)
-            .subscribe(res => {
-                this.dashboardList = res;
-                this.counts.update(c=>({...c, dashboard: res.length}));
-                this.dashboardList.forEach(f => this.appService.searchInApp.set('dashboard' + f.id, { icon: ['fas', 'tachometer-alt'], name: 'Dashboard: ' + f.title, route: ['ui', 'dashboard'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+        this.dashboardService.getDashboardList(this.app.id).subscribe(res => {
+            this.dashboardList = res;
+            this.counts.update(c=>({...c, dashboard: res.length}));
+            this.dashboardList.forEach(f => this.registerSearch('dashboard', f.id, 'Dashboard: ' + f.title, ['fas', 'tachometer-alt']));
+            this.cdr.detectChanges();
+        });
     }
 
-    accessList: any[] = [];
-    getAccessList(appId) {
-        this.groupService.getGroupList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.accessList = res.content;
-                this.counts.update(c=>({...c, access: res.page?.totalElements}));
-                this.accessList.forEach(f => this.appService.searchInApp.set('access' + f.id, { icon: ['fas', 'users-cog'], name: 'Access Group: ' + f.name, route: ['user'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+    private loadSecondaryLists(appId: string) {
+        this.fetchSecondaryData(appId, this.groupService.getGroupList.bind(this.groupService), 'accessList', 'access', 'Access Group', ['fas', 'users-cog'], 'user');
+        this.fetchSecondaryData(appId, this.mailerService.getMailerList.bind(this.mailerService), 'mailerList', 'mailer', 'Mailer', ['fas', 'mail-bulk']);
+        this.fetchSecondaryData(appId, this.lookupService.getLookupList.bind(this.lookupService), 'lookupList', 'lookup', 'Lookup', ['far', 'caret-square-down']);
+        this.fetchSecondaryData(appId, this.bucketService.getBucketList.bind(this.bucketService), 'bucketList', 'bucket', 'Bucket', ['fas', 'box']);
+        this.fetchSecondaryData(appId, this.lambdaService.getLambdaList.bind(this.lambdaService), 'lambdaList', 'lambda', 'Lambda', ['fas', 'rocket']);
+        this.fetchSecondaryData(appId, this.cognaService.getCognaList.bind(this.cognaService), 'cognaList', 'cogna', 'Cogna', ['fas', 'robot']);
+        this.kryptaService.getWalletList({ appId: appId, size: 9999 }).subscribe(res => { this.walletList = res.content; this.cdr.detectChanges(); });
     }
 
-    mailerList: any[] = [];
-    getMailerList(appId) {
-        this.mailerService.getMailerList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.mailerList = res.content;
-                this.mailerList.forEach(f => this.appService.searchInApp.set('mailer' + f.id, { icon: ['fas', 'mail-bulk'], name: 'Mailer: ' + f.name, route: ['mailer'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+    private fetchSecondaryData(appId: string, serviceMethod: any, targetProp: string, type: string, label: string, icon: [string, string], customRoute?: string) {
+        serviceMethod({ appId, size: 9999 }).subscribe((res: any) => {
+            this[targetProp] = res.content;
+            if (res.page) this.counts.update(c=>({...c, [type]: res.page.totalElements}));
+            res.content.forEach((f: any) => this.registerSearch(type, f.id, `${label}: ${f.name}`, icon, customRoute || type));
+            this.cdr.detectChanges();
+        });
     }
 
-    lookupList: any[] = [];
-    getLookupList(appId) {
-        this.lookupService.getLookupList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.lookupList = res.content;
-                this.counts.update(c=>({...c, lookup: res.page?.totalElements}));
-                this.lookupList.forEach(f => this.appService.searchInApp.set('lookup' + f.id, { icon: ['far', 'caret-square-down'], name: 'Lookup: ' + f.name, route: ['lookup'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+    private registerSearch(type: string, id: string, name: string, icon: [string, string], routeName?: string) {
+        this.appService.searchInApp.set(type + id, { 
+            icon, name, route: routeName === 'user' ? ['user'] : ['ui', routeName || type], opt: { queryParams: { id } } 
+        });
     }
 
-    bucketList: any[] = [];
-    getBucketList(appId) {
-        this.bucketService.getBucketList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.bucketList = res.content;
-                this.bucketList.forEach(f => this.appService.searchInApp.set('bucket' + f.id, { icon: ['fas', 'box'], name: 'Bucket: ' + f.name, route: ['bucket'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+    // =========================================================================
+    // 2. DRY PERMISSIONS
+    // =========================================================================
+    
+    private hasAccess(emailStr?: string): boolean {
+        if (!emailStr || emailStr.trim() === '') return true;
+        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
+        const allowedEmails = emailStr.split(',').map((e: string) => e.trim());
+        return allowedEmails.includes(userEmail);
     }
 
-    lambdaList: any[] = [];
-    getLambdaList(appId) {
-        this.lambdaService.getLambdaList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.lambdaList = res.content;
-                this.lambdaList.forEach(f => this.appService.searchInApp.set('lambda' + f.id, { icon: ['fas', 'rocket'], name: 'Lambda: ' + f.name, route: ['lambda'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
+    canEdit(item: any): boolean { return this.hasAccess(item?.email); }
+    canEditDataset(item: any): boolean { return this.hasAccess(item?.form?.email); }
+    canEditScreen(item: any): boolean { return this.hasAccess(item?.email); }
+
+    // =========================================================================
+    // 3. DRY DRAG & DROP REORDERING
+    // =========================================================================
+
+    private handleReorder(event: CdkDragDrop<any[]>, targetArray: any[], saveServiceMethod: (data: any[]) => Observable<any>) {
+        moveItemInArray(targetArray, event.previousIndex, event.currentIndex);
+        const mappedList = targetArray.map((val, index) => ({ id: val.id, sortOrder: index }));
+        saveServiceMethod(mappedList).subscribe();
+        return [...targetArray];
     }
 
-    cognaList: any[] = [];
-    getCognaList(appId) {
-        this.cognaService.getCognaList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.cognaList = res.content;
-                this.cognaList.forEach(f => this.appService.searchInApp.set('cogna' + f.id, { icon: ['fas', 'robot'], name: 'Cogna: ' + f.name, route: ['cogna'], opt: { queryParams: { id: f.id } } }));
-                this.cdr.detectChanges();
-            });
-    }
+    reorderForm(event: CdkDragDrop<number[]>, parent: any[]) { this.editableForms = this.handleReorder(event, parent, data => this.formService.saveFormOrder(data)); }
+    reorderScreen(event: CdkDragDrop<number[]>, parent: any[]) { this.editableScreens = this.handleReorder(event, parent, data => this.screenService.saveScreenOrder(data)); }
+    reorderDashboard(event: CdkDragDrop<number[]>, parent: any[]) { this.dashboardList = this.handleReorder(event, parent, data => this.dashboardService.saveDashboardOrder(data)); }
+    reorderDataset(event: CdkDragDrop<number[]>, parent: any[]) { this.editableDatasets = this.handleReorder(event, parent, data => this.datasetService.saveDatasetOrder(data)); }
 
-    walletList: any[] = [];
-    getWalletList(appId) {
-        this.kryptaService.getWalletList({ appId: appId, size: 9999 })
-            .subscribe(res => {
-                this.walletList = res.content;
-                this.cdr.detectChanges();
-            });
-    }
+    // =========================================================================
+    // 4. DRY MODAL HANDLING (EDIT & CLONE)
+    // =========================================================================
 
-    setPath(str: string) {
-        this.path = str;
-    }
-
-    popShare(id) {
-        let url = this.app.appPath ? this.app.appPath + '.' + domainBase : domainBase + "/#/run/" + id;
-        prompt('App URL (Press Ctrl+C to copy)', url);
-    }
-
-    lookupIds = [];
-    lookupKey = {};
-    lookup = {};
-    mod = {};
-
-    getCounts(appId) {
-        this.appService.getCount(appId)
-            .subscribe(res => {
-                this.counts.set(res);
-                this.cdr.detectChanges();
-            });
-    }
-
-    viewCopyRequest(content) {
+    private openEditModal(tpl: TemplateRef<any>, data: any, saveMethod: (appId: string, payload: any) => Observable<any>, routeName: string, refreshFn: () => void, modalSize?: string) {
+        data.appId = this.app.id;
         history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(res => { }, err => { });
+        this.modalService.open(tpl, { backdrop: 'static', size: modalSize }).result.then(res => {
+            saveMethod(this.app.id, res).subscribe(savedRes => {
+                refreshFn();
+                this.router.navigate([routeName], { relativeTo: this.route, queryParams: { id: savedRes.id } });
+                this.cdr.detectChanges();
+            });
+        }, () => {});
     }
 
-    editApp(data) {
+    private openCloneModal(tpl: TemplateRef<any>, cloneMethod: (sourceId: string, destAppId: string) => Observable<any>, entityName: string, idProp: string, refreshFn: () => void, editFn: (tpl: any, data: any) => void, editTpl: TemplateRef<any>) {
+        history.pushState(null, null, window.location.href);
+        this.modalService.open(tpl, { backdrop: 'static' }).result.then(cloneData => {
+            cloneMethod(cloneData[idProp], this.app.id).subscribe({
+                next: (res: any) => {
+                    refreshFn();
+                    res.title += " (cloned)";
+                    editFn(editTpl, res);
+                    this.toastService.show(`${entityName} cloned successfully`, { classname: 'bg-success text-light' });
+                }, 
+                error: () => this.toastService.show(`${entityName} cloning failed`, { classname: 'bg-danger text-light' })
+            });
+        }, () => {});
+    }
+
+    newForm: any = { nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true, x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } };
+    editFormData: any = {};
+    editForm(tpl: any, data: any) { this.editFormData = data; this.openEditModal(tpl, data, (id, d) => this.formService.saveForm(id, d), 'form', () => this.getFormList(), 'lg'); }
+    cloneForm(tpl: any) { this.openCloneModal(tpl, (src, dest) => this.formService.cloneForm(src, dest), 'Form', 'formId', () => this.getFormList(), (t,d) => this.editForm(t,d), this.editFormTpl); }
+
+    newDataset: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, actions:[{label:'View', action:'view',type:'dropdown',inpop:true,icon:'fas:file',style:'btn-secondary'},{label:'Edit', action:'edit',type:'dropdown',inpop:true,icon:'fas:pencil-alt',style:'btn-secondary'},{label:'Delete', action:'delete',type:'dropdown',inpop:true,icon:'fas:trash',style:'btn-secondary'}], x: {tblcard:true, showSummary: true}, wide: true };
+    editDatasetData: any = {};
+    editDataset(tpl: any, data: any) { this.editDatasetData = data; this.openEditModal(tpl, data, (id, d) => this.datasetService.saveDataset(id, d), 'dataset', () => this.getDatasetList()); }
+    cloneDataset(tpl: any) { this.openCloneModal(tpl, (src, dest) => this.datasetService.cloneDataset(src, dest), 'Dataset', 'datasetId', () => this.getDatasetList(), (t,d) => this.editDataset(t,d), this.editDatasetTpl); }
+
+    newDashboard: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, canView: true, canEdit: true, canDelete: true };
+    editDashboardData: any = {};
+    editDashboard(tpl: any, data: any) { this.editDashboardData = data; this.openEditModal(tpl, data, (id, d) => this.dashboardService.saveDashboard(id, d), 'dashboard', () => this.getDashboardList()); }
+    cloneDashboard(tpl: any) { this.openCloneModal(tpl, (src, dest) => this.dashboardService.cloneDashboard(src, dest), 'Dashboard', 'dashboardId', () => this.getDashboardList(), (t,d) => this.editDashboard(t,d), this.editDashboardTpl); }
+
+    newScreen: any = { data: {}, canPrint: false };
+    editScreenData: any = {};
+    editScreen(tpl: any, data: any) { this.editScreenData = data; this.openEditModal(tpl, data, (id, d) => this.screenService.saveScreen(id, d), 'screen', () => this.getScreenList()); }
+    cloneScreen(tpl: any) { this.openCloneModal(tpl, (src, dest) => this.screenService.cloneScreen(src, dest), 'Screen', 'screenId', () => this.getScreenList(), (t,d) => this.editScreen(t,d), this.editScreenTpl); }
+
+    // =========================================================================
+    // 5. REMAINING UTILS & IMPORT LOGIC
+    // =========================================================================
+
+    cleanText = cleanText;
+
+    setPath(str: string) { this.path = str; }
+
+    getCounts(appId: string) {
+        this.appService.getCount(appId).subscribe(res => { this.counts.set(res); this.cdr.detectChanges(); });
+    }
+
+    editApp(data: any) {
         history.pushState(null, null, window.location.href);
         const modalRef = this.modalService.open(AppEditComponent, { backdrop: 'static' });
         modalRef.componentInstance.user = this.user;
         modalRef.componentInstance.offline = this.offline;
         modalRef.componentInstance.data = data;
-
         modalRef.result.then(rItem => {
-            this.appService.save(rItem, this.user.email)
-                .subscribe(res => {
-                    let params = { email: this.user.email };
-                    this.appService.getApp(res.id, params)
-                        .subscribe(res => {
-                            this.app = res;
-                            this.cdr.detectChanges();
-                        });
-                    this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
-                }, error => {
-                    this.toastService.show("App properties saving failed", { classname: 'bg-danger text-light' });
-                });
-        }, res => { });
+            this.appService.save(rItem, this.user.email).subscribe(res => {
+                this.loadApp(res.id);
+                this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
+            }, () => this.toastService.show("App properties saving failed", { classname: 'bg-danger text-light' }));
+        }, () => { });
     }
 
-    importMetadataData: any;
-    importMetadata(content) {
-        this.importMetadataData = null;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => { }, res => { });
-    }
+    // --- Import Excel & Meta Logic untouched ---
+    createDataset: boolean; createDashboard: boolean; importToLive: boolean; importLoading: boolean = false;
+    importExcelData: any; importMetadataData: any; importMetadataLoading: boolean = false;
 
-    metadataFile: any;
-    importMetadataLoading: boolean = false;
-    uploadMetadata($event) {
+    importMetadata(content: any) { this.importMetadataData = null; history.pushState(null, null, window.location.href); this.modalService.open(content, { backdrop: 'static' }).result.then(() => {}, () => {}); }
+    importExcel(content: any) { this.importExcelData = null; history.pushState(null, null, window.location.href); this.modalService.open(content, { backdrop: 'static' }).result.then(() => {}, () => {}); }
+
+    uploadMetadata($event: any) {
         if ($event.target.files && $event.target.files.length) {
             this.importMetadataLoading = true;
-            this.appService.uploadMetadata(this.app.id, $event.target.files[0], this.user.email)
-                .subscribe({
-                    next: (res) => {
-                        this.importMetadataData = res;
-                        this.importMetadataLoading = false;
-                        this.app = res.app;
-                        this.getCounts(this.app.id);
-
-                        this.getFormList();
-                        this.getDatasetList();
-                        this.getDashboardList();
-                        this.getScreenList();
-
-                        this.getCognaList(this.app.id);
-                        this.getMailerList(this.app.id);
-                        this.getAccessList(this.app.id);
-                        this.getLookupList(this.app.id);
-                        this.getBucketList(this.app.id);
-                        this.getLambdaList(this.app.id);
-                        this.cdr.detectChanges();
-
-                        this.toastService.show("Metadata successfully imported", { classname: 'bg-success text-light' });
-                    },
-                    error: (error) => {
-                        this.importMetadataData = {
-                            success: false,
-                            message: error.message
-                        };
-                        this.importMetadataLoading = false;
-                    }
-                });
+            this.appService.uploadMetadata(this.app.id, $event.target.files[0], this.user.email).subscribe({
+                next: (res: any) => {
+                    this.importMetadataData = res; this.importMetadataLoading = false;
+                    this.app = res.app;
+                    this.getCounts(this.app.id);
+                    this.refreshPrimaryLists();
+                    this.loadSecondaryLists(this.app.id);
+                    this.toastService.show("Metadata successfully imported", { classname: 'bg-success text-light' });
+                },
+                error: (error: any) => { this.importMetadataData = { success: false, message: error.message }; this.importMetadataLoading = false; }
+            });
         }
     }
 
-    importExcelData: any;
-    importExcel(content) {
-        this.importExcelData = null;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => { }, res => { });
-    }
-
-    createDataset: boolean;
-    createDashboard: boolean;
-    importToLive: boolean;
-    file: any;
-    importLoading: boolean = false;
-    uploadExcel($event, createDataset, createDashboard, importToLive) {
+    uploadExcel($event: any, createDataset: boolean, createDashboard: boolean, importToLive: boolean) {
         if ($event.target.files && $event.target.files.length) {
             this.importLoading = true;
-            this.appService.uploadExcel(this.app.id, $event.target.files[0], this.user.email, createDataset, createDashboard, importToLive)
-                .subscribe({
-                    next: (res) => {
-                        this.importExcelData = res;
-                        this.importLoading = false;
-                        this.getCounts(this.app.id);
-                        this.commService.emitChange({ key: 'form', value: "import" });
-                        this.toastService.show("Excel successfully imported", { classname: 'bg-success text-light' });
-                    },
-                    error: (error) => {
-                        this.importExcelData = {
-                            success: false,
-                            message: error.message
-                        };
-                        this.importLoading = false;
-                    }
-                });
+            this.appService.uploadExcel(this.app.id, $event.target.files[0], this.user.email, createDataset, createDashboard, importToLive).subscribe({
+                next: (res: any) => {
+                    this.importExcelData = res; this.importLoading = false;
+                    this.getCounts(this.app.id);
+                    this.commService.emitChange({ key: 'form', value: "import" });
+                    this.toastService.show("Excel successfully imported", { classname: 'bg-success text-light' });
+                },
+                error: (error: any) => { this.importExcelData = { success: false, message: error.message }; this.importLoading = false; }
+            });
         }
-    }
-
-    newForm: any = { nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true, 
-    x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } };
-
-    editFormData: any = {};
-    editForm(tpl, data) {
-        this.editFormData = data;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static', size: 'lg' })
-            .result.then(res => {
-                this.formService.saveForm(this.app.id, res)
-                    .subscribe(res => {
-                        this.getFormList();
-                        this.router.navigate(['form'], { relativeTo: this.route, queryParams: { id: res.id } });
-                        this.cdr.detectChanges();
-                    });
-            }, dismiss => { });
-    }
-
-    @ViewChild("editFormTpl") editFormTpl: TemplateRef<any>;
-    cloneForm(tpl) {
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(cloneFormData => {
-                this.formService.cloneForm(cloneFormData.formId, this.app.id)
-                    .subscribe({
-                        next: (res) => {
-                            this.getFormList();
-                            res.title = res.title + " (cloned)";
-                            this.editForm(this.editFormTpl, res);
-                            this.toastService.show("Form cloned successfully", { classname: 'bg-success text-light' });
-                        }, error: (err) => {
-                            this.toastService.show("Form cloning failed", { classname: 'bg-danger text-light' });
-                        }
-                    });
-            }, dismiss => { });
-    }
-
-    newDataset: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, 
-                        actions:[{label:'View', action:'view',type:'dropdown',inpop:true,icon:'fas:file',style:'btn-secondary'},{label:'Edit', action:'edit',type:'dropdown',inpop:true,icon:'fas:pencil-alt',style:'btn-secondary'},{label:'Delete', action:'delete',type:'dropdown',inpop:true,icon:'fas:trash',style:'btn-secondary'}],
-                        x: {tblcard:true, showSummary: true}, wide: true
-                      };
-
-    editDatasetData: any = {};
-    editDataset(tpl, data) {
-        this.editDatasetData = data;
-        this.editDatasetData.appId = this.app.id;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(res => {
-                this.datasetService.saveDataset(this.app.id, res)
-                    .subscribe(res => {
-                        this.getDatasetList();
-                        this.router.navigate(['dataset'], { relativeTo: this.route, queryParams: { id: res.id } });
-                        this.cdr.detectChanges();
-                    });
-            }, dismiss => { });
-    }
-
-    @ViewChild("editDatasetTpl") editDatasetTpl: TemplateRef<any>;
-    cloneDataset(tpl) {
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(cloneDatasetData => {
-                this.datasetService.cloneDataset(cloneDatasetData.datasetId, this.app.id)
-                    .subscribe({
-                        next: (res) => {
-                            this.getDatasetList();
-                            res.title = res.title + " (cloned)";
-                            this.editDataset(this.editDatasetTpl, res);
-                            this.toastService.show("Dataset cloned successfully", { classname: 'bg-success text-light' });
-                        }, error: (err) => {
-                            this.toastService.show("Dataset cloning failed", { classname: 'bg-danger text-light' });
-                        }
-                    });
-            }, dismiss => { });
-    }
-
-    @ViewChild("editDashboardTpl") editDashboardTpl: TemplateRef<any>;
-    cloneDashboard(tpl) {
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(cloneDashboardData => {
-                this.dashboardService.cloneDashboard(cloneDashboardData.dashboardId, this.app.id)
-                    .subscribe({
-                        next: (res) => {
-                            this.getDashboardList();
-                            res.title = res.title + " (cloned)";
-                            this.editDashboard(this.editDashboardTpl, res);
-                            this.toastService.show("Dashboard cloned successfully", { classname: 'bg-success text-light' });
-                        }, error: (err) => {
-                            this.toastService.show("Dashboard cloning failed", { classname: 'bg-danger text-light' });
-                        }
-                    });
-            }, dismiss => { });
-    }
-
-    newDashboard: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, canView: true, canEdit: true, canDelete: true };
-    editDashboardData: any = {};
-    editDashboard(tpl, data) {
-        this.editDashboardData = data;
-        this.editDashboardData.appId = this.app.id;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(res => {
-                this.dashboardService.saveDashboard(this.app.id, res)
-                    .subscribe(res => {
-                        this.getDashboardList();
-                        this.router.navigate(['dashboard'], { relativeTo: this.route, queryParams: { id: res.id } });
-                        this.cdr.detectChanges();
-                    });
-            }, dismiss => { });
-    }
-
-    newScreen: any = { data: {}, canPrint: false };
-    editScreenData: any = {};
-
-    editScreen(tpl, data) {
-        this.editScreenData = data;
-        this.editScreenData.appId = this.app.id;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(res => {
-                this.screenService.saveScreen(this.app.id, res)
-                    .subscribe(res => {
-                        this.getScreenList();
-                        this.router.navigate(['screen'], { relativeTo: this.route, queryParams: { id: res.id } });
-                        this.cdr.detectChanges();
-                    });
-            }, dismiss => { });
-    }
-
-    @ViewChild("editScreenTpl") editScreenTpl: TemplateRef<any>;
-    cloneScreen(tpl) {
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(tpl, { backdrop: 'static' })
-            .result.then(cloneScreenData => {
-                this.screenService.cloneScreen(cloneScreenData.screenId, this.app.id)
-                    .subscribe({
-                        next: (res) => {
-                            this.getScreenList();
-                            res.title = res.title + " (cloned)";
-                            this.editScreen(this.editScreenTpl, res);
-                            this.toastService.show("Screen cloned successfully", { classname: 'bg-success text-light' });
-                        }, error: (err) => {
-                            this.toastService.show("Screen cloning failed", { classname: 'bg-danger text-light' });
-                        }
-                    });
-            }, dismiss => { });
-    }
-
-    cleanText = cleanText;
-
-    reorderForm(event: CdkDragDrop<number[]>, parent) {
-        moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let formList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
-        this.formService.saveFormOrder(formList).subscribe();
-    }
-
-    reorderScreen(event: CdkDragDrop<number[]>, parent) {
-        moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let screenList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
-        this.editableScreens = [...parent];
-        this.screenService.saveScreenOrder(screenList).subscribe();
-    }
-
-    reorderDashboard(event: CdkDragDrop<number[]>, parent) {
-        moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let dashboardList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
-        this.dashboardList = [...parent];
-        this.dashboardService.saveDashboardOrder(dashboardList).subscribe();
-    }
-
-    reorderDataset(event: CdkDragDrop<number[]>, parent) {
-        moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let datasetList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
-        this.editableDatasets = [...parent];
-        this.datasetService.saveDatasetOrder(datasetList).subscribe();
-    }
-
-    // Helper to check if the current user can edit the form
-    canEdit(item: any): boolean {
-        if (!item || !item.email) return true;
-        if (item.email.trim() === '') return true;
-        
-        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
-        const allowedEmails = item.email.split(',').map((e: string) => e.trim());
-        return allowedEmails.includes(userEmail);
-    }
-
-    // Helper to check if the dataset's attached form is restricted
-    canEditDataset(item: any): boolean {
-        if (!item || !item.form || !item.form.email) return true;
-        if (item.form.email.trim() === '') return true;
-        
-        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
-        const allowedEmails = item.form.email.split(',').map((e: string) => e.trim());
-        return allowedEmails.includes(userEmail);
-    }
-
-    // Helper to check if the custom screen is restricted
-    canEditScreen(item: any): boolean {
-        if (!item || !item.email) return true;
-        if (item.email.trim() === '') return true;
-
-        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
-        const allowedEmails = item.email.split(',').map((e: string) => e.trim());
-        return allowedEmails.includes(userEmail);
     }
 
     ngOnDestroy() {
         this.location.onPopState(null);
-
-        this.editFormTpl = null;
-        this.editDatasetTpl = null;
-        this.editDashboardTpl = null;
-        this.editScreenTpl = null;
-
+        this.editFormTpl = null; this.editDatasetTpl = null; this.editDashboardTpl = null; this.editScreenTpl = null;
         this.counts.set({});
     }
 }
