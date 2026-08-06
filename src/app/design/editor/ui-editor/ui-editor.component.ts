@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, OnInit, OnDestroy, signal, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, OnDestroy, signal, TemplateRef, ViewChild } from '@angular/core';
 import { FormService } from '../../../service/form.service';
 import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody } from '@ng-bootstrap/ng-bootstrap';
@@ -31,7 +31,6 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { CognaService } from '../../../service/cogna.service';
 import { LookupService } from '../../../run/_service/lookup.service';
-import { EntryService } from '../../../run/_service/entry.service';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
 import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/clone-dashboard.component';
@@ -50,7 +49,6 @@ import { KryptaService } from '../../../service/krypta.service';
 })
 export class UiEditorComponent implements OnInit, OnDestroy {
 
-
     user: any;
     app: any;
     path: string = "";
@@ -60,7 +58,6 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     searchText: string = "";
 
     helpLink = "https://unimas-my.sharepoint.com/:w:/g/personal/blmrazif_unimas_my/EcX9YxrT4o5NtXnyF-j2dQgBR0rw7rgL8ab7sw3i9SgdyA?e=msJJtB";
-
 
     private formService = inject(FormService);
     private datasetService = inject(DatasetService);
@@ -90,51 +87,48 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     }
 
     otherAppList: any[] = [];
-
     currentPath: string = "form";
+    excelImportIsNext: boolean = false;
 
-    excelImportIsNext:boolean=false;
+    // Separated arrays for restricted access
+    editableForms: any[] = [];
+    restrictedForms: any[] = [];
+    showRestrictedForms: boolean = false;
+
+    editableDatasets: any[] = [];
+    restrictedDatasets: any[] = [];
+    showRestrictedDatasets: boolean = false;
+
+    editableScreens: any[] = [];
+    restrictedScreens: any[] = [];
+    showRestrictedScreens: boolean = false;
 
     ngOnInit() {
-
         this.commService.changeEmitted$.subscribe(data => {
             this.counts.update(c=>({...c, [data.key]: data.value}));
             if (this.app?.id){
-                if (data.key == 'form') {
-                    this.getFormList();
-                }
-                if (data.key == 'dataset') {
-                    this.getDatasetList();
-                }
-                if (data.key == 'screen') {
-                    this.getScreenList();
-                }
-                if (data.key == 'dashboard') {
-                    this.getDashboardList();
-                }                
+                if (data.key == 'form') this.getFormList();
+                if (data.key == 'dataset') this.getDatasetList();
+                if (data.key == 'screen') this.getScreenList();
+                if (data.key == 'dashboard') this.getDashboardList();
             }
-
         });
 
         this.route.parent.url.subscribe(e => {
             this.currentPath = this.route.firstChild.routeConfig.path;
-        })
+        });
 
         this.userService.getCreator().subscribe((user) => {
-
             this.user = user;
             this.cdr.detectChanges();
 
             this.route.parent.parent.params
-                // NOTE: I do not use switchMap here, but subscribe directly
                 .subscribe((params: Params) => {
-
-
                     const appId = params['appId'];
-                    localStorage.setItem("debugAppId",appId);
+                    localStorage.setItem("debugAppId", appId);
                     
                     if (appId) {
-                        let params = { email: user.email }
+                        let params = { email: user.email };
 
                         this.appService.getApp(appId, params)
                             .subscribe(res => {
@@ -157,7 +151,6 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                                 this.cdr.detectChanges();
                             });
                     }
-
                 });
 
             this.appService.getAppMyList({
@@ -167,36 +160,29 @@ export class UiEditorComponent implements OnInit, OnDestroy {
             }).subscribe(res => {
                 this.otherAppList = res.content;
                 this.cdr.detectChanges();
-            })
-
+            });
         });
     }
 
-
-    // formPageNo:number=1;
     formLoading: boolean = false;
-    // formPageSize: number = 9999;
     formSearchText: string = "";
     formList: any[] = [];
     formTotal: number = 0;
     getFormList() {
         this.formLoading = true;
-
         let params = {
             appId: this.app.id,
             size: 9999,
             page: 0,
             searchText: this.formSearchText,
             sort: ['sortOrder,asc','id,asc']
-        }
+        };
 
         this.formService.getListBasic(params)
             .subscribe(res => {
-                // Reset arrays
                 this.editableForms = [];
                 this.restrictedForms = [];
 
-                // Distribute items once
                 res.content.forEach((f: any) => {
                     if (f?.id) {
                         if (this.canEdit(f)) {
@@ -211,28 +197,22 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 this.formList = res.content;
                 this.formTotal = res.page?.totalElements;
                 this.formLoading = false;
-                // this.commService.emitChange({ key: 'form', value: this.formTotal });
-                // this.counts['form'] = res.page?.totalElements;
                 this.counts.update(c=>({...c, form: res.page?.totalElements}));
-                // this.formList.forEach(f => this.appService.searchInApp.set('form' + f.id, { icon: ['far', 'plus-square'], name: 'Form: ' + f.title, route: ['ui', 'form'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
             }, res => {
                 this.formLoading = false;
                 this.cdr.detectChanges();
             });
-
     }
 
-    datasetList: any[] =[];
+    datasetList: any[] = [];
     datasetGroupBy: string = null;
     getDatasetList() {
         this.datasetService.getDatasetList(this.app.id)
             .subscribe(res => {
-                // Reset arrays
                 this.editableDatasets = [];
                 this.restrictedDatasets = [];
 
-                // Distribute items once
                 res.forEach((f: any) => {
                     if (this.canEditDataset(f)) {
                         this.editableDatasets.push(f);
@@ -243,12 +223,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 });
 
                 this.datasetList = res;
-                // this.commService.emitChange({ key: 'dataset', value: res.length });
-                // this.counts['dataset'] = res.length;
                 this.counts.update(c=>({...c, dataset: res.length}));
-                // this.datasetList.forEach(f => this.appService.searchInApp.set('dataset' + f.id, { icon: ['fas', 'list'], name: 'Dataset: ' + f.title, route: ['ui', 'dataset'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     screenLoading: boolean;
@@ -258,15 +235,23 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.screenLoading = true;
         this.screenService.getScreenList(this.app.id)
             .subscribe(res => {
+                this.editableScreens = [];
+                this.restrictedScreens = [];
+
+                res.forEach((f: any) => {
+                    if (this.canEditScreen(f)) {
+                        this.editableScreens.push(f);
+                    } else {
+                        this.restrictedScreens.push(f);
+                    }
+                    this.appService.searchInApp.set('screen' + f.id, { icon: ['fas', 'file'], name: 'Screen: ' + f.title, route: ['ui', 'screen'], opt: { queryParams: { id: f.id } } });
+                });
+
                 this.screenList = res;
                 this.screenLoading = false;
-                // this.commService.emitChange({ key: 'screen', value: res.length });   
-                // this.counts['screen'] = res.length;
                 this.counts.update(c=>({...c, screen: res.length}));
-                this.screenList.forEach(f => this.appService.searchInApp.set('screen' + f.id, { icon: ['fas', 'file'], name: 'Screen: ' + f.title, route: ['ui', 'screen'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-
-            })
+            });
     }
 
     dashboardList: any[] = [];
@@ -274,13 +259,10 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.dashboardService.getDashboardList(this.app.id)
             .subscribe(res => {
                 this.dashboardList = res;
-                // this.commService.emitChange({ key: 'dashboard', value: res.length });
-                // this.counts['dashboard'] = res.length;
                 this.counts.update(c=>({...c, dashboard: res.length}));
                 this.dashboardList.forEach(f => this.appService.searchInApp.set('dashboard' + f.id, { icon: ['fas', 'tachometer-alt'], name: 'Dashboard: ' + f.title, route: ['ui', 'dashboard'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-
-            })
+            });
     }
 
     accessList: any[] = [];
@@ -288,12 +270,10 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.groupService.getGroupList({ appId: appId, size: 9999 })
             .subscribe(res => {
                 this.accessList = res.content;
-                // this.commService.emitChange({ key: 'access', value: res.length });
-                // this.counts['access'] = res.page?.totalElements;
                 this.counts.update(c=>({...c, access: res.page?.totalElements}));
                 this.accessList.forEach(f => this.appService.searchInApp.set('access' + f.id, { icon: ['fas', 'users-cog'], name: 'Access Group: ' + f.name, route: ['user'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     mailerList: any[] = [];
@@ -301,11 +281,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.mailerService.getMailerList({ appId: appId, size: 9999 })
             .subscribe(res => {
                 this.mailerList = res.content;
-                // this.commService.emitChange({ key: 'access', value: res.length });
-                // this.counts[]
                 this.mailerList.forEach(f => this.appService.searchInApp.set('mailer' + f.id, { icon: ['fas', 'mail-bulk'], name: 'Mailer: ' + f.name, route: ['mailer'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     lookupList: any[] = [];
@@ -313,11 +291,10 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.lookupService.getLookupList({ appId: appId, size: 9999 })
             .subscribe(res => {
                 this.lookupList = res.content;
-                // this.counts['lookup'] = res.page?.totalElements;
                 this.counts.update(c=>({...c, lookup: res.page?.totalElements}));
                 this.lookupList.forEach(f => this.appService.searchInApp.set('lookup' + f.id, { icon: ['far', 'caret-square-down'], name: 'Lookup: ' + f.name, route: ['lookup'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     bucketList: any[] = [];
@@ -327,7 +304,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 this.bucketList = res.content;
                 this.bucketList.forEach(f => this.appService.searchInApp.set('bucket' + f.id, { icon: ['fas', 'box'], name: 'Bucket: ' + f.name, route: ['bucket'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     lambdaList: any[] = [];
@@ -337,7 +314,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 this.lambdaList = res.content;
                 this.lambdaList.forEach(f => this.appService.searchInApp.set('lambda' + f.id, { icon: ['fas', 'rocket'], name: 'Lambda: ' + f.name, route: ['lambda'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     cognaList: any[] = [];
@@ -347,7 +324,7 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 this.cognaList = res.content;
                 this.cognaList.forEach(f => this.appService.searchInApp.set('cogna' + f.id, { icon: ['fas', 'robot'], name: 'Cogna: ' + f.name, route: ['cogna'], opt: { queryParams: { id: f.id } } }));
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     walletList: any[] = [];
@@ -355,10 +332,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.kryptaService.getWalletList({ appId: appId, size: 9999 })
             .subscribe(res => {
                 this.walletList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges();
             });
     }
-
 
     setPath(str: string) {
         this.path = str;
@@ -374,20 +350,12 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     lookup = {};
     mod = {};
 
-    // copyRequestList: any = [];
-    // getCopyRequestList() {
-    //     this.appService.getCopyRequestList(this.app.id)
-    //         .subscribe(res => {
-    //             this.copyRequestList = res.content;
-    //         })
-    // }
-
     getCounts(appId) {
         this.appService.getCount(appId)
             .subscribe(res => {
                 this.counts.set(res);
                 this.cdr.detectChanges();
-            })
+            });
     }
 
     viewCopyRequest(content) {
@@ -396,34 +364,20 @@ export class UiEditorComponent implements OnInit, OnDestroy {
             .result.then(res => { }, err => { });
     }
 
-    // activateCp(id, action) {
-    //     this.appService.activateCp(id, action)
-    //         .subscribe(res => {
-    //             this.getCopyRequestList();
-    //         })
-    // }
-
     editApp(data) {
-
         history.pushState(null, null, window.location.href);
-
-        const modalRef = this.modalService.open(AppEditComponent, { backdrop: 'static' })
+        const modalRef = this.modalService.open(AppEditComponent, { backdrop: 'static' });
         modalRef.componentInstance.user = this.user;
         modalRef.componentInstance.offline = this.offline;
         modalRef.componentInstance.data = data;
 
         modalRef.result.then(rItem => {
-            // console.log(rItem);
             this.appService.save(rItem, this.user.email)
                 .subscribe(res => {
-                    let params = { email: this.user.email }
-                    // new HttpParams()
-                    //     .set("email", this.user.email);
-
+                    let params = { email: this.user.email };
                     this.appService.getApp(res.id, params)
                         .subscribe(res => {
                             this.app = res;
-                            // this.getCopyRequestList();
                             this.cdr.detectChanges();
                         });
                     this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
@@ -438,15 +392,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.importMetadataData = null;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-
-            }, res => { })
+            .result.then(data => { }, res => { });
     }
 
-    // createField:boolean;
-    // createDataset: boolean;
-    // createDashboard: boolean;
-    // importToLive: boolean;
     metadataFile: any;
     importMetadataLoading: boolean = false;
     uploadMetadata($event) {
@@ -455,17 +403,10 @@ export class UiEditorComponent implements OnInit, OnDestroy {
             this.appService.uploadMetadata(this.app.id, $event.target.files[0], this.user.email)
                 .subscribe({
                     next: (res) => {
-                        // let app = res.app;
-
                         this.importMetadataData = res;
                         this.importMetadataLoading = false;
-                        // this.getCounts(this.app.id);
-                        // this.commService.emitChange({ key: 'form', value: "import" });
-
-
                         this.app = res.app;
                         this.getCounts(this.app.id);
-                        // this.getCopyRequestList();
 
                         this.getFormList();
                         this.getDatasetList();
@@ -480,20 +421,17 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.getLambdaList(this.app.id);
                         this.cdr.detectChanges();
 
-
                         this.toastService.show("Metadata successfully imported", { classname: 'bg-success text-light' });
                     },
                     error: (error) => {
                         this.importMetadataData = {
                             success: false,
                             message: error.message
-                        }
+                        };
                         this.importMetadataLoading = false;
                     }
-                })
-
+                });
         }
-
     }
 
     importExcelData: any;
@@ -501,12 +439,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.importExcelData = null;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-
-            }, res => { })
+            .result.then(data => { }, res => { });
     }
 
-    // createField:boolean;
     createDataset: boolean;
     createDashboard: boolean;
     importToLive: boolean;
@@ -528,23 +463,19 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.importExcelData = {
                             success: false,
                             message: error.message
-                        }
+                        };
                         this.importLoading = false;
                     }
-                })
-
+                });
         }
-
     }
 
-    // formEditData:any={}
     newForm: any = { nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true, 
-    x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } }
+    x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true } };
 
-    editFormData: any = {}
+    editFormData: any = {};
     editForm(tpl, data) {
         this.editFormData = data;
-        // this.formEditData = {x:{}}
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static', size: 'lg' })
             .result.then(res => {
@@ -553,13 +484,12 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.getFormList();
                         this.router.navigate(['form'], { relativeTo: this.route, queryParams: { id: res.id } });
                         this.cdr.detectChanges();
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     @ViewChild("editFormTpl") editFormTpl: TemplateRef<any>;
     cloneForm(tpl) {
-        // this.formEditData = {x:{}}
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static' })
             .result.then(cloneFormData => {
@@ -569,13 +499,12 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                             this.getFormList();
                             res.title = res.title + " (cloned)";
                             this.editForm(this.editFormTpl, res);
-                            // delete this.curForm;
                             this.toastService.show("Form cloned successfully", { classname: 'bg-success text-light' });
                         }, error: (err) => {
                             this.toastService.show("Form cloning failed", { classname: 'bg-danger text-light' });
                         }
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     newDataset: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, 
@@ -584,11 +513,9 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                       };
 
     editDatasetData: any = {};
-    // editDatasetFormHolder:any={};
     editDataset(tpl, data) {
         this.editDatasetData = data;
         this.editDatasetData.appId = this.app.id;
-        // this.editDatasetFormHolder = holder;
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static' })
             .result.then(res => {
@@ -597,13 +524,12 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.getDatasetList();
                         this.router.navigate(['dataset'], { relativeTo: this.route, queryParams: { id: res.id } });
                         this.cdr.detectChanges();
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     @ViewChild("editDatasetTpl") editDatasetTpl: TemplateRef<any>;
     cloneDataset(tpl) {
-        // this.formEditData = {x:{}}
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static' })
             .result.then(cloneDatasetData => {
@@ -612,20 +538,17 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         next: (res) => {
                             this.getDatasetList();
                             res.title = res.title + " (cloned)";
-                            // this.editDatasetFormHolder = {data:res.form, prev: res.form?.prev}
                             this.editDataset(this.editDatasetTpl, res);
-                            // delete this.curForm;
                             this.toastService.show("Dataset cloned successfully", { classname: 'bg-success text-light' });
                         }, error: (err) => {
                             this.toastService.show("Dataset cloning failed", { classname: 'bg-danger text-light' });
                         }
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     @ViewChild("editDashboardTpl") editDashboardTpl: TemplateRef<any>;
     cloneDashboard(tpl) {
-        // this.formEditData = {x:{}}
         history.pushState(null, null, window.location.href);
         this.modalService.open(tpl, { backdrop: 'static' })
             .result.then(cloneDashboardData => {
@@ -634,15 +557,13 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         next: (res) => {
                             this.getDashboardList();
                             res.title = res.title + " (cloned)";
-                            // this.editDatasetFormHolder = {data:res.form, prev: res.form?.prev}
                             this.editDashboard(this.editDashboardTpl, res);
-                            // delete this.curForm;
                             this.toastService.show("Dashboard cloned successfully", { classname: 'bg-success text-light' });
                         }, error: (err) => {
                             this.toastService.show("Dashboard cloning failed", { classname: 'bg-danger text-light' });
                         }
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     newDashboard: any = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, canView: true, canEdit: true, canDelete: true };
@@ -658,16 +579,14 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.getDashboardList();
                         this.router.navigate(['dashboard'], { relativeTo: this.route, queryParams: { id: res.id } });
                         this.cdr.detectChanges();
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     newScreen: any = { data: {}, canPrint: false };
-        
     editScreenData: any = {};
 
     editScreen(tpl, data) {
-        // console.log(data);
         this.editScreenData = data;
         this.editScreenData.appId = this.app.id;
         history.pushState(null, null, window.location.href);
@@ -678,11 +597,10 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         this.getScreenList();
                         this.router.navigate(['screen'], { relativeTo: this.route, queryParams: { id: res.id } });
                         this.cdr.detectChanges();
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
-    
     @ViewChild("editScreenTpl") editScreenTpl: TemplateRef<any>;
     cloneScreen(tpl) {
         history.pushState(null, null, window.location.href);
@@ -693,77 +611,43 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                         next: (res) => {
                             this.getScreenList();
                             res.title = res.title + " (cloned)";
-                            // this.editScreenFormHolder = {data:res.form, prev: res.form?.prev}
                             this.editScreen(this.editScreenTpl, res);
-                            // delete this.curForm;
                             this.toastService.show("Screen cloned successfully", { classname: 'bg-success text-light' });
                         }, error: (err) => {
                             this.toastService.show("Screen cloning failed", { classname: 'bg-danger text-light' });
                         }
-                    })
-            }, dismiss => { })
+                    });
+            }, dismiss => { });
     }
 
     cleanText = cleanText;
 
-    // dragPosition = { x: 0, y: 0 };
-    // sidebarWidth: number = 240;
-    // sidebarResize($event, sidebarMenu) {
-    //     // console.log($event);
-    //     let x = $event.event.clientX ?? $event.event.changedTouches[0].clientX;
-    //     let half = ($event.event.view.innerWidth / 2) - 23;
-    //     if (x - 46 >= half) {
-    //         this.dragPosition = { x: half - 240, y: 0 };
-    //         this.sidebarWidth = half;
-    //     } else if (x <= 46) {
-    //         this.dragPosition = { x: 0 - 240, y: 0 };
-    //         this.sidebarWidth = 0;
-    //     } else {
-    //         this.dragPosition = { x: x - 240 - 46, y: 0 };
-    //         this.sidebarWidth = x - 46;
-    //     }
-    //     sidebarMenu.style.maxWidth = this.sidebarWidth + 'px';
-    // }
-
-    reorderForm(event: CdkDragDrop<number[]>, parent){
+    reorderForm(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let formList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
-        this.formService.saveFormOrder(formList)
-        .subscribe();
-    }
-    reorderScreen(event: CdkDragDrop<number[]>, parent){
-        moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let screenList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
-        this.screenList = [...parent];
-        this.screenService.saveScreenOrder(screenList)
-        .subscribe();
+        let formList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
+        this.formService.saveFormOrder(formList).subscribe();
     }
 
-    reorderDashboard(event: CdkDragDrop<number[]>, parent){
+    reorderScreen(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let dashboardList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
+        let screenList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
+        this.editableScreens = [...parent];
+        this.screenService.saveScreenOrder(screenList).subscribe();
+    }
+
+    reorderDashboard(event: CdkDragDrop<number[]>, parent) {
+        moveItemInArray(parent, event.previousIndex, event.currentIndex);
+        let dashboardList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
         this.dashboardList = [...parent];
-        this.dashboardService.saveDashboardOrder(dashboardList)
-        .subscribe();
+        this.dashboardService.saveDashboardOrder(dashboardList).subscribe();
     }
 
-    reorderDataset(event: CdkDragDrop<number[]>, parent){
+    reorderDataset(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent, event.previousIndex, event.currentIndex);
-        let datasetList = parent.map((val, $index)=>({id: val.id, sortOrder: $index}));
-        this.datasetList = [...parent];
-        this.datasetService.saveDatasetOrder(datasetList)
-        .subscribe();
+        let datasetList = parent.map((val, $index) => ({ id: val.id, sortOrder: $index }));
+        this.editableDatasets = [...parent];
+        this.datasetService.saveDatasetOrder(datasetList).subscribe();
     }
-
-    // Replace formList and datasetList with these separated arrays
-    editableForms: any[] = [];
-    restrictedForms: any[] = [];
-    
-    editableDatasets: any[] = [];
-    restrictedDatasets: any[] = [];
-
-    // State for toggling the restricted forms accordion
-    showRestrictedForms: boolean = false;
 
     // Helper to check if the current user can edit the form
     canEdit(item: any): boolean {
@@ -775,15 +659,6 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         return allowedEmails.includes(userEmail);
     }
 
-    // Helper to filter out the restricted forms for the secondary list
-    // getRestrictedForms(filteredList: any[]): any[] {
-    //     if (!filteredList) return [];
-    //     return filteredList.filter(i => i?.id && !this.canEdit(i));
-    // }
-
-    // State for toggling the restricted datasets accordion
-    showRestrictedDatasets: boolean = false;
-
     // Helper to check if the dataset's attached form is restricted
     canEditDataset(item: any): boolean {
         if (!item || !item.form || !item.form.email) return true;
@@ -794,35 +669,24 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         return allowedEmails.includes(userEmail);
     }
 
-    // Returns only editable datasets (used BEFORE the groupBy pipe)
-    // getEditableDatasets(filteredList: any[]): any[] {
-    //     if (!filteredList) return [];
-    //     return filteredList.filter(i => i?.id && this.canEditDataset(i));
-    // }
+    // Helper to check if the custom screen is restricted
+    canEditScreen(item: any): boolean {
+        if (!item || !item.email) return true;
+        if (item.email.trim() === '') return true;
 
-    // Returns only restricted datasets
-    // getRestrictedDatasets(filteredList: any[]): any[] {
-    //     if (!filteredList) return [];
-    //     return filteredList.filter(i => i?.id && !this.canEditDataset(i));
-    // }
+        const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
+        const allowedEmails = item.email.split(',').map((e: string) => e.trim());
+        return allowedEmails.includes(userEmail);
+    }
 
     ngOnDestroy() {
-        // Remove popstate listener
         this.location.onPopState(null);
 
-        // Nullify ViewChild references
         this.editFormTpl = null;
         this.editDatasetTpl = null;
         this.editDashboardTpl = null;
         this.editScreenTpl = null;
 
-        // Reset signals
         this.counts.set({});
-        // this.datasetList.set([]);
-
-        // Optionally clear searchInApp map if needed
-        // this.appService.searchInApp.clear();
     }
-
-
 }
