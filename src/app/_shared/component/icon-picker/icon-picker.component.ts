@@ -63,6 +63,7 @@ export class IconPickerComponent {
     { key: "fas:user-edit", value: ["fas", "user-edit"], category: "Users & Identity" },
     { key: "fas:user-shield", value: ["fas", "user-shield"], category: "Users & Identity" },
     { key: "fas:users-cog", value: ["fas", "users-cog"], category: "Users & Identity" },
+    { key: "fas:chalkboard-teacher", value: ["fas", "chalkboard-teacher"], category: "Users & Identity" },
     { key: "fas:id-card", value: ["fas", "id-card"], category: "Users & Identity" },
     { key: "far:id-card", value: ["far", "id-card"], category: "Users & Identity" },
     { key: "fas:address-book", value: ["fas", "address-book"], category: "Users & Identity" },
@@ -79,6 +80,7 @@ export class IconPickerComponent {
     { key: "far:file-archive", value: ["far", "file-archive"], category: "Files & Folders" },
     { key: "fas:folder", value: ["fas", "folder"], category: "Files & Folders" },
     { key: "far:folder", value: ["far", "folder"], category: "Files & Folders" },
+    { key: "fas:scroll", value: ["fas", "scroll"], category: "Files & Folders" },
     { key: "fas:upload", value: ["fas", "upload"], category: "Files & Folders" },
     { key: "fas:download", value: ["fas", "download"], category: "Files & Folders" },
     { key: "fas:cloud-upload-alt", value: ["fas", "cloud-upload-alt"], category: "Files & Folders" },
@@ -107,6 +109,10 @@ export class IconPickerComponent {
     { key: "fas:circle-nodes", value: ["fas", "circle-nodes"], category: "Data & Tech" },
     { key: "fas:hexagon-nodes", value: ["fas", "hexagon-nodes"], category: "Data & Tech" },
     { key: "fas:qrcode", value: ["fas", "qrcode"], category: "Data & Tech" },
+    { key: "fas:laptop-file", value: ["fas", "laptop-file"], category: "Data & Tech" },
+    { key: "fas:wifi", value: ["fas", "wifi"], category: "Data & Tech" },
+    { key: "fas:brain", value: ["fas", "brain"], category: "Data & Tech" },
+    { key: "fas:signal", value: ["fas", "signal"], category: "Data & Tech" },
 
     // --- ACTIONS & EDITING ---
     { key: "fas:plus", value: ["fas", "plus"], category: "Actions & Editing" },
@@ -163,9 +169,12 @@ export class IconPickerComponent {
     // --- E-COMMERCE & BILLING ---
     { key: "fas:shopping-cart", value: ["fas", "shopping-cart"], category: "E-Commerce & Billing" },
     { key: "fas:shopping-bag", value: ["fas", "shopping-bag"], category: "E-Commerce & Billing" },
+    { key: "fas:briefcase", value: ["fas", "briefcase"], category: "E-Commerce & Billing" },
     { key: "fas:credit-card", value: ["fas", "credit-card"], category: "E-Commerce & Billing" },
     { key: "far:credit-card", value: ["far", "credit-card"], category: "E-Commerce & Billing" },
     { key: "fas:money-bill-wave", value: ["fas", "money-bill-wave"], category: "E-Commerce & Billing" },
+    { key: "fas:coins", value: ["fas", "coins"], category: "E-Commerce & Billing" },
+    { key: "fas:hand-holding-usd", value: ["fas", "hand-holding-usd"], category: "E-Commerce & Billing" },
     { key: "fas:receipt", value: ["fas", "receipt"], category: "E-Commerce & Billing" },
     { key: "fas:file-invoice-dollar", value: ["fas", "file-invoice-dollar"], category: "E-Commerce & Billing" },
     { key: "fas:tag", value: ["fas", "tag"], category: "E-Commerce & Billing" },
@@ -187,8 +196,12 @@ export class IconPickerComponent {
     { key: "far:comment-dots", value: ["far", "comment-dots"], category: "Interaction & Comm" },
     { key: "far:message", value: ["far", "message"], category: "Interaction & Comm" },
     { key: "fas:phone", value: ["fas", "phone"], category: "Interaction & Comm" },
+    { key: "fas:fax", value: ["fas", "fax"], category: "Interaction & Comm" },
+    { key: "fas:headset", value: ["fas", "headset"], category: "Interaction & Comm" },
+    { key: "fas:bullhorn", value: ["fas", "bullhorn"], category: "Interaction & Comm" },
 
     // --- OBJECTS & MISC ---
+    { key: "fas:building", value: ["fas", "building"], category: "Objects & Misc" },
     { key: "fas:calendar", value: ["fas", "calendar"], category: "Objects & Misc" },
     { key: "far:calendar-alt", value: ["far", "calendar-alt"], category: "Objects & Misc" },
     { key: "far:clock", value: ["far", "clock"], category: "Objects & Misc" },
@@ -223,6 +236,13 @@ export class IconPickerComponent {
     { key: "far:eye-slash", value: ["far", "eye-slash"], category: "Objects & Misc" },
     { key: "fas:play", value: ["fas", "play"], category: "Objects & Misc" },
     { key: "fas:quidditch", value: ["fas", "quidditch"], category: "Objects & Misc" },
+    { key: "far:camera", value: ["far", "camera"], category: "Objects & Misc" },
+    { key: "fas:utensils", value: ["fas", "utensils"], category: "Objects & Misc" },
+    { key: "fas:award", value: ["fas", "award"], category: "Objects & Misc" },
+    { key: "fas:bed", value: ["fas", "bed"], category: "Objects & Misc" },
+    { key: "fas:book", value: ["fas", "book"], category: "Objects & Misc" },
+    { key: "fas:lightbulb", value: ["fas", "lightbulb"], category: "Objects & Misc" },
+    { key: "fas:couch", value: ["fas", "couch"], category: "Objects & Misc" },
 
     // --- BRANDS ---
     { key: "fab:google", value: ["fab", "google"], category: "Brands" },
@@ -232,7 +252,10 @@ export class IconPickerComponent {
     { key: "fab:microsoft", value: ["fab", "microsoft"], category: "Brands" },
     { key: "fab:twitter", value: ["fab", "twitter"], category: "Brands" },
     { key: "fab:uncharted", value: ["fab", "uncharted"], category: "Brands" },
-    { key: "fab:wpforms", value: ["fab", "wpforms"], category: "Brands" }
+    { key: "fab:wpforms", value: ["fab", "wpforms"], category: "Brands" },
+    { key: "fab:whatsapp", value: ["fab", "whatsapp"], category: "Brands" },
+    { key: "fab:instagram", value: ["fab", "instagram"], category: "Brands" },
+    { key: "fab:youtube", value: ["fab", "youtube"], category: "Brands" }
   ];
 
   model = model<string>();

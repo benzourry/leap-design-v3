@@ -387,7 +387,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
 
     return fetch$.pipe(
       switchMap(res => {
-        this.entry = res;
+        // this.entry = res;
+        this.replaceValue(this.entry, res);
+
         this.getDataFiles('data', res.id);
 
         if (form.prev) { // && res.prev?.$id xpat pake prev.$id sbb prev mungkin pake param
@@ -409,8 +411,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     const singleQuery = this._eval({}, form.singleQ, form);
     return this.entryService.getFirstEntryByParam(singleQuery, form.id).pipe(
       switchMap(res => {
-        // this.entry.set(res); // Object.assign(this.entry, res); 
-        this.entry = res;
+        // this.entry = res;        
+        this.replaceValue(this.entry, res);
+
         // ADDED: Fetch previous data on success too!
         if (form.prev) { // xpat pake  && res.prev?.$id sbb mungkin prev nya cuma based on param, bukan ID langsung. Jadi kita cek di getPrevDataObs nya aja, kalau prev ID nya ada pakai itu, kalau enggak pakai param.
           // Use res.prev?.$id here if it exists,
@@ -1004,7 +1007,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
-          this.entry = res;
+          // this.entry = res;          
+          this.replaceValue(this.entry, res);
+
           // this.entry.set(res);
           this.saving.set(false);
           this.submitting.set(true);
@@ -1013,7 +1018,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             .pipe(takeUntil(this.destroy$))
             .subscribe({
               next: res => {
-                this.entry = res;
+                // this.entry = res;              
+                this.replaceValue(this.entry, res);
+
                 if (this.form().onSubmit) {
                   try {
                     this.onSubmit();
@@ -1156,7 +1163,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .subscribe({
         next: res => {
           // this.entry.set(res);
-          this.entry = res;
+          // this.entry = res;           
+          this.replaceValue(this.entry, res);
+
           this.saving.set(false);
           this.cdr.detectChanges();
           if (this.form().onSave) {
@@ -1198,7 +1207,9 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       .pipe(
         tap({
           next: (e) => {
-            this.entry = e;
+            // this.entry = e;
+            this.replaceValue(this.entry, e);
+
             this.filterItems();
 
             this.linkFiles(e);
@@ -1882,6 +1893,24 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
       this.$digest$();
     }, 500);
   }
+
+  replaceValue = (target: any, source: any) => {
+    // If no target exists yet, just return the source
+    if (!target) return source;
+    if (!source) return target;
+
+    const originalDataRef = target.data || {};
+
+    if (source.data) {
+      Object.assign(originalDataRef, source.data);
+    }
+
+    Object.assign(target, source);
+
+    target.data = originalDataRef;
+    
+    return target;
+  };
 
   canDeactivate() {
     return !(this.form()?.x?.askNavigate && this.entryForm()?.dirty); //asknavigate && dirty --> modal
