@@ -87,6 +87,8 @@ export class FieldEditComponent extends ElementBase<any> {
   fileValueChange = output<any>();
   fileValueClear = output<any>();
   addAction = output<any>();
+  prefixClick = output<any>();
+  suffixClick = output<any>();
 
   // State
   file: any = {};
@@ -102,6 +104,8 @@ export class FieldEditComponent extends ElementBase<any> {
   readonly model = viewChild<NgModel>('formField');
 
   // Computed Values
+  compiledDataPrefix = computed(() => this.compileTpl(this.field()?.x?.prefix, this.data(), this.field()?.subType === 'htmlSave'));
+  compiledDataSuffix = computed(() => this.compileTpl(this.field()?.x?.suffix, this.data(), this.field()?.subType === 'htmlSave'));
   compiledDataPlaceholder = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
   compiledDataLabel = computed(() => this.compileTpl(this.field()?.label, this.data(), this.field()?.subType === 'htmlSave'));
   simpleList = computed(() => splitAsList(this.field()?.options));
@@ -396,4 +400,6 @@ export class FieldEditComponent extends ElementBase<any> {
   selectGroupBy = (item: any) => this.field() ? this.compileTpl(this.field()?.x?.groupBy, { '$': item }) : undefined;
   lookupSearchFn = (term: string, item: any) => item && JSON.stringify(Object.values(item)).toLowerCase().includes(term.toLowerCase());
   encodeURIComponent = encodeURIComponent;
+  prefixClicked = () => this.prefixClick.emit(this.value);
+  suffixClicked = () => this.suffixClick.emit(this.value);
 }

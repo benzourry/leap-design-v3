@@ -970,36 +970,134 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
     this.valueUpdate.next({ event: $event, data: data, field: field, section: section })
   }
 
+
   fieldChange($event, data, field, section) {
-    if (field.post) { // PENYEBAB!!
-      let postTxt = this.compileTpl(field.post, {})
+    this.executeFieldAction(field.post, 'post', data, field, section, $event);
+  }
+
+  onPrefixClick(data: any, field: any, section: any) {
+    if (field.x?.prefixPost) {
+      this.executeFieldAction(field.x.prefixPost, 'prefixPost', data, field, section);
+    }
+  }
+
+  onSuffixClick(data: any, field: any, section: any) {
+    if (field.x?.suffixPost) {
+      this.executeFieldAction(field.x.suffixPost, 'suffixPost', data, field, section);
+    }
+  }
+
+  /**
+   * Helper to evaluate a script, update form state, and trigger change detection
+   */
+  private executeFieldAction(script: string | undefined, logLabel: string, data: any, field: any, section: any, $event?: any) {
+    // 1. Evaluate script if it exists
+    if (script) {
+      let postTxt = this.compileTpl(script, {});
       try {
         this._eval(data, postTxt, this.form());
-      } catch (e) { this.logService.log(`{form-${field.code}-post}-${e}`) }
+      } catch (e) { 
+        this.logService.log(`{form-${field.code}-${logLabel}}-${e}`); 
+      }
     }
+
+    // 2. Update UI & Form State
     if (!section) {
       this.evalAll(data);
     } else {
       this.evalAllSection(data, section);
       this.evalAll(this.entry.data);
-      // if da section, try filterChildItems
       this.filterChildItems(data, section);
     }
 
     this.filterTabs();
-    // console.log(",,fieldchange,,", this.entry)
-    // utk kes dataset, filterItems mungkin run awal gilak dari postaction, so preCompFilter mungkin belom proper
-    // mn _prePassive direct value sentiasa diupdate.
-    // need more study
-    // update: dlm built-in anonymous function semua dh tap(filterItems);
-    // console.log("fieldChange");
-    this.filterItems(); // PENYEBAB!!
+    this.filterItems();
 
-    // this.triggerDependentCognaFields(field.code);
-    this.rcognaSubject.next({ code: field.code, value: $event });
+    // 3. Trigger Cognitive fields ONLY on actual value changes (fieldChange)
+    if ($event !== undefined) {
+      this.rcognaSubject.next({ code: field.code, value: $event });
+    }
 
+    // 4. Update View
     this.cdr.detectChanges();
   }
+
+  // fieldChange($event, data, field, section) {
+  //   if (field.post) { // PENYEBAB!!
+  //     let postTxt = this.compileTpl(field.post, {})
+  //     try {
+  //       this._eval(data, postTxt, this.form());
+  //     } catch (e) { this.logService.log(`{form-${field.code}-post}-${e}`) }
+  //   }
+  //   if (!section) {
+  //     this.evalAll(data);
+  //   } else {
+  //     this.evalAllSection(data, section);
+  //     this.evalAll(this.entry.data);
+  //     // if da section, try filterChildItems
+  //     this.filterChildItems(data, section);
+  //   }
+
+  //   this.filterTabs();
+  //   // console.log(",,fieldchange,,", this.entry)
+  //   // utk kes dataset, filterItems mungkin run awal gilak dari postaction, so preCompFilter mungkin belom proper
+  //   // mn _prePassive direct value sentiasa diupdate.
+  //   // need more study
+  //   // update: dlm built-in anonymous function semua dh tap(filterItems);
+  //   // console.log("fieldChange");
+  //   this.filterItems(); // PENYEBAB!!
+
+  //   // this.triggerDependentCognaFields(field.code);
+  //   this.rcognaSubject.next({ code: field.code, value: $event });
+
+  //   this.cdr.detectChanges();
+  // }
+
+  // onPrefixClick(data: any, field: any, section: any) {
+  //   if (field.x?.prefixPost) {
+  //     let postTxt = this.compileTpl(field.x.prefixPost, {});
+  //     try {
+  //       this._eval(data, postTxt, this.form());
+  //     } catch (e) { 
+  //       this.logService.log(`{form-${field.code}-prefixPost}-${e}`); 
+  //     }
+      
+  //     // Trigger UI updates
+  //     if (!section) {
+  //       this.evalAll(data);
+  //     } else {
+  //       this.evalAllSection(data, section);
+  //       this.evalAll(this.entry.data);
+  //       this.filterChildItems(data, section);
+  //     }
+  //     this.filterTabs();
+  //     this.filterItems();
+  //     this.cdr.detectChanges();
+  //   }
+  // }
+
+  // onSuffixClick(data: any, field: any, section: any) {
+  //   if (field.x?.suffixPost) {
+  //     let postTxt = this.compileTpl(field.x.suffixPost, {});
+  //     try {
+  //       this._eval(data, postTxt, this.form());
+  //     } catch (e) { 
+  //       this.logService.log(`{form-${field.code}-suffixPost}-${e}`); 
+  //     }
+      
+  //     // Trigger UI updates
+  //     if (!section) {
+  //       this.evalAll(data);
+  //     } else {
+  //       this.evalAllSection(data, section);
+  //       this.evalAll(this.entry.data);
+  //       this.filterChildItems(data, section);
+  //     }
+  //     this.filterTabs();
+  //     this.filterItems();
+  //     this.cdr.detectChanges();
+  //   }
+  // }
 
   submit = (resubmit: boolean) => {
     this.saving.set(true);
@@ -1611,11 +1709,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
               file: file,
               maxSize: f.v.max
             }).then(resizedImage => {
-              let filename = file.name;
-              if (f.x?.filenameTpl && f.x?.bucket) {
-                let ext = getFileExt(filename);
-                filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file }) + ext;
-              }
+              let filename = this.generateFilename(file, f);
               this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
@@ -1635,12 +1729,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             file: fileList[0],
             maxSize: f.v.max
           }).then(resizedImage => {
-            let filename = fileList[0].name;
-            if (f.x?.filenameTpl && f.x?.bucket) {
-              let ext = getFileExt(filename);
-              filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: fileList[0] })
-                + ext;
-            }
+            let filename = this.generateFilename(fileList[0], f);
             this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
@@ -1662,13 +1751,8 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
             if (f.v.max && file.size > f.v.max * 1024 * 1024) {
               return;
             }
-            let filename = file.name;
-            if (f.x?.filenameTpl && f.x?.bucket) {
-              let ext = getFileExt(filename);
-              filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file })
-                + ext;
-            }
-            this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, file.name)
+            let filename = this.generateFilename(file, f);
+            this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, filename)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
                 next: res => {
@@ -1685,12 +1769,7 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
           if (f.v.max && file.size > f.v.max * 1024 * 1024) {
             return;
           }
-          let filename = file.name;
-          if (f.x?.filenameTpl && f.x?.bucket) {
-            let ext = getFileExt(filename);
-            filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file })
-              + ext;
-          }
+          let filename = this.generateFilename(file, f);
           this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, filename)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -1706,6 +1785,15 @@ export class FormComponent implements OnInit, OnDestroy, AfterViewChecked, Compo
         }
       }
     }
+  }
+
+  private generateFilename(file: File, f: any): string {
+    let filename = file.name;
+    if (f.x?.filenameTpl && f.x?.bucket) {
+      let ext = getFileExt(filename);
+      filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file }) + ext;
+    }
+    return filename;
   }
 
   processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, multi, list) {

@@ -123,7 +123,7 @@
                                 @if (tier.section?.type === 'approval') {
                                   @if (tier.section && preCheckAppr(tier.section?.pre, tierAppr)) {
                                     <div class="card-body bg-light bg-opacity-50">
-                                      <div class="row g-4"
+                                      <div class="row g-3"
                                         [init]="updateWatchList(tier.section, tierAppr)">
                                         @for (f of tier.section.items; track f.id) {
                                           @let field = formVal?.items[f.code];

@@ -125,7 +125,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-3 light-015">
+                    <div class="card-header p-4 light-015">
                       <h6 class="card-title m-0">
                         @if (e.icon) {
                           <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
@@ -137,7 +137,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                       }
                     </div>
                   }
-                  <div class="card-body p-3">
+                  <div class="card-body p-4">
                     <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
                       @for (f of e.items; track f.id) {
                         @let field = form()?.items[f.code];
@@ -208,7 +208,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-3 bordered light-015">
+                    <div class="card-header p-4 bordered light-015">
                       <h6 class="card-title m-0">
                         @if (e.icon) {
                           <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
@@ -223,8 +223,8 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                   }
                   @if (data() && data()[e.code]?.length > 0) {
                     @if (e.x?.tableStyle) {
-                      <div class="table-responsive mx-3">
-                        <table class="table table-print mb-0 table-striped bg-white mb-3">
+                      <div class="table-responsive mx-4">
+                        <table class="table table-print mb-0 table-striped bg-white mb-4">
                           <thead>
                             <tr>
                               @for (f of e.x?.tableFields; track $index) {
@@ -304,10 +304,10 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                         }
                         
                         @if(!hideGroup[e.code+listKv?.key]) {
-                          <div class="list-group list-group-flush list-child pt-1 px-3 pb-3">
+                          <div class="list-group list-group-flush list-child pt-1 px-4 pb-4">
                             @for (child of listKv.value; track $index; let $index_c = $index) {
                               @let $index_child = $index_g + '-' + $index_c;
-                              <div class="list-group-item px-0 py-3">
+                              <div class="list-group-item px-0 py-4">
                                 <div class="row g-4">
                                   @for (f of e.items; track f.id) {
                                     @let field = form()?.items[f.code];
@@ -343,7 +343,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                       }
                     }
                   } @else {
-                    <div class="card-body p-3">
+                    <div class="card-body p-4">
                       <p>{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
                     </div>
                   }

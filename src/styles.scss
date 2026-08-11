@@ -187,7 +187,7 @@ input.search-icon[type="search"] {
       border-bottom: solid 1px rgba(127, 127, 127, .2);
       position: absolute;
       right: 0px; left: 0px;
-      margin: 0px 15px;
+      margin: 0 1.5rem;
       bottom: -1px;
     }
   }
@@ -200,7 +200,7 @@ input.search-icon[type="search"] {
       content: "";
       border-bottom: solid 1px rgba(127, 127, 127, .2);
       position: absolute; right: 0px; left: 0px;
-      margin: 0px 15px; bottom: -1px;
+      margin: 0 1.5rem; bottom: -1px;
     }
   }
 }

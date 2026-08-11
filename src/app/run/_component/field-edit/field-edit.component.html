@@ -26,13 +26,25 @@
       @case ('text') {
         @if (f.subType == 'input') {
           <div class="input-group">
-            @if (f.x?.prefix) { <span class="input-group-text smyds">{{f.x?.prefix}}</span> }
+            @if (f.x?.prefix) {
+              @if (f.x?.prefixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+              }
+            }
             <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
               type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
               [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
               [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
               (blur)="valueBlured($event)" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-            @if (f.x?.suffix) { <span class="input-group-text smyds">{{f.x?.suffix}}</span> }
+            @if (f.x?.suffix) {
+              @if (f.x?.suffixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+              }
+            }
           </div>
           @if (hasFocus) {
             <datalist id="datalist-{{uid}}">
@@ -79,11 +91,23 @@
           </div>
         } @else {
           <div class="input-group">
-            @if (f.x?.prefix) { <span class="input-group-text smyds">{{f.x?.prefix}}</span> }
+            @if (f.x?.prefix) {
+              @if (f.x?.prefixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+              }
+            }
             <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
               [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
               [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-            @if (f.x?.suffix) { <span class="input-group-text smyds">{{f.x?.suffix}}</span> }
+            @if (f.x?.suffix) {
+              @if (f.x?.suffixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+              }
+            }
           </div>
         }
       }
@@ -452,11 +476,23 @@
         @if (f.subType=='text') {
           <div>
             <div class="input-group">
-              @if (f.x?.prefix) { <span class="input-group-text smyds">{{f.x?.prefix}}</span> }
+              @if (f.x?.prefix) {
+                @if (f.x?.prefixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHTML]="compiledDataPrefix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds" [innerHTML]="compiledDataPrefix()|safe:'html'"></span>
+                }
+              }
               <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
                 [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
                 (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
-              @if (f.x?.suffix) { <span class="input-group-text smyds">{{f.x?.suffix}}</span> }
+              @if (f.x?.suffix) {
+                @if (f.x?.suffixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                }
+              }
             </div>
           </div>
         } @else if (f.subType=='qr') {

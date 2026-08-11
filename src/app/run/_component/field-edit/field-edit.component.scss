@@ -73,6 +73,10 @@
     overflow: hidden;
 }
 
+field-edit .form-control,field-edit .ng-select-container,field-edit .angular-editor-textarea{
+    background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
 // /* Float label */
 // .has-float-label {
 //     display: block;

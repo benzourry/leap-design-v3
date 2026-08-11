@@ -209,7 +209,7 @@
                         <div>
                           @if (curForm.nav!='simple') {
                             @let tab = getTab(t.key);
-                            <div class="p-3 text-center mt-2 mx-n2" style="background:whitesmoke;position:sticky;top: 0;z-index:5">
+                            <div class="p-4 text-center mt-2 mx-n2" style="background:whitesmoke;position:sticky;top: 0;z-index:5">
                               @if (tab) {
                                 <h5 class="m-0" [class.text-primary]="t.key=='-1'||t.key=='-999'">{{tab.title}}</h5>
                               }
@@ -232,7 +232,7 @@
                                     @if (notEmptyObject(e.x?.facet)) {
                                       <div style="position:absolute;right:9px;height:5px; width:5px;font-size:12px;">&#9713;</div>
                                     }
-                                    <div class="card-header p-3 bordered element"
+                                    <div class="card-header p-4 bordered element"
                                       [ngClass]="[e.altClass||'']">
                                       <div class="text-white small opacity-50 flytag">
                                         @if (e.pre) {
@@ -314,7 +314,7 @@
                                       </div>
                                     </div>
                                     @if (['section','list','approval','approval-list'].indexOf(e.type)>-1) {
-                                      <div class="card-body p-3">
+                                      <div class="card-body p-4">
                                         <div class="row g-4" [ngStyle]="{'justify-content':e.align}"
                                           cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="dropItem($event, e)"
                                           [cdkDropListData]="e?.items" [cdkDropListSortingDisabled]="filterField.length > 0">
@@ -2804,6 +2804,28 @@
                       </div>
                   </div>
                 </div>
+                @if (editItemData.x.prefix){
+                  <div class="form-group mb-3">
+                    <label class="form-label">Prefix Post-action</label>
+                    <div class="mx-n3">
+                      <app-cm name="prefixPost" lang="javascript"
+                        [(ngModel)]="editItemData.x.prefixPost" [linenumber]="true"
+                        subType="active" [extraAutoComplete]="extraAutoCompleteJs">
+                      </app-cm>
+                    </div>
+                  </div>
+                }
+                @if (editItemData.x.suffix){
+                  <div class="form-group mb-3">
+                    <label class="form-label">Suffix Post-action</label>
+                    <div class="mx-n3">
+                      <app-cm name="suffixPost" lang="javascript"
+                        [(ngModel)]="editItemData.x.suffixPost" [linenumber]="true"
+                        subType="active" [extraAutoComplete]="extraAutoCompleteJs">
+                      </app-cm>
+                    </div>
+                  </div>
+                }
               }
               @if (['date'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
