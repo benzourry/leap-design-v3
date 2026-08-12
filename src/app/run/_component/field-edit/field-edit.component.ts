@@ -115,7 +115,7 @@ export class FieldEditComponent extends ElementBase<any> {
     const f = this.field();
     
     // Initialize a Map instead of a standard Record object
-    const map = new WeakMap<any, string>();
+    const map = new Map<string, string>();
 
     if (!list || !f?.placeholder) return map;
 
@@ -123,11 +123,95 @@ export class FieldEditComponent extends ElementBase<any> {
       // We pass the raw `item` object as the key! 
       // Even if two items have the exact same name/data, they occupy 
       // different memory spaces, so the Map treats them as unique keys.
-      map.set(item, this.compileTpl(f.placeholder, { '$': item, '$prev$': item.$prev }));
+      const key = this.getLookupMapKey(item);
+      map.set(key, this.compileTpl(f.placeholder, { '$': item, '$prev$': item.$prev }));
     }
 
     return map;
   });
+
+// --- UNIFIED DISABLE LOGIC ---
+  markDisabledFn = computed(() => {
+    const field = this.field();
+    const script = field?.x?.markDisabledFn;
+    
+    if (!script) return undefined;
+
+    let cachedFn: Function | null = null;
+    let cachedKeys: string[] = [];
+
+    return (target: any) => {
+      try {
+        let jsDate: number | undefined = undefined;
+        let struct: any = undefined;
+        let option: any = undefined;
+
+        // Check if target is a Datepicker NgbDateStruct
+        if (target && typeof target === 'object' && 'year' in target && 'month' in target && 'day' in target) {
+          jsDate = new Date(target.year, target.month - 1, target.day).getTime();
+          struct = target;
+        } else {
+          // Otherwise, it's an Option item (Dropdown, Radio, Checkbox)
+          option = target;
+        }
+
+        const bindings = { 
+          ...(this.data() || {}), 
+          $date$: jsDate, 
+          $struct$: struct,
+          $item$: option
+        };
+
+        if (!cachedFn) {
+          cachedKeys = Object.keys(bindings);
+          cachedFn = new Function(...cachedKeys, `return ${script}`);
+        }
+
+        const argValues = cachedKeys.map(k => bindings[k as keyof typeof bindings]);
+        return !!cachedFn(...argValues);
+
+      } catch (e) {
+        console.error(`{field-${field?.code}-markDisabled}`, e);
+        return false; 
+      }
+    };
+  });
+
+  // Helper method for HTML loops (radios, checkboxes, buttons)
+  isDisabled(item: any): boolean {
+    const fn = this.markDisabledFn();
+    return fn ? fn(item) : false;
+  }
+
+  checkDisabled = (item: any) => this.isDisabled(item);
+
+// Pre-processes the lookupList for ng-select to natively inject the `disabled` property ONLY if true
+  processedLookupList = computed(() => {
+    const list = this.lookupList();
+    const disableFn = this.markDisabledFn();
+    
+    if (!disableFn || !list?.length) return list;
+    
+    return list.map(item => {
+      if (item && typeof item === 'object') {
+        const isDisabled = disableFn(item);
+        if (isDisabled) {
+          return { ...item, disabled: true }; // Only clone if disabled
+        }
+        return item; // Return pristine original item!
+      }
+      return item; // Fallback for raw strings
+    });
+  });
+
+  // Ensures ng-select maps selections correctly when using the processed clone
+  compareWithFn = (a: any, b: any) => {
+    if (a && b && typeof a === 'object' && typeof b === 'object') {
+      if (a.code !== undefined && b.code !== undefined) return a.code === b.code;
+      if (a.id !== undefined && b.id !== undefined) return a.id === b.id;
+    }
+    return a === b;
+  };
 
   // compiledGroupByMap = computed(() => {
   //   const list = this.lookupList();
@@ -330,6 +414,13 @@ export class FieldEditComponent extends ElementBase<any> {
     if (!timestamp) return null;
     const date = new Date(timestamp);
     return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
+  }
+
+  // Helper to safely generate a unique string key for any item
+  getLookupMapKey(item: any): string {
+    if (item == null) return '';
+    if (typeof item !== 'object') return String(item);
+    return item.code ?? item.id ?? JSON.stringify(item);
   }
 
   compileTpl(a: any, b: any, keep?: boolean) {

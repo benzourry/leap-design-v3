@@ -121,7 +121,9 @@
                 <div>
                   <ngb-datepicker class="smyds" [class.is-invalid]="isInvalid" [id]="uid"
                     [name]="uid" #formField="ngModel" [(ngModel)]="value" [required]="f.v?.required"
-                    [minDate]="toNgbDateStruct(f.v?.minDate)" [maxDate]="toNgbDateStruct(f.v?.maxDate)" (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
+                    [minDate]="toNgbDateStruct(f.v?.minDate)" [maxDate]="toNgbDateStruct(f.v?.maxDate)" 
+                    [markDisabled]="markDisabledFn()"
+                    (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
                   </ngb-datepicker>
                 </div>
               } @else {
@@ -129,6 +131,7 @@
                   <input class="form-control smyds" type="text" [class.is-invalid]="isInvalid" [id]="uid"
                     [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder" [required]="f.v?.required"
                     [minDate]="toNgbDateStruct(f?.v?.minDate)" [maxDate]="toNgbDateStruct(f?.v?.maxDate)"
+                    [markDisabled]="markDisabledFn()"
                     (click)="d.toggle()" (ngModelChange)="valueChanged($event)" ngbDatepicker #d="ngbDatepicker" [disabled]="f.readOnly">
                   <button type="button" class="btn btn-light smyds" style="border-color: var(--bs-border-color)" (click)="d.toggle()" [disabled]="f.readOnly">
                     <fa-icon [icon]="['far','calendar-alt']"></fa-icon>
@@ -169,11 +172,13 @@
               @for (i of lookupList(); track $index) {
                 <!-- @let i = {...n}; -->
                 <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
-                  [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" autocomplete="off">
-                <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="checkValue(i)">
+                  [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" 
+                  autocomplete="off"[disabled]="f.readOnly || isDisabled(i)">
+                <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}"
+                  [class.active]="checkValue(i)" [class.disabled]="f.readOnly || isDisabled(i)">
                   @if (f?.placeholder) {
                     <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
-                    <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
+                    <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
                   }
@@ -186,11 +191,13 @@
                 <!-- @let i = {...n}; -->
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline">
                   <input type="checkbox" class="form-check-input smyds" [value]="i" id="{{uid}}-{{i?.code}}"
-                    [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);" />
-                  <label class="form-check-label" for="{{uid}}-{{i?.code}}">
+                    [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);"
+                    [class.disabled]="f.readOnly || isDisabled(i)" />
+                  <label class="form-check-label" for="{{uid}}-{{i?.code}}" 
+                    [class.disabled]="f.readOnly || isDisabled(i)">
                     @if (f?.placeholder) {
                       <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
-                      <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
+                      <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
                     }
@@ -212,7 +219,7 @@
 
       @case ('modelPicker') {
         <div [class.modelPicker]="value && f?.placeholder">
-          <ng-select class="smyds" [items]="lookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+          <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
             [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
             [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
             [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
@@ -221,7 +228,7 @@
             @if (f?.placeholder) {
               <ng-template ng-option-tmp let-item="item">
                 <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'"></div> -->
-                <div [innerHtml]="compiledLookupMap().get(item) | safe:'html'"></div>
+                <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
               </ng-template>
             }
           </ng-select>
@@ -245,7 +252,7 @@
 
       @case ('select') {
         <div [class.modelPicker]="value && f?.placeholder">
-          <ng-select [items]="lookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
+          <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
             [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
             [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
             [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
@@ -255,7 +262,7 @@
             @if (f?.placeholder) {
               <ng-template ng-option-tmp let-item="item">
                 <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item})|safe:'html'"></div> -->
-                <div [innerHtml]="compiledLookupMap().get(item) | safe:'html'"></div>
+                <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
               </ng-template>
             }
             @if (f?.x?.groupBy) {
@@ -275,14 +282,14 @@
               @if (value?.length>0) {
                 <div class="list-group">
                   @for (sv of value; track $index) {
-                    <!-- <div class="list-group-item" [innerHtml]="compiledLookupMap().get(sv) | safe:'html'"></div> -->
+                    <!-- <div class="list-group-item" [innerHtml]="compiledLookupMap().get(getLookupMapKey(sv)) | safe:'html'"></div> -->
                     <div class="list-group-item" [innerHtml]="compileTpl(f.placeholder,{'$':sv})|safe:'html'"></div>
                   }
                 </div>
               }
             } @else {
               @if (value) {
-                <!-- <div class="card card-body single-pane" [innerHtml]="compiledLookupMap().get(value) | safe:'html'"></div> -->
+                <!-- <div class="card card-body single-pane" [innerHtml]="compiledLookupMap().get(getLookupMapKey(value)) | safe:'html'"></div> -->
                 <div class="card card-body single-pane" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
               }
             }
@@ -299,11 +306,13 @@
                 <!-- @let i = {...n}; -->
                 <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
                   (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
-                  id="{{uid}}-{{$index}}" autocomplete="off" />
-                <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" [class.active]="value?.code === i?.code">
+                  id="{{uid}}-{{$index}}" autocomplete="off" [disabled]="f.readOnly || isDisabled(i)" />
+                <label class="btn btn-outline-secondary smyds me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}" 
+                  [class.active]="value?.code === i?.code"
+                  [class.disabled]="f.readOnly || isDisabled(i)">
                   @if (f?.placeholder) {
                     <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
-                    <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
+                    <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
                   }
@@ -317,11 +326,13 @@
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
                   <input type="radio" class="form-check-input smyds" #fieldValue [value]="i" id="{{uid}}-{{i?.code}}"
                     [checked]="value?.code === i?.code" [name]="uid" [required]="f.v?.required"
+                    [class.disabled]="f.readOnly || isDisabled(i)"
                     (change)="value=i;valueChanged(i);" />
-                  <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}">
+                  <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}"
+                    [class.disabled]="f.readOnly || isDisabled(i)">
                     @if (f?.placeholder) {
                       <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
-                      <div [innerHtml]="compiledLookupMap().get(i) | safe:'html'"></div>
+                      <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
                     }
@@ -350,8 +361,10 @@
                 @for (i of simpleList(); track $index) {
                   <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
                     (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check smyds"
-                    id="{{uid}}-{{$index}}" autocomplete="off">
-                  <label class="btn btn-outline-secondary smyds me-1 mb-1 light toggle-opt" for="{{uid}}-{{$index}}">{{i}}</label>
+                    id="{{uid}}-{{$index}}" autocomplete="off" [disabled]="f.readOnly || isDisabled(i)">
+                  <label class="btn btn-outline-secondary smyds me-1 mb-1 light toggle-opt" 
+                    for="{{uid}}-{{$index}}"
+                    [class.disabled]="f.readOnly || isDisabled(i)">{{i}}</label>
                 }
               </div>
               @if (!f?.options) { <div class="text-muted">Option not available</div> }

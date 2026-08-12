@@ -111,12 +111,12 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               [class.fade-bottom]="!isReadMore() && isOverflowing()">
               
             <div>
-              @if (field().x?.prefix) {
-                <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+              @if (field().x?.prefix && !field().x?.prefixPost) {
+                <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
               }
               <span [morphHtml]="nl2brSafe(value())"></span>
-              @if (field().x?.suffix) {
-                <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+              @if (field().x?.suffix && !field().x?.suffixPost) {
+                <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
               }
             </div>
           </div>
@@ -161,8 +161,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       @if (['eval'].includes(field()?.type)) {
         <span>
           @if (field().subType === 'text') {
-            @if (field().x?.prefix) {
-              <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+            @if (field().x?.prefix && !field().x?.prefixPost) {
+              <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
             }
             <span>
               @if(field()?.format) {
@@ -171,8 +171,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
                 <span [innerHtml]="value()"></span>
               }
             </span>
-            @if (field().x?.suffix) {
-              <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+            @if (field().x?.suffix && !field().x?.suffixPost) {
+              <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
             }
           }
           @if (field()?.subType === 'qr') {
@@ -192,8 +192,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 
       @if (['number', 'scaleTo5', 'scaleTo10', 'scale'].includes(field()?.type)) {
         <span>
-          @if (field().x?.prefix) {
-            <span class="text-muted me-05">{{ field().x?.prefix }}</span>
+          @if (field().x?.prefix && !field().x?.prefixPost) {
+            <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
           }
           <span>
             {{ formattedValue() }}
@@ -203,8 +203,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               @case ('scaleTo10') { <sup>/10</sup> }
             }
           </span>
-          @if (field().x?.suffix) {
-            <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
+          @if (field().x?.suffix && !field().x?.suffixPost) {
+            <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
           }
         </span>
       }
@@ -469,6 +469,17 @@ export class FieldViewComponent implements OnInit {
     const fData = this.field();
     const labelTpl = fData?.placeholder ?? (fData?.type !== 'static' ? fData?.label : '');
     return this.compileTpl(labelTpl, this.data());
+  });
+
+  // Uses Angular's modern computed() to correctly cache based on signal dependencies
+  compiledPrefix = computed(() => {
+    const fData = this.field();
+    return this.compileTpl(fData.x?.prefix, this.data());
+  });
+  // Uses Angular's modern computed() to correctly cache based on signal dependencies
+  compiledSuffix = computed(() => {
+    const fData = this.field();
+    return this.compileTpl(fData.x?.suffix, this.data());
   });
 
   updatedValue = computed(() => {
