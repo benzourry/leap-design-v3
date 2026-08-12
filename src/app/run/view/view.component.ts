@@ -123,6 +123,10 @@ export class ViewComponent implements OnInit, OnDestroy {
   filesMap: any = {}
   liveSubscription: any = {};
 
+  
+  dayjs = dayjs;
+  ServerDate = ServerDate;
+
   constructor() {
     this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
 

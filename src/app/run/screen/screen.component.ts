@@ -123,6 +123,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
   prevSignalKey: string = '';
 
   appConfig: any = this.runService.appConfig;
+  
+  dayjs = dayjs;
+  ServerDate = ServerDate;
 
   scopeId = computed<string>(() => "screen_" + this.screenId());
 

@@ -127,6 +127,9 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   prevEntry: any = null;
   prevLoading = signal<boolean>(false);
 
+  dayjs = dayjs;
+  ServerDate = ServerDate;
+
   isEmpty = inputObject => inputObject && Object.keys(inputObject).length === 0;
 
   prevSignalKey: string = '';

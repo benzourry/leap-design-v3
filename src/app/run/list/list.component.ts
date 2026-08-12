@@ -202,6 +202,10 @@ export class ListComponent implements OnInit {
   _this = createProxy({}, () => this.cdr.markForCheck());
   appConfig: any = this.runService.appConfig;
 
+  
+  dayjs = dayjs;
+  ServerDate = ServerDate;
+
   private activeDatasetReq?: Subscription;
   private activeListReq?: Subscription;
 
