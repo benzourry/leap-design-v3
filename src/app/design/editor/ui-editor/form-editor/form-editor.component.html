@@ -2852,7 +2852,7 @@
                 </div>
               }
 
-              @if (['modelPicker','select','radio','checkboxOption'].indexOf(editItemData.type)>-1) {
+              @if (['date','modelPicker','select','radio','checkboxOption'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
                   <label class="form-label">Mark Disabled Function</label>
                   <div class="mx-n3">
@@ -2869,7 +2869,7 @@
                         <li>$date$: To get the date in milisecond format</li>
                         <li>$struct$: To get the date in NgbDateStruct format</li>
                       }
-                      @if (['select','radio','checkboxOption'].indexOf(editItemData.type)>-1) {
+                      @if (['modelPicker','select','radio','checkboxOption'].indexOf(editItemData.type)>-1) {
                         <li>$item$: To get the item of lookup</li>
                       }
                     </ul>
