@@ -7,14 +7,14 @@
             <h4>Please select form to edit from the list or</h4>
             <div class="d-flex flex-row justify-content-center mt-3">
               <button type="button"
-                class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
+                class="m-1 p-2 rounded-2 border-2 bg-body border btn d-flex flex-column align-items-center"
                 (click)="editForm(editFormTpl,newForm, true)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                 <div>New Form</div>
               </button>
               <button type="button"
-                class="m-1 p-2 rounded-2 border-2 bg-white border btn d-flex flex-column align-items-center"
+                class="m-1 p-2 rounded-2 border-2 bg-body border btn d-flex flex-column align-items-center"
                 (click)="cloneForm(cloneFormTpl)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
@@ -47,8 +47,8 @@
               <div class="mt-3">
                 <div class="mb-2">Allowed creators:</div>
                 @for(splitted of curForm.email|asList; track $index){
-                    
-                  <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
+                  
+                  <div class="d-inline-block me-1 border bg-body-secondary rounded px-1 mb-1 overflow-hidden">
                       <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
                     height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
                       {{splitted}}
@@ -84,12 +84,12 @@
                     <div class="p-2">
                       <div class="row g-2">
                         <div class="col">
-                          <input type="text" class="form-control bg-light" [(ngModel)]="filterField"
+                          <input type="text" class="form-control bg-body-secondary" [(ngModel)]="filterField"
                             name="filterField" placeholder="Type to filter fields">
                         </div>
                         @if (facetList) {
                           <div class="col" style="max-width:200px">
-                            <select class="form-select bg-light" name="previewfacet"
+                            <select class="form-select bg-body-secondary" name="previewfacet"
                               [(ngModel)]="previewFacet">
                               <option class="text-muted" [ngValue]="undefined">Select view mode
                               </option>
@@ -177,8 +177,6 @@
                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                   </button>
                                   @if (!$first) {
-                                    <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                      (click)="reorderTab($index, -1)"> -->
                                     <button type="button" class="btn btn-info btn-round btn-sm"
                                       (click)="reorderTab(tab, -1)">
                                       <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true">
@@ -186,8 +184,6 @@
                                     </button>
                                   }
                                   @if (!$last) {
-                                    <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                      (click)="reorderTab($index, 1)"> -->
                                     <button type="button" class="btn btn-info btn-round btn-sm"
                                       (click)="reorderTab(tab, 1)">
                                       <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true">
@@ -205,11 +201,10 @@
                         </div>
                       }
                       @for (t of curForm.sections|groupBy:'parent':(curForm.nav!='simple'):'parentObj.sortOrder'; track t.key) {
-                        <!-- {{curForm.sections|json}} -->
                         <div>
                           @if (curForm.nav!='simple') {
                             @let tab = getTab(t.key);
-                            <div class="p-4 text-center mt-2 mx-n2" style="background:whitesmoke;position:sticky;top: 0;z-index:5">
+                            <div class="p-4 text-center mt-2 mx-n2" style="background:var(--bs-tertiary-bg);position:sticky;top: 0;z-index:5">
                               @if (tab) {
                                 <h5 class="m-0" [class.text-primary]="t.key=='-1'||t.key=='-999'">{{tab.title}}</h5>
                               }
@@ -248,10 +243,6 @@
                                         }
                                         <div [class.ms-4]="e.icon">
                                           <h6 class="m-0">
-                                            <!-- @if (e.icon) {
-                                              <fa-icon [icon]="e.icon|iconSplit"
-                                              [fixedWidth]="true"></fa-icon>
-                                            } -->
                                             {{e.title}} @if(e.type=='list' && e.x?.required){
                                               <span>*</span>
                                             }
@@ -294,8 +285,6 @@
                                         @if (!$s_first) {
                                           <button type="button" class="btn btn-info btn-round btn-sm"
                                             (click)="reorderSection(curForm.sections,e.__index, -1)">
-                                          <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                            (click)="reorderSection(e, -1)"> -->
                                             <fa-icon [icon]="['fas','arrow-left']"
                                               [fixedWidth]="true">
                                             </fa-icon>
@@ -304,8 +293,6 @@
                                         @if (!$s_last) {
                                           <button type="button" class="btn btn-info btn-round btn-sm"
                                             (click)="reorderSection(curForm.sections,e.__index, 1)">
-                                          <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                            (click)="reorderSection(e, 1)"> -->
                                             <fa-icon [icon]="['fas','arrow-right']"
                                               [fixedWidth]="true">
                                             </fa-icon>
@@ -384,7 +371,7 @@
                                                         [pattern]="field?.v?.pattern">
                                                       </field-edit>
                                                       @if (['select','radio','radioBtn','checkboxOption'].indexOf(field.type)>-1 && field.dataSource) {
-                                                          <button type="button" class="btn btn-xs btn-light" (click)="editLookupEntry(editLookupEntryTpl,field,field.dataSource,{enabled:1})">
+                                                          <button type="button" class="btn btn-xs btn-outline-secondary mt-1" (click)="editLookupEntry(editLookupEntryTpl,field,field.dataSource,{enabled:1})">
                                                             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
                                                           </button>
                                                       }
@@ -400,7 +387,7 @@
                                                         <label class="label-span form-label">{{field?.label}}</label>
                                                       }
                                                       <div
-                                                        class="card-body bg-light text-muted text-center">
+                                                        class="card-body bg-body-secondary text-muted text-center">
                                                         <h1>
                                                           <fa-icon
                                                             [icon]="['fas','table']"
@@ -424,7 +411,7 @@
                                                             (click)="editDataset(editDatasetTpl,field.dataSource)">
                                                             <fa-icon
                                                               [icon]="['fas','pencil-alt']"
-                                                            [fixedWidth]="true"></fa-icon>
+                                                              [fixedWidth]="true"></fa-icon>
                                                             Edit Dataset
                                                           </button>
                                                         }
@@ -447,7 +434,7 @@
                                                   post</div>
                                                 }
                                               </div>
-                                              <div class="element-edit mt-1 cursor-move bg-white text-info"
+                                              <div class="element-edit mt-1 cursor-move bg-body text-info"
                                                 style="position:absolute;top:3px;left:10px;"
                                                 cdkDragHandle>
                                                 <fa-icon [icon]="['fas','grip-vertical']"
@@ -469,8 +456,6 @@
                                                   </fa-icon>
                                                 </button>
                                                 @if (!$f_first) {
-                                                  <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderItem(e, e.items.indexOf(f) -1)"> -->
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
                                                     (click)="reorderItem(e, f, -1)">
                                                     <fa-icon [icon]="['fas','arrow-left']"
@@ -479,8 +464,6 @@
                                                   </button>
                                                 }
                                                 @if (!$f_last) {
-                                                  <!-- <button type="button" class="btn btn-info btn-round btn-sm"
-                                                    (click)="reorderItem(e, e.items.indexOf(f), 1)"> -->
                                                   <button type="button" class="btn btn-info btn-round btn-sm"
                                                     (click)="reorderItem(e, f, 1)">
                                                     <fa-icon [icon]="['fas','arrow-right']"
@@ -494,9 +477,9 @@
                                         </div>
                                       </div>
                                       <div
-                                        style="border-top:dashed 3px #ddd; top:22px;position:relative">
+                                        style="border-top:dashed 3px var(--bs-border-color); top:22px;position:relative">
                                       </div>
-                                      <a class="btn btn-round mb-3 btn-light shadow-clean position-relative align-self-center pointer"
+                                      <a class="btn btn-round mb-3 btn-outline-secondary shadow-clean position-relative align-self-center pointer"
                                         (click)="editItem(editItemTpl,e,{size:'col-sm-12', hideLabel:false, x:{facet:{add:'edit',view:'view',edit:'edit'}}},e.items.length)">
                                         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                         Add Form Item
@@ -519,7 +502,6 @@
                           </div>
                         </div>
                       }
-                      <!-- <div class="row"> -->
                         <div class="text-center p-3">
                           <a class="d-block p-2 pointer"
                             (click)="editSection(editSectionTpl,{sortOrder:curForm.sections?.length, size:'col-sm-12',type:'section'})">
@@ -527,7 +509,6 @@
                             Add Section
                           </a>
                         </div>
-                      <!-- </div> -->
                     </div>
                   </ng-template>
                 </li>
@@ -556,7 +537,6 @@
                             <div id="t_-1_line" [class.selected-line]="selectedLine==-1"
                               [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
                               style="left:130px; min-width:190px"></div>
-                            <!-- First line dari Submission kepada 1st Tier -->
                             <div id="line_-1" [class.selected-line]="selectedLine==-1"
                               [style.border-color]="selectedLine==-1?selectedColor:'#ccc'" style="border: 2px solid rgb(204, 204, 204);
                               border-left: none;
@@ -569,7 +549,6 @@
                             <div class="ballx"
                               [ngClass]="tier.altClass">
                               <div style="margin-left: 0px; min-height:55px;  min-width:320px;position: relative;">
-                                <!-- THE NEW LABEL -->
                                 @if (tier.pre) {
                                   <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
                                     <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
@@ -585,8 +564,6 @@
                                     @if (!curForm.x?.extended){
                                       <div class="element-edit" style="position:absolute;top:6px;right:12px;">
                                         @if (!$first) {
-                                          <!-- <button type="button" class="btn btn-round btn-info btn-sm"
-                                            (click)="reorderTier($t_index, -1)"> -->
                                           <button type="button" class="btn btn-round btn-info btn-sm"
                                             (click)="reorderTier(tier, -1)">
                                             <fa-icon [icon]="['fas','arrow-up']"
@@ -595,8 +572,6 @@
                                           </button>
                                         }
                                         @if (!$last) {
-                                          <!-- <button type="button" class="btn btn-round btn-info btn-sm"
-                                            (click)="reorderTier($t_index, 1)"> -->
                                           <button type="button" class="btn btn-round btn-info btn-sm"
                                             (click)="reorderTier(tier, 1)">
                                             <fa-icon [icon]="['fas','arrow-down']"
@@ -617,16 +592,14 @@
                                         </button>
                                       </div>
                                     }
-                                    <!-- [ngClass]="{'border-primary text-primary':selectedLineTier==tier.id}" -->
                                     <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
                                       [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
-                                      style="width:30px;right:14px;font-weight: bold;position:absolute;background: white; height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
+                                      style="width:30px;right:14px;font-weight: bold;position:absolute;background: var(--bs-body-bg); height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
                                       {{$t_index+1}}
                                     </div>
                                     <div class="element-item">
                                       {{tier.name}}<sup class="ms-2">{{tier.id}}</sup>
                                     </div>
-                                    <!-- Sebagai hujung arrow pointing to tier -->
                                     <div id="t_{{tier.id}}"
                                       [class.selected-line-tier]="selectedLineTier==tier.id"
                                       [style.background-color]="selectedLineTier==tier.id?selectedColor:'#ddd'"
@@ -668,7 +641,7 @@
                                         <div class="small mb-2">
                                           <span class="me-1 mb-2">Fixed approver to </span>
                                           @for (i of tier.approver|asList; track $index) {
-                                            <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">
+                                            <div class="d-inline-block me-2 border bg-body-secondary rounded px-1 mb-1">
                                               {{i}}
                                             </div>
                                           }
@@ -723,14 +696,6 @@
                                       </div>
                                     }
                                     <div>
-                                      <!-- <span class="disabled-region"> -->
-                                      <!-- [ngClass]="{'border border-2 border-primary':selectedLine==o.value.id}" -->
-                                      <!-- [style.border-color]="selectedLine==o.value.id?selectedColor:'rgb(108,
-                                      117, 125)'"
-                                      [style.color]="selectedLine==o.value.id?selectedColor:'rgb(108,
-                                      117, 125)'" -->
-                                      <!-- class="btn btn-outline-secondary btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative" -->
-                                      <!-- [style.border-width]="selectedLine==o.value.id?'2px':'2px'" -->
                                       @if (tier.alwaysApprove) {
                                         <button type="button" (click)="highlightLine(tier,{id:-2323, color:'rgb(0, 123, 255)', action:'nextTier'})"
                                             title="Always approve"
@@ -860,7 +825,7 @@
                                                 [style.top.px]="50+($a_index*10)"
                                                 style="width:15px;">
                                                 <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                                  style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                                  style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
                                                   @if (o.value.action=='curTier') {
                                                     <fa-icon
                                                       size="xs" [icon]="['fas',o.value.icon]">
@@ -875,8 +840,8 @@
                                                 [style.top.px]="50+($a_index*10)"
                                                 style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
                                                 <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                                  [style.color]="selectedLine==o.value.id?selectedColor:'black'"
-                                                  style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:white; border:solid 2px #ccc;">
+                                                  [style.color]="selectedLine==o.value.id?selectedColor:'var(--bs-body-color)'"
+                                                  style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
                                                   @if (o.value.action=='curTier') {
                                                     <fa-icon
                                                       size="xs" [icon]="['fas',o.value.icon]">
@@ -957,12 +922,6 @@
                     </div>
                   </ng-template>
                 </li>
-                <!-- <li ngbNavItem class="mt-3">
-                  <a ngbNavLink>Data</a>
-                  <ng-template ngbNavContent>
-                      <app-datatable [form]="curForm"></app-datatable>
-                  </ng-template>
-                </li> -->
                 <li class="nav-item me-1 mt-3 ms-auto">
                   <div>
                     <div ngbDropdown class="d-inline-block">
@@ -990,11 +949,6 @@
                           <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
                           Form's JSON Schema
                         </button>
-                        <!-- <a title="Get data JSON Schema" [class.disabled]="offline"
-                          (click)="genView(curForm.id)" href="{{baseApi}}/cogna/get-formatter/{{formId}}" target="_blank" ngbDropdownItem>
-                          <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon> 
-                          Get data JSON Schema
-                        </a> -->
                         <button type="button" title="Get data JSON Schema" [class.disabled]="offline"
                           (click)="moveFormToApp(moveFormToAppTpl)" ngbDropdownItem>
                           <fa-icon [icon]="['fas','random']" [fixedWidth]="true"></fa-icon>
@@ -1033,7 +987,7 @@
       }
     </div>
   </div>
-  <div class="d-flex flex-column" style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+  <div class="d-flex flex-column" style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px var(--bs-border-color)">
     
     @if (curForm?.x?.extended && superForm){
       @if (!showSuper && !showPalette) {
@@ -1057,16 +1011,12 @@
       @if (showSuper) {
         <div id="palette-pane" class="flex-1 list-group list-group-flush" cdkDropListSortingDisabled cdkDropList
           [cdkDropListData]="superItems"
-          style="max-width:180px; border-left:solid 1px #e6e6e6">
+          style="max-width:180px; border-left:solid 1px var(--bs-border-color)">
           @for (p of superItems; track $index) {
             <div class="list-group-item p-2 list-group-item-info bg-opacity-10"  style="font-size:11px; cursor:pointer;" cdkDrag>
               {{p.label}}
               <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
             </div>
-            <!-- <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
-             >
-              
-            </button> -->
           }
         </div>
       }
@@ -1094,9 +1044,9 @@
     @if (showPalette) {
       <div id="palette-pane" class="p-1 flex-1" cdkDropListSortingDisabled cdkDropList
         [cdkDropListData]="palettes"
-        style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+        style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px var(--bs-border-color)">
         @for (p of palettes; track $index) {
-          <button type="button" class="btn bg-light text-truncate" style="font-size:11px; padding:3px; margin:2px;"
+          <button type="button" class="btn bg-body-secondary text-truncate" style="font-size:11px; padding:3px; margin:2px;"
             cdkDrag>
             {{p.label}}
             <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
@@ -1109,7 +1059,6 @@
 
 <ng-template #editFormTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
-    <!-- {{walletList|json}} -->
     <app-edit-form [form]="editFormData" [app]="app" [user]="user"
      [formList]="formList" [accessList]="accessList" [walletList]="walletList"
      [extraAutoCompleteJs]="extraAutoCompleteJs" [extraAutoCompleteHtml]="extraAutoCompleteHtml" [close]="c" [dismiss]="d"></app-edit-form>
@@ -1154,7 +1103,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Type *</label>
                 <div>
-                  <div name="lang" class="text-dark">
+                  <div name="lang" class="text-body">
                     <input type="radio" class="btn-check" id="type-section" name="type-section" value="section" #type="ngModel"
                       [(ngModel)]="editSectionData.type" [required]="true">
                     <label for="type-section" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
@@ -1173,16 +1122,8 @@
                       Approval
                       <div><small>Used for approval</small></div>
                     </label>
-                    <!-- <label ngbButtonLabel class="btn btn-outline-secondary">
-                    <input ngbButton type="radio" class="btn-check" value="approval-list">
-                    Approval (List)</label> -->
-                    <!-- <label ngbButtonLabel class="btn btn-outline-secondary">
-                    <input ngbButton type="radio" class="btn-check" value="dataset">
-                    Dataset</label> -->
                   </div>
                 </div>
-
-
 
               </div>
               <div class="row">
@@ -1211,7 +1152,7 @@
                         <label for="align-flex-end" class="btn btn-outline-secondary me-1 mb-1">
                           <fa-icon [icon]="['fas','align-right']" [fixedWidth]="true">
                           </fa-icon>
-                        </label>                       
+                        </label>                        
                         <input type="radio" class="btn-check" value="space-between"
                           id="align-space-between" name="align-space-between"
                           [(ngModel)]="editSectionData.align">
@@ -1342,7 +1283,6 @@
                       </div>
                     }
                   </div>
-                  <!-- <input type="hidden" name="tableFieldChecker" [ngModel]="editSectionData.x?.tableStyle" [required]="editSectionData.x?.tableStyle?.length==0"> -->
                 }
                 <div class="form-check form-switch">
                   <input type="checkbox" class="form-check-input"
@@ -1356,44 +1296,13 @@
                     <select class="form-select" name="defGroupField"
                       [(ngModel)]="editSectionData.x.defGroupField">
                       <option [ngValue]="null">Ungroup</option>
-                      <!-- <option value="currentStatus">Status</option> -->
                       @for (f of editSectionData?.items; track $index) {
                         <option [ngValue]="f.code">
                           {{curForm?.items?.[f.code].label}} ({{f.code}})
                         </option>
                       }
-                      <!-- @for(gf of groupableFields|groupBy:'formTitle'; track $index; let $gindex=$index){
-                        <optgroup [label]="gf?.key">
-                          @for(f of gf?.value; track $index){
-                            <option
-                              [ngValue]="f.fieldPath">
-                              {{f.sectionTitle}} -
-                              {{f.itemLabel}}
-                            </option>
-                          }
-                        </optgroup>
-                      } -->
                     </select>
                   </div>
-
-
-                  <!-- <div class="ms-4 mb-3" [class.disabled]="editSectionData.inline">
-                    <div class="btn-group float-end">
-                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllSectionFields()">All</button>
-                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAllSectionFields()">None</button>
-                    </div>        
-                    <label class="text-muted">Displayed column *
-                    </label>
-                    @for (f of editSectionData?.items; track $index) {
-                      <div class="form-check mt-1" >
-                        <input type="checkbox" class="form-check-input" [value]="f.code" id="displayedcol-{{$index}}"
-                          [checked]="checkSectionField(f.code)" name="f-displayedcol-{{$index}}" (change)="toggleSectionField(f.code)" />
-                        <label class="form-check-label" for="displayedcol-{{$index}}">
-                          {{curForm.items[f.code].label}}</label>
-                      </div>
-                    }
-                  </div> -->
-                  <!-- <input type="hidden" name="tableFieldChecker" [ngModel]="editSectionData.x?.tableStyle" [required]="editSectionData.x?.tableStyle?.length==0"> -->
                 }
                 <div class="form-check form-switch">
                   <input type="checkbox" class="form-check-input"
@@ -1412,7 +1321,6 @@
                           <option [value]="f.code">{{curForm.items[f.code].label}}</option>
                         }
                       </select>
-                      <!-- <div class="btn-group"> -->
                         <input type="radio" class="btn-check" id="def-sort-asc" name="def-sort-asc" value="asc" #defSortAsc="ngModel"
                           [(ngModel)]="editSectionData.x.defSortDir" [required]="editSectionData.x.defSort">
                         <label for="def-sort-asc" class="btn btn-outline-secondary">
@@ -1423,12 +1331,6 @@
                         <label for="def-sort-desc" class="btn btn-outline-secondary">
                           DESC
                         </label>
-                      <!-- </div> -->
-                      <!-- <select class="form-select col-1" name="defSortDir"
-                        [(ngModel)]="editSectionData.x.defSortDir">
-                        <option value="asc">ASC</option>
-                        <option value="desc">DESC</option>
-                      </select> -->
                     </div>
                     <div class="form-check mb-3 mt-2">
                       <input type="checkbox" class="form-check-input"
@@ -1469,7 +1371,6 @@
                   </select>
                 </div>
               }
-                                        <!-- *ngIf="editSectionData?.type!='approval'" -->
               <div class="form-group mt-3 mb-3">
                 <label class="form-label">Panel Style Class</label>
                 <input type="text" class="form-control"
@@ -1594,11 +1495,6 @@
                   </app-cm>
                 </div>
               </div>
-              <!-- <div class="form-group mb-3">
-                <label class="form-label">Pre-requisite</label>
-                <input type="text" class="form-control" [(ngModel)]="editTabData && editTabData.pre" name="pre"
-                  placeholder="Expression (ie: $.age > 18)">
-              </div> -->
               <div class="form-group mb-3">
                 <label class="form-label">Enable condition</label>
                 <div class="mx-n3">
@@ -1763,7 +1659,7 @@
               @for (c of actionIcons; track c) {
                 <input type="radio" class="btn-check" [value]="c" id="icon-{{c}}" name="icon-{{c}}"
                   [(ngModel)]="editTierActionData.icon" required>
-                <label for="icon-{{c}}" class="btn btn-round color-item me-1 mb-1 bg-light"
+                <label for="icon-{{c}}" class="btn btn-round color-item me-1 mb-1 bg-body-secondary"
                   [class.active-outline]="editTierActionData.icon==c">
                   <fa-icon [icon]="['fas',c]" [fixedWidth]="true">
                   </fa-icon>
@@ -1786,16 +1682,11 @@
                 </label>
               }
             </div>
-            <!-- <input type="text" class="form-control" [(ngModel)]="editTierActionData && editTierActionData.color"
-            name="color">         -->
           </div>
         </div>
       </div>
       <div class="form-group mb-3">
         <label class="form-label">Pre-requisite (tier action will be hidden if false)</label>
-        <!-- <app-codejar name="pre" lang="js" [(ngModel)]="editTierActionData && editTierActionData.pre"
-        [linenumber]="true" [options]="{lineNumbers: true,mode: 'javascript'}">
-      </app-codejar> -->
         <div class="mx-n3">
           <app-cm name="pre" lang="javascript" [(ngModel)]="editTierActionData.pre"
             [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
@@ -1962,15 +1853,12 @@
                   option will
                 be hidden, move to the next tier</label>
               </div>
-              <!-- <div [class.disabled-region]="editTierData.alwaysApprove"> -->
-                <!-- <label class="form-label">Allowed Tier Action</label> -->
               <div class="form-check form-switch form-group">
                 <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.canRemark"
                   name="canRemark" id="canRemark">
                 <label for="canRemark" class="form-check-label">Enable Remark - Allow approver
                   to add decision remark</label>
               </div>
-              <!-- </div> -->
               <div class="form-group mb-3">
                 <label class="form-label">Custom Approval Form</label>
                 <ng-select [items]="curForm.sections" bindLabel="title"
@@ -2356,20 +2244,6 @@
                   <label class="form-check-label" for="seconds">Enable seconds picker</label>
                 </div>  
               }
-              <!-- @if (['date'].indexOf(editItemData?.type)>-1){
-                <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox" id="use_now"
-                    [(ngModel)]="editItemData.x.use_now" name="use_now">
-                  <label class="form-check-label" for="use_now">Default with current time if no value</label>
-                </div>  
-              } -->
-              <!-- @if (['date'].indexOf(editItemData?.type)>-1){
-                <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox" id="use_now"
-                    [(ngModel)]="editItemData.x.use_now" name="use_now">
-                  <label class="form-check-label" for="use_now">Default with current time if no value</label>
-                </div>  
-              } -->
               
               @if (['simpleOption'].indexOf(editItemData.type)>-1) {
                 <div class="form-group mb-3">
@@ -2379,8 +2253,7 @@
                 </div>
               }
               @if (['modelPicker'].indexOf(editItemData.type)>-1 && dataset?.id) {
-                <div class="form-group mb-3"
-                  >
+                <div class="form-group mb-3">
                   <label class="form-label">Field to show (on input)</label>
                   <select class="form-select" name="bindLabel"
                     [(ngModel)]="editItemData.bindLabel" #mPicker>
@@ -2468,8 +2341,7 @@
                                     </tr>
                                   </table>
                                   @if (efResult[editItemData.code].errorCount) {
-                                    <div class="form-check mt-2"
-                                      >
+                                    <div class="form-check mt-2">
                                       <input type="checkbox" class="form-check-input"
                                         id="showlog_{{editItemData.code}}"
                                         [(ngModel)]="showlog[editItemData.code]"
@@ -2561,7 +2433,7 @@
                     @if (editItemData.placeholder) {
                       <div class="mt-2">
                         <label class="form-label">Preview</label>
-                        <div class="bg-white p-2 border border-light"
+                        <div class="bg-body p-2 border border-secondary-subtle"
                         [innerHtml]="editItemData.placeholder|safe:'html'"></div>
                       </div>
                     }
@@ -2706,7 +2578,7 @@
                       </div>
                     </div>
                   }
-                   
+                    
                   <div class="col-sm-6">
                     <div class="form-group mb-3">
                       <label class="form-label">Max
@@ -2789,7 +2661,7 @@
                 <textarea class="form-control" [(ngModel)]="editItemData.hint" name="hint"
                 placeholder="Hint for input"></textarea>
               </div>
-              @if (['text','eval','number'].indexOf(editItemData.type)>-1) {
+              @if (['text','eval','number', 'file', 'select','modelPicker', 'qr', 'btn'].indexOf(editItemData.type)>-1) {
                 <div class="row">
                   <div class="col-sm-6">
                       <div class="form-group mb-3">
@@ -3019,7 +2891,7 @@
                     </div>
                   }
                 </div>
-                 
+                  
                 @if(editItemData.x?.use_default){
                   @if (!editItemData.x?.use_dyn_default){
                     <div class="input-group mb-3">
@@ -3038,7 +2910,6 @@
                           [(ngModel)]="editItemData.x.default"
                           placeholder="Choose default date" (click)="defDt.toggle()" ngbDatepicker
                           #defDt="ngbDatepicker">
-                        <!-- * Leave blank to use current time -->
                       }@else if(['simpleOption'].indexOf(editItemData?.type)>-1){
                         <select class="form-select" name="defaultSimpleOption"
                           [(ngModel)]="editItemData.x.default" >
@@ -3146,7 +3017,7 @@
               }
 
               
-              <div class="mx-n2 mb-n3 p-2 bg-light">
+              <div class="mx-n2 mb-n3 p-2 bg-body-secondary">
                 @if (['select','radio', 'simpleOption','checkboxOption' ].indexOf(editItemData.type)>-1) {
                   <div class="form-group mb-3">
                     <label class="form-label">Smart Form (classified from text)</label>
@@ -3172,7 +3043,7 @@
                         </app-cm>
                       </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
-                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                        <span class="badge text-body bg-body-secondary border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }
                     </div>
                   }
@@ -3202,7 +3073,7 @@
                         </app-cm>
                       </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
-                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                        <span class="badge text-body bg-body-secondary border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }
                     </div>
                     <div class="form-group mb-3">
@@ -3280,7 +3151,7 @@
                         </app-cm>
                       </div>
                       @for(i of editItemData.x?.rcognaFields; track $index){
-                        <span class="badge text-dark bg-light border border-1 me-1 mb-1 fw-normal">{{i}}</span>
+                        <span class="badge text-body bg-body-secondary border border-1 me-1 mb-1 fw-normal">{{i}}</span>
                       }
                     </div>
                   }
@@ -3485,178 +3356,6 @@
   </div>
 </ng-template>
 
-<!-- <ng-template #viewItemsTpl let-c="close" let-d="dismiss">
-  <div class="modal-header">
-    <h4 class="modal-title">Manage Form Item Source</h4>
-  </div>
-  <div class="list-group list-group-flush">
-    @if (curForm) {
-      <a class="list-group-item list-group-item-secondary py-2" (click)="showCurFormItem=!showCurFormItem">
-        <h5 class="mb-0">{{curForm.title}}
-          <fa-icon class="ms-1 float-end" [icon]="['fas',showCurFormItem?'angle-up':'angle-down']"
-          [fixedWidth]="true"></fa-icon>
-        </h5>
-      </a>
-      @if (showCurFormItem) {
-        <div class="bg-light p-2 text-center">
-          <input type="text" class="p-2" style="width:100%;" placeholder="Start typing to search..."
-            [(ngModel)]="itemSearch">
-        </div>
-        @for (f of curForm.items|keyvalue|filter:itemSearch; track $index) {
-          <div class="list-group-item element py-2">
-            {{f.value.label}} - <code>$.{{f.value.code}}</code>
-            <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
-              @if (f.value.f) {
-                <button type="button" class="btn btn-round btn-sm btn-info"
-                  (click)="showFunc[f.value.id]=!showFunc[f.value.id]">
-                  <fa-icon [icon]="['fas','terminal']" [fixedWidth]="true"></fa-icon>
-                </button>
-              }
-              <button type="button" class="btn btn-round btn-sm btn-info" (click)="removeItemSource(curForm.id,f.value.id)">
-                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-              </button>
-            </div>
-            @if (showFunc[f.value.id]) {
-              <div class="mt-1 small">
-                <pre style="white-space: pre-wrap;">{{f.value.f}}</pre>
-                <div class="bg-danger mx-n2 text-white">
-                  <div class="p-3">
-                    <div class="form-group mb-3">
-                      <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="force_{{f.key}}"
-                          [(ngModel)]="force[f.key]" name="force_{{f.key}}">
-                        <label class="form-check-label" for="force_{{f.key}}">Include non-empty
-                        (force update ALL)</label>
-                      </div>
-                    </div>
-                    @if (f.value.f) {
-                      <button type="button" [disabled]="efLoading[f.key]"
-                        class="btn btn-sm btn-danger text-start border-white" style="border-width:2px;"
-                        (click)="backendEf(f.value, '', force[f.key])"
-                        >
-                        @if (efLoading[f.key]) {
-                          <span>Executing update...please wait</span>
-                        }
-                        @if (!efLoading[f.key]) {
-                          <span>Update <strong>{{force[f.key]?'all':'empty'}}</strong> data</span>
-                        }
-                        <div class="small">Update previous record prior to the addition of this EF</div>
-                      </button>
-                    }
-                    @if (efResult[f.key]) {
-                      <div class="text-white mt-2">
-                        <table width="100%">
-                          <tr>
-                            <td>Success</td>
-                            <td>: {{efResult[f.key].successCount}}</td>
-                          </tr>
-                          <tr>
-                            <td>Failed</td>
-                            <td>: {{efResult[f.key].errorCount}}</td>
-                          </tr>
-                          <tr>
-                            <td>Not empty (unchanged)</td>
-                            <td>: {{efResult[f.key].notEmptyCount}}</td>
-                          </tr>
-                        </table>
-                        @if (efResult[f.key].errorCount) {
-                          <div class="form-check mt-2">
-                            <input type="checkbox" class="form-check-input" id="showlog_{{f.key}}"
-                              [(ngModel)]="showlog[f.key]" name="showlog_{{f.key}}">
-                            <label class="form-check-label" for="showlog_{{f.key}}">Show error
-                            logs</label>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                  @if (showlog[f.key]) {
-                    <div class="p-3" style="max-height:200px; overflow:auto">
-                      @for (l of efResult[f.key].errorLog; track l) {
-                        <div>{{l}}</div>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-        }
-      }
-    }
-    @if (curForm.prev) {
-      <a class="list-group-item list-group-item-secondary py-2" (click)="showPrevFormItem=!showPrevFormItem">
-        <h5 class="mb-0">{{curForm.prev.title}}
-          <fa-icon class="ms-1 float-end" [icon]="['fas',showPrevFormItem?'angle-up':'angle-down']"
-          [fixedWidth]="true"></fa-icon>
-        </h5>
-      </a>
-      @if (showPrevFormItem) {
-        @for (f of curForm.prev.items|keyvalue; track $index) {
-          <div class="list-group-item element py-2">
-            {{f.value.label}} - <code>$prev$.{{f.value.code}}</code>
-            <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
-              <button type="button" class="btn btn-round btn-sm btn-info"
-                (click)="removeItemSource(curForm.prev.id,f.value.id)">
-                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-              </button>
-            </div>
-          </div>
-        }
-      }
-    }
-    @if (!curForm.items) {
-      <h5 class="text-muted p-3">Source Item Not Available</h5>
-    }
-    <div class="list-group-item element py-2">
-      <div class="small">Endpoint View by ID</div>
-      <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/entry/[entryId]?formId={{curForm.id}}" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-    </div>
-    <div class="list-group-item element py-2">
-      <div class="small">Endpoint View by params (first result only)</div>
-      <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/entry/by-params?formId={{curForm.id}}&[params]" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-      
-    </div>
-    @if (curForm.publicEp) {
-      <div class="list-group-item element py-2">
-        <div class="small">Public Endpoint View by ID</div>
-        <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-      </div>
-    }
-    @if (curForm.publicEp) {
-      <div class="list-group-item element py-2">
-        <div class="small">Public Endpoint View by params (first result only)</div>
-        <input type="text" class="form-control form-control-sm mt-1" 
-        value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
-        onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
-      </div>
-    }
-    @if (!curForm.publicEp) {
-      <div class="bg-danger text-white p-3">
-        Access to Public Endpoint View by ID &amp; Endpoint View by params is disabled.
-        <div class="small">To enable, please toggle <b>Public endpoint access to entry data via Id or Params</b> in
-          Form Setting &rsaquo; Options</div>
-      </div>
-    }
-    <div class="bg-danger text-white p-3">
-      Clear entries for the form
-      <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all entry</button>
-    </div>
-  </div>
-  <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
-  </div>
-</ng-template> -->
-
-
-
-
 <ng-template #viewItemsTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
     <h4 class="modal-title">Manage Form Item Source</h4>
@@ -3670,8 +3369,8 @@
         </h5>
       </a>
       @if (showCurFormItem) {
-        <div class="bg-light p-2 text-center">
-          <input type="text" class="p-2" style="width:100%;" placeholder="Start typing to search..."
+        <div class="bg-body-secondary p-2 text-center">
+          <input type="text" class="p-2 form-control" style="width:100%;" placeholder="Start typing to search..."
             [(ngModel)]="itemSearch">
         </div>
         
@@ -3680,7 +3379,7 @@
           
           @if (filteredItems.length > 0) {
             <!-- Section Header -->
-            <div class="list-group-item bg-light fw-bold py-1 small border-top" 
+            <div class="list-group-item bg-body-secondary fw-bold py-1 small border-top" 
                  [class.text-danger]="group.isOrphan"
                  (click)="collapsibleItemGroup[group.sectionTitle] = !collapsibleItemGroup[group.sectionTitle]"
                  style="cursor: pointer;">
@@ -3802,12 +3501,6 @@
         @for (f of curForm.prev.items|keyvalue; track $index) {
           <div class="list-group-item element py-2">
             {{f.value.label}} - <code>$prev$.{{f.value.code}}</code>
-            <!-- <div class="element-edit" style="position:absolute;top:2px;right:2px; padding:3px">
-              <button type="button" class="btn btn-round btn-sm btn-info"
-                (click)="removeItemSource(curForm.prev.id,f.value.id)">
-                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-              </button>
-            </div> -->
           </div>
         }
       }
@@ -3817,8 +3510,7 @@
       <h5 class="text-muted p-3">Source Item Not Available</h5>
     }
 
-
-    <div class="list-group-item bg-light fw-bold py-1 small border-top" 
+    <div class="list-group-item bg-body-secondary fw-bold py-1 small border-top" 
           (click)="collapsibleItemGroup.ep = !collapsibleItemGroup.ep"
           style="cursor: pointer;">
       <fa-icon [icon]="['fas','link']" class="me-1"></fa-icon>
@@ -3846,16 +3538,16 @@
         <div class="list-group-item element py-2">
           <div class="small">Public Endpoint View by ID</div>
           <input type="text" class="form-control form-control-sm mt-1" 
-          value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
-          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+            value="{{baseApi}}/public/entry/[entryId]?formId={{curForm.id}}" 
+            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
         </div>
       }
       @if (curForm.publicEp) {
         <div class="list-group-item element py-2">
           <div class="small">Public Endpoint View by params (first result only)</div>
           <input type="text" class="form-control form-control-sm mt-1" 
-          value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
-          onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
+            value="{{baseApi}}/public/entry/by-params?formId={{curForm.id}}&[params]" 
+            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
         </div>
       }
       
@@ -3950,13 +3642,13 @@
                 (change)="uploadExcel($event, createField, createDataset, createDashboard, importToLive, importFileType)" name="file"
                 required accept=".{{importFileType}}" />
               @if (!importLoading) {
-                <div class="form-control" style="background: white">
+                <div class="form-control bg-body">
                   <fa-icon [icon]="['fas','upload']"></fa-icon>
                   Browse and Import
                 </div>
               }
               @if (importLoading) {
-                <div class="form-control" style="background: white">
+                <div class="form-control bg-body">
                   Importing...
                 </div>
               }
@@ -3965,8 +3657,7 @@
           @if (importExcelData) {
             <div class="mx-n3">
               @if (importExcelData.logs && importExcelData.logs.length>0) {
-                <table class="table table-bordered table-sm table-borderless"
-                  >
+                <table class="table table-bordered table-sm table-borderless">
                   <thead>
                     <tr>
                       <th>Message</th>
@@ -4015,7 +3706,7 @@
   <div class="modal-header">
     <h4 class="modal-title">Form's Entry Trails</h4>
   </div>
-  <div class="bg-light p-2">
+  <div class="bg-body-secondary p-2">
     <div class="input-group" ngbDropdown>
       <input type="search" autocapitalize="none" class="form-control" placeholder="Start typing to search..."
         [(ngModel)]="trailsSearchText" (keyup.enter)="loadTrails(curForm.id,trailsPageNumber)">
@@ -4101,8 +3792,7 @@
                   @if (showPossibleTrailAction) {
                     <td>
                       @if (['removed','updated','saved'].indexOf(trail.action)>-1 && showPossibleTrailAction) {
-                        <div
-                          >
+                        <div>
                           @if (trail.action=='removed') {
                             <button type="button" class="btn btn-sm btn-secondary"
                               (click)="undelete(trail.entryId, trail.id)">Restore <fa-icon
@@ -4124,7 +3814,6 @@
         </table>
       }@else {
         <div class="details">
-          <!-- <h3>No trails available</h3> -->
           <p class="text-center"> No trails data available.</p>
         </div>        
       }
@@ -4222,15 +3911,12 @@
   <div class="modal-header">
     <h4 class="modal-title">Form Data JSON Schema</h4>
   </div>
-  <!-- <div class="modal-body"> -->
-    <div class="px-2 py-1 bg-white limit-height code-container">
-      <div>
-        <pre class="my-0">{{formJsonSchema|json}}</pre>
-      </div>
+  <div class="px-2 py-1 bg-body limit-height code-container">
+    <div>
+      <pre class="my-0">{{formJsonSchema|json}}</pre>
     </div>
-  <!-- </div> -->
+  </div>
   <div class="modal-footer justify-content-between">
-    <!-- <button type="button" class="btn btn-round btn-secondary" (click)="c()">Download Excel</button> -->
     <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

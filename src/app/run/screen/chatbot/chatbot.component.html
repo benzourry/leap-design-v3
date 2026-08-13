@@ -1,7 +1,7 @@
 <div class="p-3">
-  <div class="overflow-hidden" class="chatviewport-msg">
+  <div class="overflow-hidden chatviewport-msg">
     @if(screen().description){
-      <div class="pb-2 d-flex">
+      <div class="pb-2 d-flex text-body-secondary">
         {{screen().description}}
       </div>
     }
@@ -14,7 +14,7 @@
       }
 
       @if(screen()?.data?.notice){
-        <div class="chat-prompt-notice small text-muted text-center pb-3 mx-auto" style="max-width:450px">
+        <div class="chat-prompt-notice small text-body-secondary text-center pb-3 mx-auto" style="max-width:450px">
           <span [innerHTML]="imagify(linkify(screen().data?.notice))"></span>
         </div>                  
       }
@@ -35,7 +35,7 @@
                   {{app().x?.lang=='ms'?'Berikut beberapa idea untuk bermula':'Here\'s some idea to get started'}}
                 </div>
                 @for (suggest of screen().data?.suggestion; track $index) {
-                  <div class="chatbot-suggestion-item d-inline-block px-2 py-1 border rounded rounded-4 small text-primary border-primary bg-white me-auto my-1 pointer"
+                  <div class="chatbot-suggestion-item d-inline-block px-2 py-1 border rounded rounded-4 small text-primary border-primary bg-body me-auto my-1 pointer"
                     (click)="chatPrompt(screen().cogna, suggest.text)">
                     @if(suggest.icon){
                       <fa-icon [icon]="suggest.icon|iconSplit:'far:question-circle'" class="float-start" [fixedWidth]="true"></fa-icon>
@@ -54,9 +54,9 @@
               <div class="p-3 px-3" [innerHtml]="targetBlank(p.text)|safe:'html'"></div>
             }
             @if (p.type=='response'){
-              <div class="chatbot-bubble-meta p-2 px-3 d-flex bg-light">
-                <button type="button" class="btn btn-xs text-muted" title="Copy chat message" (click)="copyChatText(p.text)" ><fa-icon [icon]="['fas', 'copy']" [fixedWidth]="true"></fa-icon></button>
-                <button type="button" class="btn btn-xs text-muted" title="Report chat message" (click)="reportChat(p.text)" ><fa-icon [icon]="['fas', 'flag']" [fixedWidth]="true"></fa-icon></button>
+              <div class="chatbot-bubble-meta p-2 px-3 d-flex bg-body-secondary">
+                <button type="button" class="btn btn-xs text-body-secondary" title="Copy chat message" (click)="copyChatText(p.text)" ><fa-icon [icon]="['fas', 'copy']" [fixedWidth]="true"></fa-icon></button>
+                <button type="button" class="btn btn-xs text-body-secondary" title="Report chat message" (click)="reportChat(p.text)" ><fa-icon [icon]="['fas', 'flag']" [fixedWidth]="true"></fa-icon></button>
                 <div class="ms-auto small p-1 opacity-50 text-end fst-italic" style="line-height:100%">
                   {{p.timestamp|date:'medium':'':angularLocale()}}
                 </div>
@@ -106,7 +106,7 @@
   </div>
 </div>
 <div id="chat-prompt-sticky" class="sticky-bottom p-3">
-  <div id="chat-prompt-text-outer" class="bg-white shadow" style="border-radius:5px;">
+  <div id="chat-prompt-text-outer" class="bg-body-tertiary border shadow" style="border-radius:5px;">
     <div class="d-flex flex-row p-2"> 
       @if(cogna.mmSupport){ 
         <label
@@ -116,44 +116,44 @@
           <fa-icon [icon]="['fas','upload']"></fa-icon>
         </label>
       }
-      <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill p-1"  autocomplete="off" 
+      <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill p-1 bg-transparent text-body"  autocomplete="off" 
         (keyup.enter)="chatPrompt(screen().cogna, chatPromptText())"  autocapitalize="none" [(ngModel)]="chatPromptText"
         maxlength="2000"
         [placeholder]="isListening()?lang()=='ms'?'Saya mendengar...':'I\'m listening...':(lang()=='ms'?'Tanya saya sesuatu...':'Ask me something...')"
         placeholder="Ask me something...">  
         @if (screen().data.speechInput){
           @if (isListening()){
-            <button type="button" class="btn bg-transparent border-0 blink_me" style="height:38px; min-width:38px"
+            <button type="button" class="btn bg-transparent border-0 text-body blink_me" style="height:38px; min-width:38px"
               (click)="stopListen()">
               <fa-icon [icon]="['fas','square']"></fa-icon>
             </button>  
           }@else {
-            <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px"
+            <button type="button" class="btn bg-transparent border-0 text-body" style="height:38px; min-width:38px"
               (click)="startListen()">
               <fa-icon [icon]="['fas','microphone']"></fa-icon>
             </button>          
           }
         }
 
-      <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px" [class.disabled]="!chatPromptText()?.trim()" [disabled]="!(chatPromptText()?.trim() || fileList().length>0)"
+      <button type="button" class="btn bg-transparent border-0 text-body" style="height:38px; min-width:38px" [class.disabled]="!chatPromptText()?.trim()" [disabled]="!(chatPromptText()?.trim() || fileList().length>0)"
         (click)="chatPrompt(screen().cogna, chatPromptText())">
         <fa-icon [icon]="['fas','paper-plane']"></fa-icon>
       </button>
     </div>
     @if(fileList().length>0){
-      <div class="small list-group list-group-flush mb-3" style="border-top:solid 1px #ccc; border-bottom: solid 1px #ccc">
+      <div class="small list-group list-group-flush mb-3" style="border-top:solid 1px var(--bs-border-color); border-bottom: solid 1px var(--bs-border-color)">
         @for(f of fileList(); track $index){
           @if (f.isImage){
-            <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end" (click)="removeFile($index)">&times;</button>
+            <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end" (click)="removeFile($index)">&times;</button>
               <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f.path" style="max-width:200px"> 
             </div>
           }@else {
-            <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end" (click)="removeFile($index)">&times;</button> {{f.path}} </div>
+            <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end" (click)="removeFile($index)">&times;</button> {{f.path}} </div>
           }
         }
       </div>
     }
-    <div class="text-end text-muted px-3 py-1 small">
+    <div class="text-end text-body-secondary px-3 py-1 small">
       {{chatPromptText()?.length||0}}/2000
     </div>
   </div>

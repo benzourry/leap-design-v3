@@ -1,9 +1,11 @@
-table thead tr th{
-    background-color: white;
+table thead tr th {
+  background-color: var(--bs-body-bg);
 }
 
-.blue{color:blue}
+.blue {
+  color: var(--bs-primary);
+}
 
-.cursor-pointer{
-    cursor: pointer;
+.cursor-pointer {
+  cursor: pointer;
 }

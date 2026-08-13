@@ -1,42 +1,35 @@
-// .props-disabled{
-//     text-decoration: line-through;
-//     color: #aaa !important;
-// }
-
-.props-disabled td:not(.action){
-    text-decoration: line-through;
-    color: #aaa !important;
+.props-disabled td:not(.action) {
+  text-decoration: line-through;
+  color: var(--bs-secondary-color, #aaa) !important;
 }
 
-
-td.action{
-    width:1%; 
-    white-space: nowrap;
+td.action {
+  width: 1%; 
+  white-space: nowrap;
 }
 
+table.tbl-child * {
+  text-align: left;
+  font-size: 0.8rem;
+}
 
+table.tbl-child>thead th {
+  color: var(--bs-secondary-color, #666);
+}  
 
-table.tbl-child *{
-    text-align: left;
-    font-size:0.8rem;
-  }
-  table.tbl-child>thead th{
-    color:#666
-  }  
-  table.tblcard>.list-tmid>tr>td.td-list{
-    padding: 0 !important;
-  }
-  table.tblcard>.list-tmid>tr>td.td-list::before{
-    padding: 0.5rem !important;
-  }
+table.tblcard>.list-tmid>tr>td.td-list {
+  padding: 0 !important;
+}
+
+table.tblcard>.list-tmid>tr>td.td-list::before {
+  padding: 0.5rem !important;
+}
 
 @media screen and (max-width: 576px) {
-  /* table.tblcard>.tmid>tr>td.td-list{
-    padding: 0.25em;
-  } */
-  table.tbl-child{
-    border-left: solid 5px #ddd;
+  table.tbl-child {
+    border-left: solid 5px var(--bs-border-color, #ddd);
   }
+
   table.tblcard {
     border: 0;
     background-color: transparent !important;
@@ -53,53 +46,46 @@ table.tbl-child *{
     width: 1px;
   }
 
-  table.tblcard > .list-tmid >  tr {
-    /* border-bottom: 3px solid #ddd; */
+  table.tblcard > .list-tmid > tr {
     display: block;
     margin-bottom: .625em;
-    /* border: solid 2px white; */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.24);
     border-radius: 0.375rem;
     overflow: hidden;
-    background:white;
+    background: var(--bs-body-bg, white);
+    border: 1px solid var(--bs-border-color, transparent);
   }
 
-  table.tblcard > .list-tmid >  tr.ds-group-header {
-    box-shadow:none;
+  table.tblcard > .list-tmid > tr.ds-group-header {
+    box-shadow: none;
   }
 
   table.tblcard > .list-tmid > tr.selected-row {
-    background-color: #eaf4fe;
-    outline: solid 2px #0d6efd;
+    background-color: var(--bs-primary-bg-subtle, #eaf4fe);
+    outline: solid 2px var(--bs-primary, #0d6efd);
   }
 
   table.tblcard > .list-tmid > tr > td.ds-check,
-  table.tblcard > .list-tmid > tr > td.ds-index{    
+  table.tblcard > .list-tmid > tr > td.ds-index {    
     display: inline-block;
     border-bottom: none;
   }
 
-  table.tblcard > .list-tmid > tr > .ds-check{
+  table.tblcard > .list-tmid > tr > .ds-check {
     text-align: left;
-    padding-left:0.8em;
-    /* width:70%; */
+    padding-left: 0.8em;
   }  
-  /* table.tblcard .ds-index{
-    background-color: white;
-    color: black;
-  } */
-
 
   table.tblcard > .list-tmid > .selected-row > td {
-    background-color: #eaf4fe;
+    background-color: var(--bs-primary-bg-subtle, #eaf4fe);
   }
 
-  table.tblcard  > .list-tmid > tr > td {
+  table.tblcard > .list-tmid > tr > td {
     border-bottom: 1px solid var(--bs-border-color);
     display: block;
     font-size: .8em;
     text-align: right;
-    background-color: white;
+    background-color: var(--bs-body-bg, white);
   }
 
   .tblcard.table-striped>tbody.list-tmid>tr:nth-of-type(odd)>* {
@@ -107,10 +93,6 @@ table.tbl-child *{
   }
 
   table.tblcard > .list-tmid > tr > td::before {
-    /*
-      * aria-label has no advantage, it won't be read inside a table
-      content: attr(aria-label);
-      */
     content: attr(data-label);
     float: left;
     font-weight: bold;

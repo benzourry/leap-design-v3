@@ -49,12 +49,12 @@
               }
               @if (!dataset()?.x?.hideSearch) {
                 <input type="search" autocapitalize="none"
-                  class="search-icon flex-grow-1 bg-white rounded-2 border border-2"
+                  class="search-icon flex-grow-1 bg-body-tertiary text-body rounded-2 border border-2"
                   placeholder="{{lang()=='ms'?'Tapis senarai':'Filter list'}}" [(ngModel)]="searchText"
                   (keyup.enter)="loadDatasetEntry(dataset(), 1)">
-              }              
+              }            
               @if (dataset()?.filters && dataset()?.filters.length>0) {
-                <button type="button" class="btn border border-2 bg-light"
+                <button type="button" class="btn border border-2 bg-body-tertiary text-body"
                   [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl,filtersData(),true)">
                   <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
                   @if(!filterIsEmpty()){
@@ -65,7 +65,7 @@
               }
               @if (dataset()?.exportXls||dataset()?.exportCsv||dataset()?.exportPdf) {
                 <div ngbDropdown class="d-inline-block">
-                  <button type="button" class="btn border border-2 bg-light" title="Export dataset" id="dropdownExport"
+                  <button type="button" class="btn border border-2 bg-body-tertiary text-body" title="Export dataset" id="dropdownExport"
                     ngbDropdownToggle>
                     <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
                   </button>
@@ -96,7 +96,7 @@
               }
               @if (entryTotal()>25 && screen()?.data?.paginate) {
                 <div ngbDropdown class="d-inline-block">
-                  <button type="button" class="btn border border-2 bg-light" title="Pagination size" id="dropdownPage"
+                  <button type="button" class="btn border border-2 bg-body-tertiary text-body" title="Pagination size" id="dropdownPage"
                     ngbDropdownToggle>
                     <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
                   </button>
@@ -114,7 +114,7 @@
                 </div>
               }
               <div ngbDropdown class="d-inline-block ms-auto">
-                <button type="button" class="btn border border-2 bg-light" title="Sort by" id="dropdownSort"
+                <button type="button" class="btn border border-2 bg-body-tertiary text-body" title="Sort by" id="dropdownSort"
                   ngbDropdownToggle>
                   <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
                   <strong>{{sortFieldName()}}</strong>
@@ -137,7 +137,7 @@
             }
 
             @if (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type)) {
-              <button type="button" class="btn border border-2 bg-light"
+              <button type="button" class="btn border border-2 bg-body-tertiary text-body"
                 (click)="printReport()">
                 <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
                 </fa-icon>
@@ -148,7 +148,7 @@
 
         @if (screen()?.data?.showSummary) {
           <div class="px-2 pb-2">
-            <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
+            <div class="m-auto py-1 px-3 rounded-2 bg-body-secondary text-body border small shadow-sm" style="max-width:500px;">
               <div class="row">
                 <div class="col d-flex align-items-center">
                   <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
@@ -247,7 +247,6 @@
               @if (!loading()){
                 <div class="p-relative rows-print-as-pages" [ngClass]="screen()?.data?.parentclass">
                   @for (e of entryList(); track e.id) {
-                    <!-- FIX: e._go || buildGo prevents massive input lag when typing in searchText -->
                     <div
                       morphMode="outer"
                       [morphHtml]="compileTpl(screen()?.data?.content, {$:e.data,$prev$:e.prev,$_:e,$$_:e.approval,$go:(e._go || buildGo(e.id)),$popup:(e._pop || buildPop(e.id)),$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
@@ -271,7 +270,7 @@
                     (pageChange)="loadDatasetEntry(screen()?.dataset,pageNumber())" [boundaryLinks]="true"
                     [directionLinks]="true">
                     <ng-template ngbPaginationFirst>
-                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
                     </ng-template>
                     <ng-template ngbPaginationPrevious>
                       <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -279,7 +278,7 @@
                     <ng-template ngbPaginationNext>
                       <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                     </ng-template>
-                    <ng-template ngbPaginationLast>              
+                    <ng-template ngbPaginationLast>             
                       <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                     </ng-template>
                   </ngb-pagination>
@@ -305,7 +304,7 @@
             }
           }@else if (screen()?.type=='page') {
             @if (!_entryId) {
-              <div class="bg-white mb-2">
+              <div class="bg-body-tertiary mb-2 p-2 rounded">
                 <div class="input-group">
                   <span class="input-group-text">Entry ID</span>
                   <input type="text" class="form-control" (keyup.enter)="runEntry(testId.value)"
@@ -333,7 +332,7 @@
     } @else {
       @if (!loading()) {
         @if (!isAuthorized()) {
-          <div class="detail text-muted">
+          <div class="detail text-body-secondary">
             <h3>{{unAuthorizedMsg}}</h3>
           </div>
         }
@@ -346,7 +345,7 @@
   <div class="modal-body d-flex">
     <div class="d-flex justify-content-center flex-column align-items-center m-a">
       <div class="d-flex flex-column">
-        <div class="py-3 text-center text-muted" style="font-weight: 1.2em;">{{lang()=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
+        <div class="py-3 text-center text-body-secondary" style="font-weight: 1.2em;">{{lang()=='ms'?'Sila pilih tindakan':'Please choose action'}}</div>
         @for (action of actionLinks(); track $index) {
           
           @if (action.inpop && popObj[action.action.id]) {
@@ -412,7 +411,7 @@
 </ng-template>
 
 <ng-template #inPopTpl let-c="close" let-d="dismiss">
-  <div style="background: whitesmoke;" [style.margin-bottom.px]="inPopType()=='screen'?0:-68">
+  <div class="bg-body-tertiary" [style.margin-bottom.px]="inPopType()=='screen'?0:-68">
     @if (['form'].includes(inPopType())) {
       @defer(prefetch on idle){
         <app-form (saved)="onSavedInit();c($event)" (submitted)="onSavedInit();c($event)"
@@ -471,7 +470,7 @@
           </div>
         </div>
       }
-      <div class="justify-content-between bg-white p-3">
+      <div class="justify-content-between bg-body-tertiary p-3">
         <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
       </div>
     }

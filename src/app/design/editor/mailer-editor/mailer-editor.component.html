@@ -1,13 +1,12 @@
 <style>
   input[type=search].start {
-    /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
-    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background: var(--bs-tertiary-bg, #ccc) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23888" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
     background-size: 20px 16px;
-    border: none;
+    border: 1px solid var(--bs-border-color, #ccc);
     padding: 6px 10px 6px 32px;
     vertical-align: middle;
     border-radius: 10em;
-    color: black;
+    color: var(--bs-body-color);
     max-width: 100%;
   }
   input[type=search].start:focus {
@@ -19,10 +18,10 @@
   }
 </style>
 <div class="wrapper" split-pane>
-  <div class="sidebar bg-white" sidebar #sidebar>
+  <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
       <h5 class="mb-3">Mailer Manager</h5>
-      <input type="search"  autocapitalize="none" class="start" placeholder="Filter list" (keyup.enter)="loadMailerList(1)"
+      <input type="search" autocapitalize="none" class="start" placeholder="Filter list" (keyup.enter)="loadMailerList(1)"
         [(ngModel)]="searchText">
     </div>
     <div class="group-list">
@@ -45,7 +44,7 @@
                 {{a.name}} <sup>{{a?.id}}</sup>
               </div>
               @if (a.description) {
-                <div class="list-group-item-text">{{a.description}}</div>
+                <div class="list-group-item-text text-body-secondary">{{a.description}}</div>
               }
             </a>
           }
@@ -60,7 +59,7 @@
                 [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
                 (pageChange)="loadMailerList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
                 <ng-template ngbPaginationFirst>
-                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
                 </ng-template>
                 <ng-template ngbPaginationPrevious>
                   <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -68,7 +67,7 @@
                 <ng-template ngbPaginationNext>
                   <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                 </ng-template>
-                <ng-template ngbPaginationLast>              
+                <ng-template ngbPaginationLast>             
                   <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                 </ng-template>
               </ngb-pagination>
@@ -79,14 +78,14 @@
       }
       @if (!schedLoading) {
         <div class="mb-3">
-          <small class="ms-3">Scheduled Mailer</small>
+          <small class="ms-3 text-body-secondary">Scheduled Mailer</small>
           @for (a of schedList | filter:searchText; track a.id) {
             <div class="pointer element link-item">
-              <div class="list-group-item-heading"  [class.strike]="a.enabled==0">
+              <div class="list-group-item-heading" [class.strike]="a.enabled==0">
                 {{a.name}}
               </div>
               @if (a.description) {
-                <div class="list-group-item-text">{{a.description}}</div>
+                <div class="list-group-item-text text-body-secondary">{{a.description}}</div>
               }
               <div class="element-edit" style="position:absolute;top:10px;right:5px;">
                 <button type="button" class="btn btn-secondary btn-round btn-sm"
@@ -105,7 +104,7 @@
           </a>
         </div>
         <div class="mb-3">
-          <small class="ms-3">Mailer History</small>
+          <small class="ms-3 text-body-secondary">Mailer History</small>
           <a class="pointer element link-item" (click)="openHistory(notiListTpl, null)">
             View Mail History
           </a>
@@ -127,11 +126,11 @@
               <div class="me-auto d-flex flex-row w-100 py-2">
                 <h5 class="m-0 text-truncate">{{mailer.name}}</h5>
                 @if (mailer.description) {
-                  <div class="ms-2 text-truncate align-bottom text-muted">
+                  <div class="ms-2 text-truncate align-bottom text-body-secondary">
                   {{mailer.description}}</div>
                 }
               </div>
-              <div class="text-muted mb-2">
+              <div class="text-body-secondary mb-2">
                 <small>Mailer ID : {{mailer.id}}</small>
               </div>
               <div class="d-flex flex-row">
@@ -217,7 +216,7 @@
                       </div>
                       <div style="margin-left:40px;">Extra To: {{mailer.toExtra}}@if (!mailer.toExtra) {
                         <span
-                        class="text-muted">Not specified</span>
+                        class="text-body-secondary">Not specified</span>
                       }</div>
                     </div>
                     <div>
@@ -241,19 +240,19 @@
                       </div>
                       <div style="margin-left:40px;">Extra CC: {{mailer.ccExtra}}@if (!mailer.ccExtra) {
                         <span
-                        class="text-muted">Not specified</span>
+                        class="text-body-secondary">Not specified</span>
                       }</div>
                     </div>
                   </div>
                 </div>
-                <div class="card-body" [innerHtml]="nl2br(mailer.content)">
+                <div class="card-body border-top" [innerHtml]="nl2br(mailer.content)">
                 </div>
               </div>
             }
           </div>
         }
         @if (!mailer) {
-          <div style="color:#aaa;">
+          <div class="text-body-secondary">
             <h3>Please select Mailer from the list on the left to view it's data.</h3>
           </div>
         }
@@ -279,7 +278,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeMailerData)">
         <i class="icon-minus-sign-alt"></i> Remove Mailer
       </button>
@@ -300,7 +299,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeSchedData)">
       <i class="icon-minus-sign-alt"></i> Remove Schedule
     </button>
@@ -328,7 +327,7 @@
       <input type="text" class="form-control" [ngModel]="editSchedData && editSchedData.name" (ngModelChange)="editSchedData && (editSchedData.name = $event)" #name="ngModel"
         name="name" required>
         @if (name?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (name?.errors?.required) {
               <span class="help-block">Name is required</span>
             }
@@ -367,7 +366,7 @@
               }
             </select>
             @if (dayOfWeek?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (dayOfWeek?.errors?.required) {
                   <span class="help-block">Day of week is required</span>
                 }
@@ -382,14 +381,13 @@
             <label class="form-label">Day of month *</label>
             <select class="form-select" name="dayOfMonth"
               [ngModel]="editSchedData && editSchedData.dayOfMonth" (ngModelChange)="editSchedData && (editSchedData.dayOfMonth = $event)" #dayOfMonth="ngModel" required>
-              <!-- <option value="" disabled>Select date...</option> -->
               @for (item of dayOfMonthList; track $index) {
                 <option [value]="item">{{item}}
                 </option>
               }
             </select>
             @if (dayOfMonth?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (dayOfMonth?.errors?.required) {
                   <span class="help-block">Day of month is required</span>
                 }
@@ -404,14 +402,13 @@
             <label class="form-label">Month of year *</label>
             <select class="form-select" name="monthOfYear"
               [ngModel]="editSchedData && editSchedData.monthOfYear" (ngModelChange)="editSchedData && (editSchedData.monthOfYear = $event)" #monthOfYear="ngModel" required>
-              <!-- <option value="" disabled>Select date...</option> -->
               @for (item of monthOfYearList; track $index) {
                 <option [value]="item.value">{{item.name}}
                 </option>
               }
             </select>
             @if (monthOfYear?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (monthOfYear?.errors?.required) {
                   <span class="help-block">Month of year is required</span>
                 }
@@ -427,7 +424,7 @@
             #clock="ngModel" placeholder="ie: 1410" name="clock" (keyup)="keepMinute00(editSchedData)"
             required>
           @if (clock?.invalid) {
-            <small class="form-text has-warning">
+            <small class="form-text text-warning">
               @if (clock?.errors?.required) {
                 <span class="help-block">Clock is required in HHmm (ie: 0800 or
                 1410)</span>
@@ -492,7 +489,7 @@
           </label>
         </div>
         @if (enabledsched?.invalid) {
-          <div class="form-text has-warning small">
+          <div class="form-text text-warning small">
             @if (enabledsched.errors?.required) {
               <span class="help-block">Status is required</span>
             }
@@ -502,7 +499,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="schedEditForm.invalid"
       (click)="c(editSchedData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -522,7 +519,7 @@
     </div>
   }
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
   </div>
 </ng-template>
 

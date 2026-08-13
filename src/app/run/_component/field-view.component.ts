@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, AfterViewInit, computed, inject, input, signal, viewChild, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, inject, input, signal, viewChild, effect } from '@angular/core';
 import { baseApi } from '../../_shared/constant.service';
 import { NgStyle, AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -35,16 +35,16 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     @if (value() === undefined || value() === null) {
       <span>
         @if (!['static', 'file', 'btn', 'checkbox'].includes(field()?.type)) {
-          <span style="color:#aaa">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
+          <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
         }
         
         @if (['file'].includes(field()?.type)) {
           <span>
             @if (['image', 'imagemulti'].includes(field()?.subType)) {
-              <img loading="lazy" style="background: #aaa; max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
+              <img loading="lazy" style="background: var(--bs-tertiary-bg); max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
             }
             @if (['other', 'othermulti'].includes(field()?.subType)) {
-              <span style="color:#aaa">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
+              <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
             }
           </span>
         }
@@ -83,33 +83,12 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       }
 
       @if (['text', 'simpleOption', 'speech'].includes(field()?.type)) {
-        <!-- <div>
-          <div style="overflow:hidden; position:relative;" [ngStyle]="{'max-height': (isReadMore ? 'unset' : '236px')}">
-            <div [class.pb-5]="isReadMore">
-              @if (field().x?.prefix) {
-                <span class="text-muted me-05">{{ field().x?.prefix }}</span>
-              }
-              <span [morphHtml]="nl2brSafe(value())"></span>
-              @if (field().x?.suffix) {
-                <span class="text-muted ms-05">{{ field().x?.suffix }}</span>
-              }
-            </div>
-            
-            <div class="p-1" style="position:absolute; background:rgba(255,255,255,.8); border-radius:3px;" [ngStyle]="{'top': isReadMore ? 'calc(100% - 35px)' : '205px'}">
-              <button type="button" class="btn btn-xs btn-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore = !isReadMore">
-                {{ isReadMore ? 'Less...' : 'More...' }}
-              </button>
-            </div>
-          </div>
-        </div> -->
-
-
         <div>
-            <div #textContainer class="print-expand"
-              style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
-              [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '150px'}"
-              [class.fade-bottom]="!isReadMore() && isOverflowing()">
-              
+          <div #textContainer class="print-expand"
+            style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
+            [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '150px'}"
+            [class.fade-bottom]="!isReadMore() && isOverflowing()">
+            
             <div>
               @if (field().x?.prefix && !field().x?.prefixPost) {
                 <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
@@ -124,7 +103,6 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           @if (isOverflowing()) {
             <div class="text-start print-hide">
               <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())">
-                <!-- {{ isReadMore ? 'Less...' : 'More...' }} -->
                 {{ 
                   lang() === 'ms' 
                     ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
@@ -221,7 +199,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               }
             </span>
           } @else {
-            <span style="color:#aaa">{{ value() }}</span>
+            <span class="text-body-tertiary">{{ value() }}</span>
           }
         </span>
       }
@@ -356,7 +334,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       object-fit: cover;
       object-position: center;
       vertical-align: bottom;
-      max-width:250px; // nedded for grid
+      max-width:250px;
     }
 
     @media (max-aspect-ratio: 1/1) {
@@ -392,19 +370,16 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     }
 
     @media print {
-      /* 1. Force the container to expand fully and override the inline [ngStyle] */
       .print-expand {
         max-height: none !important;
         overflow: visible !important;
       }
       
-      /* 2. Remove the faded bottom effect so text is readable */
       .fade-bottom {
         -webkit-mask-image: none !important;
         mask-image: none !important;
       }
       
-      /* 3. Hide the More/Less button */
       .print-hide {
         display: none !important;
       }
@@ -427,34 +402,24 @@ export class FieldViewComponent implements OnInit {
   isReadMore = signal<boolean>(false);
   baseApi: string = baseApi;
 
-
-  // -- handle long text --
   isOverflowing = signal<boolean>(false);
-  contentHeight = signal<number>(2000); // Default fallback
+  contentHeight = signal<number>(2000);
 
-  // 1. Declare the signal-based viewChild
   textContainer = viewChild<ElementRef<HTMLElement>>('textContainer');
 
   constructor() {
-    // We use an effect so that we can react the moment the @if block creates the textContainer
     effect((onCleanup) => {
       const el = this.textContainer()?.nativeElement;
 
       if (el) {
-        // 1. Create a ResizeObserver. The browser will fire this automatically 
-        // the millisecond the morphHtml directive paints the text into the div!
         const observer = new ResizeObserver(() => {
-          // 2. Check the real scrollHeight once the browser has rendered it
-          // console.log('Real height:', el.scrollHeight);
           const exactHeight = el.scrollHeight;
           this.isOverflowing.set(exactHeight > 150);
           this.contentHeight.set(exactHeight);
         });
 
-        // 3. Start watching the div
         observer.observe(el);
 
-        // 4. Cleanup the observer if the element is destroyed (prevents memory leaks)
         onCleanup(() => {
           observer.disconnect();
         });
@@ -462,21 +427,18 @@ export class FieldViewComponent implements OnInit {
     });
   }
 
-
-  // Uses Angular's modern computed() to correctly cache based on signal dependencies
   compiledTpl = computed(() => {
-    this.timestamp(); // trigger recalculation if timestamp changes
+    this.timestamp();
     const fData = this.field();
     const labelTpl = fData?.placeholder ?? (fData?.type !== 'static' ? fData?.label : '');
     return this.compileTpl(labelTpl, this.data());
   });
 
-  // Uses Angular's modern computed() to correctly cache based on signal dependencies
   compiledPrefix = computed(() => {
     const fData = this.field();
     return this.compileTpl(fData.x?.prefix, this.data());
   });
-  // Uses Angular's modern computed() to correctly cache based on signal dependencies
+
   compiledSuffix = computed(() => {
     const fData = this.field();
     return this.compileTpl(fData.x?.suffix, this.data());
@@ -490,19 +452,15 @@ export class FieldViewComponent implements OnInit {
     return this.value() !== compiled ? compiled : this.value();
   });
 
-  // 4. Safe formatting signal
   formattedValue = computed(() => {
     const val = this.value();
     const format = this.field()?.format;
 
-    // If no format is provided, just return the raw value
     if (!format) return val;
 
     try {
-      // Attempt to format. If val is null/undefined, transform returns null, so fallback to val.
       return this.decimalPipe.transform(val, format) ?? val;
     } catch (e) {
-      // Gracefully catch NG02100 (or if the value isn't a number) and return raw value
       this.logService.log(`{fieldview-${this.field()?.code}-format} Invalid format '${format}' for value '${val}'.`);
       return val;
     }
@@ -528,6 +486,5 @@ export class FieldViewComponent implements OnInit {
 
   isArray = (value: any) => Array.isArray(value);
 
-  // Safe wrapper for nl2br
   nl2brSafe = (val: any) => nl2br(val ?? '');
 }

@@ -1,20 +1,31 @@
-::ng-deep .angular-editor-textarea{
-    border:none !important;
-    background-color: whitesmoke !important;
-    margin: 5px;
+::ng-deep .angular-editor-textarea {
+  border: 1px solid var(--bs-border-color, #dee2e6) !important;
+  background-color: var(--bs-body-bg, #f8f9fa) !important;
+  color: var(--bs-body-color, #212529) !important;
+  margin: 5px;
 }
-::ng-deep .ae-limit-width .angular-editor-textarea{
-    max-width: 780px;
-    // margin:auto;    
-}
-::ng-deep .angular-editor-toolbar{
-    border: none !important;
-}
-// ::ng-deep angular-editor#ae-content .angular-editor-button{
-//     border:none !important;
-// }
 
-.var-ph-picker{
-    max-height:145px;
-    overflow-y: auto;
+::ng-deep .ae-limit-width .angular-editor-textarea {
+  max-width: 780px;
+}
+
+::ng-deep .angular-editor-toolbar {
+  border: 1px solid var(--bs-border-color, #dee2e6) !important;
+  background-color: var(--bs-tertiary-bg, #f8f9fa) !important;
+  color: var(--bs-body-color, #212529) !important;
+
+  button {
+    background-color: transparent !important;
+    color: var(--bs-body-color, #212529) !important;
+    border-color: var(--bs-border-color, #dee2e6) !important;
+
+    &:hover {
+      background-color: var(--bs-secondary-bg, #e9ecef) !important;
+    }
+  }
+}
+
+.var-ph-picker {
+  max-height: 145px;
+  overflow-y: auto;
 }

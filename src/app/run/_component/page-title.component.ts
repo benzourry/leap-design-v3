@@ -30,7 +30,7 @@ import { PageTitleService } from '../../_shared/service/page-title-service';
       }
       <div class="title-text" (click)="open(true)"><ng-content></ng-content></div>
       `,
-    styleUrls: ['./page-title.component.css'],
+    styleUrls: ['./page-title.component.scss'],
     imports: [FaIconComponent]
 })
 export class PageTitleComponent {

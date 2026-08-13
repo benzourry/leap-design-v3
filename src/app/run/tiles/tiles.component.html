@@ -3,7 +3,7 @@
 <page-title>
   <h4 class="m-0">{{appVal?.title}}</h4>
   @if (appVal?.description) {
-    <div class="mt-1">{{appVal?.description}}</div>
+    <div class="mt-1 text-body-secondary">{{appVal?.description}}</div>
   }
 </page-title>
 
@@ -30,15 +30,9 @@
   @if (badge()?.[item.type + '_' + item.screenId]) {
     <div class="badge">{{badge()[item.type + '_' + item.screenId]}}</div>
   }
-  <!-- @if (item.type === 'dataset' && badge() && badge()[item.screenId]) {
-    <div class="badge">{{badge()[item.screenId]}}</div>
-  }
-  @if (item.type === 'screen' && badge() && badge()['screen_' + item.screenId]) {
-    <div class="badge">{{badge()['screen_' + item.screenId]}}</div>
-  } -->
 </ng-template>
 
-<div class="single-content">
+<div class="py-3">
   @if (appVal) {
     <div style="max-width:680px; margin:0 auto; overflow: hidden;">
       
@@ -165,7 +159,7 @@
           }
         </div>
       } @else {
-        <div class="p-20 text-muted text-center">
+        <div class="p-20 text-body-secondary text-center">
           <h3>{{lang() === 'ms' ? 'Tiada modul tersedia buat masa ini' : 'No modules currently available'}}</h3>
         </div>
       }

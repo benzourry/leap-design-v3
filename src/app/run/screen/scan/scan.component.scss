@@ -1,0 +1,93 @@
+#video {
+  top: 0; 
+}
+
+@media (max-width: 768px) {
+  #video {
+    right: 0;
+    width: 100%;
+  }
+}
+
+#app {
+  position: relative;
+}
+
+.cont {
+  display: flex; 
+  top: 0; 
+  left: 0; 
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.no-ev {
+  pointer-events: none;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: .5;
+  }
+}
+
+.swapStartError {
+  opacity: 0;
+  animation: blinker .3s linear;
+  background: var(--bs-danger, red);
+}
+
+.swapStartSuccess {
+  opacity: 0;
+  animation: blinker .3s linear;
+  background: var(--bs-success, green);
+}
+
+@-webkit-keyframes scanner {
+  0% {
+    bottom: 100%;
+  }
+  50% {
+    bottom: 0%;
+  }
+  to {
+    bottom: 100%;
+  }
+}
+
+@keyframes scanner {
+  0% {
+    bottom: 100%;
+  }
+  50% {
+    bottom: 0%;
+  }
+  to {
+    bottom: 100%;
+  }
+}
+
+.custom-scanner {
+  width: 100%;
+  left: 0%;
+  height: 2px;
+  background: var(--bs-success, #4caf50);
+  position: absolute;
+  transition: all .2s linear;
+  -webkit-animation: scanner 3s infinite ease-in-out;
+  animation: scanner 3s infinite ease-in-out;
+  box-shadow: 0 1px 0 0 rgba(0,0,0,.4);
+}
+
+.scanner-box {
+  width: 300px; 
+  height: 210px; 
+  border: solid 3px rgba(255,255,255,.5); 
+  outline-width: 500px;
+  position: relative;
+  color: rgba(255,255,255,.8); 
+}

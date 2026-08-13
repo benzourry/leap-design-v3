@@ -41,7 +41,7 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
     selector: 'app-screen-editor',
     templateUrl: './screen-editor.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./screen-editor.component.scss', '../../../../../assets/css/tile.css',
+    styleUrls: ['./screen-editor.component.scss', '../../../../../assets/css/tile.scss',
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
         NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule,

@@ -1,0 +1,43 @@
+.f-label {
+  opacity: 0.7;
+  z-index: 3;
+  line-height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ta-btn:hover, .ta-btn:active, .btn-check:checked + .ta-btn {
+  --tabg: #6c757d;
+  background-color: var(--tabg);
+}
+
+@media print {
+  @page {
+    margin: 0.34in 0.3in 0.34in 0.3in;
+  }
+
+  page-title { display: block; }
+
+  ::ng-deep div.form-group, ::ng-deep .card-header {
+    break-inside: avoid;
+  }
+  ::ng-deep .card {
+    display: block;
+    border: none;
+  }
+  ::ng-deep .form-group * {
+    font-size: 0.85rem !important;
+  }
+  ::ng-deep .card .card-body {
+    padding: 1rem;
+  }
+  ::ng-deep .card-header,
+  ::ng-deep .card-body {
+    padding: 0.8em !important;
+  }
+}
+
+.label-span {
+  opacity: 0.7;
+  font-size: 0.95em;
+  margin-bottom: 0.3rem;
+}

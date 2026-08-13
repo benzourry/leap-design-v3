@@ -1,53 +1,63 @@
+/* ==========================================================================
+   SPLIT-PANE / RESIZABLE SIDEBAR COMPONENT
+   ========================================================================== */
 :host {
-    height: 100%;
+  height: 100%;
 }
 
 ::ng-deep [sidebar] {
-    flex: 1;
+  flex: 1;
 }
 
 ::ng-deep [content] {
-    flex: 1;
-    padding: 0px;
+  flex: 1;
+  padding: 0px;
 }
 
+.resize-handle {
+  position: absolute;
+  z-index: 3;
+  width: 8px;
+  top: 48px;
+  bottom: 0;
+  left: 282px;
+  cursor: col-resize;
+
+  &:hover,
+  &:active {
+    background: rgba(var(--bs-primary-rgb), 0.5); /* Theme-aware primary highlight */
+  }
+}
+
+/* Mobile Screens (< 640px) */
 @media screen and (max-width: 639px) {
-    ::ng-deep [sidebar]{
-        max-width: none !important;
-    }
-    .resize-handle{
-        display: none;
-    }
+  ::ng-deep [sidebar] {
+    max-width: none !important;
+  }
+
+  .resize-handle {
+    display: none;
+  }
 }
 
-
+/* Desktop Screens (>= 640px) */
 @media screen and (min-width: 640px) {
-    :host {
-        display: flex;
-    }
+  :host {
+    display: flex;
+  }
 
-    ::ng-deep [sidebar] {
-        max-width: 240px;
-        overflow: auto; /*hidden*/
-        border-right:solid 1px #e6e6e6;
-    }
+  ::ng-deep [sidebar] {
+    max-width: 240px;
+    overflow: auto;
+    border-right: solid 1px var(--bs-border-color); /* Replaced #e6e6e6 to support Dark Mode */
+  }
 
-    ::ng-deep [content] {
-        height: 100%;
-        overflow: auto;
-    }
-    .resize-handle{
-        display: block;
-    }
-}
-.resize-handle{
-    position: absolute;
-    z-index:3;
-    width: 8px;
-    top:48px;bottom:0;
-    left:282px;
-    cursor: col-resize;
-}
-.resize-handle:hover,.resize-handle:active{
-    background: #0d6dfd89;
+  ::ng-deep [content] {
+    height: 100%;
+    overflow: auto;
+  }
+
+  .resize-handle {
+    display: block;
+  }
 }

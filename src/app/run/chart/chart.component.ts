@@ -36,6 +36,7 @@ import { first, map, shareReplay } from 'rxjs/operators';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { ViewComponent } from '../view/view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
+import { ThemeService } from '../../_shared/service/theme.service';
 
 @Component({
     selector: 'app-chart',
@@ -107,6 +108,16 @@ export class ChartComponent implements OnInit {
     $counter: { label: "System Counter", code: '$counter', type: 'number', subType: 'number' },
     $statusText: { label: "Current Status Text", code: '$statusText', type: 'text', subType: 'input' }
   }
+
+  private themeService = inject(ThemeService, { optional: true });
+
+  // Signal that returns true when dark mode is active
+  isDark = computed(() => {
+    const themePref = this.themeService?.currentTheme();
+    return document.documentElement.getAttribute('data-bs-theme') === 'dark' ||
+      themePref === 'dark' ||
+      (themePref === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
 
   ngOnInit() {
     if (this.chart().formId) {

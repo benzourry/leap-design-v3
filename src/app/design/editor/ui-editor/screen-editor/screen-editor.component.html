@@ -1,20 +1,5 @@
 <div class="fix-gutter">
   <div class="p-2">
-    <!-- @if (screenList?.length==0) {
-      <div class="m-a col-sm-12">
-        <div class="p-4 text-muted text-center">
-          <h1>:(</h1>
-          <h4>No custom screen specified</h4>
-        </div>
-      </div>
-    }
-    @if (screenList?.length>0 && !curScreen) {
-      <div class="m-a col-sm-12" style="color:#aaa;">
-        <div class="p-4 text-muted text-center">
-          <h4>Please select screen above</h4>
-        </div>
-      </div>
-    } -->
     @if (curScreen) {
       <div class="mb-2">
         <div class="limit-width">
@@ -22,28 +7,11 @@
             <div class="d-flex flex-column">
               <div class="me-auto d-flex flex-row w-100 mb-2">
                 <h5 class="m-0 text-truncate">{{cleanText(curScreen.title)}} <sup>{{curScreen.id}}</sup></h5>
-                <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curScreen.description)}}
+                <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curScreen.description)}}
                 </div>
               </div>
               <div class="d-flex align-items-baseline">
                 <div class="me-auto mt-2">
-                  <!-- @switch(curScreen.type){
-                    @case ('qr'){
-
-                    }
-                    @case ('list'){
-
-                    }
-                    @case ('page'){
-
-                    }
-                    @case ('static'){
-
-                    }
-                    @case ('calendar'){
-
-                    }
-                  } -->
                   @if (curScreen.type == 'qr') {
                     <span>
                       <fa-icon [icon]="['fas','qrcode']" [fixedWidth]="true"></fa-icon>
@@ -128,22 +96,22 @@
               </div>
             </div>
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2"
+          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
             [class.d-block]="curScreen.type=='page' && !curScreen.form?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             No form found associated with this screen. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2"
+          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
             [class.d-block]="curScreen.type=='list' && !curScreen.dataset?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             No dataset found associated with this screen. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2"
+          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
             [class.d-block]="curScreen.type=='list' && !curScreen.dataset?.form?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             Dataset associated with this screen has no form. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2"
+          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
             [class.d-block]="curScreen.type=='bucket' && !curScreen?.bucket?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             Dataset associated with this screen has no form. It might has been removed.
@@ -161,7 +129,7 @@
               [routerLink]="['../../../'+dataset.appId+'/ui/dataset']" [queryParams]="{id:dataset.id}">View Dataset</a></div>
             </div>
           }
-         @if (['bucket'].indexOf(curScreen.type)>-1 && bucket.id){
+          @if (['bucket'].indexOf(curScreen.type)>-1 && bucket.id){
             <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
               <div class="flex-grow-1 p-2 text-truncate">
                 Bucket: <strong>{{bucket?.name}}</strong>
@@ -185,7 +153,7 @@
               [routerLink]="['../../../'+form.appId+'/ui/form']" [queryParams]="{id:form.id}">View Form</a></div>
             </div>
           }
-  
+ 
         </div>
 
         @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine', 'qr'].indexOf(curScreen.type)>-1) {
@@ -200,7 +168,7 @@
                         <a class="small px-2" ngbNavLink>Content</a>
                         <ng-template ngbNavContent>
                           @if (curScreen.type=='page') {
-                            <div class="bg-white p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.form?.items|keyvalue; track $index) {
                                 @if (curScreen.form?.items[k.key].type!='static') {
                                   <button
@@ -239,7 +207,7 @@
                             </div>
                           }
                           @if (curScreen.type=='static') {
-                            <div class="bg-white p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                               @if (curScreen.actions) {
                                 @for (k of curScreen.actions; track k.id) {
                                   <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
@@ -252,7 +220,7 @@
                             </div>
                           }
                           @if (curScreen.type=='list') {
-                            <div class="bg-white p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                 @if (curScreen.dataset?.form?.items[k.key].type!='static') {
                                   <button
@@ -307,7 +275,7 @@
                               </app-cm>
                             }
                             @if (['list','page'].indexOf(curScreen.type)>-1) {
-                              <div class="bg-white p-2">
+                              <div class="bg-body-tertiary border-top p-2">
                                 <div class="input-group input-group-sm">
                                   <span class="input-group-text">
                                     Container class
@@ -375,7 +343,7 @@
 
                                 <div class="form-group mx-n2 mb-3">
                                   <label class="form-label">Custom Title Template</label>
-                                  <div class="bg-white p-1 pb-0 var-ph-picker">
+                                  <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                     @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                       @if (curScreen.dataset?.form?.items[k.key].type!='static') {
                                         <button
@@ -505,7 +473,7 @@
 
                               <div class="form-group mb-3">
                                 <label class="form-label">Custom Popup Content</label>
-                                <div class="bg-white p-1 pb-0 var-ph-picker">
+                                <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                   @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                     @if (curScreen.dataset?.form?.items[k.key].type!='static') {
                                       <button
@@ -549,7 +517,6 @@
                                 </app-cm>
                               </div>
 
-                                <!-- @if(curScreen.data.bucketType=='custom'){ -->
                               <div class="form-group mb-3">
                                 <label class="form-label">Custom Map Panel Style</label>
                                 
@@ -586,7 +553,6 @@
                                   placeholder="Leave blank to use default (OpenStreetMap)"
                                   name="customMapServer">
                               </div>
-                              <!-- @if (!curScreen.data?.readOnly){ -->
                               <div class="form-group mt-2" [class.disabled]="curScreen.data?.readOnly">
                                 <label class="form-label">Drop pin on (event)</label>
                                 <select class="form-select" name="dropPinOn"
@@ -598,7 +564,6 @@
                                   }
                                 </select>
                               </div>
-                              <!-- } -->
                             </div>
                           }
                           @if (['chatbot'].indexOf(curScreen.type)>-1){                    
@@ -633,7 +598,7 @@
                                   (cdkDropListDropped)="dropSubs($event, curScreen.data?.suggestion)">
                                   @for (item of curScreen.data?.suggestion; track $index) {
                                     <div class="list-group-item element" cdkDrag>
-                                      <span  class="element-item">
+                                      <span class="element-item">
                                         @if(item.icon){
                                           <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
@@ -657,7 +622,7 @@
                                     </div>
                                   }
                                   <div class="list-group-item">
-                                    <a class="pointer d-block" (click)="addChatSuggestion(addChatSuggestionTpl,{}, true)">
+                                    <a class="pointer d-block text-decoration-none" (click)="addChatSuggestion(addChatSuggestionTpl,{}, true)">
                                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                       Add prompt suggestion
                                     </a>
@@ -686,23 +651,6 @@
                   
                             <div class="p-3">
                               <h5>Combined Page configuration</h5>
-                              <!-- <div class="form-group mb-3">
-                                <label class="form-label">Initial greeting *</label>
-                                <textarea class="form-control" 
-                                  [(ngModel)]="curScreen.data.greeting" rows="4"
-                                  name="greeting" id="greeting" required></textarea>
-                              </div>
-                              <div class="form-group mb-3">
-                                <label class="form-label">Notice</label>
-                                <textarea class="form-control" 
-                                  [(ngModel)]="curScreen.data.notice" rows="4"
-                                  name="notice" id="notice"></textarea>
-                              </div>
-                              <div class="form-group mb-3">
-                                <label class="form-label">Logo URL</label>
-                                <input type="text" class="form-control" [(ngModel)]="curScreen.data.logo"
-                                  name="logo">
-                              </div> -->
 
                               <div class="form-group mb-3">
                                 <label class="form-label">Nav Type *</label>
@@ -743,7 +691,7 @@
                                 (cdkDropListDropped)="dropSubs($event, curScreen.data?.comps)">
                                   @for (item of curScreen.data?.comps; track $index) {
                                     <div class="list-group-item element" cdkDrag>
-                                      <span  class="element-item">
+                                      <span class="element-item">
                                         @if(item.icon){
                                           <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
@@ -767,7 +715,7 @@
                                     </div>
                                   }
                                   <div class="list-group-item">
-                                    <a class="pointer d-block" (click)="addCombineComp(addCombineCompTpl,{}, true)">
+                                    <a class="pointer d-block text-decoration-none" (click)="addCombineComp(addCombineCompTpl,{}, true)">
                                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                       Add component
                                     </a>
@@ -805,7 +753,7 @@
                               <div class="form-group mb-3">
                                 <label class="form-label">Type *</label>
                                 <div>
-                                  <div name="lang" class="text-dark">
+                                  <div name="lang" class="text-body">
                                     <input type="radio" class="btn-check" id="type-user" name="type-user" value="user" #type="ngModel"
                                       [(ngModel)]="curScreen.data.bucketType" [required]="true">
                                     <label for="type-user" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
@@ -851,7 +799,7 @@
                             </div>
                           }
                           @if (['mailbox'].indexOf(curScreen.type)>-1) {
-                            <div class="fs-5 text-muted p-3 text-center">Nothing to be configured</div>
+                            <div class="fs-5 text-body-secondary p-3 text-center">Nothing to be configured</div>
                           }
                         </ng-template>
                       </li>
@@ -860,7 +808,7 @@
                       <li ngbNavItem>
                         <a class="small px-2" ngbNavLink>Pre</a>
                         <ng-template ngbNavContent>
-                          <div class="bg-white p-1 pb-0 var-ph-picker">
+                          <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
                                 <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-info"
@@ -890,7 +838,7 @@
                       <li ngbNavItem>
                         <a class="small px-2" ngbNavLink>Post</a>
                         <ng-template ngbNavContent>
-                          <div class="bg-white p-1 pb-0 var-ph-picker">
+                          <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
                                 <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-info"
@@ -955,7 +903,7 @@
         <div class="mb-2">
           <label class="form-label">Actions</label>
           @if (curScreen.actions.length==0) {
-            <div class="text-muted pb-3">No actions specified</div>
+            <div class="text-body-secondary pb-3">No actions specified</div>
           }
           @if (curScreen.actions.length>0) {
             <table class="table">
@@ -971,7 +919,6 @@
                 @for (ac of curScreen.actions; track ac.id) {
                   <tr>
                     <td><span style="font-size:1.5em; line-height: 1em;">{{ac.id}}</span></td>
-                  <!-- <div class="btn btn-sm btn-outline-secondary btn-round"></div> -->
                   <td>{{ac.label}}</td>
                   <td>
                     @if (ac.nextType=='view') {
@@ -1071,8 +1018,8 @@
         </div>
       </div>
     } @else {
-      <div class="m-a col-sm-12" style="color:#aaa;">
-        <div class="p-4 text-muted text-center">
+      <div class="m-a col-sm-12 text-body-secondary">
+        <div class="p-4 text-body-secondary text-center">
           <h4>Please select screen to edit</h4>
         </div>
       </div>
@@ -1115,8 +1062,7 @@
             }
           </select>
           @if (curScreen.type=='static' && ['edit','prev','view','screen'].indexOf(editActionData?.nextType)>-1) {
-            <div class="small text-muted mt-1"
-              >
+            <div class="small text-body-secondary mt-1">
             Entry ID must be appended to the action link ie: {{'{'}}{{'{'}}go['100']{{'}'}}{{'}'}}1234</div>
           }
         </div>
@@ -1149,7 +1095,7 @@
               <select class="form-select" name="next" [(ngModel)]="editActionData.next" (change)="loadFacet(editActionData.next)" required>
                 <option value="" disabled>Select form...</option>
                 @for (item of formList; track item.id) {
-                  <option [value]="item.id" >{{item.title}}</option>
+                  <option [value]="item.id">{{item.title}}</option>
                 }
               </select>
             </div>
@@ -1239,7 +1185,7 @@
         }
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editActionForm.invalid"
         (click)="c(editActionData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -1281,7 +1227,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeScreenData)">
       Remove Screen
     </button>
@@ -1306,7 +1252,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeActionData)">
       Remove Action
     </button>
@@ -1331,7 +1277,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(chatSuggestData)">
       Add Suggestion
     </button>
@@ -1346,7 +1292,7 @@
       <li ngbNavItem>
         <a ngbNavLink>Component</a>
         <ng-template ngbNavContent>
-          <div class="single-pane">
+          <div class="single-pane p-3">
 
             <div class="form-group mb-3">
               <label class="form-label">Label</label>
@@ -1360,7 +1306,7 @@
                 <div class="form-check">
                   <input type="radio" class="form-check-input" id="type-add" name="type"
                     [(ngModel)]="addCombineCompData.type" value="add" required>
-                  <label for="type-form" class="form-check-label">Add</label>
+                  <label for="type-add" class="form-check-label">Add</label>
                 </div>
                 <div class="form-check">
                   <input type="radio" class="form-check-input" id="type-edit-single" name="type"
@@ -1392,16 +1338,6 @@
                     [(ngModel)]="addCombineCompData.type" value="lookup" required>
                   <label for="type-lookup" class="form-check-label">Lookup</label>
                 </div>
-                <!-- <div class="form-check">
-                  <input type="radio" class="form-check-input" id="type-external" name="type"
-                    [(ngModel)]="editItemData.type" value="external" required>
-                  <label for="type-external" class="form-check-label">External URL</label>
-                </div>
-                <div class="form-check">
-                  <input type="radio" class="form-check-input" id="type-internal" name="type"
-                    [(ngModel)]="editItemData.type" value="internal" required>
-                  <label for="type-internal" class="form-check-label">Internal URL</label>
-                </div> -->
                 <div class="form-check">
                   <input type="radio" class="form-check-input" id="type-user" name="type"
                     [(ngModel)]="addCombineCompData.type" value="user" required>
@@ -1425,8 +1361,7 @@
       
       
             @if (['add','edit-single','view-single'].indexOf(addCombineCompData.type)>-1) {
-              <div class="form-group mb-3"
-                >
+              <div class="form-group mb-3">
                 <label class="form-label">Select Form *</label>
                 <select class="form-select" name="screenId"
                   [(ngModel)]="addCombineCompData.screenId" required>
@@ -1510,19 +1445,14 @@
               </div>
             }
 
-
-
           </div>
         </ng-template>
       </li>
       <li ngbNavItem>
         <a ngbNavLink>Icon</a>
         <ng-template ngbNavContent>
-          <div class="single-pane">
-            <!-- <div class="form-group mb-3">
-              <label class="form-label">Icon</label> -->
-              <app-icon-picker [(model)]="addCombineCompData.icon" [showNone]="true"></app-icon-picker>
-            <!-- </div> -->
+          <div class="single-pane p-3">
+            <app-icon-picker [(model)]="addCombineCompData.icon" [showNone]="true"></app-icon-picker>
           </div>
         </ng-template>
       </li>
@@ -1530,9 +1460,9 @@
     <div [ngbNavOutlet]="nav"></div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="addCombineCompForm.invalid" (click)="c(addCombineCompData)">
       Save Component
     </button>
   </div>
-</ng-template> 
+</ng-template>

@@ -1,30 +1,29 @@
 <div id="dashboard-{{dashboard()?.id}}" class="viewport section-to-print">
   @if (!asComp() && !hideTitle()) {
-  <page-title>
-    <h4 class="m-0" [innerHtml]="dashboard()?.title"></h4>
-    @if (dashboard()?.description) {
-    <div class="mt-1" [innerHtml]="dashboard()?.description"></div>
-    }
-  </page-title>
+    <page-title>
+      <h4 class="m-0" [innerHtml]="dashboard()?.title"></h4>
+      @if (dashboard()?.description) {
+        <div class="mt-1" [innerHtml]="dashboard()?.description"></div>
+      }
+    </page-title>
   }
   @if (dashboard() && !userUnauthorized()) {
     @if (!hideTitle() && dashboard().x?.canPrint){
-    <div class="title text-center pb-4">
-      <button type="button" class="print-hide btn btn-info btn-round btn-sm" (click)="printReport()">
-        <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
-        </fa-icon> {{lang()=='ms'?'Cetak':'Print'}}
-      </button>
-    </div>
+      <div class="title text-center pb-4">
+        <button type="button" class="print-hide btn btn-info btn-round btn-sm" (click)="printReport()">
+          <fa-icon [icon]="['fas','print']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Cetak':'Print'}}
+        </button>
+      </div>
     }
     <div class="p-2">
       <div class="centered fix-gutter" [class.limit-width]="!dashboard()?.wide">
         <div class="row m-p-4">
           @for (chart of dashboard()?.charts; track chart.id) {
             @if ((!maxState() || max()==chart.id) && preCheck(chart, {})) {
-            <div [ngClass]="maxState()?'col-sm-12':chart.size">
-              <app-chart [chart]="chart" [maxState]="maxState()" (onEnterMaxState)="enterMaxState($event)"
-                (onExitMaxState)="exitMaxState()" [scopeId]="scopeId()" [param]="param()"></app-chart>
-            </div>
+              <div [ngClass]="maxState()?'col-sm-12':chart.size">
+                <app-chart [chart]="chart" [maxState]="maxState()" (onEnterMaxState)="enterMaxState($event)"
+                  (onExitMaxState)="exitMaxState()" [scopeId]="scopeId()" [param]="param()"></app-chart>
+              </div>
             }
           }
         </div>
@@ -33,9 +32,9 @@
   } @else {
     @if (!loading()) {
       @if (userUnauthorized()) {
-      <div class="detail text-muted">
-        <h3>{{app().x?.lang=='ms'?'Akses dashboard tidak dibenarkan':'Access to the dashboard is not allowed'}}</h3>
-      </div>
+        <div class="detail text-body-secondary text-center p-4">
+          <h3>{{app().x?.lang=='ms'?'Akses dashboard tidak dibenarkan':'Access to the dashboard is not allowed'}}</h3>
+        </div>
       }
     }
   }

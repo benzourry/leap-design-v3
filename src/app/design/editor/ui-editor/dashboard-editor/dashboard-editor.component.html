@@ -3,7 +3,7 @@
     <div class="limit-width">
       @if (dashboardList?.length==0) {
       <div class="m-a col-sm-12">
-        <div class="p-4 text-muted text-center">
+        <div class="p-4 text-body-secondary text-center">
           <h1>:(</h1>
           <h4>No dashboard specified</h4>
         </div>
@@ -11,7 +11,7 @@
       }
       @if (dashboardList?.length>0 && !curDashboard) {
       <div class="m-a col-sm-12">
-        <div class="p-4 text-muted text-center">
+        <div class="p-4 text-body-secondary text-center">
           <h4>Please select dashboard above</h4>
         </div>
       </div>
@@ -23,7 +23,7 @@
         <div class="d-flex flex-column">
           <div class="me-auto d-flex flex-row w-100 mb-2">
             <h5 class="m-0 text-truncate">{{cleanText(curDashboard.title)}} <sup>{{curDashboard.id}}</sup></h5>
-            <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curDashboard.description)}}</div>
+            <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curDashboard.description)}}</div>
           </div>
           <div class="ps-3 d-flex align-items-center ms-auto">
             <div>
@@ -48,7 +48,7 @@
           (cdkDropListDropped)="dropChart($event, curDashboard)">
           @if (curDashboard?.charts.length==0) {
           <div class="col-md-12">
-            <div class="p-4 text-muted text-center">
+            <div class="p-4 text-body-secondary text-center">
               <h1>:(</h1>
               <h4>No chart specified</h4>
             </div>
@@ -58,7 +58,7 @@
           {
           <div [ngClass]="e.size" cdkDrag>
 
-            <div class="card element bg-secondary text-white border-secondary border-2 overflow-hidden" [ngClass]="e.altClass"
+            <div class="card element bg-body-tertiary text-body border-2 overflow-hidden" [ngClass]="e.altClass"
               [ngStyle]="{'min-height.px':e.height?e.height-100:350}">
 
               <div class="card-body pointer element d-flex justify-content-center around-0 w-100">
@@ -70,7 +70,7 @@
 
                 <div class="text-center w-100" style="align-self:center">
                   @if (!e.form && e.source=='db') {
-                  <div class="text-light bg-danger p-3 mb-2">
+                  <div class="text-white bg-danger p-3 mb-2 rounded">
                     <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
                     No form found associated with this chart. It might have been removed.
                   </div>
@@ -78,9 +78,9 @@
                   <div class="element-item-old">
                     <h6 class="card-title">{{e.title}} <sup>{{e.id}}</sup></h6>
                     @if (e.description) {
-                    <p class="card-subtitle">{{e.description}}</p>
+                    <p class="card-subtitle text-body-secondary">{{e.description}}</p>
                     }
-                    <div style="color:#eee; text-align: center">
+                    <div class="text-body-secondary text-center">
                       @if (e.type=='pie' || e.type=='rose') {
                       <fa-icon [icon]="['fas','chart-pie']" size="5x" [fixedWidth]="true"></fa-icon>
                       } @else if (e.type=='doughnut') {
@@ -108,17 +108,17 @@
                     <p class="my-3 small">
                       <strong>{{e.agg}}</strong>( @if(e.agg=='count') {distinct }
                       <strong>@for (h of forceArray(splitAsList(e.fieldValue)); track $index) {
-                        <div class="d-inline-block me-1 border bg-outline-light rounded px-1 mb-1">{{h}}</div>
+                        <div class="d-inline-block me-1 border bg-body-secondary rounded px-1 mb-1">{{h}}</div>
                         }
                       </strong>) by
                       <strong>@for (h of forceArray(splitAsList(e.fieldCode)); track $index) {
-                        <div class="d-inline-block me-2 border bg-outline-light rounded px-1 mb-1">{{h}}</div>
+                        <div class="d-inline-block me-2 border bg-body-secondary rounded px-1 mb-1">{{h}}</div>
                         }
                       </strong>
                       @if (e.fieldSeries) {
                       <span>by
-                        <strong><div class="d-inline-block me-2 border bg-outline-light rounded px-1 mb-1">{{e.fieldSeries}}</div></strong></span>
-                      }from <a class="text-white"
+                        <strong><div class="d-inline-block me-2 border bg-body-secondary rounded px-1 mb-1">{{e.fieldSeries}}</div></strong></span>
+                      }from <a class="text-body fw-bold"
                       [routerLink]="['/design/'+app.id+'/ui/form']" [queryParams]="{id:e.formId}"><strong>{{formMap[e.formId]}} [{{e.formId}}]</strong></a>
 
                       
@@ -126,8 +126,6 @@
                     }
 
                   </div>
-                  <!-- <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-                      [routerLink]="['/design/'+app.id+'/ui/form']" [queryParams]="{id:e.formId}">View Form</a> -->
 
                   <div class="">
                     <div class="my-2 text-start">
@@ -138,31 +136,31 @@
                       </div>
                     </div>
                     <div class="my-2 text-start">
-                      <div class="small">Endpoint (as array)</div>
+                      <div class="small text-body-secondary">Endpoint (as array)</div>
                       <div class="input-group input-group-sm w-100">
-                        <span class="input-group-text bg-secondary text-white">
+                        <span class="input-group-text">
                           @if(publicEp[e.id]){
                           <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
                           }@else {
                           <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
                           }
                         </span>
-                        <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10"
+                        <input type="text" class="form-control form-control-sm text-body bg-body-secondary"
                           value="{{baseApi}}{{publicEp[e.id]?'/public':''}}/entry/chart/{{e.id}}"
                           onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
                       </div>
                     </div>
                     <div class="my-2 text-start">
-                      <div class="small">Endpoint (as map)</div>
+                      <div class="small text-body-secondary">Endpoint (as map)</div>
                       <div class="input-group input-group-sm w-100">
-                        <span class="input-group-text bg-secondary text-white">
+                        <span class="input-group-text">
                           @if(publicEp[e.id]){
                           <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
                           }@else {
                           <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
                           }
                         </span>
-                        <input type="text" class="form-control form-control-sm text-white bg-white bg-opacity-10"
+                        <input type="text" class="form-control form-control-sm text-body bg-body-secondary"
                           value="{{baseApi}}{{publicEp[e.id]?'/public':''}}/entry/chart-map/{{e.id}}"
                           onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" readonly>
                       </div>
@@ -171,16 +169,16 @@
 
                   @if (!isEmptyObject(e?.presetFilters)) {
                   <div class="pt-3">
-                    <div class="small text-start">Preset Condition</div>
+                    <div class="small text-start text-body-secondary">Preset Condition</div>
                     @for (c of e.presetFilters|keyvalue; track $index) {
                       @if (c.key.startsWith('$')||c.key.startsWith('@')) {
                       <div>
-                        <div class="input-group input-group-sm mb-1 border-1 border-dark">
-                          <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                        <div class="input-group input-group-sm mb-1 border">
+                          <span class="input-group-text bg-transparent text-body" style="cursor:pointer"
                             (click)="editPresetKey(e,c)">{{c.key}}</span>
-                          <span class="input-group-text bg-transparent text-white" style="cursor:pointer"
+                          <span class="input-group-text bg-transparent text-body" style="cursor:pointer"
                             (click)="editPresetValue(e,c)">{{c.value}}</span>
-                          <button type="button" class="btn btn-light" (click)="removePreset(e,c.key)">
+                          <button type="button" class="btn btn-outline-secondary" (click)="removePreset(e,c.key)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>
@@ -193,23 +191,19 @@
                 </div>
 
                 <div class="element-edit" style="position:absolute;top:5px;right:10px;">
-                  <!-- <a class="btn btn-round btn-light btn-sm ms-1" target="_blank"
-                        href="{{baseApi}}/entry/chart/{{e.id}}">
-                        <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
-                      </a> -->
                   @if (!$c_first) {
-                  <button type="button" class="btn btn-round btn-info btn-sm"
+                  <button type="button" class="btn btn-round btn-info btn-sm me-1"
                     (click)="reorderChart(curDashboard,$c_index, -1)">
                     <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
                   </button>
                   }
                   @if (!$c_last) {
-                  <button type="button" class="btn btn-round btn-info btn-sm"
+                  <button type="button" class="btn btn-round btn-info btn-sm me-1"
                     (click)="reorderChart(curDashboard,$c_index, 1)">
                     <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
                   </button>
                   }
-                  <button type="button" class="btn btn-round btn-info btn-sm"
+                  <button type="button" class="btn btn-round btn-info btn-sm me-1"
                     (click)="editChart(editChartTpl,curDashboard.id,e,false)">
                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                   </button>
@@ -220,7 +214,7 @@
               </div>
 
               @if (e.x?.drill && e?.x?.drillFields?.length>0) {
-              <div class="p-3 bg-light text-dark">
+              <div class="p-3 bg-body-secondary text-body border-top">
                 <div class="small">
                   <div class="form-check small float-end">
                     <input type="checkbox" class="form-check-input" id="editDrillFields_{{e.id}}"
@@ -239,15 +233,15 @@
                       [cdkDragDisabled]="!editDrillFields[e.id]" (click)="curField[e.id]=a.code">
                       <div class="input-group input-group-sm border border-2 rounded"
                         [class.border-primary]="curField[e.id]==a.code">
-                        <span class="input-group-text border-0 bg-white">
+                        <span class="input-group-text border-0 bg-body">
                           {{a.label}}
                         </span>
                         @if(editDrillFields[e.id]){
-                          <button type="button" class="btn" (click)="editFieldLabel(e, a)">
+                          <button type="button" class="btn btn-outline-secondary" (click)="editFieldLabel(e, a)">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                             </fa-icon>
                           </button>
-                          <button type="button" class="btn" (click)="removeDrillField(e, $index)">
+                          <button type="button" class="btn btn-outline-secondary" (click)="removeDrillField(e, $index)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                             </fa-icon>
                           </button>
@@ -264,7 +258,7 @@
           }
         </div>
         <div class="p-3 text-center">
-          <a class="pointer"
+          <a class="pointer text-decoration-none"
             (click)="editChart(editChartTpl,curDashboard.id,{sortOrder:curDashboard.charts.length, size:'col-sm-12', sourceType:'db', height:'450', filters:[],x:{}}, true)">
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
             Add Chart
@@ -299,7 +293,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Basic Info</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <div class="form-group mb-3">
                 <label class="form-label">Chart Caption *</label>
                 <input class="form-control" type="text" [(ngModel)]="editChartData.title" name="title" required>
@@ -323,7 +317,7 @@
                   </div>
                 </div>
                 @if (sourceType?.invalid) {
-                <small class="form-text has-warning">
+                <small class="form-text text-warning">
                   @if (sourceType?.errors?.required) {
                   <span class="help-block">Source type is
                     required</span>
@@ -337,7 +331,7 @@
                 <input type="text" class="form-control" [(ngModel)]="editChartData.endpoint" #endpoint="ngModel"
                   name="endpoint" required>
                 @if (endpoint?.invalid) {
-                <small class="form-text has-warning">
+                <small class="form-text text-warning">
                   @if (endpoint?.errors?.required) {
                   <span class="help-block">Endpoint URL is
                     required</span>
@@ -364,11 +358,11 @@
                 <strong>{{editChartData.agg}}</strong>(@if(editChartData.agg=='count') {distinct }
                 <strong>
                   @for (h of forceArray(editChartData.fieldValue); track $index) {
-                  <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1">{{h}}</div>
+                  <div class="d-inline-block me-1 border bg-body-tertiary rounded px-1 mb-1">{{h}}</div>
                   }
                 </strong>) by
                 <strong>@for (h of forceArray(editChartData.fieldCode); track $index) {
-                  <div class="d-inline-block me-2 border bg-light rounded px-1 mb-1">{{h}}</div>
+                  <div class="d-inline-block me-2 border bg-body-tertiary rounded px-1 mb-1">{{h}}</div>
                   }
                 </strong>
                 @if (editChartData.fieldSeries) {
@@ -377,7 +371,6 @@
                 }
               </p>
               }
-              <!-- category, value, isseries, series -->
               @if (editChartData.form) {
               <div class="row">
                 <div class="col-md-6">
@@ -426,7 +419,6 @@
                         <optgroup [label]="editHolderFormSig()[fm].title">
                           <option [ngValue]="getPrefix(fm)+'.$id'"># Entry ID</option>
                           @for (s of sectionItems[fm]; track $index) {
-                            <!-- @if (s.tier!=null) { -->
                             @for (f of s.items; track f.id) {
                               @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
                               @if (editHolderFormSig()[fm].items[f.code]?.type!='static') {
@@ -459,7 +451,7 @@
                         name="series" (ngModelChange)="seriesChange(editChartData.series)">
                       <label class="form-check-label" for="series">
                         Series chart
-                        <div class="small">
+                        <div class="small text-body-secondary">
                           Enable series statistics for progression chart (bar, line, area)
                         </div>
                       </label>
@@ -478,7 +470,6 @@
                         <optgroup [label]="editHolderFormSig()[fm].title">
                           <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
                           @for (s of sectionItems[fm]; track $index) {
-                          <!-- @if (s.tier!=null) { -->
                             @for (f of s.items; track f.id) {
                               @let prefixedField = getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
                               {{f.type}}
@@ -504,9 +495,6 @@
                   </div>
                 </div>
                 }
-                <!-- @if (editChartData.form) {
-                  <div class="col-sm-12"></div>
-                } -->
                 @if (editChartData.form) {
                 <div class="col-md-6">
                   <div class="form-group mb-3">
@@ -553,7 +541,6 @@
                 <div class="row">
                   @for (type of chartTypeList; track $index) {
                   <div class="col-6 col-sm-4">
-                    <!-- [class.disabled-more]="(editChartData.series||forceArray(editChartData.fieldCode).length>1) && type.noseries" -->
                     <div class="form-check nobreak">
                       <input type="radio" class="form-check-input" id="ct-{{type.code}}" name="layout"
                         [(ngModel)]="editChartData.type" [value]="type.code" required>
@@ -681,7 +668,7 @@
                     </div>
 
                     @if(isStatusAllFalse(statusFilterForm)){
-                    <div class="p-3 bg-white blink_me">
+                    <div class="p-3 bg-body-tertiary text-body border rounded blink_me">
                       No status selected. Counting results for <strong>all statuses</strong>.
                     </div>
                     }
@@ -723,7 +710,6 @@
                         <div class="p-2">
                           <h6>{{tier.name}}</h6>
                           @for (action of tier.actions|keyvalue; track $index) {
-                            <!-- {{action.value|json}} -->
                           <div class="form-check">
                             <input [(ngModel)]="prevStatusFilterForm[tier.id][action.key]" class="form-check-input"
                               name="{{'prev_'+action.key+'_'+tier.id}}" id="{{'prev_'+action.key+'_'+tier.id}}" type="checkbox">
@@ -747,7 +733,7 @@
                         }
                       </div>
                       @if(isStatusAllFalse(prevStatusFilterForm)){
-                      <div class="p-3 bg-white blink_me">
+                      <div class="p-3 bg-body-tertiary text-body border rounded blink_me">
                         No previous entry status selected. Counting results for <strong>all previous entry statuses</strong>.
                       </div>
                       }
@@ -755,14 +741,8 @@
                   }
                 }
 
-
-
-
-
-
                 </div>
 
- 
               }
             </div>
           </ng-template>
@@ -771,7 +751,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Options</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <div class="row">
                 <div class="col-sm-6">
                   <div class="form-group mb-3">
@@ -821,7 +801,6 @@
                         <optgroup [label]="editHolderFormSig()[fm].title">
                           <option [ngValue]="fm+'#'+'$id'"># Entry ID</option>
                           @for (s of sectionItems[fm]; track $index) {
-                            <!-- @if (s.tier!=null) { -->
                             @for (f of s.items; track f.id) {
                               @let prefixedField =
                               getPrefix(fm,s.section)+'.'+f.code+getPostfix(editHolderFormSig()[fm].items[f.code]);
@@ -882,7 +861,7 @@
                   Fields to show *
                 </label>
 
-                <div class="border rounded p-2 form-control" style="max-height: 250px; overflow-y: auto;">
+                <div class="border rounded p-2 bg-body-tertiary" style="max-height: 250px; overflow-y: auto;">
 
                   @for (fm of ['data','prev']; track fm) {
                     @if (editHolderFormSig()[fm]) {
@@ -891,12 +870,11 @@
                         {{editHolderFormSig()[fm].title}}
                       </div>
 
-                      <!-- <div class="fw-bold text-primary mt-3 mb-1" style="font-size: 0.9em;">System Variables</div> -->
                       <div class="form-check ms-3 mb-1">
                         <input class="form-check-input" type="checkbox" [id]="'chk_entry_id_' + fm"
                           [checked]="isFieldSelected(fm, '$id')"
                           (change)="toggleFieldSelection(fm, '$id', '# Entry ID', $event)">
-                        <label class="form-check-label text-muted" [for]="'chk_entry_id_' + fm">
+                        <label class="form-check-label text-body-secondary" [for]="'chk_entry_id_' + fm">
                           # Entry ID
                         </label>
                       </div>
@@ -904,7 +882,7 @@
                         <input class="form-check-input" type="checkbox" [id]="'chk_entry_code_' + fm"
                           [checked]="isFieldSelected(fm, '$code')"
                           (change)="toggleFieldSelection(fm, '$code', '# Entry Code', $event)">
-                        <label class="form-check-label text-muted" [for]="'chk_entry_code_' + fm">
+                        <label class="form-check-label text-body-secondary" [for]="'chk_entry_code_' + fm">
                           # Entry Code
                         </label>
                       </div>
@@ -912,7 +890,7 @@
                         <input class="form-check-input" type="checkbox" [id]="'chk_entry_counter_' + fm"
                           [checked]="isFieldSelected(fm, '$counter')"
                           (change)="toggleFieldSelection(fm, '$counter', '# Entry Counter', $event)">
-                        <label class="form-check-label text-muted" [for]="'chk_entry_counter_' + fm">
+                        <label class="form-check-label text-body-secondary" [for]="'chk_entry_counter_' + fm">
                           # Entry Counter
                         </label>
                       </div>
@@ -923,7 +901,7 @@
                           <input class="form-check-input" type="checkbox" [id]="'chk_statusText_' + fm"
                             [checked]="isFieldSelected(fm, '$statusText')"
                             (change)="toggleFieldSelection(fm, '$statusText', '# Current Status Text', $event)">
-                          <label class="form-check-label text-muted" [for]="'chk_statusText_' + fm"># Current Status Text</label>
+                          <label class="form-check-label text-body-secondary" [for]="'chk_statusText_' + fm"># Current Status Text</label>
                         </div>
                       }
 
@@ -976,7 +954,7 @@
                   <app-cm name="f" lang="javascript" [(ngModel)]="editChartData.f" [linenumber]="true">
                   </app-cm>
                 </div>
-                <div class="small mt-2 text-muted">
+                <div class="small mt-2 text-body-secondary">
                   <p>You can use the following hook</p>
                   <ul>
                     <li><code>$dataset$</code> - To access chart dataset</li>
@@ -986,9 +964,6 @@
               </div>
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
-                <!-- <app-codejar [(ngModel)]="editChartData && editChartData.x.pre" lang="js" name="pre"
-                [linenumber]="true" [options]="{lineNumbers: true,mode: 'javascript'}">
-              </app-codejar> -->
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editChartData.x.pre" [linenumber]="true">
                   </app-cm>
@@ -1002,8 +977,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Filters</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
-              <!-- {{editChartData.filters}} -->
+            <div class="single-pane p-3">
               <app-entry-filter [formHolder]="editHolderFormSig()" [presetFilters]="editChartData.presetFilters"
                 [(filters)]="editChartData.filters" [sectionItems]="sectionItems" [lookup]="lookup"></app-entry-filter>
             </div>
@@ -1014,7 +988,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editChartForm.invalid"
         (click)="c(editChartData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -1044,7 +1018,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeDashboardData)">
       Remove Dashboard
     </button>
@@ -1067,7 +1041,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeChartData)">
       Remove Chart
     </button>

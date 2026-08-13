@@ -22,7 +22,7 @@
       @if (form() && (!(formInactive() && ['add','prev'].includes(action())) && isAuthorized() && !invalidFacet() && !editWithoutId())) {
         @if (!form()?.hideStatus) {
           @if (entry()?.id) {
-            <div class="limit-width centered">
+            <div class="limit-width centered mt-3">
               <step-wizard [user]="user()" [tiers]="form()?.tiers" [approval]="entry()?.approval" [entry]="entry()"></step-wizard>
             </div>
           }
@@ -52,7 +52,7 @@
                 <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
               }
 
-              <div ngbAccordion [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
+              <div ngbAccordion class="mt-3" [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
                 @for (tab of filteredTabs(); track tab.id) {
                   <div class="acc-card" [hidden]="(tab.x?.facet?.[_action] == 'hidden')" [ngbAccordionItem]="_action + $index" [collapsed]="$index != _navIndex()"
                     [disabled]="!disabledTabs()[tab.id]" #accitem="ngbAccordionItem">
@@ -94,7 +94,7 @@
                 <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
               }
 
-              <div class="tab-simple">
+              <div class="tab-simple mt-3">
                 <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + _navIndex()"
                   [class.limit-width]="!form()?.x?.wide" [hidden]="!filteredTabs()?.length"
                   class="nav-{{form().nav}} justify-content-center centered" [class.pe-none]="form().x?.progression && form().x?.noPageSkip">

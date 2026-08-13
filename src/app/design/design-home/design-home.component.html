@@ -76,10 +76,10 @@
                       </button>
                       @if (item.email.includes(user()?.email)) {
                         <div class="d-flex justify-content-between">
-                          <button type="button" class="btn btn-light btn-round me-1" [disabled]="offline()" routerLink="/design/{{item.id}}" title="Edit Template">
+                          <button type="button" class="btn btn-outline-secondary btn-round me-1" [disabled]="offline()" routerLink="/design/{{item.id}}" title="Edit Template">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                           </button>
-                          <button type="button" class="btn btn-light btn-round me-1" [disabled]="offline()" (click)="editItem(appEditTpl, item, false)" title="Edit Properties">
+                          <button type="button" class="btn btn-outline-secondary btn-round me-1" [disabled]="offline()" (click)="editItem(appEditTpl, item, false)" title="Edit Properties">
                             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                           </button>
                           <button type="button" class="btn btn-danger btn-round" [disabled]="offline()" (click)="removeItem(removeItemTpl, item)" title="Remove Template">
@@ -129,7 +129,7 @@
         <div>
           <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> My App Collection
         </div>
-    
+        
         <div class="ms-auto btn-group-xs small group-by-toggle">
           <input class="btn-check" type="radio" value="all" id="dsgb-ungroup"
             name="dsgb-ungroup" [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
@@ -142,7 +142,7 @@
           <label for="dsgb-type" class="btn">Dev</label>
         </div>
       </div>
-    
+        
       @if (!itemLoading()) {
         @if (itemTotal() === 0) {
           <div class="p-4 text-muted text-center">
@@ -152,7 +152,7 @@
         } @else {
           <div class="px-2">
             <div class="py-1 small m-a limit-width">
-              <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+              <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
                 [class.bg-info-subtle]="groupFilter() === null" 
                 [class.text-primary]="groupFilter() === null" 
                 [class.border-primary]="groupFilter() === null" 
@@ -160,7 +160,7 @@
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
               </button>
               @for (gf of groupedItemList(); track gf.key) {
-                <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
                   [class.bg-info-subtle]="groupFilter() === gf.key" 
                   [class.text-primary]="groupFilter() === gf.key" 
                   [class.border-primary]="groupFilter() === gf.key" 
@@ -174,19 +174,19 @@
               }
             </div>
           </div>
-    
+        
           <div class="d-flex flex-wrap flex-row align-content-center">
             @for (dsKv of groupedItemList(); track dsKv.key) {
               @if (!groupFilter() || groupFilter() === dsKv.key) {
                 <div style="flex-grow: 1;">
-                  <div class="p-2 rounded-2 text-center bg-light mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
+                  <div class="p-2 rounded-2 text-center bg-body-secondary mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
                     @if (dsKv.key !== 'undefined') {
                       <span>{{ dsKv.key }}</span>
                     } @else {
                       <span class="fst-italic text-muted">Ungrouped</span>
                     }
                   </div>
-    
+        
                   @if (!hideGroupItems()[dsKv.key]) {
                     <div class="tile-wrap tile-center">
                       @for (item of dsKv.value; track item.id) {
@@ -204,10 +204,10 @@
                                   <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
                                 </button>
                                 <div class="d-flex justify-content-between">
-                                  <button type="button" class="btn btn-light btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
+                                  <button type="button" class="btn btn-outline-secondary btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
                                     <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
                                   </button>
-                                  <button type="button" class="btn btn-light btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
+                                  <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   </button>
                                   <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" title="Remove App" (click)="removeItem(removeItemTpl, item)">
@@ -232,7 +232,7 @@
       } @else {
         <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
       }
-    
+        
       @if (itemTotal() > pageSize()) {
         <div class="d-flex justify-content-center p-3 pagination-rounded">
           <ngb-pagination [collectionSize]="itemTotal()" [pageSize]="pageSize()" [(page)]="pageNumber" [maxSize]="4" [rotate]="true" (pageChange)="getItemList(pageNumber())" [boundaryLinks]="true" [directionLinks]="false">

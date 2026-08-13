@@ -41,6 +41,7 @@ import { PageTitleComponent } from '../_component/page-title.component';
 import { EntryService } from '../_service/entry.service';
 import { RunService } from '../_service/run.service';
 import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
+import { ThemeToggleComponent } from "../_component/theme-toggle.component";
 
 @Component({
   selector: 'app-start',
@@ -48,7 +49,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   styleUrls: ['./start.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgbCollapse,
-    NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe]
+    NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe, ThemeToggleComponent]
 })
 export class StartComponent implements OnInit, OnDestroy {
 

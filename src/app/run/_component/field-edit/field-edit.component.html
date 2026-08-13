@@ -161,7 +161,7 @@
                     [minDate]="toNgbDateStruct(f?.v?.minDate)" [maxDate]="toNgbDateStruct(f?.v?.maxDate)"
                     [markDisabled]="markDisabledFn()"
                     (click)="d.toggle()" (ngModelChange)="valueChanged($event)" ngbDatepicker #d="ngbDatepicker" [disabled]="f.readOnly">
-                  <button type="button" class="btn btn-light smyds" style="border-color: var(--bs-border-color)" (click)="d.toggle()" [disabled]="f.readOnly">
+                  <button type="button" class="btn btn-outline-secondary smyds" style="border-color: var(--bs-border-color)" (click)="d.toggle()" [disabled]="f.readOnly">
                     <fa-icon [icon]="['far','calendar-alt']"></fa-icon>
                   </button>
                 </div>
@@ -232,7 +232,7 @@
           }
           @if (!hideAddAction() && f.x?.addEntryEnabled) {
             <div class="mt-1">
-              <button type="button" class="btn btn-xs btn-light" (click)="triggerAddAction('')">
+              <button type="button" class="btn btn-xs btn-outline-secondary" (click)="triggerAddAction('')">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
               </button>
             </div>
@@ -434,7 +434,7 @@
           @if (!lookupList() || lookupList().length==0) { <div class="text-muted">Option not available</div> }
           @if (!hideAddAction() && f.x?.addEntryEnabled){
             <div class="mt-1">
-              <button type="button" class="btn btn-xs btn-light" (click)="triggerAddAction('')">
+              <button type="button" class="btn btn-xs btn-outline-secondary" (click)="triggerAddAction('')">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
               </button>
             </div>
@@ -527,14 +527,14 @@
                     }
                   }
                   
-                  <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background:white;">
+                  <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background: var(--bs-body-bg);">
                     @if (f.x?.extractor) {
                       <div style="padding:2px 5px; color:#4c0bce; font-size:0.9em; line-height:0.9em;">
                         <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
                       </div>            
                     }     
                     @if (value) {
-                      <div style="width:20px; cursor:pointer; color:#999; font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                      <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
                     }        
                   </div>
                 </label>
@@ -574,14 +574,14 @@
                   }
                 }
                 
-                <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background:white;">
+                <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background: var(--bs-body-bg);">
                   @if (f.x?.extractor) {
                     <div style="padding:2px 5px; color:#4c0bce; font-size:0.9em; line-height:0.9em;">
                       <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
                     </div>            
                   }     
                   @if (value) {
-                    <div style="width:20px; cursor:pointer; color:#999; font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                    <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
                   }        
                 </div>
               </label>
@@ -601,8 +601,8 @@
                 </div>
               }
               @if (!value) {
-                <div style="background: #aaa;height:250px;max-width:100%;border-radius:var(--bs-border-radius)" class="d-flex align-items-center text-center img-holder">
-                  <div style="flex: 1;color: white; font-size: 0.8em">
+                <div style="background: var(--bs-tertiary-bg);height:250px;max-width:100%;border-radius:var(--bs-border-radius)" class="d-flex align-items-center text-center img-holder">
+                  <div style="flex: 1;color: var(--bs-body-color); font-size: 0.8em">
                     {{lang()=='ms'?'Klik untuk muatnaik':'Click to upload image'}}
                     @if (f.subType == 'imagemulti') {
                       <div>{{lang()=='ms'?'Untuk memilih banyak fail, tekan kekunci CTRL atau SHIFT semasa memilih':'To select multiple files, hold down the CTRL or SHIFT key while selecting'}}</div>
@@ -707,12 +707,12 @@
                 <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
                   [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
                 @if (qrError()) {
-                  <div class="form-control smyds text-danger" style="background: white"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+                  <div class="form-control smyds text-danger bg-body"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
                 } @else {
                   @if (!value) {
-                    <div class="form-control smyds" style="background: white"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                    <div class="form-control smyds bg-body"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
                   } @else {
-                    <div class="form-control smyds" style="background: white">{{value}}</div>
+                    <div class="form-control smyds bg-body">{{value}}</div>
                   }
                 }
               </label>
@@ -729,12 +729,12 @@
               <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
                 [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
               @if (qrError()) {
-                <div class="form-control smyds text-danger" style="background: white"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+                <div class="form-control smyds text-danger bg-body"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
               } @else {
                 @if (!value) {
-                  <div class="form-control smyds" style="background: white"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                  <div class="form-control smyds bg-body"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
                 } @else {
-                  <div class="form-control smyds" style="background: white">{{value}}</div>
+                  <div class="form-control smyds bg-body">{{value}}</div>
                 }
               }
             </label>

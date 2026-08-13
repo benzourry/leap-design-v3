@@ -43,11 +43,10 @@
               <div class="section-to-print">
                 <div class="my-3">
                   <div class="fs-4">Platform Summary</div>
-                  <div class="small text-muted">Last updated: {{updatedOn}}</div>
+                  <div class="small text-body-secondary">Last updated: {{updatedOn}}</div>
                 </div>
 
                 <div class="card mb-3">
-                    <!-- {{appStatByLiveOpt|json}} -->
                   <div class="card-header text-start">App by Status</div>
                   <div class="demo-chart" style="height: 450px" echarts [options]="appStatByLiveOpt"></div>
                 </div>
@@ -66,8 +65,6 @@
                           New</label>
                       </div>
                       Entry By Year/Month (Last 10 Month)
-                      <!-- <div class="small">Monthly statistics of entry in platform</div> -->
-
                   </div>
 
                   @if (entryStatIsCumulative){
@@ -103,8 +100,6 @@
                           New</label>
                       </div>
                       User By Year/Month (Last 10 Month)
-                      <!-- <div class="small">Monthly statistics of user in platform</div> -->
-
                   </div>
 
                   @if (userStatIsCumulative){
@@ -133,8 +128,6 @@
                           New</label>
                       </div>
                       Attachment By Year/Month (Last 10 Month)
-                      <!-- <div class="small">Monthly statistics of user in platform</div> -->
-
                   </div>
 
                   @if (attachmentStatIsCumulative){
@@ -145,13 +138,11 @@
                 </div>
               </div>
               
-              
-
-            }@else {
+          }@else {
                 <div class="alert alert-danger">
                     <strong>Warning:</strong> You are not authorized to access this area. Please contact your administrator.
                 </div>
-            }
+          }
             
         </div>
 

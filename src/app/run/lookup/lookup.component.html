@@ -1,4 +1,4 @@
-<div class="viewport ">
+<div class="viewport">
   @if (!hideTitle()) {
     <page-title>
       <h4 class="m-0">{{lookup()?.name}}</h4>
@@ -13,7 +13,7 @@
         <div class="single-pane">
           <div class="d-flex flex-row">
             <div style="flex-grow:1">
-              <input type="search"  autocapitalize="none" class="form-control form-control-sm border border-2"
+              <input type="search" autocapitalize="none" class="form-control form-control-sm border border-2"
                 placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber())"
                 [(ngModel)]="searchText">
             </div>
@@ -60,7 +60,7 @@
               @if (lookupEntryList()?.length) {
 
                 <div class="px-2 py-2">
-                  <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
+                  <div class="m-auto py-1 px-3 rounded-2 bg-body-tertiary border text-body small shadow-sm" style="max-width:500px;">
                     <div class="row">
                       <div class="col d-flex align-items-center">
                         <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
@@ -107,7 +107,7 @@
 
 
             <div class="table-responsive">
-                <table class="table table-bordered table-striped bg-white">
+                <table class="table table-bordered table-striped">
                   <thead>
                     <tr>
                       @if (!lookup()?.x?.codeHidden){
@@ -150,7 +150,7 @@
                                           <span>{{o.value?.name}}</span>
                                         }@else if (mapDataFields()[o.key]=='multiplelookup') {
                                           @if (o.value && o.value.length>0) {
-                                              <div class="list-group list-group-sm small">                                            
+                                              <div class="list-group list-group-sm small">            
                                                 @for(v of o.value; track $index) {
                                                   <div class="list-group-item p-1 px-2">{{v.name}}</div>
                                                 }
@@ -224,7 +224,7 @@
                   [pageSize]="pageSize" [(page)]="entryPageNumber" [maxSize]="10"
                   (pageChange)="getLookupEntryList(entryPageNumber())" boundaryLinks="false" directionLinks="false">
                   <ng-template ngbPaginationFirst>
-                    <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                    <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
                   </ng-template>
                   <ng-template ngbPaginationPrevious>
                     <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -232,7 +232,7 @@
                   <ng-template ngbPaginationNext>
                     <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                   </ng-template>
-                  <ng-template ngbPaginationLast>              
+                  <ng-template ngbPaginationLast>             
                     <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                   </ng-template>
                 </ngb-pagination>
@@ -267,17 +267,12 @@
         </div>
       </div>
     }@else {
-      <div class="detail text-muted">
+      <div class="detail text-body-secondary">
         <h3>{{app()?.x?.lang=='ms'?'Anda tidak mempunyai akses kepada lookup ini':
         'You are not authorized to access this lookup'}}</h3>
       </div>
     }
   }
-  <!-- @else{
-    <div style="color:#aaa;">
-      <h3>Please select Lookup Table from the list on the left to view it's data.</h3>
-    </div>
-  } -->
 </div>
 <ng-template #removeLookupEntryTpl let-c="close" let-d="dismiss">
   <div>
@@ -303,7 +298,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeLookupEntryData)">
         <i class="icon-minus-sign-alt"></i> {{lang()=='ms'?'Padam Lookup':'Remove Lookup'}}
       </button>
@@ -324,7 +319,7 @@
             <input type="text" class="form-control" name="code" #code="ngModel"
               [(ngModel)]="_lookupEntry.code" required />
             @if (code?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (code.errors?.required) {
                   <span class="help-block">Code is required</span>
                 }
@@ -337,7 +332,7 @@
           <input type="text" class="form-control" name="name" #name="ngModel"
             [(ngModel)]="_lookupEntry.name" required />
           @if (name?.invalid) {
-            <small class="form-text has-warning">
+            <small class="form-text text-warning">
               @if (name.errors?.required) {
                 <span class="help-block">Description is required</span>
               }
@@ -350,7 +345,7 @@
             <input type="text" class="form-control" name="extra" #extra="ngModel"
               [(ngModel)]="_lookupEntry.extra" />
             @if (extra?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (extra.errors?.required) {
                   <span class="help-block">Description is required</span>
                 }
@@ -361,8 +356,8 @@
 
         @if (lookup().dataEnabled) {
           <div class="mb-3">
-            <div class="text-muted small fw-bold text-center add-data-split mx-n3">
-              <span class="bg-white" style="display: inline-block;z-index: 1;position: relative;padding: 5px;">
+            <div class="text-body-secondary small fw-bold text-center add-data-split mx-n3">
+              <span class="bg-body text-body" style="display: inline-block;z-index: 1;position: relative;padding: 5px;">
                 {{lang()=='ms'?'Data (maklumat Tambahan)':'Data (additional attributes)'}}</span>
             </div>
               @for (e of lookupEntryFields; track $index) {
@@ -387,7 +382,7 @@
                         [(ngModel)]="_lookupEntry.data[e.key]" (click)="d2.toggle()" ngbDatepicker
                         #d2="ngbDatepicker">
                     }@else if (e.type=='options') {
-                      <select class="form-control form-control-sm" name="value_{{$index}}"
+                      <select class="form-select form-select-sm" name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]">
                         @for (a of e.opts; track $index) {
                           <option [ngValue]="a">{{a}}</option>
@@ -410,7 +405,7 @@
                       <label class="flex-grow-1">
                         <input type="file" [hidden]="true" (change)="uploadFile($event, _lookupEntry.data, e.key)"
                           name="file" />
-                        <div class="form-control form-control-sm" style="background: white">
+                        <div class="form-control form-control-sm">
                           <fa-icon [icon]="['fas','upload']"></fa-icon>
                           {{_lookupEntry.data[e.key]||'Browse'}}
                         </div>
@@ -422,7 +417,7 @@
                     }
 
                     @if (e.type!='lookup'&&e.type!='multiplelookup'){
-                      <button type="button" style="--bs-btn-border-color:#ddd" class="btn btn-sm btn-outline-secondary border-start-0"
+                      <button type="button" style="--bs-btn-border-color: var(--bs-border-color, #ddd)" class="btn btn-sm btn-outline-secondary border-start-0"
                         (click)="deleteDataRow(_lookupEntry.data, e.key)">
                         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                       </button>
@@ -446,7 +441,7 @@
                         [(ngModel)]="_lookupEntry.data[e.key]">
                     }
 
-                    <button type="button" class="btn btn-sm btn-light"
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
                       (click)="deleteDataRow(_lookupEntry.data, e.key)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
@@ -535,7 +530,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(requestParams())">
         <i class="icon-minus-sign-alt"></i> Execute Request
       </button>

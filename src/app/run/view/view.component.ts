@@ -48,7 +48,7 @@ import { ScreenComponent } from '../screen/screen.component';
     selector: 'app-view',
     templateUrl: './view.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush, // mcm ok
-    styleUrls: ['./view.component.css'],
+    styleUrls: ['./view.component.scss'],
     imports: [PageTitleComponent, FormsModule, FormViewComponent, NgClass, InitDirective,
       FieldEditComponent, FaIconComponent, FieldViewComponent, RouterLink, DatePipe, KeyValuePipe,
       forwardRef(() => ListComponent), ScreenComponent]

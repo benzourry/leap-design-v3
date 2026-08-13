@@ -6,26 +6,35 @@
   --ae-text-area-border-radius: 8px;
 }
 
-.field-edit {
-  --bs-border-color: rgba(0, 0, 0, 0.15);
-}
-
 *::placeholder {
-  color: #999 !important;
+  color: var(--bs-secondary-color) !important;
 }
 
 /* ==========================================================================
    UTILITY CLASSES
    ========================================================================== */
-.toggle-opt { border-color: var(--bs-border-color); }
-.has-float-label { display: block; position: relative; margin-bottom: 0; }
-.width-38 { width: 38px; }
-.addon-timepicker { margin-top: -1em; }
-.qrCode svg { width: 100%; }
+.toggle-opt { 
+  border-color: var(--bs-border-color); 
+}
+.has-float-label { 
+  display: block; 
+  position: relative; 
+  margin-bottom: 0; 
+}
+.width-38 { 
+  width: 38px; 
+}
+.addon-timepicker { 
+  margin-top: -1em; 
+}
+.qrCode svg { 
+  width: 100%; 
+}
 
 .file-img-btn {
-  border: solid 1px #ccc;
-  background: #fff;
+  border: solid 1px var(--bs-border-color);
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
   padding: 3px 6px;
   border-radius: 4px;
   float: left;
@@ -46,7 +55,8 @@
 
 field-edit {
   .form-control, .ng-select-container, .angular-editor-textarea {
-    background-color: rgba(255, 255, 255, 0.8) !important;
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
   }
 }
 
@@ -87,9 +97,9 @@ field-edit {
 }
 
 angular-editor.is-invalid .angular-editor {
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: var(--bs-border-color);
   background-clip: padding-box;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--bs-body-bg);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
@@ -107,6 +117,18 @@ angular-editor.is-invalid .angular-editor {
   .ng-select-container {
     border-radius: var(--bs-border-radius);
     min-height: 36px;
+    border-color: var(--bs-border-color) !important; /* Matches standard inputs */
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+
+    .ng-value-container {
+      .ng-placeholder {
+        color: var(--bs-secondary-color);
+      }
+      .ng-input > input {
+        color: var(--bs-body-color);
+      }
+    }
   }
 
   &.ng-select-single .ng-select-container {
@@ -114,13 +136,17 @@ angular-editor.is-invalid .angular-editor {
   }
 
   &.ng-select-multiple .ng-select-container .ng-value-container {
-    .ng-value { margin-bottom: 1px; }
+    .ng-value { 
+      margin-bottom: 1px; 
+      background-color: var(--bs-secondary-bg);
+      color: var(--bs-body-color);
+    }
     .ng-input { padding: 0 0 1px 3px; }
   }
 
   &.ng-invalid {
     &.ng-touched .ng-select-container {
-      border-color: #dc3545;
+      border-color: var(--bs-form-invalid-border-color, #dc3545) !important;
     }
     &.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
       box-shadow: 0 0 0 0.18em rgba(var(--bs-danger-rgb), 0.25);
@@ -142,7 +168,7 @@ angular-editor {
     .angular-editor-placeholder {
       display: block;
       top: 0.6em;
-      color: #000;
+      color: var(--bs-body-color);
       line-height: 1;
       opacity: 0.7 !important;
     }
@@ -151,13 +177,16 @@ angular-editor {
       display: block !important;
       border-radius: 8px;
       box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05), 0px 12px 50px 0px rgba(0, 0, 0, 0.10);
-      border: solid 1px #eee;
+      border: solid 1px var(--bs-border-color);
       margin-top: 5px;
+      background: var(--bs-body-bg);
     }
   }
 
   .angular-editor-textarea {
     padding: 0.375rem 0.75rem !important;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
   }
 }
 
@@ -170,7 +199,7 @@ angular-editor-toolbar {
   position: absolute;
   top: 100%;
   z-index: 3;
-  background: white;
+  background: var(--bs-body-bg);
 }
 
 /* ==========================================================================
@@ -254,7 +283,7 @@ angular-editor-toolbar {
     border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius) !important;
     border-top: none !important;
     border-color: var(--bs-border-color) !important;
-    background: #f6f6f6;
+    background: var(--bs-tertiary-bg);
     margin-top: 0;
   }
 

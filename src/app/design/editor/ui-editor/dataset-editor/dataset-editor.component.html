@@ -1,22 +1,22 @@
-<div class="fix-gutter ">
+<div class="fix-gutter">
   <div class="p-2 limit-width">
     @if (datasetList?.length==0) {
       <div class="m-a col-sm-12">
-        <div class="p-4 text-muted text-center">
+        <div class="p-4 text-body-secondary text-center">
           <h1>:(</h1>
           <h4>No dataset specified</h4>
         </div>
       </div>
     }
     @if (datasetList?.length>0 && !curDataset && !dsError) {
-      <div class="m-a col-sm-12" style="color:#aaa;">
-        <div class="p-4 text-muted text-center">
+      <div class="m-a col-sm-12 text-body-secondary">
+        <div class="p-4 text-body-secondary text-center">
           <h4>Please select dataset above</h4>
         </div>
       </div>
     }
     @if (dsError) {
-      <div class="m-3 p-3 bg-danger text-white">
+      <div class="m-3 p-3 bg-danger text-white rounded">
         <h5>Failed to load dataset with id <strong>{{curDatasetId}}</strong></h5>
         <p>Message: {{dsError.message}}</p>
         <button type="button" class="btn btn-outline-light btn-round"
@@ -30,7 +30,7 @@
           <div class="d-flex flex-column">
             <div class="me-auto d-flex flex-row w-100 mb-2">
               <h5 class="m-0 text-truncate">{{cleanText(curDataset.title)}} <sup>{{curDataset.id}}</sup></h5>
-              <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curDataset.description)}}
+              <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curDataset.description)}}
               </div>
             </div>
             <div class="d-flex align-items-baseline">
@@ -87,7 +87,7 @@
           Loading...
         }@else{
           @if (!form.data) {
-            <div class="text-white bg-danger p-3">
+            <div class="text-white bg-danger p-3 rounded">
               <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
               No form found associated with this dataset. It might has been removed.
             </div>
@@ -162,14 +162,14 @@
                             </div>
                           </div>
                           @if(field.subs && field.subs?.length>0){
-                            <div class="flex-grow-1 d-flex flex-row" style="border-top:solid 2px #ccc"  cdkDropList
+                            <div class="flex-grow-1 d-flex flex-row border-top" style="border-top-color: var(--bs-border-color, #ccc) !important;" cdkDropList
                             cdkDropListOrientation="horizontal"
                             (cdkDropListDropped)="dropSubs($event, field.subs)">                            
                               @for(cf of field.subs; track $index){
                                 <div class="f-subs-item" cdkDrag>
                                   <div class="p-2 pb-0 text-truncate" style="max-width:120px">{{cf.label}}</div>
                                   <div class="p-2 btn-group">
-                                    <div class="btn btn-sm btn-light cursor-move" cdkDragHandle>
+                                    <div class="btn btn-sm btn-outline-secondary cursor-move" cdkDragHandle>
                                       <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
                                     </div>
                                     <button type="button" class="btn btn-sm btn-secondary" (click)="editColumnText(cf, field)">
@@ -179,7 +179,7 @@
                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   </div>
-                              </div>
+                                </div>
                               }
                             </div>
                           }
@@ -237,7 +237,7 @@
                   }
                 </div>
               }
-              <div class="p-2 border border-2 border-black-50 rounded mb-3">
+              <div class="p-2 border border-2 rounded mb-3">
                 <div class="row width-auto align-items-center g-2" cdkDropList
                   cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
@@ -247,14 +247,14 @@
                       (click)="curAction=a.id">
                       <div class="input-group input-group-sm border border-2 rounded"
                         [class.border-primary]="curAction==a.id">
-                        <span class="input-group-text border-0 bg-white">
+                        <span class="input-group-text border-0 bg-body-tertiary text-body">
                           @if (a.icon) {
                             <fa-icon [icon]="a.icon|iconSplit" [fixedWidth]="true">
                             </fa-icon>
                           }
                           {{a.label}}
                           @if (a.type=='bulk') {
-                            <span  style="font-size: 0.7em;"
+                            <span style="font-size: 0.7em;"
                               class="border-secondary small pointer border rounded d-inline-block px-1 py-0 ms-1">BULK</span>
                           }
                           @if (a.pre) {
@@ -263,11 +263,11 @@
                             PRE</div>
                           }
                         </span>
-                        <button type="button" class="btn" (click)="deleteAction(a)">
+                        <button type="button" class="btn btn-outline-secondary" (click)="deleteAction(a)">
                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn" (click)="editAction(editActionTpl,a)">
+                        <button type="button" class="btn btn-outline-secondary" (click)="editAction(editActionTpl,a)">
                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
@@ -290,9 +290,9 @@
                     <div cdkDropList cdkDropListOrientation="vertical"
                       (cdkDropListDropped)="dropFilter($event, curDataset.filters)">
                       @for (field of curDataset.filters; track field.id) {
-                        <div class="element p-2 mb-1 bg-white small" style="" (dblclick)="editFilterText(field)"cdkDrag>
+                        <div class="element p-2 mb-1 bg-body-tertiary text-body border rounded small position-relative" (dblclick)="editFilterText(field)" cdkDrag>
                           <div class="element-item" style="user-select:none;">
-                            <div style="font-size: 12px;">
+                            <div style="font-size: 12px;" class="text-body-secondary">
                               {{cleanText(form[field.root]?.title)}}
                             </div>
                             <span>{{field.label}}</span>
@@ -322,7 +322,7 @@
                     </div>
                   </div>
                 </div>
-              }      
+              }     
               @if (qFilter) {
                 <div>
                   <h6>Filters Condition Structure</h6>
@@ -330,8 +330,7 @@
                   <div class="my-2 ms-2">
                     <div class="cond-badge" style="float:left">
                       <div
-                        style="background:#ccc!important;font-weight: bold;"
-                        class="p-1 ms-1 text-center rounded-2 position-relative text-white">
+                        class="p-1 ms-1 text-center rounded-2 position-relative bg-secondary-subtle text-body fw-bold">
                         {{curDataset.presetFilters['@cond']||'AND'}}
                       </div>
                     </div>
@@ -349,8 +348,7 @@
                         <div class="tree-wrapper">
                           <div class="cond-badge" style="float:left">
                             <div
-                              style="background:#ccc!important;font-weight: bold;"
-                              class="p-1 ms-1 text-center rounded-2 position-relative text-white">
+                              class="p-1 ms-1 text-center rounded-2 position-relative bg-secondary-subtle text-body fw-bold">
                               @if (h.key=='$or') {
                                 <div>OR</div>
                               }
@@ -371,8 +369,7 @@
                       } @else {
                         <div class="param-badge pb-1" style="margin-left:0px;">
                           <div
-                            style="border-color:#ccc!important;"
-                            class="p-2 py-1 ms-1 border border-2 rounded-1 position-relative bg-white">
+                            class="p-2 py-1 ms-1 border border-2 rounded-1 position-relative bg-body-tertiary text-body">
                             {{h.key}}
                           </div>
                         </div>
@@ -395,7 +392,7 @@
                           (click)="editPresetKey(c)">{{c.key}}</span>
                           <span class="input-group-text" style="cursor:pointer"
                           (click)="editPresetValue(c)">{{c.value}}</span>
-                          <button type="button" class="btn btn-round btn-sm" (click)="removePreset(c.key)">
+                          <button type="button" class="btn btn-outline-secondary btn-round btn-sm" (click)="removePreset(c.key)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>
@@ -584,7 +581,7 @@
                   </div>
                 }
               </div>
-              <div class="bg-danger text-white mb-3 p-3">
+              <div class="bg-danger text-white mb-3 p-3 rounded">
                 <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all
                 entry</button>
                 Clear entries for the dataset
@@ -599,7 +596,6 @@
 
 <ng-template #editDatasetTpl let-c="close" let-d="dismiss">
   @defer(prefetch on idle){
-    <!-- {{editDatasetData}} -->
     <app-edit-dataset [dismiss]="d" [close]="c" [user]="user" [(dataset)]="editDatasetData" 
       [appList]="otherAppList" [app]="app" [accessList]="accessList"></app-edit-dataset>
   }@loading {
@@ -631,7 +627,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" (click)="c(removeDatasetData)">
       Remove Data List
     </button>
@@ -643,7 +639,7 @@
     <div class="modal-header">
       <h4 class="modal-title">Edit Item</h4>
     </div>
-    <div class="single-pane">
+    <div class="single-pane p-3">
       <div class="form-group mb-3">
         <label class="form-label">Label *</label>
         <input type="text" class="form-control" [(ngModel)]="editItemData.label" name="label"
@@ -673,7 +669,7 @@
       }
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editItemForm.invalid"
         (click)="c(editItemData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -693,7 +689,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Overview</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <div class="form-group mb-3">
                 <label class="form-label">Label *</label>
                 <input type="text" class="form-control"
@@ -701,28 +697,6 @@
               </div>
               <div class="row">
                 <div class="col-sm-6">
-                  <!-- <div class="form-group mb-3">
-                    <label class="form-label">Button Type *</label>
-                    <div>
-                      <div class="btn-group">
-                        <input class="btn-check" type="radio" value="inline" id="type-inline"
-                          name="type-inline"
-                          [(ngModel)]="editActionData.type" required>
-                        <label for="type-inline" class="btn btn-outline-secondary">
-                        Inline</label>
-                        <input class="btn-check" type="radio" value="dropdown"
-                          id="type-dropdown" name="type-dropdown"
-                          [(ngModel)]="editActionData.type" required>
-                        <label for="type-dropdown" class="btn btn-outline-secondary">
-                        Dropdown</label>
-                        <input class="btn-check" type="radio" value="bulk"
-                          id="type-bulk" name="type-bulk"
-                          [(ngModel)]="editActionData.type" required>
-                        <label for="type-bulk" class="btn btn-outline-secondary">
-                        Bulk</label>
-                      </div>
-                    </div>
-                  </div> -->
                   <div class="form-group mb-3">
                     <label class="form-label">Button Type *</label>
                     
@@ -953,7 +927,7 @@
             [fixedWidth]="true"></fa-icon>
           } *</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <app-icon-picker [(model)]="editActionData.icon"
               [showNone]="true"></app-icon-picker>
             </div>
@@ -963,7 +937,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editActionForm.invalid"
         (click)="c(editActionData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>

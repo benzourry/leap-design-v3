@@ -3,7 +3,7 @@
     @if (bucket()) {
       <div class="d-flex flex-row">
         <div style="flex-grow: 1;">
-          <input type="search" class="form-control form-control-sm border border-2" autocapitalize="none"
+          <input type="search" class="form-control form-control-sm border border-2 bg-body-tertiary text-body" autocapitalize="none"
             placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
         </div>
         <div style="flex-shrink: 0;">
@@ -62,19 +62,19 @@
         </div>
       }@else{
         <div class="mt-1">
-          <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+          <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}" (click)="bySStatus(undefined)">
             {{lang()=='ms'?'Semua':'All'}}
           </button>
-          <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+          <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='OK'}" (click)="bySStatus('OK')">
             {{lang()=='ms'?'Fail Selamat':'Safe file'}}
           </button>
-          <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+          <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='FOUND'}" (click)="bySStatus('FOUND')">
             {{lang()=='ms'?'Ancaman Dikesan':'Threat Found'}}
           </button>
-          <button class="btn border btn-light btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
+          <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': sStatus=='VAULT'}" (click)="bySStatus('VAULT')">
             {{lang()=='ms'?'Kuarantin':'Quarantined'}}
           </button>
@@ -106,7 +106,7 @@
                         <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="58"
                           onerror="this.src='assets/img/placeholder-128.png'">
                         } @else {
-                        <span class="text-muted text-center">
+                        <span class="text-body-secondary text-center">
                           {{lang()=='ms'?'Tiada Paparan Tersedia':'No Preview Available'}}</span>
                         }
                       </td>
@@ -135,7 +135,7 @@
                             {{bucketFile.smessage}}
                             @if (bucketFile.sstatus=='FOUND'){
                             <div class="mt-2">
-                              <button class="btn btn-light btn-sm" (click)="quarantine(bucketFile.id)">Quarantine</button>
+                              <button class="btn btn-outline-light btn-sm" (click)="quarantine(bucketFile.id)">Quarantine</button>
                             </div>
                             }
                             <div></div>
@@ -195,7 +195,7 @@
       </div>
       }
     }@else{
-    <div style="color:#aaa;">
+    <div class="text-body-secondary">
       <h3>{{lang()=='ms'?'Sili pilih Bucket dari senarai':"Please select Bucket from the list on the left to view it's data"}}.</h3>
     </div>
     }
@@ -253,7 +253,7 @@
 
         @if (scanProgress[bucket().id]) {
         <div style="position: relative;" class="mx-n3 mt-3 ">
-          <div class="px-2 py-1 bg-white limit-height code-container">
+          <div class="px-2 py-1 bg-body-tertiary text-body border rounded limit-height code-container">
             <div>
               <pre class="my-0">{{scanProgress[bucket().id].print}}</pre>
             </div>
@@ -269,7 +269,7 @@
         }
       </ul>
       }@else{
-      <h4 class="text-muted mt-3">{{lang()=='ms'?'Tiada log tersedia':'No log available'}}</h4>
+      <h4 class="text-body-secondary mt-3">{{lang()=='ms'?'Tiada log tersedia':'No log available'}}</h4>
       }
     </div>
     <div class="modal-footer justify-content-between">

@@ -25,6 +25,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 // import { ToastsContainer } from './_shared/component/toasts-container.component';
 import { RouterOutlet } from '@angular/router';
 import { ToastsContainer } from './run/_component/toasts-container.component';
+import { ThemeService } from './_shared/service/theme.service';
 // import { Meta } from '@angular/platform-browser';
 
 @Component({
@@ -38,6 +39,7 @@ export class AppComponent {
   private swUpdate = inject(SwUpdate)
   private utilityService = inject(UtilityService)
   private logService = inject(LogService)
+  private themeService = inject(ThemeService);
 
   title = 'app';
 

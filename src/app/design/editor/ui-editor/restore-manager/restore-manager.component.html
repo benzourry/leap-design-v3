@@ -6,12 +6,12 @@
 <div class="limit-width fix-gutter">
   <div class="single-pane pt-0">
     @for (rp of restorePointList; track rp.id) {
-      <div class="p-3 bg-white mb-3">
+      <div class="p-3 bg-body-tertiary border rounded mb-3">
         <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeRestorePoint(removeRestorePointTpl,rp)"><fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon></button>
-        <button type="button" class="btn btn-round btn-sm btn-light float-end me-2" (click)="goRestorePoint(goRestorePointTpl,rp)">Restore</button>
-        {{rp.name}}
-        <div class="small">Backup from {{rp.timestamp|date:'medium'}} by {{rp.email}} </div>
-        <div class="small">Backup includes 
+        <button type="button" class="btn btn-round btn-sm btn-outline-secondary float-end me-2" (click)="goRestorePoint(goRestorePointTpl,rp)">Restore</button>
+        <div class="fw-bold">{{rp.name}}</div>
+        <div class="small text-body-secondary">Backup from {{rp.timestamp|date:'medium'}} by {{rp.email}} </div>
+        <div class="small text-body-secondary">Backup includes 
           @if (rp.includeApp) {
             <span>App </span>
             } @if (rp.includeUsers) {
@@ -24,7 +24,7 @@
       </div>
     }
     @if (restorePointList?.length==0) {
-      <div class="detail">
+      <div class="detail text-body-secondary">
         <p>No Restore Point is currently available. To create a new Restore Point, please click button below.</p>
       </div>
     }
@@ -41,7 +41,7 @@
     <div class="modal-header">
       <h4 class="modal-title">Create Restore Point</h4>
     </div>
-    <div class="single-pane">
+    <div class="single-pane p-3">
       <div class="form-group mb-3">
         <label class="form-label">Name</label>
         <input type="text" class="form-control" [(ngModel)]="editRestorePointData.name"
@@ -52,19 +52,9 @@
           [ngModel]="editRestorePointData && editRestorePointData.includeApp" (ngModelChange)="editRestorePointData && (editRestorePointData.includeApp = $event)" name="includeApp">
         <label class="form-check-label" for="includeApp">Backup App</label>
       </div>
-      <!-- <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="includeUsers"
-          [ngModel]="editRestorePointData && editRestorePointData.includeUsers" (ngModelChange)="editRestorePointData && (editRestorePointData.includeUsers = $event)" name="includeUsers">
-        <label class="form-check-label" for="includeUsers">Backup Users</label>
-      </div>
-      <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="includeEntry"
-          [ngModel]="editRestorePointData && editRestorePointData.includeEntry" (ngModelChange)="editRestorePointData && (editRestorePointData.includeEntry = $event)" name="includeEntry">
-        <label class="form-check-label" for="includeEntry">Backup Entry</label>
-      </div> -->
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editRestorePointForm.invalid || loading"
         (click)="c(editRestorePointData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -105,7 +95,7 @@
       <p>Please note that this action is <strong>IRREVERSIBLE</strong>. Please create a restore point for the current data if you wish to revert to this current data later.</p>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-danger" [disabled]="goRestorePointForm.invalid"
         (click)="c(goRestorePointData)">
         <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
@@ -140,7 +130,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-danger" [disabled]="removeRestorePointForm.invalid"
         (click)="c(removeRestorePointData)">
         <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>

@@ -1,13 +1,12 @@
 <style>
   input[type=search].start {
-    /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
-    background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background: var(--bs-tertiary-bg, #ccc) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23888" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
     background-size: 20px 16px;
-    border: none;
+    border: 1px solid var(--bs-border-color, #ccc);
     padding: 6px 10px 6px 32px;
     vertical-align: middle;
     border-radius: 10em;
-    color: black;
+    color: var(--bs-body-color);
     max-width: 100%;
   }
 
@@ -20,7 +19,7 @@
   }
 </style>
 <div class="wrapper" split-pane>
-  <div class="sidebar bg-white" sidebar #sidebar>
+  <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
       <h5 class="mb-3">Cogna Manager</h5>
       <input type="search" class="start" placeholder="Filter list" autocapitalize="none"
@@ -45,7 +44,7 @@
             {{a.name}} <sup>{{a?.id}}</sup>
           </div>
           @if (a.description) {
-          <div class="list-group-item-text">{{a.description}}</div>
+          <div class="list-group-item-text text-body-secondary">{{a.description}}</div>
           }
         </a>
         }
@@ -87,11 +86,11 @@
           <div class="me-auto d-flex flex-row w-100 py-2">
             <h5 class="m-0 text-truncate">{{cogna.name}}</h5>
             @if (cogna.description) {
-            <div class="ms-2 text-truncate align-bottom text-muted">
+            <div class="ms-2 text-truncate align-bottom text-body-secondary">
               {{cogna.description}}</div>
             }
           </div>
-          <div class="text-muted mb-2">
+          <div class="text-body-secondary mb-2">
             <small>Cogna ID : {{cogna.id}}</small>
           </div>
 
@@ -115,10 +114,10 @@
                 </div>
                 <div class="dropdown-divider"></div>
                 <div class="px-2">
-                  <label class="small">Cogna Endpoint</label>
+                  <label class="small text-body-secondary">Cogna Endpoint</label>
                   <input name="endpointUrl"
                     onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" type="text"
-                    class="form-control border-0 bg-light small"
+                    class="form-control border-0 bg-body-tertiary text-body small"
                     value="{{cogna.code? base+'/~cogna/'+cogna.code+'/'+cognaEp[cogna.type]:baseApi+'/cogna/'+cogna.id+'/'+cognaEp[cogna.type]}}"
                     readonly>
                 </div>
@@ -145,7 +144,7 @@
               <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
             </button>
             } @else {
-            <div class="bg-warning p-1 small">
+            <div class="bg-warning text-dark p-1 small rounded">
               Interactive access and modification only available for <i>{{cogna.email}}</i>
             </div>
             }
@@ -167,7 +166,7 @@
             @if(['txtgen'].includes(cogna.type)){
             <div class="card overflow-hidden border border-2 mb-2">
               <div class="card-header p-2">
-                <div class="text-muted text-strong col">Embedding</div>
+                <div class="text-body-secondary text-strong col">Embedding</div>
               </div>
               <div class="list-group list-group-flush">
                 <div class="list-group-item">
@@ -178,13 +177,13 @@
                   }@else if(cogna.embedModelType=='e5large'){
                   E5-Large-V2 (built-in)
                   }@else{
-                  <div class="small text-muted">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
+                  <div class="small text-body-secondary">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
                   <div>{{cogna.embedModelName}}</div>
                   }
                 </div>
               </div>
 
-              <div class="card-body bg-light small p-2">
+              <div class="card-body bg-body-tertiary small p-2">
                 Chunk: {{cogna.chunkLength}}, Overlap: {{cogna.chunkOverlap}}
               </div>
             </div>
@@ -193,37 +192,25 @@
             cogna.data?.txtclsLlm)){
             <div class="card overflow-hidden border border-2 mb-2">
               <div class="card-header p-2">
-                <div class="text-muted text-strong col">Inference</div>
+                <div class="text-body-secondary text-strong col">Inference</div>
               </div>
               <div class="list-group list-group-flush">
                 <div class="list-group-item">
-                  <div class="small text-muted">
+                  <div class="small text-body-secondary">
                     {{embedModelTypeMap[cogna.inferModelType]?.name}}
                   </div>
                   <div>{{cogna.inferModelName}}</div>
                 </div>
                 @if(['imggen'].includes(cogna.type)){
-                <!-- <div class="list-group-item">
-                        <div class="small text-muted">
-                          Quality
-                        </div>
-                        <div>{{cogna.data?.imgQuality}}</div>
-                      </div> -->
                 <div class="list-group-item">
-                  <div class="small text-muted">
+                  <div class="small text-body-secondary">
                     Size
                   </div>
                   <div>{{cogna.data?.imgSize}}</div>
                 </div>
-                <!-- <div class="list-group-item">
-                        <div class="small text-muted">
-                          Style
-                        </div>
-                        <div>{{cogna.data?.imgStyle}}</div>
-                      </div> -->
                 @if (cogna.data?.genBucket){
                 <div class="list-group-item">
-                  <div class="small text-muted">
+                  <div class="small text-body-secondary">
                     Generated image saved to
                   </div>
                   <div>Bucket: <strong>{{cogna.data?.genBucketId}} </strong> <a
@@ -234,13 +221,13 @@
                 }
                 @if(['imgcls'].includes(cogna.type)){
                 <div class="list-group-item">
-                  <div class="small text-muted">
+                  <div class="small text-body-secondary">
                     Min Score
                   </div>
                   <div>{{cogna.data?.imgclsMinScore}}</div>
                 </div>
                 <div class="list-group-item">
-                  <div class="small text-muted">
+                  <div class="small text-body-secondary">
                     Limit Result
                   </div>
                   <div>{{cogna.data?.imgclsLimit}}</div>
@@ -248,7 +235,7 @@
                 }
               </div>
               @if(['txtgen'].includes(cogna.type)){
-              <div class="card-body bg-light small p-2">
+              <div class="card-body bg-body-tertiary small p-2">
                 Temperature: {{cogna.temperature}}, Max Memory: {{cogna.maxChatMemory}}
               </div>
               }
@@ -258,25 +245,18 @@
             @if(['txtext'].includes(cogna.type)){
             <div class="card overflow-hidden border border-2 mb-2">
               <div class="card-header p-2">
-                <div class="text-muted text-strong col">Fields to extract</div>
+                <div class="text-body-secondary text-strong col">Fields to extract</div>
               </div>
-              <!-- <div class="list-group list-group-flush">
-                    @for(i of getAsList(cogna.data.extractField); track i){
-                      <div class="list-group-item">
-                        <div>{{i}}</div>
-                      </div>
-                    }
-                  </div> -->
               <div class="list-group list-group-flush">
                 @let jsonObj = extractJsonObj?.properties;
                 @for(i of jsonObj|keyvalue; track $index){
                 <div class="list-group-item p-2">
                   @if(['object','array'].includes(i.value?.type)){
-                  <button type="button" class="btn btn-xs btn-light float-end"
+                  <button type="button" class="btn btn-xs btn-outline-secondary float-end"
                     (click)="nestedProp[i.key]=!nestedProp[i.key]">◢</button>
                   }
                   <div>{{i.key}}</div>
-                  <div class="text-muted small">{{i.value?.type}}</div>
+                  <div class="text-body-secondary small">{{i.value?.type}}</div>
                   @if(['object','array'].includes(i.value?.type)){
                   @if (nestedProp[i.key]){
                   <div class="small list-group mt-2">
@@ -284,7 +264,7 @@
                     track $index){
                     <div class="list-group-item p-2">
                       <div>{{j.key}}</div>
-                      <div class="text-muted small">{{j.value?.type}}</div>
+                      <div class="text-body-secondary small">{{j.value?.type}}</div>
                     </div>
                     }
                   </div>
@@ -298,7 +278,7 @@
             @if(['imgcls'].includes(cogna.type) && imgclsCat.length>0){
             <div class="card overflow-hidden border border-2 mb-2">
               <div class="card-header p-2">
-                <div class="text-muted text-strong col">SynSet ({{imgclsLen}} classes)</div>
+                <div class="text-body-secondary text-strong col">SynSet ({{imgclsLen}} classes)</div>
               </div>
               <div class="list-group list-group-flush">
                 @for(i of imgclsCat; track $index){
@@ -307,7 +287,7 @@
                 </div>
                 }
                 @if (imgclsMore>0){
-                <div class="list-group-item p-1 bg-light small text-center fst-italic">
+                <div class="list-group-item p-1 bg-body-tertiary small text-center fst-italic">
                   ...and {{imgclsMore}} more
                 </div>
                 }
@@ -315,13 +295,11 @@
             </div>
             }
 
-
-
             @if (['txtcls'].includes(cogna.type) && cogna.data?.txtclsLlm){
 
             <div class="card overflow-hidden border border-2 mb-2">
               <div class="card-header p-2">
-                <div class="text-muted text-strong col">
+                <div class="text-body-secondary text-strong col">
                   @if (classifyWhat){
                   {{classifyWhat}}
                   }@else {
@@ -337,11 +315,11 @@
                   {{le.name}}
                 </div>
                 }@empty {
-                <div class="text-black-50 p-3 text-center fs-4"> No lookup entries</div>
+                <div class="text-body-secondary p-3 text-center fs-4"> No lookup entries</div>
                 }
               </div>
               }@else{
-              <div class="text-black-50 p-3 text-center fs-4"> No lookup selected</div>
+              <div class="text-body-secondary p-3 text-center fs-4"> No lookup selected</div>
               }
             </div>
             }
@@ -407,26 +385,22 @@
                   <div class=" ms-4">
                     @if (['bucket','dataset'].includes(b.type)){
                     {{b.name}}
-                    <div class="small text-muted">{{b.type}}{{b.srcId?'_'+b.srcId:''}}</div>
+                    <div class="small text-body-secondary">{{b.type}}{{b.srcId?'_'+b.srcId:''}}</div>
                     }
                     @if (b.type=='url'){
                     {{b.srcUrl}}
-                    <div class="small text-muted">Webpage</div>
+                    <div class="small text-body-secondary">Webpage</div>
                     }
                     @if (b.lastIngest){
-                    <div class="text-muted small">{{b.lastIngest|date:'medium'}}</div>
+                    <div class="text-body-secondary small">{{b.lastIngest|date:'medium'}}</div>
                     }@else {
                     <div class="text-danger small">Not yet ingested</div>
                     }
 
                   </div>
                 </div>
-                @if(ingestRes()[b.id]){
-                <div class="text-white p-1 small" [class.bg-success]="ingestRes()[b.id]?.success"
-                  [class.bg-danger]="!ingestRes()[b.id]?.success">Doc: {{ingestRes()[b.id]?.docCount}}</div>
-                }
                 }@empty {
-                <div class="text-black-50 p-3 text-center fs-4"> No sources specified</div>
+                <div class="text-body-secondary p-3 text-center fs-4"> No sources specified</div>
                 }
                 <div class="list-group-item p-2">
                   <a class="pointer" (click)="editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
@@ -440,15 +414,6 @@
                 </div>
                 }
               </div>
-              <!-- <div class="card-body">
-                    <a class="pointer" (click)="editCognaSrc(editCognaSrcTpl,{},false)">
-                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                      Add Source
-                    </a>
-                  </div> -->
-
-
-
             </div>
 
             <div class="card border border-2 mb-2">
@@ -472,10 +437,10 @@
                     </button>
                   </div>
                   <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-muted]="!b.enabled">{{b.name}}</div>
+                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
                 </div>
                 }@empty {
-                <div class="text-black-50 p-3 text-center fs-4"> No tool specified</div>
+                <div class="text-body-secondary p-3 text-center fs-4"> No tool specified</div>
                 }
                 <div class="list-group-item p-2">
                   <a class="pointer"
@@ -508,10 +473,10 @@
                     </button>
                   </div>
                   <fa-icon class="float-start" [icon]="['fas','file']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-muted]="!b.enabled">{{b.name}}</div>
+                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
                 </div>
                 }@empty {
-                <div class="text-black-50 p-3 text-center fs-4"> No MCP server specified</div>
+                <div class="text-body-secondary p-3 text-center fs-4"> No MCP server specified</div>
                 }
                 <div class="list-group-item p-2">
                   <a class="pointer"
@@ -539,14 +504,13 @@
               <div class="card-body">
                 <img [src]="dbMap[cogna.vectorStoreType]?.logo" height="18" />
                 {{dbMap[cogna.vectorStoreType]?.name}}
-                <!-- {{dbMap}} -->
                 @if (cogna.vectorStoreType=='inmemory'){
                 <div class="small text-danger mt-2">
                   Embedding will be stored in memory and will be lost on restart
                 </div>
                 }
               </div>
-              <div class="card-body bg-light small p-2">
+              <div class="card-body bg-body-tertiary small p-2">
                 Max Result: {{cogna.embedMaxResult}}, Min Score: {{cogna.embedMinScore??'None'}}
               </div>
             </div>
@@ -574,10 +538,10 @@
                     </button>
                   </div>
                   <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-muted]="!b.enabled">{{b.name}}</div>
+                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
                 </div>
                 }@empty {
-                <div class="text-black-50 p-3 text-center fs-4"> No sub specified</div>
+                <div class="text-body-secondary p-3 text-center fs-4"> No sub specified</div>
                 }
                 <div class="list-group-item p-2">
                   <a class="pointer" (click)="editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
@@ -591,8 +555,8 @@
           </div>
           <div class="col-sm-8 col-lg-9">
             @if(['txtgen','master'].includes(cogna.type)){
-            <div class="rounded rounded-2 bg-light border border-1 overflow-hidden shadow-sm">
-              <div class="bg-secondary bg-opacity-25 d-flex flex-row p-1">
+            <div class="rounded rounded-2 bg-body-tertiary border border-1 overflow-hidden shadow-sm">
+              <div class="bg-body-secondary d-flex flex-row p-1 border-bottom">
                 <div class="p-3 py-1">
                   Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})
                 </div>
@@ -614,11 +578,11 @@
                   </div>
                 </div>
               </div>
-              <div id="chat-response-list" class="p-3 bg-white"
+              <div id="chat-response-list" class="p-3 bg-body"
                 style="min-height:300px; max-height:600px;overflow:auto">
                 @for (p of chatResponseList; track $index) {
                 @if(p.text){
-                <div class="p-2 border-1 mb-3 rounded-2 shadow-sm cogna-resp {{p.type}}"
+                <div class="p-2 border mb-3 rounded-2 shadow-sm cogna-resp {{p.type}}"
                   [innerHtml]="targetBlank(p.text)">
                 </div>
                 }
@@ -643,12 +607,12 @@
                 }
                 @if (streamTyping()){
 
-                <div class="p-2 border-1 mb-3 rounded-2 shadow-sm cogna-resp response" [innerHtml]="streamResult()">
+                <div class="p-2 border mb-3 rounded-2 shadow-sm cogna-resp response" [innerHtml]="streamResult()">
                 </div>
                 }
               </div>
               <div>
-                <div class="bg-light p-2">Custom Parameters</div>
+                <div class="bg-body-secondary border-top border-bottom p-2">Custom Parameters</div>
                 <div class="mx-n3">
                   <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
                     subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
@@ -657,7 +621,7 @@
                 </div>
               </div>
 
-              <div class="bg-secondary bg-opacity-25">
+              <div class="bg-body-secondary border-top">
 
 
                 <div class="d-flex flex-row p-2">
@@ -665,23 +629,15 @@
                   <label class="rounded-pill me-2 cursor-pointer d-flex align-items-center justify-content-center"
                     style="width:48px; cursor: pointer;">
                     <input type="file" [hidden]="true" (change)="onUpload($event)" name="file" />
-                    <!-- @if(fileList.length>0){ -->
-                    <!-- @for(file of fileList; track $index){
-                              <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file" width="100%">
-                            }  -->
-
-
-                    <!-- }@else { -->
                     <fa-icon [icon]="['fas','upload']"></fa-icon>
-                    <!-- } -->
                   </label>
                   }
 
 
-                  <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill px-3 py-1"
+                  <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill px-3 py-1 bg-body-tertiary text-body"
                     autocomplete="off" (keyup.enter)="chatPrompt(cogna, chatPromptText())" autocapitalize="none"
                     [(ngModel)]="chatPromptText" maxlength="2000" placeholder="Ask me something...">
-                  <button type="button" class="btn bg-transparent border-0" style="height:38px; min-width:38px"
+                  <button type="button" class="btn bg-transparent border-0 text-body" style="height:38px; min-width:38px"
                     [disabled]="!(chatPromptText()?.trim() || fileList.length>0)"
                     (click)="chatPrompt(cogna, chatPromptText())">
                     <fa-icon [icon]="['fas','paper-plane']"></fa-icon>
@@ -691,19 +647,19 @@
                 <div class="small list-group list-group-flush mb-3">
                   @for(f of fileList; track $index){
                   @if (f.isImage){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end"
+                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
                       (click)="removeFile($index)">&times;</button>
                     <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f.path" style="max-width:200px">
                   </div>
                   }@else {
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end"
+                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
                       (click)="removeFile($index)">&times;</button> {{f.path}} </div>
                   }
                   }
                 </div>
                 }
 
-                <div class="text-end text-muted px-3 py-1 small">
+                <div class="text-end text-body-secondary px-3 py-1 small">
                   {{chatPromptText()?.length||0}}/2000
                 </div>
 
@@ -720,7 +676,7 @@
                   <label class="form-label">Extract from documents</label>
                   <label style="width:100%">
                     <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
-                    <div class="form-control" style="background: white">
+                    <div class="form-control">
                       <fa-icon [icon]="['fas','upload']"></fa-icon>
                       Browse documents
                     </div>
@@ -729,12 +685,12 @@
                 @if(fileList.length>0){
                 <div class="small list-group list-group-flushed mb-3">
                   @for(f of fileList; track $index){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end"
+                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
                       (click)="removeFile($index)">&times;</button> {{f}} </div>
                   }
                 </div>
                 }
-                <div class="text-center my-2 mx-n3 bg-light p-2">or</div>
+                <div class="text-center my-2 mx-n3 bg-body-tertiary p-2">or</div>
                 <div class="form-group mb-3">
                   <label class="form-label">Extract from text</label>
                   <textarea class="form-control" [(ngModel)]="extractData.text" rows="4" name="extractText"
@@ -757,15 +713,14 @@
             <div class="card mt-2">
               <div class="card-header">Result</div>
               <div class="card-body">
-                <div class="px-2 py-1 bg-white small limit-height">
+                <div class="px-2 py-1 bg-body-tertiary small limit-height border rounded">
                   @if (!isEmptyObject(extractRes()[cogna.id])) {
                   <json-viewer [json]="extractRes()[cogna.id]"></json-viewer>
-                  <!-- <pre><code class="language-js">{{extractRes()[cogna.id] | json}}</code></pre> -->
                   }@else{
-                  <div class="text-muted">No response</div>
+                  <div class="text-body-secondary">No response</div>
                   }
                   @if(extractError()[cogna.id]){
-                  <div class="bg-error p-2">{{extractError()[cogna.id]}}</div>
+                  <div class="bg-danger text-white p-2 rounded mt-2">{{extractError()[cogna.id]}}</div>
                   }
                 </div>
               </div>
@@ -781,7 +736,7 @@
                   <label class="form-label">Classify image</label>
                   <label style="width:100%">
                     <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
-                    <div class="form-control" style="background: white">
+                    <div class="form-control">
                       <fa-icon [icon]="['fas','upload']"></fa-icon>
                       Browse documents
                     </div>
@@ -790,7 +745,7 @@
                 @if(fileList.length>0){
                 <div class="small list-group list-group-flushed mb-3">
                   @for(f of fileList; track $index){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-light float-end"
+                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
                       (click)="removeFile($index)">&times;</button>
                     <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f" style="max-width:70%">
                   </div>
@@ -813,9 +768,8 @@
             <div class="card mt-2">
               <div class="card-header">Result</div>
               <div class="card-body">
-                <div class="px-2 py-1 bg-white small">
+                <div class="px-2 py-1 bg-body-tertiary small rounded border">
                   @if (!isEmptyObject(imgclsRes[cogna.id])) {
-                  <!-- <pre><code class="language-js">{{imgclsRes | json}}</code></pre> -->
                   @for(img of imgclsRes[cogna.id]|keyvalue; track $index){
                   <div class="row g-1">
                     <div class="col-6">
@@ -840,10 +794,10 @@
 
 
                   }@else{
-                  <div class="text-muted">No response</div>
+                  <div class="text-body-secondary">No response</div>
                   }
                   @if(imgclsError[cogna.id]){
-                  <div class="bg-error p-2">{{imgclsError[cogna.id]}}</div>
+                  <div class="bg-danger text-white p-2 rounded mt-2">{{imgclsError[cogna.id]}}</div>
                   }
                 </div>
               </div>
@@ -911,7 +865,7 @@
             <div class="card mt-2">
               <div class="card-header">Result</div>
               <div class="card-body">
-                <div class="px-2 py-1 bg-white small limit-height">
+                <div class="px-2 py-1 bg-body-tertiary small limit-height rounded border">
                   @if (classifyIsOk){
                   @if (!isEmptyObject(classifyRes[cogna.id])) {
 
@@ -921,7 +875,7 @@
                   <div>Category: <strong>{{classifyRes[cogna.id]?.category[$index]}}</strong></div>
                   @if (classifyRes[cogna.id]?.data){
                   <div>Data:</div>
-                  <pre><code class="language-js">{{classifyRes[cogna.id]?.data[$index] | json}}</code></pre>
+                  <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data[$index] | json}}</code></pre>
                   }
                   @if (classifyRes[cogna.id]?.score){
                   <div>Score: {{classifyRes[cogna.id]?.score[$index]}}</div>
@@ -938,13 +892,13 @@
                   }
                   @if (classifyRes[cogna.id]?.data){
                   <div>Data:</div>
-                  <pre><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
+                  <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
                   }
 
                   }
 
                   }@else{
-                  <div class="text-muted">No response</div>
+                  <div class="text-body-secondary">No response</div>
                   }
                   }@else{
                   <div class="text-danger">{{classifyError[cogna.id]}}</div>
@@ -981,19 +935,17 @@
             <div class="card mt-2">
               <div class="card-header">Result</div>
               <div class="card-body">
-                <div class="px-2 py-1 bg-white small">
+                <div class="px-2 py-1 bg-body-tertiary small rounded border">
                   @if (!isEmptyObject(imgGenRes[cogna.id])) {
                   Generated Image URL:
                   <div class="mb-3"><a [href]="imgGenRes[cogna.id]?.url"
                       target="_blank">{{imgGenRes[cogna.id]?.url}}</a></div>
                   <img [src]="imgGenRes[cogna.id]?.url" width="100%">
-                  <!-- <div>Category: {{imgGenRes.category}}</div>
-                      <div>Score: {{imgGenRes.score}}</div> -->
                   }@else{
-                  <div class="text-muted">No response</div>
+                  <div class="text-body-secondary">No response</div>
                   }
                   @if(imgGenError[cogna.id]){
-                  <div class="bg-error p-2">{{imgGenError[cogna.id]}}</div>
+                  <div class="bg-danger text-white p-2 rounded mt-2">{{imgGenError[cogna.id]}}</div>
                   }
 
                 </div>
@@ -1004,7 +956,7 @@
         </div>
       </div>
       }@else{
-      <div style="color:#aaa;">
+      <div class="text-body-secondary">
         <h3>Please select Cogna from the list on the left to view it's data.</h3>
       </div>
       }
@@ -1030,7 +982,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeCognaData)">
         <i class="icon-minus-sign-alt"></i> Remove Cogna
       </button>
@@ -1062,7 +1014,7 @@
               <input type="text" class="form-control" [(ngModel)]="editCognaData.name" #name="ngModel"
                 (change)="editCognaData.id||editCognaData.code=toHyphen(editCognaData.name)" name="name" required>
               @if (name?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (name?.errors?.required) {
                 <span class="help-block">Name is required</span>
                 }
@@ -1076,8 +1028,7 @@
             <div class="form-group mb-3">
               <label class="form-label">Used to *</label>
               <div>
-                <div name="lang" class="text-dark">
-                  <!-- ggml-gpt4all-j-v1.3-groovy.bin -->
+                <div name="lang" class="text-body">
                   <input type="radio" class="btn-check" id="txtgen" name="txtgen" value="txtgen" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
                   <label for="txtgen" class="btn btn-outline-secondary border-2 me-1 mb-1">
@@ -1112,7 +1063,7 @@
                 </div>
               </div>
               @if (cognaType?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (cognaType?.errors?.required) {
                 <span class="help-block">Cogna type is required</span>
                 }
@@ -1177,7 +1128,7 @@
                 <span class="input-group-text">/{{cognaEp[editCognaData.type]}}</span>
               </div>
               @if (code.pending) {
-              <small>Checking availability...</small>
+              <small class="text-body-secondary">Checking availability...</small>
               }
               @if (code.invalid) {
               <small class="text-danger">
@@ -1199,7 +1150,7 @@
               <input type="text" class="form-control" [(ngModel)]="editCognaData.email" name="email" #email="ngModel"
                 required>
               @if (email?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (email?.errors?.required) {
                 <span class="help-block">Creator email is required</span>
                 }
@@ -1210,7 +1161,6 @@
         </div>
       </div>
     </div>
-    <!-- Embedding only required for textgeneration and classification -->
     @if(['txtgen'].includes(editCognaData.type) || (['txtcls'].includes(editCognaData.type) && !editCognaData.data?.txtclsLlm)){
     <div ngbAccordionItem>
       <h2 ngbAccordionHeader>
@@ -1290,13 +1240,6 @@
                     #embedBaseUrl="ngModel" name="embedBaseUrl" required>
                 </div>
               </div>
-              <!-- <div class="col-6">
-                      <div class="form-group mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" class="form-control form-control-sm" [(ngModel)]="editCognaData.data && editCognaData.data.inferLocation" #inferModelLocation="ngModel" name="inferModelLocation"
-                          required>
-                      </div>
-                    </div> -->
             </div>
             }@else {
             <div class="form-group mb-3">
@@ -1390,8 +1333,6 @@
                 [(ngModel)]="editCognaData.data.overrideInfer" name="overrideInfer">
               <label class="form-check-label" for="overrideInfer">Override Model Configuration</label>
             </div>
-            <!-- @if(['txtgen','txtext'].includes(editCognaData.type)){
-                 } -->
 
             @if(['imgcls'].includes(editCognaData.type)){
             <div class="form-group mt-3">
@@ -1471,8 +1412,8 @@
               </div>
               }
             </div>
-          }
-          @if (['txtgen'].includes(editCognaData.type)){
+            }
+            @if (['txtgen'].includes(editCognaData.type)){
             <h5>Post-processing</h5>
             <div class="form-check form-switch">
               <input type="checkbox" class="form-check-input" id="imggenOn" [(ngModel)]="editCognaData.data.imggenOn"
@@ -1495,11 +1436,6 @@
                 [(ngModel)]="editCognaData.data.jsonOutput" name="jsonOutput">
               <label class="form-check-label" for="jsonOutput">Output response as JSON</label>
             </div>
-            <!-- <div class="form-check form-switch mb-3">
-                    <input type="checkbox" class="form-check-input" id="txtextOn"
-                      [(ngModel)]="editCognaData.data.txtextOn" name="txtextOn">
-                    <label class="form-check-label" for="txtextOn">Response in json format</label>
-                  </div> -->
             }
 
             @if(['imggen'].includes(editCognaData.type)){
@@ -1515,42 +1451,6 @@
                   </select>
                 </div>
               </div>
-              <!-- <div class="col-6">
-                      <div class="form-group mb-3">
-                        <label class="form-label">Quality *</label>
-                        <div>
-                          <div class="">
-                            <input class="btn-check" type="radio" value="standard" id="imggen-quality-standard"
-                              name="imggen-quality-standard" [(ngModel)]="editCognaData.data.imgQuality"
-                              required>
-                            <label for="imggen-quality-standard" class="btn btn-outline-secondary me-1 mb-1">
-                            Standard</label>
-                            <input class="btn-check" type="radio" value="hd" id="imggen-quality-hd"
-                              name="imggen-quality-hd" [(ngModel)]="editCognaData.data.imgQuality" required>
-                            <label for="imggen-quality-hd" [disabled]="editCognaData.inferModelName=='dall-e-3'" class="btn btn-outline-secondary me-1 mb-1">
-                            HD</label>                            
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-6">
-                      <div class="form-group mb-3">
-                        <label class="form-label">Style *</label>
-                        <div>
-                          <div class="">
-                            <input class="btn-check" type="radio" value="vivid" id="imggen-style-vivid"
-                              name="imggen-style-vivid" [(ngModel)]="editCognaData.data.imgStyle"
-                              required>
-                            <label for="imggen-style-vivid" class="btn btn-outline-secondary me-1 mb-1">
-                            Vivid</label>
-                            <input class="btn-check" type="radio" value="natural" id="imggen-style-natural"
-                              name="imggen-style-natural" [(ngModel)]="editCognaData.data.imgStyle" required>
-                            <label for="imggen-style-natural" class="btn btn-outline-secondary me-1 mb-1">
-                            Natural</label>                            
-                          </div>
-                        </div>
-                      </div>
-                    </div> -->
             </div>
             }
             }
@@ -1583,13 +1483,6 @@
                     #inferBaseUrl="ngModel" name="inferBaseUrl" required>
                 </div>
               </div>
-              <!-- <div class="col-6">
-                      <div class="form-group mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" class="form-control form-control-sm" [(ngModel)]="editCognaData.data && editCognaData.data.inferLocation" #inferModelLocation="ngModel" name="inferModelLocation"
-                          required>
-                      </div>
-                    </div> -->
             </div>
             } @else {
             <div class="form-group mb-3">
@@ -1640,12 +1533,6 @@
                 (ngModelChange)="editCognaData.data && (editCognaData.data.extractPrompt = $event)" name="extractPrompt"
                 rows="4"></textarea>
             </div>
-            <!-- <div class="form-group mb-3">
-                  <label class="form-label">Fields to extract (comma-separated) *</label>
-                  <textarea class="form-control" [(ngModel)]="editCognaData.data && editCognaData.data.extractField"
-                  rows="5"
-                  #extractField="ngModel" name="extractField" required></textarea>
-                </div> -->
             }
             @if (editCognaData.type=='txtgen'){
             <div class="row">
@@ -1665,13 +1552,6 @@
                     #maxChatMemory="ngModel" name="chatMemory" required>
                 </div>
               </div>
-              <!-- <div class="col-sm-3">
-                    <div class="form-group mb-3">
-                      <label class="form-label">Max Token * - {{editCognaData.maxChatMemory}}</label>
-                      <input type="number" class="form-control" [(ngModel)]="editCognaData && editCognaData.maxToken" min="0" max="20" #maxToken="ngModel" name="maxToken"
-                        required>
-                    </div>
-                  </div> -->
             </div>
 
             <div class="form-group mb-3">
@@ -1708,7 +1588,7 @@
             <div class="form-group mb-3">
               <label class="form-label">Retriever Augmentation *</label>
               <div>
-                <div name="lang" class="text-dark">
+                <div name="lang" class="text-body">
                   <input type="radio" class="btn-check" id="naive" name="naive" [value]="undefined" #augmentor="ngModel"
                     [ngModel]="editCognaData && editCognaData.augmentor"
                     (ngModelChange)="editCognaData && (editCognaData.augmentor = $event)">
@@ -1793,7 +1673,7 @@
             <div class="form-group mb-3">
               <label class="form-label">Select Vector Store/Database Type *</label>
               <div>
-                <div name="lang" class="text-dark">
+                <div name="lang" class="text-body">
                   <input type="radio" class="btn-check" id="db_milvus" name="milvus" value="milvus"
                     #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType"
                     (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
@@ -1821,12 +1701,6 @@
                     <br />
                     InMemory
                   </label>
-                  <!-- <input type="radio" class="btn-check" id="db_es" name="es" value="es"
-                      #vectorStore="ngModel" [(ngModel)]="editCognaData && editCognaData.vectorStoreType" [required]="true"
-                      disabled>
-                      <label for="db_es" class="btn btn-outline-secondary border-2 me-2">
-                        ElasticSearch
-                    </label> -->
                 </div>
               </div>
               @if (editCognaData.vectorStoreType=='inmemory'){
@@ -1835,7 +1709,7 @@
               </div>
               }
               @if (vectorStore?.invalid) {
-              <small class="form-text has-warning">
+              <small class="form-text text-warning">
                 @if (vectorStore?.errors?.required) {
                 <span class="help-block">Vector Store/DB is required</span>
                 }
@@ -1906,7 +1780,7 @@
   </div>
 
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="cognaEditForm.invalid"
       (click)="c(editCognaData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -1923,7 +1797,7 @@
     <div class="form-group mb-3">
       <label class="form-label">Source Type *</label>
       <div>
-        <div name="src" class="text-dark">
+        <div name="src" class="text-body">
           <input type="radio" class="btn-check" id="type-dataset" name="type" #srcType="ngModel"
             [(ngModel)]="editSrcData.type" value="dataset" [required]="true">
           <label for="type-dataset" class="btn btn-outline-secondary border-2 me-2">
@@ -1944,7 +1818,7 @@
         </div>
       </div>
       @if (srcType?.invalid) {
-      <small class="form-text has-warning">
+      <small class="form-text text-warning">
         @if (srcType?.errors?.required) {
         <span class="help-block">Source type is required</span>
         }
@@ -1967,7 +1841,6 @@
     @if (editSrcData.type=='dataset') {
     <p>Note: Cogna will run the dataset and ingest the resulted data after transformed with the provided sentence
       template</p>
-    <!-- @if(!editSrcData.id){ // WHY THESE???? -->
     <div class="form-group mb-3">
       <label class="form-label">Select Dataset *</label>
       <select class="form-select" name="srcId" (change)="loadDataset(editSrcData.srcId)"
@@ -1981,9 +1854,7 @@
         }
       </select>
     </div>
-    <!-- } -->
 
-    <!-- @if (['static','modelPicker','select'].indexOf(editItemData.type)>-1) { -->
     <div class="form-group mb-3">
       <label class="form-label d-block">Sentence Template</label>
       @for (k of dataset?.items; track $index) {
@@ -2100,14 +1971,13 @@
           <label class="form-label">Day of week *</label>
           <select class="form-select" name="dayOfWeak" [ngModel]="editSrcData && editSrcData.dayOfWeek"
             (ngModelChange)="editSrcData && (editSrcData.dayOfWeek = $event)" #dayOfWeek="ngModel" required>
-            <!-- <option value="" disabled>Select day...</option> -->
             @for (item of dayOfWeekList; track $index) {
             <option [value]="item.value">{{item.name}}
             </option>
             }
           </select>
           @if (dayOfWeek?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (dayOfWeek?.errors?.required) {
             <span class="help-block">Day of week is required</span>
             }
@@ -2128,7 +1998,7 @@
             }
           </select>
           @if (dayOfMonth?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (dayOfMonth?.errors?.required) {
             <span class="help-block">Day of month is
               required</span>
@@ -2144,14 +2014,13 @@
           <label class="form-label">Month of year *</label>
           <select class="form-select" name="monthOfYear" [ngModel]="editSrcData && editSrcData.monthOfYear"
             (ngModelChange)="editSrcData && (editSrcData.monthOfYear = $event)" #monthOfYear="ngModel" required>
-            <!-- <option value="" disabled>Select date...</option> -->
             @for (item of monthOfYearList; track $index) {
             <option [value]="item.value">{{item.name}}
             </option>
             }
           </select>
           @if (monthOfYear?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (monthOfYear?.errors?.required) {
             <span class="help-block">Month of year is
               required</span>
@@ -2168,7 +2037,7 @@
             (ngModelChange)="editSrcData && (editSrcData.clock = $event)" #clock="ngModel" placeholder="ie: 1400"
             maxlength="4" name="clock" (keyup)="keepMinute00(editSrcData)" required>
           @if (clock?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (clock?.errors?.required) {
             <span class="help-block">Clock is required in HHmm (ie: 0800
               or 1400)</span>
@@ -2181,7 +2050,7 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="cognaSrcEditForm.invalid"
       (click)="c(editSrcData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -2201,7 +2070,7 @@
       <input type="text" class="form-control" [(ngModel)]="editToolData.name" #name="ngModel"
         (ngModelChange)="editToolData.name=toSnakeCase(editToolData.name)" name="name" required>
       @if (name?.invalid) {
-      <small class="form-text has-warning">
+      <small class="form-text text-warning">
         @if (name?.errors?.required) {
         <span class="help-block">Name is required</span>
         }
@@ -2229,8 +2098,6 @@
       </select>
     </div>
 
-    <!-- @if (editSrcData.type=='bucket') {
-      <p>Note: Cogna will crawl and ingest any file with the supported format (pdf, docx, pptx, xlsx and txt)</p> -->
     <div class="form-group mb-3">
       <label class="form-label">Select Lambda *</label>
       <select class="form-select mb-3" name="lambdaId" [(ngModel)]="editToolData.lambdaId" required>
@@ -2242,23 +2109,14 @@
         }
       </select>
     </div>
-    <!-- <div class="form-group mb-3">
-        <label class="form-label">Select Lambda *</label>
-        <ng-select [items]="lambdaList" bindLabel="name" bindValue="id" placeholder="No lambda"
-          [ngModel]="editToolData.lambdaId" (ngModelChange)="editToolData && (editToolData.lambdaId = $event)" name="lambdaId">
-        </ng-select>
-      </div> -->
 
     <label class="form-label">Tool Parameters</label>
 
     <div class="list-group">
-      <!-- <div class="list-group-item small">
-          Tool Parameters
-        </div> -->
       @if(editToolData.params && editToolData.params.length>0){
       @for(p of editToolData.params; track $index){
       @if (paramEdit[$index]){
-      <div class="list-group-item p-3 bg-light">
+      <div class="list-group-item p-3 bg-body-tertiary">
         <div class="mb-2">
           <label class="form-label small">Parameter Key</label>
           <input type="text" class="form-control form-control-sm" [(ngModel)]="p.key"
@@ -2281,26 +2139,26 @@
       </div>
       }@else {
       <div class="list-group-item">
-        <button class="btn btn-sm float-end">
+        <button class="btn btn-sm float-end btn-outline-secondary ms-1">
           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true" (click)="removeToolParam($index)">
           </fa-icon>
         </button>
-        <button class="btn btn-sm float-end" (click)="paramEdit[$index]=true">
+        <button class="btn btn-sm float-end btn-outline-secondary" (click)="paramEdit[$index]=true">
           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
           </fa-icon>
         </button>
         <div class="fw-bold">{{p.key}} @if (p.required){<sup>*</sup>}</div>
-        <div class="small">{{p.description}}</div>
+        <div class="small text-body-secondary">{{p.description}}</div>
       </div>
       }
       }
       }@else {
       <div class="list-group-item">
-        <div class="fs-5 text-muted text-center p-3">No parameter specified</div>
+        <div class="fs-5 text-body-secondary text-center p-3">No parameter specified</div>
       </div>
       }
       @if (!isParamEdit()){
-      <div class="list-group-item p-3 bg-light">
+      <div class="list-group-item p-3 bg-body-tertiary">
         <div class="fw-bold mb-2">Add new parameter</div>
         <div class="mb-2">
           <label class="form-label small">Parameter Key</label>
@@ -2326,7 +2184,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="cognaToolEditForm.invalid"
       (click)="c(editToolData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -2346,7 +2204,7 @@
       <input type="text" class="form-control" [(ngModel)]="editMcpData.name" #name="ngModel"
         (ngModelChange)="editMcpData.name=toSnakeCase(editMcpData.name)" name="name" required>
       @if (name?.invalid) {
-      <small class="form-text has-warning">
+      <small class="form-text text-warning">
         @if (name?.errors?.required) {
         <span class="help-block">Name is required</span>
         }
@@ -2371,7 +2229,7 @@
 
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="cognaMcpEditForm.invalid"
       (click)="c(editMcpData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -2391,7 +2249,7 @@
       <input type="text" class="form-control" [(ngModel)]="editSubData.name" #name="ngModel"
         (ngModelChange)="editSubData.name=toSnakeCase(editSubData.name)" name="name" required>
       @if (name?.invalid) {
-      <small class="form-text has-warning">
+      <small class="form-text text-warning">
         @if (name?.errors?.required) {
         <span class="help-block">Name is required</span>
         }
@@ -2426,7 +2284,7 @@
     </div>
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
     <button type="button" class="btn btn-round btn-primary" [disabled]="cognaSubEditForm.invalid"
       (click)="c(editSubData)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -2440,7 +2298,7 @@
     <h4 class="modal-title">View Chat History</h4>
   </div>
 
-  <div class="bg-light p-2">
+  <div class="bg-body-tertiary p-2 border-bottom">
     <div class="input-group" ngbDropdown>
       <input type="search" autocapitalize="none" class="form-control" placeholder="Start typing to search..."
         [(ngModel)]="chatHistorySearchText" (keyup.enter)="loadChatHistory(cogna.id,chatHistoryPageNumber)">
@@ -2455,7 +2313,7 @@
       </button>
       <div ngbDropdownMenu aria-labelledby="dropdownFormChatHistory">
         <div class="px-2">
-          <label class="small">Page Size</label>
+          <label class="small text-body-secondary">Page Size</label>
           <div class="btn-group float-end">
             @for (i of [15,25,50,100]; track i) {
             <input class="btn-check" type="radio" [value]="i" id="tpagesize-{{i}}" name="tpagesize-{{i}}"
@@ -2514,7 +2372,7 @@
   </div>
   }
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
   </div>
 </ng-template>
 
@@ -2587,6 +2445,6 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
   </div>
 </ng-template>

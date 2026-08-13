@@ -9,7 +9,7 @@ import { NgClass } from '@angular/common';
   selector: 'app-scan',
   // changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './scan.component.html',
-  styleUrls: ['./scan.component.css'],
+  styleUrls: ['./scan.component.scss'],
   imports: [NgClass, FormsModule, FaIconComponent]
 })
 export class ScanComponent implements OnInit, OnDestroy {

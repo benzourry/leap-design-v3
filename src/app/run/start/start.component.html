@@ -117,20 +117,16 @@
           @if (navis().length > 0) {
             <div class="app-nav" [ngStyle]="{'background-color':app()?.theme}" [style]="app()?.x?.menuCss" [class.dark-mode-nav]="darkMode()">
               
+              
+
               <div class="app-info p-3">
-                <!-- <div class="app-title">
-                  <a class="text-white" routerLink="{{preurl()}}/{{startPage()}}">
-                    <h4 class="mb-0">{{app()?.title}}</h4>
-                  </a>
-                  @if (app()?.description) {
-                    <div class="mt-2">{{app()?.description}}</div>
-                  }
-                </div> -->
                 <div class="app-title position-relative">
                   
                   <a class="text-white text-decoration-none" routerLink="{{preurl()}}/{{startPage()}}">
                     <h4 class="mb-0 pe-4">{{app()?.title}}</h4>
                   </a>
+
+                  
                   
                   @if (app()?.x.mailbox){
                     <a class="text-white position-absolute top-0 end-0 mt-1" [class.disabled]="!mailboxBadge()" 
@@ -222,6 +218,10 @@
                   }
                 }
                 <div class="clearfix"></div>
+              </div>
+
+              <div class="dark-mode-toggle" style="height:50px; overflow:hidden; text-align:right;">
+                <app-theme-toggle></app-theme-toggle>
               </div>
             </div>
           }

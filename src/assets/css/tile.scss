@@ -1,0 +1,138 @@
+/* ==========================================================================
+   TILE WRAPPER & GRID
+   ========================================================================== */
+.tile-wrap {
+  display: flex;
+  padding: 6px;
+  flex-wrap: wrap;
+
+  &.tile-center {
+    justify-content: center;
+  }
+
+  .active {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.7);
+    color: var(--bs-primary);
+  }
+}
+
+/* ==========================================================================
+   TILE CARD
+   ========================================================================== */
+.tile {
+  flex: 1 0 130px;
+  overflow: hidden;
+  position: relative;
+  margin: 6px;
+  height: 200px;
+  max-width: 160px;
+  min-width: 130px;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  border-radius: var(--bs-border-radius, 0.45rem);
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &.border-2 {
+    border-width: 2px !important;
+  }
+
+  .notch {
+    position: absolute;
+    top: 15px;
+    left: 0px;
+    height: 1em;
+    width: 4px;
+    border-radius: 0px 3px 3px 0px;
+  }
+
+  .tile-content .desc {
+    font-size: 14px;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-secondary-color);
+  }
+
+  .tile-action {
+    top: 100%;
+    height: 0%;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.7);
+    text-align: center;
+    pointer-events: none;
+    overflow: hidden;
+
+    a,
+    button.stack {
+      margin-bottom: 5px;
+      width: 100%;
+      text-align: left;
+    }
+
+    > div {
+      min-width: 90%;
+
+      a {
+        color: #fff;
+      }
+    }
+
+    .stack fa-icon {
+      margin: 0rem 0.4rem 0rem 0.2rem;
+    }
+  }
+
+  &:hover,
+  &:active {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+
+    .tile-content {
+      filter: blur(4px);
+    }
+
+    .tile-action {
+      top: 0px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      opacity: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      pointer-events: unset;
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+  }
+}
+
+.tile-light .tile .tile-action {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tile-mid {
+  padding: 15px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.tile-image {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-size: 80px;
+  background-repeat: no-repeat;
+  background-position: 110% 110%;
+  filter: opacity(0.5);
+}

@@ -29,7 +29,7 @@ import { PageTitleComponent } from '../_component/page-title.component';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
+  styleUrls: ['./dashboard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PageTitleComponent, FaIconComponent, NgClass, ChartComponent]
 })

@@ -40,13 +40,13 @@ import { NgClass } from '@angular/common';
       font-size: 10px;
       position: relative;
       text-align: center;
-      color: white;
+      color: var(--bs-white, white);
   }
   .step .half{
       filter: grayscale(85%) brightness(1.4);
   }
   .step .cur{
-    border: 2px solid rgba(0, 123, 255, 1);
+      border: 2px solid var(--bs-primary, rgba(0, 123, 255, 1));
   }
   .mini.wizardstep .step span{
       display: block;
@@ -55,23 +55,23 @@ import { NgClass } from '@angular/common';
       border-radius: 50%;
       line-height: 16px;
       text-align: center;
-      border: 2px solid #7d7d7d;
-      background-color: #7d7d7d;
-      color: white;
+      border: 2px solid var(--bs-secondary-color, #7d7d7d);
+      background-color: var(--bs-secondary-color, #7d7d7d);
+      color: var(--bs-white, white);
   }
   .mini.wizardstep .step:after {
       width: 100%;
       height: 20px;
       content: '';
       position: absolute;
-      background-color: #bbb;
+      background-color: var(--bs-border-color, #bbb);
       top: 0px;
       left: -50%;
       z-index: -1;
   }
   .mini.wizardstep .step.active span {
-      border-color: green;
-      background-color: green;
+      border-color: var(--bs-success, green);
+      background-color: var(--bs-success, green);
   }
   /* full version */
   .wizardstep {
@@ -96,19 +96,20 @@ import { NgClass } from '@angular/common';
       border-radius: 50%;
       line-height: 24px;
       text-align: center;
-      border: 2px solid #7d7d7d;
-      background-color: white;
+      border: 2px solid var(--bs-secondary-color, #7d7d7d);
+      background-color: var(--bs-body-bg, white);
+      color: var(--bs-body-color, inherit);
   }
   .wizardstep .step p{
       margin-top: 10px;
-      color:#333;
+      color: var(--bs-body-color, #333);
   }
   .wizardstep .step:after {
       width: 100%;
       height: 2px;
       content: '';
       position: absolute;
-      background-color: #7d7d7d;
+      background-color: var(--bs-border-color, #7d7d7d);
       top: 15px;
       left: -50%;
       z-index: -1;
@@ -117,7 +118,7 @@ import { NgClass } from '@angular/common';
       content: none;
   }
   .wizardstep .step.active span {
-      border-color: green;
+      border-color: var(--bs-success, green);
   }`],
     imports: [NgClass, NgbTooltip, FaIconComponent]
 })

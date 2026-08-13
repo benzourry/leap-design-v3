@@ -1,5 +1,6 @@
 <div class="wrapper" split-pane>
-    <div class="sidebar bg-white" sidebar #sidebar>
+    <!-- 1. Changed bg-white to bg-body to dynamically switch background -->
+    <div class="sidebar bg-body" sidebar #sidebar>
         <div class="p-3 pb-2">
             <h5 class="m-0 text-truncate">UI Editor</h5>
         </div>
@@ -43,8 +44,9 @@
                         <!-- RESTRICTED FORMS (Collapsible & Disabled) -->
                         @if ((restrictedForms | filter:searchText).length > 0) {
                           <div class="">
-                            <button type="button" class="btn btn-sm btn-light w-100 text-start text-muted d-flex align-items-center" 
-                              (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none; background: #f8f9fa;">
+                            <!-- 2. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                            <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                              (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none;">
                               <fa-icon [icon]="['fas', showRestrictedForms ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                               Restricted Forms ({{restrictedForms.length}})
                             </button>
@@ -52,7 +54,8 @@
                             @if (showRestrictedForms) {
                               <div>
                                 @for (i of restrictedForms; track i.id) {
-                                  <a class="element text-truncate text-muted bg-light" 
+                                  <!-- 3. Changed bg-light to bg-body-secondary -->
+                                  <a class="element text-truncate text-muted bg-body-secondary" 
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"
@@ -141,8 +144,9 @@
                       <!-- RESTRICTED DATASETS (Collapsible & Disabled) -->
                       @if ((restrictedDatasets | filter:searchText).length > 0) {
                         <div>
-                          <button type="button" class="btn btn-sm btn-light w-100 text-start text-muted d-flex align-items-center" 
-                            (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none; background: #f8f9fa;">
+                          <!-- 4. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                          <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                            (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none;">
                             <fa-icon [icon]="['fas', showRestrictedDatasets ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                             From Restricted Forms ({{restrictedDatasets.length}})
                           </button>
@@ -150,7 +154,8 @@
                           @if (showRestrictedDatasets) {
                             <div>
                               @for (i of restrictedDatasets; track i.id) {
-                                <a class="element pointer text-truncate text-muted bg-light" 
+                                <!-- 5. Changed bg-light to bg-body-secondary -->
+                                <a class="element pointer text-truncate text-muted bg-body-secondary" 
                                   title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
                                   routerLinkActive="active" 
                                   [routerLink]="['/design', app.id, 'ui', 'dataset']" 
@@ -277,8 +282,9 @@
                         <!-- RESTRICTED SCREENS (Collapsible & Disabled / Manager Override) -->
                         @if ((restrictedScreens | filter:searchText).length > 0) {
                           <div>
-                            <button type="button" class="btn btn-sm btn-light w-100 text-start text-muted d-flex align-items-center" 
-                              (click)="showRestrictedScreens = !showRestrictedScreens" style="box-shadow: none; background: #f8f9fa;">
+                            <!-- 6. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                            <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                              (click)="showRestrictedScreens = !showRestrictedScreens" style="box-shadow: none;">
                               <fa-icon [icon]="['fas', showRestrictedScreens ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                               Restricted Screens ({{restrictedScreens.length}})
                             </button>
@@ -286,7 +292,8 @@
                             @if (showRestrictedScreens) {
                               <div>
                                 @for (i of restrictedScreens; track i.id) {
-                                  <a class="element text-truncate text-muted bg-light" 
+                                  <!-- 7. Changed bg-light to bg-body-secondary -->
+                                  <a class="element text-truncate text-muted bg-body-secondary" 
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"
@@ -527,13 +534,15 @@
                             (change)="uploadMetadata($event)" name="file"
                             required accept=".appmeta.json" />
                         @if (!importMetadataLoading) {
-                        <div class="form-control" style="background: white">
+                        <!-- 8. Replaced style="background: white" with class="bg-body" -->
+                        <div class="form-control bg-body">
                             <fa-icon [icon]="['fas','upload']"></fa-icon>
                             Browse and Import
                         </div>
                         }
                         @if (importMetadataLoading) {
-                        <div class="form-control" style="background: white">
+                        <!-- 9. Replaced style="background: white" with class="bg-body" -->
+                        <div class="form-control bg-body">
                             Importing...
                         </div>
                         }

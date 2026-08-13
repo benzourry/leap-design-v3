@@ -1,23 +1,23 @@
 .dropdown-toggle::after {
-    display: none;
-  }
+  display: none;
+}
 
-  tr.row-danger *{
-    background-color: rgb(220, 53, 69);
-    color: white !important;
-  }
+tr.row-danger * {
+  background-color: var(--bs-danger-bg-subtle, rgb(220, 53, 69));
+  color: var(--bs-danger-text-emphasis, white) !important;
+}
 
-  tr.row-vault *{
-    background-color: #eee;
-    color: rgba(0,0,0,.5) !important;
-    // opacity: 0.5;
-  }
+tr.row-vault * {
+  background-color: var(--bs-tertiary-bg, #eee);
+  color: var(--bs-body-color-subtle, rgba(0,0,0,.5)) !important;
+}
 
-  .limit-height{
-    max-height: 400px;overflow: auto;
+.limit-height {
+  max-height: 400px;
+  overflow: auto;
 }
 
 .code-container {
-    display: flex;
-    flex-direction: column-reverse;
-  }
+  display: flex;
+  flex-direction: column-reverse;
+}

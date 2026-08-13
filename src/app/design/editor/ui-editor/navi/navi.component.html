@@ -60,8 +60,8 @@
                 <div class="list-group list-group-flush child" cdkDropList [cdkDropListData]="group.items"
                   (cdkDropListDropped)="dropItem($event, group)">
                   @if (group.items && group.items.length==0) {
-                    <div class="list-group-item p-3 bg-light">
-                      <h5 class="text-muted text-center font-italic">Empty Group</h5>
+                    <div class="list-group-item p-3 bg-body-tertiary">
+                      <h5 class="text-body-secondary text-center fst-italic">Empty Group</h5>
                     </div>
                   }
                   @for (item of group.items; track $index; let $idx_item = $index; let $idx_first = $first; let $idx_last = $last) {
@@ -75,28 +75,27 @@
                         <div style="margin-left:2rem">
                           <div>{{item.title}}</div>
                           @if (item.type=='form') {
-                            <small>/form/{{item.screenId}}/add</small>
+                            <small class="text-body-secondary">/form/{{item.screenId}}/add</small>
                           }@else if (item.type=='form-single') {
-                            <small>/form/{{item.screenId}}/edit-single</small>
+                            <small class="text-body-secondary">/form/{{item.screenId}}/edit-single</small>
                           }@else if (item.type=='view-single') {
-                            <small>/form/{{item.screenId}}/view</small>
+                            <small class="text-body-secondary">/form/{{item.screenId}}/view</small>
                           }@else if (item.type=='dataset') {
-                            <small>/dataset/{{item.screenId}}</small>
+                            <small class="text-body-secondary">/dataset/{{item.screenId}}</small>
                           }@else if (item.type=='dashboard') {
-                            <small>/dashboard/{{item.screenId}}</small>
+                            <small class="text-body-secondary">/dashboard/{{item.screenId}}</small>
                           }@else if (item.type=='lookup') {
-                            <small>/lookup/{{item.screenId}}</small>
+                            <small class="text-body-secondary">/lookup/{{item.screenId}}</small>
                           }@else if (item.type=='screen') {
-                            <small>/screen/{{item.screenId}}</small>
+                            <small class="text-body-secondary">/screen/{{item.screenId}}</small>
                           }@else if (item.type=='user') {
-                            <small>/user/{{item.screenId}}</small>
+                            <small class="text-body-secondary">/user/{{item.screenId}}</small>
                           }@else if (item.type=='lambda') {
-                            <small>/webui/{{item.url}}</small>
+                            <small class="text-body-secondary">/webui/{{item.url}}</small>
                           }@else if (item.type=='start') {
-                            <small>/start</small>
+                            <small class="text-body-secondary">/start</small>
                           }@else if (item.type=='external'||item.type=='internal') {
-                            <small
-                            >{{item.url}}</small>
+                            <small class="text-body-secondary">{{item.url}}</small>
                           }
 
                           @if (item.pre) {
@@ -110,8 +109,8 @@
 
                         </div>
                       </span>
-                      <div class="element-edit mt-1 cursor-move bg-white text-info"
-                        style="position:absolute;top:3px;left:3px;" cdkDragHandle>
+                      <div class="element-edit mt-1 cursor-move bg-body text-info border rounded"
+                        style="position:absolute;top:3px;left:3px; padding:2px;" cdkDragHandle>
                         <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
                         </fa-icon>
                       </div>
@@ -145,7 +144,7 @@
                   }
                 </div>
                 <div class="card-footer">
-                  <a class="pointer" (click)="editItem(editItemTpl, {}, group, true)">
+                  <a class="pointer text-decoration-none" (click)="editItem(editItemTpl, {}, group, true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add Item
                   </a>
@@ -154,7 +153,7 @@
             }
             <div class="row">
               <div class="col-12 text-center p-2 mb-3">
-                <a class="p-2 pointer" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length}, true)">
+                <a class="p-2 pointer text-decoration-none" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length}, true)">
                   <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                   Add Group
                 </a>
@@ -162,18 +161,18 @@
             </div>
           </div>
           <div class="col-md-8">
-            <div class="input-group">
+            <div class="input-group mb-3">
               <span class="input-group-text">
                 View as
               </span>
-              <input class="form-control" type="text" placeholder="ie: admin@email.com"  autocapitalize="none"
+              <input class="form-control" type="text" placeholder="ie: admin@email.com" autocapitalize="none"
                 [(ngModel)]="viewAs" (keyup.enter)="getNaviData(appId)">
             </div>
             <div class="d-flex flex-wrap flex-row align-content-center">
               @for (group of navis; track $index) {
                 <div
                   [class.group-hidden]="!(!group?.access||group?.access?.users?.indexOf(viewAs||'*')>-1)" style="flex-grow:1">
-                  <div class="s-icon-heading">
+                  <div class="s-icon-heading fw-bold mb-2">
                     {{group.title}}
                   </div>
                   <div class="s-icon-wrap">
@@ -191,7 +190,7 @@
                         }
                         @if (naviDataItem || ['external','internal','user','start', 'lambda'].indexOf(item.type)>-1) {
                           @if (item.type=='form') {
-                            <a class="s-icon"
+                            <a class="s-icon text-body"
                               [class.disabled]="naviDataItem?.inactive">
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
@@ -199,7 +198,7 @@
                               <div class="title">{{item.title}}</div>
                               @if (!naviDataItem?.inactive) {
                                 @if(!item.x?.hideDesc){
-                                  <div class="sub">
+                                  <div class="sub text-body-secondary">
                                     {{naviDataItem?.description}}
                                   </div>
                                 }
@@ -214,7 +213,7 @@
                             </a>
                           }
                           @if (item.type=='form-single') {
-                            <a class="s-icon"
+                            <a class="s-icon text-body"
                               [class.disabled]="naviDataItem?.inactive">
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
@@ -222,7 +221,7 @@
                               <div class="title">{{item.title}}</div>
                               @if (!naviDataItem?.inactive) {
                                 @if(!item.x?.hideDesc){
-                                  <div class="sub">
+                                  <div class="sub text-body-secondary">
                                     {{naviDataItem?.description}}
                                   </div>
                                 }
@@ -238,7 +237,7 @@
                             </a>
                           }
                           @if (item.type=='view-single') {
-                            <a class="s-icon"
+                            <a class="s-icon text-body"
                               [class.disabled]="naviDataItem?.inactive">
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
@@ -246,7 +245,7 @@
                               <div class="title">{{item.title}}</div>
                               @if (!naviDataItem?.inactive) {
                                 @if(!item.x?.hideDesc){
-                                  <div class="sub">
+                                  <div class="sub text-body-secondary">
                                     {{naviDataItem?.description}}
                                   </div>
                                 }
@@ -263,12 +262,12 @@
                           }
                           @if (['dataset','dashboard','lookup','screen','external','internal','user','start','lambda'].indexOf(item.type)>-1) {
                             <ng-container>
-                              <a class="s-icon">
+                              <a class="s-icon text-body">
                                 <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true"></fa-icon>
                                 <div class="title">{{item.title}}</div>
                                 @if(!item.x?.hideDesc){
-                                  <div class="sub">
+                                  <div class="sub text-body-secondary">
                                     {{naviDataItem?.description}}
                                   </div>
                                 }
@@ -288,7 +287,7 @@
     </div>
   </div>
   @if (!showPalette) {
-    <button type="button" class="position-relative border-0 rounded end-0 d-none d-md-flex flex-column py-2 px-1" (click)="showPalette=true">
+    <button type="button" class="position-relative border-0 rounded end-0 d-none d-md-flex flex-column py-2 px-1 bg-body-tertiary text-body" (click)="showPalette=true">
       <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
       </fa-icon>
       <div style="width:20px; margin-top:2.5em;font-weight: bold;">
@@ -297,10 +296,10 @@
     </button>
   }
   @if (showPalette) {
-    <div class="bg-white d-none d-md-block"
-      style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px #e6e6e6">
+    <div class="bg-body-tertiary border-start d-none d-md-block"
+      style="max-width:180px; overflow-x: hidden; overflow-y: auto;">
       <div class="small" cdkDragHandle >
-        <button type="button" class="p-2 border-0 w-100" (click)="showPalette=false">
+        <button type="button" class="p-2 border-0 w-100 bg-transparent text-body" (click)="showPalette=false">
           <strong>Palette</strong>
           <div class="float-end pointer" style="width:20px;">
             @if (showPalette) {
@@ -321,8 +320,8 @@
             }
           </select>
         </div>
-        <div class="p-2 bg-white  position-sticky sticky-top">
-          <input type="text" class="w-100 small p-1" placeholder="Type to filter" [(ngModel)]="paletteFilter"
+        <div class="p-2 bg-body-tertiary position-sticky sticky-top">
+          <input type="text" class="form-control form-control-sm small p-1" placeholder="Type to filter" [(ngModel)]="paletteFilter"
             name="paletteFilter" />
         </div>
       </div>
@@ -330,7 +329,7 @@
         <div id="palette-pane" class="card-body p-1" cdkDropListSortingDisabled cdkDropList
           [cdkDropListData]="(palettes|filter:paletteFilter)">
           @for (item of palettes|filter:paletteFilter; track $index) {
-            <button type="button" class="btn bg-light text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;"
+            <button type="button" class="btn btn-sm btn-outline-secondary text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;"
               title="{{item.title}}"
               cdkDrag>
               <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit" [fixedWidth]="true">
@@ -339,7 +338,7 @@
             </button>
           }
           @if (palettes.length==0) {
-            <div class="p-3">
+            <div class="p-3 text-body-secondary">
               No component available
             </div>
           }
@@ -354,7 +353,7 @@
     <div class="modal-header">
       <h4 class="modal-title">{{editGroupData.id?'Edit':'Add'}} Group</h4>
     </div>
-    <div class="single-pane">
+    <div class="single-pane p-3">
       <div class="form-group mb-3">
         <label class="form-label">Title *</label>
         <input type="text" class="form-control" [(ngModel)]="editGroupData.title" placeholder="ie: Registration"
@@ -380,7 +379,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editGroupForm.invalid"
         (click)="c(editGroupData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -400,7 +399,7 @@
         <li ngbNavItem>
           <a ngbNavLink>Basic Info</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <div class="form-group mb-3">
                 <label class="form-label">Title *</label>
                 <input type="text" class="form-control" [(ngModel)]="editItemData.title"
@@ -623,7 +622,7 @@
             [fixedWidth]="true"></fa-icon>
           } *</a>
           <ng-template ngbNavContent>
-            <div class="single-pane">
+            <div class="single-pane p-3">
               <app-icon-picker [(model)]="editItemData.icon" [showNone]="false"></app-icon-picker>
             </div>
           </ng-template>
@@ -632,7 +631,7 @@
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editItemForm.invalid"
         (click)="c(editItemData)">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -649,7 +648,7 @@
       <h4 class="modal-title">Edit Navi Setting</h4>
     </div>
     <div class="tab-simple fix-gutter" justify="center">
-      <div class="single-pane">
+      <div class="single-pane p-3">
         <div class="form-group">
           <label class="form-label">Init Function</label>
           <div class="mx-n3">
@@ -661,7 +660,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editNaviForm.invalid"
         (click)="c(editNaviData)">
         <fa-icon [icon]="['fas','floppy-disk']" [fixedWidth]="true"></fa-icon>
@@ -676,14 +675,14 @@
     <div class="modal-header">
       <h4 class="modal-title">Remove Group</h4>
     </div>
-    <div class="single-pane">
+    <div class="single-pane p-3">
       <div class="form-group mb-3">
         <label class="form-label">Title *</label>
         <p>{{removeGroupData.title}}</p>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="removeGroupForm.invalid"
         (click)="c(removeGroupData)">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
@@ -698,14 +697,14 @@
     <div class="modal-header">
       <h4 class="modal-title">Remove Item</h4>
     </div>
-    <div class="single-pane">
+    <div class="single-pane p-3">
       <div class="form-group mb-3">
         <label class="form-label">Name *</label>
         <p>{{removeItemData.title}}</p>
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="removeItemForm.invalid"
         (click)="c(removeItemData)">
         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>

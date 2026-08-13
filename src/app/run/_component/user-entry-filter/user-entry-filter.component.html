@@ -111,7 +111,7 @@
       }
 
       @if (field.type === 'simpleOption') {
-        <select class="form-control custom-select" name="{{baseKey}}"
+        <select class="form-select" name="{{baseKey}}"
           [class.disabled]="presetFilters()[bindKey]"
           [(ngModel)]="filtersData()[bindKey]">
           <option [ngValue]="undefined" class="text-muted">Unset</option>

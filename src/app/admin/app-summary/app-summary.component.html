@@ -1,7 +1,26 @@
+<style>
+  input[type=search].start {
+    background: var(--bs-tertiary-bg, #ccc) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23888" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: 1px solid var(--bs-border-color, #ccc);
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: var(--bs-body-color);
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
 <div [class.centered]="platformView" class="limit-width p-3">
     @if (platformView){
         <div class="mb-3">
-            <button class="btn btn-light bg-white btn-rounded fs-5" routerLink="/admin/apps">
+            <button class="btn btn-outline-secondary btn-rounded fs-5" routerLink="/admin/apps">
                 <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
                 Back
             </button>
@@ -13,7 +32,7 @@
             onError="this.src='assets/icons/logo.svg'" width="60" height="60" class="me-2">
         <div style="margin-left:80px">
             <div class="fs-5">{{app.title}}</div>
-            @if(app.description){<p class="desc">{{app.description}}</p>}
+            @if(app.description){<p class="desc text-body-secondary">{{app.description}}</p>}
 
             @if(app.live){
                 <p class="text-success small">This app is live and can be accessed by the public.</p>
@@ -29,10 +48,8 @@
                 <fa-icon [icon]="['fas','list']"></fa-icon>
                 App Log
             </a>
-            <!-- <p class="desc">Created on: {{item.dateCreated|date:'medium'}}</p> -->
-            <!-- <p></p> -->
-             <div class="input-group input-group-sm">
-                <span class="input-group-text text-muted small" id="basic-addon1">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text text-body-secondary small" id="basic-addon1">
                     @if (checkLogin(app,'useSarawakid')) {
                     <fa-icon [icon]="['far','circle-user']" title="Login with SarawakID" [fixedWidth]="true"></fa-icon>
                     }
@@ -81,7 +98,7 @@
             <div class="my-2">
                 @for(i of splitAsList(app.email); track $index){
                     
-                <div class="d-inline-block me-1 border bg-light rounded small px-1 mb-1 overflow-hidden">
+                <div class="d-inline-block me-1 border bg-body-tertiary text-body rounded small px-1 mb-1 overflow-hidden">
                     <img src="{{base}}/user/{{app.id}}/photo/{{i}}" alt="Logo" onError="this.src='assets/img/avatar-big.png'" width="22"
                   height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
                     {{i}}
@@ -172,27 +189,15 @@
                         <div>Entry Log</div>
                         <div>{{summary.data?.entryTrail}}</div>
                     </div>
-                    <!-- <div class="list-group-item d-flex justify-content-between">
-                        <div>Approval Log</div>
-                        <div>{{summary.data?.entryApprovalTrail}}</div>
-                    </div> -->
                     <div class="list-group-item d-flex justify-content-between">
                         <div>Prompt Log</div>
                         <div>
-                            <!-- <a title="Export logs (CSV)" href="{{baseApi}}/cogna/export-log-csv" target="_blank"> -->
-                                {{summary.data?.promptLog}}
-                            <!-- </a> -->
+                            {{summary.data?.promptLog}}
                         </div>
                     </div>
-                    <!-- <div class="list-group-item d-flex justify-content-between">
-                        <div>Endpoint</div>
-                        <div>{{summary.endpoint}}</div>
-                    </div> -->
                 </div>
             </div>
         </div>
-    <!-- </div>
-    <div class="row g-2"> -->
         <div class="col-sm-6">
             <div class="card">
                 <div class="card-header">Entry Summary</div>
@@ -230,9 +235,9 @@
     
                             @if (summary.entry?.formCount.length>5 ){
                             @if (entryFormCountLimit){
-                            <button class="list-group-item" (click)="entryFormCountLimit=undefined">Read more...</button>
+                            <button class="list-group-item list-group-item-action text-primary" (click)="entryFormCountLimit=undefined">Read more...</button>
                             }@else {
-                            <button class="list-group-item" (click)="entryFormCountLimit=5">Read less...</button>
+                            <button class="list-group-item list-group-item-action text-primary" (click)="entryFormCountLimit=5">Read less...</button>
                             }
                             }
                         </div>
@@ -252,14 +257,6 @@
                         <div>Bucket Count</div>
                         <div>{{summary.bucket?.bucketCount}}</div>
                     </div>
-                    <!-- <div class="list-group-item d-flex justify-content-between">
-                        <div>Total Size</div>
-                        <div>{{summary.bucket?.totalSize/(1024*1024)|number}} MiB</div>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between">
-                        <div>File Count</div>
-                        <div>{{summary.bucket?.totalCount}}</div>
-                    </div> -->
                 </div>
                 @if (summary.bucket?.totalCount>0){
                 <div class="p-3 pt-2">
@@ -288,9 +285,9 @@
                         }
                         @if (summary.bucket?.typeSize.length>5 ){
                             @if (bucketTypeSizeLimit){
-                            <button class="list-group-item" (click)="bucketTypeSizeLimit=undefined">Read more...</button>
+                            <button class="list-group-item list-group-item-action text-primary" (click)="bucketTypeSizeLimit=undefined">Read more...</button>
                             }@else {
-                            <button class="list-group-item" (click)="bucketTypeSizeLimit=5">Read less...</button>
+                            <button class="list-group-item list-group-item-action text-primary" (click)="bucketTypeSizeLimit=5">Read less...</button>
                             }
                         }
                     </div>
@@ -315,7 +312,7 @@
                         New</label>
                     </div>
                     Entry Monthly
-                    <div class="small">Monthly statistics of entry in app</div>
+                    <div class="small text-body-secondary">Monthly statistics of entry in app</div>
 
                 </div>
 
@@ -348,7 +345,7 @@
                         New</label>
                     </div>
                     User Monthly
-                    <div class="small">Monthly statistics of user in app</div>
+                    <div class="small text-body-secondary">Monthly statistics of user in app</div>
 
                 </div>
 
@@ -379,7 +376,7 @@
                         New</label>
                     </div>
                     File Upload Monthly
-                    <div class="small">Monthly statistics of file upload in app</div>
+                    <div class="small text-body-secondary">Monthly statistics of file upload in app</div>
 
                 </div>
 
@@ -410,7 +407,7 @@
                         New</label>
                     </div>
                     File Upload Monthly (Size GiB)
-                    <div class="small">Monthly statistics of file upload in app</div>
+                    <div class="small text-body-secondary">Monthly statistics of file upload in app</div>
 
                 </div>
 

@@ -1,148 +1,131 @@
 @import url("https://dev-cats.github.io/code-snippets/JetBrainsMono.css");
 
-:host{
-    // display: flex;
-    // align-items: center;
-    // justify-content: center;
-    width: 100%;
-}
-::ng-deep .cm-editor .cm-content{
-    font-family: JetBrains Mono, monospace !important;
-    font-size: 0.85em;
-}
-::ng-deep .cm-editor{
-    // resize: horizontal;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+:host {
+  display: block;
+  width: 100%;
 }
 
-// :host{
-    
-// }
+.codemirrorhost {
+  width: 100%;
+}
+
+::ng-deep .cm-editor .cm-content {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85em;
+}
+
+/* ==========================================================================
+   LAYOUT & GUTTER CLEANUP
+   ========================================================================== */
 ::ng-deep .cm-scroller {
-    resize: horizontal;
-    flex-shrink: 0;    
-    overflow: auto;
-    min-width: 100%;
-    width:100%;
-    background: #fff;
+  resize: horizontal;
+  flex-shrink: 0;
+  overflow: auto;
+  min-width: 100%;
+  width: 100%;
 }
 
-::ng-deep .foldmarker{
-    font-size: 0.43em;
-    cursor: pointer;
-    padding: 3px;
-    color: #bbb;
-}
-::ng-deep .cm-panels.cm-panels-bottom{
-    width: 100%;
+::ng-deep .cm-editor {
+  /* Removes default box background on active line number for a cleaner look */
+  .cm-activeLineGutter {
+    background-color: transparent !important;
+  }
 }
 
-// ::ng-deep .cm-tooltip-autocomplete > ul{
-//     height: 20em;
-// }
+::ng-deep .foldmarker {
+  font-size: 0.43em;
+  cursor: pointer;
+  padding: 3px;
+  color: var(--bs-secondary-color);
+}
 
-::ng-deep .cm-tooltip-autocomplete > ul{
-    font-family: JetBrains Mono, monospace !important;
+/* ==========================================================================
+   AUTOCOMPLETE TOOLTIP (THEME-AWARE)
+   ========================================================================== */
+::ng-deep .cm-tooltip-autocomplete {
+  background-color: var(--bs-body-bg) !important;
+  border: 1px solid var(--bs-border-color) !important;
+  color: var(--bs-body-color);
+
+  > ul {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 0.85em;
     height: 100%;
     max-height: 30vh !important;
-}
-::ng-deep .cm-tooltip-autocomplete > ul > li {
-    width: 100%;
-    padding: 2px 5px !important;
-    min-height: 24px;
-    display: flex;
-    align-items: center;
+
+    > li {
+      width: 100%;
+      padding: 2px 5px !important;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+
+      &[aria-selected] {
+        background-color: var(--bs-primary) !important;
+        color: var(--bs-white) !important;
+
+        .cm-completionMatchedText {
+          text-decoration: unset !important;
+          color: var(--bs-info-bg-subtle, #93c5fd) !important;
+        }
+      }
+
+      .cm-completionMatchedText {
+        text-decoration: unset !important;
+        color: var(--bs-primary, #2563eb);
+      }
+
+      .cm-completionDetail {
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--bs-secondary-color);
+      }
+    }
   }
-::ng-deep .cm-tooltip-autocomplete > ul > li .cm-completionDetail{
-    font-family: Arial, Helvetica, sans-serif;
 }
 
-
-::ng-deep .cm-tooltip-autocomplete > ul > li .cm-completionMatchedText{
-    text-decoration: unset !important;
-    color:blue;
+::ng-deep .cm-tooltip-autocomplete > ul > li .cm-completionIcon-web::after { 
+  content: "\1F310";
 }
 
-::ng-deep .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionMatchedText{
-    text-decoration: unset !important;
-    color:lightblue;
-}
-
-::ng-deep .cm-tooltip-autocomplete > ul > li .cm-completionIcon-web::after{ 
-    content: "\1F310"
- }
-// ::ng-deep .
-// .cm-disabled{ pointer-events: none !important; opacity: 0.5;}
-
+/* ==========================================================================
+   CUSTOM REKA DOMAIN SYNTAX HIGHLIGHTING (FROM YOUR VIEWPLUGIN)
+   ========================================================================== */
 ::ng-deep {
-    .cm-tag-x-if,.cm-tag-x-else-if,.cm-tag-x-else,.cm-tag-x-foreach,.cm-tag-x-for{
-        // background-color: #e2c3ff61 !important;
-        font-weight: 500;
-        padding: 0px;
-        border-radius: 4px;
-        font-style: italic;
-    }
-    .cm-attr-x-if,.cm-attr-x-foreach,.cm-attr-x-for{
-        // background-color: #91dcff61 !important;
-        font-weight: 500;
-        padding: 0px;
-        border-radius: 4px;
-        font-style: italic;
-    }
-    .cm-var-x{
-        background-color: #91dcff61 !important;
-        padding: 0px 4px;
-        border-radius: 4px;
-    }
-    .cm-reka-key,.cm-reka-key *{
-        color:purple !important;
-        font-weight: bold !important;
-        font-style: normal !important;
-    }
-    .cm-tag-x-markdown{
-        // background-color: #97ffb361 !important;
-        font-weight: bold;
-        padding: 0px;
-        border-radius: 4px;
-        font-style: italic;
-    }
-    // Add to your SCSS file
-    .cm-js-expression {
-        background-color: rgba(79, 195, 247, 0.1);
-        border-radius: 2px;
-    }
-    
-    .cm-js-expression .cm-variable {
-        color: #346698;
-    }
-    
-    .cm-js-expression .cm-string {
-        color: #00850f;
-    }
-    
-    .cm-js-expression .cm-number {
-        color: #0073e6;
-    }
-    
-    .cm-js-expression .cm-keyword,
-    .cm-js-expression .cm-default.let,
-    .cm-js-expression .cm-default.var,
-    .cm-js-expression .cm-default.return,
-    .cm-js-expression .cm-default.try,
-    .cm-js-expression .cm-default.catch,
-    .cm-js-expression .cm-default.function,
-    .cm-js-expression .cm-default.const,
-    .cm-js-expression .cm-default.if,
-    .cm-js-expression .cm-default.else,
-    .cm-js-expression .cm-default.for,
-    .cm-js-expression .cm-default.foreach,
-    .cm-js-expression .cm-default.while
-     {
-        color: #002aff;
-        // font-weight: bold;
-    }
+  .cm-tag-x-if, .cm-tag-x-else-if, .cm-tag-x-else, .cm-tag-x-foreach, .cm-tag-x-for {
+    font-weight: 500;
+    padding: 0px;
+    border-radius: 4px;
+    font-style: italic;
+  }
+
+  .cm-attr-x-if, .cm-attr-x-foreach, .cm-attr-x-for {
+    font-weight: 500;
+    padding: 0px;
+    border-radius: 4px;
+    font-style: italic;
+  }
+
+  .cm-var-x {
+    background-color: rgba(145, 220, 255, 0.25) !important;
+    padding: 0px 4px;
+    border-radius: 4px;
+  }
+
+  .cm-reka-key, .cm-reka-key * {
+    color: var(--bs-purple, #c084fc) !important;
+    font-weight: bold !important;
+    font-style: normal !important;
+  }
+
+  .cm-tag-x-markdown {
+    font-weight: bold;
+    padding: 0px;
+    border-radius: 4px;
+    font-style: italic;
+  }
+
+  .cm-js-expression {
+    background-color: rgba(79, 195, 247, 0.15);
+    border-radius: 2px;
+  }
 }
-  

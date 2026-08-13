@@ -1,0 +1,69 @@
+.element .element-edit {
+    opacity: 0;
+    z-index: 2;
+}
+
+.element .element-edit .btn {
+    margin: 0 2px;
+}
+
+.element:hover .element-edit,
+.element:active .element-edit {
+    opacity: 1;
+}
+
+.element:hover::after,
+.element:active::after {
+    content: '';
+    position: absolute;
+    background: rgba(var(--bs-body-color-rgb, 255, 255, 255), 0.1);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.element .element-item {
+    pointer-events: none !important;
+}
+
+.element:hover .element-item,
+.element:active .element-item {
+    filter: blur(2px);
+}
+
+@media screen and (min-width: 640px) {
+    .prev-row {
+        display: flex;
+        flex-direction: row;
+    }
+    .form-previous {
+        flex-grow: 1;
+        border-bottom: solid 2px var(--bs-border-color);
+    }
+    .prev-row .form-previous {
+        flex-grow: 1;
+        border-right: solid 2px var(--bs-border-color);
+        border-bottom: none;
+    }
+}
+
+.form-previous {
+    border-bottom: solid 2px var(--bs-border-color);
+}
+
+.def-sort-field {
+    color: var(--bs-primary);
+}
+
+.def-sort-field .def-sort-dir {
+    font-weight: bold;
+}
+
+.card-blank-style .card-body {
+    padding: 0 !important;
+}
+
+table.tblcard > .list-tmid > tr.ds-group-header {
+    box-shadow: none;
+}

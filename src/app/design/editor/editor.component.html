@@ -1,21 +1,25 @@
-<div class="d-flex flex-row bg-white position-relative shadow-sm" style="height:48px;z-index:1">
+<div class="d-flex flex-row bg-body position-relative shadow-sm" style="height:48px; z-index:1">
   @if (loading()){
     <div class="header-colors"></div>
   }
-  <a class="bar-link text-dark" routerLink="/design" title="Back to Home Page" routerLinkActive="active">
+  
+  <a class="bar-link text-body" routerLink="/design" title="Back to Home Page" routerLinkActive="active">
     <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon>
   </a>
+  
   @if (app()?.id) {
     @if (authorized()){
       <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
-        <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-light border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
+        <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-body-secondary text-body border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
           [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
           (selectItem)="selectItem($event)" placeholder="Search components" list="searchresult">
       </div>
+      
       <ng-template #rt let-r="result" let-t="term">
         <fa-icon [icon]="r.icon" class="ms-n2 me-2" [fixedWidth]="true"></fa-icon>
         <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
       </ng-template>
+      
       <div class="me-auto d-flex align-items-center text-truncate py-3" style="font-size:1.1em">
         @if (app()?.logo) {
           <img [src]="baseApi + '/app/logo/' + app()?.logo" alt="Logo"
@@ -23,15 +27,16 @@
         }
         {{app()?.title}}
       </div>
+      
       <div class="p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
-          <a type="button" class="btn btn-round btn-light ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
+          <a type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
             <fa-icon [icon]="['fas','chart-bar']" [fixedWidth]="true"></fa-icon>
           </a>
-          <button type="button" class="btn btn-round btn-light ms-1" (click)="popShare(app()?.id)">
+          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="popShare(app()?.id)">
             <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
           </button>
-          <button type="button" class="btn btn-round btn-light ms-1" (click)="editApp(appEditTpl, app())">
+          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="editApp(appEditTpl, app())">
             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
           </button>
           <button type="button" class="btn btn-round btn-success ms-1 px-2" (click)="runApp()">

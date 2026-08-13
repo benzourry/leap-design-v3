@@ -30,7 +30,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     styleUrls: [
         '../../../assets/css/side-menu.css',
         '../../../assets/css/element-action.css',
-        '../../../assets/css/tile.css', 
+        '../../../assets/css/tile.scss', 
         './editor.component.scss'
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],

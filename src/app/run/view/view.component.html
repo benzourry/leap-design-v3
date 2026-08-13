@@ -30,7 +30,7 @@
             <div class="form-wrapper">
               @if (!prevLoading()) {   
                 @if (formVal?.prev && prevEntry && !formVal?.x?.hidePrev) {
-                  <div class="form-previous" style="border-bottom:solid 2px #ccc">
+                  <div class="form-previous" style="border-bottom:solid 2px var(--bs-border-color)">
                     <form-view [form]="formVal?.prev" [entry]="prevEntry" [data]="prevEntry?.data"
                       [evalContextFn]="getEvalContext" [lang]="lang()"
                       [$this$]="_this" [$param$]="param()"
@@ -67,11 +67,11 @@
               @if (act !== 'approve') {
                 <div class="text-end">
                   @if (trails().length > 0 && !formVal?.x?.hideTrail) {
-                  <button type="button" class="btn btn-round btn-light btn-sm print-hide"
+                  <button type="button" class="btn btn-round btn-outline-secondary btn-sm print-hide"
                     (click)="viewTrail(viewTrailTpl)">{{lang() == 'ms' ? 'Lihat Jejak' : 'View Trails'}}</button>
                   }
                   @if (getKeys(entry?.txHash).length > 0 && formVal?.x?.wallet) {
-                    <button type="button" class="btn ms-1 btn-round btn-light text-success btn-sm print-hide"
+                    <button type="button" class="btn ms-1 btn-round btn-outline-secondary text-success btn-sm print-hide"
                     (click)="viewTxHash(viewTxHashTpl)">
                       <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon> {{lang() == 'ms' ? 'Direkod' : 'Recorded'}}
                     </button>
@@ -92,7 +92,7 @@
                     @if (preCheckStr(tier.pre)) {
                       <div class="ball" [class.current]="entry?.currentTier == tier.sortOrder">
                         <div
-                          style="float:left;width:40px;font-weight: bold;position:absolute;background: white; height:40px; border:solid 4px #ccc;color:#ccc; border-radius:50%; font-size:20px; text-align: center; line-height: 32px;">
+                          style="float:left;width:40px;font-weight: bold;position:absolute;background: var(--bs-body-bg); height:40px; border:solid 4px var(--bs-border-color);color: var(--bs-secondary-color); border-radius:50%; font-size:20px; text-align: center; line-height: 32px;">
                           {{$index + 1}}
                         </div>
                         <div style="margin-left: 50px; min-height:55px;">
@@ -122,7 +122,7 @@
                               }
                                 @if (tier.section?.type === 'approval') {
                                   @if (tier.section && preCheckAppr(tier.section?.pre, tierAppr)) {
-                                    <div class="card-body bg-light bg-opacity-50">
+                                    <div class="card-body bg-body-tertiary">
                                       <div class="row g-3"
                                         [init]="updateWatchList(tier.section, tierAppr)">
                                         @for (f of tier.section.items; track f.id) {
@@ -327,7 +327,7 @@
                                           }
                                         }
                                       }
-                                      </div>
+                                    </div>
                                   </div>
                                 }
                                 @if (!entryAppr) {
@@ -427,7 +427,7 @@
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round btn-default" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="editApprovalForm.invalid"
         (click)="c({tierId:editApprovalData.id, approver:approver})">
         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -460,7 +460,7 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-default" (click)="d()">{{lang() === 'ms' ? 'Tutup' : 'Close'}}</button>
+    <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang() === 'ms' ? 'Tutup' : 'Close'}}</button>
   </div>
 </ng-template>
 <ng-template #viewTxHashTpl let-c="close" let-d="dismiss">
@@ -491,6 +491,6 @@
     }
   </div>
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-default" (click)="d()">{{lang() === 'ms' ? 'Tutup' : 'Close'}}</button>
+    <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang() === 'ms' ? 'Tutup' : 'Close'}}</button>
   </div>
 </ng-template>

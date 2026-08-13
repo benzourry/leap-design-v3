@@ -52,7 +52,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-form',
   templateUrl: './form.component.html',
-  styleUrls: ['./form.component.css'],
+  styleUrls: ['./form.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
   imports: [FormsModule, PageTitleComponent, StepWizardComponent, FormViewComponent, NgbAccordionDirective, NgbAccordionItem,
@@ -786,6 +786,21 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   lookupLoading = signal<any>({});
 
+  private lookupProxy = this.buildReactiveProxy(
+    (prop) => this.lookup()[prop],
+    (prop, value) => this.lookup.update(l => ({ ...l, [prop]: value }))
+  );
+
+  private entryProxy = this.buildReactiveProxy(
+    (prop) => this.entry()[prop],
+    (prop, value) => this.entry.update(e => ({ ...e, [prop]: value }))
+  );
+
+  private fileProxy = this.buildReactiveProxy(
+    (prop) => this.filesMap()[prop],
+    (prop, value) => this.filesMap.update(fm => ({ ...fm, [prop]: value }))
+  );
+
   lookupDataObs: any = {}
   _getLookup = (code, param, cb?, err?, force?: boolean) => {
     if (code) {
@@ -1356,10 +1371,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   private activeEvalMethods: any;
 
   getEvalContext = (entry: any, data: any, approval: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
+    
     const passive = {
       $editable$: additionalData?.$editable$ ?? true,
       $app$: this.app(),
-      $_: entry,
+      $_: this.entryProxy,
       $: data,
       $$_: approval,
       $$: Object.values(approval || {}).map((appr: any) => appr?.data),
@@ -1376,11 +1392,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       $baseUrl$: this.baseUrl(),
       $baseApi$: this.baseApi,
       $ngForm$: this.entryForm(),
-      $lookupList$: this.lookup(),
+      $lookupList$: this.lookupProxy,
       dayjs,
       ServerDate,
       $token$: this.accessToken(),
-      $file$: this.filesMap(),
+      $file$: this.fileProxy,
       $activeIndex$: this._navIndex(),
     };
 
@@ -1903,6 +1919,23 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     
     return target;
   };
+
+  private buildReactiveProxy(
+    getter: (prop: string) => any, 
+    setter: (prop: string, value: any) => void
+  ) {
+    return new Proxy({}, {
+      get: (target, prop) => {
+        if (typeof prop !== 'string') return Reflect.get(target, prop);
+        return getter(prop);
+      },
+      set: (target, prop, value) => {
+        if (typeof prop !== 'string') return Reflect.set(target, prop, value);
+        setter(prop, value);
+        return true;
+      }
+    });
+  }
 
   canDeactivate() {
     return !(this.form()?.x?.askNavigate && this.entryForm()?.dirty); 

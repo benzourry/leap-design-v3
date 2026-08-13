@@ -1,33 +1,30 @@
 <style>
   input[type=search].start {
-  /* background: rgba(255, 255, 255, .7) url(assets/img/search-icon.png) no-repeat 9px center; */
-background: #ccc url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
-background-size: 20px 16px;
-border: none;
-padding: 6px 10px 6px 32px;
-vertical-align: middle;
-border-radius: 10em;
-color: black;
-max-width: 100%;
-}
-input[type=search].start:focus {
-border-color: #0078d7;
-outline: none;
--webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
--moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
-}
+    background: var(--bs-tertiary-bg, #ccc) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23888" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: 1px solid var(--bs-border-color, #ccc);
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: var(--bs-body-color);
+    max-width: 100%;
+  }
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
 </style>
 <div class="wrapper" split-pane>
-  <div class="sidebar bg-white" sidebar #sidebar>
+  <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
-    <!-- <h4>{{app?.title}}</h4>
-    <p>{{app?.description}}</p> -->
-    <h5 class="mb-3">Endpoint Manager</h5>
-    <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadEndpointList(1)"
-      (search)="loadEndpointList(1)"
-      autocapitalize="none"
-      [(ngModel)]="searchText">
+      <h5 class="mb-3">Endpoint Manager</h5>
+      <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadEndpointList(1)"
+        (search)="loadEndpointList(1)"
+        autocapitalize="none"
+        [(ngModel)]="searchText">
     </div>
     <div class="group-list">
       @if (itemLoading) {
@@ -51,7 +48,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                 {{a.name}} <sup>{{a?.id}}</sup>
               </div>
               @if (a.description) {
-                <div class="list-group-item-text">{{a.description}}</div>
+                <div class="list-group-item-text text-body-secondary">{{a.description}}</div>
               }
             </a>
           }
@@ -66,7 +63,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                 [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
                 (pageChange)="loadEndpointList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
                 <ng-template ngbPaginationFirst>
-                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
                 </ng-template>
                 <ng-template ngbPaginationPrevious>
                   <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -74,7 +71,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                 <ng-template ngbPaginationNext>
                   <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                 </ng-template>
-                <ng-template ngbPaginationLast>              
+                <ng-template ngbPaginationLast>             
                   <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                 </ng-template>
               </ngb-pagination>
@@ -93,7 +90,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             <div class="">
               <div class="me-auto d-flex flex-row w-100 py-2">
                 <h5 class="m-0 text-truncate">{{endpoint.name}}</h5>
-                <div class="ms-2 text-truncate align-bottom text-muted">
+                <div class="ms-2 text-truncate align-bottom text-body-secondary">
                   {{endpoint.description}}
                 </div>
               </div>
@@ -112,7 +109,6 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                     </span>
                   }
                 </div>
-                <!-- lambda.email.indexOf(user.email)>-1 -->
                 <div class="d-flex flex-row">
                   @if (endpoint && (endpoint.email?.indexOf(user.email)>-1) && (endpoint.app?.id == appId)) {
                     <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
@@ -146,7 +142,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                   <span style="text-transform: uppercase;font-weight: bold;">{{endpoint.method}}</span>
                   {{endpoint.url}}
                 </div>
-                <div class="card-footer">
+                <div class="card-footer text-body-secondary">
                   Code: {{endpoint.code}}
                 </div>
               </div>
@@ -157,18 +153,18 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                 <div class="list-group list-group-flush">
                   @if (endpoint.authFlow=='client_credential') {
                     <div class="list-group-item">
-                      <div class="small">Token Endpoint</div>
+                      <div class="small text-body-secondary">Token Endpoint</div>
                       {{endpoint.tokenEndpoint}}
                     </div>
                     <div class="list-group-item">
-                      <div class="small">Client ID</div>
+                      <div class="small text-body-secondary">Client ID</div>
                       {{endpoint.clientId}}
                     </div>
                     <div class="list-group-item">
-                      <button type="button" class="btn btn-sm btn-light float-end" (click)="endpoint.visible=!endpoint.visible">
+                      <button type="button" class="btn btn-sm btn-outline-secondary float-end" (click)="endpoint.visible=!endpoint.visible">
                         <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>
                       </button>
-                      <div class="small">Client Secret</div>
+                      <div class="small text-body-secondary">Client Secret</div>
                         @if (endpoint.visible){
                           {{endpoint.clientSecret}} 
                         }@else{
@@ -185,8 +181,8 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             }
             <div class="card mt-2">
               <div class="card-body">
-                <div class="small mb-3">Snippet Sample</div>
-                <pre>
+                <div class="small mb-3 text-body-secondary">Snippet Sample</div>
+                <pre class="m-0 text-body">
                   {{ "$endpoint$('" + endpoint.code + "', {" }}
                   @for (p of params; track $index; let last = $last) {
                     {{ "    "+p+":'value'"}}{{last?'':','}}
@@ -201,8 +197,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             </div>
             @if (result) {
               <div class="card mt-2 mb-2">
-                <!-- <div class="card-body"> -->
-                <div class="small p-2 text-white bg-success d-flex">
+                <div class="small p-2 text-white bg-success d-flex align-items-center">
                   <div>
                     Result
                   </div>
@@ -211,43 +206,38 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
                   <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
                     <input type="radio" class="btn-check" name="resultTypeText" id="resultTypeText"
                       [(ngModel)]="resultType" value="text">
-                    <label class="btn btn-light" for="resultTypeText"> Print </label>
+                    <label class="btn btn-outline-light btn-sm" for="resultTypeText"> Print </label>
                     <input type="radio" class="btn-check" name="resultTypeJson" id="resultTypeJson"
                       [(ngModel)]="resultType" value="json">
-                    <label class="btn btn-light" for="resultTypeJson"> Parsed </label>
+                    <label class="btn btn-outline-light btn-sm" for="resultTypeJson"> Parsed </label>
                   </div>
                 
                 </div>
                 @if (resultType=='text'){
-                  <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+                  <div class="px-2 py-1 bg-body-tertiary text-body border-top small" style="max-height: 400px;overflow: auto;">
                     <pre class="m-0"><code class="language-js">{{result | json}}</code></pre>
                   </div>
                 }@else{
-                  <!-- <app-obj-viewer class="small" [data]="result"></app-obj-viewer> -->
                   <div class="p-2">
                     <json-viewer [json]="result"></json-viewer>
                   </div>
                 }
-
-              <!-- </div> -->
             </div>
             
             
           }
           @if (error) {
             <div class="card mt-2">
-              <!-- <div class="card-body"> -->
               <div class="small mb-3 p-3 text-white bg-danger">Error</div>
-              <div class="px-2 py-1 bg-white small" style="max-height: 400px;overflow: auto;">
+              <div class="px-2 py-1 bg-body-tertiary text-body border-top small" style="max-height: 400px;overflow: auto;">
                 <pre class="m-0"><code class="language-js">{{error.error | json}}</code></pre>
               </div>
-            <!-- </div> -->
           </div>
         }
       </div>
     }
     @if (!endpoint) {
-      <div style="color:#aaa;">
+      <div class="text-body-secondary">
         <h3>Please select Endpoint from the list on the left to view it's data.</h3>
       </div>
     }
@@ -273,7 +263,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(removeEndpointData)">
         <i class="icon-minus-sign-alt"></i> Remove Endpoint
       </button>
@@ -292,26 +282,26 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         (ngModelChange)="editEndpointData.id||editEndpointData.code=toSnakeCase(editEndpointData.name)"
         name="name" required>
         @if (name?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (name?.errors?.required) {
               <span class="help-block">Name is required</span>
             }
           </small>
         }
       </div>
-      <div class="form-group mb-3" [class.element]="!editCode">
+      <div class="form-group mb-3 position-relative" [class.element]="!editCode">
         <label class="form-label">Code *</label>
         <input type="text" class="form-control element-item" [(ngModel)]="editEndpointData.code" name="code"
           placeholder="ie: firstName" [readonly]="!editCode" required>
         @if (!editCode) {
           <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
-            style="position:absolute;top:10px;right:10px;" (click)="editCode=true">
+            style="position:absolute;top:32px;right:10px;" (click)="editCode=true">
             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
           </button>
         }
         @if (editCode) {
           <button type="button" class="btn btn-secondary btn-round btn-sm element-edit"
-            style="position:absolute;top:10px;right:10px;" (click)="editCode=false">
+            style="position:absolute;top:32px;right:10px;" (click)="editCode=false">
             <fa-icon [icon]="['fas','check']" [fixedWidth]="true"></fa-icon>
           </button>
         }
@@ -328,13 +318,6 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       <div class="form-group mb-3">
         <label class="form-label">Request Method Type</label>
         <div>
-          <!-- <div class="btn-group btn-group-toggle" ngbRadioGroup name="method" #method="ngModel"
-          [(ngModel)]="editEndpointData && editEndpointData.method" required>
-          <label ngbButtonLabel class="btn btn-outline-secondary">
-            <input ngbButton type="radio" class="btn-check" value="GET"> GET </label>
-            <label ngbButtonLabel class="btn btn-outline-secondary">
-              <input ngbButton type="radio" class="btn-check" value="POST"> POST </label>
-            </div> -->
           <div class="" role="group">
             <input type="radio" name="method" #method="ngModel" [ngModel]="editEndpointData && editEndpointData.method" (ngModelChange)="editEndpointData && (editEndpointData.method = $event)"
               [required]="true" value="GET" class="btn-check" id="methodGET">
@@ -345,7 +328,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
           </div>
         </div>
         @if (method?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (method?.errors?.required) {
               <span class="help-block">Request Method Type is required</span>
             }
@@ -378,7 +361,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
             </div>
           </div>
           @if (authFlow?.invalid) {
-            <small class="form-text has-warning">
+            <small class="form-text text-warning">
               @if (authFlow?.errors?.required) {
                 <span class="help-block">Auth flow is required</span>
               }
@@ -447,7 +430,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
           </div>
         </div>
         @if (responseType?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (responseType?.errors?.required) {
               <span class="help-block">Response type is required</span>
             }
@@ -458,7 +441,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         <label class="form-label">Http Headers</label>
         <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.headers" (ngModelChange)="editEndpointData && (editEndpointData.headers = $event)"
           #headers="ngModel" name="headers">
-        <small class="form-text">
+        <small class="form-text text-body-secondary">
           <span class="help-block">
             <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
             Format: name1->value1|name2->value2
@@ -470,7 +453,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
         <input type="text" class="form-control" [ngModel]="editEndpointData && editEndpointData.email" (ngModelChange)="editEndpointData && (editEndpointData.email = $event)" name="email"
           #email="ngModel" required>
         @if (email?.invalid) {
-          <small class="form-text has-warning">
+          <small class="form-text text-warning">
             @if (email?.errors?.required) {
               <span class="help-block">Creator email is required</span>
             }
@@ -479,10 +462,9 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [disabled]="endpointEditForm.invalid"
         (click)="c(editEndpointData)">
-      <!-- <i class="fa fa-plus"></i>  -->
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
       Save Endpoint
     </button>
@@ -506,7 +488,7 @@ box-shadow: 0 0 5px rgba(109, 207, 246, .5);
       </div>
     </div>
     <div class="modal-footer justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" (click)="c(requestParams)">
         <i class="icon-minus-sign-alt"></i> Execute Request
       </button>

@@ -1,26 +1,22 @@
 .active-outline {
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .7);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .7) !important;
 }
 
 .column-list {
-  // width: 1000px;
-  // max-width: 100%;
-  border: solid 2px #ccc;
+  border: solid 2px var(--bs-border-color, #ccc);
   min-height: 60px;
   display: flex;
   flex-direction: row;
-  background: white;
+  background: var(--bs-body-bg, #fff);
   border-radius: 5px;
   width: fit-content;
   overflow-y: hidden;
-  // overflow: hidden;
 }
 
 .column-box {
-  // padding: 10px;
-  border-right: solid 2px #ccc;
-  color: rgba(0, 0, 0, 0.87);
+  border-right: solid 2px var(--bs-border-color, #ccc);
+  color: var(--bs-body-color);
   flex-direction: row;
   font-size: 14px;
   flex-grow: 1;
@@ -31,7 +27,7 @@
 .cdk-drag-preview {
   box-sizing: border-box;
   border-radius: 5px;
-  border:none;
+  border: none;
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
@@ -56,19 +52,19 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.f-subs-item{
-  border-right:solid 2px #ccc;
+.f-subs-item {
+  border-right: solid 2px var(--bs-border-color, #ccc);
   overflow: hidden;
 }
-.f-subs-item:last-child{
-  border-right:none;
+
+.f-subs-item:last-child {
+  border-right: none;
 }
 
 .scroll--h {
-  --background-color: rgba(255, 255, 255, 1);
-  --transparent: rgba(255, 255, 255, 0);
-  /* We can't use "transparent" directly, because Safari would interpret the color as "transparent black" (see https://css-tricks.com/thing-know-gradients-transparent-black/). Using this workaround, it works fine. */
-  --shadow-color: rgba(80, 205, 255, .5);
+  --background-color: var(--bs-body-bg, #fff);
+  --transparent: transparent;
+  --shadow-color: rgba(80, 205, 255, .3);
   --shadow-size: 1.5em;
 
   background:
@@ -80,21 +76,6 @@
   background-repeat: no-repeat;
   background-attachment: local, scroll, local, scroll;
   background-size: 100% 100%, var(--shadow-size) 100%, 100% 100%, var(--shadow-size) 100%;
-  // height: 100%;
-  // animation: blinker 1s linear infinite;
-  // animation: animatedBackground 10s linear infinite alternate;
-}
-
-// .custom-control {
-//   z-index: unset;
-// }
-
-// .flytag{
-//   position:absolute;top:6px;left:-25px; font-size:.6em; width:37px;text-align:right
-// }
-.active-outline {
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .7) !important;
 }
 
 .color-item {
@@ -103,16 +84,6 @@
 
 .tree-cont {
   position: relative;
-}
-
-.tree-cont::before {
-  /* content: '';
-position: absolute;
-background: gray;
-left: 0px;
-height: calc(100% - 22px);
-width: 2px;
-top: 11px; */
 }
 
 .cond-badge {
@@ -129,7 +100,7 @@ top: 11px; */
   top: 12px;
   left: 0px;
   height: 2px;
-  background: #ccc;
+  background: var(--bs-border-color, #ccc);
 }
 
 .param-badge {
@@ -144,7 +115,7 @@ top: 11px; */
   top: 12px;
   left: 0px;
   height: 2px;
-  background: #ccc;
+  background: var(--bs-border-color, #ccc);
 }
 
 .tree-wrapper {
@@ -159,7 +130,7 @@ top: 11px; */
   height: 100%;
   width: 2px;
   top: 0;
-  background: #ccc;
+  background: var(--bs-border-color, #ccc);
 }
 
 .tree-wrapper:first-child::before,

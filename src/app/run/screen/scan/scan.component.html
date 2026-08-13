@@ -5,7 +5,7 @@
       @if (camSupport()) {
         <div [ngClass]="altClass" class="position-absolute">
           @if (error) {
-            <div style="color: #f00">
+            <div class="text-danger">
               {{lang()=='ms'?'Kod QR tidak sah':'Invalid QR Code'}} ({{errorMsg()}})
             </div>
           }
@@ -34,7 +34,7 @@
       <div class="text-danger p-3 m-1">{{scError()}}</div>
     }
     @if (!camSupport()) {
-      <label class="bg-white p-3" for="qr-input-screen" style="display: block;margin-bottom: unset">
+      <label class="bg-body-tertiary text-body border rounded p-3" for="qr-input-screen" style="display: block;margin-bottom: unset">
         <input type="file" [hidden]="true" id="qr-input-screen" (change)="qrValueChanged($event)" [(ngModel)]="file"
           name="screen" accept="image/*" capture />
         <fa-icon [icon]="['fas','qrcode']" [fixedWidth]="true"></fa-icon>
@@ -45,7 +45,7 @@
   <canvas #canvas id="canvas" style="display:none"></canvas>
 </div>
 @if (loading()) {
-  <div class="p-4 text-muted text-center">
+  <div class="p-4 text-body-secondary text-center">
     <div class="lds-ellipsis">
       <div></div>
       <div></div>

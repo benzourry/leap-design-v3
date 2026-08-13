@@ -22,7 +22,7 @@ import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
   selector: 'app-design-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './design-home.component.html',
-  styleUrls: ['../../../assets/css/tile.css', './design-home.component.css'],
+  styleUrls: ['../../../assets/css/tile.scss', './design-home.component.css'],
   imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbPagination,
     NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent, NgTemplateOutlet]
 })

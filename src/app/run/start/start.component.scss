@@ -1,68 +1,52 @@
-/* iris app-nav */
-// :host {
-//   font-size: 0.875rem;
-//   background-color: transparent;
-// }
-
+/* ==========================================================================
+   APP NAV & MENUS
+   ========================================================================== */
 .menu {
-  color: white;
-}
-.menu .menu-heading fa-icon{
-  opacity:.5;
-}
-
-.menu a {
-  font-size: 0.9rem;
-  // 0.875rem;
-  font-weight: 500;
   color: #fff;
-  text-decoration: none;
-  display: block;
-  padding: 0.7rem 1rem;
-  text-align: left;
-  position: relative;
-}
-.menu .badge {
-  top: 12px; right: 15px; 
-  background-color: rgba(255, 255, 255, 0.5); 
-  color: #000000; 
-  mix-blend-mode: screen; 
-  border-radius: 6px; 
-  font-size: 11px; 
-  padding: 3px 5px;
-}
-.menu a fa-icon {
-  color: rgba(255, 255, 255, 0.5);
-  min-width: 1.5rem;
-  display: inline-block;
-}
 
-.menu a.active {
-  background: rgba(0, 0, 0, 0.1);
-}
+  .menu-heading fa-icon {
+    opacity: 0.5;
+  }
 
-// .menu a.active::after {
-//   content: "";
-//   position: absolute;
-//   right: 20px;
-//   top: 12px;
-//   width: 10px;
-//   height: 10px;
-//   background: rgba(255,255,255,0.5);
-//   border-radius: 10px;
-// }
+  a {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    position: relative;
 
-.menu .menu-heading {
-  font-size: 0.9rem; 
-  //0.875rem;
-  /* text-transform: uppercase; */
-  padding: 0.7rem 1rem;
-  cursor: pointer;
-  font-weight: 500;
+    fa-icon {
+      color: rgba(255, 255, 255, 0.5);
+      min-width: 1.5rem;
+      display: inline-block;
+    }
+
+    &.active {
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .badge {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 3px 5px;
+  }
+
+  .menu-heading {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
 }
-/* .menu .menu-heading.active{  
-  opacity: .3;
-} */
 
 .floating {
   position: fixed;
@@ -71,100 +55,115 @@
   width: 80px;
   height: 80px;
   border-radius: 50px;
-  background: white;
+  background: var(--bs-body-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.app-info {
-  /* background: rgba(255,255,255,.05); */
-}
-
-.topgap .app-info{
+.topgap .app-info {
   padding-top: 3.8em !important;
 }
 
 .app-nav {
   color: #f8f9fa;
   background: #0747a6;
-  // flex: 1;
+  transition: background-color 0.3s ease;
+}
+
+/* Automatically switch App Nav to a dark background in Dark Mode */
+[data-bs-theme="dark"] .app-nav {
+  background: var(--bs-dark);
 }
 
 .content {
   flex: 1;
   padding: 0px;
-  background: whitesmoke;
-  /* overflow: auto; */
+  background: var(--bs-tertiary-bg);
 }
-/* Layout for sidemenu*/
 
+/* ==========================================================================
+   LAYOUT & SIDEMENU
+   ========================================================================== */
 .wrapper {
   height: 100%;
 }
-// .wrapper.topnav{
-//   display:flex;
-//   flex-direction: column;
-// }
 
 .app-menu {
   padding-bottom: 1rem;
 }
-.app-info a{
+
+.app-info a {
   text-decoration: none;
 }
-.app-user{
-  padding:3px;
-  margin-left:-3px;
-  border-radius:24px;  
+
+.app-user {
+  padding: 3px;
+  margin-left: -3px;
+  border-radius: 24px;  
   max-width: 270px;
   transition: all 350ms ease-in-out;
+
+  &:hover,
+  &:active {
+    background: rgba(255, 255, 255, 0.2);  
+  }
 }
-// .app-user:focus{
-//   outline: 0;
-// }
-.app-user:hover,
-.app-user:active{
-  background:rgba(255,255,255,.2);  
-}
-.edit-mode{
+
+.edit-mode {
   position: fixed;
   bottom: 0;
-  left:0;
-  z-index:9003;
+  left: 0;
+  z-index: 9003;
 }
+
 .offcanvas-overlay {
   background: #000;
   opacity: 0;
   transition: opacity 350ms linear;
 }
-.overlay-close{
-  position:fixed;
-  bottom:10px;
-  right:20px;
-  // z-index:20;
-  color:white;
+
+.overlay-close {
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  color: white;
   font-size: 1.4em;
 }
-.noframe .offcanvas-overlay {
-  display:none;
+
+.noframe {
+  .offcanvas-overlay,
+  .app-nav {
+    display: none;
+  }
 }
-.noframe .app-nav{
-  display:none;
-}
-/* TRY NAVMENU */
-.sidemenu .app-nav {
-  position: fixed;
-  bottom: 0px;
-  top: 0px;
-  left: -270px;
-  z-index: 998;
-  width: 270px;
-  transition: left 250ms ease-in-out;
-  overflow-y: auto;
-  height: 100%;
-}
-.sidemenu.active .app-nav {
-  bottom: 0px;
-  top: 0px;
-  left: 0px;
+
+/* Mobile Sidemenu */
+.sidemenu {
+  .app-nav {
+    position: fixed;
+    bottom: 0px;
+    top: 0px;
+    left: -270px;
+    z-index: 998;
+    width: 270px;
+    transition: left 250ms ease-in-out;
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  &.active .app-nav {
+    left: 0px;
+  }
+
+  .content {
+    overflow: auto;
+    height: 100%;
+  }
+
+  .dark-mode-toggle {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+  }
 }
 
 .active .offcanvas-overlay {
@@ -176,169 +175,155 @@
   z-index: 997;
   opacity: 0.6;
 }
-.sidemenu .content {
-  overflow: auto;
-  height: 100%;
-}
-// .sidemenu.active .content{
-//   filter:blur(7px);
-// }
-.sidemenu.active .content.dark-mode{
-  filter:invert(1) hue-rotate(180deg)
-}
-/* END */
-.app-nav.dark-mode-nav{
-  background-color:#1d1d1d !important;
-}
 
-.dark-mode-toggle{
-  font-size:.8em;
-  opacity: .6;
+.dark-mode-toggle {
+  font-size: 0.8em;
+  // opacity: 0.6;
   cursor: pointer;
-  padding: 1rem 1.2rem .8rem;
+  color: inherit;
 }
 
-.sidemenu .dark-mode-toggle{
-  position: relative;
-  bottom:0px;
-}
-
-
-/* For Sidemenu */
+/* ==========================================================================
+   DESKTOP SIDEMENU (>= 640px)
+   ========================================================================== */
 @media screen and (min-width: 640px) {
-  /* TRY NAVMENU */
-  .offcanvas-overlay{
+  .offcanvas-overlay {
     display: none;
   }
-  .sidemenu .app-nav {
-    position: unset;
+
+  .sidemenu {
+    &.wrapper {
+      display: flex;
+    }
+
+    .app-nav {
+      position: relative;
+      left: 0;
+      top: 0;
+      width: 270px;
+      min-width: 270px;
+      max-width: 270px;
+      height: 100vh;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .content {
+      height: 100%;
+      overflow: auto;
+    }
   }
-  /* END */
 
-  .app-info{
-
-  }
-
-  .topgap .app-info{
+  .topgap .app-info {
     padding-top: 1em !important;
   }
+}
 
-  .sidemenu.wrapper {
+/* ==========================================================================
+   TOPNAV LAYOUT
+   ========================================================================== */
+.topnav {
+  &.wrapper {
     display: flex;
+    flex-direction: column;
   }
 
-  .sidemenu .app-nav {
-    max-width: 270px;
-    overflow: auto;
-    /* border-right: solid 1px #ddd; */
+  .app-nav {
+    position: fixed;
+    width: 100%;
+    top: -100%;
+    z-index: 998;
+    transition: top 250ms ease-in-out;
+    max-height: calc(100% - 50px);
+    overflow-y: auto;
   }
 
-  .sidemenu .content {
-    height: 100%;
-    overflow: auto;
+  &.active .app-nav {
+    top: 0;
   }
-  // .sidemenu.active .content,.sidemenu.active .content.dark-mode{
-    // filter: none;
-  // }
 }
 
-/* For Topnav */
-.topnav.wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-.topnav .app-nav{
-  position: fixed;
-  width:100%;
-  top:-100%;
-  z-index: 998;
-  transition: top 250ms ease-in-out;
-  max-height: calc(100% - 50px);
-  overflow-y: auto;
-}
-.topnav.active .app-nav{
-  top:0;
-  // display:unset;
-}
 @media screen and (min-width: 640px) {
   .app-menu {
     padding-bottom: 0;
   }
-  // REPOSITION USER INFO WHEN WIDE SCREEN
-  .topnav .app-user{
-    text-align: left;
-    position: absolute;
-    right: 55px;
-    top: -5px; 
-    width: max-content;
-    max-width:36px;
-  }
-  .topnav .app-user:hover,
-  .topnav .app-user:active{
-    max-width: 270px;
-    padding-right: 15px;
-  }
 
-  .topnav .app-nav {
-    flex-grow: 0;
-    text-align: center;
-    position: unset;
-    overflow-y: unset;
-    /* border-bottom: solid 1px #ddd; */
-  }
+  .topnav {
+    .app-user {
+      text-align: left;
+      position: absolute;
+      right: 55px;
+      top: -5px; 
+      width: max-content;
+      max-width: 36px;
 
-  .topnav .content {
-    // height: 100%;
-    overflow: auto; // problem mn dataset lebar. xpat scroll mn xda overflow:auto.
-  }
+      &:hover,
+      &:active {
+        max-width: 270px;
+        padding-right: 15px;
+      }
+    }
 
-  .topnav .menu-items {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    min-width: 100%; /* <--- ADD THIS LINE */
-    background: white;
-    z-index: 10;
-  }
+    .app-nav {
+      flex-grow: 0;
+      text-align: center;
+      position: relative;
+      top: 0; /* Added: Resets mobile top: -100% offset */
+      overflow-y: unset;
+    }
 
-  .topnav .menu-heading.active {
-    background: white;
-    color: black;
-  }
+    .content {
+      overflow: auto;
+    }
 
-  .topnav .menu {
-    /* float: left; */
-    display: inline-block;
-    position: relative;
-  }
+    /* Topnav Dropdown Menus */
+    .menu-items {
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 100%;
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      z-index: 10;
+    }
 
-  .topnav .menu .badge {
-    background-color: rgba(0, 0, 0, 0.5); 
-    color: #fff; 
-    mix-blend-mode: unset; 
-  }
+    .menu-heading.active {
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+    }
 
-  .topnav .menu a {
-    color: black;
-    white-space: nowrap;
-  }
+    .menu {
+      display: inline-block;
+      position: relative;
 
-  .topnav .menu a fa-icon {
-    color: rgba(0, 0, 0, 0.5);
-  }
+      .badge {
+        background-color: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
+      }
 
-  .topnav .dark-mode-toggle{
-    position: absolute;
-    right:0px;
-    top:55px;
+      a {
+        color: var(--bs-body-color);
+        white-space: nowrap;
+
+        fa-icon {
+          color: var(--bs-secondary-color);
+        }
+      }
+    }
+
+    .dark-mode-toggle {
+      position: absolute;
+      top: 0; 
+      left: 0;
+    }
   }
 }
 
-.menu-text{
-  margin-left:28px;
+.menu-text {
+  margin-left: 28px;
 }
-.menu-items fa-icon{
-  float:left;
+
+.menu-items fa-icon {
+  float: left;
 }

@@ -34,7 +34,7 @@ import { ToastService } from '../../_shared/service/toast-service';
 @Component({
     selector: 'app-run-home',
     templateUrl: './repo-home.component.html',
-    styleUrls: ['../../../assets/css/tile.css', './repo-home.component.css'],
+    styleUrls: ['../../../assets/css/tile.scss', './repo-home.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [RouterLink, RouterLinkActive, AppEditComponent, FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe]
 })

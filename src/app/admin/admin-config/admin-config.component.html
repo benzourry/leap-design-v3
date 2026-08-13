@@ -1,27 +1,47 @@
+<style>
+  input[type=search].start {
+    background: var(--bs-tertiary-bg, #ccc) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23888" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>') no-repeat 8px center;
+    background-size: 20px 16px;
+    border: 1px solid var(--bs-border-color, #ccc);
+    padding: 6px 10px 6px 32px;
+    vertical-align: middle;
+    border-radius: 10em;
+    color: var(--bs-body-color);
+    max-width: 100%;
+  }
+
+  input[type=search].start:focus {
+    border-color: #0078d7;
+    outline: none;
+    -webkit-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    -moz-box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+    box-shadow: 0 0 5px rgba(109, 207, 246, .5);
+  }
+</style>
 <div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
     <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
-        <div class="home-top-l p-2">
-            <img src="assets/icons/logo-w.svg" width="38">
+      <div class="home-top-l p-2">
+        <img src="assets/icons/logo-w.svg" width="38">
+      </div>
+      <div class="home-top-r pe-2">
+        <div class="d-flex">
+          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          @if (user?.manager){
+          <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          }
+          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+            <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
+          </a>
         </div>
-        <div class="home-top-r pe-2">
-            <div class="d-flex">
-                <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
-                <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
-                @if (user?.manager){
-                <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
-                }
-                <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
-                    <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
-                </a>
-            </div>
-        </div>
+      </div>
     </div>
 </div>
 
 
 <div class="limit-width centered p-3 tab-simple">
     <div class="mb-3">
-        <button class="btn btn-light bg-white btn-rounded fs-5" routerLink="/admin">
+        <button class="btn btn-outline-secondary btn-rounded fs-5" routerLink="/admin">
             <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
             Home
         </button>
@@ -47,7 +67,7 @@
                 </div>
                 @if (platformProps?.length > 0) {
                 <table class="table tblcard">
-                    <thead class="bg-light list-tmid ds-thead">
+                    <thead class="bg-body-tertiary list-tmid ds-thead">
                         <tr>
                             <th class="ds-item">Key</th>
                             <th class="ds-item">Value</th>
@@ -61,8 +81,8 @@
                             <td data-label="Value" class="ds-item">
                                 @if (i.group=='platform' && i.key=='managers'){
                                     @for(splitted of splitAsList(i.value); track $index){
-                    
-                                        <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
+                                    
+                                        <div class="d-inline-block me-1 border bg-body-tertiary rounded px-1 mb-1 overflow-hidden">
                                             <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
                                           height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
                                             {{splitted}}
@@ -102,7 +122,7 @@
 
                 @if (appProps?.length > 0) {
                 <table class="table tblcard">
-                    <thead class="bg-light list-tmid ds-thead">
+                    <thead class="bg-body-tertiary list-tmid ds-thead">
                         <tr>
                             <th class="ds-item">Key</th>
                             <th class="ds-item">Value</th>
@@ -143,7 +163,7 @@
 
                 @if (appGroups?.length > 0) {
                 <table class="table tblcard">
-                    <thead class="bg-light list-tmid ds-thead">
+                    <thead class="bg-body-tertiary list-tmid ds-thead">
                         <tr>
                             <th class="ds-item">Name</th>
                             <th class="ds-item">Description</th>
@@ -158,8 +178,8 @@
                             <td class="ds-item" data-label="Description">{{ i.description }}</td>
                             <td class="ds-item" data-label="Managers">
                                 @for(splitted of splitAsList(i.managers); track $index){
-                    
-                                    <div class="d-inline-block me-1 border bg-light rounded px-1 mb-1 overflow-hidden">
+                                    
+                                    <div class="d-inline-block me-1 border bg-body-tertiary rounded px-1 mb-1 overflow-hidden">
                                         <img src="{{base}}/user/-1/photo/{{splitted}}" alt="Photo" onError="this.src='assets/img/avatar-big.png'" width="22"
                                       height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
                                         {{splitted}}
@@ -208,16 +228,11 @@
                 <div class="form-group mb-3">
                     <label class="form-label">Group *</label>
                     <select class="form-select" name="userFromApp" disabled [(ngModel)]="editPropsData.group" required>
-                        <!-- <option [ngValue]="undefined" class="text-muted">Use own local user</option> -->
-                        <!-- @for (app of otherAppList; track app.id) { -->
                         <option value="platform">Platform</option>
                         <option value="app.prop">application.properties</option>
-                        <!-- } -->
                     </select>
-                    <!-- <input type="text" class="form-control" name="code" #propsGroup="ngModel"
-                        [(ngModel)]="editPropsData.group" required /> -->
                     @if (propsGroup?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (propsGroup.errors?.required) {
                         <span class="help-block">Group is required</span>
                         }
@@ -229,7 +244,7 @@
                     <input type="text" class="form-control" name="name" #propsKey="ngModel"
                         [(ngModel)]="editPropsData.key" required />
                     @if (propsKey?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (propsKey.errors?.required) {
                         <span class="help-block">Key is required</span>
                         }
@@ -240,10 +255,8 @@
                     <label class="form-label">Value *</label>
                     <textarea class="form-control" name="value" #propsValue="ngModel" [(ngModel)]="editPropsData.value"
                         required></textarea>
-                    <!-- <input type="text" class="form-control" name="value" #propsValue="ngModel"
-                        [(ngModel)]="editPropsData.value" required /> -->
                     @if (propsValue?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (propsValue.errors?.required) {
                         <span class="help-block">Value is required</span>
                         }
@@ -261,7 +274,7 @@
             </div>
         </div>
         <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-round" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
             <button type="button" class="btn btn-round btn-primary" [disabled]="editPropsForm.invalid"
                 (click)="c(editPropsData)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -283,7 +296,7 @@
                     <input type="text" class="form-control" name="agname" #appGroupName="ngModel"
                         [(ngModel)]="editAppGroupData.name" required />
                     @if (appGroupName?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (appGroupName.errors?.required) {
                         <span class="help-block">Name is required</span>
                         }
@@ -295,7 +308,7 @@
                     <textarea class="form-control" name="agdesc" #appGroupDesc="ngModel" [(ngModel)]="editAppGroupData.description"
                         required></textarea>
                     @if (appGroupDesc?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (appGroupDesc.errors?.required) {
                         <span class="help-block">Description is required</span>
                         }
@@ -307,7 +320,7 @@
                     <textarea class="form-control" name="agmanagers" #appGroupManagers="ngModel" [(ngModel)]="editAppGroupData.managers"
                         required></textarea>
                     @if (appGroupManagers?.invalid) {
-                    <small class="form-text has-warning">
+                    <small class="form-text text-warning">
                         @if (appGroupManagers.errors?.required) {
                         <span class="help-block">Managers is required</span>
                         }
@@ -325,7 +338,7 @@
             </div>
         </div>
         <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-round" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
             <button type="button" class="btn btn-round btn-primary" [disabled]="editAppGroupForm.invalid"
                 (click)="c(editAppGroupData)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>

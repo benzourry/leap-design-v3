@@ -1,7 +1,12 @@
-.lookup-disabled{
-    text-decoration: line-through;
+.lookup-disabled {
+  text-decoration: line-through;
+  opacity: 0.6;
 }
+
 .dropdown-toggle::after {
-    display: none;
-  }
-  .extra-data-tbl tr:last-child{border-bottom:transparent;}
+  display: none;
+}
+
+.extra-data-tbl tr:last-child {
+  border-bottom: transparent;
+}

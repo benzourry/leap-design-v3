@@ -1,22 +1,22 @@
 <div>
   @if (!hideControl()) {
-    <div>
-      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="formatCode()"
-      [disabled]="readOnly()">Format</button>
-      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="foldAll()">Fold All</button>
-      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="unfoldAll()">Unfold All</button>
-      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="openSearch()">Search</button>
-      <button type="button" class="btn btn-light ms-1 mb-1 btn-xs float-right" (click)="undo()">Undo</button>
+    <!-- Changed justify-content-end to justify-content-start -->
+    <div class="d-flex justify-content-start flex-wrap gap-1 mb-1 ms-3">
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="undo()">Undo</button>
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="openSearch()">Search</button>
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="unfoldAll()">Unfold All</button>
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="foldAll()">Fold All</button>
+      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="formatCode()" [disabled]="readOnly()">Format</button>
     </div>
   }
   
   <div #codemirrorhost class="codemirrorhost"></div>
   
   @if (!skipCheck() && codeStatus) {
-    <div class="text-white small p-1 bg-danger">{{codeStatus}}</div>
+    <div class="text-white small p-1 bg-danger mt-1">{{codeStatus}}</div>
   }
   
   @if (isAssignmentError) {
-    <div class="text-white small p-1 bg-danger">Value assignment is not allowed here</div>
+    <div class="text-white small p-1 bg-danger mt-1">Value assignment is not allowed here</div>
   }
 </div>

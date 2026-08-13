@@ -49,7 +49,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
           <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
             <button ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
               @if (form().showIndex) {
-                <div style="float:left;height:25px; width:25px;background:#666; color:white;
+                <div style="float:left;height:25px; width:25px;background:var(--bs-secondary-bg); color:var(--bs-body-color);
                   padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
                   border-radius:20px;">{{$index + 1}}</div>
               }
@@ -86,7 +86,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
         <li [ngbNavItem]="'view' + $index" [disabled]="!disabledTabs()[tab.id]">
           <a ngbNavLink>
             @if (form().showIndex) {
-              <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
+              <div style="float:left;height:20px; width:20px;background:var(--bs-secondary-bg); color:var(--bs-body-color); font-size: .8em;
                 padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
                 border-radius:20px;">{{$index + 1}}</div>
             }
@@ -214,7 +214,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
                         } 
                         {{e.title}}
-                        <span class="badge badge-pill bg-dark float-end">{{data() && data()[e.code]?.length}}</span>
+                        <span class="badge rounded-pill bg-secondary float-end">{{data() && data()[e.code]?.length}}</span>
                       </h6>
                       @if (e.description) {
                         <div class="card-subtitle small mt-1" [innerHtml]="e.description"></div>
@@ -224,7 +224,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                   @if (data() && data()[e.code]?.length > 0) {
                     @if (e.x?.tableStyle) {
                       <div class="table-responsive mx-4">
-                        <table class="table table-print mb-0 table-striped bg-white mb-4">
+                        <table class="table table-print mb-0 table-striped bg-body mb-4">
                           <thead>
                             <tr>
                               @for (f of e.x?.tableFields; track $index) {
@@ -240,7 +240,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                               @if (e.x?.defGroupField) {
                                 <tr class="ds-group-header">
                                   <td [attr.colspan]="e.x?.tableFields?.length" style="padding:0">
-                                    <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                                    <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold bg-body-secondary text-body" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
                                       @if(!hideGroup[e.code+listKv?.key]) {
                                         <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                                       } @else {
@@ -262,7 +262,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                               @if(!hideGroup[e.code+listKv?.key]) {
                                 @for (child of listKv.value; track $index; let $index_c = $index) {
                                   <tr>
-                                    @for (f of e.x?.tableFields; track $index; let $index_f = $index) {                                      
+                                    @for (f of e.x?.tableFields; track $index; let $index_f = $index) {                                       
                                       @let field = form()?.items[f];
                                       @if (field && field.subType !== 'clearfix') {
                                         <td>
@@ -272,7 +272,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                             @if (field.type === 'static') {
                                               <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()" 
                                                 [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
-                                            }                                      
+                                            }                                       
                                         </td>
                                       }
                                     }
@@ -286,7 +286,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                     } @else {
                       @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index) {
                         @if (e.x?.defGroupField) {
-                          <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                          <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-body-secondary text-body fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
                             @if(!hideGroup[e.code+listKv?.key]) {
                               <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                             } @else {
@@ -307,7 +307,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           <div class="list-group list-group-flush list-child pt-1 px-4 pb-4">
                             @for (child of listKv.value; track $index; let $index_c = $index) {
                               @let $index_child = $index_g + '-' + $index_c;
-                              <div class="list-group-item px-0 py-4">
+                              <div class="list-group-item px-0 py-4 bg-transparent text-body">
                                 <div class="row g-4">
                                   @for (f of e.items; track f.id) {
                                     @let field = form()?.items[f.code];
@@ -344,7 +344,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                     }
                   } @else {
                     <div class="card-body p-4">
-                      <p>{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
+                      <p class="m-0 text-body-secondary">{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
                     </div>
                   }
                 </div>
@@ -554,19 +554,6 @@ export class FormViewComponent implements OnInit {
     return !code || res;
   }
 
-  // _eval = (data: any, v: string, includeActive: boolean) => { 
-  //   const bindings = this.evalContextFn()(this.entry(), data, {}, this.form(), includeActive);
-  //   bindings.$ = data;
-  //   bindings.$this$ = this.$this$();
-  //   bindings.$conf$ = this.appConfig; 
-    
-  //   const argNames  = Object.keys(bindings);
-  //   const argValues = Object.values(bindings);
-    
-  //   return new Function(...argNames, `return ${v}`)(...argValues);
-  // }
-
-  // --- DRY Caching Engine for Eval ---
   private evalCache = new Map<string, Function>();
 
   _eval = (data: any, v: string, includeActive: boolean) => { 
@@ -582,7 +569,6 @@ export class FormViewComponent implements OnInit {
     
     let fn = this.evalCache.get(cacheKey);
     if (!fn) {
-      // Only compile the function once per unique execution string
       fn = new Function(...argNames, `return ${v}`);
       this.evalCache.set(cacheKey, fn);
     }
