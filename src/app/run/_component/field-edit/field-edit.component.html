@@ -28,9 +28,9 @@
           <div class="input-group">
             @if (f.x?.prefix) {
               @if (f.x?.prefixPost) {
-                <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
               } @else {
-                <span class="input-group-text smyds" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
               }
             }
             <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
@@ -40,9 +40,9 @@
               (blur)="valueBlured($event)" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
             @if (f.x?.suffix) {
               @if (f.x?.suffixPost) {
-                <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
               } @else {
-                <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
               }
             }
           </div>
@@ -53,11 +53,16 @@
           }
         }
         @else if (f.subType == 'textarea') {
-          <textarea class="form-control smyds" [class.is-invalid]="isInvalid" [id]="uid"
+          <textarea class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid" [id]="uid"
             [ngxMask]="f.v?.mask" [name]="uid" #formField="ngModel" [(ngModel)]="value"
-            [maxlength]="f.v?.maxlength" [minlength]="f.v?.minlength" [placeholder]="placeholder"
+            [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" [minlength]="f.v?.minlength" [placeholder]="placeholder"
             [pattern]="f.v?.pattern" [rows]="f.v?.rows||3" [required]="f.v?.required"
             (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="f.readOnly"></textarea>
+          @if (hasFocus) {
+            <datalist id="datalist-{{uid}}">
+              @for (i of lookupList(); track $index) { <option>{{i.name}}</option> }
+            </datalist>
+          }
         }
         @else if (f.subType == 'richtext') {
           <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="!!value" [class.pe-none]="f.readOnly">
@@ -74,10 +79,33 @@
       }
 
       @case ('color') {
-        <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
-          type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
-          [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
-          (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+        @if (f.x?.prefix || f.x?.suffix) {
+          <div class="input-group">
+            @if (f.x?.prefix) {
+              @if (f.x?.prefixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+              }
+            }
+            <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
+              type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
+              [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+              (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+            @if (f.x?.suffix) {
+              @if (f.x?.suffixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+              }
+            }
+          </div>
+        } @else {
+          <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
+            type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
+            [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+            (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+        }
       }
 
       @case ('number') {
@@ -93,9 +121,9 @@
           <div class="input-group">
             @if (f.x?.prefix) {
               @if (f.x?.prefixPost) {
-                <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
               } @else {
-                <span class="input-group-text smyds" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
               }
             }
             <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
@@ -103,9 +131,9 @@
               [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
             @if (f.x?.suffix) {
               @if (f.x?.suffixPost) {
-                <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
               } @else {
-                <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
               }
             }
           </div>
@@ -170,14 +198,12 @@
           @if (f?.subType=='btn') {
             <div role="group">
               @for (i of lookupList(); track $index) {
-                <!-- @let i = {...n}; -->
                 <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
                   [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" 
                   autocomplete="off"[disabled]="f.readOnly || isDisabled(i)">
                 <label class="btn btn-outline-secondary me-1 mb-1 light text-start toggle-opt" for="{{uid}}-{{$index}}"
                   [class.active]="checkValue(i)" [class.disabled]="f.readOnly || isDisabled(i)">
                   @if (f?.placeholder) {
-                    <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
                     <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
@@ -188,7 +214,6 @@
           } @else {
             <div>
               @for (i of lookupList(); track $index) {
-                <!-- @let i = {...n}; -->
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline">
                   <input type="checkbox" class="form-check-input smyds" [value]="i" id="{{uid}}-{{i?.code}}"
                     [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);"
@@ -196,7 +221,6 @@
                   <label class="form-check-label" for="{{uid}}-{{i?.code}}" 
                     [class.disabled]="f.readOnly || isDisabled(i)">
                     @if (f?.placeholder) {
-                      <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
                       <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
@@ -219,19 +243,49 @@
 
       @case ('modelPicker') {
         <div [class.modelPicker]="value && f?.placeholder">
-          <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
-            [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
-            [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
-            [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
-            [multiple]="f.subType?.includes('multiple')" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')" 
-            [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
-            @if (f?.placeholder) {
-              <ng-template ng-option-tmp let-item="item">
-                <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item, '$prev$':item.$prev})|safe:'html'"></div> -->
-                <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
-              </ng-template>
-            }
-          </ng-select>
+          @if (f.x?.prefix || f.x?.suffix) {
+            <div class="input-group">
+              @if (f.x?.prefix) {
+                @if (f.x?.prefixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                }
+              }
+              <ng-select class="smyds flex-grow-1" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+                [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
+                [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+                [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
+                [multiple]="f.subType?.includes('multiple')" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')" 
+                [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
+                @if (f?.placeholder) {
+                  <ng-template ng-option-tmp let-item="item">
+                    <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                  </ng-template>
+                }
+              </ng-select>
+              @if (f.x?.suffix) {
+                @if (f.x?.suffixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                }
+              }
+            </div>
+          } @else {
+            <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+              [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
+              [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+              [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
+              [multiple]="f.subType?.includes('multiple')" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')" 
+              [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
+              @if (f?.placeholder) {
+                <ng-template ng-option-tmp let-item="item">
+                  <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                </ng-template>
+              }
+            </ng-select>
+          }
           @if (f?.placeholder) {
             @if (f.subType?.includes('multiple')) {
               @if (value?.length > 0) {
@@ -252,44 +306,84 @@
 
       @case ('select') {
         <div [class.modelPicker]="value && f?.placeholder">
-          <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
-            [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
-            [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
-            [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
-            [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
-            (search)="valueSearched($event)" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')"
-            [searchFn]="lookupSearchFn">
-            @if (f?.placeholder) {
-              <ng-template ng-option-tmp let-item="item">
-                <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':item})|safe:'html'"></div> -->
-                <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
-              </ng-template>
-            }
-            @if (f?.x?.groupBy) {
-              <ng-template ng-label-tmp let-item="item">
-                <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
-                <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon> {{item.name}}
-              </ng-template>
-            }
-            @if(f.x?.addEntryEnabled) {
-              <ng-template ng-tag-tmp let-search="searchTerm">
-                <div><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong></div>
-              </ng-template>
-            }
-          </ng-select>
+          @if (f.x?.prefix || f.x?.suffix) {
+            <div class="input-group">
+              @if (f.x?.prefix) {
+                @if (f.x?.prefixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                }
+              }
+              <ng-select [items]="processedLookupList()" class="smyds flex-grow-1" [class.is-invalid]="isInvalid" #formField="ngModel"
+                [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+                [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
+                [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
+                [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
+                (search)="valueSearched($event)" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')"
+                [searchFn]="lookupSearchFn">
+                @if (f?.placeholder) {
+                  <ng-template ng-option-tmp let-item="item">
+                    <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                  </ng-template>
+                }
+                @if (f?.x?.groupBy) {
+                  <ng-template ng-label-tmp let-item="item">
+                    <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
+                    <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon> {{item.name}}
+                  </ng-template>
+                }
+                @if(f.x?.addEntryEnabled) {
+                  <ng-template ng-tag-tmp let-search="searchTerm">
+                    <div><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong></div>
+                  </ng-template>
+                }
+              </ng-select>
+              @if (f.x?.suffix) {
+                @if (f.x?.suffixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                }
+              }
+            </div>
+          } @else {
+            <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
+              [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+              [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
+              [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
+              [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
+              (search)="valueSearched($event)" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')"
+              [searchFn]="lookupSearchFn">
+              @if (f?.placeholder) {
+                <ng-template ng-option-tmp let-item="item">
+                  <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                </ng-template>
+              }
+              @if (f?.x?.groupBy) {
+                <ng-template ng-label-tmp let-item="item">
+                  <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
+                  <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon> {{item.name}}
+                </ng-template>
+              }
+              @if(f.x?.addEntryEnabled) {
+                <ng-template ng-tag-tmp let-search="searchTerm">
+                  <div><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong></div>
+                </ng-template>
+              }
+            </ng-select>
+          }
           @if (f?.placeholder) {
             @if (f.subType?.includes('multiple')) {
               @if (value?.length>0) {
                 <div class="list-group">
                   @for (sv of value; track $index) {
-                    <!-- <div class="list-group-item" [innerHtml]="compiledLookupMap().get(getLookupMapKey(sv)) | safe:'html'"></div> -->
                     <div class="list-group-item" [innerHtml]="compileTpl(f.placeholder,{'$':sv})|safe:'html'"></div>
                   }
                 </div>
               }
             } @else {
               @if (value) {
-                <!-- <div class="card card-body single-pane" [innerHtml]="compiledLookupMap().get(getLookupMapKey(value)) | safe:'html'"></div> -->
                 <div class="card card-body single-pane" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
               }
             }
@@ -303,7 +397,6 @@
           @if (f?.subType=='btn') {
             <div role="group">
               @for (i of lookupList(); track $index) {
-                <!-- @let i = {...n}; -->
                 <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
                   (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
                   id="{{uid}}-{{$index}}" autocomplete="off" [disabled]="f.readOnly || isDisabled(i)" />
@@ -311,7 +404,6 @@
                   [class.active]="value?.code === i?.code"
                   [class.disabled]="f.readOnly || isDisabled(i)">
                   @if (f?.placeholder) {
-                    <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
                     <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                   } @else {
                     <span [innerHtml]="i?.name"></span>
@@ -322,7 +414,6 @@
           } @else {
             <div>
               @for (i of lookupList(); track $index) {
-                <!-- @let i = {...n}; -->
                 <div class="form-check mt-1" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
                   <input type="radio" class="form-check-input smyds" #fieldValue [value]="i" id="{{uid}}-{{i?.code}}"
                     [checked]="value?.code === i?.code" [name]="uid" [required]="f.v?.required"
@@ -331,7 +422,6 @@
                   <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}"
                     [class.disabled]="f.readOnly || isDisabled(i)">
                     @if (f?.placeholder) {
-                      <!-- <div [innerHtml]="compileTpl(f.placeholder,{'$':i})|safe:'html'"></div> -->
                       <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
                     } @else {
                       <span [innerHtml]="i?.name"></span>
@@ -401,40 +491,101 @@
       @case ('file') {
         @if (['other','othermulti'].includes(f.subType)) {
           <div class="custom-file" [class.disabled]="f.readOnly">
-            <label class="has-float-label" [class.extracting]="extractLoading()" for="{{uid}}">
-              @if (fileProgress()) {
-                <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
-                  <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
-                </div>
-              }
-              <input type="file" [hidden]="true" [class.is-invalid]="isInvalid" #native #formField="ngModel" #fileInput
-                (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
-                [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
-                [accept]="f.v.accept" [required]="!value && f?.v?.required" />
-              @if (!value) {
-                <div class="form-control nobreak smyds" [class.is-invalid]="isInvalid">
-                  <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{f.placeholder||'Browse'}}
-                </div>
-              } @else {
-                @if (f.subType=='other') {
-                  <div class="form-control nobreak smyds" style="background: white;padding-right:30px;">{{value}}</div>
-                } @else {
-                  <div class="form-control nobreak" [ngStyle]=" value.length>1 && {'height':'auto'}" style="background: white;padding-right:30px;">
-                    @for (vf of value; track $index) { <div>{{vf}}</div> }
+            @if (f.x?.prefix || f.x?.suffix) {
+              <div class="input-group">
+                @if (f.x?.prefix) {
+                  @if (f.x?.prefixPost) {
+                    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                  } @else {
+                    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                  }
+                }
+                
+                <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
+                       [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
+                  @if (fileProgress()) {
+                    <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
+                      <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
+                    </div>
+                  }
+                  <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
+                    (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
+                    [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
+                    [accept]="f.v.accept" [required]="!value && f?.v?.required" />
+                  
+                  @if (!value) {
+                    <div class="nobreak">
+                      <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{f.placeholder||'Browse'}}
+                    </div>
+                  } @else {
+                    @if (f.subType=='other') {
+                      <div class="nobreak pe-4">{{value}}</div>
+                    } @else {
+                      <div class="nobreak pe-4" [ngStyle]="value.length > 1 && {'height':'auto'}">
+                        @for (vf of value; track $index) { <div>{{vf}}</div> }
+                      </div>
+                    }
+                  }
+                  
+                  <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background:white;">
+                    @if (f.x?.extractor) {
+                      <div style="padding:2px 5px; color:#4c0bce; font-size:0.9em; line-height:0.9em;">
+                        <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
+                      </div>            
+                    }     
+                    @if (value) {
+                      <div style="width:20px; cursor:pointer; color:#999; font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                    }        
+                  </div>
+                </label>
+
+                @if (f.x?.suffix) {
+                  @if (f.x?.suffixPost) {
+                    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                  } @else {
+                    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                  }
+                }
+              </div>
+            } @else {
+              <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
+                     [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
+                @if (fileProgress()) {
+                  <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
+                    <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
                   </div>
                 }
-              }
-              <div style="position:absolute;top:10px; right:5px;display: flex;background:white;">
-                @if (f.x?.extractor) {
-                  <div style="padding:5px;color: #4c0bce;font-size:0.9em;line-height:0.9em;">
-                    <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
-                  </div>            
-                }     
-                @if (value) {
-                  <div style="width:25px;cursor:pointer;padding:5px;color: #999;font-weight:bold;font-size:1.4em;line-height:10px;" (click)="clear(native)">×</div>
-                }        
-              </div>
-            </label>
+                <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
+                  (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
+                  [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
+                  [accept]="f.v.accept" [required]="!value && f?.v?.required" />
+                
+                @if (!value) {
+                  <div class="nobreak">
+                    <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{f.placeholder||'Browse'}}
+                  </div>
+                } @else {
+                  @if (f.subType=='other') {
+                    <div class="nobreak pe-4">{{value}}</div>
+                  } @else {
+                    <div class="nobreak pe-4" [ngStyle]="value.length > 1 && {'height':'auto'}">
+                      @for (vf of value; track $index) { <div>{{vf}}</div> }
+                    </div>
+                  }
+                }
+                
+                <div style="position:absolute; top:50%; transform:translateY(-50%); right:8px; display:flex; background:white;">
+                  @if (f.x?.extractor) {
+                    <div style="padding:2px 5px; color:#4c0bce; font-size:0.9em; line-height:0.9em;">
+                      <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
+                    </div>            
+                  }     
+                  @if (value) {
+                    <div style="width:20px; cursor:pointer; color:#999; font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                  }        
+                </div>
+              </label>
+            }
           </div>
         }
         @if (['image','imagemulti'].includes(f.subType)) {
@@ -443,7 +594,7 @@
             <input type="file" style="display: none" #native #formField="ngModel" (change)="fileValueChanged($event)"
               [id]="uid" [(ngModel)]="file[f.code]" [name]="uid"
               [multiple]="f.subType == 'imagemulti'" [required]="!value  && f?.v?.required" accept="image/*" />
-            <label class="mb-0 d-block position-relative smyds" for="{{uid}}">
+            <label class="mb-0 d-block position-relative smyds cursor-pointer" for="{{uid}}">
               @if (fileProgress()) {
                 <div class="progress position-absolute top-0 end-0 mt-1 me-1" style="width: 60px; height:5px;">
                   <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
@@ -491,9 +642,9 @@
             <div class="input-group">
               @if (f.x?.prefix) {
                 @if (f.x?.prefixPost) {
-                  <button type="button" class="btn btn-outline-secondary smyds" (click)="prefixClicked()" [innerHTML]="compiledDataPrefix()|safe:'html'"></button>
+                  <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHTML]="compiledDataPrefix()|safe:'html'"></button>
                 } @else {
-                  <span class="input-group-text smyds" [innerHTML]="compiledDataPrefix()|safe:'html'"></span>
+                  <span class="input-group-text smyds prefix-txt" [innerHTML]="compiledDataPrefix()|safe:'html'"></span>
                 }
               }
               <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
@@ -501,9 +652,9 @@
                 (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
               @if (f.x?.suffix) {
                 @if (f.x?.suffixPost) {
-                  <button type="button" class="btn btn-outline-secondary smyds" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                  <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
                 } @else {
-                  <span class="input-group-text smyds" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                  <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
                 }
               }
             </div>
@@ -543,24 +694,76 @@
 
       @case ('qr') {
         <div class="custom-file" [class.disabled]="f.readOnly">
-            <label class="has-float-label" for="{{uid}}">
-          <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
-            [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
-          @if (qrError()) {
-            <div class="form-control smyds text-danger" style="background: white"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
-          }@else{
-            @if (!value) {
-                <div class="form-control smyds" style="background: white"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
-            } @else {
-                <div class="form-control smyds" style="background: white">{{value}}</div>
-            }
+          @if (f.x?.prefix || f.x?.suffix) {
+            <div class="input-group">
+              @if (f.x?.prefix) {
+                @if (f.x?.prefixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+                }
+              }
+              <label class="has-float-label cursor-pointer flex-grow-1 mb-0" for="{{uid}}">
+                <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
+                  [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
+                @if (qrError()) {
+                  <div class="form-control smyds text-danger" style="background: white"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+                } @else {
+                  @if (!value) {
+                    <div class="form-control smyds" style="background: white"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                  } @else {
+                    <div class="form-control smyds" style="background: white">{{value}}</div>
+                  }
+                }
+              </label>
+              @if (f.x?.suffix) {
+                @if (f.x?.suffixPost) {
+                  <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+                } @else {
+                  <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+                }
+              }
+            </div>
+          } @else {
+            <label class="has-float-label cursor-pointer" for="{{uid}}">
+              <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
+                [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
+              @if (qrError()) {
+                <div class="form-control smyds text-danger" style="background: white"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+              } @else {
+                @if (!value) {
+                  <div class="form-control smyds" style="background: white"><fa-icon [icon]="['fas','qrcode']"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                } @else {
+                  <div class="form-control smyds" style="background: white">{{value}}</div>
+                }
+              }
+            </label>
           }
-          </label>
         </div>
       }
 
       @case ('btn') {
-        <button type="button" class="btn btn-secondary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+        @if (f.x?.prefix || f.x?.suffix) {
+          <div class="input-group d-inline-flex w-auto">
+            @if (f.x?.prefix) {
+              @if (f.x?.prefixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+              }
+            }
+            <button type="button" class="btn btn-secondary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+            @if (f.x?.suffix) {
+              @if (f.x?.suffixPost) {
+                <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+              } @else {
+                <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+              }
+            }
+          </div>
+        } @else {
+          <button type="button" class="btn btn-secondary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+        }
       }
 
       @default {
