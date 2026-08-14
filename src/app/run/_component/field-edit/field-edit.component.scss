@@ -114,35 +114,35 @@ angular-editor.is-invalid .angular-editor {
 }
 
 .ng-select {
-  .ng-select-container {
-    border-radius: var(--bs-border-radius);
-    min-height: 36px;
-    border-color: var(--bs-border-color) !important; /* Matches standard inputs */
-    background-color: var(--bs-body-bg);
-    color: var(--bs-body-color);
+//   .ng-select-container {
+//     border-radius: var(--bs-border-radius);
+//     min-height: 36px;
+//     border-color: var(--bs-border-color) !important;
+//     background-color: var(--bs-body-bg);
+//     color: var(--bs-body-color);
 
-    .ng-value-container {
-      .ng-placeholder {
-        color: var(--bs-secondary-color);
-      }
-      .ng-input > input {
-        color: var(--bs-body-color);
-      }
-    }
-  }
+//     .ng-value-container {
+//       .ng-placeholder {
+//         color: var(--bs-secondary-color);
+//       }
+//       .ng-input > input {
+//         color: var(--bs-body-color);
+//       }
+//     }
+//   }
 
   &.ng-select-single .ng-select-container {
     height: unset;
   }
 
-  &.ng-select-multiple .ng-select-container .ng-value-container {
-    .ng-value { 
-      margin-bottom: 1px; 
-      background-color: var(--bs-secondary-bg);
-      color: var(--bs-body-color);
-    }
-    .ng-input { padding: 0 0 1px 3px; }
-  }
+//   &.ng-select-multiple .ng-select-container .ng-value-container {
+//     .ng-value { 
+//       margin-bottom: 1px; 
+//       background-color: var(--bs-secondary-bg);
+//       color: var(--bs-body-color);
+//     }
+//     .ng-input { padding: 0 0 1px 3px; }
+//   }
 
   &.ng-invalid {
     &.ng-touched .ng-select-container {
@@ -157,6 +157,43 @@ angular-editor.is-invalid .angular-editor {
 .ng-value-container {
   padding: 0.375rem 0.75rem;
 }
+
+/* Dropdown Menu Panel Dark Mode Support */
+// .ng-dropdown-panel {
+//   background-color: var(--bs-body-bg) !important;
+//   color: var(--bs-body-color) !important;
+//   border: 1px solid var(--bs-border-color) !important;
+
+//   .ng-dropdown-panel-items {
+//     .ng-option {
+//       background-color: var(--bs-body-bg) !important;
+//       color: var(--bs-body-color) !important;
+
+//       /* Hover / Focused option */
+//       &.ng-option-marked {
+//         background-color: var(--bs-tertiary-bg) !important;
+//         color: var(--bs-body-color) !important;
+//       }
+
+//       /* Selected option */
+//       &.ng-option-selected,
+//       &.ng-option-selected.ng-option-marked {
+//         background-color: var(--bs-secondary-bg) !important;
+//         color: var(--bs-body-color) !important;
+//       }
+
+//       &.ng-option-disabled {
+//         color: var(--bs-secondary-color) !important;
+//       }
+//     }
+
+//     /* Group header */
+//     .ng-optgroup {
+//       background-color: var(--bs-body-bg) !important;
+//       color: var(--bs-secondary-color) !important;
+//     }
+//   }
+// }
 
 /* ==========================================================================
    ANGULAR EDITOR SPECIFICS
@@ -187,7 +224,13 @@ angular-editor {
     padding: 0.375rem 0.75rem !important;
     color: var(--bs-body-color);
     background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color) !important;
   }
+}
+
+[data-bs-theme="dark"] angular-editor-toolbar,
+.dark-mode angular-editor-toolbar {
+  box-shadow: 0px 2px 10px 0px rgba(255, 255, 255, 0.06), 0px 12px 40px 0px rgba(0, 0, 0, 0.7) !important;
 }
 
 .angular-editor-placeholder {

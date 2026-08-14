@@ -1,106 +1,148 @@
 @media print {
+    /* ==========================================================================
+       DARK MODE & INK-SAVING PRINT OVERRIDES
+       ========================================================================== */
+    :root,
+    [data-bs-theme="dark"],
+    .dark-mode {
+        --bs-body-bg: #ffffff !important;
+        --bs-body-color: #000000 !important;
+        --bs-card-bg: #ffffff !important;
+        --bs-tertiary-bg: #ffffff !important;
+        --bs-secondary-bg: #ffffff !important;
+        --bs-border-color: #cccccc !important;
+    }
+
     @page {
         /*border:solid 10px #000;*/
         margin: 0mm 0mm 0mm 0mm;
         size: auto;
     }
-    body {
+
+    html, body {
         height: unset;
-        background-color: white !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: economy;
+        print-color-adjust: economy;
         /* overflow: visible !important; */
     }
+
+    /* Reset background images & animations on screens */
+    .screen-content,
+    #screen-9702 {
+        background: #ffffff !important;
+        background-image: none !important;
+    }
+
     .tab-simple .tab-content {
         background: white !important;
     }
+
     .content {
         height: unset !important;
     }
+
     body * {
         visibility: hidden;
         filter: none !important;
     }
-    page-title{
+
+    page-title {
         background: white !important;
+        color: #000000 !important;
     }
-    page-title .nav-icon{
+
+    page-title .nav-icon {
         display: none;
     }
+
     .nav-tabs {
         display: none;
     }
+
     .m-p-4 {
         margin: 1.5rem !important;
     }
+
+    /* ==========================================================================
+       PRINTABLE SECTION STYLES
+       ========================================================================== */
     .section-to-print,
     .section-to-print * {
         visibility: visible;
+        color: #000000 !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
     }
+
     .section-to-print {
         /* position: absolute; */
         left: 0;
         top: 0;
         width: 100%;
     }
+
+    /* Reset Text Gradients to solid black for paper readability */
+    .section-to-print .text-gradient,
+    .section-to-print .icon-gradient {
+        background-image: none !important;
+        -webkit-text-fill-color: #000000 !important;
+        color: #000000 !important;
+    }
+
+    /* Strip dark glassmorphism & heavy fills for printing */
+    .section-to-print .card,
+    .section-to-print .bg-glass-colorful,
+    .section-to-print .bg-glass-white,
+    .section-to-print .bg-glass-turquoise,
+    .section-to-print .bg-glass-purple,
+    .section-to-print .bg-glass-blue,
+    .section-to-print .bg-glass-red {
+        background: #ffffff !important;
+        border: 1px solid #dddddd !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    .section-to-print .bg-glass-colorful::before {
+        display: none !important;
+    }
+
+    .section-to-print .bg-white,
+    .section-to-print .bg-body-tertiary {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #eeeeee !important;
+    }
+
     .print-only {
         display: block !important;
     }
+
     .print-hide {
         display: none !important;
     }
+
     .section-to-print a[href]:after {
         display: none;
     }
-    /*table{*/
-    /*page-break-inside: avoid;*/
-    /*}*/
-    .col-print-1 {
-        width: 8%;
-        float: left;
-    }
-    .col-print-2 {
-        width: 16%;
-        float: left;
-    }
-    .col-print-3 {
-        width: 25%;
-        float: left;
-    }
-    .col-print-4 {
-        width: 33%;
-        float: left;
-    }
-    .col-print-5 {
-        width: 42%;
-        float: left;
-    }
-    .col-print-6 {
-        width: 50%;
-        float: left;
-    }
-    .col-print-7 {
-        width: 58%;
-        float: left;
-    }
-    .col-print-8 {
-        width: 66%;
-        float: left;
-    }
-    .col-print-9 {
-        width: 75%;
-        float: left;
-    }
-    .col-print-10 {
-        width: 83%;
-        float: left;
-    }
-    .col-print-11 {
-        width: 92%;
-        float: left;
-    }
-    .col-print-12 {
-        width: 100%;
-        float: left;
-    }
+
+    /* ==========================================================================
+       PRINT COLUMNS & GRID LAYOUTS
+       ========================================================================== */
+    .col-print-1 { width: 8%; float: left; }
+    .col-print-2 { width: 16%; float: left; }
+    .col-print-3 { width: 25%; float: left; }
+    .col-print-4 { width: 33%; float: left; }
+    .col-print-5 { width: 42%; float: left; }
+    .col-print-6 { width: 50%; float: left; }
+    .col-print-7 { width: 58%; float: left; }
+    .col-print-8 { width: 66%; float: left; }
+    .col-print-9 { width: 75%; float: left; }
+    .col-print-10 { width: 83%; float: left; }
+    .col-print-11 { width: 92%; float: left; }
+    .col-print-12 { width: 100%; float: left; }
 
     .tab-content > .tab-pane {
         display: block !important;
@@ -112,80 +154,47 @@
         display: none !important;
     }
 
-    .col-sm-1,
-    .col-sm-2,
-    .col-sm-3,
-    .col-sm-4,
-    .col-sm-5,
-    .col-sm-6,
-    .col-sm-7,
-    .col-sm-8,
-    .col-sm-9,
-    .col-sm-10,
-    .col-sm-11,
-    .col-sm-12 {
+    .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4,
+    .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8,
+    .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
         float: left;
     }
-    .col-sm-12 {
-        width: 100%;
-    }
-    .col-sm-11 {
-        width: 91.66666667%;
-    }
-    .col-sm-10 {
-        width: 83.33333333%;
-    }
-    .col-sm-9 {
-        width: 75%;
-    }
-    .col-sm-8 {
-        width: 66.66666667%;
-    }
-    .col-sm-7 {
-        width: 58.33333333%;
-    }
-    .col-sm-6 {
-        width: 50%;
-    }
-    .col-sm-5 {
-        width: 41.66666667%;
-    }
-    .col-sm-4 {
-        width: 33.33333333%;
-    }
-    .col-sm-3 {
-        width: 25%;
-    }
-    .col-sm-2 {
-        width: 16.66666667%;
-    }
-    .col-sm-1 {
-        width: 8.33333333%;
-    } 
+    .col-sm-12 { width: 100%; }
+    .col-sm-11 { width: 91.66666667%; }
+    .col-sm-10 { width: 83.33333333%; }
+    .col-sm-9  { width: 75%; }
+    .col-sm-8  { width: 66.66666667%; }
+    .col-sm-7  { width: 58.33333333%; }
+    .col-sm-6  { width: 50%; }
+    .col-sm-5  { width: 41.66666667%; }
+    .col-sm-4  { width: 33.33333333%; }
+    .col-sm-3  { width: 25%; }
+    .col-sm-2  { width: 16.66666667%; }
+    .col-sm-1  { width: 8.33333333%; } 
+
     .modal-dialog {
         max-width: 100% !important;
         margin: 0 auto !important;
     }
-    .modal{
-        position:unset !important;
+    .modal {
+        position: unset !important;
         height: unset !important; 
-        overflow:visible !important;
+        overflow: visible !important;
         width: 100%;
     }
-    .modal-open app-root{
-        display:none;
+    .modal-open app-root {
+        display: none;
     }
-    /* .modal-dialog */
 
     .tab-content .tab-pane.fade:not(.show) {
         opacity: 1 !important;
-      }
+    }
 
     .tab-content .tab-pane {
         margin-bottom: 2em;
-      }
+    }
 
-      .form-group{
+    .form-group {
         break-inside: avoid;
-      }
+    }
 }

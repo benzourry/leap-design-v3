@@ -191,6 +191,7 @@ export class ChartComponent implements OnInit {
       tooltip: c.x && c.x.tooltip ? { trigger: 'axis', showContent: true, axisPointer: { type: 'shadow' } } : {},
       legend: { type: 'scroll' },
       grid: { containLabel: true },
+      backgroundColor: 'transparent',
       dataset: { source: cd.data },
       series: [
         {

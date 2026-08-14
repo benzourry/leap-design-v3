@@ -262,7 +262,7 @@ export class FieldEditComponent extends ElementBase<any> {
       placeholder: f?.placeholder || 'Enter text here...',
       translate: 'yes',
       toolbarPosition: 'bottom',
-      toolbarHiddenButtons: [['insertImage', 'insertVideo', 'toggleEditorMode']]
+      toolbarHiddenButtons: [['fontName', 'indent', 'outdent','insertHorizontalRule','link','unlink','removeFormat'], ['insertImage', 'insertVideo', 'toggleEditorMode']]
     };
     
     if (f?.x?.inlineImg) {

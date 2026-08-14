@@ -65,7 +65,7 @@ export class EditScreenComponent implements OnInit {
   {
     code: 'calendar',
     name: 'Calendar',
-    description: 'Calendar screen from dataset',
+    description: 'Calendar from dataset',
     icon: ['far', 'calendar-alt']
   },
   {

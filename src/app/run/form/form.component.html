@@ -600,7 +600,7 @@
             <div class="single-pane pt-1">
               <div class="centered d-flex" [class.limit-width]="!form()?.x?.wide">
                 @if (!tabfirst) {
-                  <button type="button" class="btn btn-round bg-white text-truncate me-2" (click)="progBack(tabidx)">
+                  <button type="button" class="btn btn-round btn-outline-secondary text-truncate me-2" (click)="progBack(tabidx)">
                     <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                     {{lang() == 'ms' ? 'Kembali' : 'Back'}}
                     @if (saving()) {

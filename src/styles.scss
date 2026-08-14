@@ -44,7 +44,8 @@ a {
 @media (pointer: fine) {
   body, * {
     scrollbar-width: thin;
-    scrollbar-color: var(--bs-border-color, rgba(0,0,0,.3)) var(--bs-body-bg, rgba(255,255,255,.3));
+    /* scrollbar-color: <thumb with 30% opacity> <track with 0% opacity> */
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0);
   }
 }
 
@@ -364,11 +365,133 @@ ngb-pagination ul.pagination { justify-content: center; }
 
 .ng-select.ng-select-sm .ng-select-container { min-height: 32px; font-size: 0.875rem; }
 
-.clean .angular-editor-toolbar {
-  border: none !important; background-color: transparent !important;
-  button { border: none !important; }
-  button:disabled { background-color: var(--bs-body-bg, #fff) !important; opacity: 0.4; }
+.ng-select {
+  .ng-select-container {
+    border-radius: var(--bs-border-radius);
+    min-height: 36px;
+    border-color: var(--bs-border-color) !important;
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+
+    .ng-value-container {
+      .ng-placeholder {
+        color: var(--bs-secondary-color);
+      }
+      .ng-input > input {
+        color: var(--bs-body-color);
+      }
+    }
+  }
+
+    &.ng-select-multiple .ng-select-container .ng-value-container {
+    .ng-value { 
+      margin-bottom: 1px; 
+      background-color: var(--bs-secondary-bg);
+      color: var(--bs-body-color);
+    }
+    .ng-input { padding: 0 0 1px 3px; }
+  }
 }
+
+.ng-dropdown-panel {
+  background-color: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+  border: 1px solid var(--bs-border-color) !important;
+
+  .ng-dropdown-panel-items {
+    .ng-option {
+      background-color: var(--bs-body-bg) !important;
+      color: var(--bs-body-color) !important;
+
+      /* Hover / Focused option */
+      &.ng-option-marked {
+        background-color: var(--bs-tertiary-bg) !important;
+        color: var(--bs-body-color) !important;
+      }
+
+      /* Selected option */
+      &.ng-option-selected,
+      &.ng-option-selected.ng-option-marked {
+        background-color: var(--bs-secondary-bg) !important;
+        color: var(--bs-body-color) !important;
+      }
+
+      &.ng-option-disabled {
+        color: var(--bs-secondary-color) !important;
+      }
+    }
+
+    /* Group header */
+    .ng-optgroup {
+      background-color: var(--bs-body-bg) !important;
+      color: var(--bs-secondary-color) !important;
+    }
+  }
+}
+
+// .clean .angular-editor-toolbar {
+//   border: none !important; background-color: transparent !important;
+//   button { border: none !important; }
+//   button:disabled { background-color: var(--bs-body-bg, #fff) !important; opacity: 0.4; }
+// }
+
+
+.angular-editor-toolbar {
+  border: none !important;
+  background-color: transparent !important;
+
+  /* Style all toolbar buttons */
+  button,
+  .angular-editor-button {
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--bs-body-color, #f8f9fa) !important;
+    border-radius: 4px;
+
+    /* Ensure icons/text inherit dark mode text colors */
+    i, svg, fa-icon, span {
+      color: var(--bs-body-color, #f8f9fa) !important;
+      fill: var(--bs-body-color, #f8f9fa) !important;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: var(--bs-tertiary-bg, rgba(255, 255, 255, 0.1)) !important;
+      color: var(--bs-body-color, #ffffff) !important;
+    }
+
+    /* Active / Selected formatting state */
+    &.active,
+    &.ae-active {
+      background-color: var(--bs-primary, #0d6efd) !important;
+      color: #ffffff !important;
+
+      i, svg, fa-icon, span {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+
+    &:disabled {
+      background-color: transparent !important;
+      opacity: 0.3 !important;
+    }
+  }
+
+  /* Dropdowns / Font & Heading selectors */
+  // select,
+  .ae-picker-label {
+    color: var(--bs-body-color, #f8f9fa) !important;
+  }
+  .ae-picker-label::before{
+    background: transparent !important;
+  }
+
+  .ae-picker-options {
+    background-color: var(--bs-body-bg, #1a1d20) !important;
+  }
+}
+
 
 .CodeMirror { height: fit-content !important; }
 .CodeMirror pre.CodeMirror-placeholder { color: var(--bs-secondary-color, #999); }

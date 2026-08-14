@@ -49,7 +49,7 @@
     </div>
     @if (['qr','page'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label>Select Form *</label>
+        <label class="form-label">Select Form *</label>
         <select class="form-select" name="form" #cForm [compareWith]="compareByIdFn"
           [(ngModel)]="_editScreenData.form" [required]="_editScreenData.type=='page'">
           <option value="undefined" disabled>Select form...</option>
@@ -61,7 +61,7 @@
     }
     @if (['list','calendar','map'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label>Select Dataset *</label>
+        <label class="form-label">Select Dataset *</label>
         <select class="form-select" name="dataset" #cDataset
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.dataset" required>
           <option value="undefined" disabled>Select dataset...</option>
@@ -73,7 +73,7 @@
     }
     @if (['chatbot'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label>Select Cogna *</label>
+        <label class="form-label">Select Cogna *</label>
         <select class="form-select" name="cogna" #cCogna
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.cogna" required>
           <option value="undefined" disabled>Select cogna...</option>
@@ -85,7 +85,7 @@
     }
     @if (['bucket'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label>Select Bucket *</label>
+        <label class="form-label">Select Bucket *</label>
         <select class="form-select" name="bucket" #cBucket
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.bucket" required>
           <option value="undefined" disabled>Select bucket...</option>

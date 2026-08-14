@@ -9,3 +9,24 @@ table thead tr th {
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* Fixes the white space below the table on the flipped card side */
+.fc-back {
+  background-color: var(--bs-body-bg) !important;
+}
+
+/* Custom class for the drill-down value links to handle light/dark mode adaptation */
+.drill-link {
+  color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .drill-link,
+.dark-mode .drill-link {
+  color: #6ea8fe !important; /* Brighter, high-contrast blue for dark mode */
+}
+
+/* Override ECharts default dark theme background */
+[data-bs-theme="dark"] .demo-chart,
+.dark-mode .demo-chart {
+  background-color: slategray !important; /* You can also use a specific hex like #708090 or #2d3748 */
+}

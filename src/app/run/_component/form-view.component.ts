@@ -41,7 +41,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
     @let tabPre = {id: -1, sortOrder: -1, title: "(head)"};
     <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre}"></ng-container>
   }
-  <div ngbAccordion class="pb-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
+  <div ngbAccordion class="pb-3 mt-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
     @for (tab of formTab(); track tab.id) {
       <div class="acc-card" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index !== navIndex()"
         [disabled]="!disabledTabs()[tab.id]" #accitem="ngbAccordionItem">
@@ -78,7 +78,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
     @let tabPre = {id: -1, sortOrder: -1, title: "(head)"};
     <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre}"></ng-container>
   }
-  <div class="tab-simple">
+  <div class="tab-simple mt-3">
     <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
       [class.limit-width]="!form()?.x?.wide"
       class="nav-{{form().nav}} justify-content-center d-print-none centered">

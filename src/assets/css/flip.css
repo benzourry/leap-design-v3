@@ -8,7 +8,6 @@
   transition: 0.8s;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-  /* width: 100%; */
   position: relative;
 }
 
@@ -23,24 +22,33 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   position: absolute;
-  background-color: #fff;
+  /* Use Bootstrap's background variable so it adapts to Light/Dark mode automatically */
+  background-color: var(--bs-body-bg, #fff); 
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius:0.45rem;
+  border-radius: 1rem;
 }
 
 /* front pane, placed above back */
 .flip-card .fc-front {
   z-index: 2;
-  /* for firefox 31 */
-  /* -webkit-transform: rotateY(0deg); */
   transform: rotateY(0deg);
 }
 
 /* back, initially hidden pane */
 .flip-card .fc-back {
-  /* -webkit-transform: rotateY(180deg); */
   transform: rotateY(180deg);
+}
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (Optional: If you want a specific shade like slate gray)
+   ========================================================================== */
+[data-bs-theme="dark"] .flip-card .fc-front,
+[data-bs-theme="dark"] .flip-card .fc-back,
+.dark-mode .flip-card .fc-front,
+.dark-mode .flip-card .fc-back {
+  /* Change this if you want it to be different from the main body background */
+  background-color: var(--bs-body-bg); 
 }
