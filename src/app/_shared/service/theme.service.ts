@@ -18,6 +18,16 @@ export class ThemeService {
         this.applyTheme('auto');
       }
     });
+
+    // Watch for localStorage changes triggered by other windows/iframes (e.g., the parent window)
+    window.addEventListener('storage', (event: StorageEvent) => {
+      if (event.key === 'app-theme' && event.newValue) {
+        const newTheme = event.newValue as Theme;
+        // Update signal and DOM without writing back to localStorage
+        this.currentTheme.set(newTheme);
+        this.applyTheme(newTheme);
+      }
+    });
   }
 
   private initTheme(): void {
@@ -33,7 +43,7 @@ export class ThemeService {
     // 1. Update signal
     this.currentTheme.set(theme);
     
-    // 2. Save to local storage
+    // 2. Save to local storage (This triggers the 'storage' event in the iframe)
     localStorage.setItem('app-theme', theme);
     
     // 3. Apply to DOM
