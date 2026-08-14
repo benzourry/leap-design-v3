@@ -1,27 +1,46 @@
 /* ==========================================================================
+   VARIABLES
+   ========================================================================== */
+$nav-width: 270px;
+$nav-bg: #0747a6;
+$text-white: #fff;
+$text-light: #f8f9fa;
+
+$transition-fast: 250ms ease-in-out;
+$transition-med: 300ms ease;
+$transition-slow: 350ms ease-in-out;
+
+/* ==========================================================================
    APP NAV & MENUS
    ========================================================================== */
 .menu {
-  color: #fff;
+  color: $text-white;
 
-  .menu-heading fa-icon {
-    opacity: 0.5;
+  .menu-heading {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    fa-icon {
+      opacity: 0.5;
+    }
   }
 
   a {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #fff;
-    text-decoration: none;
+    position: relative;
     display: block;
     padding: 0.7rem 1rem;
+    color: $text-white;
+    font-size: 0.9rem;
+    font-weight: 500;
     text-align: left;
-    position: relative;
+    text-decoration: none;
 
     fa-icon {
-      color: rgba(255, 255, 255, 0.5);
-      min-width: 1.5rem;
       display: inline-block;
+      min-width: 1.5rem;
+      color: rgba(255, 255, 255, 0.5);
     }
 
     &.active {
@@ -33,55 +52,60 @@
     position: absolute;
     top: 12px;
     right: 15px;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-radius: 6px;
-    font-size: 11px;
     padding: 3px 5px;
-  }
-
-  .menu-heading {
-    font-size: 0.9rem;
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    font-weight: 500;
+    color: $text-white;
+    font-size: 11px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
   }
 }
 
-.floating {
-  position: fixed;
-  bottom: 20px;
-  right: 30px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50px;
-  background: var(--bs-body-bg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.menu-text {
+  margin-left: 28px;
 }
 
-.topgap .app-info {
-  padding-top: 3.8em !important;
+.menu-items fa-icon {
+  float: left;
 }
 
 .app-nav {
-  color: #f8f9fa;
-  background: #0747a6;
-  transition: background-color 0.3s ease;
+  color: $text-light;
+  background: $nav-bg;
+  transition: background-color $transition-med;
 }
 
-/* Automatically switch App Nav to a dark background in Dark Mode */
+/* Dark Mode Navigation */
 [data-bs-theme="dark"] .app-nav {
   background: var(--bs-dark);
 }
 
+.dark-mode-toggle {
+  flex-shrink: 0;
+  color: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.floating {
+  position: fixed;
+  right: 30px;
+  bottom: 20px;
+  width: 80px;
+  height: 80px;
+  background: var(--bs-body-bg);
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .content {
   flex: 1;
-  padding: 0px;
+  padding: 0;
   background: var(--bs-tertiary-bg);
 }
 
 /* ==========================================================================
-   LAYOUT & SIDEMENU
+   LAYOUT & SHARED
    ========================================================================== */
 .wrapper {
   height: 100%;
@@ -91,16 +115,20 @@
   padding-bottom: 1rem;
 }
 
+.topgap .app-info {
+  padding-top: 3.8em !important;
+}
+
 .app-info a {
   text-decoration: none;
 }
 
 .app-user {
+  max-width: $nav-width;
   padding: 3px;
   margin-left: -3px;
   border-radius: 24px;  
-  max-width: 270px;
-  transition: all 350ms ease-in-out;
+  transition: all $transition-slow;
 
   &:hover,
   &:active {
@@ -119,13 +147,17 @@
   background: #000;
   opacity: 0;
   transition: opacity 350ms linear;
+
+  @media screen and (min-width: 640px) {
+    display: none;
+  }
 }
 
 .overlay-close {
   position: fixed;
-  bottom: 10px;
   right: 20px;
-  color: white;
+  bottom: 10px;
+  color: $text-white;
   font-size: 1.4em;
 }
 
@@ -136,62 +168,57 @@
   }
 }
 
-/* Mobile Sidemenu */
+/* ==========================================================================
+   SIDEMENU (Mobile First)
+   ========================================================================== */
 .sidemenu {
   .app-nav {
     position: fixed;
-    bottom: 0px;
-    top: 0px;
-    left: -270px;
+    top: 0;
+    bottom: 0;
+    left: -$nav-width;
     z-index: 998;
-    width: 270px;
-    transition: left 250ms ease-in-out;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    width: $nav-width;
     height: 100%;
+    overflow: hidden;
+    transition: left $transition-fast;
   }
 
-  &.active .app-nav {
-    left: 0px;
+  &.active {
+    .app-nav {
+      left: 0;
+    }
+    
+    .offcanvas-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 997;
+      width: 100%;
+      height: 100%;
+      opacity: 0.6;
+    }
+  }
+
+  .app-info {
+    flex-shrink: 0;
+  }
+
+  .app-menu {
+    flex: 1;
+    padding-bottom: 1rem;
+    overflow-y: auto;
   }
 
   .content {
-    overflow: auto;
     height: 100%;
+    overflow: auto;
   }
 
-  .dark-mode-toggle {
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-  }
-}
-
-.active .offcanvas-overlay {
-  position: fixed;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  height: 100%;
-  z-index: 997;
-  opacity: 0.6;
-}
-
-.dark-mode-toggle {
-  font-size: 0.8em;
-  // opacity: 0.6;
-  cursor: pointer;
-  color: inherit;
-}
-
-/* ==========================================================================
-   DESKTOP SIDEMENU (>= 640px)
-   ========================================================================== */
-@media screen and (min-width: 640px) {
-  .offcanvas-overlay {
-    display: none;
-  }
-
-  .sidemenu {
+  /* Desktop Sidemenu Override */
+  @media screen and (min-width: 640px) {
     &.wrapper {
       display: flex;
     }
@@ -199,28 +226,20 @@
     .app-nav {
       position: relative;
       left: 0;
-      top: 0;
-      width: 270px;
-      min-width: 270px;
-      max-width: 270px;
-      height: 100vh;
       flex-shrink: 0;
-      overflow-y: auto;
+      min-width: $nav-width;
+      max-width: $nav-width;
+      height: 100vh;
     }
 
-    .content {
-      height: 100%;
-      overflow: auto;
+    .topgap .app-info {
+      padding-top: 1em !important;
     }
-  }
-
-  .topgap .app-info {
-    padding-top: 1em !important;
   }
 }
 
 /* ==========================================================================
-   TOPNAV LAYOUT
+   TOPNAV LAYOUT (Mobile First)
    ========================================================================== */
 .topnav {
   &.wrapper {
@@ -230,77 +249,76 @@
 
   .app-nav {
     position: fixed;
-    width: 100%;
     top: -100%;
     z-index: 998;
-    transition: top 250ms ease-in-out;
+    width: 100%;
     max-height: calc(100% - 50px);
     overflow-y: auto;
+    transition: top $transition-fast;
   }
 
   &.active .app-nav {
     top: 0;
   }
-}
 
-@media screen and (min-width: 640px) {
-  .app-menu {
-    padding-bottom: 0;
-  }
-
-  .topnav {
-    .app-user {
-      text-align: left;
-      position: absolute;
-      right: 55px;
-      top: -5px; 
-      width: max-content;
-      max-width: 36px;
-
-      &:hover,
-      &:active {
-        max-width: 270px;
-        padding-right: 15px;
-      }
+  /* Desktop Topnav Override */
+  @media screen and (min-width: 640px) {
+    .app-menu {
+      padding-bottom: 0;
     }
 
     .app-nav {
+      position: relative;
+      top: 0;
       flex-grow: 0;
       text-align: center;
-      position: relative;
-      top: 0; /* Added: Resets mobile top: -100% offset */
       overflow-y: unset;
     }
-
+    
     .content {
       overflow: auto;
     }
 
+    .app-user {
+      position: absolute;
+      top: -5px; 
+      right: 55px;
+      width: max-content;
+      max-width: 36px;
+      text-align: left;
+
+      &:hover,
+      &:active {
+        max-width: $nav-width;
+        padding-right: 15px;
+      }
+    }
+
     /* Topnav Dropdown Menus */
     .menu-items {
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
       position: absolute;
       top: 100%;
       left: 0;
+      z-index: 10;
       min-width: 100%;
       background: var(--bs-body-bg);
       border: 1px solid var(--bs-border-color);
-      border-top:none;
-      z-index: 10;
+      border-top: none;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
     }
 
     .menu-heading.active {
-      background: var(--bs-body-bg);
       color: var(--bs-body-color);
+      background: var(--bs-body-bg);
     }
 
     .menu {
-      display: inline-block;
       position: relative;
+      display: inline-block;
 
       .badge {
-        background-color: var(--bs-secondary-bg);
         color: var(--bs-body-color);
+        background-color: var(--bs-secondary-bg);
       }
 
       a {
@@ -319,12 +337,4 @@
       left: 0;
     }
   }
-}
-
-.menu-text {
-  margin-left: 28px;
-}
-
-.menu-items fa-icon {
-  float: left;
 }

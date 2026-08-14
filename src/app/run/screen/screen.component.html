@@ -33,7 +33,7 @@
     }
     @if (isAuthorized()) {
       @if ((screen()?.showAction||screen()?.canPrint||screen()?.data?.showSummary)) {
-        <div [class.px-2]="!asComp()" [class.pt-2]="asComp()" class="print-hide">
+        <div [class.px-2]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
           <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
           [class.input-group-sm]="asComp()" [class.justify-content-center]="!screen()?.showAction" [class.limit-width]="!screen()?.wide">
             @if (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)){

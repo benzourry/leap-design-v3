@@ -213,7 +213,7 @@
                     @if (columnVisible[item.id]) {
                       @if (item.type == 'list') {
                         <th class="ds-item {{item.code}}">
-                          <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-black-50"></fa-icon>&nbsp;{{item.label}}
+                          <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-secondary"></fa-icon>&nbsp;{{item.label}}
                         </th>
                       } @else {
                         @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
