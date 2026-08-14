@@ -22,6 +22,7 @@ import { atobUTF } from '../../_shared/utils';
 import { LoadingService } from '../../_shared/service/loading.service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { ThemeToggleComponent } from '../../run/_component/theme-toggle.component';
 
 @Component({
     selector: 'app-editor',
@@ -35,7 +36,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, FormsModule, NgbTypeahead,
-        NgbHighlight, RouterOutlet, AppEditComponent]
+        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent]
 })
 export class EditorComponent implements OnInit {
 

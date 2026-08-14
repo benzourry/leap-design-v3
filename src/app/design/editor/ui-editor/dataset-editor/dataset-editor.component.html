@@ -263,12 +263,12 @@
                             PRE</div>
                           }
                         </span>
-                        <button type="button" class="btn btn-outline-secondary" (click)="deleteAction(a)">
-                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
+                        <button type="button" class="btn" (click)="editAction(editActionTpl,a)">
+                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" (click)="editAction(editActionTpl,a)">
-                          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                        <button type="button" class="btn" (click)="deleteAction(a)">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
                       </div>
@@ -392,7 +392,7 @@
                           (click)="editPresetKey(c)">{{c.key}}</span>
                           <span class="input-group-text" style="cursor:pointer"
                           (click)="editPresetValue(c)">{{c.value}}</span>
-                          <button type="button" class="btn btn-outline-secondary btn-round btn-sm" (click)="removePreset(c.key)">
+                          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="removePreset(c.key)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>

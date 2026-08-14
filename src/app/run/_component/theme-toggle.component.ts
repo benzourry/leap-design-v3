@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { ThemeService } from '../../_shared/service/theme.service';
 
 @Component({
@@ -9,11 +9,12 @@ import { ThemeService } from '../../_shared/service/theme.service';
       type="button" 
       class="theme-toggle-btn" 
       (click)="toggleTheme()" 
-      [attr.aria-label]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      [attr.aria-label]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      title="{{isDarkMode ? lang() == 'ms' ? 'Tukar ke Mod Terang' : 'Switch to Light Mode' : lang() == 'ms' ? 'Tukar ke Mod Gelap' : 'Switch to Dark Mode'}}">
       
       @if (isDarkMode) {
         <!-- Sun Icon (visible in dark mode) -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="4"/>
           <path d="M12 2v2"/>
           <path d="M12 20v2"/>
@@ -26,27 +27,37 @@ import { ThemeService } from '../../_shared/service/theme.service';
         </svg>
       } @else {
         <!-- Moon Icon (visible in light mode) -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
         </svg>
       }
     </button>
   `,
   styles: [`
-  :host {
-    overflow: hidden;
-  }
-    .theme-toggle-btn {
-      background: transparent;
-      border: none;
-      border-radius: 50%;
-      color: inherit;
-      cursor: pointer;
+    :host {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 15px;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    .theme-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      color: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .theme-toggle-btn svg {
+      display: block;
     }
 
     /* Twist effect on hover */
@@ -61,6 +72,8 @@ import { ThemeService } from '../../_shared/service/theme.service';
 })
 export class ThemeToggleComponent {
   themeService = inject(ThemeService);
+
+  lang = input<string>('en');
 
   get isDarkMode(): boolean {
     return this.themeService.currentTheme() === 'dark';
