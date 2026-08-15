@@ -190,7 +190,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       $updateLookup$: this.updateLookup,
       get echarts() { return self.echartsRef; },
       $merge$: deepMerge,
-      $web$: this.http,
+      $web$: this.runService.web,
       $q$: this.$q,
       $showNav$: this.openNav,
     };
@@ -1349,11 +1349,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     this.filterItems();
   }
 
-  initForm(js, data, form, entryWrapper = this.entry()) {
+  async initForm(js, data, form, entryWrapper = this.entry()) {
     let res = undefined;
     let jsTxt = this.compileTpl(js, {})
     try {
-      res = this._eval(data, jsTxt, form, entryWrapper); 
+      res = await this._eval(data, jsTxt, form, entryWrapper); 
     } catch (e) { this.logService.log(`{form-${this.form().title}-initForm}-${e}`) }
     this.filterTabs();
     this.filterItems();

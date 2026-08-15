@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
 import { NgbDateAdapter, NgbModal, NgbTimeAdapter, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { NavigationExtras, Router, RouterLink } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UtilityService } from '../../_shared/service/utility.service';
@@ -28,7 +28,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { base, baseApi } from '../../_shared/constant.service';
 import { LogService } from '../../_shared/service/log.service';
-import { first, map, shareReplay, switchMap, tap, catchError } from 'rxjs/operators';
+import { first, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
@@ -403,12 +403,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  initScreen(js) {
+  async initScreen(js) {
     let jsTxt = this.compileTpl(js, { $: this.entry()?.data, $prev$: this.entry()?.prev, $_: this.entry(), $go: this.buildGo(this.entry()?.id), $popup: this.buildPop(this.entry()?.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
 
     let res = undefined;
     try {
-      res = this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
+      res = await this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
     } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
     return res;
   }
@@ -453,6 +453,29 @@ export class ScreenComponent implements OnInit, OnDestroy {
     
     return fn(...Object.values(bindings));
   }
+
+  //   private wrapObservable<T>(obs: Observable<T>): Observable<T> & PromiseLike<T> {
+  //     const thenable = obs as any;
+  
+  //     // We attach a .then() method to the Observable
+  //     // This makes 'await' treat the Observable like a Promise
+  //     thenable.then = (resolve: any, reject: any) => 
+  //       firstValueFrom(obs).then(resolve, reject);  
+  //     return thenable;
+  //   }
+  
+  // private _hybridWebCache: any = null;
+  // get hybridWeb() {
+  //   if (!this._hybridWebCache) {
+  //     this._hybridWebCache = {
+  //       get: (url: string, opts?: any) => this.wrapObservable(this.http.get(url, opts)),
+  //       post: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.post(url, body, opts)),
+  //       put: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.put(url, body, opts)),
+  //       delete: (url: string, opts?: any) => this.wrapObservable(this.http.delete(url, opts)),
+  //     };
+  //   }
+  //   return this._hybridWebCache;
+  // }
 
   getEvalContext = (entry: any, data: any, isPassive: boolean = false, additionalParams: any = {}) => {
     // Properties shared across ALL evaluations (_pre, _eval, _qrEval)
@@ -499,7 +522,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       echarts,
       $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
       $merge$: deepMerge,
-      $web$: this.http,
+      $web$: this.runService.web,
       $go: this.goObj,
       $popup: this.popObj,
       $q$: this.$q,
@@ -835,8 +858,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
           return of(res);
         })
       ).subscribe(res => {
-        this.loading.set(false);
         this.initScreen(this.screen().data.f);
+        this.loading.set(false);
 
         this.cdr.detectChanges();
       });
@@ -847,8 +870,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       ).subscribe(res => {
         this._entryId = res.id;
         this.entry.set(res);
-        this.loading.set(false);
         this.initScreen(this.screen().data.f);
+        this.loading.set(false);
 
         this.cdr.detectChanges();
       });
@@ -1009,7 +1032,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
               
               this.entryList.set(content);
               this.entryTotal.set(res.page?.totalElements);
-              this.loading.set(false);
               this.entry.set({ list: content });
               this._this._list = content;
               this.numberOfElements.set(content?.length);
@@ -1024,6 +1046,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
               if (this.screen().type == 'map') {
                 this.processForMap();
               }
+
+              this.loading.set(false);
 
               this.cdr.detectChanges();
             },

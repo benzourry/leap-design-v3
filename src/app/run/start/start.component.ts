@@ -21,10 +21,10 @@ import { UserService } from '../../_shared/service/user.service';
 import { ActivatedRoute, NavigationEnd, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { NgbCollapse, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass, NgStyle, registerLocaleData } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle } from '@angular/common';
 import { baseApi, domainRegex, domainBase, base } from '../../_shared/constant.service';
 import { Title } from '@angular/platform-browser';
-import { Observable, firstValueFrom, lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { PageTitleService } from '../../_shared/service/page-title-service';
 import { ServerDate, compileTpl, createProxy, deepMerge, getQuery, loadScript } from '../../_shared/utils';
 import { LogService } from '../../_shared/service/log.service';
@@ -414,9 +414,9 @@ export class StartComponent implements OnInit, OnDestroy {
               this.mailboxBadge.set(res);
             });
 
-          this.appLoading.set(false);
           this.checkPush(this.app());
           await this.initScreen(this.app().f);
+          this.appLoading.set(false);
         },
         error: (err) => {
           // this.validPath.set(false);
@@ -453,6 +453,7 @@ export class StartComponent implements OnInit, OnDestroy {
           }
           this.checkPush(res);
           await this.initScreen(res.f);
+          this.appLoading.set(false);
 
           // this.startPage.set(res.startPage??'start');
 
@@ -482,10 +483,6 @@ export class StartComponent implements OnInit, OnDestroy {
             .subscribe(res => {
               this.mailboxBadge.set(res);
           });
-
-
-          this.appLoading.set(false);
-
         },
         error: (err) => this.appLoading.set(false)
       })
@@ -665,7 +662,7 @@ export class StartComponent implements OnInit, OnDestroy {
       echarts: null,
       $live$: this.runService?.$live$(this.liveSubscription(), this.$digest$),
       $merge$: deepMerge,
-      $web$: this.hybridWeb,
+      $web$: this.runService.web,
       $go: null,
       $pop: null,
       $q$: this.$q,
@@ -687,31 +684,6 @@ export class StartComponent implements OnInit, OnDestroy {
     return this.executeEval(v, bindings, this.compiledEvalCache);
   }
 
-  // --- End DRY Engine ---
-
-  private wrapObservable<T>(obs: Observable<T>): Observable<T> & PromiseLike<T> {
-    const thenable = obs as any;
-
-    // We attach a .then() method to the Observable
-    // This makes 'await' treat the Observable like a Promise
-    thenable.then = (resolve: any, reject: any) => 
-      firstValueFrom(obs).then(resolve, reject);
-
-    return thenable;
-  }
-
-  private _hybridWebCache: any = null;
-  get hybridWeb() {
-    if (!this._hybridWebCache) {
-      this._hybridWebCache = {
-        get: (url: string, opts?: any) => this.wrapObservable(this.http.get(url, opts)),
-        post: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.post(url, body, opts)),
-        put: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.put(url, body, opts)),
-        delete: (url: string, opts?: any) => this.wrapObservable(this.http.delete(url, opts)),
-      };
-    }
-    return this._hybridWebCache;
-  }
 
   compileTpl(html, data) {
     var f = "";
@@ -736,7 +708,6 @@ export class StartComponent implements OnInit, OnDestroy {
   httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
   httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
   endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
-
 
   loadScript = loadScript;
 

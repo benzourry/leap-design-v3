@@ -18,7 +18,7 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpEvent, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { Observable, first, map, tap } from 'rxjs';
+import { Observable, first, firstValueFrom, map, tap } from 'rxjs';
 import { base, baseApi } from '../../_shared/constant.service';
 import { RxStompService } from '../../_shared/service/rx-stomp.service';
 import { atobUTF } from '../../_shared/utils';
@@ -415,6 +415,32 @@ export class RunService {
       .pipe(
         tap({ next: callback, error: error }), first()
       );
+  }
+
+  private wrapObservable<T>(obs: Observable<T>): Observable<T> & PromiseLike<T> {
+    const thenable = obs as any;
+    // Attach .then() so it can be 'await'-ed like a Promise
+    thenable.then = (resolve: any, reject: any) => 
+      firstValueFrom(obs).then(resolve, reject);
+    return thenable;
+  }
+
+  private _webCache: any = null;
+  
+  get web() {
+    if (!this._webCache) {
+      this._webCache = {
+        get: (url: string, opts?: any) => 
+          this.wrapObservable(this.http.get(url, opts)),
+        post: (url: string, body: any, opts?: any) => 
+          this.wrapObservable(this.http.post(url, body, opts)),
+        put: (url: string, body: any, opts?: any) => 
+          this.wrapObservable(this.http.put(url, body, opts)),
+        delete: (url: string, opts?: any) => 
+          this.wrapObservable(this.http.delete(url, opts)),
+      };
+    }
+    return this._webCache;
   }
 
   $live$ = (subs:any, finalFn: any) =>({
