@@ -485,7 +485,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
       $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
       $merge$: deepMerge,
-      $web$: this.http,
+      $web$: this.runService.web,
 
       onInit: this.onInit,
       onSave: this.onSave,

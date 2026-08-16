@@ -116,7 +116,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 }
 
 <ng-template #sectionGroup let-tab="tab">
-  <div class="single-pane pb-0">
+  <div class="single-pane section-group pb-0">
     <div class="fix-gutter centered" [class.limit-width]="!form()?.x?.wide">
       <div class="row" [ngStyle]="{'justify-content': form()?.align}">
         @for (e of this.sectionMap[tab?.id]; track e.id) {
@@ -359,7 +359,13 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   `,
   styles: [
     `.form-group > label, .custom-checkbox > label { font-size: 14px; font-weight: 600; }`,
-    `.label-span { opacity: 0.7; font-size: 0.95em; margin-bottom: 0.3rem; }`
+    `.label-span { opacity: 0.7; font-size: 0.95em; margin-bottom: 0.3rem; }`,
+    `
+      /* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
+      .section-group:not(:has(.row > *:not([hidden]))) {
+          display: none !important;
+      }
+    `
   ],
   imports: [
     NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,

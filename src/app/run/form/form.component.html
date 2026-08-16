@@ -175,7 +175,7 @@
         <!-- SECTION GROUP TEMPLATE -->
         <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
-          <div class="single-pane pb-0" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
+          <div class="single-pane section-group pb-0" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
             <div class="centered fix-gutter" [class.limit-width]="!form()?.x?.wide">
               <div class="row" [ngStyle]="{'justify-content': form().align}">
                 @for (e of sectionMap()[tab?.id]; track e.id) {
