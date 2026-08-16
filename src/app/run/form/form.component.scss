@@ -67,3 +67,8 @@
 table.tblcard > .list-tmid > tr.ds-group-header {
     box-shadow: none;
 }
+
+/* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
+.section-group:not(:has(.row > *:not([hidden]))) {
+    display: none !important;
+}
