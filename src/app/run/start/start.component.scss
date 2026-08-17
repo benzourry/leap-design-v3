@@ -164,7 +164,7 @@ $transition-slow: 350ms ease-in-out;
 .noframe {
   .offcanvas-overlay,
   .app-nav {
-    display: none;
+    display: none !important;
   }
 }
 
