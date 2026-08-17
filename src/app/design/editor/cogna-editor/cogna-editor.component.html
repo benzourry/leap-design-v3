@@ -615,6 +615,7 @@
                 <div class="bg-body-secondary border-top border-bottom p-2">Custom Parameters</div>
                 <div class="mx-n3">
                   <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
+                    label="Cogna Parameters"
                     subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
                     [(ngModel)]="chatPromptParam" [linenumber]="true" required>
                   </app-cm>
@@ -1521,6 +1522,7 @@
               <label class="form-label">JSON Formatting (JSON Schema Properties) *</label>
               <div class="mx-n3">
                 <app-cm name="extractSchema" lang="javascript"
+                  label="Extract JSON Schema"
                   [ngModel]="editCognaData.data && editCognaData.data.extractSchema"
                   (ngModelChange)="editCognaData.data && (editCognaData.data.extractSchema = $event)"
                   [linenumber]="true" [skipCheck]="true" required></app-cm>
@@ -1870,6 +1872,7 @@
     </div>
     <div class="mx-n3 mb-3">
       <app-cm id="codeeditor" name="codeeditor" lang="html" #codeeditor [extraAutoComplete]="extraAutoCompleteHtml"
+        label="Sentence Template"
         [(ngModel)]="editSrcData.sentenceTpl" [linenumber]="true" subType="mailer"
         placeholder="Create a sentence using values in dataset">
       </app-cm>
@@ -1890,6 +1893,7 @@
       </div>
       <div class="mx-n3 mb-3">
         <app-cm id="cateditor" name="cateditor" lang="html" #cateditor [extraAutoComplete]="extraAutoCompleteHtml"
+          label="Category Template"
           [(ngModel)]="editSrcData.categoryTpl" [linenumber]="true" subType="mailer"
           placeholder="Create a category using values in dataset">
         </app-cm>

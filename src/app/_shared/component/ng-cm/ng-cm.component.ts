@@ -24,6 +24,7 @@ import { highlightSelectionMatches, searchKeymap, openSearchPanel } from '@codem
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { ElementBase } from '../../../run/_component/element-base';
 import { ThemeService } from '../../service/theme.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: Provider = {
   provide: NG_VALUE_ACCESSOR,
@@ -140,6 +141,7 @@ const customXIfHighlight = ViewPlugin.fromClass(class {
   selector: 'app-cm',
   templateUrl: './ng-cm.component.html',
   styleUrls: ['./ng-cm.component.scss'],
+  imports: [FaIconComponent],
   providers: [CUSTOMINPUT_VALUE_ACCESSOR],
   standalone: true,
 })
@@ -159,6 +161,8 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   extraAutoComplete = input<any[]>([]);
   subType = input<string>('');
   skipCheck = input<boolean>(false);
+  label = input<string>('');
+  isFullscreen: boolean = false;
 
   codemirrorhost = viewChild.required<ElementRef>('codemirrorhost'); 
 

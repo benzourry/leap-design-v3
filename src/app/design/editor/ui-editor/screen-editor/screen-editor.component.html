@@ -269,6 +269,7 @@
                             }
                             @if (!showWysiwyg) {
                               <app-cm id="codeeditor" name="content" lang="html" #codeeditor
+                                label="Screen Content"
                                 (keydown)="onKeyDown($event)"
                                 [(ngModel)]="curScreen.data.content"
                                 [extraAutoComplete]="extraAutoCompleteHtml" [linenumber]="true">
@@ -381,6 +382,7 @@
                                     }
                                   </div>
                                   <app-cm name="codeeditorcalendartitle" lang="html" #codeeditorcalendartitle
+                                    label="Screen Calendar Title"
                                     (keydown)="onKeyDown($event)"
                                     [extraAutoComplete]="extraAutoCompleteHtml"
                                     [(ngModel)]="curScreen.data.titleTpl" [linenumber]="true" required>
@@ -511,6 +513,7 @@
                                   }
                                 </div>
                                 <app-cm name="codeeditorpopupcontent" lang="html" #codeeditorpopupcontent
+                                  label="Screen Map Popup Template"
                                   (keydown)="onKeyDown($event)"
                                   [extraAutoComplete]="extraAutoCompleteHtml"
                                   [(ngModel)]="curScreen.data.popupTpl" [linenumber]="true" required>
@@ -521,6 +524,7 @@
                                 <label class="form-label">Custom Map Panel Style</label>
                                 
                                 <app-cm name="codeeditormapstyle" lang="html" #codeeditormapstyle
+                                  label="Custom Map Panel Style"
                                   [placeholder]="defaultMapStyle" 
                                   (keydown)="onKeyDown($event)" subType="passive"
                                   [extraAutoComplete]="extraAutoCompleteJs"
@@ -531,6 +535,7 @@
                                 <label class="form-label">Custom Map Pin Icon Style</label>
                                 
                                 <app-cm name="codeeditormapicon" lang="html" #codeeditormapicon
+                                  label="Default map icon image"
                                   placeholder="Default map icon image" 
                                   (keydown)="onKeyDown($event)"
                                   [extraAutoComplete]="extraAutoCompleteHtml"
@@ -639,6 +644,7 @@
                               <div class="form-group mb-3">
                                 <label class="form-label">Custom Parameters</label>
                                 <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam
+                                  label="Custom Cogna Parameters"
                                   [placeholder]="defaultCognaParam"
                                   (keydown)="onKeyDown($event)" subType="active" [skipCheck]="true"
                                   [extraAutoComplete]="extraAutoCompleteJs"
@@ -779,6 +785,7 @@
                                 <div class="form-group mb-3">
                                   <label class="form-label">Custom Parameters</label>
                                   <app-cm name="bucketparam" lang="javascript" #codeeditorbucketparam
+                                    label="Custom Bucket Parameters"
                                     [placeholder]="defaultBucketParam"
                                     (keydown)="onKeyDown($event)" subType="active"
                                     [extraAutoComplete]="extraAutoCompleteJs"
@@ -827,6 +834,7 @@
                             [(ngModel)]="curScreen.data.pretext"></angular-editor>
                           } @else {
                             <app-cm name="pretext" lang="html" #codeeditorpre
+                              label="Screen Content Pre-text"
                               (keydown)="onKeyDown($event)"
                               [(ngModel)]="curScreen.data.pretext" [linenumber]="true">
                             </app-cm>
@@ -858,6 +866,7 @@
                           }
                           @if (!showWysiwyg) {
                             <app-cm name="posttext" lang="html" #codeeditorpost
+                              label="Screen Content Post-text"
                               (keydown)="onKeyDown($event)"
                               [(ngModel)]="curScreen.data.posttext" [linenumber]="true">
                             </app-cm>
@@ -871,6 +880,7 @@
                         @if (curScreen.id) {
                           <div class="mt-1">
                             <app-cm name="init" lang="javascript" #codeeditorinit
+                              label="Screen Init Function"
                               (keydown)="onKeyDown($event)" subType="active"
                               [extraAutoComplete]="extraAutoCompleteJs"
                               [(ngModel)]="curScreen.data.f" [linenumber]="true">
@@ -1071,6 +1081,7 @@
             <label class="form-label">Function</label>
             <div class="mx-n3">
               <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
+                label="Screen Action Function"
                 [extraAutoComplete]="extraAutoCompleteJs" subType="active"
                 placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
                 [linenumber]="true">
@@ -1169,6 +1180,7 @@
               <label class="form-label">Parameters ($code$ as QR Code placeholder)</label>
               <div class="mx-n3">
                 <app-cm name="params" lang="javascript" hideControl="true" #paramseditor
+                  label="Screen Action Parameters"
                   [(ngModel)]="editActionData.params" [linenumber]="true">
                 </app-cm>
               </div>

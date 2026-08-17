@@ -1399,6 +1399,7 @@
                 satisfied)</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                    label="Section Pre-requisite"
                     subType="passive" [(ngModel)]="editSectionData.pre"
                     placeholder="Expression (ie: $.age > 18)" [linenumber]="true">
                   </app-cm>
@@ -1483,6 +1484,7 @@
                 <label class="form-label">Pre-requisite</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editTabData.pre"
+                    label="Tab Pre-requisite"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
                 </div>
@@ -1491,6 +1493,7 @@
                 <label class="form-label">On Tab Activate</label>
                 <div class="mx-n3">
                   <app-cm name="post" lang="javascript" [(ngModel)]="editTabData.x.post"
+                    label="On Tab Activate"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="active" [linenumber]="true">
                   </app-cm>
                 </div>
@@ -1499,6 +1502,7 @@
                 <label class="form-label">Enable condition</label>
                 <div class="mx-n3">
                   <app-cm name="enableCond" lang="javascript" [(ngModel)]="editTabData.x.enableCond"
+                    label="Tab Enable Condition"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
                 </div>
@@ -1690,6 +1694,7 @@
         <div class="mx-n3">
           <app-cm name="pre" lang="javascript" [(ngModel)]="editTierActionData.pre"
             [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
+            label="Tier Pre-requisite"
             placeholder="Expression (ie: $$_.status == 'approved')" [linenumber]="true">
           </app-cm>
         </div>
@@ -1791,6 +1796,7 @@
                   <label class="form-label">Parameter</label>
                   <div class="mx-n3">
                     <app-cm name="orgMapParam" lang="javascript"
+                      label="Tier Org Mapping Parameter"
                       [(ngModel)]="editTierData.orgMapParamStr" [skipCheck]="true" subType="passive"
                       placeholder="ie: { extra: '$.$id'}" [linenumber]="true">
                     </app-cm>
@@ -1952,6 +1958,7 @@
                 <label class="form-label">Pre-requisite (tier will be hidden if false)</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editTierData.pre"
+                    label="Tier Pre-requisite"
                     [extraAutoComplete]="extraAutoCompleteTier" subType="passive"
                     placeholder="ie: $user$.groups['213']" [linenumber]="true">
                   </app-cm>
@@ -1962,6 +1969,7 @@
                 <div class="mx-n3">
                   <app-cm name="post" lang="javascript"
                     [(ngModel)]="editTierData.post"
+                    label="Tier Post-action"
                     [extraAutoComplete]="extraAutoCompleteTier" subType="active"
                     placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
                     [linenumber]="true">
@@ -2203,6 +2211,7 @@
                   <label class="form-label">Source Initial Parameter</label>
                   <div class="mx-n3">
                     <app-cm name="dataSourceInit" lang="javascript"
+                      label="Source Initial Parameter"
                       [(ngModel)]="editItemData.dataSourceInit"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
                       placeholder="ie: {extra:'base'}" [linenumber]="true">
@@ -2270,6 +2279,7 @@
                   <label class="form-label">Expression *</label>
                   <div class="mx-n3">
                     <app-cm name="f" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                      label="Evaluated Field Expression"
                       subType="passive" [(ngModel)]="editItemData.f" [linenumber]="true">
                     </app-cm>
                   </div>
@@ -2405,6 +2415,7 @@
                   <div class="mx-n3">
                     @if (['btn'].indexOf(editItemData.type)>-1) {
                       <app-cm name="placeholder" lang="html"
+                        label="Button Style Properties"
                         [(ngModel)]="editItemData.placeholder" [linenumber]="true"
                         placeholder="Button style">
                       </app-cm>
@@ -2425,6 +2436,7 @@
                     </div>
                     <div class="mx-n3">
                       <app-cm name="placeholder" lang="html" #codeeditor
+                        label="Field Placeholder"
                         [extraAutoComplete]="extraAutoCompleteHtml"
                         [(ngModel)]="editItemData.placeholder" [linenumber]="true"
                         placeholder="HTML supported">
@@ -2681,6 +2693,7 @@
                     <label class="form-label">Prefix Post-action</label>
                     <div class="mx-n3">
                       <app-cm name="prefixPost" lang="javascript"
+                        label="Prefix Post-Action"
                         [(ngModel)]="editItemData.x.prefixPost" [linenumber]="true"
                         subType="active" [extraAutoComplete]="extraAutoCompleteJs">
                       </app-cm>
@@ -2692,6 +2705,7 @@
                     <label class="form-label">Suffix Post-action</label>
                     <div class="mx-n3">
                       <app-cm name="suffixPost" lang="javascript"
+                        label="Suffix Post-action"
                         [(ngModel)]="editItemData.x.suffixPost" [linenumber]="true"
                         subType="active" [extraAutoComplete]="extraAutoCompleteJs">
                       </app-cm>
@@ -2717,7 +2731,8 @@
                 <div class="form-group mb-3">
                   <label class="form-label">Group by</label>
                   <div class="mx-n3">
-                    <app-cm name="groupBy" lang="javascript" [(ngModel)]="editItemData.x.groupBy"
+                    <app-cm name="groupBy" lang="html" [(ngModel)]="editItemData.x.groupBy"
+                      label="Group by Template"
                       [extraAutoComplete]="extraAutoCompleteHtml" subType="passive" [linenumber]="true">
                     </app-cm>
                   </div>
@@ -2729,6 +2744,7 @@
                   <label class="form-label">Mark Disabled Function</label>
                   <div class="mx-n3">
                     <app-cm name="markDisabledFn" lang="javascript"
+                      label="Mark Disabled Function"
                       [(ngModel)]="editItemData.x.markDisabledFn" [linenumber]="true"
                       subType="active" [extraAutoComplete]="extraAutoCompleteJs">
                     </app-cm>
@@ -2752,6 +2768,7 @@
                 <label class="form-label">Pre-requisite</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
+                    label="Field Pre-requisite"
                     [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [linenumber]="true">
                   </app-cm>
                 </div>
@@ -2760,6 +2777,7 @@
                 <label class="form-label">Post-action</label>
                 <div class="mx-n3">
                   <app-cm name="post" lang="javascript"
+                    label="Field Post-action"
                     [(ngModel)]="editItemData.post" [linenumber]="true"
                     subType="active" [extraAutoComplete]="extraAutoCompleteJs">
                   </app-cm>
@@ -2966,6 +2984,7 @@
 
                       <div class="mx-n3">
                         <app-cm name="dyn_default" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs"
+                          label="Dynamic Default Value"
                           subType="passive" [(ngModel)]="editItemData.x.dyn_default"
                           placeholder="Expression (ie: $.age>18?'Yes':'No')" [linenumber]="true">
                         </app-cm>
@@ -3038,6 +3057,7 @@
                       <label class="form-label">Text to classify (support template) *</label>
                       <div class="mx-n3">
                         <app-cm name="rtxtclsTpl" lang="html"
+                            label="Text to classify (support template)"
                             [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
                             subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
                         </app-cm>
@@ -3068,6 +3088,7 @@
                       <label class="form-label">Text to process (support template) *</label>
                       <div class="mx-n3">
                         <app-cm name="rtxtclsTpl" lang="html"
+                            label="Text to process (support template)"
                             [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
                             subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
                         </app-cm>
@@ -3146,6 +3167,7 @@
                       <label class="form-label">Image prompt (support template) *</label>
                       <div class="mx-n3">
                         <app-cm name="rcognaTpl" lang="html"
+                            label="Image prompt (support template)"
                             [(ngModel)]="editItemData.x.rcognaTpl" [linenumber]="true" (ngModelChange)="rcognaExtractor($event)"
                             subType="passive" [extraAutoComplete]="extraAutoCompleteHtml" required >
                         </app-cm>

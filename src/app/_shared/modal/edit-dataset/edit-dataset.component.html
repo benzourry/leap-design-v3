@@ -578,7 +578,7 @@
                       <label class="form-label">Pre-requisite (hide button if condition not
                       satisfied)</label>
                       <div class="mx-n3">
-                        <app-cm name="pre" lang="javascript" [extraAutoComplete]="[]"
+                        <app-cm name="pre" lang="javascript" [extraAutoComplete]="[]" label="Add Button Pre-requisite"
                           subType="passive" [(ngModel)]="_editDatasetData.x.addPre"
                           placeholder="Expression (ie: $user$.groups['123'])" [linenumber]="true">
                         </app-cm>
@@ -617,7 +617,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Additional Initial Parameter</label>
                 <div class="mx-n3">
-                  <app-cm name="initParam" lang="javascript"
+                  <app-cm name="initParam" lang="javascript" label="Additional Initial Parameter"
                     [(ngModel)]="_editDatasetData.x.initParam"
                     subType="passive" [skipCheck]="true"
                     placeholder="ie: { sorts: ['$.year~desc','$.name~asc'] }" [linenumber]="true">
@@ -627,7 +627,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Content before dataset</label>
                 <div class="mx-n3">
-                  <app-cm name="listPre" lang="html"
+                  <app-cm name="listPre" lang="html" label="Content before dataset"
                     [placeholder]="placeholder"
                     [(ngModel)]="_editDatasetData.x.pre" [linenumber]="true">
                   </app-cm>
@@ -636,7 +636,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Content after dataset</label>
                 <div class="mx-n3">
-                  <app-cm name="listPost" lang="html"
+                  <app-cm name="listPost" lang="html" label="Content after dataset"
                     placeholder="ie: End of list"
                     [(ngModel)]="_editDatasetData.x.post" [linenumber]="true">
                   </app-cm>
@@ -645,7 +645,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Row's custom class</label>
                 <div class="mx-n3">
-                  <app-cm name="rowClass" lang="html"
+                  <app-cm name="rowClass" lang="html" label="Row's custom class" subType="passive"
                     placeholder="Support templating, ie: {{'{'}}{{'{'}}$.status{{'}'}}{{'}'}}"
                     [(ngModel)]="_editDatasetData.x.rowClass" [linenumber]="true">
                   </app-cm>
@@ -680,7 +680,7 @@
               <div class="form-group mb-3">
                 <label class="form-label">Custom query builder</label>
                 <div class="mx-n3">
-                  <app-cm name="orgMapParam" lang="json"
+                  <app-cm name="orgMapParam" lang="json" label="Custom query builder"
                     [placeholder]="queryBuilderPlaceholder" [(ngModel)]="_editDatasetData.x.qFilter"
                     [extraAutoComplete]="extraAutoComplete"  subType="passive"
                     [linenumber]="true">

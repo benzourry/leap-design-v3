@@ -373,6 +373,7 @@
           satisfied)</label>
           <div class="mx-n3">
             <app-cm name="pre" lang="javascript" [(ngModel)]="editGroupData.pre"
+              label="Group Pre-requisite"
               [linenumber]="true" placeholder="Expression (ie: $user$.attributes?.staff)">
             </app-cm>
           </div>
@@ -608,6 +609,7 @@
                 satisfied)</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
+                    label="Item Pre-requisite"
                     [linenumber]="true" placeholder="Expression (ie: $user$.provider=='google')">
                   </app-cm>
                 </div>
@@ -653,8 +655,9 @@
           <label class="form-label">Init Function</label>
           <div class="mx-n3">
             <app-cm name="f" lang="javascript" subType="active"
-            [extraAutoComplete]="extraAutoCompleteJs"
-             [(ngModel)]="editNaviData.f" [linenumber]="true"></app-cm>
+              label="App Init Function"
+              [extraAutoComplete]="extraAutoCompleteJs"
+              [(ngModel)]="editNaviData.f" [linenumber]="true"></app-cm>
           </div>
         </div>
       </div>

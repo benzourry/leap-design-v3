@@ -1,4 +1,10 @@
-<div>
+<div [class.cm-fullscreen-mode]="isFullscreen">
+
+  <!-- Show label only when in fullscreen -->
+  @if (isFullscreen && label()) {
+    <h4 class="mb-3">{{label()}}</h4>
+  }
+
   @if (!hideControl()) {
     <!-- Changed justify-content-end to justify-content-start -->
     <div class="d-flex justify-content-start flex-wrap gap-1 m-1">
@@ -7,6 +13,11 @@
       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="unfoldAll()">Unfold All</button>
       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="foldAll()">Fold All</button>
       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="formatCode()" [disabled]="readOnly()">Format</button>
+
+      <!-- NEW FULLSCREEN BUTTON -->
+      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="isFullscreen = !isFullscreen">
+        <fa-icon [icon]="['fas', isFullscreen ? 'compress' : 'expand']"></fa-icon>
+      </button>
     </div>
   }
   

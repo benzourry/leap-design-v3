@@ -87,6 +87,7 @@
                 <label class="form-check-label" for="accessByCond">Allow entry access by condition</label>
                 <div class="mx-n3">
                   <app-cm name="accessByCond" lang="javascript" [(ngModel)]="_editFormData.x.accessByCond"
+                    label="Allow entry access by condition"
                     [extraAutoComplete]="extraAutoCompleteJs()" placeholder="$user$.attributes.staff" subType="active"
                     [linenumber]="true">
                   </app-cm>
@@ -181,7 +182,7 @@
                     <label class="form-label small mb-2">Qualifier *</label>
                     <div class="form-control overflow-hidden p-0">
                       <div class="mx-n3">
-                        <app-cm name="singleQ" lang="javascript"
+                        <app-cm name="singleQ" lang="javascript" label="Single Data Qualifier"
                           [(ngModel)]="_editFormData.singleQ" [hideControl]="true" [linenumber]="true" [skipCheck]="true"
                           placeholder="ie: {'$_.email':$user$.email}" [extraAutoComplete]="extraAutoCompleteJs()"
                           subType="passive">
@@ -192,7 +193,7 @@
 
                   <div class="form-check form-control-sm mt-1">
                     <input type="checkbox" class="form-check-input" [(ngModel)]="_editFormData.x.enableQFilter"
-                      name="saveAndStay" id="enableQFilter">
+                      name="enableQFilter" id="enableQFilter">
                     <label class="form-check-label" for="enableQFilter">Enable advanced query builder</label>
                   </div>
                   @if(_editFormData.x?.enableQFilter){
@@ -201,6 +202,7 @@
                     <div class="form-control overflow-hidden p-0">
                       <div class="mx-n3">
                         <app-cm name="f" lang="javascript" [(ngModel)]="_editFormData.x.qFilter" hideControl="true" [skipCheck]="true"
+                          label="Single Data Query Builder"
                           [extraAutoComplete]="extraAutoCompleteJs()" subType="passive" [linenumber]="true">
                         </app-cm>
                       </div>
@@ -430,6 +432,7 @@
                                     <label class="">Template for data *</label>
                                     <div class="mx-n3">
                                       <app-cm name="walletTextTpl-{{item}}" lang="html" [(ngModel)]="_editFormData.krypta[item].tpl" [hideControl]="true"
+                                        label="Template for Krypta data"
                                         [extraAutoComplete]="extraAutoCompleteJs()" subType="passive" [linenumber]="true" required>
                                       </app-cm>
                                     </div>
@@ -635,6 +638,7 @@
               <label class="form-label">Init Function</label>
               <div class="mx-n3">
                 <app-cm name="f" lang="javascript" [(ngModel)]="_editFormData.f"
+                  label="Form Init Function"
                   [extraAutoComplete]="extraAutoCompleteJs()" subType="active" [linenumber]="true">
                 </app-cm>
               </div>
@@ -661,6 +665,7 @@
               <label class="form-label">On Save</label>
               <div class="mx-n3">
                 <app-cm name="onSave" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()" subType="active"
+                  label="Form On Save"
                   [(ngModel)]="_editFormData.onSave" [linenumber]="true">
                 </app-cm>
               </div>
@@ -688,6 +693,7 @@
               <label class="form-label">On Submit</label>
               <div class="mx-n3">
                 <app-cm name="onSubmit" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()" subType="active"
+                  label="Form On Submit"
                   [(ngModel)]="_editFormData.onSubmit" [linenumber]="true">
                 </app-cm>
               </div>
@@ -714,6 +720,7 @@
               <label class="form-label">On View</label>
               <div class="mx-n3">
                 <app-cm name="onView" lang="javascript" [extraAutoComplete]="extraAutoCompleteJs()" subType="active"
+                  label="Form On View"
                   [(ngModel)]="_editFormData.onView" [linenumber]="true">
                 </app-cm>
               </div>

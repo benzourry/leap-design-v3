@@ -13,7 +13,6 @@
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 0.85em;
 }
-
 /* ==========================================================================
    LAYOUT & GUTTER CLEANUP
    ========================================================================== */
@@ -23,15 +22,24 @@
   overflow: auto;
   min-width: 100%;
   width: 100%;
+  /* Restored opaque background and text color to fix the transparency issue */
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
 }
 
 ::ng-deep .cm-editor {
+  /* Restored flex alignment to keep the editor centered when resized */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   /* Removes default box background on active line number for a cleaner look */
   .cm-activeLineGutter {
     background-color: transparent !important;
   }
 }
 
+/* Restored foldmarker sizing */
 ::ng-deep .foldmarker {
   font-size: 0.43em;
   cursor: pointer;
@@ -127,5 +135,37 @@
   .cm-js-expression {
     background-color: rgba(79, 195, 247, 0.15);
     border-radius: 2px;
+  }
+}
+
+/* ==========================================================================
+   FULLSCREEN MODE OVERRIDES
+   ========================================================================== */
+.cm-fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999; /* Ensure it floats above modals/navbars */
+  background-color: var(--bs-body-bg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+
+  /* Force the editor host to fill remaining vertical space */
+  .codemirrorhost {
+    flex-grow: 1;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  ::ng-deep .cm-editor {
+    height: 100%;
+  }
+
+  ::ng-deep .cm-scroller {
+    height: 100%;
+    resize: none; /* Disable manual resize while in fullscreen */
   }
 }

@@ -56,6 +56,7 @@
       <div class="mx-n3">
         <app-cm content="content" lang="html" #codeeditor #content="ngModel"
           name="content"
+          label="Mailer Content"
           [extraAutoComplete]="extraAutoCompleteHtml" subType="mailer" [(ngModel)]="_editMailerData.content"
           [linenumber]="true">
         </app-cm>
@@ -102,6 +103,7 @@
         <!-- ✅ FIXED: name changed to "pre" -->
         <app-cm content="pre" lang="js" #codeeditorpre #pre="ngModel"
           name="pre" 
+          label="Mailer Prerequisite"
           [extraAutoComplete]="extraAutoCompleteJs" [(ngModel)]="_editMailerData.pre"
           [linenumber]="true">
         </app-cm>

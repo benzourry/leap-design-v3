@@ -943,7 +943,9 @@
               <div class="form-group mb-3">
                 <label class="form-label">Additional options for chart (Echarts)</label>
                 <div class="mx-n3">
-                  <app-cm name="ecOpt" lang="javascript" [(ngModel)]="editChartData.x.ecOpt" [linenumber]="true">
+                  <app-cm name="ecOpt" lang="javascript" [(ngModel)]="editChartData.x.ecOpt"
+                    label="ECharts Options" 
+                    [linenumber]="true">
                   </app-cm>
                 </div>
                 Learn more chart option <a href="https://echarts.apache.org/en/option.html" target="_blank">here</a>
@@ -951,7 +953,8 @@
               <div class="form-group mb-3">
                 <label class="form-label">Transform Function</label>
                 <div class="mx-n3">
-                  <app-cm name="f" lang="javascript" [(ngModel)]="editChartData.f" [linenumber]="true">
+                  <app-cm name="f" lang="javascript" [(ngModel)]="editChartData.f" 
+                    label="Data Transform Function" [linenumber]="true">
                   </app-cm>
                 </div>
                 <div class="small mt-2 text-body-secondary">
@@ -965,7 +968,8 @@
               <div class="form-group mb-3">
                 <label class="form-label">Pre-requisite</label>
                 <div class="mx-n3">
-                  <app-cm name="pre" lang="javascript" [(ngModel)]="editChartData.x.pre" [linenumber]="true">
+                  <app-cm name="pre" lang="javascript" [(ngModel)]="editChartData.x.pre"
+                    label="Chart Pre-requisite" [linenumber]="true">
                   </app-cm>
                 </div>
               </div>

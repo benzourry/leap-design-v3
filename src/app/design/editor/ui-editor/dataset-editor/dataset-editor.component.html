@@ -649,6 +649,7 @@
         <label class="form-label">Pre-requisite</label>
         <div class="mx-n3">
           <app-cm name="f" lang="javascript" [(ngModel)]="editItemData.pre"
+            label="Item Pre-requisite"
             [extraAutoComplete]="extraAutoCompleteJs" subType="active"
             placeholder="ie: $user$.groups['1234']" [linenumber]="true">
           </app-cm>
@@ -885,6 +886,7 @@
                   <label class="form-label">Function</label>
                   <div class="mx-n3">
                     <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
+                      label="Dataset Action Function"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="active"
                       placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
                       [linenumber]="true">
@@ -897,6 +899,7 @@
                   <label class="form-label">Params</label>
                   <div class="mx-n3">
                     <app-cm name="params" lang="javascript" [(ngModel)]="editActionData.params"
+                      label="Dataset Action Parameters"
                       [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
                       placeholder="ie: {'entryId':$.$id}" [linenumber]="true">
                     </app-cm>
@@ -914,6 +917,7 @@
                 <label class="form-label">Pre-requisite</label>
                 <div class="mx-n3">
                   <app-cm name="pre" lang="javascript" hideControl="true"
+                    label="Dataset Action Pre-requisite"
                     [(ngModel)]="editActionData.pre" [linenumber]="true">
                   </app-cm>
                 </div>
