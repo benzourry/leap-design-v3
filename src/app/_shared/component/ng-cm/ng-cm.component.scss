@@ -171,3 +171,54 @@
     resize: none; /* Disable manual resize while in fullscreen */
   }
 }
+
+/* Target the CodeMirror Search Panel */
+::ng-deep .cm-panel.cm-search {
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+  padding: 8px !important;
+  gap: 6px;
+
+  /* Shared styling for search inputs and standard buttons */
+  input, button {
+    background: transparent;
+    color: inherit;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 4px;
+    padding: 6px 12px;
+  }
+
+  input:focus { 
+    border-color: var(--bs-primary); 
+    outline: none; 
+  }
+
+  button:hover { 
+    background: var(--bs-secondary-bg); 
+  }
+
+  /* Big, touch-friendly Close [x] button */
+  button[name="close"] {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    margin-left: auto; /* Pushes it to the far right */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: var(--bs-danger-bg-subtle, #f8d7da);
+      color: var(--bs-danger, #dc3545);
+    }
+  }
+
+  /* Subtitle text for checkboxes */
+  label { 
+    font-size: 0.85em; 
+    color: var(--bs-secondary-color); 
+  }
+}

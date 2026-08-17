@@ -1,33 +1,51 @@
-<div [class.cm-fullscreen-mode]="isFullscreen">
+<div [class.cm-fullscreen-mode]="isFullscreen()">
 
   <!-- Show label only when in fullscreen -->
-  @if (isFullscreen && label()) {
+  @if (isFullscreen() && label()) {
     <h4 class="mb-3">{{label()}}</h4>
   }
 
   @if (!hideControl()) {
-    <!-- Changed justify-content-end to justify-content-start -->
-    <div class="d-flex justify-content-start flex-wrap gap-1 m-1">
-      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="undo()">Undo</button>
-      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="openSearch()">Search</button>
-      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="unfoldAll()">Unfold All</button>
-      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="foldAll()">Fold All</button>
-      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="formatCode()" [disabled]="readOnly()">Format</button>
+    <!-- Sticky toolbar with background to hide scrolling text -->
+    <div class="d-flex justify-content-start flex-wrap gap-1 p-2 sticky-top" 
+         style="z-index: 10; background-color: var(--bs-body-bg, #ffffff);">
+      
+      <button type="button" class="btn btn-outline-secondary btn-xs" title="Undo" (click)="undo()">
+        <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>
+      </button>
+      
+      <button type="button" class="btn btn-outline-secondary btn-xs" title="Search" (click)="openSearch()">
+        <fa-icon [icon]="['fas', 'search']" [fixedWidth]="true"></fa-icon>
+      </button>
+      
+      <button type="button" class="btn btn-outline-secondary btn-xs" title="Unfold All" (click)="unfoldAll()">
+        <fa-icon [icon]="['far', 'plus-square']" [fixedWidth]="true"></fa-icon> Unfold
+      </button>
+      
+      <button type="button" class="btn btn-outline-secondary btn-xs" title="Fold All" (click)="foldAll()">
+        <fa-icon [icon]="['far', 'minus-square']" [fixedWidth]="true"></fa-icon> Fold
+      </button>
+      
+      <button type="button" class="btn btn-outline-secondary btn-xs" title="Format Code" (click)="formatCode()" [disabled]="readOnly()">
+        <fa-icon [icon]="['fas', 'align-left']" [fixedWidth]="true"></fa-icon> Format
+      </button>
 
-      <!-- NEW FULLSCREEN BUTTON -->
-      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="toggleFullscreen()">
-        <fa-icon [icon]="['fas', isFullscreen ? 'compress' : 'expand']"></fa-icon>
+      <!-- FULLSCREEN BUTTON -->
+      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" 
+              title="{{ isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen' }}" 
+              (click)="toggleFullscreen()">
+        <fa-icon [icon]="['fas', isFullscreen() ? 'compress' : 'expand']" [fixedWidth]="true"></fa-icon>
       </button>
     </div>
   }
   
   <div #codemirrorhost class="codemirrorhost"></div>
   
-  @if (!skipCheck() && codeStatus) {
-    <div class="text-white small p-1 bg-danger mt-1">{{codeStatus}}</div>
+  @if (!skipCheck() && codeStatus()) {
+    <div class="text-white small p-1 bg-danger mt-1">{{codeStatus()}}</div>
   }
   
-  @if (isAssignmentError) {
+  @if (isAssignmentError()) {
     <div class="text-white small p-1 bg-danger mt-1">Value assignment is not allowed here</div>
   }
 </div>

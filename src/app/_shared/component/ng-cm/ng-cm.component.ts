@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
@@ -162,7 +162,11 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   subType = input<string>('');
   skipCheck = input<boolean>(false);
   label = input<string>('');
-  isFullscreen: boolean = false;
+  
+  // Converted to signals
+  isFullscreen = signal<boolean>(false);
+  codeStatus = signal<string>("");
+  isAssignmentError = signal<boolean>(false);
 
   codemirrorhost = viewChild.required<ElementRef>('codemirrorhost'); 
 
@@ -204,9 +208,6 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       ...this.extraKeyMap
     ])
   ];
-
-  codeStatus: string = "";
-  isAssignmentError: boolean = false;
 
   constructor(
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
@@ -310,25 +311,79 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
 
   private evaluateASTChecks(code: string) {
     if (this.subType() === 'passive') {
-      this.isAssignmentError = this.isAssignmentExpression(code);
+      this.isAssignmentError.set(this.isAssignmentExpression(code));
     } else {
-      this.isAssignmentError = false;
+      this.isAssignmentError.set(false);
     }
   }
 
   async formatCode() {
-    const prettier = await import('prettier/standalone');
-    const parser = this.lang() === 'html' ? 'html' : 'typescript';
-    const plugin = this.lang() === 'html' ? await import('prettier/parser-html') : await import('prettier/parser-typescript');
-  
-    const formatted = await prettier.format(this.value, {
-      parser,
-      plugins: [plugin],
-    });
-  
-    this.editor?.dispatch({
-      changes: { from: 0, to: this.editor.state.doc.length, insert: formatted }
-    });
+    if (!this.value) return;
+
+    try {
+      // Import Prettier and safely unwrap the default export if the bundler packed it
+      const prettierModule = await import('prettier/standalone');
+      const format = prettierModule.format || (prettierModule as any).default?.format;
+
+      if (!format) throw new Error("Prettier formatter could not be loaded.");
+
+      let parserName = 'babel';
+      let plugins: any[] = [];
+      
+      // Helper to safely unwrap dynamically imported plugins
+      // THIS is what was missing!
+      const unwrap = (m: any) => m.default || m;
+
+      // Load the correct plugins based on the active language
+      // Load the correct plugins based on the active language
+      if (this.lang() === 'html') {
+        
+        // 1. Tell Prettier to use the forgiving 'angular' parser
+        parserName = 'angular'; 
+        
+        // 2. ⚠️ IMPORTANT: In standalone Prettier, the 'angular' parser 
+        // is actually bundled inside the 'html' plugin! So we import 'html'.
+        const pluginHtml = await import('prettier/plugins/html');
+        const pluginBabel = await import('prettier/plugins/babel');
+        const pluginEstree = await import('prettier/plugins/estree');
+        const pluginPostcss = await import('prettier/plugins/postcss');
+        
+        plugins = [
+          unwrap(pluginHtml), // Contains html, vue, and angular parsers
+          unwrap(pluginBabel), 
+          unwrap(pluginEstree), 
+          unwrap(pluginPostcss)
+        ];
+        
+      } else if (this.lang() === 'json') {
+        parserName = 'json';
+        const pluginBabel = await import('prettier/plugins/babel');
+        const pluginEstree = await import('prettier/plugins/estree');
+        plugins = [unwrap(pluginBabel), unwrap(pluginEstree)];
+      } else {
+        parserName = 'babel';
+        const pluginBabel = await import('prettier/plugins/babel');
+        const pluginEstree = await import('prettier/plugins/estree');
+        plugins = [unwrap(pluginBabel), unwrap(pluginEstree)];
+      }
+
+      // Format the code
+      const formatted = await format(this.value, {
+        parser: parserName,
+        plugins: plugins,
+      });
+
+      // Dispatch the formatted code to CodeMirror
+      this.editor?.dispatch({
+        changes: { from: 0, to: this.editor.state.doc.length, insert: formatted }
+      });
+      
+      this.codeStatus.set(""); // Clear any previous errors
+
+    } catch (err: any) {
+      console.error("Formatting Error:", err);
+      this.codeStatus.set("Format Error: " + (err.message ? err.message.split('\n')[0] : String(err)));
+    }
   }
 
   dontComplete = [
@@ -491,9 +546,9 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       if (validatorMap[lang]) {
         validatorMap[lang](code);
       }
-      this.codeStatus = "";
+      this.codeStatus.set("");
     } catch (e: any) {
-      this.codeStatus = "ERR: " + e.message;
+      this.codeStatus.set("ERR: " + e.message);
     }
   };
 
@@ -545,8 +600,8 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
 
 
   toggleFullscreen(): void {
-    if (!this.isFullscreen) {
-      this.isFullscreen = true;
+    if (!this.isFullscreen()) {
+      this.isFullscreen.set(true);
       
       // Explicitly pass window.location.href to perfectly preserve your /#/ hash.
       // Because the URL doesn't change, the Angular Router will ignore the subsequent back button event.
@@ -557,7 +612,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       if (window.history.state?.cmFullscreen) {
         window.history.back();
       } else {
-        this.isFullscreen = false;
+        this.isFullscreen.set(false);
       }
     }
   }
@@ -566,14 +621,14 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   onPopState(): void {
     // Intercepts the back button. Angular Router also sees this event, 
     // but ignores it because the hash URL hasn't changed.
-    if (this.isFullscreen) {
-      this.isFullscreen = false;
+    if (this.isFullscreen()) {
+      this.isFullscreen.set(false);
     }
   }
 
   ngOnDestroy(): void {
         // Clean up the history state if the component unmounts while open
-    if (this.isFullscreen && window.history.state?.cmFullscreen) {
+    if (this.isFullscreen() && window.history.state?.cmFullscreen) {
       window.history.back();
     }
     this.editor?.destroy();
