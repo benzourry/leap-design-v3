@@ -15,7 +15,7 @@
       <button type="button" class="btn btn-outline-secondary btn-xs" (click)="formatCode()" [disabled]="readOnly()">Format</button>
 
       <!-- NEW FULLSCREEN BUTTON -->
-      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="isFullscreen = !isFullscreen">
+      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" (click)="toggleFullscreen()">
         <fa-icon [icon]="['fas', isFullscreen ? 'compress' : 'expand']"></fa-icon>
       </button>
     </div>

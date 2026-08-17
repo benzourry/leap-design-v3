@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
@@ -543,7 +543,39 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     // Parser checks can go here if needed
   }
 
+
+  toggleFullscreen(): void {
+    if (!this.isFullscreen) {
+      this.isFullscreen = true;
+      
+      // Explicitly pass window.location.href to perfectly preserve your /#/ hash.
+      // Because the URL doesn't change, the Angular Router will ignore the subsequent back button event.
+      window.history.pushState({ cmFullscreen: true }, '', window.location.href);
+      
+    } else {
+      // If closing via the button, trigger the browser back action.
+      if (window.history.state?.cmFullscreen) {
+        window.history.back();
+      } else {
+        this.isFullscreen = false;
+      }
+    }
+  }
+
+  @HostListener('window:popstate')
+  onPopState(): void {
+    // Intercepts the back button. Angular Router also sees this event, 
+    // but ignores it because the hash URL hasn't changed.
+    if (this.isFullscreen) {
+      this.isFullscreen = false;
+    }
+  }
+
   ngOnDestroy(): void {
+        // Clean up the history state if the component unmounts while open
+    if (this.isFullscreen && window.history.state?.cmFullscreen) {
+      window.history.back();
+    }
     this.editor?.destroy();
   }
 }

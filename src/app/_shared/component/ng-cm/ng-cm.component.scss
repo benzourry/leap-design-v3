@@ -149,7 +149,8 @@
   height: 100vh;
   z-index: 9999; /* Ensure it floats above modals/navbars */
   background-color: var(--bs-body-bg);
-  padding: 1.5rem;
+  padding: 1rem;
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
 
@@ -157,7 +158,8 @@
   .codemirrorhost {
     flex-grow: 1;
     overflow: hidden;
-    margin-top: 0.5rem;
+    margin: 0.5rem -1rem 0 -1rem; /* top, right, bottom, left */
+    width: calc(100% + 2rem);
   }
 
   ::ng-deep .cm-editor {
