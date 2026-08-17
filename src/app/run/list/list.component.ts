@@ -280,9 +280,11 @@ export class ListComponent implements OnInit {
     this.sort.set(null);
     this.checkAllInput.set(false);
 
+    // Fetch ONLY the dataset first (removed switchMap)
     this.activeDatasetReq = this.runService.getRunDataset(id)
-      .pipe(
-        switchMap(res => {
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
           Object.defineProperty(window, '_this_' + this.scopeId(), {
             get: () => this._this,
             configurable: true
@@ -325,41 +327,13 @@ export class ListComponent implements OnInit {
           this.tiersMap = {};
           res.form.tiers.forEach((t: any) => (this.tiersMap[t.id] = t));
 
-          const filtersAll = { ...this.filtersData(), ...this._param };
-          const params: any = {
-            email: this.user()?.email,
-            searchText: '',
-            filters: JSON.stringify(filtersAll),
-            page: 0,
-            size: res.x?.defPageSize || 25,
-            ...this._pre({}, res.x?.initParam, false),
-            '@cond': this.filtersCond
-          };
+          // Dataset metadata is loaded, turn off main loader
+          this.loading.set(false); 
 
-          return this.entryService.getListByDataset(id, params);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: listRes => {
-          const content = listRes.content || [];
-
-          this.rawList.set(listRes);
-          this.entryTotal.set(listRes.page?.totalElements);
-          this.numberOfElements.set(content.length);
-          this.entryPages.set(listRes.page?.totalPages);
-
-          content.forEach((e: any, index: number) => {
-            this.entryIndex[e.id] = index;
-            this.calculateRowMetadata(e);
-          });
-
-          this.entryList.set(content);
-          this.calculateAggregations();
-
-          this.loading.set(false);
-          this.itemLoading.set(false);
-          this.cdr.detectChanges();
+          // 👇 REUSE getEntryList HERE 👇
+          // Now that dataset() is populated, this will safely pass the early exit check
+          // and emit your changed event on the first load!
+          this.getEntryList(1);
         },
         error: () => {
           this.loading.set(false);
