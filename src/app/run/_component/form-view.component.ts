@@ -411,7 +411,10 @@ export class FormViewComponent implements OnInit {
   base: string = base;
   sectionMap: any = {};
   hideGroup: any = {};
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
 
   filterSection = (sectionList: any[], type: string[], tab?: number) => 
     sectionList?.filter(s => type.includes(s.type) && (!tab || s.parent === tab));
@@ -443,7 +446,7 @@ export class FormViewComponent implements OnInit {
   ngOnInit() {
     this.filterTabs();
     this.filterItems();
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
   }
 
   formTab = computed(() => this.form().nav !== 'simple' ? this.form().tabs?.filter((tab: any) => this.preCheckStr(tab.pre)) : [{}]);

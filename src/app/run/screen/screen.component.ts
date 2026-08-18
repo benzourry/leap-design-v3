@@ -122,7 +122,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   prevSignalKey: string = '';
 
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
   
   dayjs = dayjs;
   ServerDate = ServerDate;
@@ -191,7 +194,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
   }
 
   private activeCalReq?: Subscription;
@@ -333,28 +336,34 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.goObjWParam = this.buildGo(this._entryId);
         this.popObj = this.buildPop(this._entryId, true);
 
-        // ✅ FIX 2: Cleanup previous window variables to prevent memory leaks during routing
+
+        // 2. Remove old window references using Reflect with safety fallback
         if (this.registeredScopeId) {
-          Reflect.deleteProperty(window, '_popup_' + this.registeredScopeId);
-          Reflect.deleteProperty(window, '_this_' + this.registeredScopeId);
+          const popupKey = '_popup_' + this.registeredScopeId;
+          const thisKey = '_this_' + this.registeredScopeId;
+
+          if (!Reflect.deleteProperty(window, popupKey)) {
+            (window as any)[popupKey] = undefined;
+          }
+          if (!Reflect.deleteProperty(window, thisKey)) {
+            (window as any)[thisKey] = undefined;
+          }
         }
         
-        this.registeredScopeId = this.scopeId(); // Remember what we are about to register
+        this.registeredScopeId = this.scopeId();
 
-        // console.log("sprinkle $popup and $this$ in global")
-        Object.defineProperty(window, '_popup_' + this.scopeId(), {
+        // 3. Register new window properties using Reflect
+        Reflect.defineProperty(window, '_popup_' + this.scopeId(), {
           get: () => this.popObj,
-          configurable: true,   // so you can delete it later 
+          configurable: true
         });
-        Object.defineProperty(window, '_this_' + this.scopeId(), {
+
+        Reflect.defineProperty(window, '_this_' + this.scopeId(), {
           get: () => this._this,
-          configurable: true,   // so you can delete it later 
-          // writable: true,
+          configurable: true
         });
 
         this.refreshScreen();
-
-
         this.cdr.detectChanges();
       })
   }
@@ -1088,37 +1097,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   calOptions: any;
 
-  // eventClick(info) {
-  //   var event = info.event;
-  //   if (event?.id) {
-  //     var actions = this.screen()?.actions;
-  //     if (actions?.length > 0) {
-  //       this.actionLinks.set([]);
-  //       let actionLinks = [];
-  //       actions.forEach(action => {
-  //         let url = this.goObj[action.id]?.replace("#", "");
-  //         let param = action.params ? JSON.parse(action.params.replace("$code$", event?.id)) : {};
-  //         param.entryId = event?.id;
-  //         actionLinks.push({ url: url, param: param, label: action.label });
-  //       })
-  //       this.actionLinks.set(actionLinks);
-
-  //       if (actionLinks.length == 0) {
-  //         this.router.navigate([`${this.preurl}`, 'form', this.screen()?.dataset?.form?.id, 'view'], { queryParams: { entryId: event?.id } })
-  //       } else if (actionLinks.length == 1) {
-  //         // if only 1 action, immediately navigate
-  //         this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param })
-  //       } else {
-  //         // if more than 1, show options
-  //         this.showActionOptions()
-  //       }
-  //     } else {
-  //       this.toastService.show("No action specified for calendar");
-  //     }
-  //   }
-  // }
-
-
   eventClick(info) {
     var event = info.event;
     if (event?.id) {
@@ -1374,6 +1352,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
     // this.liveSubscription.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
+
+
 
     // ✅ FIX 3: Use the tracker to delete the exact properties we registered
     if (this.registeredScopeId) {

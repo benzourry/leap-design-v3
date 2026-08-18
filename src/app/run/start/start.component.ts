@@ -96,7 +96,11 @@ export class StartComponent implements OnInit, OnDestroy {
   preGroup = signal<Record<string, boolean>>({});
   preItem = signal<Record<string, boolean>>({});
   navToggle = signal<Record<number, boolean>>({});
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
+
   baseUrl = computed(() => {
     return (
       location.protocol +
@@ -178,19 +182,17 @@ export class StartComponent implements OnInit, OnDestroy {
     this.accessToken = this.userService.getToken();
 
     // might also consider using proxy and $digest$ for any changes
-    this.appConfig = this.runService.appConfig; 
+    // this.appConfig = this.runService.appConfig; 
 
-    Object.defineProperty(window, '_conf', {
+    Reflect.defineProperty(window, '_conf', {
       get: () => this.appConfig,
-      configurable: true,   // so you can delete it later 
-      // writable: true,
-    });  
+      configurable: true // Required so Reflect.deleteProperty can remove it later
+    });
 
-    Object.defineProperty(window, '_this_start', {
+    Reflect.defineProperty(window, '_this_start', {
       get: () => this._this,
-      configurable: true,   // so you can delete it later 
-      // writable: true,
-    });  
+      configurable: true
+    });
 
     // Flattened the nested subscriptions using switchMap
     this.userService.getUser().pipe(
@@ -574,7 +576,7 @@ export class StartComponent implements OnInit, OnDestroy {
         let pre = f.pre.trim();
         res = this._pre(pre);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
       }
-    } catch (e) { this.logService.log(`{start-${f?.code}-precheck}-${e.message}`) }
+    } catch (e) { this.logService.log(`{start-[${f?.title}]-precheck}-${e.message}`) }
     return !f.pre || res;
   }
 
@@ -820,8 +822,14 @@ export class StartComponent implements OnInit, OnDestroy {
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
 
+    this.runService.appConfig = {};
     // Global cleanup
-    delete (window as any)._conf;
-    delete (window as any)._this_start;
+    const confDeleted = Reflect.deleteProperty(window, '_conf');
+    const thisStartDeleted = Reflect.deleteProperty(window, '_this_start');
+
+    // Fallback if browser/scope constraints prevent property deletion
+    if (!confDeleted) (window as any)._conf = undefined;
+    if (!thisStartDeleted) (window as any)._this_start = undefined;
+
   }
 }

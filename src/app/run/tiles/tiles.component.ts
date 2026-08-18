@@ -76,7 +76,10 @@ export class TilesComponent implements OnInit, OnDestroy {
   user = computed<any>(() => this.runService.$user());
   $param$: any = {};
 
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
   
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -96,12 +99,18 @@ export class TilesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
 
-    Object.defineProperty(window, '_this_tiles', {
+    // 1. Clear previous proxy keys to prevent state leakage
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+    // 2. Register global window reference using Reflect
+    Reflect.defineProperty(window, '_this_tiles', {
       get: () => this._this,
       configurable: true,
-    });  
+    }); 
 
     this.init();
     this.getStart(this.app()?.id);
@@ -214,7 +223,16 @@ export class TilesComponent implements OnInit, OnDestroy {
   endpointGet = (code: string, params: any, callback: any, error: any) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
 
   ngOnDestroy(): void {    
-    Reflect.deleteProperty(window, '_this_tiles');
+    // 1. Remove window reference safely with fallback
+    if (!Reflect.deleteProperty(window, '_this_tiles')) {
+      (window as any)._this_tiles = undefined;
+    }
+
+    // 2. Clear proxy state keys to release memory
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
     this.compiledEvalCache.clear();
   }
 }

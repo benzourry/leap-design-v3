@@ -106,7 +106,10 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   prevSignalKey: string = '';
 
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
 
   // scopeId = computed<string>(() => "form_"+this.formId()+'_'+this.action());
   scopeId = computed<string>(() => {
@@ -153,7 +156,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   
   ngOnInit() {
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
     this.timestamp.set(Date.now());
   }
 
@@ -568,11 +571,29 @@ export class ViewComponent implements OnInit, OnDestroy {
   onSubmit: () => any;
   onView: () => any;
 
+  private registeredScopeId: string | null = null;
+
   getForm(formId: number, entryId: number) {
-    Object.defineProperty(window, '_this_' + this.scopeId(), {
+    // 1. Clear previous proxy keys to prevent state leakage
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+    // 2. Safely unregister previous window property if scope changed
+    if (this.registeredScopeId) {
+      const oldKey = '_this_' + this.registeredScopeId;
+      if (!Reflect.deleteProperty(window, oldKey)) {
+        (window as any)[oldKey] = undefined;
+      }
+    }
+
+    this.registeredScopeId = this.scopeId();
+
+    // 3. Register global window reference using Reflect
+    Reflect.defineProperty(window, '_this_' + this.scopeId(), {
       get: () => this._this,
-      configurable: true,   // so you can delete it later 
-    });  
+      configurable: true,
+    });
 
     this.runService.getRunForm(formId)
       .subscribe(res => {
@@ -1150,10 +1171,23 @@ checkTier(tier) {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
+
+    // 1. Remove window reference safely using Reflect with fallback
+    if (this.registeredScopeId) {
+      const key = '_this_' + this.registeredScopeId;
+      if (!Reflect.deleteProperty(window, key)) {
+        (window as any)[key] = undefined;
+      }
+    }
+
+    // 2. Clear proxy state keys to release memory
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
     
     // Safety cleanup of memory leak proxy
     // delete window['_this_' + this.scopeId()];
-    Reflect.deleteProperty(window, '_this_' + this.scopeId()); 
+    // Reflect.deleteProperty(window, '_this_' + this.scopeId()); 
     this.elMap = {};
     
     // Clear the compiled function cache to free up memory

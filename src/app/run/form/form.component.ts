@@ -89,7 +89,10 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
   angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
   Math: any = Math;
   form = signal<any>({});
   lookupIds: any;
@@ -228,7 +231,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   });
 
   ngOnInit() {
-    this.appConfig = this.runService?.appConfig;
+    // this.appConfig = this.runService?.appConfig;
     
     this.entry.update(e => {
       e.email = this.user()?.email;
@@ -258,148 +261,6 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   private activeFormReq?: Subscription;
 
-  // getForm(formId, entryId, action) {
-
-  //   if (this.activeFormReq) {
-  //     this.activeFormReq.unsubscribe();
-  //   }
-
-  //   this.watchList.clear();
-  //   this.watchListSection = {};
-  //   this.reactiveCognaList = {};
-
-  //   this.loading.set(true);
-
-  //   this.activeFormReq = this.runService.getRunForm(formId).pipe(
-  //     takeUntilDestroyed(this.destroyRef),
-  //     switchMap((form: any) => {
-  //       const needsEcharts = JSON.stringify(form).includes('echarts');
-        
-  //       if (needsEcharts && !this.echartsRef) {
-  //         return from(import('echarts')).pipe(
-  //           tap(echartsModule => this.echartsRef = echartsModule),
-  //           map(() => form)
-  //         );
-  //       }
-        
-  //       return of(form); 
-  //     }),
-  //     tap(form => {
-  //       if (this.windowKey) {
-  //         delete window[this.windowKey];
-  //       }
-  //       this.windowKey = '_this_' + this.scopeId();
-  //       Object.defineProperty(window, this.windowKey, {
-  //         get: () => this._this,
-  //         configurable: true,   
-  //       });
-
-  //       this.formLoaded.emit(form);
-  //       this.form.set(form);
-  //       let formTab = form.nav != 'simple' ? form.tabs : [{}]
-
-  //       if (form.nav != 'simple') {
-  //         this.sectionMap.update(sm => ({
-  //           ...sm,
-  //           [-1]: this.filterSection(form.sections, ['section', 'list'], -1),
-  //           [-999]: this.filterSection(form.sections, ['section', 'list'], -999)
-  //         }));
-  //       }
-
-  //       formTab.forEach(tab => {
-  //         this.sectionMap.update(sm => ({
-  //           ...sm,
-  //           [tab?.id]: this.filterSection(form.sections, ['section', 'list'], tab?.id)
-  //         }));
-  //       });
-
-  //       this.entry.set({ currentStatus: 'drafted', data: {} });
-        
-  //       this.onInit = () => this.initForm(form.f, this.entry().data, form);
-  //       this.onView = () => this.initForm(form.onView, this.entry().data, form);
-  //       this.onSave = () => this.initForm(form.onSave, this.entry().data, form);
-  //       this.onSubmit = () => this.initForm(form.onSubmit, this.entry().data, form);
-
-  //       form.sections.forEach(s => {
-  //         if (['section'].indexOf(s.type) > -1) { 
-  //           s.items.forEach(item => {
-  //             let field = form.items[item.code];
-  //             if (field.type == 'eval') {
-  //               this.watchList.set(item.code, field.f)
-  //             }
-  //             if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-  //               let extracted = extractVariables(["$"], field.x?.rcognaTpl)
-  //               this.reactiveCognaList[item.code] = { sources: extracted?.["$"], data: this.entry()?.data };
-  //             }
-  //           });
-  //         } else if (s.type == 'list') { 
-  //           this.watchListSection[s.code] = new Map();
-  //           s.items.forEach(item => {
-  //             let field = form.items[item.code];
-  //             if (field.type == 'eval') {
-  //               this.watchListSection[s.code].set(item.code, field.f)
-  //             }
-  //             if (field.x?.rtxtcls || field.x?.rtxtgen || field.x?.rimggen) {
-  //               let extracted: any = extractVariables(["$"], field.x?.rcognaTpl);
-  //               this.reactiveCognaList[item.code] = { sources: extracted?.$, data: this.entry()?.data?.[s.code] };
-  //             }
-  //           });
-  //         }
-  //       });
-  //     }),
-  //     switchMap(form => {
-  //       let dataStream$: Observable<any> = of(null);
-
-  //       if (action == 'edit') {
-  //         if (entryId || !this.isEmpty(this._param || {})) {
-  //           dataStream$ = this.getDataObs(entryId, form);
-  //         } else {
-  //           if (form.single) {
-  //             dataStream$ = this.getDataSingleObs(form);
-  //           } else {
-  //             this.editWithoutId.set(true); 
-  //           }
-  //         }
-  //       } else if (action == 'edit-single') {
-  //         dataStream$ = this.getDataSingleObs(form);
-  //       } else if (action == 'prev') {
-  //         dataStream$ = this.getPrevDataObs(entryId, this._param, form.prev);
-  //       } else if (action == 'add') {
-  //         // No fetch needed
-  //       } else if (form.x?.facet?.includes(action)) {
-  //         if (entryId || !this.isEmpty(this._param || {})) {
-  //           dataStream$ = this.getDataObs(entryId, form);
-  //         }
-  //       } else {
-  //         this.invalidFacet.set(true); 
-  //         this.invalidFacetKey.set(action); 
-  //       }
-
-  //       return dataStream$.pipe(map(() => form));
-  //     })
-  //   ).subscribe({
-  //     next: (form) => {
-  //       this.evalAll(this.entry().data);
-  //       this.initForm(form.f, this.entry().data, form);
-  //       this.filterTabs();
-  //       this.filterItems();
-
-  //       this.tabPostAction(this._navIndex());
-
-  //       this.runAllCognaField();
-
-  //       this.loading.set(false);
-  //     },
-  //     error: err => {
-  //       this.logService.log(`Error fetching form: ${err.message}`);
-  //       this.loading.set(false);
-  //     }
-  //   });
-  // }
-
-  // --- RxJS Data Fetch Observables ---
-
-
   getForm(formId, entryId, action) {
 
     if (this.activeFormReq) {
@@ -427,13 +288,21 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         return of(form); 
       }),
       tap(form => {
-        if (this.windowKey) {
-          delete window[this.windowKey];
+
+        const newWindowKey = '_this_' + this.scopeId();
+
+        // Clean up old window key if action or formId changed
+        if (this.windowKey && this.windowKey !== newWindowKey) {
+          Reflect.deleteProperty(window, this.windowKey);
         }
-        this.windowKey = '_this_' + this.scopeId();
-        Object.defineProperty(window, this.windowKey, {
+
+        this.windowKey = newWindowKey;
+
+        Object.keys(this._this).forEach(key => delete this._this[key]);
+
+        Reflect.defineProperty(window, this.windowKey, {
           get: () => this._this,
-          configurable: true,   
+          configurable: true,
         });
 
         this.formLoaded.emit(form);
@@ -1953,7 +1822,10 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     }
 
     if (this.windowKey) {
-      delete window[this.windowKey];
+      const deleted = Reflect.deleteProperty(window, this.windowKey);
+      if (!deleted) {
+        (window as any)[this.windowKey] = undefined;
+      }
     }
   }
 }

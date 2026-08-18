@@ -199,6 +199,7 @@ export class UserService {
         .pipe(
           tap({
             next: (res) => {
+              window.localStorage.setItem("debugAppId", String(appId));
               window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res),null));
               this.user = of(res);
               // window.localStorage.removeItem("userexp");

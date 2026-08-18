@@ -2,7 +2,7 @@
 // Part of LEAP - GNU GPL v3
 
 import { 
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, 
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, 
   computed, effect, forwardRef, inject, input, output, signal, untracked 
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -61,7 +61,7 @@ import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-e
     forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe
   ]
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private runService = inject(RunService);
   private entryService = inject(EntryService);
@@ -200,7 +200,10 @@ export class ListComponent implements OnInit {
   };
 
   _this = createProxy({}, () => this.cdr.markForCheck());
-  appConfig: any = this.runService.appConfig;
+  // appConfig: any = this.runService.appConfig;
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
 
   
   dayjs = dayjs;
@@ -241,17 +244,13 @@ export class ListComponent implements OnInit {
       }
     });
 
-    this.destroyRef.onDestroy(() => {
-      Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key]?.unsubscribe());
-      delete (window as any)['_this_' + this.scopeId()];
-    });
   }
 
   ngOnInit() {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
   }
 
   userUnauthorized = computed(() => {
@@ -264,6 +263,8 @@ export class ListComponent implements OnInit {
     );
     return dataset.accessList?.length > 0 && intercept.length === 0;
   });
+
+  private registeredScopeId: string | null = null;
 
   getDataset(id: number) {
     if (this.activeDatasetReq) this.activeDatasetReq.unsubscribe();
@@ -280,15 +281,34 @@ export class ListComponent implements OnInit {
     this.sort.set(null);
     this.checkAllInput.set(false);
 
+    // 1. Wipe previous script variables to prevent cross-dataset contamination
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+    // 2. Unregister previous scope's window property
+    if (this.registeredScopeId) {
+      const oldKey = '_this_' + this.registeredScopeId;
+      if (!Reflect.deleteProperty(window, oldKey)) {
+        (window as any)[oldKey] = undefined;
+      }
+    }
+
+    this.registeredScopeId = this.scopeId();
+
+    // 3. Register new scoped window property
+    Reflect.defineProperty(window, '_this_' + this.scopeId(), {
+      get: () => this._this,
+      configurable: true
+    }); 
+        
     // Fetch ONLY the dataset first (removed switchMap)
     this.activeDatasetReq = this.runService.getRunDataset(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
-          Object.defineProperty(window, '_this_' + this.scopeId(), {
-            get: () => this._this,
-            configurable: true
-          });
+          
+
 
           this.dataset.set(res);
           this.totalColumn = res.items.length
@@ -1094,4 +1114,22 @@ export class ListComponent implements OnInit {
   }
 
   fclose() {}
+
+  ngOnDestroy() {
+    // 1. Clean up live subscriptions
+    Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key]?.unsubscribe());
+
+    // 2. Remove scoped global window property safely
+    if (this.registeredScopeId) {
+      const key = '_this_' + this.registeredScopeId;
+      if (!Reflect.deleteProperty(window, key)) {
+        (window as any)[key] = undefined;
+      }
+    }
+
+    // 3. Clear proxy target keys to release memory
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+  }
 }

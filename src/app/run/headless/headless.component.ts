@@ -52,7 +52,7 @@ export class HeadlessComponent implements OnInit, OnDestroy {
   path: string;
   pushDismissed: boolean;
 
-  appConfig:any = this.runService.appConfig;
+  // appConfig:any = this.runService.appConfig;
   offline = signal<boolean>(false);
   preurl: string = '';
   appId: number;
@@ -72,22 +72,42 @@ export class HeadlessComponent implements OnInit, OnDestroy {
     this.location.onPopState(() => this.modalService.dismissAll(''));
   }
 
+  get appConfig(): any {
+    return this.runService.appConfig;
+  }
+
   ngOnInit() {
 
     this.accessToken = this.userService.getToken();
 
-    this.appConfig = this.runService.appConfig;
+    // this.appConfig = this.runService.appConfig;
 
-    Object.defineProperty(window, '_conf', {
-      get: () => this.appConfig,
-      configurable: true,   // so you can delete it later 
-      // writable: true,
+    // 1. Clear previous proxy keys to prevent state leakage
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+    // 2. Register global window references using Reflect
+    Reflect.defineProperty(window, '_conf', {
+      get: () => this.runService.appConfig,
+      configurable: true,
     });  
-    Object.defineProperty(window, '_this_start', {
+
+    Reflect.defineProperty(window, '_this_start', {
       get: () => this._this,
-      configurable: true,   // so you can delete it later 
-      // writable: true,
-    });  
+      configurable: true,
+    });
+
+    // Object.defineProperty(window, '_conf', {
+    //   get: () => this.appConfig,
+    //   configurable: true,   // so you can delete it later 
+    //   // writable: true,
+    // });  
+    // Object.defineProperty(window, '_this_start', {
+    //   get: () => this._this,
+    //   configurable: true,   // so you can delete it later 
+    //   // writable: true,
+    // });  
 
     this.userService.getUser()
       .subscribe((user) => {
@@ -332,7 +352,26 @@ export class HeadlessComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
+    Object.keys(this.liveSubscription).forEach(key=>this.liveSubscription[key].unsubscribe());
+
+    // 1. Wipe the singleton service state to avoid carrying over config 
+    this.runService.appConfig = {};
+
+    // 2. Remove window references safely using Reflect with fallback
+    if (!Reflect.deleteProperty(window, '_conf')) {
+      (window as any)._conf = undefined;
+    }
+
+    if (!Reflect.deleteProperty(window, '_this_start')) {
+      (window as any)._this_start = undefined;
+    }
+
+    // 3. Clear proxy state keys to release memory
+    if (this._this) {
+      Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+
   }
 
 

@@ -196,6 +196,9 @@ export class EditorComponent implements OnInit {
         runas = prompt("Run preview as (email): ", runas);
 
         if (runas) {
+
+            localStorage.setItem('debugAppId', String(this.appId));
+
             this.userService.getUserDebug(runas, this.appId)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
