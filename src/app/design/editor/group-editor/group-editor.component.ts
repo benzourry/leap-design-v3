@@ -59,7 +59,12 @@ export class GroupEditorComponent implements OnInit {
   private utilityService = inject(UtilityService);
 
   constructor() {
-    this.location.onPopState(() => this.modalService.dismissAll(''));
+        this.location.onPopState(() => {
+            if (document.querySelector('.cm-fullscreen-mode')) {
+                return;
+            }
+            this.modalService.dismissAll('')
+        });
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
 

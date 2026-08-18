@@ -2,12 +2,12 @@
 
   <!-- Show label only when in fullscreen -->
   @if (isFullscreen() && label()) {
-    <h4 class="mb-3">{{label()}}</h4>
+    <h5 class="mb-2">{{label()}}</h5>
   }
 
   @if (!hideControl()) {
     <!-- Sticky toolbar with background to hide scrolling text -->
-    <div class="d-flex justify-content-start flex-wrap gap-1 p-2 sticky-top" 
+    <div class="ng-cm-toolbar d-flex justify-content-start flex-wrap gap-1 p-1 sticky-top align-items-stretch" 
          style="z-index: 10; background-color: var(--bs-body-bg, #ffffff);">
       
       <button type="button" class="btn btn-outline-secondary btn-xs" title="Undo" (click)="undo()">
@@ -22,9 +22,24 @@
         <fa-icon [icon]="['far', 'plus-square']" [fixedWidth]="true"></fa-icon> Unfold
       </button>
       
-      <button type="button" class="btn btn-outline-secondary btn-xs" title="Fold All" (click)="foldAll()">
-        <fa-icon [icon]="['far', 'minus-square']" [fixedWidth]="true"></fa-icon> Fold
-      </button>
+      <div ngbDropdown display="static" class="d-flex dropdown position-relative">
+        
+        <button type="button" class="btn btn-outline-secondary btn-xs d-inline-flex align-items-center" id="dropdownFold" ngbDropdownToggle title="Fold Options">
+          <fa-icon [icon]="['far', 'minus-square']" [fixedWidth]="true" class="me-1"></fa-icon> Fold
+        </button>
+
+        <div ngbDropdownMenu aria-labelledby="dropdownFold">
+          <button type="button" ngbDropdownItem (click)="foldAll()">
+            <strong>Fold All</strong>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" ngbDropdownItem (click)="foldLevel(1)">Level 1 (Root)</button>
+          <button type="button" ngbDropdownItem (click)="foldLevel(2)">Level 2</button>
+          <button type="button" ngbDropdownItem (click)="foldLevel(3)">Level 3</button>
+          <button type="button" ngbDropdownItem (click)="foldLevel(4)">Level 4</button>
+          <button type="button" ngbDropdownItem (click)="foldLevel(5)">Level 5</button>
+        </div>
+      </div>
       
       <button type="button" class="btn btn-outline-secondary btn-xs" title="Format Code" (click)="formatCode()" [disabled]="readOnly()">
         <fa-icon [icon]="['fas', 'align-left']" [fixedWidth]="true"></fa-icon> Format

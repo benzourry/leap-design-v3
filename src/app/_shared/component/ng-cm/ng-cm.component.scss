@@ -158,8 +158,12 @@
   .codemirrorhost {
     flex-grow: 1;
     overflow: hidden;
-    margin: 0.5rem -1rem 0 -1rem; /* top, right, bottom, left */
+    margin: 0 -1rem 0 -1rem; /* top, right, bottom, left */
     width: calc(100% + 2rem);
+  }
+
+  .ng-cm-toolbar{
+    margin:0 -1rem;
   }
 
   ::ng-deep .cm-editor {
@@ -170,6 +174,10 @@
     height: 100%;
     resize: none; /* Disable manual resize while in fullscreen */
   }
+}
+
+::ng-deep .cm-panels.cm-panels-bottom{
+  position: absolute;
 }
 
 /* Target the CodeMirror Search Panel */
@@ -221,4 +229,58 @@
     font-size: 0.85em; 
     color: var(--bs-secondary-color); 
   }
+}
+
+/* ==========================================================================
+   SYNTAX ERROR HIGHLIGHTING
+   ========================================================================== */
+::ng-deep .cm-syntax-error {
+  /* Classic red squiggly line */
+  text-decoration: underline wavy var(--bs-danger, #dc3545) 1px !important;
+  
+  /* 1. MAGIC FIX: Stop the browser from erasing the line when it touches text */
+  text-decoration-skip-ink: none !important;
+  
+  /* 2. Push the line down slightly so it sits cleanly under the brackets/letters */
+  text-underline-offset: 3px !important;
+  
+  /* Light red background */
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   SCROLLBAR ERROR INDICATOR (VS CODE STYLE)
+   ========================================================================== */
+::ng-deep .cm-error-scrollbar-track {
+  position: absolute;
+  top: 0;
+  /* Placed ~15px from the right so it sits perfectly next to the native scrollbar */
+  right: 15px; 
+  bottom: 0;
+  width: 8px;
+  z-index: 100;
+  /* Allows the user to click through empty space on the track */
+  pointer-events: none; 
+}
+
+::ng-deep .cm-error-mark {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background-color: var(--bs-danger, #dc3545);
+  border-radius: 2px;
+  /* Re-enables clicking specifically on the red marks */
+  pointer-events: auto; 
+  cursor: pointer;
+  transform: translateY(-50%);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+/* Make it pop when the user hovers over it to click */
+::ng-deep .cm-error-mark:hover {
+  background-color: #ff4d4d;
+  transform: translateY(-50%) scaleX(1.5) scaleY(1.5);
+  z-index: 101;
 }

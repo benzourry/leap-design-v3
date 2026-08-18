@@ -29,3 +29,8 @@
   max-height: 145px;
   overflow-y: auto;
 }
+
+/* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
+.var-ph-picker:not(:has(button)) {
+    display: none !important;
+}

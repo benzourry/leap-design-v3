@@ -352,7 +352,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     otherAppList: any[] = [];
     ngOnInit() {
 
-        this.location.onPopState(() => this.modalService.dismissAll(''));
+        this.location.onPopState(() => {
+            if (document.querySelector('.cm-fullscreen-mode')) {
+                return;
+            }
+            this.modalService.dismissAll('')
+        });
 
         this.utilityService.testOnline$()
             .pipe(takeUntilDestroyed(this.destroyRef))

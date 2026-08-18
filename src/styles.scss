@@ -42,10 +42,18 @@ a {
 }
 
 @media (pointer: fine) {
+  /* Default (Light Mode): Dark scrollbar on light background */
   body, * {
     scrollbar-width: thin;
-    /* scrollbar-color: <thumb with 30% opacity> <track with 0% opacity> */
-    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0);
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  }
+
+  /* Dark Mode: Light scrollbar on dark background */
+  [data-bs-theme="dark"] body, 
+  [data-bs-theme="dark"] *,
+  .dark-mode body,
+  .dark-mode * {
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
 }
 

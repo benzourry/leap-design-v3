@@ -13,13 +13,14 @@
       @if (dataset().x?.pre) {
         <div [outerHTML]="compileTpl(dataset().x?.pre, {$_: rawList()}) | safe:'html'"></div>
       }
+      
       <div [class.px-2]="!asComp()" class="print-hide" [class.pt-3]="!asComp()">
-        <div class="toolbar title d-flex print-hide m-a pb-2 flex-wrap" style="gap:0.25rem;"
+        <div class="toolbar title d-flex print-hide m-a pb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
           [class.input-group-sm]="asComp()" [class.limit-width]="!dataset()?.wide">
           
           @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
             @if (!(form()?.data?.prev && !prevId)) {
-              <button type="button" class="btn btn-primary bg-gradient flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
+              <button type="button" class="btn btn-primary bg-gradient rounded-2 flex-grow-1 flex-sm-grow-0" ngbTooltip="New Entry"
                 (click)="runAction('/form/'+form().data?.id+'/'+(form().data.prev?'prev':'add'),
                 dataset()?.x?.inpopAdd, inPopTpl, prevId, form()?.data?.id, 'form', form().data.prev?'prev':'add', _param)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -37,7 +38,7 @@
           }
 
           @if (dataset()?.filters && dataset()?.filters.length > 0) {
-            <button type="button" class="btn border border-2 position-relative"
+            <button type="button" class="btn border border-2 rounded-2 position-relative"
               [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
               @if (!filterIsEmpty()) {
@@ -48,13 +49,13 @@
           }
 
           @if (dataset()?.canBlast) {
-            <button type="button" class="btn border border-2" (click)="blastEmail(blastTpl, blastData())">
+            <button type="button" class="btn border border-2 rounded-2" (click)="blastEmail(blastTpl, blastData())">
               <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
             </button>
           }
 
           @if (dataset()?.x?.canResync) {
-            <button type="button" class="btn border border-2" title="Resync Dataset" [class.disabled]="offline()"
+            <button type="button" class="btn border border-2 rounded-2" title="Resync Dataset" [class.disabled]="offline()"
               (click)="resyncDataset(dataset()?.id)">
               <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
             </button>
@@ -62,7 +63,8 @@
 
           @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
             <div ngbDropdown class="d-inline-block">
-              <button type="button" class="btn border border-2" title="Export dataset" id="dropdownExport" ngbDropdownToggle>
+              <!-- Added h-100 here to fill the stretched wrapper -->
+              <button type="button" [class.btn-sm]="asComp()" class="btn border border-2 rounded-2 h-100" title="Export dataset" id="dropdownExport" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
               </button>
               <div ngbDropdownMenu aria-labelledby="dropdownExport">
@@ -93,7 +95,8 @@
 
           @if (entryTotal() > 25) {
             <div ngbDropdown class="d-inline-block">
-              <button type="button" class="btn border border-2" title="Pagination size" id="dropdownPage" ngbDropdownToggle>
+              <!-- Added h-100 here -->
+              <button type="button" class="btn border border-2 h-100" title="Pagination size" id="dropdownPage" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
               </button>
               <div ngbDropdownMenu aria-labelledby="dropdownPage">
@@ -108,7 +111,8 @@
 
           @if (dataset()?.x?.tblcard && !asComp()) {
             <div ngbDropdown class="d-inline-block ms-auto d-sm-none">
-              <button type="button" class="btn border border-2" title="Sort by" id="dropdownSort" ngbDropdownToggle>
+              <!-- Added h-100 here -->
+              <button type="button" class="btn border border-2 h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
                 <strong>{{sortFieldName()}}</strong>
               </button>
@@ -128,7 +132,8 @@
 
           @if (dataset()?.x?.canGroup) {
             <div ngbDropdown class="d-inline-block">
-              <button type="button" class="btn border border-2" title="Group by" id="dropdownGroup" ngbDropdownToggle>
+              <!-- Added h-100 here -->
+              <button type="button" class="btn border border-2 h-100" title="Group by" id="dropdownGroup" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
                 {{dataset()?.x?.groupFieldName}}
               </button>
@@ -149,7 +154,7 @@
         </div>
       </div>
 
-      @if (dataset()?.x?.showSummary) {
+      <!-- @if (dataset()?.x?.showSummary) {
         <div class="px-2 pb-2">
           <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
             <div class="row">
@@ -158,6 +163,37 @@
               <div class="col">{{lang()=='ms'?'Dipapar':'Shown'}}: <div>{{numberOfElements()}}</div></div>
               <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}: <div>{{entryPages()}}</div></div>
             </div>
+          </div>
+        </div>
+      } -->
+
+      @if (dataset()?.x?.showSummary) {
+        <div class="px-2 pb-3">
+          <!-- Added justify-content-center here -->
+          <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
+            
+            <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+              {{lang()=='ms'?'Ringkasan':'Summary'}}
+            </span>
+            
+            <!-- Subtle vertical divider -->
+            <div class="vr opacity-25"></div>
+            
+            <div>
+              {{lang()=='ms'?'Semua':'Total'}}: 
+              <span class="text-body fw-medium">{{entryTotal()}}</span>
+            </div>
+            
+            <div>
+              {{lang()=='ms'?'Dipapar':'Shown'}}: 
+              <span class="text-body fw-medium">{{numberOfElements()}}</span>
+            </div>
+            
+            <div>
+              {{lang()=='ms'?'Halaman':'Pages'}}: 
+              <span class="text-body fw-medium">{{entryPages()}}</span>
+            </div>
+            
           </div>
         </div>
       }

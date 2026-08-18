@@ -20,7 +20,7 @@ import { IconPickerComponent } from '../../../../_shared/component/icon-picker/i
 import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FormsModule } from '@angular/forms';
-import { NgClass, DatePipe } from '@angular/common';
+import { NgClass, DatePipe, PlatformLocation } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role.component';
 import { LookupService } from '../../../../run/_service/lookup.service';
@@ -59,8 +59,15 @@ export class NaviComponent implements OnInit {
   private utilityService = inject(UtilityService);
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
+  private location = inject(PlatformLocation);
 
   constructor() {
+    this.location.onPopState(() => {
+        if (document.querySelector('.cm-fullscreen-mode')) {
+            return;
+        }
+        this.modalService.dismissAll('')
+    });
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
     this.commService.changeEmitted$.subscribe(data => {
       if (data.value == 'import') {

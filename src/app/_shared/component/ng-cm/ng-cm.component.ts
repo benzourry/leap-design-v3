@@ -2,7 +2,7 @@ import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, inp
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
-import { javascript } from '@codemirror/lang-javascript';
+import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { EditorView } from 'codemirror';
 import { CompletionContext, snippetCompletion, Completion } from "@codemirror/autocomplete";
 import { rekaTheme, rekaDarkTheme } from './reka-theme';
@@ -17,7 +17,9 @@ import { Compartment, EditorState, Transaction } from '@codemirror/state';
 import { 
   foldAll, unfoldAll, foldGutter, indentOnInput, syntaxTree,
   syntaxHighlighting, defaultHighlightStyle, 
-  bracketMatching, foldKeymap
+  bracketMatching, foldKeymap,
+  foldEffect,
+  foldable
 } from '@codemirror/language';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { highlightSelectionMatches, searchKeymap, openSearchPanel } from '@codemirror/search';
@@ -25,6 +27,7 @@ import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } 
 import { ElementBase } from '../../../run/_component/element-base';
 import { ThemeService } from '../../service/theme.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: Provider = {
   provide: NG_VALUE_ACCESSOR,
@@ -90,12 +93,26 @@ const customXIfHighlight = ViewPlugin.fromClass(class {
         }
         
         try {
-          const jsState = EditorState.create({
-            doc: jsContent,
-            extensions: [javascript()]
-          });
+          // const jsState = EditorState.create({
+          //   doc: jsContent,
+          //   extensions: [javascript()]
+          // });
           
-          const tree = syntaxTree(jsState);
+          // const tree = syntaxTree(jsState);
+          // tree.iterate({
+          //   enter: (node) => {
+          //     if (node.from < node.to) {
+          //       const className = this.getJsTokenClass(node.name);
+          //       decorations.push(Decoration.mark({ class: className + " " + node.name })
+          //         .range(
+          //           from + match.index + 2 + node.from,
+          //           from + match.index + 2 + node.to
+          //         ));
+          //     }
+          //   }
+          // });
+          const tree = javascriptLanguage.parser.parse(jsContent);
+          
           tree.iterate({
             enter: (node) => {
               if (node.from < node.to) {
@@ -136,12 +153,83 @@ const customXIfHighlight = ViewPlugin.fromClass(class {
   decorations: v => v.decorations
 });
 
+const errorTrackerPlugin = ViewPlugin.fromClass(class {
+  decorations: DecorationSet;
+  dom: HTMLElement;
+
+  constructor(view: EditorView) {
+    this.dom = document.createElement("div");
+    this.dom.className = "cm-error-scrollbar-track";
+    view.dom.appendChild(this.dom);
+    this.decorations = this.updateErrors(view);
+  }
+
+  update(update: ViewUpdate) {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.updateErrors(update.view);
+    }
+  }
+
+  updateErrors(view: EditorView) {
+    const text = view.state.doc.toString();
+    const decos: any[] = [];
+    const errorLines = new Set<number>();
+
+    // Helper to register an error for both the squiggly line and the scrollbar
+    const addErr = (from: number, to: number) => {
+      decos.push(Decoration.mark({ class: "cm-syntax-error" }).range(from, to));
+      errorLines.add(view.state.doc.lineAt(from).number);
+    };
+
+    // 1. Scan for Native Syntax Errors
+    syntaxTree(view.state).iterate({
+      enter: (node) => {
+        if (node.type.isError) {
+          addErr(node.from, node.from === node.to ? node.to + 1 : node.to);
+        }
+      }
+    });
+
+    // 2. Scan for Broken {{ }} Variables
+    const regex = /\{\{[^}\n]*\}(?!\})|\{\{[^}\n<]*(?=[<{\n]|$)/g;
+    for (let m; (m = regex.exec(text)) !== null;) {
+      addErr(m.index, m.index + m[0].length);
+    }
+
+    // 3. Draw Scrollbar Marks
+    this.dom.innerHTML = "";
+    const totalLines = view.state.doc.lines || 1;
+    
+    errorLines.forEach(line => {
+      const mark = Object.assign(document.createElement("div"), {
+        className: "cm-error-mark",
+        title: `Syntax Error on line ${line}`,
+        onclick: (e: Event) => {
+          e.stopPropagation();
+          view.dispatch({ effects: EditorView.scrollIntoView(view.state.doc.line(line).from, { y: "center" }) });
+        }
+      });
+      mark.style.top = `${(line / totalLines) * 100}%`;
+      this.dom.appendChild(mark);
+    });
+
+    // Return the squiggly line decorations
+    return Decoration.set(decos.sort((a, b) => a.from - b.from), true);
+  }
+
+  destroy() { 
+    this.dom.remove(); 
+  }
+}, { 
+  decorations: v => v.decorations 
+});
+
 
 @Component({
   selector: 'app-cm',
   templateUrl: './ng-cm.component.html',
   styleUrls: ['./ng-cm.component.scss'],
-  imports: [FaIconComponent],
+  imports: [FaIconComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem],
   providers: [CUSTOMINPUT_VALUE_ACCESSOR],
   standalone: true,
 })
@@ -183,6 +271,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   extraKeyMap: KeyBinding[] = [{ key: 'Ctrl-d', run: copyLineDown }];
 
   customBasicSetup: any[] = [
+    errorTrackerPlugin,
     highlightActiveLineGutter(),
     highlightSpecialChars(),
     history(),
@@ -246,10 +335,10 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   ngAfterViewInit(): void {
     const jsDocCompletions = javascript().language.data.of({ autocomplete: this.myJsCompletions });
     const lambdaDocCompletions = javascript().language.data.of({ autocomplete: this.myLambdaCompletions });
-    const htmlDocCompletions = html().language.data.of({ autocomplete: this.myHtmlCompletions });
+    const htmlDocCompletions = html({ selfClosingTags: true }).language.data.of({ autocomplete: this.myHtmlCompletions });
 
     const langPack: Record<string, any[]> = {
-      "html": [html(), customXIfHighlight],
+      "html": [html({ selfClosingTags: true }), customXIfHighlight],
       "javascript": [javascript()],
       "json": [javascript()],
       "lambda": [javascript()]
@@ -371,6 +460,9 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       const formatted = await format(this.value, {
         parser: parserName,
         plugins: plugins,
+        bracketSameLine: true,
+        printWidth: 200,
+        htmlWhitespaceSensitivity: 'ignore' // Forces Prettier to respect your manual line breaks in text
       });
 
       // Dispatch the formatted code to CodeMirror
@@ -516,10 +608,60 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     };
   }
 
-  foldAll() { foldAll(this.editor); }
+  foldAll() { this.foldLevel(2) }
   unfoldAll() { unfoldAll(this.editor); }
   openSearch() { openSearchPanel(this.editor); }
   undo() { undo(this.editor); }
+
+  foldLevel(targetDepth: number) {
+    // 1. Unfold everything first so we start from a clean slate
+    unfoldAll(this.editor);
+
+    const state = this.editor.state;
+    const lines = state.doc.lines;
+    const foldRanges: {from: number, to: number}[] = [];
+
+    // 2. Find every valid foldable block in the document
+    for (let i = 1; i <= lines; i++) {
+      const line = state.doc.line(i);
+      const range = foldable(state, line.from, line.to);
+      
+      // CodeMirror returns a range if the line is the *start* of a foldable block.
+      if (range) {
+        // Prevent duplicates just in case multiple lines trigger the same range
+        if (!foldRanges.find(r => r.from === range.from && r.to === range.to)) {
+          foldRanges.push(range);
+        }
+      }
+    }
+
+    // 3. Calculate nesting depth for each block
+    const effects = [];
+    for (const currentRange of foldRanges) {
+      let depth = 1;
+      
+      // Check how many other ranges completely enclose this one
+      for (const parentRange of foldRanges) {
+        if (
+          parentRange !== currentRange &&
+          parentRange.from <= currentRange.from &&
+          parentRange.to >= currentRange.to
+        ) {
+          depth++;
+        }
+      }
+
+      // 4. If the depth matches our target, queue it for folding
+      if (depth === targetDepth) {
+        effects.push(foldEffect.of(currentRange));
+      }
+    }
+
+    // 5. Dispatch all fold effects at once
+    if (effects.length) {
+      this.editor.dispatch({ effects });
+    }
+  }
 
   processSnippet(list: any[]): Completion[] {
     return list.map(i => snippetCompletion(i.apply, i));
@@ -555,12 +697,13 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   isAssignmentExpression(codeString: string): boolean {
     if (!codeString) return false;
     try {
-      const state = EditorState.create({
-        doc: codeString,
-        extensions: [javascript()]
-      });
+      // const state = EditorState.create({
+      //   doc: codeString,
+      //   extensions: [javascript()]
+      // });
   
-      const tree = syntaxTree(state);
+      // const tree = syntaxTree(state);
+      const tree = javascriptLanguage.parser.parse(codeString);
       const cursor = tree.cursor();
   
       if (!cursor.firstChild()) return false;

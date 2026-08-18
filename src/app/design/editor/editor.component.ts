@@ -65,7 +65,12 @@ export class EditorComponent implements OnInit {
     private destroyRef = inject(DestroyRef); // <-- Inject for subscription cleanup
 
     constructor() {
-        this.location.onPopState(() => this.modalService.dismissAll(''));
+        this.location.onPopState(() => {
+            if (document.querySelector('.cm-fullscreen-mode')) {
+                return;
+            }
+            this.modalService.dismissAll('')
+        });
         this.utilityService.testOnline$()
             .pipe(takeUntilDestroyed())
             .subscribe(online => this.offline.set(!online));
