@@ -14,7 +14,7 @@
         <div [outerHTML]="compileTpl(dataset().x?.pre, {$_: rawList()}) | safe:'html'"></div>
       }
       
-      <div [class.px-2]="!asComp()" class="print-hide" [class.pt-3]="!asComp()">
+      <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
         <div class="toolbar title d-flex print-hide m-a pb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
           [class.input-group-sm]="asComp()" [class.limit-width]="!dataset()?.wide">
           
@@ -30,8 +30,9 @@
           }
 
           @if (!dataset()?.x?.hideSearch) {
-            <input type="search" autocapitalize="none"
+            <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
               class="search-icon flex-grow-1 bg-body rounded-2 border border-2"
+              [class.normal]="!asComp()"
               [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" 
               [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
               (keyup.enter)="getEntryList(1)">
