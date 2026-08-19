@@ -112,19 +112,28 @@ export class FieldEditComponent extends ElementBase<any> {
 
   compiledLookupMap = computed(() => {
     const list = this.lookupList();
+    const processedList = this.processedLookupList();
     const f = this.field();
     
     // Initialize a Map instead of a standard Record object
-    const map = new Map<string, string>();
+    const map = new Map<any, string>();
 
     if (!list || !f?.placeholder) return map;
 
-    for (const item of list) {
-      // We pass the raw `item` object as the key! 
-      // Even if two items have the exact same name/data, they occupy 
-      // different memory spaces, so the Map treats them as unique keys.
-      const key = this.getLookupMapKey(item);
-      map.set(key, this.compileTpl(f.placeholder, { '$': item, '$prev$': item.$prev }));
+    // Both lists will always be the same length
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      const processedItem = processedList[i];
+      
+      const html = this.compileTpl(f.placeholder, { '$': item, '$prev$': item.$prev });
+
+      // 1. Map the original item reference (used by radio/checkbox loops)
+      map.set(item, html);
+      
+      // 2. If the item was cloned for a disabled state, map the clone too (used by ng-select)
+      if (item !== processedItem) {
+        map.set(processedItem, html);
+      }
     }
 
     return map;
@@ -417,10 +426,13 @@ export class FieldEditComponent extends ElementBase<any> {
   }
 
   // Helper to safely generate a unique string key for any item
-  getLookupMapKey(item: any): string {
-    if (item == null) return '';
-    if (typeof item !== 'object') return String(item);
-    return item.code ?? item.id ?? JSON.stringify(item);
+  // getLookupMapKey(item: any): string {
+  //   if (item == null) return '';
+  //   if (typeof item !== 'object') return String(item);
+  //   return item.code ?? item.id ?? JSON.stringify(item);
+  // }
+  getLookupMapKey(item: any): any {
+    return item; // Just return the item itself to use as an object reference key
   }
 
   compileTpl(a: any, b: any, keep?: boolean) {

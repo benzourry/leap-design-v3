@@ -582,3 +582,7 @@ ngb-pagination ul.pagination { justify-content: center; }
   from { background-position: 0 bottom; }
   to { background-position: 1600px bottom; }
 }
+
+.card-blank-style .card-body {
+    padding: 0 !important;
+}

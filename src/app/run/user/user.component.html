@@ -68,7 +68,7 @@
               }
             </div>      
             @if (appUserList()?.length) {
-              <div class="px-2 py-2">
+              <!-- <div class="px-2 py-2">
                 <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
                   <div class="row">
                     <div class="col d-flex align-items-center">
@@ -84,6 +84,28 @@
                       <div class="d-sm-inline">{{entryPages()}}</div>
                     </div>
                   </div>
+                </div>
+              </div> -->
+
+              <div class="px-2 py-3">
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
+                  
+                  <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                    {{lang()=='ms'?'Ringkasan':'Summary'}}
+                  </span>
+                  <div class="vr opacity-25"></div>                    
+                  <div>
+                    {{lang()=='ms'?'Semua':'Total'}}: 
+                    <span class="text-body fw-medium">{{appUserTotal()}}</span>
+                  </div>                    
+                  <div>
+                    {{lang()=='ms'?'Dipapar':'Shown'}}: 
+                    <span class="text-body fw-medium">{{numberOfElements()}}</span>
+                  </div>                    
+                  <div>
+                    {{lang()=='ms'?'Halaman':'Pages'}}: 
+                    <span class="text-body fw-medium">{{entryPages()}}</span>
+                  </div>                    
                 </div>
               </div>
             }

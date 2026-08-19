@@ -21,7 +21,7 @@
     } @else {
       @if (form() && (!(formInactive() && ['add','prev'].includes(action())) && isAuthorized() && !invalidFacet() && !editWithoutId())) {
         @if (!form()?.hideStatus) {
-          @if (entry()?.id) {
+          @if (entry()?.id && form()?.tiers?.length>0) {
             <div class="limit-width centered mt-3">
               <step-wizard [user]="user()" [tiers]="form()?.tiers" [approval]="entry()?.approval" [entry]="entry()"></step-wizard>
             </div>

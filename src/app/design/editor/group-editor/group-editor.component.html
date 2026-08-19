@@ -154,7 +154,7 @@
               }@else {
                 <div class="table-responsive mt-2">
                   @if (appUserList()?.length>0) {
-                    <div class="px-2 pb-2">
+                    <!-- <div class="px-2 pb-2">
                       <div class="m-auto py-1 px-3 rounded-2 bg-body-secondary text-body border small shadow-sm" style="max-width:450px;">
                         <div class="row">
                           <div class="col d-flex align-items-center">
@@ -171,7 +171,29 @@
                           </div>
                         </div>
                       </div>
+                    </div> -->
+                    <div class="px-2 py-3">
+                      <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
+                        
+                        <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                          Summary
+                        </span>
+                        <div class="vr opacity-25"></div>                    
+                        <div>
+                          Total: 
+                          <span class="text-body fw-medium">{{appUserTotal()}}</span>
+                        </div>                    
+                        <div>
+                          Shown: 
+                          <span class="text-body fw-medium">{{numberOfElements()}}</span>
+                        </div>                    
+                        <div>
+                          Pages: 
+                          <span class="text-body fw-medium">{{entryPages()}}</span>
+                        </div>                    
+                      </div>
                     </div>
+
                     <table class="table table-bordered">
                       <thead>
                         <tr>
