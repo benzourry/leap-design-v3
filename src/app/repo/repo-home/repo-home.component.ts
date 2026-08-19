@@ -15,12 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { UserService } from '../../_shared/service/user.service';
 import { AppService } from '../../service/app.service';
 import { baseApi, domainBase } from '../../_shared/constant.service';
-// import { SpeechRecognitionService } from 'src/app/_shared/service/speech-recognition.service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgStyle, NgClass } from '@angular/common';
@@ -40,22 +39,24 @@ import { ToastService } from '../../_shared/service/toast-service';
 })
 export class RepoHomeComponent implements OnInit, OnDestroy {
 
-  offline = false;
+  offline = signal<boolean>(false);
 
   editItemData: any;
+  buyItemData: any = {};
+  activationStatus = signal<any>({});
 
-  itemTotal: number;
-  itemLoading: boolean;
-  user: any;
-  itemList: any[];
-  pageSize = 24;
-  pageNumber = 1;
-  searchText = "";
-  file: any;
+  itemTotal = signal<number>(0);
+  itemLoading = signal<boolean>(false);
+  user = signal<any>(null);
+  itemList = signal<any[]>([]);
+  pageSize = signal<number>(24);
+  pageNumber = signal<number>(1);
+  searchText = signal<string>("");
+  file = signal<any>(null);
   baseApi: string = baseApi;
-  topLoading: boolean;
-  topList: any;
-  topTotal: any;
+  topLoading = signal<boolean>(false);
+  topList = signal<any[]>([]);
+  topTotal = signal<number>(0);
   bgClassName: string = domainBase.replace(/\./g,'-');
 
   private http = inject(HttpClient);
@@ -66,20 +67,18 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
-  private cdr = inject(ChangeDetectorRef);
   
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
   }
 
   ngOnInit() {
     this.userService.getCreator()
       .subscribe(user => {
-        this.user = user;
+        this.user.set(user);
         this.getItemList(1);
         this.getTopList();
-        this.cdr.detectChanges();
       });
   }
 
@@ -87,15 +86,12 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
     // this.speechRecognitionService.DestroySpeechObject();
   }
 
-  buyItemData: any = {};
-  activationStatus: any = {};
-  buyItem(content, data) {
+  buyItem(content: any, data: any) {
     this.buyItemData = data;
-    history.pushState(null, null, window.location.href);
-    this.appService.checkActivate(data.id, this.user.email)
+    history.pushState(null, '', window.location.href);
+    this.appService.checkActivate(data.id, this.user()?.email)
       .subscribe(ca => {
-        this.activationStatus[data.id] = ca.result;
-        this.cdr.detectChanges();
+        this.activationStatus.update(s => ({ ...s, [data.id]: ca.result }));
       })
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(result => {
@@ -107,87 +103,75 @@ export class RepoHomeComponent implements OnInit, OnDestroy {
   }
 
   requestCopy() {
-    this.appService.requestCopy(this.buyItemData.id, this.user.email)
+    this.appService.requestCopy(this.buyItemData.id, this.user()?.email)
       .subscribe(res => {
-        this.activationStatus[this.buyItemData.id] = "pending";
-        this.cdr.detectChanges();
+        this.activationStatus.update(s => ({ ...s, [this.buyItemData.id]: "pending" }));
       })
   }
 
-  cloneItem(tpl,data, isNew) {
-    // var items = {};
-    // this.initialAppPath = data.appPath;
+  cloneItem(tpl: any, data: any, isNew: boolean) {
     this.appService.getApp(data.id)
       .subscribe({
         next: app => {
           app.status = "local";
           delete app.appPath;
           this.editItemData = app;
-          if (this.user.email.indexOf("@unimas.my") == -1) {
+          if (this.user()?.email.indexOf("@unimas.my") == -1) {
             this.editItemData.useUnimas = false;
           }
 
-          history.pushState(null, null, window.location.href);
+          history.pushState(null, '', window.location.href);
           this.modalService.open(tpl, { backdrop: 'static' })
           .result.then(rItem => {
             delete rItem.navis;
-            this.appService.clone(rItem, this.user.email)
+            this.appService.clone(rItem, this.user()?.email)
               .subscribe({
                 next: res => {
-                  this.getItemList(this.pageNumber);
+                  this.getItemList(this.pageNumber());
                   if (isNew) {
                     this.router.navigate([`design/${res.id}`]);
                   }
                   this.toastService.show("App cloned successfully", { classname: 'bg-success text-light' });
-                  this.cdr.detectChanges();
                 }, error: err => {
                   this.toastService.show("App cloned failure", { classname: 'bg-danger text-light' });
-                  this.cdr.detectChanges();
                 }
               });
           }, res => { });
       
         }, error: err => {
           this.toastService.show("App cloned failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
         }
       });
   }
 
 
-  getItemList(pageNumber) {
-    this.itemLoading = true;
-    let params = { size: this.pageSize, page: pageNumber - 1, searchText: this.searchText };
+  getItemList(pageNumber: number) {
+    this.itemLoading.set(true);
+    let params = { size: this.pageSize(), page: pageNumber - 1, searchText: this.searchText() };
 
     this.appService.getAppList(params)
     .subscribe({
-      next:res=>{
-        this.itemList = res.content;
-        this.itemTotal = res.page?.totalElements;
-        this.itemLoading = false;
-        this.cdr.detectChanges();
+      next: res => {
+        this.itemList.set(res.content || []);
+        this.itemTotal.set(res.page?.totalElements || 0);
+        this.itemLoading.set(false);
       },
-      error:err=>{
-        this.itemLoading = false;
-        this.cdr.detectChanges();
+      error: err => {
+        this.itemLoading.set(false);
       }
     })
   }
 
   getTopList() {
-    this.topLoading = true;
+    this.topLoading.set(true);
 
     this.appService.getTopList()
       .subscribe(res => {
-        this.topList = res.content;
-        this.topTotal = res.page?.totalElements;
-        this.topLoading = false;
-        this.cdr.detectChanges();
+        this.topList.set(res.content || []);
+        this.topTotal.set(res.page?.totalElements || 0);
+        this.topLoading.set(false);
       }, res => { 
-        this.topLoading = false;
-        this.cdr.detectChanges(); 
+        this.topLoading.set(false);
       })
   }
-
-
 }

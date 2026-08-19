@@ -1,5 +1,5 @@
 import { NgClass, PlatformLocation } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { base, baseApi, domainBase } from '../../_shared/constant.service';
@@ -25,19 +25,24 @@ export class AdminConfigComponent implements OnInit {
   domainBase: string = domainBase;
 
   bgClassName: string = domainBase.replace(/\./g, '-');
-  appProps: any[] = [];
-  platformProps: any[] = [];
+  
+  // Converted state variables to Signals
+  appProps = signal<any[]>([]);
+  platformProps = signal<any[]>([]);
+  appGroups = signal<any[]>([]);
 
-  searchText: string = "";
-  appPropsFilter: string = "";
-  playtformPropsFilter: string = "";
-  user: any;
+  searchText = signal<string>("");
+  appPropsFilter = signal<string>("");
+  playtformPropsFilter = signal<string>("");
+  appGroupsFilter = signal<string>("");
+  
+  user = signal<any>(null);
+
   splitAsList = splitAsList;
 
-  appGroups: any[] = [];
-  appGroupsFilter: string = "";
+  editPropsData: any = {};
+  editAppGroupData: any = {};
 
-  private cdr = inject(ChangeDetectorRef);
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
   private toastService = inject(ToastService);
@@ -49,60 +54,40 @@ export class AdminConfigComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // throw new Error('Method not implemented.');
     this.userService.getCreator()
       .subscribe((user) => {
-        this.user = user;
-        this.cdr.detectChanges();
+        this.user.set(user);
 
         this.loadPlatformProps();
         this.loadAppProps();
         this.loadAppGroups();
-
-        // this.loadPlatformStat();
       });
-    
   }
-
-
-  editPropsData: any = {}
-
-  // platformStat:any = {};
-
-  // loadPlatformStat(){
-  //   this.platformService.stat()
-  //     .subscribe((res) => {
-  //       this.platformStat = res;
-  //     });
-  // }
 
   loadPlatformProps(){
     this.platformService.valueByGroup('platform')
       .subscribe((res) => {
-        this.platformProps = res;
-        this.cdr.detectChanges();
+        this.platformProps.set(res);
       });
   }
 
   loadAppProps() {  
     this.platformService.valueByGroup('app.prop')
       .subscribe((res) => {
-        this.appProps = res;
-        this.cdr.detectChanges();
+        this.appProps.set(res);
       });
   }
 
   loadAppGroups() {  
     this.platformService.listAppGroup({size:9999})
       .subscribe((res) => {
-        this.appGroups = res.content;
-        this.cdr.detectChanges();
+        this.appGroups.set(res.content);
       });
   }
 
-  editProps(content, item: any) {
+  editProps(content: any, item: any) {
     this.editPropsData = item;
-    history.pushState(null, null, window.location.href);
+    history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
 
@@ -114,17 +99,15 @@ export class AdminConfigComponent implements OnInit {
             this.toastService.show("Property successfully saved", { classname: 'bg-success text-light' });
             this.loadAppProps();
             this.loadPlatformProps();
-            this.cdr.detectChanges();
           }, error: (err) => {
             this.modalService.dismissAll();
             this.toastService.show("Property saving failed", { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges();
           }
         })
       }, res => { })
   }
 
-  removeProps(id){
+  removeProps(id: any){
     if (confirm("Are you sure to delete this property?")) {
       this.platformService.removeValue(id)
       .subscribe({
@@ -132,19 +115,16 @@ export class AdminConfigComponent implements OnInit {
           this.toastService.show("Property successfully deleted", { classname: 'bg-success text-light' });
           this.loadAppProps();
           this.loadPlatformProps();
-          this.cdr.detectChanges();
         }, error: (err) => {
           this.toastService.show("Property deleting failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
         }
       })
     }
   }
 
-  editAppGroupData: any = {}
-  editAppGroup(content, item: any) {
+  editAppGroup(content: any, item: any) {
     this.editAppGroupData = item;
-    history.pushState(null, null, window.location.href);
+    history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
 
@@ -155,32 +135,25 @@ export class AdminConfigComponent implements OnInit {
             this.modalService.dismissAll();
             this.toastService.show("App Group successfully saved", { classname: 'bg-success text-light' });
             this.loadAppGroups();
-            this.cdr.detectChanges();
           }, error: (err) => {
             this.modalService.dismissAll();
             this.toastService.show("App Group saving failed", { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges();
           }
         })
       }, res => { })
   }
 
-  removeAppGroup(id){
+  removeAppGroup(id: any){
     if (confirm("Are you sure to delete this app group?")) {
       this.platformService.removeAppGroup(id)
       .subscribe({
         next: (res) => {
           this.toastService.show("App Group successfully deleted", { classname: 'bg-success text-light' });
           this.loadAppGroups();
-          this.cdr.detectChanges();
         }, error: (err) => {
           this.toastService.show("App Group deleting failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
         }
       })
     }
   }
-
-
-
 }

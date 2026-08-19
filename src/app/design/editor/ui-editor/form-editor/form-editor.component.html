@@ -371,7 +371,7 @@
                                                         [pattern]="field?.v?.pattern">
                                                       </field-edit>
                                                       @if (['select','radio','radioBtn','checkboxOption'].indexOf(field.type)>-1 && field.dataSource) {
-                                                          <button type="button" class="btn btn-xs btn-outline-secondary mt-1" (click)="editLookupEntry(editLookupEntryTpl,field,field.dataSource,{enabled:1})">
+                                                          <button type="button" class="btn btn-xs btn-outline-secondary mt-1 rounded-2" (click)="editLookupEntry(editLookupEntryTpl,field,field.dataSource,{enabled:1})">
                                                             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
                                                           </button>
                                                       }

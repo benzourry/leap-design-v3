@@ -434,7 +434,7 @@
           @if (!lookupList() || lookupList().length==0) { <div class="text-muted">Option not available</div> }
           @if (!hideAddAction() && f.x?.addEntryEnabled){
             <div class="mt-1">
-              <button type="button" class="btn btn-xs btn-outline-secondary" (click)="triggerAddAction('')">
+              <button type="button" class="btn btn-xs rounded-2 btn-outline-secondary" (click)="triggerAddAction('')">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
               </button>
             </div>

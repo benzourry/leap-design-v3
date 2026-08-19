@@ -1,5 +1,5 @@
-import { DatePipe, NgClass, NgStyle, PlatformLocation} from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject  } from '@angular/core';
+import { DatePipe, NgClass, NgStyle, PlatformLocation } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../_shared/service/toast-service';
@@ -17,7 +17,7 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 
 @Component({
   selector: 'app-app-list',
-  imports: [FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination,RouterLink, RouterLinkActive,
+  imports: [FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination, RouterLink, RouterLinkActive,
     NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, 
     AppEditComponent
   ],
@@ -26,200 +26,180 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppListComponent implements OnInit {
-  offline: boolean;
-  user: any;
+  offline = signal<boolean>(false);
+  user = signal<any>(null);
 
-  appStatusFilter: string = "all";
+  appStatusFilter = signal<string>("all");
 
   baseApi: string = baseApi;
   base: string = base;
   domainBase: string = domainBase;
 
-  bgClassName: string = domainBase.replace(/\./g,'-');
-
+  bgClassName: string = domainBase.replace(/\./g, '-');
 
   private userService = inject(UserService);
-  // private route = inject(ActivatedRoute);
-  // private bucketService = inject(BucketService);
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
   private router = inject(Router);
-  // private runService = inject(RunService);
   private appService = inject(AppService);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
-  private cdr = inject(ChangeDetectorRef);
 
-  searchText: string = "";
-  appId: any;
-  itemList: any[]=[];
-  itemTotal: number = 0;
-  itemLoading: boolean = false;
-  pageSize: number = 24;
-  pageNumber: number = 1;
+  searchText = signal<string>("");
+  appId = signal<any>(null);
+  itemList = signal<any[]>([]);
+  itemTotal = signal<number>(0);
+  itemLoading = signal<boolean>(false);
+  pageSize = signal<number>(24);
+  pageNumber = signal<number>(1);
 
-  numberOfElements: number = 0;
-  entryPages: number = 0;
+  numberOfElements = signal<number>(0);
+  entryPages = signal<number>(0);
+
+  editItemData = signal<any>(null);
+  removeItemData = signal<any>(null);
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
-    this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+    this.utilityService.testOnline$().subscribe(online => this.offline.set(!online));
   }
 
   ngOnInit(): void {
     this.userService.getCreator()
       .subscribe((user) => {
-        this.user = user;
-        this.cdr.detectChanges();
-
+        this.user.set(user);
         this.getItemList(0);
       });
   }
 
-  getItemList(pageNumber) {
-    this.itemLoading = true;
-    let params:any = {
-      size: this.pageSize,
+  getItemList(pageNumber: number) {
+    this.itemLoading.set(true);
+    let params: any = {
+      size: this.pageSize(),
       page: pageNumber - 1,
-      searchText: this.searchText,
-      email: this.user.email,
+      searchText: this.searchText(),
+      email: this.user()?.email,
       sort: 'id,desc'
     }
-    if (this.appStatusFilter!='all'){
-      params.live = this.appStatusFilter
+    if (this.appStatusFilter() != 'all') {
+      params.live = this.appStatusFilter();
     }
 
     this.appService.getSuperList(params)
       .subscribe({
         next: res => {
-          this.itemTotal = res.page?.totalElements;
-          this.itemList = res.content;
-          this.itemLoading = false;          
-          this.numberOfElements = res.content?.length;
-          this.entryPages = res.page?.totalPages;
-          this.cdr.detectChanges();
+          this.itemTotal.set(res.page?.totalElements || 0);
+          this.itemList.set(res.content || []);
+          this.itemLoading.set(false);         
+          this.numberOfElements.set(res.content?.length || 0);
+          this.entryPages.set(res.page?.totalPages || 0);
         }, error: err => {
-          this.itemLoading = false;
-          this.cdr.detectChanges();
+          this.itemLoading.set(false);
         }
       });
   }
 
   splitAsList = splitAsList
 
-  checkLogin(app, prop){
+  checkLogin(app: any, prop: string) {
     return app[prop];
   }
 
-  editItemData: any;
-  editItem(tpl,data, isNew) {
-    // this.initialAppPath = data.appPath;
-    this.editItemData = data;
+  editItem(tpl: any, data: any, isNew: boolean) {
+    this.editItemData.set(data);
     if (data.id) {
       this.appService.getApp(data.id)
         .subscribe({
           next: app => {
-            this.editItemData = app;
-            this._editApp(tpl,app, isNew);
-          }, error: err => {
-
-          }
+            this.editItemData.set(app);
+            this._editApp(tpl, app, isNew);
+          }, error: err => {}
         })
     } else {
-      this._editApp(tpl,data, isNew);
+      this._editApp(tpl, data, isNew);
     }
   }
 
-  _editApp(tpl,app, isNew) {
-    history.pushState(null, null, window.location.href);
+  _editApp(tpl: any, app: any, isNew: boolean) {
+    history.pushState(null, '', window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
-    .result.then(rItem => {
-      this.appService.save(rItem, this.user.email)
-        .subscribe({
-          next: res => {
-            this.getItemList(this.pageNumber);
-            if (isNew) {
-              this.router.navigate([`design/${res.id}`]);
+      .result.then(rItem => {
+        this.appService.save(rItem, this.user()?.email)
+          .subscribe({
+            next: res => {
+              this.getItemList(this.pageNumber());
+              if (isNew) {
+                this.router.navigate([`design/${res.id}`]);
+              }
+              this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
+            }, error: err => {
+              this.toastService.show("App properties saved failure<br/>" + err.error?.message, { classname: 'bg-danger text-light' });
             }
-            this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges();
-          }, error: err => {
-            this.toastService.show("App properties saved failure<br/>"+err.error?.message, { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges();
-          }
-        })
-    }, res => { });
-
+          })
+      }, res => { });
   }
 
-
-  cloneItem(tpl,data, isNew) {
+  cloneItem(tpl: any, data: any, isNew: boolean) {
     this.appService.getApp(data.id)
       .subscribe({
         next: app => {
           app.status = "local";
           delete app.appPath;
-          this.editItemData = app;
-          if (this.user.email.indexOf("@unimas.my") == -1) {
-            this.editItemData.useUnimas = false;
+          this.editItemData.set(app);
+          if (this.user()?.email.indexOf("@unimas.my") == -1) {
+            let updatedApp = { ...app, useUnimas: false };
+            this.editItemData.set(updatedApp);
           }
 
-          history.pushState(null, null, window.location.href);
+          history.pushState(null, '', window.location.href);
           this.modalService.open(tpl, { backdrop: 'static' })
-          .result.then(rItem => {
-            delete rItem.navis;
-            this.appService.clone(rItem, this.user.email)
-              .subscribe({
-                next: res => {
-                  this.getItemList(this.pageNumber);
-                  if (isNew) {
-                    this.router.navigate([`design/${res.id}`]);
+            .result.then(rItem => {
+              delete rItem.navis;
+              this.appService.clone(rItem, this.user()?.email)
+                .subscribe({
+                  next: res => {
+                    this.getItemList(this.pageNumber());
+                    if (isNew) {
+                      this.router.navigate([`design/${res.id}`]);
+                    }
+                    this.toastService.show("App cloned successfully", { classname: 'bg-success text-light' });
+                  }, error: err => {
+                    this.toastService.show("App cloned failure", { classname: 'bg-danger text-light' });
                   }
-                  this.toastService.show("App cloned successfully", { classname: 'bg-success text-light' });
-                  this.cdr.detectChanges();
-                }, error: err => {
-                  this.toastService.show("App cloned failure", { classname: 'bg-danger text-light' });
-                  this.cdr.detectChanges();
-                }
-              });
-          }, res => { });
-      
+                });
+            }, res => { });
+
         }, error: err => {
           this.toastService.show("App cloned failed", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
         }
       });
   }
 
-  removeItemData: any;
-  removeItem(content, data) {
-    this.removeItemData = data;
-    history.pushState(null, null, window.location.href);
+  removeItem(content: any, data: any) {
+    this.removeItemData.set(data);
+    history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(result => {
         if (prompt("Are you sure you want to permanently remove this app?\n Type 'delete " + data.title.toLowerCase() + "' and press OK to proceed") == 'delete ' + data.title.toLowerCase()) {
-          this.appService.remove(data, this.user.email)
+          this.appService.remove(data, this.user()?.email)
             .subscribe({
               next: res => {
-                this.getItemList(this.pageNumber);
+                this.getItemList(this.pageNumber());
                 this.toastService.show("App removed successfully", { classname: 'bg-success text-light' });
-                this.cdr.detectChanges();
               }, error: err => {
                 this.toastService.show("App removal failed", { classname: 'bg-danger text-light' });
-                this.cdr.detectChanges();
               }
             });
         } else {
           this.toastService.show("Invalid removal confirmation key", { classname: 'bg-danger text-light' });
-          this.cdr.detectChanges();
         }
       }, res => { });
   }
 
-  getUrl(app) {
-    let separator = app?.live?'.':'--dev.';
-    let note = app?.live?'':'* Please note that this app is currently in DEV mode';
+  getUrl(app: any) {
+    let separator = app?.live ? '.' : '--dev.';
+    let note = app?.live ? '' : '* Please note that this app is currently in DEV mode';
     let url = app.appPath ? app.appPath + separator + domainBase : domainBase + "/#/run/" + app.id;
-    return 'https://'+url;
+    return 'https://' + url;
   }
 }

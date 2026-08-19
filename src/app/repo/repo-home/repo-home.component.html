@@ -7,7 +7,7 @@
         <div class="d-flex">
           <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
           <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
-          @if (user?.manager){
+          @if (user()?.manager){
             <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
           }
           <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
@@ -17,11 +17,11 @@
     </div>
   </div>
 </div>
-<div class="wrapperzzz bg-plain">
+<div class="wrapper pt-3 bg-plain text-body">
   <div class="limit-width repo centered">
     <div class="repo-tool text-center">
       <div class="tool-container" style="max-width:480px;margin:auto">
-        <input type="search" autocapitalize="none" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
+        <input type="search" class="rounded" autocapitalize="none" placeholder="Filter list" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
           (keyup.enter)="getItemList(1)">
           <!-- <button type="button" class="btn btn-round btn-secondary ms-1" name="btnActivateSpeechSearchMovie"
           id="btnActivateSpeechSearchMovie" (click)="activateSpeechSearchMovie()" [disabled]="!showSearchButton">
@@ -30,11 +30,11 @@
       </div>
     </div>
     <div class="repo-item">
-      <div class="repo-title">
+      <div class="repo-title text-body">
         <fa-icon [icon]="['far','thumbs-up']" [fixedWidth]="true"></fa-icon> Top Pick
       </div>
-      @if (itemLoading) {
-        <div class="p-4 text-muted text-center">
+      @if (itemLoading()) {
+        <div class="p-4 text-body-secondary text-center">
           <div class="lds-ellipsis">
             <div></div>
             <div></div>
@@ -43,26 +43,26 @@
           </div>
         </div>
       }
-      @if (!topLoading && topTotal==0) {
-        <div class="p-4 text-muted text-center">
+      @if (!topLoading() && topTotal()==0) {
+        <div class="p-4 text-body-secondary text-center">
           <h1>:(</h1>
           <h4>No application available</h4>
         </div>
       }
-      @if (!topLoading && topTotal>0) {
+      @if (!topLoading() && topTotal()>0) {
         <div class="tile-wrap tile-center">
-          @for (item of topList | filter:searchText; track item.id) {
-            <div class="tile" style="text-overflow: ellipsis">
+          @for (item of topList() | filter:searchText(); track item.id) {
+            <div class="tile bg-body-tertiary text-body" style="text-overflow: ellipsis">
               <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
               <div class="tile-image"
               [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
               <div class="tile-mid">
                 <div class="tile-content">
-                  <h6 class="list-group-item-heading">{{item?.title}}
+                  <h6 class="list-group-item-heading text-body">{{item?.title}}
                   </h6>
-                  <p style="font-size:13px; color:#666; font-style:italic;overflow: hidden;
+                  <p style="font-size:13px; color: var(--bs-secondary-color, #666); font-style:italic;overflow: hidden;
                   text-overflow: ellipsis;">{{item?.email}}</p>
-                  <p class="desc">{{item?.description}}</p>
+                  <p class="desc text-body">{{item?.description}}</p>
                 </div>
                 <div class="tile-action p-2">
                   <div>
@@ -95,11 +95,11 @@
       }
     </div>
     <div class="repo-item">
-      <div class="repo-title">
+      <div class="repo-title text-body">
         <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Published App
       </div>
-      @if (itemLoading) {
-        <div class="p-4 text-muted text-center">
+      @if (itemLoading()) {
+        <div class="p-4 text-body-secondary text-center">
           <div class="lds-ellipsis">
             <div></div>
             <div></div>
@@ -108,26 +108,26 @@
           </div>
         </div>
       }
-      @if (!itemLoading && itemTotal==0) {
-        <div class="p-4 text-muted text-center">
+      @if (!itemLoading() && itemTotal()==0) {
+        <div class="p-4 text-body-secondary text-center">
           <h1>:(</h1>
           <h4>No application available</h4>
         </div>
       }
-      @if (!itemLoading && itemTotal>0) {
+      @if (!itemLoading() && itemTotal()>0) {
         <div class="tile-wrap tile-center">
-          @for (item of itemList | filter:searchText; track item.id) {
-            <div class="tile" style="text-overflow: ellipsis">
+          @for (item of itemList() | filter:searchText(); track item.id) {
+            <div class="tile bg-body-tertiary text-body" style="text-overflow: ellipsis">
               <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
               <div class="tile-image"
               [ngStyle]="item.logo && {'background-image':'url('+baseApi+'/app/logo/'+item.logo+')'}"></div>
               <div class="tile-mid">
                 <div class="tile-content">
-                  <h6 class="list-group-item-heading">{{item?.title}}
+                  <h6 class="list-group-item-heading text-body">{{item?.title}}
                   </h6>
-                  <p style="font-size:13px; color:#666; font-style:italic;overflow: hidden;
+                  <p style="font-size:13px; color: var(--bs-secondary-color, #666); font-style:italic;overflow: hidden;
                   text-overflow: ellipsis;">{{item?.email}}</p>
-                  <p class="desc">{{item?.description}}</p>
+                  <p class="desc text-body">{{item?.description}}</p>
                 </div>
                 <div class="tile-action p-2">
                   <div>
@@ -157,10 +157,10 @@
           }
         </div>
       }
-      @if (itemTotal>pageSize) {
+      @if (itemTotal()>pageSize()) {
         <div class="d-flex justify-content-center p-3 pagination-rounded">
-          <ngb-pagination [collectionSize]="itemTotal" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="4"
-            [rotate]="true" (pageChange)="getItemList(pageNumber)" [boundaryLinks]="true" [directionLinks]="false">
+          <ngb-pagination [collectionSize]="itemTotal()" [pageSize]="pageSize()" [page]="pageNumber()" [maxSize]="4"
+            [rotate]="true" (pageChange)="pageNumber.set($event); getItemList(pageNumber())" [boundaryLinks]="true" [directionLinks]="false">
             <ng-template ngbPaginationFirst>
               <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
             </ng-template>
@@ -182,14 +182,14 @@
 
 <ng-template #buyItemTpl let-c="close" let-d="dismiss">
   <div>
-    <div class="modal-header border-0">
+    <div class="modal-header border-0 text-body">
       <h5 class="modal-title">App require activation</h5>
     </div>
-    <div class="modal-body">
+    <div class="modal-body text-body">
       <div class="m-a" style="max-width:10em;">
-        <div class="img-thumbnail mb-2">
+        <div class="img-thumbnail bg-body mb-2">
           @if (!buyItemData.logo) {
-            <img style="background: #aaa" src="assets/img/blank_product.png" width="100%">
+            <img style="background: var(--bs-secondary-bg, #aaa)" src="assets/img/blank_product.png" width="100%">
           }
           @if (buyItemData.logo) {
             <img src="{{baseApi}}/app/logo/{{buyItemData.logo}}" alt="Image preview..."
@@ -201,18 +201,18 @@
       <p>{{buyItemData.description}}</p>
       <p>This application is protected. Please contact <strong>{{buyItemData.email}}</strong> for more details</p>
       <!-- Already REQUEST COPY -->
-      @if (activationStatus[buyItemData.id]) {
-      Your copy request status is <strong>{{activationStatus[buyItemData.id]}}</strong>
+      @if (activationStatus()[buyItemData.id]) {
+      Your copy request status is <strong>{{activationStatus()[buyItemData.id]}}</strong>
       }
     </div>
-    <div class="modal-footer border-0 justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
-      @if (!activationStatus[buyItemData.id]) {
+    <div class="modal-footer border-0 justify-content-between text-body">
+      <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+      @if (!activationStatus()[buyItemData.id]) {
         <button type="button" class="btn btn-round btn-primary" (click)="requestCopy()">
           Request Copy
         </button>
       }
-      @if (activationStatus[buyItemData.id] && activationStatus[buyItemData.id]=='activated') {
+      @if (activationStatus()[buyItemData.id] && activationStatus()[buyItemData.id]=='activated') {
         <button type="button" class="btn btn-round btn-success" (click)="cloneItem(appEditTpl, buyItemData, true)">
           Copy App
         </button>
@@ -223,7 +223,7 @@
 
 <ng-template #appEditTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){
-    <app-app-edit [(data)]="editItemData" [offline]="offline" [user]="user"
+    <app-app-edit [data]="editItemData" (dataChange)="editItemData=$event" [offline]="offline()" [user]="user()"
     [dismiss]="d" [close]="c"></app-app-edit>
   }@loading {
     <div class="text-center m-5">
