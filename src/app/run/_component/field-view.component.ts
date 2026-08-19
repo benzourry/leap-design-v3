@@ -61,11 +61,15 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         }
         
         @if (['checkbox'].includes(field()?.type)) {
-          <span>
-            <fa-icon [icon]="['far', 'square']"></fa-icon>
-            &nbsp;<span [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></span>
-          </span>
+          <div class="d-flex align-items-start gap-2">
+            <fa-icon 
+              [icon]="field()?.subType === 'switch' ? ['fas', 'toggle-off'] : ['far', 'square']"
+              class="text-body-tertiary">
+            </fa-icon>
+            <div [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></div>
+          </div>
         }
+
       </span>
     } @else {
       @if (['static'].includes(field()?.type)) {
@@ -162,10 +166,23 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       }
 
       @if (['checkbox'].includes(field()?.type)) {
-        <span>
-          <fa-icon [icon]="['far', value() ? 'check-square' : 'square']"></fa-icon>
-          &nbsp;<span [innerHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></span>
-        </span>
+        <div class="d-flex align-items-start gap-2">
+          @if (field()?.subType === 'switch') {
+            <fa-icon 
+              [icon]="['fas', value() ? 'toggle-on' : 'toggle-off']" 
+              [class.text-primary]="value()" 
+              [class.text-body-tertiary]="!value()">
+            </fa-icon>
+          } @else {
+            <!-- Switched to 'fas' for checked, and added conditional text colors -->
+            <fa-icon 
+              [icon]="value() ? ['fas', 'check-square'] : ['far', 'square']"
+              [class.text-primary]="value()" 
+              [class.text-body-tertiary]="!value()">
+            </fa-icon>
+          }
+          <div [morphHtml]="compileTpl(field()?.placeholder || field()?.label, data()) | safe:'html'"></div>
+        </div>
       }
 
       @if (['number', 'scaleTo5', 'scaleTo10', 'scale'].includes(field()?.type)) {

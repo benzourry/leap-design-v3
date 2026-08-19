@@ -202,6 +202,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             { name: 'Checkbox Button', code: 'btn' },
             { name: 'Checkbox Option', code: 'checkbox' }
         ],
+        checkbox:[            
+            { name: 'Checkbox (Normal)', code: 'check' },
+            { name: 'Checkbox (Switch)', code: 'switch' }
+        ],
         number: [
             { name: 'Number Input', code: 'number' },
             { name: 'Range Slider', code: 'range' }

@@ -180,7 +180,7 @@
       @case ('checkbox') {
         @if (isInvalid) { <ng-template [ngTemplateOutlet]="errorIcon"></ng-template> }
         <div [class.disabled]="f.readOnly">
-          <div class="form-check">
+          <div class="form-check" [class.form-switch]="f.subType == 'switch'">
             <input type="checkbox" class="form-check-input smyds" [(ngModel)]="value" #formField="ngModel"
               [id]="uid" [name]="uid" [required]="f.v?.required" (ngModelChange)="checkValueChanged($event)">
 
