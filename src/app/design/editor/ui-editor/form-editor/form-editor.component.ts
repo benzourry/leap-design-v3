@@ -2408,4 +2408,125 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);
 
+    viewSectionJsonData: any;
+
+    viewSectionJson(content: any, section: any) {
+        let sectionClone = JSON.parse(JSON.stringify(section));
+        delete sectionClone.id; // Strip section ID
+        
+        let itemsClone: any = {};
+
+        if (sectionClone.items && Array.isArray(sectionClone.items)) {
+            sectionClone.items.forEach(ref => {
+                delete ref.id; // Strip section.items.id
+                
+                if (this.curForm.items && this.curForm.items[ref.code]) {
+                    let itemObj = JSON.parse(JSON.stringify(this.curForm.items[ref.code]));
+                    delete itemObj.id; // Strip item ID
+                    itemsClone[ref.code] = itemObj;
+                }
+            });
+        }
+
+        this.viewSectionJsonData = {
+            sourceFormId: this.curForm.id, // Track origin to prevent collisions later
+            items: itemsClone,
+            section: sectionClone
+        };
+        
+        history.pushState(null, '', window.location.href);
+        this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+    }
+
+    copyToClipboard(data: any) {
+        navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+            this.toastService.show("JSON copied to clipboard", { classname: 'bg-success text-light' });
+        });
+    }
+
+    pastedSectionJson: string = '';
+    pasteSuffix: string = '';
+    parsedPasteData: any = null;
+    isSameForm: boolean = false;
+
+    onPasteJsonChange(val: string) {
+        try {
+            this.parsedPasteData = JSON.parse(val);
+            // Check if the pasted JSON originated from this exact form
+            this.isSameForm = this.parsedPasteData.sourceFormId === this.curForm.id;
+        } catch(e) {
+            this.parsedPasteData = null;
+            this.isSameForm = false;
+        }
+    }
+
+    pasteSection(content: any) {
+        this.pastedSectionJson = '';
+        this.pasteSuffix = '';
+        this.parsedPasteData = null;
+        this.isSameForm = false;
+
+        history.pushState(null, '', window.location.href);
+        this.modalService.open(content, { backdrop: 'static', size: 'lg' })
+            .result.then(result => {
+                if (result === 'proceed' && this.parsedPasteData) {
+                    try {
+                        let parsed = this.parsedPasteData;
+                        let section = parsed.section || parsed;
+                        let items = parsed.items || {};
+
+                        // Apply suffix dynamically if provided
+                        if (this.pasteSuffix) {
+                            if (section.code) section.code += this.pasteSuffix;
+                            let newItems = {};
+                            Object.keys(items).forEach(k => {
+                                let item = items[k];
+                                if (item.code) item.code += this.pasteSuffix;
+                                newItems[k + this.pasteSuffix] = item;
+                            });
+                            items = newItems;
+                        }
+
+                        section.sortOrder = this.curForm.sections?.length || 0;
+                        section.items = []; // Clear items so backend creates clean section references
+
+                        // 1. Save the Section
+                        this.formService.saveSection(this.curForm.id, section)
+                            .pipe(takeUntilDestroyed(this.destroyRef))
+                            .subscribe({
+                                next: (savedSection) => {
+                                    let itemKeys = Object.keys(items);
+                                    
+                                    // 2. Loop through the items and save them to the newly created section
+                                    if (itemKeys.length > 0) {
+                                        let savedCount = 0;
+                                        
+                                        itemKeys.forEach((k, index) => {
+                                            this.formService.saveItem(this.curForm.id, savedSection.id, items[k], index)
+                                                .pipe(takeUntilDestroyed(this.destroyRef))
+                                                .subscribe({
+                                                    next: () => {
+                                                        savedCount++;
+                                                        if (savedCount === itemKeys.length) {
+                                                            this.getFormData(this.curForm.id);
+                                                            this.getLookupIdList(this.curForm.id);
+                                                            this.toastService.show("Section and items pasted successfully", { classname: 'bg-success text-light' });
+                                                        }
+                                                    },
+                                                    error: () => this.toastService.show(`Failed to save item: ${k}`, { classname: 'bg-danger text-light' })
+                                                });
+                                        });
+                                    } else {
+                                        this.getFormData(this.curForm.id);
+                                        this.toastService.show("Section pasted successfully", { classname: 'bg-success text-light' });
+                                    }
+                                },
+                                error: () => this.toastService.show("Failed to paste section", { classname: 'bg-danger text-light' })
+                            });
+                    } catch (e) {
+                        this.toastService.show("Invalid data format during paste", { classname: 'bg-danger text-light' });
+                    }
+                }
+            }, () => {});
+    }
 }

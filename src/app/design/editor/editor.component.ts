@@ -3,7 +3,7 @@
 // This file is part of LEAP.
 // ... (Standard License Header)
 
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, inject, signal, viewChild, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, inject, signal, viewChild, DestroyRef, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../_shared/service/user.service';
@@ -235,5 +235,15 @@ export class EditorComponent implements OnInit {
                         }
                     });
             }, () => { });
+    }
+
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        // Check if Ctrl (or Cmd on Mac) and '/' are pressed
+        if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+            // Prevent default behavior to avoid interfering with browser shortcuts
+            event.preventDefault(); 
+            this.focusSearch();
+        }
     }
 }

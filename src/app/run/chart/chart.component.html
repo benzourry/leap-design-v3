@@ -197,7 +197,7 @@
     <page-title (closed)="d()" [asComp]="true">
       <h4 class="m-0">{{chart()?.title}}</h4>
     </page-title>
-    <div class="px-2 pb-2 mt-1">
+    <!-- <div class="px-2 pb-2 mt-1">
       <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
         <div class="row">
           <div class="col d-flex align-items-center">
@@ -214,7 +214,32 @@
           </div>
         </div>
       </div>
+    </div> -->
+
+    <div class="px-2 pb-3 mt-1">
+      <!-- Added justify-content-center here -->
+      <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
+        
+        <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+          {{lang()=='ms'?'Ringkasan':'Summary'}}
+        </span>
+        <div class="vr opacity-25"></div>
+        <div>
+          {{lang()=='ms'?'Semua':'Total'}}: 
+          <span class="text-body fw-medium">{{entryTotal}}</span>
+        </div>
+        <div>
+          {{lang()=='ms'?'Dipapar':'Shown'}}: 
+          <span class="text-body fw-medium">{{entryElements}}</span>
+        </div>
+        <div>
+          {{lang()=='ms'?'Halaman':'Pages'}}: 
+          <span class="text-body fw-medium">{{entryPages}}</span>
+        </div>
+        
+      </div>
     </div>
+
     @if (!entryLoading()){
       <div class="table-responsive">
         <table id="drill_{{chart().id}}" class="table table-striped table-flush position-relative mb-0">

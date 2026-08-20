@@ -9,10 +9,15 @@
   
   @if (app()?.id) {
     @if (authorized()){
-      <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
+      <!-- <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
         <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-body-secondary text-body border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
           [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
           (selectItem)="selectItem($event)" placeholder="Search components" list="searchresult">
+      </div> -->
+      <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
+        <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-body-secondary text-body border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
+          [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
+          (selectItem)="selectItem($event)" placeholder="Search components (Ctrl+/)" list="searchresult">
       </div>
       
       <ng-template #rt let-r="result" let-t="term">

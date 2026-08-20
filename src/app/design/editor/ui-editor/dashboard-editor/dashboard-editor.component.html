@@ -173,7 +173,7 @@
                     @for (c of e.presetFilters|keyvalue; track $index) {
                       @if (c.key.startsWith('$')||c.key.startsWith('@')) {
                       <div>
-                        <div class="input-group input-group-sm mb-1 border">
+                        <div class="input-group input-group-sm mb-1">
                           <span class="input-group-text bg-transparent text-body" style="cursor:pointer"
                             (click)="editPresetKey(e,c)">{{c.key}}</span>
                           <span class="input-group-text bg-transparent text-body" style="cursor:pointer"

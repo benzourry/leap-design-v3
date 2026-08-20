@@ -123,13 +123,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           @if (isArray(value())) {
             @for (c of value(); track $index) {
               <div>
-                <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
+                <fa-icon [icon]="['far', 'check-square']" class="text-primary float-start"></fa-icon>
                 <div class="ms-4"><span [innerHtml]="c.name"></span></div>
               </div>
             }
           } @else {
             <div>
-              <fa-icon [icon]="['far', 'check-square']" class="text-muted float-start"></fa-icon>
+              <fa-icon [icon]="['far', 'check-square']" class="text-primary float-start"></fa-icon>
               <div class="ms-4"><span [innerHtml]="value()?.name"></span></div>
             </div>
           }

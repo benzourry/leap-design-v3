@@ -1,7 +1,40 @@
-
 .line-clamp {
-    display: -webkit-box;
-    -webkit-line-clamp: 6;
-    overflow: hidden;
-    -webkit-box-orient: vertical;  
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+  -webkit-box-orient: vertical;  
+}
+
+/* ==========================================================================
+   DARK MODE ADAPTATIONS
+   ========================================================================== */
+
+/* Search input styling */
+.search-input {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 4px);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--bs-primary);
   }
+}
+
+/* Overlay for the More/Less button */
+.read-more-overlay {
+  background: rgba(255, 255, 255, 0.85); /* Light mode fallback */
+  
+  /* Supports data-bs-theme internally or wrapped in dark-mode class */
+  [data-bs-theme="dark"] &,
+  :host-context([data-bs-theme="dark"]) &,
+  .dark-mode & {
+    background: rgba(33, 37, 41, 0.9); /* Dark mode equivalent */
+  }
+}
+
+    // .fade-bottom {
+    //   -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    //   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    // }

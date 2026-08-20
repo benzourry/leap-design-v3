@@ -227,21 +227,38 @@ export class UiEditorComponent implements OnInit, OnDestroy {
         this.fetchSecondaryData(appId, this.bucketService.getBucketList.bind(this.bucketService), 'bucketList', 'bucket', 'Bucket', ['fas', 'box']);
         this.fetchSecondaryData(appId, this.lambdaService.getLambdaList.bind(this.lambdaService), 'lambdaList', 'lambda', 'Lambda', ['fas', 'rocket']);
         this.fetchSecondaryData(appId, this.cognaService.getCognaList.bind(this.cognaService), 'cognaList', 'cogna', 'Cogna', ['fas', 'robot']);
-        this.kryptaService.getWalletList({ appId: appId, size: 9999 }).subscribe(res => { this.walletList = res.content; this.cdr.detectChanges(); });
-    }
+        // FIX: Unique types, forced 'krypta' route, and dynamic query param keys
+        this.fetchSecondaryData(appId, this.kryptaService.getWalletList.bind(this.kryptaService), 'kryptaWalletList', 'kryptaWallet', 'Wallet', ['fas', 'hashtag'], 'krypta', 'id');
+        this.fetchSecondaryData(appId, this.kryptaService.getContractList.bind(this.kryptaService), 'kryptaContractList', 'kryptaContract', 'Contract', ['fas', 'hashtag'], 'krypta', 'contractId');    }
 
-    private fetchSecondaryData(appId: string, serviceMethod: any, targetProp: string, type: string, label: string, icon: [string, string], customRoute?: string) {
+    private fetchSecondaryData(appId: string, serviceMethod: any, targetProp: string, type: string, label: string, icon: [string, string], customRoute?: string, queryParamKey: string = 'id') {
         serviceMethod({ appId, size: 9999 }).subscribe((res: any) => {
             this[targetProp] = res.content;
             if (res.page) this.counts.update(c=>({...c, [type]: res.page.totalElements}));
-            res.content.forEach((f: any) => this.registerSearch(type, f.id, `${label}: ${f.name}`, icon, customRoute || type));
+            
+            // Pass the queryParamKey down to registerSearch
+            res.content.forEach((f: any) => this.registerSearch(type, f.id, `${label}: ${f.name}`, icon, customRoute || type, queryParamKey));
+            
             this.cdr.detectChanges();
         });
     }
 
-    private registerSearch(type: string, id: string, name: string, icon: [string, string], routeName?: string) {
+    // private registerSearch(type: string, id: string, name: string, icon: [string, string], routeName?: string) {
+    //     this.appService.searchInApp.set(type + id, { 
+    //         icon, name, route: routeName === 'user' ? ['user'] : ['ui', routeName || type], opt: { queryParams: { id } } 
+    //     });
+    // }
+
+    private registerSearch(type: string, id: string, name: string, icon: [string, string], routeName?: string, queryParamKey: string = 'id') {
+        const isUiChild = ['form', 'dataset', 'dashboard', 'screen'].includes(type);
+        const finalRoute = routeName || type;
+
         this.appService.searchInApp.set(type + id, { 
-            icon, name, route: routeName === 'user' ? ['user'] : ['ui', routeName || type], opt: { queryParams: { id } } 
+            icon, 
+            name, 
+            route: isUiChild ? ['ui', finalRoute] : [finalRoute], 
+            // ES6 Bracket notation computes the key name dynamically
+            opt: { queryParams: { [queryParamKey]: id } } 
         });
     }
 
