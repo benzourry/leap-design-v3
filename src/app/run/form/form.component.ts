@@ -1791,7 +1791,8 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   private buildReactiveProxy(
     getter: (prop: string) => any, 
-    setter: (prop: string, value: any) => void
+    setter: (prop: string, value: any) => void,
+    deleter?: (prop: string) => void
   ) {
     return new Proxy({}, {
       get: (target, prop) => {
@@ -1801,6 +1802,13 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       set: (target, prop, value) => {
         if (typeof prop !== 'string') return Reflect.set(target, prop, value);
         setter(prop, value);
+        return true;
+      },
+      deleteProperty: (target, prop) => {
+        if (typeof prop !== 'string') return Reflect.deleteProperty(target, prop);
+        if (deleter) {
+          deleter(prop);
+        }
         return true;
       }
     });

@@ -813,24 +813,61 @@ export function convertQueryParams(queryParams: Record<string, string>): Record<
   return convertedParams;
 }
 
-export function createProxy (prop, fn?) {
-  return new Proxy(prop, {
-    set(target, prop, value) {
-      setTimeout(() =>  fn?.(prop, value), 0);
-      target[prop as keyof typeof target] = value;
-      return true;
-    },
-    get(target, prop, receiver) {
-      const orig = target[prop as keyof typeof target];
-      if (typeof orig === 'function') {
-        return function (...args: unknown[]) {
-          return orig.apply(this, args);
-        };
+// export function createProxy (prop, fn?) {
+//   return new Proxy(prop, {
+//     set(target, prop, value) {
+//       setTimeout(() =>  fn?.(prop, value), 0);
+//       target[prop as keyof typeof target] = value;
+//       return true;
+//     },
+//     get(target, prop, receiver) {
+//       const orig = target[prop as keyof typeof target];
+//       if (typeof orig === 'function') {
+//         return function (...args: unknown[]) {
+//           return orig.apply(this, args);
+//         };
+//       }
+//       return orig;
+//     }
+//   });
+// }
+
+export function createProxy(
+    prop: any, 
+    fn?: (prop: string | symbol, value?: any) => void,
+    delFn?: (prop: string | symbol) => void
+  ) {
+    return new Proxy(prop, {
+      set(target, prop, value) {
+        setTimeout(() => fn?.(prop, value), 0);
+        target[prop as keyof typeof target] = value;
+        return true;
+      },
+      get(target, prop, receiver) {
+        const orig = target[prop as keyof typeof target];
+        if (typeof orig === 'function') {
+          return function (...args: unknown[]) {
+            return orig.apply(this, args);
+          };
+        }
+        return orig;
+      },
+      deleteProperty(target, prop) {
+        const exists = prop in target;
+        if (exists) {
+          delete target[prop as keyof typeof target];
+          setTimeout(() => {
+            if (delFn) {
+              delFn(prop);
+            } else {
+              fn?.(prop, undefined);
+            }
+          }, 0);
+        }
+        return true;
       }
-      return orig;
-    }
-  });
-}
+    });
+  }
 
 // Deep getter for any object (works with signals)
 export function getModel(obj: any, path: string): any {
