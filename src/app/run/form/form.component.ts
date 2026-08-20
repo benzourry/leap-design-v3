@@ -655,19 +655,34 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   lookupLoading = signal<any>({});
 
-  private lookupProxy = this.buildReactiveProxy(
-    (prop) => this.lookup()[prop],
-    (prop, value) => this.lookup.update(l => ({ ...l, [prop]: value }))
-  );
-
   private entryProxy = this.buildReactiveProxy(
     (prop) => this.entry()[prop],
-    (prop, value) => this.entry.update(e => ({ ...e, [prop]: value }))
+    (prop, value) => this.entry.update(e => ({ ...e, [prop]: value })),
+    (prop) => this.entry.update(e => {
+      const updated = { ...e };
+      delete updated[prop];
+      return updated;
+    })
+  );
+
+  private lookupProxy = this.buildReactiveProxy(
+    (prop) => this.lookup()[prop],
+    (prop, value) => this.lookup.update(l => ({ ...l, [prop]: value })),
+    (prop) => this.lookup.update(l => {
+      const updated = { ...l };
+      delete updated[prop];
+      return updated;
+    })
   );
 
   private fileProxy = this.buildReactiveProxy(
     (prop) => this.filesMap()[prop],
-    (prop, value) => this.filesMap.update(fm => ({ ...fm, [prop]: value }))
+    (prop, value) => this.filesMap.update(fm => ({ ...fm, [prop]: value })),
+    (prop) => this.filesMap.update(fm => {
+      const updated = { ...fm };
+      delete updated[prop];
+      return updated;
+    })
   );
 
   lookupDataObs: any = {}
