@@ -68,7 +68,7 @@
 
           <div>
             <div class="repo-title pt-3 px-2">
-              <div class="d-flex flex-row flex-wrap flex-md-nowrap">
+              <div class="d-flex flex-row flex-wrap flex-md-nowrap align-items-center">
                 <div class="pe-0 pe-md-3 me-auto d-flex flex-row w-100">
                   <h5 class="m-0 text-truncate">{{cleanText(curForm.title)}} <sup>{{curForm.id}}</sup></h5>
                   <div class="ms-2 text-truncate align-bottom text-muted">{{cleanText(curForm.description)}}
@@ -112,7 +112,8 @@
                     </div>
                     <div class="p-2">
                       @if (curForm.prev) {
-                        <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+                        <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
+                        <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">                          
                           <div class="flex-grow-1 p-2 text-truncate">
                             Previous Form: <strong>{{curForm.prev.title}}</strong>
                             @if (curForm.prev.description) {
@@ -4004,11 +4005,14 @@
   <div class="modal-header">
     <h4 class="modal-title">Copy Section Metadata</h4>
   </div>
-  <div class="px-2 py-1 bg-body limit-height code-container" style="max-height: 500px; overflow: auto;">
-    <pre class="my-0">{{viewSectionJsonData | json}}</pre>
-  </div>
+  <div class="modal-body p-0 bg-body code-container" style="overflow: auto;">
+    <pre class="my-0 p-3">{{viewSectionJsonData | json}}</pre>
+  </div>  
   <div class="modal-footer justify-content-between">
-    <button type="button" class="btn btn-round btn-secondary" (click)="copyToClipboard(viewSectionJsonData)">Copy JSON</button>
+    <button type="button" class="btn btn-round btn-secondary" (click)="copyToClipboard(viewSectionJsonData)">
+      <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+      Copy JSON
+    </button>
     <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>
@@ -4020,7 +4024,15 @@
   <div class="modal-body">
     <div class="form-group mb-3">
       <label class="form-label">Paste JSON payload here</label>
-      <textarea class="form-control" rows="10" [(ngModel)]="pastedSectionJson" (ngModelChange)="onPasteJsonChange($event)"></textarea>
+      <div class="mx-n3">
+        <app-cm name="pastedSectionJson" lang="javascript"
+          label="Paste JSON payload here"
+          [(ngModel)]="pastedSectionJson"
+           (ngModelChange)="onPasteJsonChange($event)"
+          [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
+          placeholder="ie: {}" [linenumber]="true">
+        </app-cm>
+      </div>
     </div>
     @if (parsedPasteData) {
       <div class="form-group mb-3">

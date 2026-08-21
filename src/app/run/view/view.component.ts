@@ -25,7 +25,7 @@ import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
 import { catchError, first, map, share, switchMap, tap } from 'rxjs/operators';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, resizeImage } from '../../_shared/utils';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import { KeyValue, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
@@ -354,7 +354,7 @@ export class ViewComponent implements OnInit, OnDestroy {
   updateField = (entryId, value, callback, error) => {
     return lastValueFrom(this.entryService.updateField(entryId, value, this.form().appId)
       .pipe(
-        tap({ next: callback, error: error }),
+        // tap({ next: callback, error: error }),
         tap({
           next: (res: any) => {
             if (res?.id == this.entry?.id) {
@@ -663,7 +663,8 @@ export class ViewComponent implements OnInit, OnDestroy {
     this.activeDataReq = this.getDataObs(id, form).pipe(
       // tap() allows us to run side-effects with the first response
       tap((res) => {
-        this.entry = res;
+        // this.entry = res;
+        this.replaceValue(this.entry, res);
         this.loading.set(false);
         this.runCheckTier();
         this.getDataFiles('data', res.id);
@@ -775,8 +776,12 @@ export class ViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  // isMine(tier) {
+  //   return this.entry.approver?.[tier.id]?.indexOf(this.user().email) > -1
+  // }
   isMine(tier) {
-    return this.entry.approver?.[tier.id]?.indexOf(this.user().email) > -1
+    const approvers = this.entry.approver?.[tier.id];
+    return approvers ? approvers.split(',').some(e => e.trim().toLowerCase() === this.user().email.trim().toLowerCase()) : false;
   }
 
   tierCheckStatus: any = {};
@@ -909,6 +914,12 @@ checkTier(tier) {
   onFileClear(event, data, f, e) {
     this.entryService.deleteAttachment(event)
       .subscribe(res => {
+        // Clear progress
+        this.uploadProgress.update(curr => {
+          const updated = { ...curr };
+          delete updated[f.code];
+          return updated;
+        });
         // FIX: Trigger the field change to update local state
         this.fieldChange(event, data, f, e);
         this.cdr.markForCheck();
@@ -917,9 +928,9 @@ checkTier(tier) {
 
   file: any = {};
   uploading = {};
-  uploadProgress: any = {}
+  uploadProgress = signal<Record<string, number>>({});
   entryFiles: any[] = [];
-  onUpload(fileList, data, f, section) {
+  onUpload(fileList, appr, f, section) {
     if (fileList && fileList.length) {
       var totalSize = fileList.reduce((total, i) => total + i.size, 0);
       var progressSize = 0;
@@ -934,15 +945,24 @@ checkTier(tier) {
               file: file,
               maxSize: f.v.max
             }).then(resizedImage => {
-              this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, file.name)
+              let filename = this.generateFilename(file, f);
+              this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
                 .subscribe(res => {
                   if (res.type === HttpEventType.UploadProgress) {
                     progressSize = res.loaded;
-                    this.uploadProgress[f.code] = Math.round(100 * progressSize / totalSize);
+                    this.uploadProgress.update(curr => ({ 
+                      ...curr, 
+                      [f.code]: Math.round(100 * progressSize / totalSize) 
+                    }));
+
                   } else if (res instanceof HttpResponse) {
                     list.push(res.body.fileUrl);
-                    data[f.code] = list;
-                    this.fieldChange(fileList, data, f, section);
+                    appr.data[f.code] = list;
+                    this.uploadProgress.update(curr => ({ 
+                      ...curr, 
+                      [f.code]: 100
+                    }));
+                    this.fieldChange(fileList, appr, f, section);
                     this.entryFiles.push(res.body.fileUrl);
                   }                 
                   this.cdr.markForCheck();
@@ -954,14 +974,24 @@ checkTier(tier) {
             file: fileList[0],
             maxSize: f.v.max
           }).then(resizedImage => {
-            this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, fileList[0].name)
+            let filename = this.generateFilename(fileList[0], f);
+            this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form().appId, filename)
               .subscribe(res => {
                 if (res.type === HttpEventType.UploadProgress) {
                   progressSize = res.loaded;
-                  this.uploadProgress[f.code] = Math.round(100 * progressSize / totalSize);
+                  this.uploadProgress.update(curr => ({ 
+                    ...curr, 
+                    [f.code]: Math.round(100 * progressSize / totalSize) 
+                  }));
+
+
                 } else if (res instanceof HttpResponse) {
-                  data[f.code] = res.body.fileUrl;
-                  this.fieldChange(fileList, data, f, section);
+                  appr.data[f.code] = res.body.fileUrl;
+                  this.uploadProgress.update(curr => ({ 
+                    ...curr, 
+                    [f.code]: 100
+                  }));
+                  this.fieldChange(fileList, appr, f, section);
                   this.entryFiles.push(res.body.fileUrl);
                 }
                 this.cdr.markForCheck();
@@ -974,15 +1004,26 @@ checkTier(tier) {
           for (var i = 0; i < fileList.length; i++) {
             var file = fileList[i];
             if (f.v.max && file.size > f.v.max * 1024 * 1024) return;
-            this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, file.name)
+            
+            let filename = this.generateFilename(file, f);
+            this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, filename)
               .subscribe(res => {
                 if (res.type === HttpEventType.UploadProgress) {
                   progressSize = res.loaded;
-                  this.uploadProgress[f.code] = Math.round(100 * progressSize / totalSize);
+                  this.uploadProgress.update(curr => ({ 
+                    ...curr, 
+                    [f.code]: Math.round(100 * progressSize / totalSize) 
+                  }));
+
+
                 } else if (res instanceof HttpResponse) {
                   list.push(res.body.fileUrl);
-                  data[f.code] = list;
-                  this.fieldChange(fileList, data, f, section);
+                  appr.data[f.code] = list;
+                  this.uploadProgress.update(curr => ({ 
+                    ...curr, 
+                    [f.code]: 100
+                  }));
+                  this.fieldChange(fileList, appr, f, section);
                   this.entryFiles.push(res.body.fileUrl);
                 }
                 this.cdr.markForCheck();
@@ -991,14 +1032,27 @@ checkTier(tier) {
         } else {
           var file = fileList[0];
           if (f.v.max && file.size > f.v.max * 1024 * 1024) return;
-          this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, file.name)
+          
+          let filename = this.generateFilename(file, f);
+
+          this.entryService.uploadAttachment(file, f.id, f.x?.bucket, this.form().appId, filename)
             .subscribe(res => {
               if (res.type === HttpEventType.UploadProgress) {
                 progressSize = res.loaded;
-                this.uploadProgress[f.code] = Math.round(100 * progressSize / totalSize);
+                this.uploadProgress.update(curr => ({ 
+                  ...curr, 
+                  [f.code]: Math.round(100 * progressSize / totalSize) 
+                }));
+
+
+
               } else if (res instanceof HttpResponse) {
-                data[f.code] = res.body.fileUrl;
-                this.fieldChange(fileList, data, f, section);
+                appr.data[f.code] = res.body.fileUrl;
+                this.uploadProgress.update(curr => ({ 
+                    ...curr, 
+                    [f.code]: 100
+                  }));
+                this.fieldChange(fileList, appr, f, section);
                 this.entryFiles.push(res.body.fileUrl);
               }              
               this.cdr.markForCheck();
@@ -1075,7 +1129,8 @@ checkTier(tier) {
       .pipe(
         tap({
           next: (e) => {
-            entry = deepMerge(entry, e);
+            this.replaceValue(entry, e);
+            // entry = deepMerge(entry, e);
           }
         }), first()
       )
@@ -1165,6 +1220,29 @@ checkTier(tier) {
 
   dismissAll(){
     this.modalService.dismissAll();
+  }
+
+  replaceValue = (target: any, source: any) => {
+    if (!target) return source;
+    if (!source) return target;
+
+    const originalDataRef = target.data || {};
+    if (source.data) {
+      Object.assign(originalDataRef, source.data);
+    }
+
+    Object.assign(target, source);
+    target.data = originalDataRef;    
+    return target;
+  };
+
+  private generateFilename(file: File, f: any): string {
+    let filename = file.name;
+    if (f.x?.filenameTpl && f.x?.bucket) {
+      let ext = getFileExt(filename);
+      filename = this.compileTpl(f.x?.filenameTpl, { $unique$: Date.now(), $file$: file }) + ext;
+    }
+    return filename;
   }
 
   ngOnDestroy() {

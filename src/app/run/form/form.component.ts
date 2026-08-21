@@ -1301,6 +1301,10 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         if (form && form.id !== this.form().id) return this.logService.log('Blocked $submit$');
         this.submit(resubmit);
       },
+      onInit: () => this.onInit && this.onInit(),
+      onSave: () => this.onSave && this.onSave(),
+      onSubmit: () => this.onSubmit && this.onSubmit(),
+      onView: () => this.onView && this.onView(),
       ...additionalData
     };
   }

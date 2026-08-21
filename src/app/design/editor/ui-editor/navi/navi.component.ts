@@ -240,7 +240,6 @@ export class NaviComponent implements OnInit {
     this.lambdaService.getLambdaList({appId:appId, size:9999})
       .subscribe(res => {
         this.lambdaList = res.content;
-        console.log("lambdaList", this.lambdaList);
         this.lambdaList.forEach(f => {
           var obj = {
             title: f.name,

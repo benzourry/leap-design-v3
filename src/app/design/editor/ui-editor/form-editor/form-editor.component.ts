@@ -39,7 +39,7 @@ import { btoaUTF, cleanText, extractVariables, hashObject, splitAsList, tblToExc
 import { base, baseApi } from '../../../../_shared/constant.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { ScreenService } from '../../../../service/screen.service';
-import { Observable, first, map, shareReplay, tap, switchMap } from 'rxjs';
+import { Observable, first, map, shareReplay, tap, switchMap, of, catchError, forkJoin } from 'rxjs';
 import { SafePipe } from '../../../../_shared/pipe/safe.pipe';
 import { GroupByPipe } from '../../../../_shared/pipe/group-by.pipe';
 import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
@@ -349,8 +349,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     ngAfterViewChecked() {
-        this.cdr.detectChanges();
-        this.drawTierLines();
+        requestAnimationFrame(() => {
+            this.drawTierLines();
+        });
     }
 
     otherAppList: any[] = [];
@@ -2435,7 +2436,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         };
         
         history.pushState(null, '', window.location.href);
-        this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+        this.modalService.open(content, { backdrop: 'static', size: 'lg', scrollable: true }).result.then(() => {}, () => {});
     }
 
     copyToClipboard(data: any) {
@@ -2460,6 +2461,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     }
 
+// Don't forget to import these if you haven't already:
+// import { of, forkJoin } from 'rxjs';
+// import { switchMap, catchError } from 'rxjs/operators';
+
     pasteSection(content: any) {
         this.pastedSectionJson = '';
         this.pasteSuffix = '';
@@ -2469,63 +2474,65 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         history.pushState(null, '', window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(result => {
-                if (result === 'proceed' && this.parsedPasteData) {
-                    try {
-                        let parsed = this.parsedPasteData;
-                        let section = parsed.section || parsed;
-                        let items = parsed.items || {};
+                if (result !== 'proceed' || !this.parsedPasteData) return;
 
-                        // Apply suffix dynamically if provided
-                        if (this.pasteSuffix) {
-                            if (section.code) section.code += this.pasteSuffix;
-                            let newItems = {};
-                            Object.keys(items).forEach(k => {
-                                let item = items[k];
-                                if (item.code) item.code += this.pasteSuffix;
-                                newItems[k + this.pasteSuffix] = item;
-                            });
-                            items = newItems;
-                        }
+                try {
+                    let parsed = this.parsedPasteData;
+                    let section = parsed.section || parsed;
+                    let items = parsed.items || {};
 
-                        section.sortOrder = this.curForm.sections?.length || 0;
-                        section.items = []; // Clear items so backend creates clean section references
-
-                        // 1. Save the Section
-                        this.formService.saveSection(this.curForm.id, section)
-                            .pipe(takeUntilDestroyed(this.destroyRef))
-                            .subscribe({
-                                next: (savedSection) => {
-                                    let itemKeys = Object.keys(items);
-                                    
-                                    // 2. Loop through the items and save them to the newly created section
-                                    if (itemKeys.length > 0) {
-                                        let savedCount = 0;
-                                        
-                                        itemKeys.forEach((k, index) => {
-                                            this.formService.saveItem(this.curForm.id, savedSection.id, items[k], index)
-                                                .pipe(takeUntilDestroyed(this.destroyRef))
-                                                .subscribe({
-                                                    next: () => {
-                                                        savedCount++;
-                                                        if (savedCount === itemKeys.length) {
-                                                            this.getFormData(this.curForm.id);
-                                                            this.getLookupIdList(this.curForm.id);
-                                                            this.toastService.show("Section and items pasted successfully", { classname: 'bg-success text-light' });
-                                                        }
-                                                    },
-                                                    error: () => this.toastService.show(`Failed to save item: ${k}`, { classname: 'bg-danger text-light' })
-                                                });
-                                        });
-                                    } else {
-                                        this.getFormData(this.curForm.id);
-                                        this.toastService.show("Section pasted successfully", { classname: 'bg-success text-light' });
-                                    }
-                                },
-                                error: () => this.toastService.show("Failed to paste section", { classname: 'bg-danger text-light' })
-                            });
-                    } catch (e) {
-                        this.toastService.show("Invalid data format during paste", { classname: 'bg-danger text-light' });
+                    // Apply suffix dynamically if provided
+                    if (this.pasteSuffix) {
+                        if (section.code) section.code += this.pasteSuffix;
+                        const newItems: any = {};
+                        
+                        Object.entries(items).forEach(([key, item]: [string, any]) => {
+                            if (item.code) item.code += this.pasteSuffix;
+                            newItems[key + this.pasteSuffix] = item;
+                        });
+                        items = newItems;
                     }
+
+                    section.sortOrder = this.curForm.sections?.length || 0;
+                    section.items = []; // Clear items for backend
+
+                    // 1. Save the Section
+                    this.formService.saveSection(this.curForm.id, section).pipe(
+                        takeUntilDestroyed(this.destroyRef),
+                        switchMap((savedSection:any) => {
+                            const itemKeys = Object.keys(items);
+                            
+                            // If no items, return an empty observable to trigger the next step
+                            if (itemKeys.length === 0) return of(null);
+
+                            // 2. Map items to an array of HTTP request observables
+                            const saveItemRequests = itemKeys.map((k, index) => 
+                                this.formService.saveItem(this.curForm.id, savedSection.id, items[k], index).pipe(
+                                    // Catch individual item errors so forkJoin doesn't abort entirely
+                                    catchError(() => {
+                                        this.toastService.show(`Failed to save item: ${k}`, { classname: 'bg-danger text-light' });
+                                        return of(null); 
+                                    })
+                                )
+                            );
+
+                            // Wait for all item requests to complete concurrently
+                            return forkJoin(saveItemRequests);
+                        })
+                    ).subscribe({
+                        next: () => {
+                            // 3. This runs exactly once, after the section AND all items are finished
+                            this.getFormData(this.curForm.id);
+                            this.getLookupIdList(this.curForm.id);
+                            this.toastService.show("Section pasted successfully", { classname: 'bg-success text-light' });
+                        },
+                        error: () => {
+                            this.toastService.show("Failed to paste section", { classname: 'bg-danger text-light' });
+                        }
+                    });
+                    
+                } catch (e) {
+                    this.toastService.show("Invalid data format during paste", { classname: 'bg-danger text-light' });
                 }
             }, () => {});
     }

@@ -534,7 +534,7 @@
                       </div>            
                     }     
                     @if (value) {
-                      <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                      <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="$event.preventDefault();clear(native);">×</div>
                     }        
                   </div>
                 </label>
@@ -581,7 +581,7 @@
                     </div>            
                   }     
                   @if (value) {
-                    <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="clear(native); $event.stopPropagation();">×</div>
+                    <div style="width:20px; cursor:pointer; color: var(--bs-secondary-color); font-weight:bold; font-size:1.2em; line-height:1;" (click)="$event.preventDefault();clear(native);">×</div>
                   }        
                 </div>
               </label>
@@ -616,7 +616,7 @@
                     <div style="bottom:10px;left:10px; position: absolute;padding:3px; font-size: 0.8em;">
                       <div class="file-img-btn">{{lang()=='ms'?'Tukar gambar':'Change images'}}</div>
                       <div class="file-img-btn"
-                        (click)="clear(native)">× {{lang()=='ms'?'Padam':'Clear'}}</div>
+                        (click)="$event.preventDefault();clear(native)">× {{lang()=='ms'?'Padam':'Clear'}}</div>
                     </div>
                   </div>
                 } @else {
@@ -626,7 +626,7 @@
                     }
                     <div style="bottom:10px;left:10px; position: absolute;padding:3px; font-size: 0.8em;">
                       <div class="file-img-btn">{{lang()=='ms'?'Tukar gambar':'Change images'}}</div>
-                      <div class="file-img-btn" (click)="clear(native)">{{lang()=='ms'?'Padam':'Clear'}}</div>
+                      <div class="file-img-btn" (click)="$event.preventDefault();clear(native)">{{lang()=='ms'?'Padam':'Clear'}}</div>
                     </div>
                   </div>
                 }

@@ -1,3 +1,9 @@
+<div class="d-flex flex-row h-100" cdkDropListGroup>
+  <div style="flex:auto; overflow: auto;">
+    <div class="fix-gutter">
+
+
+
 <div class="fix-gutter">
   <div class="p-2">
     @if (curScreen) {
@@ -118,7 +124,8 @@
           </div>
 
           @if (['list','calendar','map'].indexOf(curScreen.type)>-1 && dataset.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
+            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Dataset: <strong>{{dataset.title}}</strong>
                 @if (dataset.description) {
@@ -130,7 +137,8 @@
             </div>
           }
           @if (['bucket'].indexOf(curScreen.type)>-1 && bucket.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
+            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Bucket: <strong>{{bucket?.name}}</strong>
                 @if (bucket?.description) {
@@ -142,7 +150,8 @@
             </div>
           }
           @if (curScreen.type=='page' && form.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
+            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Form: <strong>{{form.title}}</strong>
                 @if (form.description) {
@@ -600,7 +609,7 @@
                                 <label class="form-label">Suggested prompt</label>
                                 <div class="list-group" cdkDropList
                                   cdkDropListOrientation="vertical"
-                                  (cdkDropListDropped)="dropSubs($event, curScreen.data?.suggestion)">
+                                  (cdkDropListDropped)="dropSubs($event, 'suggestion')">
                                   @for (item of curScreen.data?.suggestion; track $index) {
                                     <div class="list-group-item element" cdkDrag>
                                       <span class="element-item">
@@ -693,8 +702,10 @@
                               <div class="form-group mt-3">
                                 <label class="form-label">Components</label>
                                 <div class="list-group" cdkDropList
+                                [cdkDropListData]="curScreen.data?.comps"
                                 cdkDropListOrientation="vertical"
-                                (cdkDropListDropped)="dropSubs($event, curScreen.data?.comps)">
+                                (cdkDropListDropped)="dropSubs($event, 'comps')">
+                                
                                   @for (item of curScreen.data?.comps; track $index) {
                                     <div class="list-group-item element" cdkDrag>
                                       <span class="element-item">
@@ -720,13 +731,14 @@
                                       </div>
                                     </div>
                                   }
-                                  <div class="list-group-item">
-                                    <a class="pointer d-block text-decoration-none" (click)="addCombineComp(addCombineCompTpl,{}, true)">
+                                  
+                                </div>
+                                <!-- <div class="list-group-item"> -->
+                                    <button class="btn btn-primary mt-3" (click)="addCombineComp(addCombineCompTpl,{}, true)">
                                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                       Add component
-                                    </a>
-                                  </div>
-                                </div>
+                                    </button>
+                                  <!-- </div> -->
                               </div>   
                               
                               <div class="form-group mt-3">
@@ -1035,6 +1047,59 @@
       </div>
     }
   </div>
+</div>
+
+
+</div> <!-- Close fix-gutter -->
+  </div> <!-- Close flex:auto area -->
+
+  <!-- Palette sidebar (Only show if screen type is combine) -->
+  @if (curScreen?.type === 'combine') {
+    @if (!showPalette) {
+      <button type="button" class="position-relative border-0 rounded end-0 d-none d-md-flex flex-column py-2 px-1 bg-body-tertiary text-body" (click)="showPalette=true">
+        <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true"></fa-icon>
+        <div style="width:20px; margin-top:2.5em;font-weight: bold;">
+          <div class="small" style="transform: rotate(270deg)">Palette</div>
+        </div>
+      </button>
+    }
+    @if (showPalette) {
+      <div class="bg-body-tertiary border-start d-none d-md-block" style="max-width:180px; overflow-x: hidden; overflow-y: auto;">
+        <div class="small" cdkDragHandle>
+          <button type="button" class="p-2 border-0 w-100 bg-transparent text-body" (click)="showPalette=false">
+            <strong>Palette</strong>
+            <div class="float-end pointer" style="width:20px;">
+              <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+            </div>
+          </button>
+          
+          <div class="p-2 pb-0">
+            <select class="form-select" name="paletteAppId" (change)="loadPaletteList(paletteAppId)" [(ngModel)]="paletteAppId">
+              @for (appItem of otherAppList; track appItem.id) {
+                <option [ngValue]="appItem.id">{{appItem.title}}</option>
+              }
+            </select>
+          </div>
+          
+          <div class="p-2 bg-body-tertiary position-sticky sticky-top">
+            <input type="text" class="form-control form-control-sm small p-1" placeholder="Type to filter" [(ngModel)]="paletteFilter" name="paletteFilter" />
+          </div>
+        </div>
+
+        <div id="palette-pane" class="card-body p-1" cdkDropList [cdkDropListData]="(palettes|filter:paletteFilter)">
+          @for (item of palettes|filter:paletteFilter; track $index) {
+            <button type="button" class="btn btn-sm btn-outline-secondary text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;" title="{{item.title}}" cdkDrag>
+              <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+              {{item.title}}
+            </button>
+          }
+          @if (palettes.length==0) {
+            <div class="p-3 text-body-secondary">No component available</div>
+          }
+        </div>
+      </div>
+    }
+  }
 </div>
 
 <ng-template #editActionTpl let-c="close" let-d="dismiss">

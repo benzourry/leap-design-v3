@@ -94,7 +94,7 @@
           }
           @if (form.data) {
             <div>
-              <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap">
+              <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
                 <div class="flex-grow-1 p-2 text-truncate">
                   Form: <strong>{{form.data.title}}</strong>
                   @if (form.data.description) {
@@ -565,11 +565,9 @@
                     <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
                     {{baseApi}}/public/entry/list?datasetId={{curDataset.id}}
                   </div>
-                }@else {
-                  <div class="text-danger">
-                    Public Endpoint not available. To enable, change the setting in Edit Dataset &gt; Options
-                    &gt;
-                    Public endpoint
+                
+                  <div class="text-danger mt-2">
+                    Public Endpoint enabled. To disable, change the setting in Edit Dataset &gt; Options &gt; Public endpoint.
                   </div>
                 }
 

@@ -271,7 +271,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   extraKeyMap: KeyBinding[] = [{ key: 'Ctrl-d', run: copyLineDown }];
 
   customBasicSetup: any[] = [
-    errorTrackerPlugin,
+    // errorTrackerPlugin,
     highlightActiveLineGutter(),
     highlightSpecialChars(),
     history(),
@@ -356,6 +356,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
 
     const ext = [
       ...this.customBasicSetup,
+      ...(!this.skipCheck() ? [errorTrackerPlugin] : []),
       ...(this.linenumber() ? [lineNumbers()] : []),
       ...(this.placeholder() ? [placeholder(this.placeholder()!)] : []),
       this.themeCompartment.of(isDark ? rekaDarkTheme : rekaTheme),

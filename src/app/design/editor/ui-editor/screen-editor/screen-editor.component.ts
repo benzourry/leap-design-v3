@@ -31,9 +31,10 @@ import { IconPickerComponent } from '../../../../_shared/component/icon-picker/i
 import { BucketService } from '../../../../service/bucket.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
-import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { RunService } from '../../../../run/_service/run.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
+import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
 // import { NgLeafletComponent } from '../../../../_shared/component/ng-leaflet/ng-leaflet.component';
 // import { combineLatest } from 'rxjs';
 
@@ -44,8 +45,8 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
     styleUrls: ['./screen-editor.component.scss', '../../../../../assets/css/tile.scss',
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
-        NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule,
-        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe,
+        NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule, CdkDropListGroup,
+        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, FilterPipe,
         NgbNavOutlet, EditScreenComponent, KeyValuePipe]
 })
 export class ScreenEditorComponent implements OnInit {
@@ -191,6 +192,7 @@ export class ScreenEditorComponent implements OnInit {
       this.route.parent.parent.parent.params.subscribe(params => {
         const appId = params['appId'];
         if (appId) {
+          this.paletteAppId = +appId; // <-- Set default palette ID
           let appParams = new HttpParams()
             .set("email", user.email);
 
@@ -204,7 +206,7 @@ export class ScreenEditorComponent implements OnInit {
               this.getDashboardList(appId);
               this.getBucketList(appId);
               this.getLookupList(appId);
-              this.getAccessList();
+              this.getAccessList(appId);
               this.cdr.detectChanges(); // <--- Add here
             });
         }
@@ -382,8 +384,8 @@ defaultMapStyle:string = `height: 600px;`
   }
 
   accessList: any[] = [];
-  getAccessList() {
-    this.groupService.getGroupList({ appId: this.app.id, size: 999 })
+  getAccessList(appId) {
+    this.groupService.getGroupList({ appId: appId, size: 999 })
       .subscribe(res => {
         this.accessList = res.content;
         this.cdr.detectChanges(); // <--- Add here if needed
@@ -397,6 +399,7 @@ defaultMapStyle:string = `height: 600px;`
     this.lookupService.getFullLookupList(params)
         .subscribe(res => {
             this.lookupList = res.content;
+            this.buildPalette();
             this.cdr.detectChanges(); // <--- Add here if needed
         })
 
@@ -409,6 +412,8 @@ defaultMapStyle:string = `height: 600px;`
     this.getDatasetList(appId);
     this.getDashboardList(appId);
     this.getBucketList(appId);
+    this.getLookupList(appId);
+    // this.getAccessList(appId);
     this.cdr.detectChanges(); // <--- Add here if needed
   }
 
@@ -424,6 +429,7 @@ defaultMapStyle:string = `height: 600px;`
     this.formService.getListBasic(params)
       .subscribe(res => {
         this.formList = res.content;
+        this.buildPalette();
         this.cdr.detectChanges(); // <--- Add here if needed
 
       });
@@ -439,6 +445,7 @@ defaultMapStyle:string = `height: 600px;`
     this.bucketService.getBucketList({appId})
       .subscribe(res => {
         this.bucketList = res.content;
+        this.buildPalette();
         this.cdr.detectChanges(); // <--- Add here if needed
       });
   }
@@ -509,6 +516,7 @@ defaultMapStyle:string = `height: 600px;`
     this.datasetService.getDatasetList(appId)
       .subscribe(res => {
         this.datasetList = res;
+        this.buildPalette();
         this.cdr.detectChanges(); // <--- Add here if needed
 
       })
@@ -522,6 +530,7 @@ defaultMapStyle:string = `height: 600px;`
           this.extraAutoCompleteJs.push({ label: `(dashboardId:${i.id}) ${i.title}`, apply: i.id + "", detail: i.title });
           this.extraAutoCompleteHtml.push({ label: `(dashboardId:${i.id}) ${i.title}`, apply: i.id + "", detail: i.title });
         })
+        this.buildPalette();
         this.cdr.detectChanges(); // <--- Add here if needed
 
       })
@@ -666,6 +675,7 @@ defaultMapStyle:string = `height: 600px;`
     this.screenService.getScreenList(appId)
       .subscribe(res => {
         this.screenList = res;
+        this.buildPalette();
         this.screenLoading = false;
         this.commService.emitChange({ key: 'screen', value: res.length });
         this.cdr.detectChanges(); // <--- Add here if needed
@@ -975,20 +985,112 @@ defaultMapStyle:string = `height: 600px;`
       return (array ? array : []).filter(r => item.indexOf(r) == -1);
   }
 
-  dropSubs(event: CdkDragDrop<number[]>, parent) {
-    moveItemInArray(parent, event.previousIndex, event.currentIndex);
-    parent = parent
-        .map((val, $index) => {
-            val.sortOrder = $index;
-            return val;
-        });
+  // dropSubs(event: CdkDragDrop<number[]>, parent) {
+  //   moveItemInArray(parent, event.previousIndex, event.currentIndex);
+  //   parent = parent
+  //       .map((val, $index) => {
+  //           val.sortOrder = $index;
+  //           return val;
+  //       });
+  //   this.saveScreen(this.curScreen, this.curScreenForm());
+  // }
+    dropSubs(event: CdkDragDrop<any[]>, targetProperty: string) {
+    // Ensure the array exists
+    if (!this.curScreen.data[targetProperty]) {
+      this.curScreen.data[targetProperty] = [];
+    }
+
+    let targetArray = this.curScreen.data[targetProperty];
+
+    if (event.previousContainer.id === "palette-pane") {
+      // Cloned from palette
+      const clone = Object.assign({}, event.previousContainer.data[event.previousIndex]);
+      targetArray.splice(event.currentIndex, 0, clone);
+    } else {
+      // Reordered within the same list
+      if (event.previousContainer === event.container) {
+        moveItemInArray(targetArray, event.previousIndex, event.currentIndex);
+      }
+    }
+
+    // Update sort order
+    this.curScreen.data[targetProperty] = targetArray.map((val, $index) => {
+        val.sortOrder = $index;
+        return val;
+    });
+
     this.saveScreen(this.curScreen, this.curScreenForm());
+    this.cdr.detectChanges();
   }
 
   compareByIdFn(a, b): boolean {
     return (a && a.id) === (b && b.id);
   }
 
+  // --- PALETTE VARIABLES ---
+  showPalette: boolean = true;
+  paletteFilter: string = "";
+  paletteAppId: number;
+  palettes: any[] = [];
+  
+  datasetIcon: any = {
+    all: 'fas:list',
+    user: 'fas:list-ol',
+    admin: 'fas:table',
+    action: 'fas:check-square'
+  };
 
+  screenIcon: any = {
+    qr: 'fas:qrcode',
+    static: 'far:file',
+    list: 'fas:stream',
+    page: 'far:file',
+    calendar: 'far:calendar-alt',
+    chatbot: 'fas:robot'
+  };
+
+  // Triggered from HTML: (change)="loadPaletteList(paletteAppId)"
+  loadPaletteList(appId: number) {
+    // You already have a function that loads all lists for a specific app!
+    this.loadOtherAppList('', appId); 
+  }
+
+  // --- REUSABLE PALETTE BUILDER ---
+  buildPalette() {
+    this.palettes = [];
+    const appId = this.paletteAppId || this.app?.id;
+
+    this.formList?.forEach(f => {
+      // Changed 'form' to 'add' to match the combined-screen viewer
+      this.palettes.push({ title: f.title, type: 'add', screenId: f.id, icon: 'fas:plus-square', appId: appId });
+      if (f.single) {
+        this.palettes.push({ title: 'Edit ' + f.title, type: 'edit-single', screenId: f.id, icon: 'fas:edit', appId: appId });
+        this.palettes.push({ title: 'View ' + f.title, type: 'view-single', screenId: f.id, icon: 'far:file', appId: appId });
+      }
+    });
+
+    this.datasetList?.forEach(f => {
+      this.palettes.push({ title: f.title, type: 'dataset', screenId: f.id, icon: this.datasetIcon[f.type] || 'fas:list', appId: appId });
+    });
+
+    this.dashboardList?.forEach(f => {
+      this.palettes.push({ title: f.title, type: 'dashboard', screenId: f.id, icon: 'fas:tachometer-alt', appId: appId });
+    });
+
+    this.screenList?.forEach(f => {
+      this.palettes.push({ title: f.title, type: 'screen', screenId: f.id, icon: this.screenIcon[f.type] || 'far:file', appId: appId });
+    });
+
+    this.lookupList?.forEach(f => {
+      this.palettes.push({ title: f.name, type: 'lookup', screenId: f.id, icon: 'far:caret-square-down', appId: appId });
+    });
+
+    this.accessList?.forEach(a => {
+      this.palettes.push({ title: 'Manage User: ' + a.name, type: 'user', screenId: a.id, icon: 'fas:users-cog', appId: appId });
+    });
+    this.palettes.push({ title: 'Manage All User', type: 'user', screenId: undefined, icon: 'fas:users-cog', appId: appId });
+
+    this.cdr.detectChanges();
+  }
 
 }
