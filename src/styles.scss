@@ -586,3 +586,18 @@ ngb-pagination ul.pagination { justify-content: center; }
 .card-blank-style .card-body {
     padding: 0 !important;
 }
+
+@keyframes intermittent-shake {
+  /* 0% to 70% does nothing (about a 1-second pause) */
+  0%, 70%, 100% { transform: translateX(0) rotate(0); }
+  
+  /* Rapid shake back and forth for the remaining 0.5 seconds */
+  75%, 85%, 95% { transform: translateX(-3px) rotate(-3deg); }
+  80%, 90%      { transform: translateX(3px) rotate(3deg); }
+}
+
+.shake_me {
+  display: inline-block; 
+  animation: intermittent-shake 1.5s infinite ease-in-out;
+  color: var(--bs-danger); 
+}

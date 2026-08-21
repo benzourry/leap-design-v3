@@ -2489,24 +2489,36 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col-sm-6">
-                  @if (['text','textarea'].indexOf(editItemData.type)>-1) {
-                    <div class="form-group mb-3">
-                      <label class="form-label">Minlength</label>
-                      <input type="number" class="form-control"
-                        [(ngModel)]="editItemData.v.minlength" name="minlength">
-                    </div>
-                  }
-                </div>
-                <div class="col-sm-6">
-                  @if (['text','textarea'].indexOf(editItemData.type)>-1) {
-                    <div class="form-group mb-3">
-                      <label class="form-label">Maxlength</label>
-                      <input type="number" class="form-control"
-                        [(ngModel)]="editItemData.v.maxlength" name="maxlength">
-                    </div>
-                  }
-                </div>
+                @if (['text','textarea'].indexOf(editItemData.type)>-1) {
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Minlength</label>
+                        <input type="number" class="form-control"
+                          [(ngModel)]="editItemData.v.minlength" name="minlength">
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Maxlength</label>
+                        <input type="number" class="form-control"
+                          [(ngModel)]="editItemData.v.maxlength" name="maxlength">
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Min words</label>
+                        <input type="number" class="form-control"
+                          [(ngModel)]="editItemData.v.minwords" name="minwords">
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                      <div class="form-group mb-3">
+                        <label class="form-label">Max words</label>
+                        <input type="number" class="form-control"
+                          [(ngModel)]="editItemData.v.maxwords" name="maxwords">
+                      </div>
+                  </div>
+                }
                 <div class="col-sm-6">
                   @if (['textarea','richtext'].indexOf(editItemData.subType)>-1) {
                     <div class="form-group mb-3">

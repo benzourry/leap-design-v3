@@ -885,3 +885,50 @@ export function extractVariables(prefixes, input) {
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+export function getFieldErrorMessages(errors: any, field: any, lang: string): string[] {
+  if (!errors) return [];
+  let errMsgs: string[] = [];
+  
+  if (errors['required']) {
+    errMsgs.push(lang === 'ms' ? 'wajib diisi' : 'is required');
+  }
+  if (errors['minlength']) {
+    const reqLen = errors['minlength'].requiredLength || field?.v?.minlength;
+    errMsgs.push(lang === 'ms' ? `minimum ${reqLen} aksara` : `minimum ${reqLen} characters`);
+  }
+  if (errors['maxlength']) {
+    const reqLen = errors['maxlength'].requiredLength || field?.v?.maxlength;
+    errMsgs.push(lang === 'ms' ? `maksimum ${reqLen} aksara` : `maximum ${reqLen} characters`);
+  }
+  if (errors['pattern']) {
+    errMsgs.push(lang === 'ms' ? 'format tidak sah' : 'invalid format');
+  }
+  if (errors['min']) {
+    const minVal = errors['min'].min ?? field?.v?.min;
+    errMsgs.push(lang === 'ms' ? `mesti di atas ${minVal}` : `should be above ${minVal}`);
+  }
+  if (errors['max']) {
+    const maxVal = errors['max'].max ?? field?.v?.max;
+    errMsgs.push(lang === 'ms' ? `mesti di bawah ${maxVal}` : `should be under ${maxVal}`);
+  }
+  if (errors['maxsize']) {
+    const files = errors['maxsize'].files ? ` (${errors['maxsize'].files})` : '';
+    errMsgs.push(lang === 'ms' ? `saiz melebihi ${field?.v?.max}MB${files}` : `size exceeds ${field?.v?.max}MB${files}`);
+  }
+  if (errors['ngbDate']) {
+    errMsgs.push(lang === 'ms' ? 'tarikh tidak sah' : 'invalid date');
+  }
+  if (errors['imgcls']) {
+    errMsgs.push(lang === 'ms' ? `tidak mengandungi '${errors['imgcls'].requiredImg}'` : `doesn't contain '${errors['imgcls'].requiredImg}'`);
+  }
+  if (errors['minwords']) {
+    const reqWords = errors['minwords'].requiredWords || field?.v?.minwords;
+    errMsgs.push(lang === 'ms' ? `minimum ${reqWords} patah perkataan` : `minimum ${reqWords} words`);
+  }
+  if (errors['maxwords']) {
+    const reqWords = errors['maxwords'].requiredWords || field?.v?.maxwords;
+    errMsgs.push(lang === 'ms' ? `maksimum ${reqWords} patah perkataan` : `maximum ${reqWords} words`);
+  }
+  return errMsgs;
+}

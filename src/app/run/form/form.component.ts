@@ -25,7 +25,7 @@ import { PlatformLocation, NgTemplateOutlet, NgStyle, DatePipe } from '@angular/
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
-import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
+import { ServerDate, btoaUTF, compileTpl, createProxy, deepMerge, extractVariables, getFieldErrorMessages, getFileExt, hashObject, loadScript, resizeImage } from '../../_shared/utils';
 import { debounceTime, distinctUntilChanged, first, map, shareReplay, switchMap, tap, catchError } from 'rxjs/operators';
 
 import dayjs from 'dayjs';
@@ -307,6 +307,17 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
         this.formLoaded.emit(form);
         this.form.set(form);
+
+
+        // --- NEW: Map for fast label lookup ---
+        const idToField: Record<number, any> = {};
+        if (form.items) {
+          Object.values(form.items).forEach((item: any) => {
+            idToField[item.id] = item; 
+          });
+        }
+        this.idToFieldMap = idToField;
+
         let formTab = form.nav != 'simple' ? form.tabs : [{}]
 
         if (form.nav != 'simple') {
@@ -416,6 +427,78 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         this.loading.set(false);
       }
     });
+  }
+
+  idToFieldMap: Record<number, any> = {};
+  sectionErrorExpanded: Record<string, boolean> = {};
+
+  toggleSectionError(sectionId: string, event: Event) {
+    event.stopPropagation(); // Prevents triggering the section collapse
+    this.sectionErrorExpanded[sectionId] = !this.sectionErrorExpanded[sectionId];
+  }
+
+  // --- NEW: Return structured errors for HTML rendering ---
+  getSectionErrors(sForm: any): { label: string, errors: string[] }[] {
+    if (!sForm?.control?.controls) return [];
+
+    const controls = sForm.control.controls;
+    const errorList: { label: string, errors: string[] }[] = [];
+
+    for (const key in controls) {
+      const control = controls[key];
+      
+      if (control.invalid && control.errors) {
+        const match = key.match(/^fn-(\d+)-/);
+        if (match) {
+          const fieldId = Number(match[1]);
+          // Grab the field object from our new map
+          const field = this.idToFieldMap[fieldId];
+          const label = field?.label || field?.code || 'Unknown Field';
+
+          // CALL OUR BRAND NEW DRY FUNCTION!
+          const errMsgs = getFieldErrorMessages(control.errors, field, this.lang());
+
+          // Deduplicate if multiple items in a list have the exact same error
+          const existing = errorList.find(e => e.label === label);
+          if (existing) {
+            errMsgs.forEach(msg => { if (!existing.errors.includes(msg)) existing.errors.push(msg); });
+          } else {
+            errorList.push({ label, errors: errMsgs });
+          }
+        }
+      }
+    }
+    return errorList;
+  }
+
+  getInvalidFieldLabels(sForm: any): string {
+    if (!sForm?.control?.controls) {
+      return this.lang() === 'ms' ? 'Seksi mengandungi medan tidak sah' : 'Section contains fields with invalid input';
+    }
+
+    const controls = sForm.control.controls;
+    const invalidLabels = new Set<string>();
+
+    for (const key in controls) {
+      if (controls[key].invalid) {
+        // Extract the field ID from the control name (e.g., 'fn-123-0')
+        const match = key.match(/^fn-(\d+)-/);
+        if (match) {
+          const fieldId = Number(match[1]);
+          const label = this.idToFieldMap[fieldId];
+          if (label) {
+            invalidLabels.add(label);
+          }
+        }
+      }
+    }
+
+    if (invalidLabels.size > 0) {
+      const title = this.lang() === 'ms' ? 'Medan tidak sah:' : 'Invalid fields:';
+      return `${title}\n` + Array.from(invalidLabels).map(l => '• ' + l).join('\n');
+    }
+
+    return this.lang() === 'ms' ? 'Seksi mengandungi medan tidak sah' : 'Section contains fields with invalid input';
   }
 
   getDataObs(id: number, form: any): Observable<any> {
@@ -1593,6 +1676,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       }
     }
   }
+
 
   onBlur($event, data, field, section, index) {
     if (field.x?.extractor) {

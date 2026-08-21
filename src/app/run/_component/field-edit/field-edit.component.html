@@ -1,8 +1,10 @@
 @let f = field();
 @let m = model();
 @let uid = 'f-'+f.id+'-'+id();
-@let isInvalid = m?.touched && m?.invalid;
+@let isInvalid = m?.touched && fieldErrors.length > 0;
 @let placeholder = f.placeholder||' ';
+
+@let isRichLenErr = f.subType === 'richtext' && value && ((f.v?.minlength && rawTextLength < f.v.minlength) || (f.v?.maxlength && rawTextLength > f.v.maxlength));
 
 <ng-template #errorIcon>
   <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='#dc3545' viewBox='0 0 12 12'>
@@ -67,7 +69,11 @@
         @else if (f.subType == 'richtext') {
           <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="!!value" [class.pe-none]="f.readOnly">
             @defer (prefetch on idle) {
-              <angular-editor class="clean" [config]="editorConfig()" [class.is-invalid]="isInvalid" [id]="uid"
+
+              <!-- Calculate specific rich text validity -->
+              <!-- @let richInvalid = isInvalid || (m?.touched && value && ((f.v?.minlength && rawTextLength < f.v.minlength) || (f.v?.maxlength && rawTextLength > f.v.maxlength))); -->
+              
+              <angular-editor class="clean" [config]="editorConfig()" [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" [id]="uid"
                 [name]="uid" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
                 [required]="f.v?.required" [placeholder]="placeholder">
               </angular-editor>
@@ -785,12 +791,17 @@
       }
     } 
     
-    @if (m?.touched && m?.invalid) {
+    <!-- @if ((m?.touched && m?.invalid) || (m?.touched && isRichLenErr)) {
       <small class="val-text text-danger d-block mt-1">
         <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
         @if (m?.errors?.required) { <span>{{f.label}} {{lang()=='ms'?'wajib diisi':'is required'}}</span> }
-        @if (m?.errors?.minlength) { <span>{{f.label}} {{lang()=='ms'?'mesti sekurang-kurangnya':'must have at least'}} {{f?.v?.minlength}} {{lang()=='ms'?'aksara':'characters'}}</span> }
-        @if (m?.errors?.maxlength) { <span>{{f.label}} {{lang()=='ms'?'mesti tidak lebih dari':'must have at most'}} {{f?.v?.maxlength}} {{lang()=='ms'?'aksara':'characters'}}</span> }
+        @if (m?.errors?.minlength || (f.subType === 'richtext' && value && f?.v?.minlength && rawTextLength < f.v.minlength)) { 
+          <span>{{f.label}} {{lang()=='ms'?'mesti sekurang-kurangnya':'must have at least'}} {{f?.v?.minlength}} {{lang()=='ms'?'aksara':'characters'}}</span> 
+        }
+        @if (m?.errors?.maxlength || (f.subType === 'richtext' && value && f?.v?.maxlength && rawTextLength > f.v.maxlength)) { 
+          <span>{{f.label}} {{lang()=='ms'?'mesti tidak lebih dari':'must have at most'}} {{f?.v?.maxlength}} {{lang()=='ms'?'aksara':'characters'}}</span> 
+        }
+        
         @if (m?.errors?.pattern) { <span>{{lang()=='ms'?'Bukan':'Not a valid'}} {{f.label}} {{lang()=='ms'?'yang sah':''}}</span> }
         @if (m?.errors?.max) { <span>{{f.label}} {{lang()=='ms'?'mesti di bawah':'should be under'}} {{f?.v?.max}}</span> }
         @if (m?.errors?.min) { <span>{{f.label}} {{lang()=='ms'?'mesti di atas':'should be above'}} {{f?.v?.min}}</span> }
@@ -798,10 +809,22 @@
         @if (m?.errors?.maxsize) { <span>{{lang()=='ms'?'Saiz file tidak boleh melebihi':'File size should not exceed'}} {{f?.v?.max}}MB. {{lang()=='ms'?'Fail diabaikan':'Ignored file(s)'}}': {{m.errors.files}}</span> }
       </small>
     }
+    
     @if (value && f?.x?.imgcls && f?.v?.imgcls && !imgclsVal()) {
       <small class="val-text text-danger d-block mt-1">
         <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon>
         <span>{{lang()=='ms'?"Gambar tidak mengandungi":"Image doesn't contain any"}} '{{f.v.imgcls}}'</span>
+      </small>
+    } -->
+
+    @if ((m?.touched && m?.invalid) || (m?.touched && fieldErrors.length > 0)) {
+      <small class="val-text text-danger d-block mt-1">
+        @for (err of fieldErrors; track err) {
+          <div class="d-block">
+            <fa-icon class="me-1" [icon]="['fas','exclamation-triangle']"></fa-icon> 
+            <span>{{f.label}} {{err}}</span>
+          </div>
+        }
       </small>
     }
 

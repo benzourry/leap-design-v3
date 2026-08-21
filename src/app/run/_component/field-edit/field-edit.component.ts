@@ -5,12 +5,16 @@ import {
   Component, forwardRef, Optional, Inject, ChangeDetectorRef, 
   output, input, computed, effect, viewChild, ChangeDetectionStrategy, 
   untracked, Signal, 
-  signal
+  signal,
+  Injectable
 } from '@angular/core';
 import { baseApi } from '../../../_shared/constant.service';
 import { 
   NG_VALUE_ACCESSOR, NG_ASYNC_VALIDATORS, NG_VALIDATORS, 
-  NgModel, FormsModule 
+  NgModel, FormsModule, 
+  Validator,
+  ValidationErrors,
+  AbstractControl
 } from '@angular/forms';
 import { 
   NgbDateAdapter, NgbTimeAdapter, NgbDatepicker, 
@@ -28,11 +32,25 @@ import { SecurePipe } from '../../../_shared/pipe/secure.pipe';
 import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
 import { LogService } from '../../../_shared/service/log.service';
 import { NgbUnixTimestampTimeAdapter } from '../../../_shared/service/time-adapter';
-import { compileTpl, deepEqual, splitAsList } from '../../../_shared/utils';
+import { compileTpl, deepEqual, getFieldErrorMessages, splitAsList } from '../../../_shared/utils';
 import { NgLeafletComponent } from '../ng-leaflet/ng-leaflet.component';
 import { ElementBase } from '../element-base';
 import { SpeechToTextComponent } from '../speech-to-text/speech-to-text.component';
 import { MorphHtmlDirective } from '../../../_shared/directive/morph-html.directive';
+
+@Injectable()
+export class FieldCustomValidator implements Validator {
+  private validationFn: () => ValidationErrors | null = () => null;
+
+  // The component will use this to wire itself up safely
+  register(fn: () => ValidationErrors | null) {
+    this.validationFn = fn;
+  }
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    return this.validationFn();
+  }
+}
 
 export const CUSTOMINPUT_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -50,7 +68,9 @@ let identifier = 0;
   providers: [
     { provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
     { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter },
-    CUSTOMINPUT_VALUE_ACCESSOR
+    CUSTOMINPUT_VALUE_ACCESSOR,
+    FieldCustomValidator, // <-- Add the class
+    { provide: NG_VALIDATORS, useExisting: FieldCustomValidator, multi: true } // <-- Register to NG_VALIDATORS
   ],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -222,6 +242,55 @@ export class FieldEditComponent extends ElementBase<any> {
     return a === b;
   };
 
+  rawTextLength: number = 0;
+  wordCount: number = 0;
+
+  // calculateTextStats(value: any, isRichText: boolean) {
+  //   if (typeof value !== 'string' || !value) {
+  //     this.rawTextLength = 0;
+  //     this.wordCount = 0;
+  //     return;
+  //   }
+    
+  //   // Fast regex: strips HTML tags and replaces &nbsp; with standard spaces
+  //   const rawText = isRichText ? value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ') : value;
+    
+  //   const cleanText = rawText.trim();
+  //   this.rawTextLength = cleanText.length;
+  //   this.wordCount = cleanText ? cleanText.split(/\s+/).length : 0; // Split by whitespace
+  // }
+
+  calculateTextStats(value: any, isRichText: boolean) {
+    if (typeof value !== 'string' || !value) {
+      this.rawTextLength = 0;
+      this.wordCount = 0;
+      return;
+    }
+    
+    const rawText = isRichText ? value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ') : value;
+    const cleanText = rawText.trim();
+    
+    this.rawTextLength = cleanText.length;
+    
+    // Highly performant word count (no arrays created in memory)
+    if (!cleanText) {
+      this.wordCount = 0;
+    } else {
+      let count = 1;
+      let inWhitespace = false;
+      for (let i = 0; i < cleanText.length; i++) {
+        const charCode = cleanText.charCodeAt(i);
+        // Check for space, tab, newline
+        if (charCode === 32 || charCode === 9 || charCode === 10 || charCode === 13) {
+          inWhitespace = true;
+        } else if (inWhitespace) {
+          count++;
+          inWhitespace = false;
+        }
+      }
+      this.wordCount = count;
+    }
+}
   // compiledGroupByMap = computed(() => {
   //   const list = this.lookupList();
   //   const f = this.field();
@@ -284,9 +353,16 @@ export class FieldEditComponent extends ElementBase<any> {
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
     @Optional() @Inject(NG_ASYNC_VALIDATORS) asyncValidators: Array<any>,
     private cdref: ChangeDetectorRef,
-    private logService: LogService
+    private logService: LogService,
+    private customValidator: FieldCustomValidator // <-- Inject here
   ) {
-    super(validators, asyncValidators);
+    // super(validators, asyncValidators);
+    super(
+      validators ? validators.filter(v => v !== customValidator) : [], 
+      asyncValidators
+    );
+
+    this.customValidator.register(() => this.getCustomValidationErrors());
 
     // Auto-snap effect when lookupList arrives late
 
@@ -312,6 +388,55 @@ export class FieldEditComponent extends ElementBase<any> {
     });
   }
   
+  // Evaluates internal state to report errors to the outer Angular Form
+  public getCustomValidationErrors(): ValidationErrors | null {
+    const f = this.field();
+    let errors: ValidationErrors | null = null;
+
+    if (this.value && typeof this.value === 'string') {
+      
+      // 1. Richtext custom limits
+      if (f?.subType === 'richtext') {
+        if (f?.v?.minlength && this.rawTextLength < f.v.minlength) {
+          errors = { ...(errors || {}), minlength: { requiredLength: f.v.minlength } };
+        }
+        if (f?.v?.maxlength && this.rawTextLength > f.v.maxlength) {
+          errors = { ...(errors || {}), maxlength: { requiredLength: f.v.maxlength } };
+        }
+      }
+
+      // 2. Universal Word Count limits
+      if (f?.v?.minwords && this.wordCount < f.v.minwords) {
+        errors = { ...(errors || {}), minwords: { requiredWords: f.v.minwords } };
+      }
+      if (f?.v?.maxwords && this.wordCount > f.v.maxwords) {
+        errors = { ...(errors || {}), maxwords: { requiredWords: f.v.maxwords } };
+      }
+    }
+
+    // 3. Custom Image Classification error
+    if (this.value && f?.x?.imgcls && f?.v?.imgcls && !this.imgclsVal()) {
+      errors = { ...(errors || {}), imgcls: { requiredImg: f.v.imgcls } };
+    }
+
+    return errors;
+  }
+
+  get fieldErrors(): string[] {
+    const m = this.model();
+    const f = this.field();
+    
+    // Grab native model errors (like required, pattern)
+    let errs = m?.errors ? { ...m.errors } : null;
+
+    // Merge in our custom programmatic errors
+    const customErrs = this.getCustomValidationErrors();
+    if (customErrs) {
+      errs = { ...(errs || {}), ...customErrs };
+    }
+
+    return getFieldErrorMessages(errs, f, this.lang());
+  }
 
   // STANDARD CLASS METHODS (Fixes "is not a function" errors)
   
@@ -351,6 +476,9 @@ export class FieldEditComponent extends ElementBase<any> {
     if (!field) return;
 
     if (!deepEqual(next, this.previousEmitted) || field.type === 'btn') {
+
+      this.calculateTextStats(next, field.subType === 'richtext');
+
       let processedValue = next;
 
       if (field.subType === 'time' && typeof next === 'number') {
@@ -474,6 +602,8 @@ export class FieldEditComponent extends ElementBase<any> {
   override writeValue(value: any): void {
     const field = this.field();
     if (field?.type === 'btn') return;
+
+    this.calculateTextStats(value, field?.subType === 'richtext');
 
     if ((value === null || value === undefined) && field?.x?.use_default) {
       const defaultValue = this.defaultValue();
