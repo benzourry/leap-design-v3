@@ -886,63 +886,51 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   groupedChildList = signal<any>({})
 
   filterItems() {
-    // requestAnimationFrame(() => {
-      let preItem = {};
-      let dynDefaultValue = {};
-      let preSection = {};
-      let classSection = {};
-      let preCompFilter = {};
-      let groupedChildList = {};
-      this.form().sections.forEach(s => {
-        preSection[s.id] = this.preCheckStr(s.pre);
-        classSection[s.id] = this.compileTpl(s.style ?? '', {})
-        if (preSection[s.id]) {
-          if (s.type != 'list') {
-            s.items.forEach(i => this.processItemConditions(
-              i.code, 
-              this.entry()?.data, 
-              this.entry()?.data, 
-              preItem, 
-              dynDefaultValue, 
-              preCompFilter
-            ));
-          } else {
-            preItem[s.code] = [];
-            dynDefaultValue[s.code] = [];
-            if (this.sectionSort()[s.code] || s.x?.sortable) {
-              let sort = this.sectionSort()[s.code] ?? (s.x?.defSort ? {
-                label: this.form().items[s.x?.defSort].label,
-                field: s.x?.defSort,
-                dir: s.x?.defSortDir
-              } : {});
-              this.sortChild(s.code, sort.field, sort.label, sort.dir);
-            }
-            if (this.entry().data && Array.isArray(this.entry().data[s.code])) {
-              groupedChildList[s.code] = this.groupByPipe.transform(this.entry().data[s.code], this.getPathForGrouping(s.x?.defGroupField));
+    let preItem = {};
+    let dynDefaultValue = {};
+    let preSection = {};
+    let classSection = {};
+    let preCompFilter = {};
+    let groupedChildList = {};
 
-              var idx = 0;
-              groupedChildList[s.code].forEach((ge, index_g) => {
-                ge.value.forEach((child, index_c) => {
-                  child.$index = idx++; // re-assign index
-                  var index = index_g + '-' + index_c;
-                  preItem[s.code][index] = {}
-                  dynDefaultValue[s.code][index] = {}
+    this.form().sections.forEach(s => {
+      // 1. ADD GUARD CLAUSE: Only evaluate for 'section' and 'list'
+      if (!['section', 'list'].includes(s.type)) return;
 
-                  s.items.forEach(i => this.processItemConditions(
-                    i.code, 
-                    child, 
-                    this.entry()?.data, 
-                    preItem[s.code][index], 
-                    dynDefaultValue[s.code][index], 
-                    preCompFilter
-                  ));
-                })
-              })
+      preSection[s.id] = this.preCheckStr(s.pre);
+      classSection[s.id] = this.compileTpl(s.style ?? '', {})
+      if (preSection[s.id]) {
+        if (s.type === 'section') { 
+          s.items.forEach(i => this.processItemConditions(
+            i.code, 
+            this.entry()?.data, 
+            this.entry()?.data, 
+            preItem, 
+            dynDefaultValue, 
+            preCompFilter
+          ));
+        } else if (s.type === 'list') {
+          preItem[s.code] = [];
+          dynDefaultValue[s.code] = [];
+          if (this.sectionSort()[s.code] || s.x?.sortable) {
+            let sort = this.sectionSort()[s.code] ?? (s.x?.defSort ? {
+              label: this.form().items[s.x?.defSort].label,
+              field: s.x?.defSort,
+              dir: s.x?.defSortDir
+            } : {});
+            this.sortChild(s.code, sort.field, sort.label, sort.dir);
+          }
+          if (this.entry().data && Array.isArray(this.entry().data[s.code])) {
+            groupedChildList[s.code] = this.groupByPipe.transform(this.entry().data[s.code], this.getPathForGrouping(s.x?.defGroupField));
 
-              this.entry().data[s.code]?.forEach((child, index) => {
-                child.$index = index; // re-assign index
+            var idx = 0;
+            groupedChildList[s.code].forEach((ge, index_g) => {
+              ge.value.forEach((child, index_c) => {
+                child.$index = idx++; // re-assign index
+                var index = index_g + '-' + index_c;
                 preItem[s.code][index] = {}
                 dynDefaultValue[s.code][index] = {}
+
                 s.items.forEach(i => this.processItemConditions(
                   i.code, 
                   child, 
@@ -952,18 +940,32 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
                   preCompFilter
                 ));
               })
-            }
+            })
+
+            this.entry().data[s.code]?.forEach((child, index) => {
+              child.$index = index; // re-assign index
+              preItem[s.code][index] = {}
+              dynDefaultValue[s.code][index] = {}
+              s.items.forEach(i => this.processItemConditions(
+                i.code, 
+                child, 
+                this.entry()?.data, 
+                preItem[s.code][index], 
+                dynDefaultValue[s.code][index], 
+                preCompFilter
+              ));
+            })
           }
         }
-      })
-      this.preItem.set(preItem);
-      this.dynDefaultValue.set(dynDefaultValue);
-      this.preSection.set(preSection);
-      this.classSection.set(classSection);
-      this.preCompFilter.set(preCompFilter);
-      this.groupedChildList.set(groupedChildList);
-      this.timestamp.set(Date.now());
-    // })
+      }
+    })    
+    this.preItem.set(preItem);
+    this.dynDefaultValue.set(dynDefaultValue);
+    this.preSection.set(preSection);
+    this.classSection.set(classSection);
+    this.preCompFilter.set(preCompFilter);
+    this.groupedChildList.set(groupedChildList);
+    this.timestamp.set(Date.now());
   }
 
   private processItemConditions(

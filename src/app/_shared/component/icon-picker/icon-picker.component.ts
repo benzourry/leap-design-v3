@@ -91,6 +91,7 @@ export class IconPickerComponent {
     { key: "fas:copy", value: ["fas", "copy"], category: "Files & Folders" },
     { key: "fas:print", value: ["fas", "print"], category: "Files & Folders" },
     { key: "fas:paperclip", value: ["fas", "paperclip"], category: "Files & Folders" },
+    { key: "far:paste", value: ["far", "paste"], category: "Files & Folders" },
 
     // --- DATA & TECH ---
     { key: "fas:chart-bar", value: ["fas", "chart-bar"], category: "Data & Tech" },
