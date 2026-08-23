@@ -746,6 +746,21 @@ export class ListComponent implements OnInit, OnDestroy {
       $token$: this.accessToken,
       ...data
     };
+
+    // AUTO-MAP: High performance extraction of approval data
+    if (obj.$_ && obj.$_.approval) {
+      obj.$$_ = obj.$_.approval;
+      obj.$$ = {};
+      
+      // A raw for-in loop is significantly faster than Object.keys().forEach()
+      for (const key in obj.$_.approval) {
+        obj.$$[key] = obj.$_.approval[key]?.data || {};
+      }
+    } else {
+      obj.$$_ = {};
+      obj.$$ = {};
+    }
+
     try {
       f = compileTpl(html, obj, this.scopeId());
     } catch (e) {
@@ -930,10 +945,17 @@ export class ListComponent implements OnInit, OnDestroy {
     if (!f) return undefined;
     let fn = this.evalCache.get(f);
     if (!fn) {
-      fn = new Function('$app$', '$_', '$', '$prev$', '$selected$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
+      // Added '$$_' and '$$' to the arguments
+      fn = new Function('$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
       this.evalCache.set(f, fn);
     }
-    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, this.selectedEntries(), this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.runService.web, bulk);
+    
+    // Fast map approval data
+    const $$_ = entry?.approval || {};
+    const $$: any = {};
+    for (const key in $$_) { $$[key] = $$_[key]?.data || {}; }
+
+    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, $$_, $$, this.selectedEntries(), this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.runService.web, bulk);
   };
 
   private preCache = new Map<string, Function>();
@@ -941,10 +963,17 @@ export class ListComponent implements OnInit, OnDestroy {
     if (!f) return true;
     let fn = this.preCache.get(f);
     if (!fn) {
-      fn = new Function('$app$', '$_', '$', '$prev$', '$selected$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
+      // Added '$$_' and '$$' to the arguments
+      fn = new Function('$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
       this.preCache.set(f, fn);
     }
-    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, this.selectedEntries(), this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+
+    // Fast map approval data
+    const $$_ = entry?.approval || {};
+    const $$: any = {};
+    for (const key in $$_) { $$[key] = $$_[key]?.data || {}; }
+
+    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, $$_, $$, this.selectedEntries(), this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
   };
 
   _eval = (data: any, entry: any, v: string) => this._evalRun(entry, v, false);
