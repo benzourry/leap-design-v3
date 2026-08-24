@@ -1,7 +1,8 @@
 @if (screen()) {
 <div id="screen-{{screen()?.id}}" #screenviewport class="viewport position-relative"
   [class.map-fullscreen]="screen()?.data?.fullscreen" [class.full-viewport-page]="['chatbot'].includes(screen()?.type)">
-  @if (!asComp() && !screen()?.data?.hideTitle && !hideTitle()) {
+  <!-- !asComp() &&  -->
+  @if (!screen()?.data?.hideTitle && !hideTitle()) {
     @let tplContext = {
     $_: entry(),
     $: entry()?.data,
@@ -144,7 +145,7 @@
           }
 
           @if (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type)) {
-          <button type="button" class="btn border border-2 rounded-2 h-100" (click)="printReport()">
+          <button type="button" class="btn border border-2 rounded-2 position-relative" (click)="printReport()">
             <fa-icon [icon]="['fas','print']" [fixedWidth]="true">
             </fa-icon>
           </button>

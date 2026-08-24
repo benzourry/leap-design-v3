@@ -15,6 +15,18 @@ table thead tr th {
   background-color: var(--bs-body-bg) !important;
 }
 
+.table-flush {
+  th:first-child, 
+  td:first-child {
+    padding-left: 1rem !important;
+  }
+  
+  th:last-child, 
+  td:last-child {
+    padding-right: 1rem !important;
+  }
+}
+
 /* Custom class for the drill-down value links to handle light/dark mode adaptation */
 .drill-link {
   color: var(--bs-primary);

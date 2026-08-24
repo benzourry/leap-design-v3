@@ -16,7 +16,7 @@
 .element:active::after {
     content: '';
     position: absolute;
-    background: rgba(var(--bs-body-color-rgb, 255, 255, 255), 0.1);
+    // background: rgba(var(--bs-body-color-rgb, 255, 255, 255), 0.1);
     top: 0;
     bottom: 0;
     left: 0;

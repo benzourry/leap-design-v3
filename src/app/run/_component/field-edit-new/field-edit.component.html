@@ -15,12 +15,32 @@
   </svg>
 </ng-template>
 
+<ng-template #prefixTpl>
+  @if (f.x?.prefixPost) {
+    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+  } @else {
+    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+  }
+</ng-template>
+
+<ng-template #suffixTpl>
+  @if (f.x?.suffixPost) {
+    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+  } @else {
+    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+  }
+</ng-template>
+
 <div class="field-edit form-group position-relative" [ngClass]="f.altClass">
   
-  <div class="mobile-field-surface" 
+  <!-- <div class="mobile-field-surface" 
        [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
        [class.is-disabled]="f.readOnly"
-       [class.is-transparent-type]="f.type === 'btn' || f.type === 'static'">
+       [class.is-transparent-type]="f.type === 'btn' || f.type === 'static'"> -->
+
+  <div [class.mobile-field-surface]="!(f.type === 'btn' || f.type === 'static')"
+       [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
+       [class.is-disabled]="f.readOnly">
     
     @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
       <label class="surface-label" for="{{uid}}">
@@ -36,25 +56,13 @@
           @case ('text') {
             @if (f.subType == 'input') {
               <div class="input-group">
-                @if (f.x?.prefix) {
-                  @if (f.x?.prefixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                 <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
                   type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
                   [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
                   [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
                   (blur)="valueBlured($event)" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-                @if (f.x?.suffix) {
-                  @if (f.x?.suffixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
               @if (hasFocus) {
                 <datalist id="datalist-{{uid}}">
@@ -91,24 +99,12 @@
           @case ('color') {
             @if (f.x?.prefix || f.x?.suffix) {
               <div class="input-group">
-                @if (f.x?.prefix) {
-                  @if (f.x?.prefixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                 <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
                   type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
                   [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
                   (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-                @if (f.x?.suffix) {
-                  @if (f.x?.suffixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
             } @else {
               <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
@@ -129,23 +125,11 @@
               </div>
             } @else {
               <div class="input-group">
-                @if (f.x?.prefix) {
-                  @if (f.x?.prefixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                 <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
                   [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
                   [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
-                @if (f.x?.suffix) {
-                  @if (f.x?.suffixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
             }
           }
@@ -157,10 +141,22 @@
                   @if (f.subType?.includes('inline')) {
                     @if (isInvalid) { <ng-template [ngTemplateOutlet]="errorIcon"></ng-template> }
                     <div>
+                      
+                      <ng-template #dtFooter>
+                        <div class="d-flex align-items-center justify-content-center p-2 border-top">
+                          <ngb-timepicker name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+                            [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [disabled]="f.readOnly"></ngb-timepicker>
+                            @if (!f.subType?.includes('inline')){
+                              <button type="button" class="btn btn-primary btn-sm ms-3 rounded-pill fw-bold" (click)="d.close()">{{lang()=='ms'?'Tetapkan':'Set'}}</button>
+                            }
+                        </div>
+                      </ng-template>
+
                       <ngb-datepicker class="smyds border-0" [class.is-invalid]="isInvalid" [id]="uid"
                         [name]="uid" #formField="ngModel" [(ngModel)]="value" [required]="f.v?.required"
                         [minDate]="toNgbDateStruct(f.v?.minDate)" [maxDate]="toNgbDateStruct(f.v?.maxDate)" 
                         [markDisabled]="markDisabledFn()"
+                        [footerTemplate]="f.subType === 'datetime-inline' ? dtFooter : null"
                         (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
                       </ngb-datepicker>
                     </div>
@@ -198,10 +194,10 @@
                   }
                 </div>
               }
-              @if (['datetime-inline','time'].includes(f.subType)) {
-                <div class="col-auto d-flex align-items-center ms-2">
-                  <ngb-timepicker name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
-                    [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [disabled]="f.readOnly"></ngb-timepicker>
+              @if (['time'].includes(f.subType)) {
+                <div class="col-auto d-flex align-items-center">
+                  <ngb-timepicker class="ms-n2" name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+                    [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [spinners]="false" [disabled]="f.readOnly"></ngb-timepicker>
                 </div>
               }
             </div>
@@ -274,13 +270,7 @@
             <div [class.modelPicker]="value && f?.placeholder">
               @if (f.x?.prefix || f.x?.suffix) {
                 <div class="input-group">
-                  @if (f.x?.prefix) {
-                    @if (f.x?.prefixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                   <ng-select class="smyds flex-grow-1" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
                     [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
                     [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
@@ -293,13 +283,7 @@
                       </ng-template>
                     }
                   </ng-select>
-                  @if (f.x?.suffix) {
-                    @if (f.x?.suffixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
                 </div>
               } @else {
                 <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
@@ -337,13 +321,7 @@
             <div [class.modelPicker]="value && f?.placeholder">
               @if (f.x?.prefix || f.x?.suffix) {
                 <div class="input-group">
-                  @if (f.x?.prefix) {
-                    @if (f.x?.prefixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                   <ng-select [items]="processedLookupList()" class="smyds flex-grow-1" [class.is-invalid]="isInvalid" #formField="ngModel"
                     [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
                     [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
@@ -368,13 +346,7 @@
                       </ng-template>
                     }
                   </ng-select>
-                  @if (f.x?.suffix) {
-                    @if (f.x?.suffixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
                 </div>
               } @else {
                 <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
@@ -522,13 +494,7 @@
               <div class="custom-file position-relative" [class.disabled]="f.readOnly">
                 @if (f.x?.prefix || f.x?.suffix) {
                   <div class="input-group">
-                    @if (f.x?.prefix) {
-                      @if (f.x?.prefixPost) {
-                        <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                      } @else {
-                        <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                      }
-                    }
+                    @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                     
                     <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
                            [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
@@ -568,13 +534,7 @@
                       </div>
                     </label>
 
-                    @if (f.x?.suffix) {
-                      @if (f.x?.suffixPost) {
-                        <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                      } @else {
-                        <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                      }
-                    }
+                    @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
                   </div>
                 } @else {
                   <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
@@ -627,10 +587,10 @@
                 @if (!value) {
                   <label class="image-preview-bleed empty d-block text-center text-muted cursor-pointer py-4" for="{{uid}}">
                     <fa-icon [icon]="['fas','image']" class="fs-2 mb-1 opacity-50 d-block"></fa-icon>
-                    <div class="fw-medium">{{lang()=='ms'?'Ketik untuk muatnaik':'Tap to upload image'}}</div>
+                    <div class="fw-medium">{{lang()=='ms'?'Klik untuk muatnaik':'Tap to upload image'}}</div>
                   </label>
                 } @else {
-                  <label class="image-preview-bleed d-block position-relative cursor-pointer" for="{{uid}}">
+                  <label class="image-preview-bleed d-block position-relative cursor-pointer" for="{{uid}}" style="min-height:150px;">
                     @if (f.subType == 'image') {
                       <img loading="lazy" [src]="baseApi + '/entry/file/inline/'+value | secure | async" class="w-100 d-block" alt="Preview">
                     } @else {
@@ -653,26 +613,12 @@
 
           @case ('eval') {
             @if (f.subType=='text') {
-              <div>
-                <div class="input-group">
-                  @if (f.x?.prefix) {
-                    @if (f.x?.prefixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHTML]="compiledDataPrefix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds prefix-txt" [innerHTML]="compiledDataPrefix()|safe:'html'"></span>
-                    }
-                  }
-                  <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
-                    [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
-                    (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
-                  @if (f.x?.suffix) {
-                    @if (f.x?.suffixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                    }
-                  }
-                </div>
+              <div class="input-group">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
+                  [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
+                  (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
             } @else if (f.subType=='qr') {
               <div class="text-center bg-white p-3 rounded-4 mt-1">
@@ -713,13 +659,7 @@
             <div class="custom-file" [class.disabled]="f.readOnly">
               @if (f.x?.prefix || f.x?.suffix) {
                 <div class="input-group mt-1">
-                  @if (f.x?.prefix) {
-                    @if (f.x?.prefixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                   <label class="has-float-label cursor-pointer flex-grow-1 mb-0" for="{{uid}}">
                     <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
                       [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
@@ -733,13 +673,7 @@
                       }
                     }
                   </label>
-                  @if (f.x?.suffix) {
-                    @if (f.x?.suffixPost) {
-                      <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                    } @else {
-                      <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                    }
-                  }
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
                 </div>
               } @else {
                 <label class="has-float-label cursor-pointer mt-1" for="{{uid}}">
@@ -762,24 +696,12 @@
           @case ('btn') {
             @if (f.x?.prefix || f.x?.suffix) {
               <div class="input-group d-inline-flex w-auto">
-                @if (f.x?.prefix) {
-                  @if (f.x?.prefixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
-                  }
-                }
-                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
-                @if (f.x?.suffix) {
-                  @if (f.x?.suffixPost) {
-                    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
-                  } @else {
-                    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
-                  }
-                }
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <button type="button" class="btn btn-primary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
             } @else {
-              <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+              <button type="button" class="btn btn-primary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
             }
           }
 
@@ -805,10 +727,10 @@
     </div>
   </div>
 
-  @if ((m?.touched && m?.invalid) || (m?.touched && fieldErrors.length > 0)) {
+  @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {
     <small class="val-text text-danger d-block mt-1 ms-2 fw-medium">
       @for (err of fieldErrors; track err) {
-        <div class="d-block mb-1">
+        <div class="mb-1">
           <fa-icon class="me-1" [icon]="['fas','exclamation-circle']"></fa-icon> 
           <span>{{f.label}} {{err}}</span>
         </div>
