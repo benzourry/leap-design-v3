@@ -136,7 +136,7 @@
                   <tr>
                     <td class="bg-body-secondary text-body-emphasis fw-bold">{{chartDataset()?._acol[0]}}</td>
                     @for (dv of chartDataset()?._acol|slice:1; track $index; let $idx = $index) {
-                      <td class="bg-body-secondary text-body-emphasis fw-bold"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
+                      <td class="bg-body-secondary text-body-emphasis fw-bold text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     }
                     <td class="text-end">
                       <strong><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></strong>

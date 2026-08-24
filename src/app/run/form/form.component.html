@@ -495,8 +495,8 @@
                                                 @let section = e;
                                                 @let forceView = !e.inline;
                                                 @let index = $index;
-                                                <!-- @let index_child = $index_child; -->
                                                 @let $index_child = $index_g + '-' + (child.__index ?? $index_c);
+                                                @let index_child = $index_child;
                                                 @let defaultValue = field.x?.use_dyn_default ? dynDefaultValue()[e.code]?.[$index_child]?.[field.code] : field.x?.default;
                                                 
                                                 <!-- ⚠️ WARNING: compileData maps strictly to TS variables. Uses Signal evaluation where applicable -> lookup(), timestamp(), entry() -->
