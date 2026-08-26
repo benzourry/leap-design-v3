@@ -182,3 +182,7 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
   opacity: 0.4;
   pointer-events: none;
 }
+
+.toolbar:not(:has(*)){
+  display:none !important;
+}

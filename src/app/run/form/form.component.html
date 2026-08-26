@@ -843,7 +843,7 @@
   <!-- Replaced @if with ngbCollapse. Note the inverted logic (collapse when NOT expanded OR NOT invalid) -->
   <div [ngbCollapse]="!(sectionErrorExpanded[e.id] && sForm.invalid)">
     <div class="px-3 px-md-4 pb-1 border-bottom">
-      <div class="alert alert-danger d-flex align-items-start mb-3 rounded-4 border-0 shadow-sm" role="alert">
+      <div class="alert alert-danger d-flex align-items-start mb-3 border-0 shadow-sm" style="border-radius: var(--bs-border-radius)" role="alert">
         <fa-icon class="me-3 mt-1 fs-5 opacity-75" [icon]="['fas','exclamation-triangle']"></fa-icon>
         <div>
           <h6 class="fw-bold mb-2">

@@ -1,0 +1,738 @@
+@let f = field();
+@let m = model();
+@let uid = 'f-'+f.id+'-'+id();
+@let isInvalid = m?.touched && fieldErrors.length > 0;
+@let placeholder = f.placeholder||' ';
+@let isRichLenErr = f.subType === 'richtext' && value && ((f.v?.minlength && rawTextLength < f.v.minlength) || (f.v?.maxlength && rawTextLength > f.v.maxlength));
+@let isSurface = !(['btn', 'static', 'checkbox', 'checkboxOption', 'radio', 'scaleTo5', 'scaleTo10', 'scale'].includes(f.type) || (f.type === 'simpleOption' && ['btn', 'radio'].includes(f.subType)));
+
+<ng-template #prefixTpl>
+  @if (f.x?.prefixPost) {
+    <button type="button" class="btn btn-outline-secondary smyds prefix-btn" (click)="prefixClicked()" [innerHtml]="compiledDataPrefix()|safe:'html'"></button>
+  } @else {
+    <span class="input-group-text smyds prefix-txt" [innerHtml]="compiledDataPrefix()|safe:'html'"></span>
+  }
+</ng-template>
+
+<ng-template #suffixTpl>
+  @if (f.x?.suffixPost) {
+    <button type="button" class="btn btn-outline-secondary smyds suffix-btn" (click)="suffixClicked()" [innerHtml]="compiledDataSuffix()|safe:'html'"></button>
+  } @else {
+    <span class="input-group-text smyds suffix-txt" [innerHtml]="compiledDataSuffix()|safe:'html'"></span>
+  }
+</ng-template>
+
+<div class="field-edit form-group position-relative" [ngClass]="f.altClass">
+  
+  @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
+    <label class="surface-label" for="{{uid}}">
+      <span [innerHtml]="f.label"></span>
+      @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
+    </label>
+  }
+
+  <div [class.mobile-field-surface]="isSurface"
+       [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
+       [class.is-disabled]="f.readOnly">
+    
+    <div class="surface-control-wrapper">
+      @defer (when f) {
+        @switch (f.type) {
+          
+          @case ('text') {
+            @if (f.subType == 'input') {
+              <div class="input-group">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
+                  type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+                  [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
+                  [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
+                  (blur)="valueBlured($event)" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+              </div>
+              @if (hasFocus) {
+                <datalist id="datalist-{{uid}}">
+                  @for (i of lookupList(); track $index) { <option>{{i.name}}</option> }
+                </datalist>
+              }
+            }
+            @else if (f.subType == 'textarea') {
+              <textarea class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid" [id]="uid"
+                [ngxMask]="f.v?.mask" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+                [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" [minlength]="f.v?.minlength" [placeholder]="placeholder"
+                [pattern]="f.v?.pattern" [rows]="f.v?.rows||3" [required]="f.v?.required"
+                (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="f.readOnly"></textarea>
+              @if (hasFocus) {
+                <datalist id="datalist-{{uid}}">
+                  @for (i of lookupList(); track $index) { <option>{{i.name}}</option> }
+                </datalist>
+              }
+            }
+            @else if (f.subType == 'richtext') {
+              <div class="has-float-label smyds" [class.always]="always()" [class.has-value]="!!value" [class.pe-none]="f.readOnly">
+                @defer (prefetch on idle) {
+                  <angular-editor class="clean" [config]="editorConfig()" [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" [id]="uid"
+                    [name]="uid" #formField="ngModel" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"         
+                    [required]="f.v?.required" [placeholder]="placeholder">
+                  </angular-editor>
+                } @loading {
+                  <div class="text-center p-3 text-muted">Loading editor...</div>
+                }
+              </div>
+            }
+          }
+
+          @case ('color') {
+            @if (f.x?.prefix || f.x?.suffix) {
+              <div class="input-group">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
+                  type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
+                  [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+                  (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+              </div>
+            } @else {
+              <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
+                type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
+                [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+                (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+            }
+          }
+
+          @case ('number') {
+            @if (f.subType == 'range') {
+              <div class="d-flex align-items-center">
+                <input class="form-range my-2 smyds" type="range" [class.is-invalid]="isInvalid" [id]="uid"
+                  [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
+                  [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
+                <div class="ms-2 my-2">@if(value!=undefined){ {{value}} }</div>
+              </div>
+            } @else {
+              <div class="input-group">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <input class="form-control smyds" type="number" [class.is-invalid]="isInvalid" [id]="uid"
+                  [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
+                  [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+              </div>
+            }
+          }
+
+          @case ('date') {
+            <div class="row g-0">
+              @if (['date','date-inline','datetime','datetime-inline'].includes(f.subType)) {
+                <div class="col" [class.col-auto]="f.subType?.includes('inline')">
+                  @if (f.subType?.includes('inline')) {
+                    <div>
+                      
+                      <ng-template #dtFooter>
+                        <div class="d-flex align-items-center justify-content-center p-2 border-top">
+                          <ngb-timepicker name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+                            [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [disabled]="f.readOnly"></ngb-timepicker>
+                            @if (!f.subType?.includes('inline')){
+                              <button type="button" class="btn btn-primary btn-sm ms-3 rounded-pill fw-bold" (click)="d.close()">{{lang()=='ms'?'Tetapkan':'Set'}}</button>
+                            }
+                        </div>
+                      </ng-template>
+
+                      <ngb-datepicker class="smyds border-0" [class.is-invalid]="isInvalid" [id]="uid"
+                        [name]="uid" #formField="ngModel" [(ngModel)]="value" [required]="f.v?.required"
+                        [minDate]="toNgbDateStruct(f.v?.minDate)" [maxDate]="toNgbDateStruct(f.v?.maxDate)" 
+                        [markDisabled]="markDisabledFn()"
+                        [footerTemplate]="f.subType === 'datetime-inline' ? dtFooter : null"
+                        (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
+                      </ngb-datepicker>
+                    </div>
+                  } @else {
+                    <ng-template #dtFooter>
+                      <div class="d-flex align-items-center justify-content-center p-2 border-top">
+                        <ngb-timepicker name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+                          [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [disabled]="f.readOnly"></ngb-timepicker>
+                        <button type="button" class="btn btn-primary btn-sm ms-3 rounded-pill fw-bold" (click)="d.close()">{{lang()=='ms'?'Tetapkan':'Set'}}</button>
+                      </div>
+                    </ng-template>
+                    <div class="input-group d-flex align-items-center">
+                      <input class="form-control smyds" type="text" [class.is-invalid]="isInvalid" [id]="uid"
+                        [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder" [required]="f.v?.required"
+                        [minDate]="toNgbDateStruct(f?.v?.minDate)" [maxDate]="toNgbDateStruct(f?.v?.maxDate)"
+                        [markDisabled]="markDisabledFn()"
+                        [autoClose]="f.subType === 'datetime' ? 'outside' : true"
+                        [footerTemplate]="f.subType === 'datetime' ? dtFooter : null"
+                        (click)="d.toggle()" (ngModelChange)="valueChanged($event)" ngbDatepicker #d="ngbDatepicker" [disabled]="f.readOnly">
+                      
+                      @if (f.subType === 'datetime' && value) {
+                        <div class="d-flex align-items-center fw-bold ps-1 pe-2" (click)="d.toggle()" style="cursor: pointer; z-index: 5;">
+                          @if (value?.hour !== undefined) {
+                            {{ f.x?.meridian === false ? ((value.hour < 10 ? '0' : '') + value.hour) : (value.hour % 12 === 0 ? 12 : value.hour % 12) }}:{{ (value.minute < 10 ? '0' : '') + value.minute }}{{ f.x?.meridian === false ? '' : (value.hour >= 12 ? ' PM' : ' AM') }}
+                          } @else {
+                            {{ value | date: (f.x?.meridian === false ? 'HH:mm' : 'h:mm a') }}
+                          }
+                        </div>
+                      }
+
+                      <button type="button" class="btn smyds text-secondary" (click)="d.toggle()" [disabled]="f.readOnly">
+                        <fa-icon [icon]="['far','calendar-alt']"></fa-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+              @if (['time'].includes(f.subType)) {
+                <div class="col-auto d-flex align-items-center">
+                  <ngb-timepicker class="ms-n2" name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
+                    [meridian]="f.x?.meridian" [seconds]="f.x?.seconds" [spinners]="false" [disabled]="f.readOnly"></ngb-timepicker>
+                </div>
+              }
+            </div>
+          }
+
+          @case ('checkbox') {
+            <div [class.disabled]="f.readOnly">
+              <div class="form-check" [class.form-switch]="f.subType == 'switch'">
+                <input type="checkbox" class="form-check-input smyds" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" [(ngModel)]="value" #formField="ngModel"
+                  [id]="uid" [name]="uid" [required]="f.v?.required" (ngModelChange)="checkValueChanged($event)">
+                <label class="form-check-label" for="{{uid}}">
+                  @if (f?.v?.required && f.hideLabel) { <span>* </span> }            
+                  <span [innerHtml]="(f.placeholder ? compiledDataPlaceholder() : compiledDataLabel()) | safe:'html'"></span>
+                </label>
+              </div>
+            </div>
+          }
+
+          @case ('checkboxOption') {
+            <div [class.disabled]="f.readOnly">
+              @if (f?.subType=='btn') {
+                <div role="group" class="d-flex flex-wrap gap-2 mt-1">
+                  @for (i of lookupList(); track $index) {
+                    <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
+                      [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" 
+                      autocomplete="off" [disabled]="f.readOnly || isDisabled(i)">
+                    <label class="btn btn-outline-secondary light text-start toggle-opt m-0" [class.is-invalid]="(m?.touched && m?.invalid)" for="{{uid}}-{{$index}}"
+                      [class.active]="checkValue(i)" [class.disabled]="f.readOnly || isDisabled(i)">
+                      @if (f?.placeholder) {
+                        <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
+                      } @else {
+                        <span [innerHtml]="i?.name"></span>
+                      }
+                    </label>
+                  }
+                </div>
+              } @else {
+                <div class="mt-1">
+                  @for (i of lookupList(); track $index) {
+                    <div class="form-check" [class.form-check-inline]="f.x?.inline">
+                      <input type="checkbox" class="form-check-input smyds" [class.is-invalid]="(m?.touched && m?.invalid)" [value]="i" id="{{uid}}-{{i?.code}}"
+                        [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);"
+                        [class.disabled]="f.readOnly || isDisabled(i)" />
+                      <label class="form-check-label" for="{{uid}}-{{i?.code}}" 
+                        [class.disabled]="f.readOnly || isDisabled(i)">
+                        @if (f?.placeholder) {
+                          <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
+                        } @else {
+                          <span [innerHtml]="i?.name"></span>
+                        }
+                      </label>
+                    </div>
+                  }
+                </div>
+              }
+              @if (!hideAddAction() && f.x?.addEntryEnabled) {
+                <div class="mt-2">
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" (click)="triggerAddAction('')">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
+                  </button>
+                </div>
+              }
+              <input type="hidden" id="{{uid}}-hid" name="{{uid}}-hid" [ngModel]="value" #formField="ngModel" [required]="f?.v?.required">
+            </div>
+          }
+
+          @case ('modelPicker') {
+            <div [class.modelPicker]="value && f?.placeholder">
+              @if (f.x?.prefix || f.x?.suffix) {
+                <div class="input-group">
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                  <ng-select class="smyds flex-grow-1" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+                    [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
+                    [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+                    [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
+                    [multiple]="f.subType?.includes('multiple')" [placeholder]="' '" 
+                    [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
+                    @if (f?.placeholder) {
+                      <ng-template ng-option-tmp let-item="item">
+                        <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                      </ng-template>
+                    }
+                  </ng-select>
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+                </div>
+              } @else {
+                <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+                  [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
+                  [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
+                  [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
+                  [multiple]="f.subType?.includes('multiple')" [placeholder]="' '" 
+                  [readonly]="f.readOnly" [searchFn]="lookupSearchFn">
+                  @if (f?.placeholder) {
+                    <ng-template ng-option-tmp let-item="item">
+                      <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                    </ng-template>
+                  }
+                </ng-select>
+              }
+              @if (f?.placeholder) {
+                @if (f.subType?.includes('multiple')) {
+                  @if (value?.length > 0) {
+                    <div class="list-group mt-2 rounded-3">
+                      @for (sv of value; track $index) {
+                        <div class="list-group-item bg-transparent border-0 px-0" [innerHtml]="compileTpl(f.placeholder,{'$':sv,'$prev$':sv.$prev})|safe:'html'"></div>
+                      }
+                    </div>
+                  }
+                } @else {
+                  @if (value) {
+                    <div class="mt-2 text-muted small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
+                  }
+                }
+              }
+            </div>
+          }
+
+          @case ('select') {
+            <div [class.modelPicker]="value && f?.placeholder">
+              @if (f.x?.prefix || f.x?.suffix) {
+                <div class="input-group">
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                  <ng-select [items]="processedLookupList()" class="smyds flex-grow-1" [class.is-invalid]="isInvalid" #formField="ngModel"
+                    [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+                    [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
+                    [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
+                    [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
+                    (search)="valueSearched($event)" [placeholder]="' '"
+                    [searchFn]="lookupSearchFn">
+                    @if (f?.placeholder) {
+                      <ng-template ng-option-tmp let-item="item">
+                        <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                      </ng-template>
+                    }
+                    @if (f?.x?.groupBy) {
+                      <ng-template ng-label-tmp let-item="item">
+                        <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
+                        <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon> {{item.name}}
+                      </ng-template>
+                    }
+                    @if(f.x?.addEntryEnabled) {
+                      <ng-template ng-tag-tmp let-search="searchTerm">
+                        <div><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong></div>
+                      </ng-template>
+                    }
+                  </ng-select>
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+                </div>
+              } @else {
+                <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
+                  [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+                  [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
+                  [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
+                  [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
+                  (search)="valueSearched($event)" [placeholder]="' '"
+                  [searchFn]="lookupSearchFn">
+                  @if (f?.placeholder) {
+                    <ng-template ng-option-tmp let-item="item">
+                      <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(item)) | safe:'html'"></div>
+                    </ng-template>
+                  }
+                  @if (f?.x?.groupBy) {
+                    <ng-template ng-label-tmp let-item="item">
+                      <span [innerHTML]="compileTpl(f?.x?.groupBy,{'$':item})|safe:'html'"></span> 
+                      <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon> {{item.name}}
+                    </ng-template>
+                  }
+                  @if(f.x?.addEntryEnabled) {
+                    <ng-template ng-tag-tmp let-search="searchTerm">
+                      <div><fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option: <strong>{{search}}</strong></div>
+                    </ng-template>
+                  }
+                </ng-select>
+              }
+              @if (f?.placeholder) {
+                @if (f.subType?.includes('multiple')) {
+                  @if (value?.length>0) {
+                    <div class="list-group mt-2">
+                      @for (sv of value; track $index) {
+                        <div class="list-group-item bg-transparent border-0 px-0" [innerHtml]="compileTpl(f.placeholder,{'$':sv})|safe:'html'"></div>
+                      }
+                    </div>
+                  }
+                } @else {
+                  @if (value) {
+                    <div class="mt-2 text-muted small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
+                  }
+                }
+              }
+            </div>
+          }
+
+          @case ('radio') {
+            <div>
+              @if (f?.subType=='btn') {
+                <div role="group" class="d-flex flex-wrap gap-2 mt-1">
+                  @for (i of lookupList(); track $index) {
+                    <input type="radio" [name]="uid" #formField [checked]="value?.code === i?.code" 
+                      (change)="value=i;valueChanged(i);" [required]="f.v?.required" [value]="i" class="btn-check smyds"
+                      id="{{uid}}-{{$index}}" autocomplete="off" [disabled]="f.readOnly || isDisabled(i)" />
+                    <label class="btn btn-outline-secondary smyds light text-start toggle-opt m-0" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" for="{{uid}}-{{$index}}" 
+                      [class.active]="value?.code === i?.code"
+                      [class.disabled]="f.readOnly || isDisabled(i)">
+                      @if (f?.placeholder) {
+                        <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
+                      } @else {
+                        <span [innerHtml]="i?.name"></span>
+                      }
+                    </label>
+                  }
+                </div>
+              } @else {
+                <div class="mt-1">
+                  @for (i of lookupList(); track $index) {
+                    <div class="form-check" [class.form-check-inline]="f.x?.inline" [class.disabled]="f.readOnly">
+                      <input type="radio" class="form-check-input smyds" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" #fieldValue [value]="i" id="{{uid}}-{{i?.code}}"
+                        [checked]="value?.code === i?.code" [name]="uid" [required]="f.v?.required"
+                        [class.disabled]="f.readOnly || isDisabled(i)"
+                        (change)="value=i;valueChanged(i);" />
+                      <label class="form-check-label d-block" for="{{uid}}-{{i?.code}}"
+                        [class.disabled]="f.readOnly || isDisabled(i)">
+                        @if (f?.placeholder) {
+                          <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
+                        } @else {
+                          <span [innerHtml]="i?.name"></span>
+                        }
+                      </label>
+                    </div>
+                  }
+                </div>
+              }
+              @if (!lookupList() || lookupList().length==0) { <div class="text-muted small mt-1">Option not available</div> }
+              @if (!hideAddAction() && f.x?.addEntryEnabled){
+                <div class="mt-2">
+                  <button type="button" class="btn btn-sm rounded-pill btn-outline-secondary px-3" (click)="triggerAddAction('')">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add option
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @case ('simpleOption') {
+            @if (f.subType=='btn') {
+              <div [class.disabled]="f.readOnly">
+                <div role="group" class="d-flex flex-wrap gap-2 mt-1">
+                  @for (i of simpleList(); track $index) {
+                    <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+                      (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check smyds"
+                      id="{{uid}}-{{$index}}" autocomplete="off" [disabled]="f.readOnly || isDisabled(i)">
+                    <label class="btn btn-outline-secondary smyds light toggle-opt m-0" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" 
+                      for="{{uid}}-{{$index}}"
+                      [class.disabled]="f.readOnly || isDisabled(i)">{{i}}</label>
+                  }
+                </div>
+                @if (!f?.options) { <div class="text-muted small mt-1">Option not available</div> }
+              </div>
+            }
+            @if (f.subType=='radio') {
+              <div class="mt-1">
+                @for (i of simpleList(); track $index) {
+                  <div class="form-check" [class.disabled]="f.readOnly" [class.form-check-inline]="f.x?.inline">
+                    <input type="radio" class="form-check-input smyds" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" #formField [value]="i" id="{{uid}}-{{$index}}"
+                      [(ngModel)]="value" [name]="uid" [required]="f.v?.required" (ngModelChange)="valueChanged(i);" />
+                    <label class="form-check-label d-block" for="{{uid}}-{{$index}}">{{i}}</label>
+                  </div>
+                }
+              </div>
+              @if (!f?.options) { <div class="text-muted small mt-1">Option not available</div> }
+            }
+            @if (f.subType=='select') {
+              <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [id]="uid" [(ngModel)]="value"
+                [loading]="loading()" [groupBy]="f.x?.groupBy?selectGroupBy:null" [virtualScroll]="true" 
+                (change)="valueChanged($event)" (focus)="selectFocused($event)" [name]="uid" [readonly]="f.readOnly" 
+                [required]="f.v?.required" [placeholder]="' '">
+              </ng-select>
+              @if (!f?.options) { <div class="text-muted small mt-1">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
+            }
+          }
+
+          @case ('imagePreview') {
+            <div class="image-preview-bleed position-relative">
+              <img [src]="value || 'assets/img/blank_product.png'" class="w-100 d-block" alt="Preview">
+            </div>
+          }
+
+          @case ('file') {
+            @if (fileProgress()) {
+                        <div class="progress file-upload-progress">
+                          <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
+                        </div>
+                      }
+            @if (['other','othermulti'].includes(f.subType)) {
+              <div class="custom-file position-relative" [class.disabled]="f.readOnly">
+                @if (f.x?.prefix || f.x?.suffix) {
+                  <div class="input-group">
+                    @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                    
+                    <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
+                           [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
+                      <!-- @if (fileProgress()) {
+                        <div class="progress file-upload-progress">
+                          <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
+                        </div>
+                      } -->
+                      <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
+                        (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
+                        [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
+                        [accept]="f.v?.accept" [required]="!value && f?.v?.required" />
+                      
+                      @if (!value) {
+                        <div class="nobreak text-muted">
+                          <fa-icon [icon]="['fas','upload']" [fixedWidth]="true" class="me-2"></fa-icon> {{f.placeholder||'Browse files...'}}
+                        </div>
+                      } @else {
+                        @if (f.subType=='other') {
+                          <div class="nobreak pe-4 fw-medium">{{value}}</div>
+                        } @else {
+                          <div class="nobreak pe-4 fw-medium" [ngStyle]="value.length > 1 && {'height':'auto'}">
+                            @for (vf of value; track $index) { <div>{{vf}}</div> }
+                          </div>
+                        }
+                      }
+                      
+                      <div class="position-absolute top-50 translate-middle-y end-0 d-flex align-items-center">
+                        @if (f.x?.extractor) {
+                          <div class="px-1 text-primary fs-6">
+                            <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
+                          </div>            
+                        }     
+                        @if (value) {
+                          <div class="cursor-pointer text-secondary fw-bold fs-5 text-center px-1" (click)="$event.preventDefault();clear(native);">×</div>
+                        }        
+                      </div>
+                    </label>
+
+                    @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+                  </div>
+                } @else {
+                  <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
+                         [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
+                    <!-- @if (fileProgress()) {
+                      <div class="progress file-upload-progress">
+                        <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
+                      </div>
+                    } -->
+                    <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
+                      (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
+                      [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
+                      [accept]="f.v?.accept" [required]="!value && f?.v?.required" />
+                    
+                    @if (!value) {
+                      <div class="nobreak text-muted">
+                        <fa-icon [icon]="['fas','upload']" [fixedWidth]="true" class="me-2"></fa-icon> {{f.placeholder||'Browse files...'}}
+                      </div>
+                    } @else {
+                      @if (f.subType=='other') {
+                        <div class="nobreak pe-4 fw-medium">{{value}}</div>
+                      } @else {
+                        <div class="nobreak pe-4 fw-medium" [ngStyle]="value.length > 1 && {'height':'auto'}">
+                          @for (vf of value; track $index) { <div>{{vf}}</div> }
+                        </div>
+                      }
+                    }
+                    
+                    <div class="position-absolute top-50 translate-middle-y end-0 d-flex align-items-center">
+                      @if (f.x?.extractor) {
+                        <div class="px-1 text-primary fs-6">
+                          <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
+                        </div>            
+                      }     
+                      @if (value) {
+                        <div class="cursor-pointer text-secondary fw-bold fs-5 text-center px-1" (click)="$event.preventDefault();clear(native);">×</div>
+                      }        
+                    </div>
+                  </label>
+                }
+              </div>
+            }
+            @if (['image','imagemulti'].includes(f.subType)) {
+              
+                  @if (fileProgress()) {
+                      <div class="progress file-upload-progress">
+                        <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
+                      </div>
+                    }
+              <div [class.disabled]="f.readOnly">
+                <input type="file" [hidden]="true" #native #formField="ngModel" (change)="fileValueChanged($event)"
+                  [id]="uid" [(ngModel)]="file[f.code]" [name]="uid"
+                  [multiple]="f.subType == 'imagemulti'" [required]="!value && f?.v?.required" accept="image/*" />
+
+                @if (!value) {
+                  <label class="image-preview-bleed empty d-block text-center text-muted cursor-pointer py-4" for="{{uid}}">
+                    <fa-icon [icon]="['fas','image']" class="fs-2 mb-1 opacity-50 d-block"></fa-icon>
+                    <div class="fw-medium">{{lang()=='ms'?'Klik untuk muatnaik':'Tap to upload image'}}</div>
+                  </label>
+                } @else {
+                  <label class="image-preview-bleed d-block position-relative cursor-pointer" for="{{uid}}" style="min-height:150px;">
+                    
+                    @if (f.subType == 'image') {
+                      <img loading="lazy" [src]="baseApi + '/entry/file/inline/'+value | secure | async" class="w-100 d-block" alt="Preview">
+                    } @else {
+                      <div class="img-grid-cont border-0 rounded-0 m-0">
+                        @for (vf of value; track $index) {
+                          <div class="img-grid-item"><img loading="lazy" [src]="baseApi+'/entry/file/inline/'+vf|secure|async" onError="this.src='./assets/img/placeholder-128.png'"></div>
+                        }
+                      </div>
+                    }
+
+                    <div class="action-bar position-absolute bottom-0 start-0 w-100 d-flex justify-content-between align-items-end p-3">
+                      <div class="btn btn-light rounded-pill px-3 fw-medium text-dark shadow-sm">{{lang()=='ms'?'Tukar':'Change'}}</div>
+                      <div class="btn btn-danger rounded-pill px-3 fw-medium shadow-sm" (click)="$event.preventDefault();clear(native)">{{lang()=='ms'?'Padam':'Clear'}}</div>
+                    </div>
+                  </label>
+                }
+              </div>
+            }
+          }
+
+          @case ('eval') {
+            @if (f.subType=='text') {
+              <div class="input-group">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <input class="form-control smyds" [id]="uid" [name]="uid" type="text"
+                  [placeholder]="f.placeholder || 'Not Available'" [value]="value||''" [readonly]="f.readOnly"
+                  (ngModelChange)="valueChanged($event)" #formField="ngModel" [(ngModel)]="value">
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+              </div>
+            } @else if (f.subType=='qr') {
+              <div class="text-center bg-white p-3 rounded-4 mt-1">
+                <img [src]="value?baseApi+'/form/qr?code='+encodeURIComponent(value):'assets/img/blank-qr.svg'" class="img-fluid" style="max-width: 200px;">
+                <input [id]="uid" [name]="uid" type="hidden" [value]="value||''">
+              </div>
+            }
+          }
+
+          @case ('static') {
+            @if (['html','htmlSave'].includes(f.subType)) {
+              <div class="mb-1" id="{{uid}}-value" morphType="inner" [morphHtml]="compiledDataPlaceholder()|safe:'html'"></div>
+            }
+            @if (f.subType=='clearfix') { <div class="clearfix clfx"></div> }
+          }
+
+          @case ('map') {
+            @defer (prefetch on idle) {
+              <div class="rounded-4 overflow-hidden mt-1 border">
+                <app-ng-leaflet class="smyds" [useCurrentPos]="f.x?.useCurrent"  [baseMapServerUri]="f.x?.customMapServer"
+                  [multiple]="f.subType=='multiple'" [readOnly]="f.readOnly"  [dropPinOn]="f.x?.dropPinOn" [(value)]="value"
+                  (valueChange)="valueChanged($event)"></app-ng-leaflet>
+              </div>
+            } @loading {
+              <div class="text-center p-4 text-muted"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
+            }
+          }
+
+          @case ('speech') {
+            @defer (prefetch on idle) {
+              <app-speech-to-text class="smyds mt-1" [field]="f" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [lang]="lang()" [defaultLang]="f.x?.defLang"></app-speech-to-text>
+            } @loading {
+              <div class="text-center p-3 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>Loading...</div>
+            }
+          }
+
+          @case ('qr') {
+            <div class="custom-file" [class.disabled]="f.readOnly">
+              @if (f.x?.prefix || f.x?.suffix) {
+                <div class="input-group mt-1">
+                  @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                  <label class="has-float-label cursor-pointer flex-grow-1 mb-0" for="{{uid}}">
+                    <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
+                      [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
+                    @if (qrError()) {
+                      <div class="form-control smyds text-danger bg-danger-subtle"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" class="me-2"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+                    } @else {
+                      @if (!value) {
+                        <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-muted"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                      } @else {
+                        <div class="form-control smyds fw-bold">{{value}}</div>
+                      }
+                    }
+                  </label>
+                  @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+                </div>
+              } @else {
+                <label class="has-float-label cursor-pointer mt-1" for="{{uid}}">
+                  <input type="file" [hidden]="true" #formField="ngModel" (change)="qrValueChanged($event)"
+                    [id]="uid" [(ngModel)]="file[f.code]" [name]="uid" [required]="!value && f?.v?.required" accept="image/*" />
+                  @if (qrError()) {
+                    <div class="form-control smyds text-danger bg-danger-subtle"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" class="me-2"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
+                  } @else {
+                    @if (!value) {
+                      <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-muted"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                    } @else {
+                      <div class="form-control smyds fw-bold">{{value}}</div>
+                    }
+                  }
+                </label>
+              }
+            </div>
+          }
+
+          @case ('btn') {
+            @if (f.x?.prefix || f.x?.suffix) {
+              <div class="input-group d-inline-flex w-auto">
+                @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
+                <button type="button" class="btn btn-primary smyds" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+                @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
+              </div>
+            } @else {
+              <button type="button" class="btn smyds" [class.btn-secondary]="!f.placeholder" [style]="f.placeholder" [disabled]="f.readOnly" (click)="valueChanged($event)">{{f.label}}</button>
+            }
+          }
+
+          @default {
+            @if (['scaleTo5', 'scaleTo10', 'scale'].includes(f.type)) {
+              <div class="mt-1">
+                <div [class.disabled]="f.readOnly">
+                  <div class="d-flex flex-wrap gap-2" role="group">
+                    @for (i of scales(); track $index) {
+                      <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+                        (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check"
+                        id="{{uid}}-{{$index}}" autocomplete="off">
+                      <label class="btn rounded-circle btn-outline-secondary light d-flex align-items-center justify-content-center m-0 toggle-opt smyds width-38 fw-bold" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" for="{{uid}}-{{$index}}">{{i}}</label>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        } 
+      }
+    </div>
+  </div>
+
+  <div class="field-sub-text mt-2">
+    @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {
+        @for (err of fieldErrors; track err) {
+      <small class="val-text text-danger d-block fw-medium">
+          <!-- <div class="mb-1"> -->
+            <fa-icon class="me-1" [icon]="['fas','exclamation-circle']"></fa-icon> 
+            <span>{{f.label}} {{err}}</span>
+          <!-- </div> -->
+      </small>
+        }
+    }
+
+    @if (f.hint) {
+      <small class="val-text text-muted d-block ">
+        <fa-icon [icon]="['fas','info-circle']" class="me-1 opacity-75"></fa-icon>
+        <span>{{f.hint}}</span>
+      </small>
+    }
+  </div>
+</div>

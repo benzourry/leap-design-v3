@@ -55,3 +55,7 @@
     bottom: 0px;
   }
 }
+
+.toolbar:not(:has(*)){
+  display:none !important;
+}
