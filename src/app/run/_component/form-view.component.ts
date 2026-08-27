@@ -123,82 +123,91 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
           @if (preSection()[e.id] && e.x?.facet?.['view'] !== 'none') {
             @if (e.type === 'section') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
-                <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
+                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-4 light-015">
+                    <div class="card-header p-4 light-015"
+                      (click)="e.x?.collapsible ? collapseSection(e) : null"
+                      [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'"
+                    >
                       <h6 class="card-title m-0">
                         @if (e.icon) {
                           <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
                         } 
                         {{e.title}}
+                        <!-- ADD the chevron icon -->
+                        @if (e.x?.collapsible) {
+                          <fa-icon class="float-end ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                        }
                       </h6>
                       @if (e.description) {
                         <div class="card-subtitle mt-1 small" [innerHtml]="e.description"></div>
                       }
                     </div>
                   }
-                  <div class="card-body p-4">
-                    <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
-                      @for (f of e.items; track f.id) {
-                        @let field = form()?.items[f.code];
-                        @if (field && preItem()[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {
-                          <div [ngClass]="field?.size"
-                            [class.mt-0]="field?.subType === 'clearfix'"
-                            [hidden]="field?.hidden || field?.x?.facet?.['view'] === 'hidden' || e.x?.facet?.['view'] === 'hidden'">
-                            @if (field?.type !== 'btn' && field?.subType !== 'clearfix' && !field?.hideLabel) {
-                              <label class="form-label label-span">{{field?.label}}</label>
-                            }
-                            @if (!['dataset','screen'].includes(field.type)) {
-                              @if (field.type !== 'static') {
-                                <div class="form-group" [ngClass]="field?.altClass">
-                                  <p class="form-control-static mb-0">
+                  <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
+                    <div class="card-body p-4">
+                      <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
+                        @for (f of e.items; track f.id) {
+                          @let field = form()?.items[f.code];
+                          @if (field && preItem()[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {
+                            <div [ngClass]="field?.size"
+                              [class.mt-0]="field?.subType === 'clearfix'"
+                              [hidden]="field?.hidden || field?.x?.facet?.['view'] === 'hidden' || e.x?.facet?.['view'] === 'hidden'">
+                              @if (field?.type !== 'btn' && field?.subType !== 'clearfix' && !field?.hideLabel) {
+                                <label class="form-label label-span">{{field?.label}}</label>
+                              }
+                              @if (!['dataset','screen'].includes(field.type)) {
+                                @if (field.type !== 'static') {
+                                  <div class="form-group" [ngClass]="field?.altClass">
+                                    <p class="form-control-static mb-0">
+                                      @if (data()) {
+                                        <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, data())"
+                                        [scopeId]="scopeId()" [lang]="lang()"
+                                        [data]="evalContextFn()(entry(), data(), {}, form())"></field-view>
+                                      }
+                                    </p>
+                                  </div>
+                                } @else {
+                                  <div>
                                     @if (data()) {
                                       <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, data())"
                                       [scopeId]="scopeId()" [lang]="lang()"
                                       [data]="evalContextFn()(entry(), data(), {}, form())"></field-view>
                                     }
-                                  </p>
-                                </div>
+                                  </div>
+                                }
                               } @else {
-                                <div>
-                                  @if (data()) {
-                                    <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, data())"
-                                    [scopeId]="scopeId()" [lang]="lang()"
-                                    [data]="evalContextFn()(entry(), data(), {}, form())"></field-view>
+                                <div class="form-group" [ngClass]="field?.altClass">
+                                  @if (field?.type === 'dataset') {
+                                    @defer(prefetch on idle) {
+                                      <app-list [asComp]="true" (changed)="dsChanged($event, f.code)"
+                                        [datasetId]="field?.dataSource"
+                                        [param]="preCompFilter()[f.code]"></app-list>
+                                    } @loading {
+                                      <div class="text-center m-5">
+                                        <div class="spinner-grow text-primary" role="status">
+                                          <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                      </div>
+                                    }
+                                  } @else if (field?.type === 'screen') {
+                                    @defer(prefetch on idle) {
+                                      <app-screen [asComp]="true" [screenId]="field.dataSource"
+                                        [param]="preCompFilter()[f.code]"></app-screen>
+                                    } @loading {
+                                      <div class="text-center m-5">
+                                        <div class="spinner-grow text-primary" role="status">
+                                          <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                      </div>
+                                    }
                                   }
                                 </div>
                               }
-                            } @else {
-                              <div class="form-group" [ngClass]="field?.altClass">
-                                @if (field?.type === 'dataset') {
-                                  @defer(prefetch on idle) {
-                                    <app-list [asComp]="true" (changed)="dsChanged($event, f.code)"
-                                      [datasetId]="field?.dataSource"
-                                      [param]="preCompFilter()[f.code]"></app-list>
-                                  } @loading {
-                                    <div class="text-center m-5">
-                                      <div class="spinner-grow text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                      </div>
-                                    </div>
-                                  }
-                                } @else if (field?.type === 'screen') {
-                                  @defer(prefetch on idle) {
-                                    <app-screen [asComp]="true" [screenId]="field.dataSource"
-                                      [param]="preCompFilter()[f.code]"></app-screen>
-                                  } @loading {
-                                    <div class="text-center m-5">
-                                      <div class="spinner-grow text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                      </div>
-                                    </div>
-                                  }
-                                }
-                              </div>
-                            }
-                          </div>
+                            </div>
+                          }
                         }
-                      }
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -206,14 +215,20 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             }
             @if (e.type === 'list') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
-                <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
+                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-4 bordered light-015">
+                    <div class="card-header p-4 bordered light-015"
+                      (click)="e.x?.collapsible ? collapseSection(e) : null"
+                      [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
                       <h6 class="card-title m-0">
                         @if (e.icon) {
                           <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
                         } 
                         {{e.title}}
+                        <!-- ADD the chevron icon -->
+                        @if (e.x?.collapsible) {
+                          <fa-icon class="ms-2 float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                        }
                         <span class="badge rounded-pill bg-secondary float-end">{{data() && data()[e.code]?.length}}</span>
                       </h6>
                       @if (e.description) {
@@ -221,132 +236,134 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                       }
                     </div>
                   }
-                  @if (data() && data()[e.code]?.length > 0) {
-                    @if (e.x?.tableStyle) {
-                      <div class="table-responsive mx-4">
-                        <table class="table table-print mb-0 table-striped bg-body mb-4">
-                          <thead>
-                            <tr>
-                              @for (f of e.x?.tableFields; track $index) {
-                                @let field = form()?.items[f];
-                                @if (field && field.subType !== 'clearfix') {
-                                  <th>{{field.label}}</th>
+                  <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
+                    @if (data() && data()[e.code]?.length > 0) {
+                      @if (e.x?.tableStyle) {
+                        <div class="table-responsive mx-4">
+                          <table class="table table-print mb-0 table-striped bg-body mb-4">
+                            <thead>
+                              <tr>
+                                @for (f of e.x?.tableFields; track $index) {
+                                  @let field = form()?.items[f];
+                                  @if (field && field.subType !== 'clearfix') {
+                                    <th>{{field.label}}</th>
+                                  }
                                 }
-                              }
-                            </tr>
-                          </thead>
-                          @for(listKv of groupedChildList[e.code]; track $index) {
-                            <tbody>
-                              @if (e.x?.defGroupField) {
-                                <tr class="ds-group-header">
-                                  <td [attr.colspan]="e.x?.tableFields?.length" style="padding:0">
-                                    <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold bg-body-secondary text-body" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
-                                      @if(!hideGroup[e.code+listKv?.key]) {
-                                        <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
-                                      } @else {
-                                        <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
-                                      }  
-                                      <div class="ms-2">
-                                        @if (listKv?.key === 'undefined') {
-                                          <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                              </tr>
+                            </thead>
+                            @for(listKv of groupedChildList[e.code]; track $index) {
+                              <tbody>
+                                @if (e.x?.defGroupField) {
+                                  <tr class="ds-group-header">
+                                    <td [attr.colspan]="e.x?.tableFields?.length" style="padding:0">
+                                      <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold bg-body-secondary text-body" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                                        @if(!hideGroup[e.code+listKv?.key]) {
+                                          <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                                         } @else {
-                                          {{listKv?.key}}
-                                        }
-                                      </div>
-                                      <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
-                                    </button>
-                                  </td>
-                                </tr>
-                              }
-
-                              @if(!hideGroup[e.code+listKv?.key]) {
-                                @for (child of listKv.value; track $index; let $index_c = $index) {
-                                  <tr>
-                                    @for (f of e.x?.tableFields; track $index; let $index_f = $index) {                                       
-                                      @let field = form()?.items[f];
-                                      @if (field && field.subType !== 'clearfix') {
-                                        <td>
-                                            @if (field.type !== 'static') {
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()"></field-view>
-                                            }
-                                            @if (field.type === 'static') {
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()" 
-                                                [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
-                                            }                                       
-                                        </td>
-                                      }
-                                    }
+                                          <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                                        }  
+                                        <div class="ms-2">
+                                          @if (listKv?.key === 'undefined') {
+                                            <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                          } @else {
+                                            {{listKv?.key}}
+                                          }
+                                        </div>
+                                        <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
+                                      </button>
+                                    </td>
                                   </tr>
                                 }
-                              }
-                            </tbody>
-                          }
-                        </table>
-                      </div>
-                    } @else {
-                      @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index) {
-                        @if (e.x?.defGroupField) {
-                          <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-body-secondary text-body fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
-                            @if(!hideGroup[e.code+listKv?.key]) {
-                              <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
-                            } @else {
-                              <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
-                            }  
-                            <div class="ms-2">
-                              @if (listKv?.key === 'undefined') {
-                                <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+
+                                @if(!hideGroup[e.code+listKv?.key]) {
+                                  @for (child of listKv.value; track $index; let $index_c = $index) {
+                                    <tr>
+                                      @for (f of e.x?.tableFields; track $index; let $index_f = $index) {                                       
+                                        @let field = form()?.items[f];
+                                        @if (field && field.subType !== 'clearfix') {
+                                          <td>
+                                              @if (field.type !== 'static') {
+                                                <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()"></field-view>
+                                              }
+                                              @if (field.type === 'static') {
+                                                <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()" 
+                                                  [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
+                                              }                                       
+                                          </td>
+                                        }
+                                      }
+                                    </tr>
+                                  }
+                                }
+                              </tbody>
+                            }
+                          </table>
+                        </div>
+                      } @else {
+                        @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index) {
+                          @if (e.x?.defGroupField) {
+                            <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-body-secondary text-body fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                              @if(!hideGroup[e.code+listKv?.key]) {
+                                <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                               } @else {
-                                {{listKv?.key}}
-                              }
-                            </div>
-                            <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
-                          </button>
-                        }
-                        
-                        @if(!hideGroup[e.code+listKv?.key]) {
-                          <div class="list-group list-group-flush list-child pt-1 px-4 pb-4">
-                            @for (child of listKv.value; track $index; let $index_c = $index) {
-                              @let $index_child = $index_g + '-' + $index_c;
-                              <div class="list-group-item px-0 py-4 bg-transparent text-body">
-                                <div class="row g-4">
-                                  @for (f of e.items; track f.id) {
-                                    @let field = form()?.items[f.code];
-                                    @if (field && preItem()[e.code][$index_child]?.[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {
-                                      <div [ngClass]="field?.size"
-                                        [class.mt-0]="field?.subType === 'clearfix'"
-                                        [hidden]="field?.hidden || field?.x?.facet?.['view'] === 'hidden' || e.x?.facet?.['view'] === 'hidden'">
-                                        @if (field.type !== 'static') {
-                                          <div class="form-group" [ngClass]="field?.altClass">
+                                <fa-icon [icon]="['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                              }  
+                              <div class="ms-2">
+                                @if (listKv?.key === 'undefined') {
+                                  <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                } @else {
+                                  {{listKv?.key}}
+                                }
+                              </div>
+                              <div class="bg-secondary px-1 text-white ms-2" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
+                            </button>
+                          }
+                          
+                          @if(!hideGroup[e.code+listKv?.key]) {
+                            <div class="list-group list-group-flush list-child pt-1 px-4 pb-4">
+                              @for (child of listKv.value; track $index; let $index_c = $index) {
+                                @let $index_child = $index_g + '-' + $index_c;
+                                <div class="list-group-item px-0 py-4 bg-transparent text-body">
+                                  <div class="row g-4">
+                                    @for (f of e.items; track f.id) {
+                                      @let field = form()?.items[f.code];
+                                      @if (field && preItem()[e.code][$index_child]?.[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {
+                                        <div [ngClass]="field?.size"
+                                          [class.mt-0]="field?.subType === 'clearfix'"
+                                          [hidden]="field?.hidden || field?.x?.facet?.['view'] === 'hidden' || e.x?.facet?.['view'] === 'hidden'">
+                                          @if (field.type !== 'static') {
+                                            <div class="form-group" [ngClass]="field?.altClass">
+                                              @if (field?.subType !== 'clearfix' && !field?.hideLabel) {
+                                                <label class="label-span form-label">{{field?.label}}</label>
+                                              }
+                                              <p class="form-control-static mb-0">
+                                                <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" [lang]="lang()"></field-view>
+                                              </p>
+                                            </div>
+                                          }
+                                          @if (field.type === 'static') {
                                             @if (field?.subType !== 'clearfix' && !field?.hideLabel) {
                                               <label class="label-span form-label">{{field?.label}}</label>
                                             }
-                                            <p class="form-control-static mb-0">
-                                              <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" [lang]="lang()"></field-view>
-                                            </p>
-                                          </div>
-                                        }
-                                        @if (field.type === 'static') {
-                                          @if (field?.subType !== 'clearfix' && !field?.hideLabel) {
-                                            <label class="label-span form-label">{{field?.label}}</label>
+                                            <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"  [lang]="lang()"
+                                              [data]="evalContextFn()(entry(), child, {}, this.form())"></field-view>
                                           }
-                                          <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"  [lang]="lang()"
-                                            [data]="evalContextFn()(entry(), child, {}, this.form())"></field-view>
-                                        }
-                                      </div>
+                                        </div>
+                                      }
                                     }
-                                  }
+                                  </div>
                                 </div>
-                              </div>
-                            }
-                          </div>
+                              }
+                            </div>
+                          }
                         }
                       }
+                    } @else {
+                      <div class="card-body p-4">
+                        <p class="m-0 text-body-secondary">{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
+                      </div>
                     }
-                  } @else {
-                    <div class="card-body p-4">
-                      <p class="m-0 text-body-secondary">{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
-                    </div>
-                  }
+                  </div>
                 </div>
               </div>
             }
@@ -584,5 +601,10 @@ export class FormViewComponent implements OnInit {
     
     const argValues = Object.values(bindings);
     return fn(...argValues);
+  }
+
+  collapseSection(e: any) {
+    if (!e.x) e.x = {};
+    e.x.collapsed = !e.x.collapsed;
   }
 }
