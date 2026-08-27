@@ -716,14 +716,12 @@
     </div>
   </div>
 
-  <div class="field-sub-text mt-2">
+  <!-- <div class="field-sub-text mt-2">
     @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {
         @for (err of fieldErrors; track err) {
       <small class="val-text text-danger d-block fw-medium">
-          <!-- <div class="mb-1"> -->
             <fa-icon class="me-1" [icon]="['fas','exclamation-circle']"></fa-icon> 
             <span>{{f.label}} {{err}}</span>
-          <!-- </div> -->
       </small>
         }
     }
@@ -731,6 +729,24 @@
     @if (f.hint) {
       <small class="val-text text-muted d-block ">
         <fa-icon [icon]="['fas','info-circle']" class="me-1 opacity-75"></fa-icon>
+        <span>{{f.hint}}</span>
+      </small>
+    }
+  </div> -->
+
+  <div class="field-sub-text mt-2">
+    @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {
+      @for (err of fieldErrors; track err) {
+        <small class="val-text text-danger d-flex align-items-start">
+          <fa-icon class="me-2 flex-shrink-0" [icon]="['fas','exclamation-circle']" ></fa-icon> 
+          <span>{{f.label}} {{err}}</span>
+        </small>
+      }
+    }
+
+    @if (f.hint) {
+      <small class="val-text text-muted d-flex align-items-start">
+        <fa-icon [icon]="['fas','info-circle']" class="me-2 opacity-75 flex-shrink-0" ></fa-icon>
         <span>{{f.hint}}</span>
       </small>
     }
