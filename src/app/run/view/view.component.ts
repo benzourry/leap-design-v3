@@ -33,7 +33,7 @@ import { lastValueFrom, Observable, of, Subscription } from 'rxjs';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 import { FormsModule, NgModel } from '@angular/forms';
-import { FieldEditComponent } from '../_component/field-edit/field-edit.component';
+import { FieldEditComponent } from '../_component/field-edit-myds/field-edit.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
@@ -332,12 +332,22 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   loadScript = loadScript;
 
-  $digest$ = () => {
-    this.timestamp.set(Date.now()); // setting new value for timestamp will force effect in field-view
-    // 2. Pre-calculate all template objects
-    this.buildTemplateContexts();
+private digestTimer: any;
 
-    this.cdr.detectChanges()
+  $digest$ = () => {
+    // Clear any pending digests
+    if (this.digestTimer) {
+      clearTimeout(this.digestTimer);
+    }
+    
+    // Schedule the digest for the next tick
+    this.digestTimer = setTimeout(() => {
+      this.timestamp.set(Date.now()); // setting new value for timestamp will force effect in field-view
+      // 2. Pre-calculate all template objects
+      this.buildTemplateContexts();
+
+      this.cdr.detectChanges();
+    }, 0); // 0ms delay moves it outside the current synchronous cycle
   }
 
   readonly navOutlet = viewChild<NgbNav | NgbAccordionDirective>('nav');
@@ -1162,15 +1172,31 @@ checkTier(tier) {
     return compileTpl(code, obj, this.scopeId())
   }
 
+  tierVisibility = signal<Record<string, boolean>>({});
+  actionVisibility = signal<Record<string, boolean>>({});
+
   buildTemplateContexts() {
     const form = this.form();
     if (!form || !form.tiers) return;
 
     const newParams: Record<string, any> = {};
     const newContexts: Record<string, any> = {};
+    const newTierVisibility: Record<string, boolean> = {}; // 1. Create a temporary object
+    const newActionVisibility: Record<string, boolean> = {};
     const currentTs = this.timestamp();
 
     form.tiers.forEach(tier => {
+
+      newTierVisibility[tier.id] = this.preCheckStr(tier.pre);
+
+      if (tier.actions) {
+        Object.keys(tier.actions).forEach(actionCode => {
+          const action = tier.actions[actionCode];
+          const cacheKey = `${tier.id}_${actionCode}`;
+          newActionVisibility[cacheKey] = this.preCheckStr(action.pre);
+        });
+      }
+
       // 1. Get both the "editing" approval and "saved" approval states
       const tierAppr = this.appr[tier.id];
       const entryAppr = this.entry?.approval?.[tier.id];
@@ -1209,6 +1235,8 @@ checkTier(tier) {
     // 4. Update the signals
     this.tierFieldContexts.set(newContexts);
     this.listScreenParams.set(newParams);
+    this.tierVisibility.set(newTierVisibility); // 3. Set the signal
+    this.actionVisibility.set(newActionVisibility);
   }
 
   refreshTxHash(){

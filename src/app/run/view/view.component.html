@@ -89,7 +89,9 @@
                     @let tierAppr = appr[tier.id];
                     @let entryAppr = entry?.approval[tier.id];
 
-                    @if (preCheckStr(tier.pre)) {
+                    @let preCheckRes = tierVisibility()[tier.id];
+
+                    @if (preCheckRes) {
                       <div class="ball" [class.current]="entry?.currentTier == tier.sortOrder">
                         <div
                           style="float:left;width:40px;font-weight: bold;position:absolute;background: var(--bs-body-bg); height:40px; border:solid 4px var(--bs-border-color);color: var(--bs-secondary-color); border-radius:50%; font-size:20px; text-align: center; line-height: 32px;">
@@ -110,7 +112,8 @@
                                         <input type="radio" class="btn-check" [value]="o.value.code"
                                           id="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}" name="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}"
                                           [(ngModel)]="tierAppr.status" required>
-                                        @if (preCheckStr(o.value?.pre)) {
+                                        <!-- @if (preCheckStr(o.value?.pre)) { -->
+                                        @if (actionVisibility()[tier.id + '_' + o.value.code] ?? true) {
                                           <label for="radioBasic-{{o.value.code}}-{{tier.id}}-{{entry?.id}}" style="font-size:14px" [style.--tabg]="o.value.color" class="ta-btn btn btn-round btn-outline-secondary mt-1 me-1">
                                             {{o.value.label}}
                                           </label>
@@ -122,7 +125,7 @@
                               }
                                 @if (tier.section?.type === 'approval') {
                                   @if (tier.section && preCheckAppr(tier.section?.pre, tierAppr)) {
-                                    <div class="card-body bg-body-tertiary">
+                                    <div class="card-body">
                                       <div class="row g-3"
                                         [init]="updateWatchList(tier.section, tierAppr)">
                                         @for (f of tier.section.items; track f.id) {

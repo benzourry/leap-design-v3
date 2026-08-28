@@ -66,6 +66,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate {
 
+  private isInitializing: boolean = false;
+
   private echartsRef: any = null;
 
   private popStateSubscription: () => void;
@@ -221,7 +223,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((obj: any) => {
-        this.fieldChange(obj.event, obj.data, obj.field, obj.section);
+        this.fieldChange(obj.event, obj.data, obj.field, obj.section, obj.isInit);
       });
   }
 
@@ -401,6 +403,8 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       })
     ).subscribe({
       next: (form) => {
+            this.isInitializing = true;
+ 
         // 1. Evaluate base data
         this.evalAll(this.entry().data);
         
@@ -421,6 +425,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         // 6. Post actions
         this.tabPostAction(this._navIndex());
         this.runAllCognaField();
+
+        setTimeout(() => {
+          this.isInitializing = false;
+          this.entryForm()?.form?.markAsPristine(); // Bonus: Clean up form state!
+        }, 500);
       },
       error: err => {
         this.logService.log(`Error fetching form: ${err.message}`);
@@ -1046,11 +1055,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         this.extractData(field, field.x?.extractor, [], $event, data, index);
       }
     }
-    this.valueUpdate.next({ event: $event, data: data, field: field, section: section })
+    this.valueUpdate.next({ event: $event, data: data, field: field, section: section, isInit: this.isInitializing })
   }
 
-  fieldChange($event, data, field, section) {
-    this.executeFieldAction(field.post, 'post', data, field, section, $event);
+  fieldChange($event, data, field, section, isInit: boolean = false) {
+    this.executeFieldAction(field.post, 'post', data, field, section, $event, isInit);
   }
 
   onPrefixClick(data: any, field: any, section: any) {
@@ -1065,7 +1074,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     }
   }
 
-  private executeFieldAction(script: string | undefined, logLabel: string, data: any, field: any, section: any, $event?: any) {
+  private executeFieldAction(script: string | undefined, logLabel: string, data: any, field: any, section: any, $event?: any, isInit: boolean = false) {
     if (script) {
       let postTxt = this.compileTpl(script, {});
       try {
@@ -1085,6 +1094,10 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
     this.filterTabs();
     this.filterItems();
+
+    if (this.isInitializing || isInit) {
+      return; 
+    }
 
     if ($event !== undefined) {
       this.rcognaSubject.next({ code: field.code, value: $event });

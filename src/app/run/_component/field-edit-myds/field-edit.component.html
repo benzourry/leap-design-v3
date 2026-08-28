@@ -697,14 +697,14 @@
 
           @default {
             @if (['scaleTo5', 'scaleTo10', 'scale'].includes(f.type)) {
-              <div class="mt-1">
+              <div>
                 <div [class.disabled]="f.readOnly">
-                  <div class="d-flex flex-wrap gap-2" role="group">
+                  <div class="d-flex flex-wrap gap-1" role="group">
                     @for (i of scales(); track $index) {
                       <input type="radio" [name]="uid" #formField="ngModel" [(ngModel)]="value"
                         (ngModelChange)="valueChanged(i)" [required]="f.v?.required" [value]="i" class="btn-check"
                         id="{{uid}}-{{$index}}" autocomplete="off">
-                      <label class="btn rounded-circle btn-outline-secondary light d-flex align-items-center justify-content-center m-0 toggle-opt smyds width-38 fw-bold" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" for="{{uid}}-{{$index}}">{{i}}</label>
+                      <label class="btn rounded-circle btn-outline-secondary light d-flex align-items-center justify-content-center m-0 toggle-opt smyds width-38" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" for="{{uid}}-{{$index}}">{{i}}</label>
                     }
                   </div>
                 </div>
