@@ -188,8 +188,10 @@ input.search-icon[type="search"] {
 .card-subtitle { font-weight: 300; }
 
 .card.card-clean {
-  border-radius: 1rem;
+  // border-radius: 1rem;
   border: none;
+  border-radius: 0; // in mobile, no radius
+  margin-bottom: 0.25rem; // in mobile, reduce section padding
 }
 
 .card-clean {
@@ -223,6 +225,7 @@ input.search-icon[type="search"] {
 
 @media screen and (min-width: 640px) {
   .card.card-clean {
+    border-radius: 1rem; // on desktop, rounded
     box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12), 0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
     
     &:focus-within {

@@ -72,3 +72,15 @@ table.tblcard > .list-tmid > tr.ds-group-header {
 .section-group:not(:has(.row > *:not([hidden]))) {
     display: none !important;
 }
+
+.section-group{
+    padding: 0rem;
+    padding-bottom:1rem;
+}
+
+@media screen and (min-width: 640px) {
+.section-group{
+    padding:1rem; // on desktop, use padding
+  }
+}
+

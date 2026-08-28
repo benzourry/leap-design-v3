@@ -175,9 +175,9 @@
         <!-- SECTION GROUP TEMPLATE -->
         <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
-          <div class="single-pane section-group pb-0" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
-            <div class="centered fix-gutter" [class.limit-width]="!form()?.x?.wide">
-              <div class="row" [ngStyle]="{'justify-content': form().align}">
+          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
+            <div class="centered overflow-hidden" [class.limit-width]="!form()?.x?.wide">
+              <div class="row g-1 g-sm-3" [ngStyle]="{'justify-content': form().align}">
                 @for (e of sectionMap()[tab?.id]; track e.id) {
                   @if (preSection()[e.id] && !(e.x?.facet?.[_action] == 'none')) {
                     @if (e.type == 'section') {
@@ -185,7 +185,7 @@
                         [class.disabled]="e.enabledFor && !e.enabledFor.includes(user().email)"
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
                         
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
@@ -616,7 +616,7 @@
           </div>
 
           @if (form().nav != 'simple' && form().x?.progression && !isPrePost) {
-            <div class="single-pane pt-1">
+            <div class="single-pane pt-0">
               <div class="centered d-flex" [class.limit-width]="!form()?.x?.wide">
                 @if (!tabfirst) {
                   <button type="button" class="btn btn-round btn-outline-secondary text-truncate me-2" (click)="progBack(tabidx)">

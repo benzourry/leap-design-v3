@@ -777,6 +777,34 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     })
   );
 
+  private formProxyCache = new WeakMap<any, any>();
+
+  private getFormProxy(targetForm: any) {
+    if (!targetForm) return undefined;
+    if (this.formProxyCache.has(targetForm)) return this.formProxyCache.get(targetForm);
+
+    const proxy = this.buildReactiveProxy(
+      // GETTER
+      (prop) => {
+        // Route 'items' down to the highly optimized $el$ proxy
+        if (prop === 'items') return this.getElProxy(targetForm);
+        return targetForm[prop];
+      },
+      // SETTER
+      (prop, value) => {
+        targetForm[prop] = value;
+        
+        // Only trigger Angular Signal if we are mutating the active form
+        if (targetForm.id === this.form()?.id) {
+          this.form.update(f => ({ ...f, [prop]: value }));
+        }
+      }
+    );
+
+    this.formProxyCache.set(targetForm, proxy);
+    return proxy;
+  }
+
 // Caches proxies based on the specific form object to prevent memory leaks
 // Caches proxies based on the specific form object to prevent memory leaks
   private elProxyCache = new WeakMap<any, any>();
@@ -1455,7 +1483,8 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       // $el$: form?.items || this.form()?.items,
       // $el$: this.elProxy,
       $el$: this.getElProxy(targetForm),
-      $form$: form || this.form(),
+      // $form$: form || this.form(),
+      $form$: this.getFormProxy(targetForm),
       $this$: this._this,
       $param$: this.param(),
       $base$: this.base,
