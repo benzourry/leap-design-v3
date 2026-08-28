@@ -777,6 +777,90 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     })
   );
 
+// Caches proxies based on the specific form object to prevent memory leaks
+// Caches proxies based on the specific form object to prevent memory leaks
+  private elProxyCache = new WeakMap<any, any>();
+
+  private getElProxy(targetForm: any) {
+    if (!targetForm || !targetForm.items) return undefined;
+
+    if (this.elProxyCache.has(targetForm)) {
+      return this.elProxyCache.get(targetForm);
+    }
+
+    const proxy = this.buildReactiveProxy(
+      // GETTER: Fires on $el$.field_code
+      (prop) => {
+        const rootField = targetForm.items[prop];
+        if (!rootField) return undefined;
+
+        // Recursive function to wrap nested objects (like .v or .x) in a proxy
+        const createDeepProxy = (targetObj: any) => {
+          if (typeof targetObj !== 'object' || targetObj === null) {
+            return targetObj;
+          }
+
+          return new Proxy(targetObj, {
+            get: (target, key) => {
+              const value = target[key];
+              // If the script reads a nested object, wrap it in a proxy too!
+              if (typeof value === 'object' && value !== null) {
+                return createDeepProxy(value);
+              }
+              return value;
+            },
+            set: (target, key, value) => {
+              target[key] = value; // Apply the mutation
+
+              // Trigger Angular Signal for the ROOT field, no matter how deep the change was
+              if (targetForm.id === this.form()?.id) {
+                this.form.update(f => {
+                  if (f.items) {
+                    // Creating a new memory reference for the root field triggers <field-edit>
+                    f.items = { ...f.items, [prop]: { ...rootField } };
+                  }
+                  return { ...f };
+                });
+              }
+              return true;
+            }
+          });
+        };
+
+        return createDeepProxy(rootField);
+      },
+      // SETTER: Fires on $el$.field_code = { ... }
+      (prop, value) => {
+        targetForm.items[prop] = value;
+        
+        if (targetForm.id === this.form()?.id) {
+          this.form.update(f => {
+            if (f.items) f.items = { ...f.items, [prop]: value };
+            return { ...f };
+          });
+        }
+      },
+      // DELETER: Fires on delete $el$.field_code
+      (prop) => {
+        delete targetForm.items[prop];
+
+        if (targetForm.id === this.form()?.id) {
+          this.form.update(f => {
+            if (f.items) {
+              const newItems = { ...f.items };
+              delete newItems[prop];
+              f.items = newItems;
+            }
+            return { ...f };
+          });
+        }
+      }
+    );
+
+    this.elProxyCache.set(targetForm, proxy);
+    return proxy;
+  }
+
   lookupDataObs: any = {}
   _getLookup = (code, param, cb?, err?, force?: boolean) => {
     if (code) {
@@ -1354,6 +1438,8 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   getEvalContext = (entry: any, data: any, approval: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
     
+    const targetForm = form || this.form();
+
     const passive = {
       $editable$: additionalData?.$editable$ ?? true,
       $app$: this.app(),
@@ -1366,7 +1452,9 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       $user$: this.user(),
       $conf$: this.appConfig,
       $action$: this._action,
-      $el$: form?.items || this.form()?.items,
+      // $el$: form?.items || this.form()?.items,
+      // $el$: this.elProxy,
+      $el$: this.getElProxy(targetForm),
       $form$: form || this.form(),
       $this$: this._this,
       $param$: this.param(),

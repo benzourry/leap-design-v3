@@ -58,7 +58,7 @@ import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-e
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
     NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, 
     UserEntryFilterComponent, AngularEditorModule, forwardRef(() => FormComponent), 
-    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe
+    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe, KeyValuePipe
   ]
 })
 export class ListComponent implements OnInit, OnDestroy {
@@ -98,6 +98,8 @@ export class ListComponent implements OnInit, OnDestroy {
   itemLoading = signal<boolean>(false);
   offline = signal<boolean>(false);
 
+  
+
   filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({ ...this.filtersData(), ...this._param })));
   confValueEncoded = computed(() => {
     const filters = this.dataset()?.presetFilters;
@@ -117,6 +119,9 @@ export class ListComponent implements OnInit, OnDestroy {
   searchText = signal<string>('');
   searchTextEncoded = computed(() => encodeURIComponent(this.searchText()));
   sort = signal<string | null>(null);
+
+  statusFilterForm:any = {}
+  statusFilterFormActual:any = {}
 
   entryIndex: Record<number, number> = {};
   rowClass: Record<number, string> = {};
@@ -336,6 +341,14 @@ export class ListComponent implements OnInit, OnDestroy {
             prev: res.form.prev || null
           });
 
+
+          if (res.x?.enableStatusFilter){
+            this.statusFilterFormActual = this.convertStatusToDisplay(res.statusFilter, this.form(), 'data');
+            this.statusFilterForm = this.convertStatusToDisplay(res.statusFilter, this.form(), 'data');
+          }
+
+          
+
           this.getLookupInFilter();
 
           if (res.canBlast) {
@@ -390,6 +403,8 @@ export class ListComponent implements OnInit, OnDestroy {
     };
 
     if (this.sort()) params['sorts'] = this.sort();
+
+    if (dataset?.x?.enableStatusFilter) params.status = JSON.stringify(this.convertDisplayToStatus(this.statusFilterForm));
 
     if (dataset.presetFilters) {
       const scopeId = this.scopeId();
@@ -449,14 +464,21 @@ export class ListComponent implements OnInit, OnDestroy {
     e._isVisible = {};
     e._computedValues = {};
     e._actionVisible = {};
+    e._actionUrls = {}; // <--- ADD THIS
 
     const rowClassTemplate = dataset.x?.rowClass ?? '';
     this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
 
     const checkAction = (ac: any) => !this.isActionOfflineDisabled(ac.action) && this.preCheck(e, ac.pre, false);
 
-    this.actionsInline.forEach(ac => { e._actionVisible[ac.id] = checkAction(ac); });
-    this.actionsDropdown.forEach(ac => { e._actionVisible[ac.id] = checkAction(ac); });
+    this.actionsInline.forEach(ac => { 
+      e._actionVisible[ac.id] = checkAction(ac); 
+      if (ac.action == 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
+    });
+    this.actionsDropdown.forEach(ac => { 
+      e._actionVisible[ac.id] = checkAction(ac); 
+      if (ac.action == 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
+    });
 
     dataset.items?.forEach((item: any) => {
       const uniqueKey = `${item.root}.${item.code}`;
@@ -530,10 +552,12 @@ export class ListComponent implements OnInit, OnDestroy {
     const filtersAll = { ...this.filtersData(), ...this._param };
     const params: any = {
       email: this.user().email,
-      status: this.dataset().status,
       searchText: this.searchText(),
       filters: JSON.stringify(filtersAll)
     };
+
+    if (this.dataset()?.x?.enableStatusFilter) params.status = JSON.stringify(this.convertDisplayToStatus(this.statusFilterForm));
+
     if (ids) params.ids = ids;
 
     this.entryService.blastByDataset(this.dataset().id, data, params)
@@ -728,9 +752,33 @@ export class ListComponent implements OnInit, OnDestroy {
       }, () => {});
   }
 
-  filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object);
-  filterSize = computed(() => Object.keys(this.filtersData()).length);
+  // filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object);
+  // filterSize = computed(() => Object.keys(this.filtersData()).length);
+
+  filterIsEmpty = computed(() => {
+    const isDataEmpty = Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object;
+    return isDataEmpty && !this.hasActiveStatusFilter();
+  });
+
+  filterSize = computed(() => {
+    const dataSize = Object.keys(this.filtersData()).length;
+    // Add 1 to the badge count if any status filter is active
+    const statusSize = this.hasActiveStatusFilter() ? 1 : 0;
+    
+    return dataSize + statusSize;
+  });
+
+
   getAsList = splitAsList;
+
+  hasActiveStatusFilter(): boolean {
+    if (!this.dataset()?.x?.enableStatusFilter || !this.statusFilterForm) return false;
+
+    // Simply check if any status inside any tier has been explicitly set to `false`
+    return Object.values(this.statusFilterForm).some((tier: any) => 
+      Object.values(tier).includes(false)
+    );
+  }
 
   compileTpl(html: string, data?: any) {
     let f = '';
@@ -1140,6 +1188,48 @@ export class ListComponent implements OnInit, OnDestroy {
 
   screenLoaded(screen: any) {
     this.inPopTitle.set(screen?.title);
+  }
+
+  convertStatusToDisplay(status, form, root) {
+    var statusFilterForm: any = {}
+    // var editDatasetStatusFilterList = {};
+    // convert { "121":"submitted,approved"} to {"121":{submitted:true, approved:true}}
+    statusFilterForm[-1] = {};
+    var draftedFilter = (status && status[-1]) ? status[-1].split(",") : [];
+    draftedFilter.forEach(element => {
+      statusFilterForm[-1][element] = true;
+    });
+    form[root] && form[root].tiers.forEach(t => {
+      statusFilterForm[t.id] = {};
+      var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
+      splittedFilter.forEach(element => {
+        statusFilterForm[t.id][element] = true;
+      });
+    });
+    return statusFilterForm;
+  }
+
+  convertDisplayToStatus(statusFilterList) {
+    var statusFilter = {};
+    var draftedArrays = [];
+    for (var k in statusFilterList[-1]) {
+      if (statusFilterList[-1][k] === true) {
+        draftedArrays.push(k);
+      }
+    }
+    statusFilter[-1] = draftedArrays.join(",");
+    // for each tier
+    Object.keys(statusFilterList).forEach(k => {
+      var statusFilterArrays = [];
+      // for each {approved:true, submitted:true, etc}
+      for (var k2 in statusFilterList[k]) {
+        if (statusFilterList[k][k2] === true) {
+          statusFilterArrays.push(k2);
+        }
+      }
+      statusFilter[k] = statusFilterArrays.join(",");
+    });
+    return statusFilter;
   }
 
   fclose() {}

@@ -39,7 +39,7 @@
               (keyup.enter)="getEntryList(1)">
           }
 
-          @if (dataset()?.filters && dataset()?.filters.length > 0) {
+          @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
             <button type="button" class="btn border border-2 rounded-2 position-relative"
               [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
@@ -388,7 +388,8 @@
                                   @if (i._actionVisible[ac.id]) {
                                     @if (ac.action == 'url' && !ac.inpop) {
                                       <a class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
-                                        [href]="compileTpl(ac.url, {$:i.data, $_:i, $prev$:i?.prev})" target="_blank">
+                                        [href]="i._actionUrls[ac.id]"
+                                        target="_blank">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </a>
                                     } @else {
@@ -410,7 +411,9 @@
                                       @for (ac of actionsDropdown; track ac.id) {
                                         @if (i._actionVisible[ac.id]) {
                                           @if (ac.action == 'url' && !ac.inpop) {
-                                            <a ngbDropdownItem [href]="compileTpl(ac.url, {$:i.data, $_:i, $prev$:i?.prev})" target="_blank">
+                                            <a ngbDropdownItem 
+                                              [href]="i._actionUrls[ac.id]"
+                                              target="_blank">
                                               <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                             </a>
                                           } @else {
@@ -548,15 +551,84 @@
     } @loading {
       <div class="text-center m-5"><div class="spinner-grow text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
     }
-    <div class="form-group mb-3">
-      <label class="form-label">{{lang()=='ms'?'Jenis Kondisi':'Condition type'}}</label>
-      <div>
-        <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all" [(ngModel)]="filtersCond" required>
-        <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Semua':'Match All'}}</label>
-        <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any" [(ngModel)]="filtersCond" required>
-        <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Mana-mana':'Match Any'}}</label>
+    @if (dataset()?.filters && dataset()?.filters.length > 0){
+      <div class="form-group mb-3">
+        <label class="form-label">{{lang()=='ms'?'Jenis Kondisi':'Condition type'}}</label>
+        <div>
+          <input class="btn-check" type="radio" value="AND" id="match-all" name="match-all" [(ngModel)]="filtersCond" required>
+          <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Semua':'Match All'}}</label>
+          <input class="btn-check" type="radio" value="OR" id="match-any" name="match-any" [(ngModel)]="filtersCond" required>
+          <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">{{lang()=='ms'?'Padan Mana-mana':'Match Any'}}</label>
+        </div>
       </div>
-    </div>
+    }
+
+    @if(dataset()?.x?.enableStatusFilter){
+      <label class="form-label">{{lang()=='ms'?'Tapis mengikut status':'Filter by status'}}</label>
+      <div>
+        @if(statusFilterFormActual['-1'].drafted){
+          <div class="form-check">
+            <input [(ngModel)]="statusFilterForm['-1'].drafted"
+              [disabled]="!statusFilterFormActual['-1'].drafted"
+              class="form-check-input" name="draftedFilter" id="draftedFilter11"
+              type="checkbox">
+            <label class="form-check-label" for="draftedFilter11">{{lang()=='ms'?'Didraf':'Drafted'}}</label>
+          </div>
+        }
+        @if (form().data?.tiers?.length>0 && statusFilterFormActual['-1'].submitted) {
+          <div class="form-check">
+            <input [(ngModel)]="statusFilterForm['-1'].submitted"
+              [disabled]="!statusFilterFormActual['-1'].submitted"
+              class="form-check-input" name="submittedFilter" id="submittedFilter11"
+              type="checkbox">
+            <label class="form-check-label" for="submittedFilter11">{{lang()=='ms'?'Dihantar':'Submitted'}}</label>
+          </div>
+        }
+        @for (tier of form().data?.tiers; track tier.id) {
+          <div class="p-2 status-filter-tier">
+            <h6>{{tier.name}}</h6>
+            @for (action of tier.actions|keyvalue; track $index) {
+              @if (statusFilterFormActual[tier.id]?.[action.key]){
+                <div class="form-check">
+                  <input
+                    [disabled]="!statusFilterFormActual[tier.id]?.[action.key]"
+                    [(ngModel)]="statusFilterForm[tier.id][action.key]"
+                    class="form-check-input" name="{{action.key+'_'+tier.id}}"
+                    id="{{action.key+'_'+tier.id}}" type="checkbox">
+                  <label class="form-check-label"
+                  for="{{action.key+'_'+tier.id}}">{{action.value.label}}</label>
+                </div>
+              }
+            }
+            @if (statusFilterFormActual[tier.id]?.resubmitted){
+              <div class="form-check">
+                <input
+                  [disabled]="!statusFilterFormActual[tier.id]?.resubmitted"
+                  [(ngModel)]="statusFilterForm[tier.id].resubmitted"
+                  class="form-check-input" name="resubmitted{{tier.id}}"
+                  id="resubmitted11{{tier.id}}" type="checkbox">
+                <label class="form-check-label"
+                for="resubmitted11{{tier.id}}">Resubmitted</label>
+              </div>
+            }
+            @if (tier.alwaysApprove && statusFilterFormActual[tier.id]?.always_approve) {
+              <div class="form-check">
+                <input
+                  [disabled]="!statusFilterFormActual[tier.id]?.always_approve"
+                  [(ngModel)]="statusFilterForm[tier.id].always_approve"
+                  class="form-check-input" name="alwaysapprove{{tier.id}}"
+                  id="alwaysapprove{{tier.id}}" type="checkbox">
+                <label class="form-check-label"
+                for="alwaysapprove{{tier.id}}">Always Approve</label>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+
+
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>

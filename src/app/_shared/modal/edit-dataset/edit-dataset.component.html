@@ -405,6 +405,11 @@
                     [(ngModel)]="_editDatasetData.publicEp" name="publicEp">
                   <label class="form-check-label" for="publicEp">Public endpoint</label>
                 </div>
+                <div class="form-check form-switch mt-1">
+                  <input class="form-check-input" type="checkbox" id="enableStatusFilter"
+                    [(ngModel)]="_editDatasetData.x.enableStatusFilter" name="enableStatusFilter">
+                  <label class="form-check-label" for="enableStatusFilter">Enable filter by entry status</label>
+                </div>
 
                 <!-- <div class="form-check form-switch mt-1">
                   <input class="form-check-input" type="checkbox" id="autoResync"

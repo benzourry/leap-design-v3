@@ -186,3 +186,5 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
 .toolbar:not(:has(*)){
   display:none !important;
 }
+
+.status-filter-tier:not(:has(.form-check)){ display:none; }
