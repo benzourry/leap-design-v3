@@ -33,7 +33,7 @@ import { lastValueFrom, Observable, of, Subscription } from 'rxjs';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { InitDirective } from '../../_shared/directive/init.directive';
 import { FormsModule, NgModel } from '@angular/forms';
-import { FieldEditComponent } from '../_component/field-edit-myds/field-edit.component';
+import { FieldEditComponent } from '../_component/field-edit-myds-ifta/field-edit.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';

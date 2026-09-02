@@ -1,0 +1,482 @@
+/* ==========================================================================
+   VARIABLES & GLOBALS
+   ========================================================================== */
+:root {
+  --bs-border-radius: 0.5rem;
+  --ae-text-area-border-radius: 0.5rem;
+}
+
+/* Muted Placeholder Translucency */
+::placeholder,
+.form-control::placeholder {
+  color: var(--bs-secondary-color) !important;
+  opacity: 0.45 !important;
+}
+
+/* Utility Classes */
+.toggle-opt { border-color: var(--bs-border-color); border-width: 1.5px !important; }
+.has-float-label { display: block; position: relative; margin-bottom: 0; }
+.width-38 { width: 2.65rem; height: 2.65rem; }
+
+.smyds {
+  &.img-holder, &.map-target-div {
+    box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.07);
+  }
+}
+
+/* Validation Error States */
+.form-check-input.is-invalid,
+.toggle-opt.is-invalid {
+  border-color: var(--bs-danger) !important;
+}
+
+/* ==========================================================================
+   ANGULAR EDITOR SPECIFICS
+   ========================================================================== */
+angular-editor {
+  position: relative;
+  display: block;
+
+  .angular-editor-wrapper {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    outline: none !important;
+  }
+
+  .angular-editor-placeholder {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--bs-secondary-color) !important;
+    opacity: 0.7 !important; 
+    font-size: 1rem !important;
+    pointer-events: none;
+  }
+
+  &:focus-within angular-editor-toolbar {
+    display: block !important;
+  }
+
+  /* FIX: Override angular-editor's hardcoded white resize handle */
+  .angular-editor-textarea::after {
+    background-color: transparent !important;
+  }
+}
+
+.has-value .angular-editor-placeholder {
+  display: none !important;
+}
+
+[data-bs-theme="dark"] angular-editor-toolbar,
+.dark-mode angular-editor-toolbar {
+  box-shadow: 0 0.125rem 0.625rem rgba(255, 255, 255, 0.06), 0 0.75rem 2.5rem rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ==========================================================================
+   IMAGE GRID
+   ========================================================================== */
+.img-grid-cont {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1875rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+}
+
+.img-grid-item {
+  height: 20vh;
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  img {
+    max-height: 100%;
+    min-width: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .img-grid-item { height: 30vh; }
+}
+
+@media (max-height: 30rem) {
+  .img-grid-item { height: 80vh; }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 30rem) {
+  .img-grid-cont { flex-direction: row; }
+  .img-grid-item {
+    height: auto;
+    width: 100%;
+    img {
+      width: 100%;
+      max-height: 75vh;
+      min-width: 0;
+    }
+  }
+}
+
+/* ==========================================================================
+   MODELPICKER PREVIEW CARD SEAMLESS JOIN
+   ========================================================================== */
+.modelPicker {
+  > .card,
+  > .list-group {
+    border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius) !important;
+    border-top: none !important;
+    border-color: var(--bs-border-color) !important;
+    background: var(--bs-tertiary-bg);
+    margin-top: 0;
+  }
+
+  > .list-group > .list-group-item {
+    background-color: unset;
+    &:first-child { border-top: none; }
+  }
+}
+
+/* ==========================================================================
+   NATIVE MOBILE FORM SURFACE OVERRIDES
+   ========================================================================== */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.field-edit {
+  display: flex;
+  flex-direction: column;
+
+  .mobile-field-surface {
+    position: relative; 
+    background-color: var(--bs-tertiary-bg);
+    border: 1.5px solid rgba(var(--bs-body-color-rgb), 0.04);
+    border-radius: 0.75rem; 
+    // padding: 0.625rem 1rem; 
+    padding: 0.425rem 0.825rem 0.625rem;
+    transition: all 0.2s ease-in-out;
+    min-height: 3.625rem; 
+    justify-content: center;
+
+    /* Force specific dropdowns to bypass intermediate wrappers and anchor to this surface */
+    .modelPicker,
+    .modelPicker .input-group,
+    ng-select,
+    .has-float-label, 
+    angular-editor {
+      position: static !important;
+    }
+
+    /* Protect ng-select's internal carets and clear (x) buttons from flying away */
+    ng-select .ng-select-container {
+      position: relative !important;
+    }
+
+    &:focus-within {
+      background-color: var(--bs-body-bg);
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08); 
+    }
+
+    &.is-invalid {
+      border-color: var(--bs-danger);
+      background-color: rgba(var(--bs-danger-rgb), 0.04);
+    }
+
+    &.is-disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    
+    &.is-transparent-type {
+      background-color: transparent !important;
+      padding: 0;
+      min-height: auto;
+      border: none;
+    }
+  }
+
+  .mobile-field-surface:not(:has(.surface-label)){
+    padding: 0.725rem 0.825rem; 
+  }
+
+  .surface-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.125rem;
+    letter-spacing: 0.0125rem;
+    text-transform: none; 
+  }
+
+  /* Core Control Stripping */
+  .surface-control-wrapper {
+    flex: 1;
+
+    .form-control, 
+    .ng-select .ng-select-container,
+    .angular-editor-textarea {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important; 
+      padding: 0 !important;
+      height: auto !important;
+      min-height: 1.5rem !important; 
+      font-size: 1rem !important; 
+      color: var(--bs-body-color) !important;
+      border-radius: 0 !important;
+    }
+
+    .form-control:focus, 
+    .ng-select.ng-select-focused > .ng-select-container {
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+
+    /* Ng-Select Specifics, Multi-Tag Spacing & Caret Alignment */
+    .ng-select {
+      .ng-select-container {
+        align-items: center !important;
+        min-height: 1.5rem !important;
+      }
+
+      .ng-value-container {
+        padding: 0 !important;
+        align-items: center !important;
+      }
+
+      &.ng-select-multiple .ng-value-container {
+        flex-wrap: wrap;
+        gap: 0.25rem 0.375rem; 
+        padding: 0.125rem 0 !important;
+
+        .ng-value {
+          display: inline-flex;
+          align-items: center;
+          background-color: var(--bs-secondary-bg) !important;
+          color: var(--bs-body-color) !important;
+          border: 1px solid var(--bs-border-color);
+          border-radius: 0.375rem; 
+          padding: 0.125rem 0.5rem !important;
+          margin: 0 !important;
+          font-size: 0.875rem !important; 
+          line-height: 1.2 !important;
+
+          .ng-value-icon {
+            padding-right: 0.375rem !important;
+            border-right: 1px solid var(--bs-border-color) !important;
+            margin-right: 0.375rem !important;
+
+            &:hover {
+              color: var(--bs-danger) !important;
+              background-color: transparent !important;
+            }
+          }
+        }
+
+        .ng-input {
+          padding: 0 !important;
+          margin: 0 !important;
+          line-height: 1.5 !important;
+        }
+      }
+
+      &.ng-select-single .ng-input {
+        top: 0 !important;
+        padding: 0 !important;
+      }
+
+      .ng-clear-wrapper,
+      .ng-arrow-wrapper {
+        align-self: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+      }
+
+      .ng-clear-wrapper {
+        padding-right: 0.375rem !important;
+      }
+
+      .ng-arrow-wrapper {
+        padding-right: 0 !important;
+        .ng-arrow {top:2px;}
+      }
+    }
+
+    /* Input Groups */
+    .input-group {
+      align-items: center;
+      
+      .input-group-text, .btn {
+        border: none;
+        background: transparent;
+        padding: 0 0.5rem; 
+        color: var(--bs-secondary-color);
+      }
+      
+      .form-control {
+        flex: 1;
+        // padding-left: 0.125rem !important; 
+      }
+    }
+
+    /* Native Checkboxes / Radios */
+    .form-check {
+      display: flex;
+      align-items: flex-start;
+      padding-left: 0 !important; 
+      margin-top: 0.4rem;  
+      margin-bottom: 0.4rem; 
+
+      &.form-check-inline {
+        display: inline-flex;
+        margin-right: 1rem;  
+      }
+    }
+    
+    .form-check-input {
+      width: 1.5rem !important;  
+      height: 1.5rem !important; 
+      margin-top: 0 !important;
+      margin-left: 0 !important; 
+      flex-shrink: 0; 
+      cursor: pointer;
+      border-radius: 0.375rem;   
+      border-width: 1.5px !important;
+      
+      /* High specificity forces radios to stay round */
+      &[type="radio"] { 
+        border-radius: 50%; 
+      }
+    }
+    
+    .form-check-label {
+      padding-left: 0.75rem; 
+      padding-top: 0;
+      font-size: 1rem;       
+      line-height: 1.5rem !important; 
+    }
+    
+    .form-switch .form-check-input {
+      width: 2.75rem !important; 
+      border-radius: 1.5rem;     
+    }
+
+    /* Full-Bleed Image Preview */
+    .image-preview-bleed {
+      margin: 0.5rem -0.825rem -1rem; 
+      border-radius: 0 0 1rem 1rem; 
+      overflow: hidden;
+      position: relative;
+
+      &.empty {
+        border-top: 1.5px dashed var(--bs-border-color);
+        transition: background-color 0.2s ease;
+        &:hover { background-color: rgba(0, 0, 0, 0.02); }
+      }
+
+      .action-bar {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+        height: 4.5rem;
+      }
+
+      .img-grid-cont {
+        border-radius: 0 !important;
+        gap: 0 !important;
+      }
+    }
+
+    ngb-timepicker {
+      .ngb-tp {
+        align-items: center; 
+      }
+      
+      .ngb-tp-meridian .btn {
+        padding: 0rem 0.5rem; 
+        border: none;
+        font-weight: bold;
+      }
+    }
+  }
+
+  /* Popups & Dropdowns Alignment */
+  .ng-select .ng-dropdown-panel,
+  angular-editor-toolbar {
+    position: absolute;
+    top: 100% !important; /* Forces it to perfectly anchor to the bottom of the field surface */
+    z-index: 1000 !important;
+    margin-top: 0.4rem !important; 
+    width: calc(100%) !important; /* Compensates for the exact 1rem left + 1rem right padding */
+    left: 0rem !important; /* Aligned properly back to the far left edge */
+    border-radius: 0.75rem !important; 
+    box-shadow: 0 0.5rem 1.875rem rgba(0, 0, 0, 0.15) !important; 
+    border: 1px solid var(--bs-border-color) !important;
+    background-color: var(--bs-body-bg) !important;
+  }
+  
+  .ng-select .ng-dropdown-panel {
+    overflow: hidden;
+  }
+
+  angular-editor-toolbar {
+    display: none !important;
+    padding: 0.5rem;
+  }
+  
+  ngb-datepicker.dropdown-menu { 
+    margin-top: 0.875rem !important; 
+    left: -1rem !important; 
+    width: auto !important;
+    max-width: fit-content !important;
+    border-radius: 0.75rem !important; 
+    overflow: hidden !important; 
+    box-shadow: 0 0.5rem 1.875rem rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid var(--bs-border-color) !important;
+    background-color: var(--bs-body-bg) !important;
+    padding: 0.25rem !important;
+
+    .ngb-dp-header {
+      background-color: transparent !important;
+      padding-top: 0.5rem !important;
+    }
+
+    .ngb-dp-months {
+      padding: 0.25rem !important;
+    }
+
+    .form-select {
+      border: none;
+    }
+  }
+
+  /* File Upload Progress Bar */
+  .file-upload-progress {
+    position: absolute;
+    top: 1rem; 
+    right: 1rem; 
+    width: 5rem; 
+    height: 0.5rem; 
+    border-radius: 0.25rem; 
+    z-index: 5;
+    background-color: var(--bs-secondary-bg);
+  }
+}
+
+.field-sub-text:not(:has(*)){
+  display: none;
+}

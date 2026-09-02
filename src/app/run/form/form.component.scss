@@ -1,3 +1,6 @@
+.viewport{
+    overflow: hidden;
+}
 .element .element-edit {
     opacity: 0;
     z-index: 2;
@@ -60,27 +63,29 @@
     font-weight: bold;
 }
 
-// .card-blank-style .card-body {
-//     padding: 0 !important;
+
+
+// table.tblcard > .list-tmid > tr.ds-group-header {
+//     box-shadow: none;
 // }
 
-table.tblcard > .list-tmid > tr.ds-group-header {
-    box-shadow: none;
-}
+// /* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
+// .section-group:not(:has(.row > *:not([hidden]))) {
+//     display: none !important;
+// }
 
-/* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
-.section-group:not(:has(.row > *:not([hidden]))) {
-    display: none !important;
-}
+// .section-group{ 
+//     // overflow:hidden; // hide horizontal scrollbar when in mobile device (somehow shown because not wrapped in container)
+//     // padding: 1rem 0rem; // on mobile device
+//     padding:1rem 0;
+//     // padding-top: 1rem;
+//     // padding-top: 1rem; // on mobile device
+//     // padding-bottom:1rem;
+// }
 
-.section-group{
-    padding: 0rem;
-    padding-bottom:1rem;
-}
-
-@media screen and (min-width: 640px) {
-.section-group{
-    padding:1rem; // on desktop, use padding
-  }
-}
+// @media screen and (min-width: 640px) {
+// .section-group{
+//     padding:1rem 1rem 0rem; // on desktop, use padding
+//   }
+// }
 

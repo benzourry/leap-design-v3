@@ -1,10 +1,12 @@
+<!-- HTML -->
 @let f = field();
 @let m = model();
 @let uid = 'f-'+f.id+'-'+id();
 @let isInvalid = m?.touched && fieldErrors.length > 0;
 @let placeholder = f.placeholder||' ';
+
 @let isRichLenErr = f.subType === 'richtext' && value && ((f.v?.minlength && rawTextLength < f.v.minlength) || (f.v?.maxlength && rawTextLength > f.v.maxlength));
-@let isSurface = !(['btn', 'static', 'checkbox', 'checkboxOption', 'radio', 'scaleTo5', 'scaleTo10', 'scale'].includes(f.type) || (f.type === 'simpleOption' && ['btn', 'radio'].includes(f.subType)));
+<!-- @let isSurface = !(['btn', 'static', 'checkbox', 'checkboxOption', 'radio', 'scaleTo5', 'scaleTo10', 'scale'].includes(f.type) || (f.type === 'simpleOption' && ['btn', 'radio'].includes(f.subType))); -->
 
 <ng-template #prefixTpl>
   @if (f.x?.prefixPost) {
@@ -24,17 +26,22 @@
 
 <div class="field-edit form-group position-relative" [ngClass]="f.altClass">
   
-  @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
-    <label class="surface-label" for="{{uid}}">
-      <span [innerHtml]="f.label"></span>
-      @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
-    </label>
-  }
-
-
-  <div [class.mobile-field-surface]="isSurface"
+  <div [class.mobile-field-surface]="!(f.type === 'btn' || f.type === 'static')"
        [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
-       [class.is-disabled]="f.readOnly">    
+       (click)="onSurfaceClick($event, f)"
+       [class.is-disabled]="f.readOnly">
+
+  <!-- <div [class.mobile-field-surface]="isSurface"
+      [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
+      [class.is-disabled]="f.readOnly">    -->
+    
+    @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
+      <label class="surface-label" for="{{uid}}">
+        <span [innerHtml]="f.label"></span>
+        @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
+      </label>
+    }
+    
     <div class="surface-control-wrapper">
       @defer (when f) {
         @switch (f.type) {
@@ -125,7 +132,6 @@
                 <div class="col" [class.col-auto]="f.subType?.includes('inline')">
                   @if (f.subType?.includes('inline')) {
                     <div>
-                      
                       <ng-template #dtFooter>
                         <div class="d-flex align-items-center justify-content-center p-2 border-top">
                           <ngb-timepicker name="{{uid}}-time" [(ngModel)]="value" (ngModelChange)="valueChanged($event)"
@@ -162,7 +168,7 @@
                         (click)="d.toggle()" (ngModelChange)="valueChanged($event)" ngbDatepicker #d="ngbDatepicker" [disabled]="f.readOnly">
                       
                       @if (f.subType === 'datetime' && value) {
-                        <div class="d-flex align-items-center fw-bold ps-1 pe-2" (click)="d.toggle()" style="cursor: pointer; z-index: 5;">
+                        <div class="d-flex align-items-center text-primary fw-bold ps-1 pe-2" (click)="d.toggle()" style="cursor: pointer; z-index: 5;">
                           @if (value?.hour !== undefined) {
                             {{ f.x?.meridian === false ? ((value.hour < 10 ? '0' : '') + value.hour) : (value.hour % 12 === 0 ? 12 : value.hour % 12) }}:{{ (value.minute < 10 ? '0' : '') + value.minute }}{{ f.x?.meridian === false ? '' : (value.hour >= 12 ? ' PM' : ' AM') }}
                           } @else {
@@ -193,8 +199,9 @@
                 <input type="checkbox" class="form-check-input smyds" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" [(ngModel)]="value" #formField="ngModel"
                   [id]="uid" [name]="uid" [required]="f.v?.required" (ngModelChange)="checkValueChanged($event)">
                 <label class="form-check-label" for="{{uid}}">
-                  @if (f?.v?.required && f.hideLabel) { <span>* </span> }            
+                  <!-- @if (f?.v?.required && f.hideLabel) { <span>* </span> }             -->
                   <span [innerHtml]="(f.placeholder ? compiledDataPlaceholder() : compiledDataLabel()) | safe:'html'"></span>
+                  @if (f?.v?.required && f.hideLabel) { <span class="text-danger ms-1">*</span> }
                 </label>
               </div>
             </div>
@@ -207,8 +214,8 @@
                   @for (i of lookupList(); track $index) {
                     <input type="checkbox" class="smyds btn-check" [name]="uid" (change)="toggleValue(i)" 
                       [required]="f.v?.required" [checked]="checkValue(i)" [value]="i" id="{{uid}}-{{$index}}" 
-                      autocomplete="off" [disabled]="f.readOnly || isDisabled(i)">
-                    <label class="btn btn-outline-secondary light text-start toggle-opt m-0" [class.is-invalid]="(m?.touched && m?.invalid)" for="{{uid}}-{{$index}}"
+                      autocomplete="off"[disabled]="f.readOnly || isDisabled(i)">
+                    <label class="btn btn-outline-secondary light text-start toggle-opt m-0" [class.is-invalid]="isInvalid || (m?.touched && m?.invalid) || (m?.touched && f?.v?.required && (!value || value.length === 0))" for="{{uid}}-{{$index}}"
                       [class.active]="checkValue(i)" [class.disabled]="f.readOnly || isDisabled(i)">
                       @if (f?.placeholder) {
                         <div [innerHtml]="compiledLookupMap().get(getLookupMapKey(i)) | safe:'html'"></div>
@@ -222,7 +229,7 @@
                 <div class="mt-1">
                   @for (i of lookupList(); track $index) {
                     <div class="form-check" [class.form-check-inline]="f.x?.inline">
-                      <input type="checkbox" class="form-check-input smyds" [class.is-invalid]="(m?.touched && m?.invalid)" [value]="i" id="{{uid}}-{{i?.code}}"
+                      <input type="checkbox" class="form-check-input smyds" [class.is-invalid]="isInvalid || (m?.touched && m?.invalid) || (m?.touched && f?.v?.required && (!value || value.length === 0))" [value]="i" id="{{uid}}-{{i?.code}}"
                         [checked]="checkValue(i)" [name]="uid" (change)="toggleValue(i);"
                         [class.disabled]="f.readOnly || isDisabled(i)" />
                       <label class="form-check-label" for="{{uid}}-{{i?.code}}" 
@@ -482,11 +489,6 @@
                     
                     <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
                            [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
-                      <!-- @if (fileProgress()) {
-                        <div class="progress file-upload-progress">
-                          <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
-                        </div>
-                      } -->
                       <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
                         (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
                         [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
@@ -506,12 +508,12 @@
                         }
                       }
                       
-                      <div class="position-absolute top-50 translate-middle-y end-0 d-flex align-items-center">
+                      <div class="position-absolute top-50 translate-middle-y end-0 me-2 d-flex align-items-center">
                         @if (f.x?.extractor) {
                           <div class="px-1 text-primary fs-6">
                             <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
                           </div>            
-                        }     
+                        }      
                         @if (value) {
                           <div class="cursor-pointer text-secondary fw-bold fs-5 text-center px-1" (click)="$event.preventDefault();clear(native);">×</div>
                         }        
@@ -523,11 +525,6 @@
                 } @else {
                   <label class="form-control smyds flex-grow-1 mb-0 position-relative d-flex align-items-center cursor-pointer"
                          [class.is-invalid]="isInvalid" [class.extracting]="extractLoading()" for="{{uid}}">
-                    <!-- @if (fileProgress()) {
-                      <div class="progress file-upload-progress">
-                        <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
-                      </div>
-                    } -->
                     <input type="file" [hidden]="true" #native #formField="ngModel" #fileInput
                       (click)="fileclick(fileInput)" (change)="fileValueChanged($event)" [id]="uid"
                       [(ngModel)]="file[f.code]" [multiple]="f.subType == 'othermulti'" [name]="uid"
@@ -552,7 +549,7 @@
                         <div class="px-1 text-primary fs-6">
                           <div [class.grow_blink_me]="extractLoading()"><fa-icon [icon]="['fas','bolt']"></fa-icon></div>            
                         </div>            
-                      }     
+                      }      
                       @if (value) {
                         <div class="cursor-pointer text-secondary fw-bold fs-5 text-center px-1" (click)="$event.preventDefault();clear(native);">×</div>
                       }        
@@ -562,12 +559,6 @@
               </div>
             }
             @if (['image','imagemulti'].includes(f.subType)) {
-              
-                  @if (fileProgress()) {
-                      <div class="progress file-upload-progress">
-                        <div class="progress-bar bg-success" role="progressbar" [style.width.%]="fileProgress()"></div>
-                      </div>
-                    }
               <div [class.disabled]="f.readOnly">
                 <input type="file" [hidden]="true" #native #formField="ngModel" (change)="fileValueChanged($event)"
                   [id]="uid" [(ngModel)]="file[f.code]" [name]="uid"
@@ -580,7 +571,6 @@
                   </label>
                 } @else {
                   <label class="image-preview-bleed d-block position-relative cursor-pointer" for="{{uid}}" style="min-height:150px;">
-                    
                     @if (f.subType == 'image') {
                       <img loading="lazy" [src]="baseApi + '/entry/file/inline/'+value | secure | async" class="w-100 d-block" alt="Preview">
                     } @else {
@@ -697,7 +687,7 @@
 
           @default {
             @if (['scaleTo5', 'scaleTo10', 'scale'].includes(f.type)) {
-              <div>
+              <div class="">
                 <div [class.disabled]="f.readOnly">
                   <div class="d-flex flex-wrap gap-1" role="group">
                     @for (i of scales(); track $index) {
@@ -715,24 +705,6 @@
       }
     </div>
   </div>
-
-  <!-- <div class="field-sub-text mt-2">
-    @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {
-        @for (err of fieldErrors; track err) {
-      <small class="val-text text-danger d-block fw-medium">
-            <fa-icon class="me-1" [icon]="['fas','exclamation-circle']"></fa-icon> 
-            <span>{{f.label}} {{err}}</span>
-      </small>
-        }
-    }
-
-    @if (f.hint) {
-      <small class="val-text text-muted d-block ">
-        <fa-icon [icon]="['fas','info-circle']" class="me-1 opacity-75"></fa-icon>
-        <span>{{f.hint}}</span>
-      </small>
-    }
-  </div> -->
 
   <div class="field-sub-text mt-2">
     @if (m?.touched && (m?.invalid || fieldErrors.length > 0)) {

@@ -52,18 +52,18 @@
                 <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
               }
 
-              <div ngbAccordion class="mt-3" [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
+              <div ngbAccordion class="" [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
                 @for (tab of filteredTabs(); track tab.id) {
-                  <div class="acc-card" [hidden]="(tab.x?.facet?.[_action] == 'hidden')" [ngbAccordionItem]="_action + $index" [collapsed]="$index != _navIndex()"
+                  <div class="acc-card" [class.mobile-border-bottom]="accitem.collapsed && !$last" [hidden]="(tab.x?.facet?.[_action] == 'hidden')" [ngbAccordionItem]="_action + $index" [collapsed]="$index != _navIndex()"
                     [disabled]="!disabledTabs()[tab.id]" #accitem="ngbAccordionItem">
                     <div ngbAccordionHeader>
-                      <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
+                      <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.desktop-border-bottom]="accitem.collapsed && !$last">
                         <button type="button" ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;"
                           [class.pe-none]="form().x?.progression && form().x?.noPageSkip && ($index != _navIndex())"
                           (click)="tabPostAction($index)">
                           @if (form().showIndex) {
                             <div style="float:left;height:25px; width:25px; min-width:25px;background:#666; color:white;
-                              padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
+                              padding:0px;line-height: 25px; text-align: center; margin-right:0.8em;
                               border-radius:20px;">{{$index + 1}}</div>
                           }
                           @if (tab.x?.icon) {
@@ -94,7 +94,7 @@
                 <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
               }
 
-              <div class="tab-simple mt-3">
+              <div class="tab-simple">
                 <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + _navIndex()"
                   [class.limit-width]="!form()?.x?.wide" [hidden]="!filteredTabs()?.length"
                   class="nav-{{form().nav}} justify-content-center centered" [class.pe-none]="form().x?.progression && form().x?.noPageSkip">
@@ -176,20 +176,20 @@
         <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
           <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
-            <div class="centered overflow-hidden" [class.limit-width]="!form()?.x?.wide">
-              <div class="row g-1 g-sm-3" [ngStyle]="{'justify-content': form().align}">
-                @for (e of sectionMap()[tab?.id]; track e.id) {
+            <div class="centered" [class.limit-width]="!form()?.x?.wide">
+              <div class="row" [ngStyle]="{'justify-content': form().align}">
+                @for (e of sectionMap()[tab?.id]; track e.id; let lastSection = $last) {
                   @if (preSection()[e.id] && !(e.x?.facet?.[_action] == 'none')) {
                     @if (e.type == 'section') {
                       <div [class]="e.size || 'col-sm-12'"
                         [class.disabled]="e.enabledFor && !e.enabledFor.includes(user().email)"
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
                         
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
-                            <div class="card-header p-4" [class.px-0]="e.x?.blankStyle"
+                            <div class="card-header p-3" [class.px-0]="e.x?.blankStyle"
                               (click)="e.x?.collapsible ? collapseSection(e) : null"
                               [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
                               @if (e.icon) {
@@ -198,18 +198,16 @@
                               <div [class.ms-4]="e.icon">
                                 <h6 class="card-title m-0">
                                   {{e.title}}
-                                  @if (e.x?.collapsible) {
-                                    <fa-icon class="float-end ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                                  }
-                                  @if (sForm.invalid) {
-                                    <fa-icon class="ms-1 text-danger float-end cursor-pointer shake_me" role="button" [icon]="['fas','exclamation-triangle']" 
-                                      title="{{lang() == 'ms' ? 'Seksyen mengandungi medan tidak sah, klik untuk lihat ralat' : 'Section contains invalid field(s), click to view errors'}}"
-                                      (click)="toggleSectionError(e.id, $event)"></fa-icon>
-                                  }
-                                  <!-- @if (sForm.invalid) {
-                                    
-                                    <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']" [title]="getInvalidFieldLabels(sForm)"></fa-icon>
-                                  } -->
+                                  <div class="float-end d-flex">
+                                    @if (sForm.invalid) {
+                                      <fa-icon class="ms-2 text-danger cursor-pointer shake_me" role="button" [icon]="['fas','exclamation-triangle']" 
+                                        title="{{lang() == 'ms' ? 'Seksyen mengandungi medan tidak sah, klik untuk lihat ralat' : 'Section contains invalid field(s), click to view errors'}}"
+                                        (click)="toggleSectionError(e.id, $event)"></fa-icon>
+                                    }
+                                    @if (e.x?.collapsible) {
+                                      <fa-icon class=" ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                                    }
+                                  </div>
                                 </h6>
                                 @if (e.description) {
                                   <div class="mb-0 mt-1 small" [innerHtml]="e.description"></div>
@@ -219,8 +217,8 @@
                           }
                           <ng-container *ngTemplateOutlet="errorPanelTpl; context: {e: e, sForm: sForm}"></ng-container>
                           <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
-                            <div class="card-body p-4">
-                              <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
+                            <div class="card-body p-3">
+                              <div class="row g-3" [ngStyle]="{'justify-content': e.align}">
                                 @for (f of e.items; track f.id) {
                                   @if (!form().items[f.code]) {
                                     <div class="p-2 border rounded mb-3">Source Item Not Available</div>
@@ -319,21 +317,24 @@
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
                         
                         <!-- ⚠️ IMPORTANT: List-level ngModelGroup for validation scoping -->
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-1 mb-sm-3" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
-                            <div class="card-header p-4 bordered" (click)="e.x?.collapsible ? collapseSection(e) : null"
+                            <div class="card-header p-3 bordered" 
+                              (click)="e.x?.collapsible ? collapseSection(e) : null"
                               [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
                               @if (e.icon) {
                                 <fa-icon [icon]="e.icon | iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
                               }
                               <div [class.ms-4]="e.icon">
                                 <h6 class="card-title m-0">
+                                  {{e.title}} @if (e.x?.required) { <span>*</span> }
                                   <div class="float-end d-flex">
+                                    <span class="badge badge-pill text-bg-secondary">{{entry()?.data[e.code]?.length}}</span>
                                     @if (e.x?.sortable) {
-                                      <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort">
-                                        <div type="button" class="p-0 me-3 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}" ngbDropdownToggle>
+                                      <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort" (click)="$event.stopPropagation()">
+                                        <div type="button" class="p-0 ms-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}" ngbDropdownToggle>
                                           <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> {{sectionSort()[e.code]?.label}} ({{sectionSort()[e.code]?.dir ?? 'asc'}})
                                         </div>
                                         <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
@@ -344,8 +345,8 @@
                                                 <div class="d-flex" [class.def-sort-field]="sectionSort()[e.code]?.field == f.code" title="{{field.label}}" ngbDropdownItem>
                                                   <div class="me-3 text-truncate">{{field.label}}</div>
                                                   <div class="btn-group btn-group-xs ms-auto">
-                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir == 'asc'" (click)="sortChild(e.code, f.code, field.label, 'asc')">ASC</button>
-                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir == 'desc'" (click)="sortChild(e.code, f.code, field.label, 'desc')">DESC</button>
+                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir == 'asc'" (click)="onSortChild(e.code, f.code, field.label, 'asc')">ASC</button>
+                                                    <button class="btn btn-xs" [class.def-sort-dir]="sectionSort()[e.code]?.dir == 'desc'" (click)="onSortChild(e.code, f.code, field.label, 'desc')">DESC</button>
                                                   </div>
                                                 </div>
                                               }
@@ -354,20 +355,15 @@
                                         </div>
                                       </div>
                                     }
-                                    <span class="badge badge-pill text-bg-secondary">{{entry()?.data[e.code]?.length}}</span>
-                                    @if (e.x?.collapsible) {
-                                      <fa-icon class="ms-2 float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                                    }
                                     @if (sForm.invalid) {
-                                      <fa-icon class="ms-1 text-danger float-end cursor-pointer shake_me" role="button" [icon]="['fas','exclamation-triangle']" 
+                                      <fa-icon class="ms-2 text-danger cursor-pointer shake_me" role="button" [icon]="['fas','exclamation-triangle']" 
                                         title="{{lang() == 'ms' ? 'Seksyen mengandungi medan tidak sah, klik untuk lihat ralat' : 'Section contains invalid field(s), click to view errors'}}"
                                         (click)="toggleSectionError(e.id, $event)"></fa-icon>
                                     }
-                                    <!-- @if (sForm.invalid) {
-                                      <fa-icon class="ms-1 text-danger float-end" [icon]="['fas','exclamation-triangle']" title="This section is required"></fa-icon>
-                                    } -->
+                                    @if (e.x?.collapsible) {
+                                      <fa-icon class="ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                                    }
                                   </div>
-                                  {{e.title}} @if (e.x?.required) { <span>*</span> }
                                 </h6>
                                 @if (e.description) {
                                   <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
@@ -379,7 +375,7 @@
                           <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
                             @if (entry()?.data[e.code]?.length > 0) {
                               @if (e.x?.tableStyle) {
-                                <div class="table-responsive mx-4">
+                                <div class="table-responsive mx-3">
                                   <table class="table table-print mb-0 bg-white">
                                     <thead>
                                       <tr>
@@ -583,7 +579,7 @@
                                 }
                               }
                             } @else {
-                              <div class="card-body p-4">
+                              <div class="card-body p-3">
                                 <p class="my-2">
                                   @if (lang() == 'ms') {
                                     <span>Tiada data tersedia. Untuk menambah {{e.title}}, klik butang <i>{{e.addLabel || 'Add'}}</i> di bawah</span>
@@ -598,7 +594,7 @@
                             }
 
                             @if (!e.maxChild || entry()?.data[e.code]?.length < e.maxChild) {
-                              <div class="card-body px-4">
+                              <div class="card-body px-3">
                                 <button type="button" class="btn btn-round btn-light pe-3" (click)="editChild(editChildTpl, e, {}, true)">
                                   <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                   {{e.addLabel || 'Add'}}
@@ -842,7 +838,7 @@
 <ng-template #errorPanelTpl let-e="e" let-sForm="sForm">
   <!-- Replaced @if with ngbCollapse. Note the inverted logic (collapse when NOT expanded OR NOT invalid) -->
   <div [ngbCollapse]="!(sectionErrorExpanded[e.id] && sForm.invalid)">
-    <div class="px-3 px-md-4 pb-1 border-bottom">
+    <div class="px-3" style="border-bottom: 1px solid rgba(var(--bs-body-color-rgb), 0.1);">
       <div class="alert alert-danger d-flex align-items-start mb-3 border-0 shadow-sm" style="border-radius: var(--bs-border-radius)" role="alert">
         <fa-icon class="me-3 mt-1 fs-5 opacity-75" [icon]="['fas','exclamation-triangle']"></fa-icon>
         <div>
@@ -850,7 +846,7 @@
             {{lang() == 'ms' ? 'Sila perbaiki ralat berikut:' : 'Please fix the following errors:'}}
           </h6>
           <ul class="mb-0 ps-3 small">
-            @for (err of getSectionErrors(sForm); track err.label) {
+            @for (err of getSectionErrors(sForm, e); track err.label) {
               <li class="mb-1">
                 <strong [innerHTML]="err.label"></strong>: <span class="opacity-75">{{err.errors.join(', ')}}</span>
               </li>

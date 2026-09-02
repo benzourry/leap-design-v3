@@ -10,6 +10,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { base, baseApi, domainBase } from '../../_shared/constant.service';
 import { deepMerge, splitAsList } from '../../_shared/utils';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-app-summary',
@@ -32,6 +33,8 @@ export class AppSummaryComponent implements OnInit {
   // private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
   private cdr = inject(ChangeDetectorRef);
+
+  private http = inject(HttpClient);
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -147,6 +150,37 @@ export class AppSummaryComponent implements OnInit {
   bucketTypeSizeLimit:number=5;
 
   entryFormCountLimit:number=5;
+
+  exportMetadata(appId: string) {
+    const url = `${this.baseApi}/app/${appId}/export`;
+    
+    // Optional: If you aren't using an HttpInterceptor, get your token and set headers manually
+    // const token = this.userService.getToken(); // Retrieve your token
+    // const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    this.http.get(url, {
+      // headers: headers, // <-- Uncomment if manually attaching token
+      responseType: 'blob' // <-- Crucial: tells Angular to expect a file, not JSON
+    }).subscribe({
+      next: (blob: Blob) => {
+        // Create a temporary URL for the Blob and trigger the download
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        
+        // You can extract the filename from the Content-Disposition header if provided by the backend,
+        // or set a default one here:
+        link.download = `app-metadata-${appId}.json`; 
+        
+        link.click();
+        window.URL.revokeObjectURL(downloadUrl); // Clean up memory
+      },
+      error: (err) => {
+        console.error('Export failed', err);
+        // Handle error (e.g., show toast notification)
+      }
+    });
+  }
 
   
   selectColor(number) {

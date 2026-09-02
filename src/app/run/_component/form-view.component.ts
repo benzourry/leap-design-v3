@@ -1,20 +1,3 @@
-// Copyright (C) 2018 Razif Baital
-// 
-// This file is part of LEAP.
-// 
-// LEAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-// 
-// LEAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
-
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, forwardRef, inject, input, model, signal } from '@angular/core';
 import { ScreenComponent } from '../../run/screen/screen.component';
 import { ListComponent } from '../../run/list/list.component';
@@ -43,14 +26,14 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   }
   <div ngbAccordion class="pb-3 mt-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
     @for (tab of formTab(); track tab.id) {
-      <div class="acc-card" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index !== navIndex()"
+      <div class="acc-card"  [class.mobile-border-bottom]="accitem.collapsed && !$last" ngbAccordionItem="acc-{{$index}}" [collapsed]="$index !== navIndex()"
         [disabled]="!disabledTabs()[tab.id]" #accitem="ngbAccordionItem">
         <div ngbAccordionHeader>
-          <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.border-bottom]="accitem.collapsed && !$last">
+          <div class="acc-btn-wrap centered" [class.limit-width]="!form()?.x?.wide" [class.desktop-border-bottom]="accitem.collapsed && !$last">
             <button ngbAccordionButton class="acc-btn border-0 p-0" style="box-shadow: none;">
               @if (form().showIndex) {
-                <div style="float:left;height:25px; width:25px;background:var(--bs-secondary-bg); color:var(--bs-body-color);
-                  padding:0px;margin-left:3px;line-height: 25px; text-align: center; margin-right:0.8em;
+                <div style="float:left;height:25px; width:25px; min-width:25px;background:#666; color:white;
+                  padding:0px;line-height: 25px; text-align: center; margin-right:0.8em;
                   border-radius:20px;">{{$index + 1}}</div>
               }
               <h5 class="m-0">{{tab.title}}</h5>
@@ -86,7 +69,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
         <li [ngbNavItem]="'view' + $index" [disabled]="!disabledTabs()[tab.id]">
           <a ngbNavLink>
             @if (form().showIndex) {
-              <div style="float:left;height:20px; width:20px;background:var(--bs-secondary-bg); color:var(--bs-body-color); font-size: .8em;
+              <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
                 padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
                 border-radius:20px;">{{$index + 1}}</div>
             }
@@ -116,36 +99,40 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 }
 
 <ng-template #sectionGroup let-tab="tab">
-  <div class="single-pane section-group pb-0">
+  <div class="single-pane section-group">
     <div class="fix-gutter centered" [class.limit-width]="!form()?.x?.wide">
       <div class="row" [ngStyle]="{'justify-content': form()?.align}">
-        @for (e of this.sectionMap[tab?.id]; track e.id) {
+        @for (e of this.sectionMap[tab?.id]; track e.id; let lastSection = $last) {
           @if (preSection()[e.id] && e.x?.facet?.['view'] !== 'none') {
             @if (e.type === 'section') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
-                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
+                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
+                  class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-4 light-015"
+                    <div class="card-header p-3" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
                       [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'"
                     >
-                      <h6 class="card-title m-0">
-                        @if (e.icon) {
-                          <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
-                        } 
-                        {{e.title}}
-                        <!-- ADD the chevron icon -->
-                        @if (e.x?.collapsible) {
-                          <fa-icon class="float-end ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                        }
-                      </h6>
-                      @if (e.description) {
-                        <div class="card-subtitle mt-1 small" [innerHtml]="e.description"></div>
+                      @if (e.icon) {
+                        <fa-icon [icon]="e.icon | iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
                       }
+                      <div [class.ms-4]="e.icon">
+                        <h6 class="card-title m-0">
+                          {{e.title}}
+                          <div class="float-end d-flex">
+                            @if (e.x?.collapsible) {
+                              <fa-icon class="ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                            }
+                          </div>
+                        </h6>
+                        @if (e.description) {
+                          <div class="mb-0 mt-1 small" [innerHtml]="e.description"></div>
+                        }
+                      </div>
                     </div>
                   }
                   <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3">
                       <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
                         @for (f of e.items; track f.id) {
                           @let field = form()?.items[f.code];
@@ -215,32 +202,36 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             }
             @if (e.type === 'list') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
-                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-3" [ngClass]="e.style">
+                <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
+                  class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [ngClass]="e.style">
                   @if (!e.hideHeader) {
-                    <div class="card-header p-4 bordered light-015"
+                    <div class="card-header p-3 bordered" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
                       [style.cursor]="e.x?.collapsible ? 'pointer' : 'default'">
-                      <h6 class="card-title m-0">
-                        @if (e.icon) {
-                          <fa-icon [icon]="e.icon | iconSplit" [fixedWidth]="true"></fa-icon>
-                        } 
-                        {{e.title}}
-                        <!-- ADD the chevron icon -->
-                        @if (e.x?.collapsible) {
-                          <fa-icon class="ms-2 float-end" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
-                        }
-                        <span class="badge rounded-pill bg-secondary float-end">{{data() && data()[e.code]?.length}}</span>
-                      </h6>
-                      @if (e.description) {
-                        <div class="card-subtitle small mt-1" [innerHtml]="e.description"></div>
+                      @if (e.icon) {
+                        <fa-icon [icon]="e.icon | iconSplit" class="float-start ms-n1" style="margin-top:-3px" [fixedWidth]="true"></fa-icon>
                       }
+                      <div [class.ms-4]="e.icon">
+                        <h6 class="card-title m-0">
+                          {{e.title}}
+                          <div class="float-end d-flex">
+                            <span class="badge badge-pill text-bg-secondary">{{data() && data()[e.code]?.length}}</span>
+                            @if (e.x?.collapsible) {
+                              <fa-icon class="ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
+                            }
+                          </div>
+                        </h6>
+                        @if (e.description) {
+                          <div class="mt-1 mb-0 small" [innerHtml]="e.description"></div>
+                        }
+                      </div>
                     </div>
                   }
                   <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
                     @if (data() && data()[e.code]?.length > 0) {
                       @if (e.x?.tableStyle) {
-                        <div class="table-responsive mx-4">
-                          <table class="table table-print mb-0 table-striped bg-body mb-4">
+                        <div class="table-responsive mx-3">
+                          <table class="table table-print mb-0 bg-white">
                             <thead>
                               <tr>
                                 @for (f of e.x?.tableFields; track $index) {
@@ -256,7 +247,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                 @if (e.x?.defGroupField) {
                                   <tr class="ds-group-header">
                                     <td [attr.colspan]="e.x?.tableFields?.length" style="padding:0">
-                                      <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold bg-body-secondary text-body" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                                      <button class="w-100 border-0 p-2 text-start d-flex flex-row fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
                                         @if(!hideGroup[e.code+listKv?.key]) {
                                           <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                                         } @else {
@@ -302,7 +293,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                       } @else {
                         @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index) {
                           @if (e.x?.defGroupField) {
-                            <button class="w-100 border-0 p-3 text-start d-flex flex-row position-relative bg-body-secondary text-body fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                            <button class="w-100 border-0 px-4 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
                               @if(!hideGroup[e.code+listKv?.key]) {
                                 <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                               } @else {
@@ -320,10 +311,10 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           }
                           
                           @if(!hideGroup[e.code+listKv?.key]) {
-                            <div class="list-group list-group-flush list-child pt-1 px-4 pb-4">
+                            <div class="list-group list-group-flush list-child position-relative px-4 py-1">
                               @for (child of listKv.value; track $index; let $index_c = $index) {
                                 @let $index_child = $index_g + '-' + $index_c;
-                                <div class="list-group-item px-0 py-4 bg-transparent text-body">
+                                <div class="list-group-item px-0 py-4 form-horizontal fix-gutter">
                                   <div class="row g-4">
                                     @for (f of e.items; track f.id) {
                                       @let field = form()?.items[f.code];
@@ -359,8 +350,8 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                         }
                       }
                     } @else {
-                      <div class="card-body p-4">
-                        <p class="m-0 text-body-secondary">{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
+                      <div class="card-body p-3">
+                        <p class="my-2 text-body-secondary">{{lang() === 'ms' ? 'Tiada data tersedia untuk' : 'No data available for'}} {{e.title}}</p>
                       </div>
                     }
                   </div>

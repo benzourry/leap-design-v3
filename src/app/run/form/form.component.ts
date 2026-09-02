@@ -36,7 +36,7 @@ import { ScreenComponent } from '../screen/screen.component';
 import { ListComponent } from '../list/list.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { EditLookupEntryComponent } from '../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
-import { FieldEditComponent } from '../_component/field-edit-myds/field-edit.component';
+import { FieldEditComponent } from '../_component/field-edit-myds-ifta/field-edit.component';
 import { FieldViewComponent } from '../_component/field-view.component';
 import { FormViewComponent } from '../_component/form-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
@@ -66,7 +66,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate {
 
-  private isInitializing: boolean = false;
+  // private isInitializing: boolean = false;
 
   private echartsRef: any = null;
 
@@ -223,7 +223,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((obj: any) => {
-        this.fieldChange(obj.event, obj.data, obj.field, obj.section, obj.isInit);
+        this.fieldChange(obj.event, obj.data, obj.field, obj.section);
       });
   }
 
@@ -403,7 +403,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       })
     ).subscribe({
       next: (form) => {
-            this.isInitializing = true;
+        // this.isInitializing = true;
  
         // 1. Evaluate base data
         this.evalAll(this.entry().data);
@@ -424,12 +424,12 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
         // 6. Post actions
         this.tabPostAction(this._navIndex());
-        this.runAllCognaField();
+        // this.runAllCognaField(); // NO NEED TO RUN ON INITIAL LOADING (ON EDIT)
 
-        setTimeout(() => {
-          this.isInitializing = false;
-          this.entryForm()?.form?.markAsPristine(); // Bonus: Clean up form state!
-        }, 500);
+        // setTimeout(() => {
+        //   this.isInitializing = false;
+        //   this.entryForm()?.form?.markAsPristine(); // Bonus: Clean up form state!
+        // }, 500);
       },
       error: err => {
         this.logService.log(`Error fetching form: ${err.message}`);
@@ -446,8 +446,8 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     this.sectionErrorExpanded[sectionId] = !this.sectionErrorExpanded[sectionId];
   }
 
-  // --- NEW: Return structured errors for HTML rendering ---
-  getSectionErrors(sForm: any): { label: string, errors: string[] }[] {
+// Add 'section: any' to the parameters
+  getSectionErrors(sForm: any, section: any): { label: string, errors: string[] }[] {
     if (!sForm?.control?.controls) return [];
 
     const controls = sForm.control.controls;
@@ -457,6 +457,16 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       const control = controls[key];
       
       if (control.invalid && control.errors) {
+        // NEW: Catch the hidden section validation input explicitly
+        if (key.endsWith('-section')) {
+          const label = section?.title + ' Section' || 'Section';
+          // Use a mock field object to utilize your existing error message translator
+          const errMsgs = getFieldErrorMessages(control.errors, { label, code: section?.code }, this.lang());
+          errorList.push({ label, errors: errMsgs });
+          continue;
+        }
+
+        // EXISTING FIELD LOGIC
         const match = key.match(/^fn-(\d+)-/);
         if (match) {
           const fieldId = Number(match[1]);
@@ -596,14 +606,15 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   private rcognaLoading = signal<any>({});
   private rcognaSubject = new Subject<any>();
 
-  runAllCognaField(): void {
-    const filtered = Object.keys(this.reactiveCognaList).filter(key =>
-      this.reactiveCognaList[key].sources.some(source => this.entry().data[source] !== null && this.entry().data[source] !== undefined)
-    );
-    filtered.forEach(key => {
-      this.runCognaField(key);
-    })
-  }
+  // USED TO TRIGGER COGNA ON INITIAL DATA LOAD
+  // runAllCognaField(): void {
+  //   const filtered = Object.keys(this.reactiveCognaList).filter(key =>
+  //     this.reactiveCognaList[key].sources.some(source => this.entry().data[source] !== null && this.entry().data[source] !== undefined)
+  //   );
+  //   filtered.forEach(key => {
+  //     this.runCognaField(key);
+  //   })
+  // }
 
   triggerDependentCognaFields(code: string): void {
     const list = Object.keys(this.reactiveCognaList)
@@ -1137,6 +1148,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   sectionSort = signal<any>({})
 
+  onSortChild(sectionKey, field, label, dir) {
+    this.sortChild(sectionKey, field, label, dir);
+    this.filterItems();
+  }
+
   sortChild(sectionKey, field, label, dir) {
     this.sectionSort.update(s =>
     ({
@@ -1167,11 +1183,11 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         this.extractData(field, field.x?.extractor, [], $event, data, index);
       }
     }
-    this.valueUpdate.next({ event: $event, data: data, field: field, section: section, isInit: this.isInitializing })
+    this.valueUpdate.next({ event: $event, data: data, field: field, section: section })
   }
 
-  fieldChange($event, data, field, section, isInit: boolean = false) {
-    this.executeFieldAction(field.post, 'post', data, field, section, $event, isInit);
+  fieldChange($event, data, field, section) {
+    this.executeFieldAction(field.post, 'post', data, field, section, $event);
   }
 
   onPrefixClick(data: any, field: any, section: any) {
@@ -1186,7 +1202,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     }
   }
 
-  private executeFieldAction(script: string | undefined, logLabel: string, data: any, field: any, section: any, $event?: any, isInit: boolean = false) {
+  private executeFieldAction(script: string | undefined, logLabel: string, data: any, field: any, section: any, $event?: any) {
     if (script) {
       let postTxt = this.compileTpl(script, {});
       try {
@@ -1207,9 +1223,14 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     this.filterTabs();
     this.filterItems();
 
-    if (this.isInitializing || isInit) {
+    // console.log(`Field Change: ${field.code}, isInit: ${isInit}, isInitializing: ${this.isInitializing}`);
+    // if (this.isInitializing || isInit) {
+    console.log('########Compare:'+field.code,data[field.code], $event,data[field.code] == $event)
+    if (data[field.code] == $event) {
       return; 
     }
+
+    console.log("########Still execute:"+field.code)
 
     if ($event !== undefined) {
       this.rcognaSubject.next({ code: field.code, value: $event });
@@ -1782,7 +1803,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   processUpload(res, data, fileList, evalEntryData, progressSize, f, totalSize, index, index_child, multi, list) {
     if (res.type === HttpEventType.UploadProgress) {
       progressSize = res.loaded;
-      this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: Math.round(100 * progressSize / totalSize) }));
+      this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: Math.max(10, Math.round(100 * progressSize / totalSize)) }));
     } else if (res instanceof HttpResponse) {
       if (res.body?.success) {
         this.uploadProgress.update(curr => ({ ...curr, [f.code + (index ?? '') + (index_child ?? '')]: 100 }));

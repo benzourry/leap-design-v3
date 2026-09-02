@@ -484,7 +484,7 @@
                                       <div style="border-top:dashed 3px var(--bs-border-color); top:21px;position:relative">
                                       </div>
                                       <a class="btn btn-round mb-3 btn-outline-secondary shadow-clean position-relative align-self-center pointer"
-                                        style="background-color: var(--bs-card-bg, var(--bs-body-bg));"
+                                        style="background-color: var(--bs-card-bg, var(--bs-body-bg)); --bs-btn-hover-bg: var(--bs-card-bg, var(--bs-body-bg)); --bs-btn-hover-color: var(--bs-secondary-color);"
                                         (click)="editItem(editItemTpl,e,{size:'col-sm-12', hideLabel:false, x:{facet:{add:'edit',view:'view',edit:'edit'}}},e.items.length)">
                                         <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                         Add Form Item

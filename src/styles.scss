@@ -191,7 +191,7 @@ input.search-icon[type="search"] {
   // border-radius: 1rem;
   border: none;
   border-radius: 0; // in mobile, no radius
-  margin-bottom: 0.25rem; // in mobile, reduce section padding
+  // margin-bottom: 0.25rem; // in mobile, reduce section padding
 }
 
 .card-clean {
@@ -205,7 +205,7 @@ input.search-icon[type="search"] {
       border-bottom: solid 1px var(--bs-border-color, rgba(127, 127, 127, .2));
       position: absolute;
       right: 0px; left: 0px;
-      margin: 0 1.5rem;
+      margin: 0 1rem;
       bottom: -1px;
     }
   }
@@ -225,6 +225,7 @@ input.search-icon[type="search"] {
 
 @media screen and (min-width: 640px) {
   .card.card-clean {
+    border: initial;
     border-radius: 1rem; // on desktop, rounded
     box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12), 0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
     
@@ -235,6 +236,45 @@ input.search-icon[type="search"] {
   
   .card-clean .card-header:first-child {
     border-radius: calc(0.45rem - 1px) calc(0.45rem - 1px) 0 0;
+  }
+}
+
+
+table.tblcard > .list-tmid > tr.ds-group-header {
+    box-shadow: none;
+}
+
+/* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
+.section-group:not(:has(.row > *:not([hidden]))) {
+    display: none !important;
+}
+
+.section-group{ 
+    // overflow:hidden; // hide horizontal scrollbar when in mobile device (somehow shown because not wrapped in container)
+    // padding: 1rem 0rem; // on mobile device
+    padding:1rem 0;
+    // padding-top: 1rem;
+    // padding-top: 1rem; // on mobile device
+    // padding-bottom:1rem;
+}
+
+@media screen and (min-width: 640px) {
+.section-group{
+    padding:1rem 1rem 0rem; // on desktop, use padding
+  }
+}
+
+/* Applies border to acc-card ONLY on mobile */
+@media (max-width: 767.98px) {
+  .mobile-border-bottom {
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color) !important;
+  }
+}
+
+/* Applies border to acc-btn-wrap ONLY on desktop (md and up) */
+@media (min-width: 768px) {
+  .desktop-border-bottom {
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color) !important;
   }
 }
 

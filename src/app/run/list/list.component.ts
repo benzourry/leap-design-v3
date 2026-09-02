@@ -382,6 +382,8 @@ export class ListComponent implements OnInit, OnDestroy {
 
   rawList = signal<any[]>([]);
 
+  private lastResStr: string = '';
+
   getEntryList(pageNumber: number, sort?: any) {
     const dataset = this.dataset();
     if (!dataset?.id) return;
@@ -419,6 +421,18 @@ export class ListComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
+          
+// --- FIX START ---
+          // Stringify the raw API response BEFORE calculateRowMetadata pollutes it.
+          const currentResStr = JSON.stringify(res);
+          
+          if (this.lastResStr === currentResStr) {
+            this.itemLoading.set(false);
+            return; // Break the infinite loop! Data is identical.
+          }
+          this.lastResStr = currentResStr;
+          // --- FIX END ---
+
           const content = res.content || [];
 
           this.rawList.set(res);
