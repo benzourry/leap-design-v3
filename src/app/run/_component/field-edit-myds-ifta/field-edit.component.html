@@ -95,14 +95,14 @@
                 @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                 <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
                   type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
-                  [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+                  [placeholder]="placeholder" [required]="f.v?.required" 
                   (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
                 @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
               </div>
             } @else {
               <input class="form-control form-control-color smyds" [class.is-invalid]="isInvalid"
                 type="color" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value" autocomplete="off" 
-                [ngxMask]="f.v?.mask" [placeholder]="placeholder" [required]="f.v?.required" 
+                [placeholder]="placeholder" [required]="f.v?.required" 
                 (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
             }
           }
@@ -110,10 +110,10 @@
           @case ('number') {
             @if (f.subType == 'range') {
               <div class="d-flex align-items-center">
-                <input class="form-range my-2 smyds" type="range" [class.is-invalid]="isInvalid" [id]="uid"
+                <input class="form-range smyds" type="range" [class.is-invalid]="isInvalid" [id]="uid"
                   [name]="uid" #formField="ngModel" [(ngModel)]="value" [placeholder]="placeholder"
                   [min]="f.v?.min" [max]="f.v?.max" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [disabled]="f.readOnly">
-                <div class="ms-2 my-2">@if(value!=undefined){ {{value}} }</div>
+                <div class="ms-2">@if(value!=undefined){ {{value}} }</div>
               </div>
             } @else {
               <div class="input-group">
@@ -442,9 +442,10 @@
                     <label class="btn btn-outline-secondary smyds light toggle-opt m-0" [class.is-invalid]="isInvalid || (m?.touched && f?.v?.required && !value)" 
                       for="{{uid}}-{{$index}}"
                       [class.disabled]="f.readOnly || isDisabled(i)">{{i}}</label>
+                  }@empty {
+                    <div class="text-muted small mt-1">Option not available</div>
                   }
                 </div>
-                @if (!f?.options) { <div class="text-muted small mt-1">Option not available</div> }
               </div>
             }
             @if (f.subType=='radio') {
@@ -455,17 +456,20 @@
                       [(ngModel)]="value" [name]="uid" [required]="f.v?.required" (ngModelChange)="valueChanged(i);" />
                     <label class="form-check-label d-block" for="{{uid}}-{{$index}}">{{i}}</label>
                   </div>
+                }@empty {
+                  <div class="text-muted small mt-1">Option not available</div>
                 }
               </div>
-              @if (!f?.options) { <div class="text-muted small mt-1">Option not available</div> }
+              <!-- @if (!f?.options) {  } -->
             }
             @if (f.subType=='select') {
+              @if(f.options){
               <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [id]="uid" [(ngModel)]="value"
                 [loading]="loading()" [groupBy]="f.x?.groupBy?selectGroupBy:null" [virtualScroll]="true" 
                 (change)="valueChanged($event)" (focus)="selectFocused($event)" [name]="uid" [readonly]="f.readOnly" 
                 [required]="f.v?.required" [placeholder]="' '">
               </ng-select>
-              @if (!f?.options) { <div class="text-muted small mt-1">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
+              }@else { <div class="text-muted small mt-1">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
             }
           }
 
@@ -615,10 +619,22 @@
             @if (f.subType=='clearfix') { <div class="clearfix clfx"></div> }
           }
 
-          @case ('map') {
+          <!-- @case ('map') {
             @defer (prefetch on idle) {
               <div class="rounded-4 overflow-hidden mt-1 border">
                 <app-ng-leaflet class="smyds" [useCurrentPos]="f.x?.useCurrent"  [baseMapServerUri]="f.x?.customMapServer"
+                  [multiple]="f.subType=='multiple'" [readOnly]="f.readOnly"  [dropPinOn]="f.x?.dropPinOn" [(value)]="value"
+                  (valueChange)="valueChanged($event)"></app-ng-leaflet>
+              </div>
+            } @loading {
+              <div class="text-center p-4 text-muted"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
+            }
+          } -->
+          @case ('map') {
+            @defer (prefetch on idle) {
+              <!-- Swapped classes here to trigger the full-bleed effect -->
+              <div class="image-preview-bleed mt-2 border-top">
+                <app-ng-leaflet class="smyds d-block w-100" [useCurrentPos]="f.x?.useCurrent"  [baseMapServerUri]="f.x?.customMapServer"
                   [multiple]="f.subType=='multiple'" [readOnly]="f.readOnly"  [dropPinOn]="f.x?.dropPinOn" [(value)]="value"
                   (valueChange)="valueChanged($event)"></app-ng-leaflet>
               </div>

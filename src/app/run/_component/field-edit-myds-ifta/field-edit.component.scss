@@ -379,8 +379,9 @@ angular-editor {
 
     /* Full-Bleed Image Preview */
     .image-preview-bleed {
-      margin: 0.5rem -0.825rem -1rem; 
-      border-radius: 0 0 1rem 1rem; 
+      // margin: 0.5rem -0.825rem -1rem; 
+      margin: 0.5rem -0.825rem -0.625rem;
+      border-radius: 0 0 0.75rem 0.75rem; 
       overflow: hidden;
       position: relative;
 
@@ -411,6 +412,12 @@ angular-editor {
         border: none;
         font-weight: bold;
       }
+    }
+
+    .form-control-color {
+      height: 1.5rem !important;
+      width: 100% !important;
+      padding: 0.125rem !important;
     }
   }
 

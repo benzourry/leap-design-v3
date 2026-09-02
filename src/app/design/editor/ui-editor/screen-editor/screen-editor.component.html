@@ -701,7 +701,7 @@
 
                               <div class="form-group mt-3">
                                 <label class="form-label">Components</label>
-                                <div class="list-group" cdkDropList
+                                <div class="list-group border border-secondary border-2" style="border-style:dashed !important;" cdkDropList
                                 [cdkDropListData]="curScreen.data?.comps"
                                 cdkDropListOrientation="vertical"
                                 (cdkDropListDropped)="dropSubs($event, 'comps')">
@@ -730,6 +730,8 @@
                                         </button>
                                       </div>
                                     </div>
+                                  }@empty {
+                                    <div class="p-3 text-center text-muted">Drop components here</div>
                                   }
                                   
                                 </div>

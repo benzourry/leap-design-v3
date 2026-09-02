@@ -6,3 +6,41 @@
 ::ng-deep .leaflet-pane {
     z-index: 2;
 }
+
+/* ng-leaflet.component.scss */
+
+// ::ng-deep {
+//   /* Target the map tiles when the app is in dark mode */
+//   [data-bs-theme="dark"] app-ng-leaflet .leaflet-tile-pane,
+//   .dark-mode app-ng-leaflet .leaflet-tile-pane {
+//     /* Inverts colors, shifts the hue back to normal (so water stays blue), and adjusts brightness */
+//     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+//     transition: filter 0.3s ease-in-out;
+//   }
+// }
+
+//recommended
+::ng-deep {
+  [data-bs-theme="dark"] app-ng-leaflet .leaflet-tile-pane,
+  .dark-mode app-ng-leaflet .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) saturate(0.3) brightness(1.1) contrast(1.2);
+    transition: filter 0.3s ease-in-out;
+  }
+}
+
+// ::ng-deep {
+//   [data-bs-theme="dark"] app-ng-leaflet .leaflet-tile-pane,
+//   .dark-mode app-ng-leaflet .leaflet-tile-pane {
+//     filter: invert(100%) grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(250%) brightness(0.9) contrast(1.2);
+//     transition: filter 0.3s ease-in-out;
+//   }
+// }
+
+// ::ng-deep {
+//   [data-bs-theme="dark"] app-ng-leaflet .leaflet-tile-pane,
+//   .dark-mode app-ng-leaflet .leaflet-tile-pane {
+//     /* saturate(0.15) kills the brown, hue-rotate(210deg) adds the slate edge */
+//     filter: invert(100%) hue-rotate(210deg) saturate(0.15) brightness(1.05) contrast(1.15);
+//     transition: filter 0.3s ease-in-out;
+//   }
+// }
