@@ -41,7 +41,10 @@ import {
     faTags, faTasks, faTerminal, faTh, faThLarge, faTimes, faTimesCircle, faToggleOff,
     faToggleOn, faTrash, faUndo, faUniversity, faUnlock, faUpload, faUtensils, faUserEdit, faUserPlus,
     faUserShield, faUsers, faUsersCog, faWifi, faWindowRestore, faCircle as fasCircle,
-    faLaptopFile
+    faLaptopFile,
+    faVideo,
+    faUserGraduate,
+    faUserTie
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- REGULAR (OUTLINE) ICONS ---
@@ -124,7 +127,7 @@ export class SharedModule {
             faSpinner, faSquare, faStar, faStop, faStream, faSync, faTable, faTachometerAlt, faTag,
             faTags, faTasks, faTerminal, faTh, faThLarge, faTimes, faTimesCircle, faToggleOff,
             faToggleOn, faTrash, faUndo, faUniversity, faUnlock, faUpload, faUtensils, faUserEdit, faUserPlus,
-            faUserShield, faUsers, faUsersCog, faWifi, faWindowRestore, fasCircle, faLaptopFile,
+            faUserShield, faUsers, faUsersCog, faWifi, faWindowRestore, fasCircle, faLaptopFile, faVideo, faUserGraduate, faUserTie,
 
             // --- REGULAR ICONS ---
             farBell, farBookmark, faCalendarAlt, faCaretSquareDown, farCheckSquare, farCircle,

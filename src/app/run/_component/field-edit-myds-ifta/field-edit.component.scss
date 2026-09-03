@@ -328,6 +328,8 @@ angular-editor {
         padding: 0 0.5rem; 
         color: var(--bs-secondary-color);
       }
+      .prefix-btn{padding-left:0;}
+      .suffix-btn{padding-right:0;}
       
       .form-control {
         flex: 1;

@@ -228,7 +228,7 @@
                                     @if (notEmptyObject(e.x?.facet)) {
                                       <div style="position:absolute;right:9px;height:5px; width:5px;font-size:12px;">&#9713;</div>
                                     }
-                                    <div class="card-header p-4 bordered element"
+                                    <div class="card-header p-3 bordered element"
                                       [ngClass]="[e.altClass||'']">
                                       <div class="text-white small opacity-50 flytag">
                                         @if (e.pre) {
@@ -306,8 +306,8 @@
                                       </div>
                                     </div>
                                     @if (['section','list','approval','approval-list'].indexOf(e.type)>-1) {
-                                      <div class="card-body p-4">
-                                        <div class="row g-4" [ngStyle]="{'justify-content':e.align}"
+                                      <div class="card-body p-3">
+                                        <div class="row g-3" [ngStyle]="{'justify-content':e.align}"
                                           cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="dropItem($event, e)"
                                           [cdkDropListData]="e?.items" [cdkDropListSortingDisabled]="filterField.length > 0">
                                           @if (e?.items.length==0) {
@@ -364,6 +364,7 @@
                                                     @if (field) {
                                                       <field-edit class="element-item"
                                                         name="fn-{{f.id}}"
+                                                        scopeId="form_{{curForm.id}}_design"
                                                         [field]="field"
                                                         [lookupList]="lookup[f.code]"
                                                         [(ngModel)]="mod[f.code]"

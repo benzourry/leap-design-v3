@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, inject, ChangeDetectionStrategy, DestroyRef, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -343,6 +343,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     private datasetService = inject(DatasetService);
     private screenService = inject(ScreenService);
     private commService = inject(CommService);
+
+    // scopeId = computed<string>(() => {     
+
+    //     return `form_${this.form()}_design`;
+    // });
 
     constructor() {
 
