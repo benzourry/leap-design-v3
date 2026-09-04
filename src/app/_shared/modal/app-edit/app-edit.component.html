@@ -9,445 +9,447 @@
   </div>
   <div [class.disabled]="offline()">
     <div class="tab-simple">
-      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">
-        <li ngbNavItem>
-          <a ngbNavLink>Overview</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane">
-              <div class="m-a" style="max-width:10em;">
-                <div class="img-thumbnail mb-2">
-                  <input type="file" style="display:none" (change)="uploadLogo($event)" id="logo" [(ngModel)]="file"
-                    name="logo" accept="image/*" />
-                  <label class="mb-0 d-block" for="logo">
-                    @if (_data.logo) {
-                      <img src="{{baseApi}}/app/logo/{{_data.logo}}" alt="App Logo"
-                        (error)="handleImageError($event)" style="max-width:100%">
-                      <button class="mt-2 btn btn-xs btn-light mx-auto" (click)="clearLogo()">Clear Logo</button>
-                    }@else{
-                      <img style="background: #aaa" src="assets/img/blank_product.png" alt="Blank logo" width="100%">
-                    }
-                  </label>
-                </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="col-form-label">App Title *</label>
-                <input type="text" class="form-control" [(ngModel)]="_data.title"
-                  (ngModelChange)="_data.id||_data.appPath=toHyphen(_data.title)" name="title"
-                  placeholder="ie: My First App" required>
-              </div>
-              <div class="form-group mb-3">
-                <label class="col-form-label">Description</label>
-                <textarea class="form-control" [(ngModel)]="_data.description" name="description"
-                placeholder="Description of the app"></textarea>
-              </div>
-              <div class="form-group layout">
-                <label class="col-form-label">Choose Layout *</label>
-                <div class="row">
-                  <div class="col-6">
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="sidemenu" name="layout" [(ngModel)]="_data.layout"
-                        value="sidemenu" required>
-                      <label for="sidemenu" class="form-check-label">Side Menu
-                        <div class="ms-0 my-1">
-                          <img src="assets/img/side-menu.svg" alt="Side Menu Layout" [class.selected]="_data.layout=='sidemenu'" width="80%">
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="topnav" name="layout" [(ngModel)]="_data.layout"
-                        value="topnav" required>
-                      <label for="topnav" class="form-check-label">Top Nav
-                        <div class="ms-0 my-1">
-                          <img src="assets/img/top-nav.svg" alt="Top Nav Layout" [class.selected]="_data.layout=='topnav'" width="80%">
-                        </div>
-                      </label>
-                    </div>
+      <div class="nav-wrap">
+        <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">
+          <li ngbNavItem>
+            <a ngbNavLink>Overview</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane">
+                <div class="m-a" style="max-width:10em;">
+                  <div class="img-thumbnail mb-2">
+                    <input type="file" style="display:none" (change)="uploadLogo($event)" id="logo" [(ngModel)]="file"
+                      name="logo" accept="image/*" />
+                    <label class="mb-0 d-block" for="logo">
+                      @if (_data.logo) {
+                        <img src="{{baseApi}}/app/logo/{{_data.logo}}" alt="App Logo"
+                          (error)="handleImageError($event)" style="max-width:100%">
+                        <button class="mt-2 btn btn-xs btn-light mx-auto" (click)="clearLogo()">Clear Logo</button>
+                      }@else{
+                        <img style="background: #aaa" src="assets/img/blank_product.png" alt="Blank logo" width="100%">
+                      }
+                    </label>
                   </div>
                 </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">App Theme</label>
-                <div>
-                  <div class="btn-group-toggle" role="group" name="appTheme">
-                    @for (c of themes; track c.color) {
-                      <input type="radio" name="colorpicker" #formField="ngModel" [(ngModel)]="_data.theme"
-                        [value]="c.color" class="btn-check" id="colorp_{{$index}}" autocomplete="off">
-                      <label class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="c.color==_data.theme"
-                        [ngStyle]="{'background-color':c.color}" for="colorp_{{$index}}">
-                        {{$index+1}}
-                      </label>
-                    }
-                    <div
-                      style="width:38px; height:38px;border-radius:20px; overflow:hidden;position:relative; display:inline-block;vertical-align: middle;margin-top:-4px;">
+                <div class="form-group mb-3">
+                  <label class="col-form-label">App Title *</label>
+                  <input type="text" class="form-control" [(ngModel)]="_data.title"
+                    (ngModelChange)="_data.id||_data.appPath=toHyphen(_data.title)" name="title"
+                    placeholder="ie: My First App" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="col-form-label">Description</label>
+                  <textarea class="form-control" [(ngModel)]="_data.description" name="description"
+                  placeholder="Description of the app"></textarea>
+                </div>
+                <div class="form-group layout">
+                  <label class="col-form-label">Choose Layout *</label>
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" id="sidemenu" name="layout" [(ngModel)]="_data.layout"
+                          value="sidemenu" required>
+                        <label for="sidemenu" class="form-check-label">Side Menu
+                          <div class="ms-0 my-1">
+                            <img src="assets/img/side-menu.svg" alt="Side Menu Layout" [class.selected]="_data.layout=='sidemenu'" width="80%">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" id="topnav" name="layout" [(ngModel)]="_data.layout"
+                          value="topnav" required>
+                        <label for="topnav" class="form-check-label">Top Nav
+                          <div class="ms-0 my-1">
+                            <img src="assets/img/top-nav.svg" alt="Top Nav Layout" [class.selected]="_data.layout=='topnav'" width="80%">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">App Theme</label>
+                  <div>
+                    <div class="btn-group-toggle" role="group" name="appTheme">
+                      @for (c of themes; track c.color) {
+                        <input type="radio" name="colorpicker" #formField="ngModel" [(ngModel)]="_data.theme"
+                          [value]="c.color" class="btn-check" id="colorp_{{$index}}" autocomplete="off">
+                        <label class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="c.color==_data.theme"
+                          [ngStyle]="{'background-color':c.color}" for="colorp_{{$index}}">
+                          {{$index+1}}
+                        </label>
+                      }
                       <div
-                        style="position:absolute;color:white; display:flex;width:38px; height:38px;justify-content: center;align-items: center; pointer-events: none;">
-                        <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                        style="width:38px; height:38px;border-radius:20px; overflow:hidden;position:relative; display:inline-block;vertical-align: middle;margin-top:-4px;">
+                        <div
+                          style="position:absolute;color:white; display:flex;width:38px; height:38px;justify-content: center;align-items: center; pointer-events: none;">
+                          <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                        </div>
+                        <input type="color" id="themepicker" style="height:48px;width:48px;padding:0px;margin:-5px"
+                          [(ngModel)]="_data.theme" name="themepicker">
                       </div>
-                      <input type="color" id="themepicker" style="height:48px;width:48px;padding:0px;margin:-5px"
-                        [(ngModel)]="_data.theme" name="themepicker">
                     </div>
+                    
                   </div>
-                  
                 </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">App Path</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" [(ngModel)]="_data.appPath"
-                    (ngModelChange)="_data.appPath=toHyphen($event)"
-                    [ngModelOptions]="{updateOn: 'blur'}" #appPath="ngModel" name="appPath"
-                    [uniqueAppPath]="initialAppPath" [uniqueAppPathFn]="isPathTaken" required>
-                    <span class="input-group-text">.{{domainBase}}</span>
+                <div class="form-group mb-3">
+                  <label class="form-label">App Path</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" [(ngModel)]="_data.appPath"
+                      (ngModelChange)="_data.appPath=toHyphen($event)"
+                      [ngModelOptions]="{updateOn: 'blur'}" #appPath="ngModel" name="appPath"
+                      [uniqueAppPath]="initialAppPath" [uniqueAppPathFn]="isPathTaken" required>
+                      <span class="input-group-text">.{{domainBase}}</span>
+                  </div>
+                  @if (appPath.pending) {
+                    <small>Checking availability...</small>
+                  }
+                  @if (appPath.invalid) {
+                    <small class="text-danger">
+                      @if (appPath.errors?.uniqueAppPath) {
+                        <span>
+                          App Path <strong>{{_data.appPath}}</strong> is already taken.
+                        </span>
+                      }
+                      @if (appPath.errors?.required) {
+                        <span>
+                          App Path is required.
+                        </span>
+                      }
+                    </small>
+                  }
+                  @if (appPath.valid && _data.appPath && initialAppPath!=_data.appPath) {
+                    <small class="text-success">
+                      App Path <strong>{{_data.appPath}}</strong> is available.
+                    </small>
+                  }
                 </div>
-                @if (appPath.pending) {
-                  <small>Checking availability...</small>
-                }
-                @if (appPath.invalid) {
-                  <small class="text-danger">
-                    @if (appPath.errors?.uniqueAppPath) {
-                      <span>
-                        App Path <strong>{{_data.appPath}}</strong> is already taken.
-                      </span>
+                <div class="form-group mb-3">
+                  <label class="form-label">Sign in with</label>
+                  <div class="row">
+                    @if (checkLogin('sarawakid')) {
+                      <div class="col-4 mb-3 text-center">
+                        <div class="form-check">
+                          <input type="checkbox" class="form-check-input" id="useSarawakid" [(ngModel)]="_data.useSarawakid"
+                            name="useSarawakid">
+                          <label class="form-check-label" for="useSarawakid">
+                            <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true" size="2x"></fa-icon>
+                            <div class="small">SarawakID</div>
+                          </label>
+                        </div>
+                      </div>
                     }
-                    @if (appPath.errors?.required) {
-                      <span>
-                        App Path is required.
-                      </span>
+                    @if (checkLogin('ssone')) {
+                      <div class="col-4 mb-3 text-center">
+                        <div class="form-check">
+                          <input type="checkbox" class="form-check-input" id="useSsone" [(ngModel)]="_data.useSsone"
+                            name="useSsone">
+                          <label class="form-check-label" for="useSsone">
+                            <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
+                            <div class="small">ssOne</div>
+                          </label>
+                        </div>
+                      </div>
                     }
-                  </small>
-                }
-                @if (appPath.valid && _data.appPath && initialAppPath!=_data.appPath) {
-                  <small class="text-success">
-                    App Path <strong>{{_data.appPath}}</strong> is available.
-                  </small>
-                }
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Sign in with</label>
-                <div class="row">
-                  @if (checkLogin('sarawakid')) {
-                    <div class="col-4 mb-3 text-center">
-                      <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useSarawakid" [(ngModel)]="_data.useSarawakid"
-                          name="useSarawakid">
-                        <label class="form-check-label" for="useSarawakid">
-                          <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">SarawakID</div>
-                        </label>
+                    @if (checkLogin('icatsid')) {
+                      <div class="col-4 mb-3 text-center">
+                        <div class="form-check">
+                          <input type="checkbox" class="form-check-input" id="useIcatsid" [(ngModel)]="_data.useIcatsid"
+                            name="useIcatsid">
+                          <label class="form-check-label" for="useIcatsid">
+                            <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
+                            <div class="small">i-CATS Identity</div>
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  }
-                  @if (checkLogin('ssone')) {
-                    <div class="col-4 mb-3 text-center">
-                      <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useSsone" [(ngModel)]="_data.useSsone"
-                          name="useSsone">
-                        <label class="form-check-label" for="useSsone">
-                          <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">ssOne</div>
-                        </label>
+                    }
+                    @if (checkLogin('unimasid')) {
+                      <div class="col-4 mb-3">
+                        <div class="form-check text-center">
+                          <input type="checkbox" class="form-check-input" id="useUnimasid" [(ngModel)]="_data.useUnimasid"
+                            name="useUnimasid">
+                          <label class="form-check-label" for="useUnimasid">
+                            <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
+                            <div class="small">UNIMAS ID</div>
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  }
-                  @if (checkLogin('icatsid')) {
-                    <div class="col-4 mb-3 text-center">
-                      <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="useIcatsid" [(ngModel)]="_data.useIcatsid"
-                          name="useIcatsid">
-                        <label class="form-check-label" for="useIcatsid">
-                          <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">i-CATS Identity</div>
-                        </label>
+                    }
+                    @if (checkLogin('unimas')) {
+                      <div class="col-4 mb-3">
+                        <div class="form-check text-center">
+                          <input type="checkbox" class="form-check-input" id="useUnimas" [(ngModel)]="_data.useUnimas"
+                            name="useUnimas">
+                          <label class="form-check-label" for="useUnimas">
+                            <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
+                            <div class="small">UNIMAS Identity (legacy)</div>
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  }
-                  @if (checkLogin('unimasid')) {
+                    }
                     <div class="col-4 mb-3">
                       <div class="form-check text-center">
-                        <input type="checkbox" class="form-check-input" id="useUnimasid" [(ngModel)]="_data.useUnimasid"
-                          name="useUnimasid">
-                        <label class="form-check-label" for="useUnimasid">
-                          <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">UNIMAS ID</div>
+                        <input type="checkbox" class="form-check-input" id="useGoogle" [(ngModel)]="_data.useGoogle"
+                          name="useGoogle">
+                        <label class="form-check-label" for="useGoogle">
+                          <fa-icon [icon]="['fab','google']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Google Account</div>
                         </label>
                       </div>
                     </div>
-                  }
-                  @if (checkLogin('unimas')) {
                     <div class="col-4 mb-3">
                       <div class="form-check text-center">
-                        <input type="checkbox" class="form-check-input" id="useUnimas" [(ngModel)]="_data.useUnimas"
-                          name="useUnimas">
-                        <label class="form-check-label" for="useUnimas">
-                          <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">UNIMAS Identity (legacy)</div>
+                        <input type="checkbox" class="form-check-input" id="useAzuread" [(ngModel)]="_data.useAzuread"
+                          name="useAzuread">
+                        <label class="form-check-label" for="useAzuread">
+                          <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Microsoft Account</div>
                         </label>
                       </div>
                     </div>
-                  }
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useGoogle" [(ngModel)]="_data.useGoogle"
-                        name="useGoogle">
-                      <label class="form-check-label" for="useGoogle">
-                        <fa-icon [icon]="['fab','google']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Google Account</div>
-                      </label>
+                    <div class="col-4 mb-3">
+                      <div class="form-check text-center">
+                        <input type="checkbox" class="form-check-input" id="useFacebook" [(ngModel)]="_data.useFacebook"
+                          name="useFacebook">
+                        <label class="form-check-label" for="useFacebook">
+                          <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Facebook Account</div>
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useAzuread" [(ngModel)]="_data.useAzuread"
-                        name="useAzuread">
-                      <label class="form-check-label" for="useAzuread">
-                        <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Microsoft Account</div>
-                      </label>
+                    <div class="col-4 mb-3">
+                      <div class="form-check text-center">
+                        <input type="checkbox" class="form-check-input" id="useTwitter" [(ngModel)]="_data.useTwitter"
+                          name="useTwitter">
+                        <label class="form-check-label" for="useTwitter">
+                          <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Twitter Account</div>
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useFacebook" [(ngModel)]="_data.useFacebook"
-                        name="useFacebook">
-                      <label class="form-check-label" for="useFacebook">
-                        <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Facebook Account</div>
-                      </label>
+                    <div class="col-4 mb-3">
+                      <div class="form-check text-center">
+                        <input type="checkbox" class="form-check-input" id="useGithub" [(ngModel)]="_data.useGithub"
+                          name="useGithub">
+                        <label class="form-check-label" for="useGithub">
+                          <fa-icon [icon]="['fab','github']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Github Account</div>
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useTwitter" [(ngModel)]="_data.useTwitter"
-                        name="useTwitter">
-                      <label class="form-check-label" for="useTwitter">
-                        <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Twitter Account</div>
-                      </label>
+                    <div class="col-4 mb-3">
+                      <div class="form-check text-center">
+                        <input type="checkbox" class="form-check-input" id="useLinkedin" [(ngModel)]="_data.useLinkedin"
+                          name="useLinkedin">
+                        <label class="form-check-label" for="useLinkedin">
+                          <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">LinkedIn Account</div>
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useGithub" [(ngModel)]="_data.useGithub"
-                        name="useGithub">
-                      <label class="form-check-label" for="useGithub">
-                        <fa-icon [icon]="['fab','github']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Github Account</div>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useLinkedin" [(ngModel)]="_data.useLinkedin"
-                        name="useLinkedin">
-                      <label class="form-check-label" for="useLinkedin">
-                        <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">LinkedIn Account</div>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-4 mb-3">
-                    <div class="form-check text-center">
-                      <input type="checkbox" class="form-check-input" id="useEmail" [(ngModel)]="_data.useEmail"
-                        name="useEmail">
-                      <label class="form-check-label" for="useEmail">
-                        <fa-icon [icon]="['far','envelope']" [fixedWidth]="true" size="2x"></fa-icon>
-                        <div class="small">Use Email (Signup)</div>
-                      </label>
+                    <div class="col-4 mb-3">
+                      <div class="form-check text-center">
+                        <input type="checkbox" class="form-check-input" id="useEmail" [(ngModel)]="_data.useEmail"
+                          name="useEmail">
+                        <label class="form-check-label" for="useEmail">
+                          <fa-icon [icon]="['far','envelope']" [fixedWidth]="true" size="2x"></fa-icon>
+                          <div class="small">Use Email (Signup)</div>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Use local user from other app</label>
-                <select class="form-select" name="userFromApp"
-                  [(ngModel)]="_data.x.userFromApp">
-                  <option [ngValue]="undefined" class="text-muted">Use own local user</option>
-                  @for (app of otherAppList(); track app.id) {
-                    <option [ngValue]="app.id">{{app.title}}</option>
+                <div class="form-group mb-3">
+                  <label class="form-label">Use local user from other app</label>
+                  <select class="form-select" name="userFromApp"
+                    [(ngModel)]="_data.x.userFromApp">
+                    <option [ngValue]="undefined" class="text-muted">Use own local user</option>
+                    @for (app of otherAppList(); track app.id) {
+                      <option [ngValue]="app.id">{{app.title}}</option>
+                    }
+                  </select>
+                  @if(_data.x.userFromApp){
+                    <div class="small text-muted mt-2">Merge user's groups from this app with groups from the above app</div>
                   }
-                </select>
-                @if(_data.x.userFromApp){
-                  <div class="small text-muted mt-2">Merge user's groups from this app with groups from the above app</div>
+                </div>
+              </div>
+            </ng-template>
+          </li>
+          <li ngbNavItem>
+            <a ngbNavLink>Advanced</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane">
+                <div class="form-group mb-3">
+                  <label class="col-form-label">Choose App Status * (can be change later)</label>
+                  <div class="row">
+                    <div class="col mb-2">
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" id="status-local" name="status"
+                          [(ngModel)]="_data.status" value="local" required>
+                        <label for="status-local" class="form-check-label">Local
+                          <div class="small">App is only accessible via URL</div>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col mb-2">
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" id="status-published" name="status"
+                          [(ngModel)]="_data.status" value="published" required>
+                        <label for="status-published" class="form-check-label">Published
+                          <div class="small">App available in Marketplace</div>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col mb-2">
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" id="status-template" name="status"
+                          [(ngModel)]="_data.status" value="template" required>
+                        <label for="status-template" class="form-check-label">Template
+                          <div class="small">App only available as template</div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                @if (_data.status=='published') {
+                  <div class="form-group mb-3">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input" id="secret" [(ngModel)]="_data.secret" name="secret">
+                      <label class="form-check-label" for="secret">Protected? (Require activation to copy)</label>
+                    </div>
+                  </div>
                 }
-              </div>
-            </div>
-          </ng-template>
-        </li>
-        <li ngbNavItem>
-          <a ngbNavLink>Advanced</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane">
-              <div class="form-group mb-3">
-                <label class="col-form-label">Choose App Status * (can be change later)</label>
-                <div class="row">
-                  <div class="col mb-2">
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="status-local" name="status"
-                        [(ngModel)]="_data.status" value="local" required>
-                      <label for="status-local" class="form-check-label">Local
-                        <div class="small">App is only accessible via URL</div>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col mb-2">
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="status-published" name="status"
-                        [(ngModel)]="_data.status" value="published" required>
-                      <label for="status-published" class="form-check-label">Published
-                        <div class="small">App available in Marketplace</div>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col mb-2">
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="status-template" name="status"
-                        [(ngModel)]="_data.status" value="template" required>
-                      <label for="status-template" class="form-check-label">Template
-                        <div class="small">App only available as template</div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              @if (_data.status=='published') {
                 <div class="form-group mb-3">
                   <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="secret" [(ngModel)]="_data.secret" name="secret">
-                    <label class="form-check-label" for="secret">Protected? (Require activation to copy)</label>
+                    <input type="checkbox" class="form-check-input" id="reg" [(ngModel)]="_data.reg" name="reg">
+                    <label class="form-check-label" for="reg">New user must register role before use</label>
+                    @if (_data.reg) {
+                      <div class="my-2">
+                        <div class="btn-group btn-group-sm btn-group-toggle" role="group">
+                          <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
+                            [required]="true" value="any" class="btn-check" id="regTypeAny">
+                          <label class="btn btn-outline-secondary" for="regTypeAny"> Any role</label>
+                          <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
+                            [required]="true" value="one" class="btn-check" id="regTypeOnly">
+                          <label class="btn btn-outline-secondary" for="regTypeOnly"> Only one role</label>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="noframe" [(ngModel)]="_data.x.noframe" name="noframe">
+                    <label class="form-check-label" for="noframe">Frameless app (Hide app navigation)</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="topgap" [(ngModel)]="_data.x.topgap" name="topgap">
+                    <label class="form-check-label" for="topgap">Increase top gap (suitable for phone with punch hole camera)</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="canPush" [(ngModel)]="_data.canPush"
+                      name="canPush">
+                    <label class="form-check-label" for="canPush">Enable Push Notification for this app</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="devInData" [(ngModel)]="_data.x.devInData"
+                      name="devInData">
+                    <label class="form-check-label" for="devInData">Enable access to Live data in Dev mode (for troubleshooting)</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="cookieBanner" [(ngModel)]="_data.x.cookieBanner"
+                      name="cookieBanner">
+                    <label class="form-check-label" for="cookieBanner">Enable cookie consent banner</label>
+                  </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="mailbox" [(ngModel)]="_data.x.mailbox"
+                      name="mailbox">
+                    <label class="form-check-label" for="mailbox">Enable inbox icon in navigation (beside app title)</label>
                   </div>
                 </div>
-              }
-              <div class="form-group mb-3">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="reg" [(ngModel)]="_data.reg" name="reg">
-                  <label class="form-check-label" for="reg">New user must register role before use</label>
-                  @if (_data.reg) {
-                    <div class="my-2">
-                      <div class="btn-group btn-group-sm btn-group-toggle" role="group">
-                        <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
-                          [required]="true" value="any" class="btn-check" id="regTypeAny">
-                        <label class="btn btn-outline-secondary" for="regTypeAny"> Any role</label>
-                        <input type="radio" name="regType" [(ngModel)]="_data.x.regType"
-                          [required]="true" value="one" class="btn-check" id="regTypeOnly">
-                        <label class="btn btn-outline-secondary" for="regTypeOnly"> Only one role</label>
-                      </div>
-                    </div>
-                  }
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="noframe" [(ngModel)]="_data.x.noframe" name="noframe">
-                  <label class="form-check-label" for="noframe">Frameless app (Hide app navigation)</label>
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="topgap" [(ngModel)]="_data.x.topgap" name="topgap">
-                  <label class="form-check-label" for="topgap">Increase top gap (suitable for phone with punch hole camera)</label>
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="canPush" [(ngModel)]="_data.canPush"
-                    name="canPush">
-                  <label class="form-check-label" for="canPush">Enable Push Notification for this app</label>
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="devInData" [(ngModel)]="_data.x.devInData"
-                    name="devInData">
-                  <label class="form-check-label" for="devInData">Enable access to Live data in Dev mode (for troubleshooting)</label>
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="cookieBanner" [(ngModel)]="_data.x.cookieBanner"
-                    name="cookieBanner">
-                  <label class="form-check-label" for="cookieBanner">Enable cookie consent banner</label>
-                </div>
-               <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="mailbox" [(ngModel)]="_data.x.mailbox"
-                    name="mailbox">
-                  <label class="form-check-label" for="mailbox">Enable inbox icon in navigation (beside app title)</label>
-                </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">One-off Screen (display once after first login)</label>
-                <select class="form-select" name="once" [(ngModel)]="_data.once">
-                  <option [ngValue]="undefined" class="text-muted">No term (skip)</option>
-                  @for (p of screens(); track p.id) {
-                    <option [ngValue]="p.id">{{p.title}}</option>
-                  }
-                </select>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Privacy Policy URL (in login page)</label>
-                <input type="text" class="form-control" [(ngModel)]="_data.x.privPol" #appDomain="ngModel"
-                  name="privPol">
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Forward Domain (require forward setup)</label>
-                <input type="text" class="form-control" [(ngModel)]="_data.appDomain" #appDomain="ngModel"
-                  name="appDomain">
-              </div>
-              @if (_data?.id) {
                 <div class="form-group mb-3">
-                  <label class="form-label">Creator (email, comma separated)</label>
-                  <input type="text" class="form-control" [(ngModel)]="_data.email" name="email">
-                </div>
-              }
-              @if (_data.id) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Default start page</label>
-                  <select class="form-select" name="startPage" [(ngModel)]="_data.startPage">
-                    <option [ngValue]="undefined">Tiles Home Page</option>
-                    @for (p of pages(); track p.path) {
-                      <option [ngValue]="p.path">{{p.title}}</option>
+                  <label class="form-label">One-off Screen (display once after first login)</label>
+                  <select class="form-select" name="once" [(ngModel)]="_data.once">
+                    <option [ngValue]="undefined" class="text-muted">No term (skip)</option>
+                    @for (p of screens(); track p.id) {
+                      <option [ngValue]="p.id">{{p.title}}</option>
                     }
                   </select>
                 </div>
-              }
-              <div class="form-group mb-3">
-                <label class="form-label">Default Language</label>
-                <div>
-                  <div class="btn-group-sm" role="group">
-                    <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="ms" class="btn-check"
-                      id="langMs">
-                    <label class="btn btn-outline-secondary me-1 mb-1" for="langMs">Bahasa Melayu</label>
-                    <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="en" class="btn-check"
-                      id="langEn">
-                    <label class="btn btn-outline-secondary me-1 mb-1" for="langEn">English</label>
+                <div class="form-group mb-3">
+                  <label class="form-label">Privacy Policy URL (in login page)</label>
+                  <input type="text" class="form-control" [(ngModel)]="_data.x.privPol" #appDomain="ngModel"
+                    name="privPol">
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Forward Domain (require forward setup)</label>
+                  <input type="text" class="form-control" [(ngModel)]="_data.appDomain" #appDomain="ngModel"
+                    name="appDomain">
+                </div>
+                @if (_data?.id) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Creator (email, comma separated)</label>
+                    <input type="text" class="form-control" [(ngModel)]="_data.email" name="email">
+                  </div>
+                }
+                @if (_data.id) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Default start page</label>
+                    <select class="form-select" name="startPage" [(ngModel)]="_data.startPage">
+                      <option [ngValue]="undefined">Tiles Home Page</option>
+                      @for (p of pages(); track p.path) {
+                        <option [ngValue]="p.path">{{p.title}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                <div class="form-group mb-3">
+                  <label class="form-label">Default Language</label>
+                  <div>
+                    <div class="btn-group-sm" role="group">
+                      <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="ms" class="btn-check"
+                        id="langMs">
+                      <label class="btn btn-outline-secondary me-1 mb-1" for="langMs">Bahasa Melayu</label>
+                      <input type="radio" name="lang" [(ngModel)]="_data.x.lang" value="en" class="btn-check"
+                        id="langEn">
+                      <label class="btn btn-outline-secondary me-1 mb-1" for="langEn">English</label>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Custom Menu Style CSS</label>
-                <div class="mx-n3">
-                  <app-cm name="menuCss" lang="html" label="Custom Menu Style CSS"
-                    placeholder="Add your css properties here"
-                    [(ngModel)]="_data.x.menuCss" [linenumber]="true">
-                  </app-cm>
+                <div class="form-group mb-3">
+                  <label class="form-label">Custom Menu Style CSS</label>
+                  <div class="mx-n3">
+                    <app-cm name="menuCss" lang="html" label="Custom Menu Style CSS"
+                      placeholder="Add your css properties here"
+                      [(ngModel)]="_data.x.menuCss" [linenumber]="true">
+                    </app-cm>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">App Welcome Text</label>
-                <div class="mx-n3">
-                  <app-cm name="welcomeText" lang="html" label="App Welcome Text"
-                    placeholder="Support HTML tag"
-                    [(ngModel)]="_data.x.welcomeText" [linenumber]="true">
-                  </app-cm>
+                <div class="form-group mb-3">
+                  <label class="form-label">App Welcome Text</label>
+                  <div class="mx-n3">
+                    <app-cm name="welcomeText" lang="html" label="App Welcome Text"
+                      placeholder="Support HTML tag"
+                      [(ngModel)]="_data.x.welcomeText" [linenumber]="true">
+                    </app-cm>
+                  </div>
                 </div>
-              </div>
 
-              <div class="form-group mb-3">
-                <label class="form-label">App Group</label>
-                <select class="form-select" name="appGroup"
-                  [compareWith]="compareByIdFn" 
-                  [(ngModel)]="_data.group">
-                  <option [ngValue]="undefined" class="text-muted">Ungroup</option>
-                  @for (app of appGroups(); track app.id) {
-                    <option [ngValue]="app">{{app.name}}</option>
-                  }
-                </select>
+                <div class="form-group mb-3">
+                  <label class="form-label">App Group</label>
+                  <select class="form-select" name="appGroup"
+                    [compareWith]="compareByIdFn" 
+                    [(ngModel)]="_data.group">
+                    <option [ngValue]="undefined" class="text-muted">Ungroup</option>
+                    @for (app of appGroups(); track app.id) {
+                      <option [ngValue]="app">{{app.name}}</option>
+                    }
+                  </select>
+                </div>
               </div>
-            </div>
-          </ng-template>
-        </li>
-      </ul>
+            </ng-template>
+          </li>
+        </ul>
+      </div>
       <div [ngbNavOutlet]="nav"></div>
     </div>
   </div>

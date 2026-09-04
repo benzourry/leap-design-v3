@@ -22,7 +22,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 @if (form().nav === 'accordions') {
   @if (sectionMap[-1]?.length > 0){
     @let tabPre = {id: -1, sortOrder: -1, title: "(head)"};
-    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre}"></ng-container>
+    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre, isPre:true}"></ng-container>
   }
   <div ngbAccordion class="pb-3 mt-3" [destroyOnHide]="false" [closeOthers]="true" #nav>
     @for (tab of formTab(); track tab.id) {
@@ -52,43 +52,45 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   </div>
   @if (sectionMap[-999]?.length > 0){
     @let tabPost = {id: -999, sortOrder: 999, title: "(bottom)"};
-    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPost}"></ng-container>
+    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPost, isPost:true}"></ng-container>
   }
 }
 
 @if (['tabs','pills','underline'].includes(form().nav)) {
   @if (sectionMap[-1]?.length > 0){
     @let tabPre = {id: -1, sortOrder: -1, title: "(head)"};
-    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre}"></ng-container>
+    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre, isPre:true}"></ng-container>
   }
-  <div class="tab-simple mt-3">
-    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
-      [class.limit-width]="!form()?.x?.wide"
-      class="nav-{{form().nav}} justify-content-center d-print-none centered">
-      @for (tab of formTab(); track tab.id) {
-        <li [ngbNavItem]="'view' + $index" [disabled]="!disabledTabs()[tab.id]">
-          <a ngbNavLink>
-            @if (form().showIndex) {
-              <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
-                padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
-                border-radius:20px;">{{$index + 1}}</div>
-            }
-            @if (tab.x?.icon){
-              <fa-icon [icon]="tab.x?.icon | iconSplit" [fixedWidth]="true"></fa-icon>
-            }
-            {{tab.title}}
-          </a>
-          <ng-template ngbNavContent>
-            <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tab}"></ng-container>
-          </ng-template>
-        </li>
-      }
-    </ul>
+  <div class="tab-simple tab-hscroll">
+    <div class="nav-wrap py-3">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
+        [class.limit-width]="!form()?.x?.wide"
+        class="nav-{{form().nav}} justify-content-center px-3 d-print-none centered">
+        @for (tab of formTab(); track tab.id) {
+          <li [ngbNavItem]="'view' + $index" [disabled]="!disabledTabs()[tab.id]">
+            <a ngbNavLink>
+              @if (form().showIndex) {
+                <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
+                  padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
+                  border-radius:20px;">{{$index + 1}}</div>
+              }
+              @if (tab.x?.icon){
+                <fa-icon [icon]="tab.x?.icon | iconSplit" [fixedWidth]="true"></fa-icon>
+              }
+              {{tab.title}}
+            </a>
+            <ng-template ngbNavContent>
+              <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tab}"></ng-container>
+            </ng-template>
+          </li>
+        }
+      </ul>
+    </div>
     <div [ngbNavOutlet]="nav"></div>
   </div>
   @if (sectionMap[-999]?.length > 0){
     @let tabPost = {id: -999, sortOrder: 999, title: "(bottom)"};
-    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPost}"></ng-container>
+    <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPost, isPost:true}"></ng-container>
   }
 }
 
@@ -98,8 +100,8 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   </div>
 }
 
-<ng-template #sectionGroup let-tab="tab">
-  <div class="single-pane section-group">
+<ng-template #sectionGroup let-tab="tab" let-isPre="isPre" let-isPost="isPost">
+  <div class="single-pane section-group" [ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}">
     <div class="fix-gutter centered" [class.limit-width]="!form()?.x?.wide">
       <div class="row" [ngStyle]="{'justify-content': form()?.align}">
         @for (e of this.sectionMap[tab?.id]; track e.id; let lastSection = $last) {
@@ -107,7 +109,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             @if (e.type === 'section') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
-                  class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [ngClass]="e.style">
+                   class="mb-md-3 mb-1" [ngClass]="e.style">
                   @if (!e.hideHeader) {
                     <div class="card-header p-3" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
@@ -133,7 +135,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                   }
                   <div [ngbCollapse]="e.x?.collapsible ? e.x?.collapsed : false">
                     <div class="card-body p-3">
-                      <div class="row g-4" [ngStyle]="{'justify-content': e.align}">
+                      <div class="row g-3" [ngStyle]="{'justify-content': e.align}">
                         @for (f of e.items; track f.id) {
                           @let field = form()?.items[f.code];
                           @if (field && preItem()[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {
@@ -203,7 +205,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             @if (e.type === 'list') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
-                  class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [ngClass]="e.style">
+                  class="mb-md-3 mb-1"  [ngClass]="e.style">
                   @if (!e.hideHeader) {
                     <div class="card-header p-3 bordered" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
@@ -293,7 +295,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                       } @else {
                         @for(listKv of groupedChildList[e.code]; track $index; let $index_g = $index) {
                           @if (e.x?.defGroupField) {
-                            <button class="w-100 border-0 px-4 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
+                            <button class="w-100 border-0 px-3 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="hideGroup[e.code+listKv?.key] = !hideGroup[e.code+listKv?.key]">
                               @if(!hideGroup[e.code+listKv?.key]) {
                                 <fa-icon [icon]="['fas','angle-up']" [fixedWidth]="true"></fa-icon>
                               } @else {
@@ -311,11 +313,11 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                           }
                           
                           @if(!hideGroup[e.code+listKv?.key]) {
-                            <div class="list-group list-group-flush list-child position-relative px-4 py-1">
+                            <div class="list-group list-group-flush list-child position-relative px-3 py-1">
                               @for (child of listKv.value; track $index; let $index_c = $index) {
                                 @let $index_child = $index_g + '-' + $index_c;
-                                <div class="list-group-item px-0 py-4 form-horizontal fix-gutter">
-                                  <div class="row g-4">
+                                <div class="list-group-item px-0 py-3 form-horizontal fix-gutter">
+                                  <div class="row g-3">
                                     @for (f of e.items; track f.id) {
                                       @let field = form()?.items[f.code];
                                       @if (field && preItem()[e.code][$index_child]?.[f.code] && field?.x?.facet?.['view'] !== 'none' && e.x?.facet?.['view'] !== 'none') {

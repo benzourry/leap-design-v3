@@ -112,17 +112,23 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
     width: 1px;
   }
 
-  table.tblcard > .list-tmid > tr {
+  table.tblcard > .list-tmid > tr.ds-row {
     display: block;
-    margin-bottom: .625em;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.12);
-    border-radius: 12px;
+    margin-bottom: .5em;
+    // box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.12);
+    // border-radius: 12px;
     overflow: hidden;
     background: var(--bs-body-bg);
   }
 
   table.tblcard > .list-tmid > tr.ds-group-header {
     box-shadow: none;
+
+    .acc-btn{
+      background: transparent !important;
+      padding:1rem !important;
+      font-size:1rem;
+    }
   }
 
   table.tblcard > .list-tmid > tr.selected-row {
@@ -134,11 +140,13 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
   table.tblcard > .list-tmid > tr > td.ds-index {    
     display: inline-block;
     border-bottom: none;
+    background-color: var(--bs-secondary-bg) !important;
+    color: var(--bs-secondary-color) !important;
   }
 
   table.tblcard > .list-tmid > tr > .ds-check {
     text-align: left;
-    padding-left: 0.8em;
+    padding-left: 1rem;
   }  
 
   table.tblcard .ds-agg {
@@ -149,24 +157,63 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
     background-color: rgba(var(--bs-primary-rgb), 0.15);
   }
 
+  // table.tblcard > .list-tmid > tr > td {
+  //   border-bottom: 1px solid var(--bs-border-color);
+  //   display: block;
+  //   font-size: .8em;
+  //   text-align: right;
+  //   background-color: var(--bs-body-bg);
+  // }
   table.tblcard > .list-tmid > tr > td {
-    border-bottom: 1px solid var(--bs-border-color);
-    display: block;
+    border-bottom: none;
     font-size: .8em;
+    background-color: transparent;
     text-align: right;
-    background-color: var(--bs-body-bg);
+    
+          padding: 0.5rem 1rem;
+    
+    /* Add Flexbox */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Aligns both to the top when wrapping occurs */
+    gap: 1rem; /* Replaces the padding-right on the pseudo-element */
+    position:relative;
   }
 
   table.tblcard > .list-tmid > tr > td.ds-item:first-child {
     padding-top: 20px;
   }
 
-  table.tblcard > .list-tmid > tr > td::before {
+  // table.tblcard > .list-tmid > tr > td::before {
+  //   content: attr(data-label);
+  //   float: left;
+  //   font-weight: bold;
+  //   text-transform: uppercase;
+  //   padding-right: 1em;
+  // }
+  table.tblcard > .list-tmid > tr > td.ds-item::before {
     content: attr(data-label);
-    float: left;
-    font-weight: bold;
-    text-transform: uppercase;
-    padding-right: 1em;
+    // font-weight: bold;
+    text-transform: none;
+
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    
+    /* Updated for Flexbox */
+    text-align: left;
+    flex: 0 1 auto;
+    max-width: 50%; /* Ensures the label never exceeds half the card width */
+    word-wrap: break-word;
+  }
+  table.tblcard > .list-tmid > tr > td.ds-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+    right: 1rem;
+    height: 0; /* Change to 0 */
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+    // border-bottom: 1px solid var(--bs-border-color);
   }
 
   table.tblcard > .list-tmid > tr > td:last-child {
@@ -174,7 +221,19 @@ table.tblcard > .list-tmid > tr > td.td-list::before {
   }
 
   table.tblcard .ds-action {
-    padding: 6px !important;
+    padding: 0.5rem 1rem !important;
+  }
+
+  //added
+  table.tblcard > .list-tmid > tr > td > .clearfix {
+    display: none;
+  }
+
+  //added
+  table.tblcard > .list-tmid > tr > td > field-view {
+    font-size:0.9rem;
+    flex: 1 1 auto;
+    min-width: 0; /* Prevents flex children from overflowing their container */
   }
 }
 

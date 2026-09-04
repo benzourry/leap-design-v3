@@ -49,7 +49,7 @@
             @if (form().nav == 'accordions' && form().tabs?.length > 0) {
               @if (sectionMap()[-1]?.length > 0) {
                 @let tabPre = {id:-1, sortOrder:-1, title:"(head)"};
-                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
+                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true, isPre: true}"></ng-container>
               }
 
               <div ngbAccordion class="" [destroyOnHide]="false" [closeOthers]="true" #nav="ngbAccordion">
@@ -86,43 +86,45 @@
 
               @if (sectionMap()[-999]?.length > 0) {
                 @let tabPost = {id:-999, sortOrder:999, title:"(bottom)"};
-                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPost, isPrePost: true}"></ng-container>
+                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPost, isPrePost: true, isPost: true}"></ng-container>
               }
             } @else if (['tabs','pills','underline'].includes(form().nav) && form().tabs?.length > 0) {
               @if (sectionMap()[-1]?.length > 0) {
                 @let tabPre = {id:-1, sortOrder:-1, title:"(head)"};
-                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true}"></ng-container>
+                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPre, isPrePost: true, isPre: true}"></ng-container>
               }
 
-              <div class="tab-simple">
-                <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + _navIndex()"
-                  [class.limit-width]="!form()?.x?.wide" [hidden]="!filteredTabs()?.length"
-                  class="nav-{{form().nav}} justify-content-center centered" [class.pe-none]="form().x?.progression && form().x?.noPageSkip">
-                  @for (tab of filteredTabs(); track tab.id) {
-                    <li [ngbNavItem]="_action + $index" [hidden]="(tab.x?.facet?.[_action] == 'hidden')" [disabled]="!disabledTabs()[tab.id]">
-                      <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" (click)="tabPostAction($index)" queryParamsHandling="preserve">
-                        @if (form().showIndex) {
-                          <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
-                            padding:0px;margin-left:-5px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
-                            border-radius:20px;">{{$index + 1}}</div>
-                        }
-                        @if (tab.x?.icon) {
-                          <fa-icon [icon]="tab.x?.icon | iconSplit" [fixedWidth]="true"></fa-icon>
-                        }
-                        {{tab.title}}
-                      </a>
-                      <ng-template ngbNavContent>
-                        <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tab, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
-                      </ng-template>
-                    </li>
-                  }
-                </ul>
+              <div class="tab-simple tab-hscroll">
+                <div class="nav-wrap py-3">
+                  <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + _navIndex()"
+                    [class.limit-width]="!form()?.x?.wide" [hidden]="!filteredTabs()?.length"
+                    class="nav-{{form().nav}} justify-content-center centered px-3" [class.pe-none]="form().x?.progression && form().x?.noPageSkip">
+                    @for (tab of filteredTabs(); track tab.id) {
+                      <li [ngbNavItem]="_action + $index" [hidden]="(tab.x?.facet?.[_action] == 'hidden')" [disabled]="!disabledTabs()[tab.id]">
+                        <a ngbNavLink [routerLink]="[]" [queryParams]="{tab:$index}" (click)="tabPostAction($index)" queryParamsHandling="preserve">
+                          @if (form().showIndex) {
+                            <div style="float:left;height:20px; width:20px;background:#666; color:white; font-size: .8em;
+                              padding:0px;margin-left:-3px;margin-top:1px;line-height: 20px; text-align: center; margin-right:0.3em;
+                              border-radius:20px;">{{$index + 1}}</div>
+                          }
+                          @if (tab.x?.icon) {
+                            <fa-icon [icon]="tab.x?.icon | iconSplit" [fixedWidth]="true"></fa-icon>
+                          }
+                          {{tab.title}}
+                        </a>
+                        <ng-template ngbNavContent>
+                          <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tab, tabidx:$index, tabids:_action+$index, tabfirst:$first, tablast:$last}"></ng-container>
+                        </ng-template>
+                      </li>
+                    }
+                  </ul>
+                </div>
                 <div [ngbNavOutlet]="nav"></div>
               </div>
 
               @if (sectionMap()[-999]?.length > 0) {
                 @let tabPost = {id:-999, sortOrder:999, title:"(bottom)"};
-                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPost, isPrePost: true}"></ng-container>
+                <ng-container *ngTemplateOutlet="sectionGroup; context:{tab:tabPost, isPrePost: true, isPost: true}"></ng-container>
               }
             } @else {
               <div>
@@ -131,7 +133,7 @@
             }
 
             @if (!(form().nav != 'simple' && form().x?.progression)) {
-              <div class="single-pane pt-0">
+              <div class="single-pane">
                 <div class="centered d-flex" [class.limit-width]="!form()?.x?.wide">
                   @if (form() && form().canSave) {
                     <button type="button" class="btn btn-round btn-primary" (click)="save()"
@@ -173,9 +175,9 @@
         </div>
 
         <!-- SECTION GROUP TEMPLATE -->
-        <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
+        <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-isPre="isPre" let-isPost="isPost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
-          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id">
+          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id" [ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}">
             <div class="centered" [class.limit-width]="!form()?.x?.wide">
               <div class="row" [ngStyle]="{'justify-content': form().align}">
                 @for (e of sectionMap()[tab?.id]; track e.id; let lastSection = $last) {
@@ -184,8 +186,7 @@
                       <div [class]="e.size || 'col-sm-12'"
                         [class.disabled]="e.enabledFor && !e.enabledFor.includes(user().email)"
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
-                        
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-sm-3" [class.mb-1]="!lastSection" [class.mb-0]="lastSection" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-md-3 mb-1" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
@@ -318,7 +319,7 @@
                         
                         <!-- ⚠️ IMPORTANT: List-level ngModelGroup for validation scoping -->
                         <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-1 mb-sm-3" [class]="classSection()[e.id]"
-                          [class.no-hr]="e.x?.collapsed" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
+                          [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
                             <div class="card-header p-3 bordered" 
@@ -463,7 +464,7 @@
                               } @else {
                                 @for (listKv of groupedChildList()[e.code]; track $index; let $index_g = $index) {
                                   @if (e.x?.defGroupField) {
-                                    <button class="w-100 border-0 px-4 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="toggleHideGroup(e.code, listKv?.key)">
+                                    <button class="w-100 border-0 px-3 text-start d-flex flex-row position-relative bg-light fw-bold" (click)="toggleHideGroup(e.code, listKv?.key)">
                                       <fa-icon [icon]="['fas', !hideGroup()[e.code + listKv?.key] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
                                       <div class="ms-2">
                                         @if (listKv?.key == 'undefined') {
@@ -476,11 +477,11 @@
                                     </button>
                                   }
                                   @if (!hideGroup()[e.code + listKv?.key]) {
-                                    <div class="list-group list-group-flush list-child position-relative px-4 py-1">
+                                    <div class="list-group list-group-flush list-child position-relative px-3 py-1">
                                       @for (child of listKv.value; track child.__index; let $index_c = $index; let $first_c = $first; let $last_c = $last) {
                                         @let $index_child = $index_g + '-' + $index_c;
-                                        <div class="list-group-item px-0 py-4 form-horizontal fix-gutter" [class.element]="!e.inline" [class]="child.altClass">
-                                          <div class="row g-4">
+                                        <div class="list-group-item px-0 py-3 form-horizontal fix-gutter" [class.element]="!e.inline" [class]="child.altClass">
+                                          <div class="row g-3">
                                             @for (f of e.items; track f.id; let $index_f = $index) {
                                               @let field = form()?.items[f.code];
                                               @if (field && preItem()[e.code]?.[$index_child]?.[f.code] && !((field?.x?.facet?.[_action] || e.x?.facet?.[_action]) == 'none')) {
@@ -612,7 +613,7 @@
           </div>
 
           @if (form().nav != 'simple' && form().x?.progression && !isPrePost) {
-            <div class="single-pane pt-0">
+            <div class="single-pane">
               <div class="centered d-flex" [class.limit-width]="!form()?.x?.wide">
                 @if (!tabfirst) {
                   <button type="button" class="btn btn-round btn-outline-secondary text-truncate me-2" (click)="progBack(tabidx)">
@@ -745,7 +746,7 @@
       <!-- Re-use the existing Error Panel Template. We pass a mock 'e' object with a unique string ID to avoid clashing with main sections -->
       <ng-container *ngTemplateOutlet="errorPanelTpl; context: {e: {id: 'modal_edit'}, sForm: editChildForm}"></ng-container>
       <div class="modal-body fix-gutter">
-        <div class="row display-flex g-4">
+        <div class="row display-flex g-3">
           @for (f of editChildItems.section.items; track f.id) {
             @let field = form()?.items[f.code];
             @if (field && preChildItem()[f.code] && !((field?.x?.facet?.[_action] || editChildItems.section?.x?.facet?.[_action]) == 'none')) {

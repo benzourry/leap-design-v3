@@ -21,7 +21,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NgbModal, NgbDateAdapter, NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { base, baseApi } from '../../_shared/constant.service';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
-import { PlatformLocation, NgTemplateOutlet, NgStyle, DatePipe } from '@angular/common';
+import { PlatformLocation, NgTemplateOutlet, NgStyle, DatePipe, NgClass } from '@angular/common';
 import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { LogService } from '../../_shared/service/log.service';
@@ -58,7 +58,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   imports: [FormsModule, PageTitleComponent, StepWizardComponent, FormViewComponent, NgbAccordionDirective, NgbAccordionItem,
     NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody,
     NgTemplateOutlet, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, RouterLink, NgbNavContent, NgbNavOutlet,
-    NgStyle, FaIconComponent, FieldViewComponent, FieldEditComponent,
+    NgStyle, NgClass, FaIconComponent, FieldViewComponent, FieldEditComponent,
     forwardRef(() => ListComponent), forwardRef(() => ScreenComponent),
     DatePipe, IconSplitPipe,
     NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,

@@ -396,240 +396,242 @@
       <h4 class="modal-title">{{editItemData.id?'Edit':'Add'}} Item</h4>
     </div>
     <div class="tab-simple fix-gutter" justify="center">
-      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
-        <li ngbNavItem>
-          <a ngbNavLink>Basic Info</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane p-3">
-              <div class="form-group mb-3">
-                <label class="form-label">Title *</label>
-                <input type="text" class="form-control" [(ngModel)]="editItemData.title"
-                  placeholder="ie: Registration" name="title" required>
+      <div class="nav-wrap">
+        <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+          <li ngbNavItem>
+            <a ngbNavLink>Basic Info</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane p-3">
+                <div class="form-group mb-3">
+                  <label class="form-label">Title *</label>
+                  <input type="text" class="form-control" [(ngModel)]="editItemData.title"
+                    placeholder="ie: Registration" name="title" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Type *</label>
+                  <div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-form" name="type"
+                        [(ngModel)]="editItemData.type" value="form" required>
+                      <label for="type-form" class="form-check-label">Form</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-form-single" name="type"
+                        [(ngModel)]="editItemData.type" value="form-single" required>
+                      <label for="type-form-single" class="form-check-label">Form Single</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-view-single" name="type"
+                        [(ngModel)]="editItemData.type" value="view-single" required>
+                      <label for="type-view-single" class="form-check-label">View Single</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-dataset" name="type"
+                        [(ngModel)]="editItemData.type" value="dataset" required>
+                      <label for="type-dataset" class="form-check-label">Dataset</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-dashboard" name="type"
+                        [(ngModel)]="editItemData.type" value="dashboard" required>
+                      <label for="type-dashboard" class="form-check-label">Dashboard</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-screen" name="type"
+                        [(ngModel)]="editItemData.type" value="screen" required>
+                      <label for="type-screen" class="form-check-label">Screen</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-lookup" name="type"
+                        [(ngModel)]="editItemData.type" value="lookup" required>
+                      <label for="type-lookup" class="form-check-label">Lookup</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-external" name="type"
+                        [(ngModel)]="editItemData.type" value="external" required>
+                      <label for="type-external" class="form-check-label">External URL (open in new tab)</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-internal" name="type"
+                        [(ngModel)]="editItemData.type" value="internal" required>
+                      <label for="type-internal" class="form-check-label">Internal URL</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-lambda" name="type"
+                        [(ngModel)]="editItemData.type" value="lambda" required>
+                      <label for="type-lambda" class="form-check-label">Lambda WebUI</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="type-user" name="type"
+                        [(ngModel)]="editItemData.type" value="user" required>
+                      <label for="type-user" class="form-check-label">Manage User Group</label>
+                    </div>
+                  </div>
+                </div>
+                @if (['form','form-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select App</label>
+                    <select class="form-select" name="appId"
+                      (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
+                      [(ngModel)]="editItemData.appId">
+                      @for (app of otherAppList; track app.id) {
+                        <option [ngValue]="app.id">{{app.title}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['form','form-single','view-single'].indexOf(editItemData.type)>-1) {
+                  <div class="form-group mb-3"
+                    >
+                    <label class="form-label">Select Form *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId" required>
+                      <option value="" disabled>Select form...</option>
+                      @for (form of formList; track form.id) {
+                        <option [value]="form.id">{{form.title}} [{{form.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='dataset') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select Dataset *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId" required>
+                      <option value="" disabled>Select dataset...</option>
+                      @for (dataset of datasetList; track dataset.id) {
+                        <option [value]="dataset.id">{{dataset.title}}
+                          [{{dataset.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='dashboard') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select Dashboard *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId" required>
+                      <option value="" disabled>Select dashboard...</option>
+                      @for (dashboard of dashboardList; track dashboard.id) {
+                        <option [value]="dashboard.id">
+                        {{dashboard.title}} [{{dashboard.id}}]</option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='screen') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select Screen *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId" required>
+                      <option value="" disabled>Select custom screen...</option>
+                      @for (screen of screenList; track screen.id) {
+                        <option [value]="screen.id">{{screen.title}}
+                          [{{screen.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='lookup') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select Lookup *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId" required>
+                      <option value="" disabled>Select lookup...</option>
+                      @for (lookup of lookupList; track lookup.id) {
+                        <option [value]="lookup.id">{{lookup.name}}
+                          [{{lookup.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='user') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select User Group *</label>
+                    <select class="form-select" name="screenId"
+                      [(ngModel)]="editItemData.screenId">
+                      <option [ngValue]="undefined">All group</option>
+                      @for (access of accessList; track access.id) {
+                        <option [value]="access.id">{{access.name}}
+                          [{{access.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='lambda') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select Lambda *</label>
+                    <select class="form-select" name="url"
+                      [(ngModel)]="editItemData.url" required>
+                      <option value="" disabled>Select lambda...</option>
+                      @for (lambda of lambdaList; track lambda.id) {
+                        <option [value]="lambda.code">{{lambda.name}}
+                          [{{lambda.id}}]
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (editItemData.type=='external'||editItemData.type=='internal') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">External/Internal URL *</label>
+                    <input class="form-control" type="text" name="url"
+                      [(ngModel)]="editItemData.url"
+                      placeholder="ie: https://organization.com/path" required>
+                  </div>
+                }
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="slc"
+                      [(ngModel)]="editItemData.x.slc" name="slc">
+                    <label class="form-check-label" for="slc">Skip Location Change (hide URL change in address bar)</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="hideDesc"
+                      [(ngModel)]="editItemData.x.hideDesc" name="hideDesc">
+                    <label class="form-check-label" for="hideDesc">Hide description in Tiles page</label>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="menuBadge"
+                      [(ngModel)]="editItemData.x.menuBadge" name="menuBadge">
+                    <label class="form-check-label" for="menuBadge">Show Count Badge in Sidebar/Topnav</label>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Pre-requisite (hide item if condition not
+                  satisfied)</label>
+                  <div class="mx-n3">
+                    <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
+                      label="Item Pre-requisite"
+                      [linenumber]="true" placeholder="Expression (ie: $user$.provider=='google')">
+                    </app-cm>
+                  </div>
+                </div>
               </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Type *</label>
-                <div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-form" name="type"
-                      [(ngModel)]="editItemData.type" value="form" required>
-                    <label for="type-form" class="form-check-label">Form</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-form-single" name="type"
-                      [(ngModel)]="editItemData.type" value="form-single" required>
-                    <label for="type-form-single" class="form-check-label">Form Single</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-view-single" name="type"
-                      [(ngModel)]="editItemData.type" value="view-single" required>
-                    <label for="type-view-single" class="form-check-label">View Single</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-dataset" name="type"
-                      [(ngModel)]="editItemData.type" value="dataset" required>
-                    <label for="type-dataset" class="form-check-label">Dataset</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-dashboard" name="type"
-                      [(ngModel)]="editItemData.type" value="dashboard" required>
-                    <label for="type-dashboard" class="form-check-label">Dashboard</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-screen" name="type"
-                      [(ngModel)]="editItemData.type" value="screen" required>
-                    <label for="type-screen" class="form-check-label">Screen</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-lookup" name="type"
-                      [(ngModel)]="editItemData.type" value="lookup" required>
-                    <label for="type-lookup" class="form-check-label">Lookup</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-external" name="type"
-                      [(ngModel)]="editItemData.type" value="external" required>
-                    <label for="type-external" class="form-check-label">External URL (open in new tab)</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-internal" name="type"
-                      [(ngModel)]="editItemData.type" value="internal" required>
-                    <label for="type-internal" class="form-check-label">Internal URL</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-lambda" name="type"
-                      [(ngModel)]="editItemData.type" value="lambda" required>
-                    <label for="type-lambda" class="form-check-label">Lambda WebUI</label>
-                  </div>
-                  <div class="form-check">
-                    <input type="radio" class="form-check-input" id="type-user" name="type"
-                      [(ngModel)]="editItemData.type" value="user" required>
-                    <label for="type-user" class="form-check-label">Manage User Group</label>
-                  </div>
-                </div>
+            </ng-template>
+          </li>
+          <li ngbNavItem>
+            <a ngbNavLink>Icon @if (editItemData.icon) {
+              <fa-icon
+                [icon]="editItemData.icon|iconSplit"
+              [fixedWidth]="true"></fa-icon>
+            } *</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane p-3">
+                <app-icon-picker [(model)]="editItemData.icon" [showNone]="false"></app-icon-picker>
               </div>
-              @if (['form','form-single','view-single','dataset','dashboard','lookup','screen','user'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select App</label>
-                  <select class="form-select" name="appId"
-                    (change)="loadOtherAppList(editItemData.type,editItemData.appId)"
-                    [(ngModel)]="editItemData.appId">
-                    @for (app of otherAppList; track app.id) {
-                      <option [ngValue]="app.id">{{app.title}}</option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['form','form-single','view-single'].indexOf(editItemData.type)>-1) {
-                <div class="form-group mb-3"
-                  >
-                  <label class="form-label">Select Form *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId" required>
-                    <option value="" disabled>Select form...</option>
-                    @for (form of formList; track form.id) {
-                      <option [value]="form.id">{{form.title}} [{{form.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='dataset') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select Dataset *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId" required>
-                    <option value="" disabled>Select dataset...</option>
-                    @for (dataset of datasetList; track dataset.id) {
-                      <option [value]="dataset.id">{{dataset.title}}
-                        [{{dataset.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='dashboard') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select Dashboard *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId" required>
-                    <option value="" disabled>Select dashboard...</option>
-                    @for (dashboard of dashboardList; track dashboard.id) {
-                      <option [value]="dashboard.id">
-                      {{dashboard.title}} [{{dashboard.id}}]</option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='screen') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select Screen *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId" required>
-                    <option value="" disabled>Select custom screen...</option>
-                    @for (screen of screenList; track screen.id) {
-                      <option [value]="screen.id">{{screen.title}}
-                        [{{screen.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='lookup') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select Lookup *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId" required>
-                    <option value="" disabled>Select lookup...</option>
-                    @for (lookup of lookupList; track lookup.id) {
-                      <option [value]="lookup.id">{{lookup.name}}
-                        [{{lookup.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='user') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select User Group *</label>
-                  <select class="form-select" name="screenId"
-                    [(ngModel)]="editItemData.screenId">
-                    <option [ngValue]="undefined">All group</option>
-                    @for (access of accessList; track access.id) {
-                      <option [value]="access.id">{{access.name}}
-                        [{{access.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='lambda') {
-                <div class="form-group mb-3">
-                  <label class="form-label">Select Lambda *</label>
-                  <select class="form-select" name="url"
-                    [(ngModel)]="editItemData.url" required>
-                    <option value="" disabled>Select lambda...</option>
-                    @for (lambda of lambdaList; track lambda.id) {
-                      <option [value]="lambda.code">{{lambda.name}}
-                        [{{lambda.id}}]
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (editItemData.type=='external'||editItemData.type=='internal') {
-                <div class="form-group mb-3">
-                  <label class="form-label">External/Internal URL *</label>
-                  <input class="form-control" type="text" name="url"
-                    [(ngModel)]="editItemData.url"
-                    placeholder="ie: https://organization.com/path" required>
-                </div>
-              }
-              <div class="form-group">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="slc"
-                    [(ngModel)]="editItemData.x.slc" name="slc">
-                  <label class="form-check-label" for="slc">Skip Location Change (hide URL change in address bar)</label>
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="hideDesc"
-                    [(ngModel)]="editItemData.x.hideDesc" name="hideDesc">
-                  <label class="form-check-label" for="hideDesc">Hide description in Tiles page</label>
-                </div>
-              </div>
-              <div class="form-group mb-3">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="menuBadge"
-                    [(ngModel)]="editItemData.x.menuBadge" name="menuBadge">
-                  <label class="form-check-label" for="menuBadge">Show Count Badge in Sidebar/Topnav</label>
-                </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Pre-requisite (hide item if condition not
-                satisfied)</label>
-                <div class="mx-n3">
-                  <app-cm name="pre" lang="javascript" [(ngModel)]="editItemData.pre"
-                    label="Item Pre-requisite"
-                    [linenumber]="true" placeholder="Expression (ie: $user$.provider=='google')">
-                  </app-cm>
-                </div>
-              </div>
-            </div>
-          </ng-template>
-        </li>
-        <li ngbNavItem>
-          <a ngbNavLink>Icon @if (editItemData.icon) {
-            <fa-icon
-              [icon]="editItemData.icon|iconSplit"
-            [fixedWidth]="true"></fa-icon>
-          } *</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane p-3">
-              <app-icon-picker [(model)]="editItemData.icon" [showNone]="false"></app-icon-picker>
-            </div>
-          </ng-template>
-        </li>
-      </ul>
+            </ng-template>
+          </li>
+        </ul>
+      </div>
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">
@@ -649,7 +651,7 @@
     <div class="modal-header">
       <h4 class="modal-title">Edit Navi Setting</h4>
     </div>
-    <div class="tab-simple fix-gutter" justify="center">
+    <div class="fix-gutter" justify="center">
       <div class="single-pane p-3">
         <div class="form-group">
           <label class="form-label">Init Function</label>

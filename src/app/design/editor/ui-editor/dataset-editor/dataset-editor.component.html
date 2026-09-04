@@ -684,258 +684,260 @@
       <h4 class="modal-title">Edit Action</h4>
     </div>
     <div class="tab-simple fix-gutter" justify="center">
-      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
-        <li ngbNavItem>
-          <a ngbNavLink>Overview</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane p-3">
-              <div class="form-group mb-3">
-                <label class="form-label">Label *</label>
-                <input type="text" class="form-control"
-                  [(ngModel)]="editActionData.label" name="label" required>
-              </div>
-              <div class="row">
-                <div class="col-sm-6">
-                  <div class="form-group mb-3">
-                    <label class="form-label">Button Type *</label>
-                    
-                    <div class="d-flex gap-1">
+      <div class="nav-wrap">
+        <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+          <li ngbNavItem>
+            <a ngbNavLink>Overview</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane p-3">
+                <div class="form-group mb-3">
+                  <label class="form-label">Label *</label>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="editActionData.label" name="label" required>
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Button Type *</label>
                       
-                      <div class="btn-group">
-                        <input class="btn-check" type="radio" value="inline" id="type-inline"
-                          name="buttonType" [(ngModel)]="editActionData.type" required>
-                        <label for="type-inline" class="btn btn-outline-secondary">
-                          Inline
-                        </label>
+                      <div class="d-flex gap-1">
+                        
+                        <div class="btn-group">
+                          <input class="btn-check" type="radio" value="inline" id="type-inline"
+                            name="buttonType" [(ngModel)]="editActionData.type" required>
+                          <label for="type-inline" class="btn btn-outline-secondary">
+                            Inline
+                          </label>
 
-                        <input class="btn-check" type="radio" value="dropdown" id="type-dropdown"
-                          name="buttonType" [(ngModel)]="editActionData.type" required>
-                        <label for="type-dropdown" class="btn btn-outline-secondary">
-                          Dropdown
-                        </label>
+                          <input class="btn-check" type="radio" value="dropdown" id="type-dropdown"
+                            name="buttonType" [(ngModel)]="editActionData.type" required>
+                          <label for="type-dropdown" class="btn btn-outline-secondary">
+                            Dropdown
+                          </label>
+                        </div>
+
+                        <div>
+                          <input class="btn-check" type="radio" value="bulk" id="type-bulk"
+                            name="buttonType" [(ngModel)]="editActionData.type" required>
+                          <label for="type-bulk" class="btn btn-outline-secondary">
+                            Bulk
+                          </label>
+                        </div>
+
                       </div>
-
-                      <div>
-                        <input class="btn-check" type="radio" value="bulk" id="type-bulk"
-                          name="buttonType" [(ngModel)]="editActionData.type" required>
-                        <label for="type-bulk" class="btn btn-outline-secondary">
-                          Bulk
-                        </label>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group mb-3">
+                      <label class="form-label">Color *</label>
+                      <div class="btn-group-toggle">
+                        @for (c of btnColors; track c) {
+                          <input type="radio" class="btn-check" [value]="c" id="color-{{c}}"
+                            name="color-{{c}}"
+                            [(ngModel)]="editActionData.style" required>
+                          <label for="color-{{c}}" class="btn btn-round color-item me-1 mb-1"
+                            [ngClass]="c" [class.active-outline]="editActionData.style==c">
+                            {{$index+1}}
+                          </label>
+                        }
                       </div>
-
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-6">
-                  <div class="form-group mb-3">
-                    <label class="form-label">Color *</label>
-                    <div class="btn-group-toggle">
-                      @for (c of btnColors; track c) {
-                        <input type="radio" class="btn-check" [value]="c" id="color-{{c}}"
-                          name="color-{{c}}"
-                          [(ngModel)]="editActionData.style" required>
-                        <label for="color-{{c}}" class="btn btn-round color-item me-1 mb-1"
-                          [ngClass]="c" [class.active-outline]="editActionData.style==c">
-                          {{$index+1}}
-                        </label>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group mb-3">
-                <label class="form-label">Button Action *</label>
-                <select class="form-select" name="action"
-                  [(ngModel)]="editActionData.action" required>
-                  <option value="" disabled>Select action...</option>
-                  <optgroup [label]="form.data?.title + ' (current)'">
-                    <option value="view">View Entry</option>
-                    <option value="edit">Edit Entry</option>
-                    <option value="delete">Delete Entry</option>
-                    <option value="retract">Retract Entry</option>
-                    <option value="approve">Approve Entry</option>
-                    <option value="screen">Open in Screen</option>
-                    <option value="facet">Open in Facet</option>
-                    <option value="extend">Open in Extended Form</option>
-                    <option value="prev">Next Form</option>
-                    <option value="edit-single">Edit Single</option>
-                    <option value="view-single">View Single</option>
-                  </optgroup>
-                  @if (form.prev) {
-                    <optgroup [label]="form.prev?.title + ' (prev)'">
-                      <option value="prev-view">View Entry</option>
-                      <option value="prev-edit">Edit Entry</option>
-                      <option value="prev-screen">Open in Screen</option>
-                      <option value="prev-facet">Open in Facet</option>
-                      <option value="prev-prev">Next Form (Add Sibling)</option>
+                <div class="form-group mb-3">
+                  <label class="form-label">Button Action *</label>
+                  <select class="form-select" name="action"
+                    [(ngModel)]="editActionData.action" required>
+                    <option value="" disabled>Select action...</option>
+                    <optgroup [label]="form.data?.title + ' (current)'">
+                      <option value="view">View Entry</option>
+                      <option value="edit">Edit Entry</option>
+                      <option value="delete">Delete Entry</option>
+                      <option value="retract">Retract Entry</option>
+                      <option value="approve">Approve Entry</option>
+                      <option value="screen">Open in Screen</option>
+                      <option value="facet">Open in Facet</option>
+                      <option value="extend">Open in Extended Form</option>
+                      <option value="prev">Next Form</option>
+                      <option value="edit-single">Edit Single</option>
+                      <option value="view-single">View Single</option>
                     </optgroup>
-                  }
-                  <option value="url">Open External URL</option>
-                  <option value="function">Run Function</option>
-                </select>
-              </div>
-              @if (['prev','prev-prev'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next form *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select form...</option>
-                    @for (item of formList; track item.id) {
-                      <option [value]="item.id">{{item.title}}
-                      </option>
+                    @if (form.prev) {
+                      <optgroup [label]="form.prev?.title + ' (prev)'">
+                        <option value="prev-view">View Entry</option>
+                        <option value="prev-edit">Edit Entry</option>
+                        <option value="prev-screen">Open in Screen</option>
+                        <option value="prev-facet">Open in Facet</option>
+                        <option value="prev-prev">Next Form (Add Sibling)</option>
+                      </optgroup>
                     }
+                    <option value="url">Open External URL</option>
+                    <option value="function">Run Function</option>
                   </select>
                 </div>
-              }
-              @if (['edit-single','view-single'].indexOf(editActionData.action)>-1) {
+                @if (['prev','prev-prev'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next form *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select form...</option>
+                      @for (item of formList; track item.id) {
+                        <option [value]="item.id">{{item.title}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['edit-single','view-single'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Select form *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select form...</option>
+                      @for (item of formList; track item.id) {
+                        <option [value]="item.id">{{item.title}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['screen'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next screen *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select screen...</option>
+                      @for (item of screenList; track item.id) {
+                        <option [value]="item.id">{{item.title}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['prev-screen'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next screen *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select screen...</option>
+                      @for (item of screenList; track item.id) {
+                        <option [value]="item.id">{{item.title}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['facet'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next facet *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select facet...</option>
+                      @for (item of removeFromArray(getAsList(form.data?.x?.facet),['add','edit','view']); track $index) {
+                        <option
+                        [value]="item">{{item}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['prev-facet'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next facet *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select facet...</option>
+                      @for (item of removeFromArray(getAsList(form.prev?.x?.facet),['add','edit','view']); track $index) {
+                        <option
+                        [value]="item">{{item}}</option>
+                      }
+                    </select>
+                  </div>
+                }
+                
+                @if (['extend'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Next form *</label>
+                    <select class="form-select" name="next"
+                      [(ngModel)]="editActionData.next" required>
+                      <option value="" disabled>Select sub form...</option>
+                      @for (item of subFormList; track item.id) {
+                        <option [value]="item.id">{{item.title}}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                }
+                @if (['url'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">URL</label>
+                    <input type="text" class="form-control" name="url" id="url"
+                      placeholder="ie: https://social.media.com/user/{{'{'}}{{'{'}}$.social_id{{'}'}}{{'}'}}"
+                      [(ngModel)]="editActionData.url">
+                  </div>
+                }
+                @if (['route'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">URL</label>
+                    <input type="text" class="form-control" name="url" id="url"
+                      [(ngModel)]="editActionData.url">
+                  </div>
+                }
+                @if (['function'].indexOf(editActionData.action)>-1) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Function</label>
+                    <div class="mx-n3">
+                      <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
+                        label="Dataset Action Function"
+                        [extraAutoComplete]="extraAutoCompleteJs" subType="active"
+                        placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
+                        [linenumber]="true">
+                      </app-cm>
+                    </div>
+                  </div>
+                }
+                @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','route','url'].includes(editActionData.action)) {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Params</label>
+                    <div class="mx-n3">
+                      <app-cm name="params" lang="javascript" [(ngModel)]="editActionData.params"
+                        label="Dataset Action Parameters"
+                        [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
+                        placeholder="ie: {'entryId':$.$id}" [linenumber]="true">
+                      </app-cm>
+                    </div>
+                  </div>
+                }
+                @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','extend','prev','prev-prev','route','url'].includes(editActionData.action)) {
+                  <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" id="inpop"
+                      [(ngModel)]="editActionData.inpop" name="inpop">
+                    <label class="form-check-label" for="inpop">Open in Modal Dialog</label>
+                  </div>
+                }
                 <div class="form-group mb-3">
-                  <label class="form-label">Select form *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select form...</option>
-                    @for (item of formList; track item.id) {
-                      <option [value]="item.id">{{item.title}}
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['screen'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next screen *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select screen...</option>
-                    @for (item of screenList; track item.id) {
-                      <option [value]="item.id">{{item.title}}</option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['prev-screen'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next screen *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select screen...</option>
-                    @for (item of screenList; track item.id) {
-                      <option [value]="item.id">{{item.title}}</option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['facet'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next facet *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select facet...</option>
-                    @for (item of removeFromArray(getAsList(form.data?.x?.facet),['add','edit','view']); track $index) {
-                      <option
-                      [value]="item">{{item}}</option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['prev-facet'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next facet *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select facet...</option>
-                    @for (item of removeFromArray(getAsList(form.prev?.x?.facet),['add','edit','view']); track $index) {
-                      <option
-                      [value]="item">{{item}}</option>
-                    }
-                  </select>
-                </div>
-              }
-              
-              @if (['extend'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Next form *</label>
-                  <select class="form-select" name="next"
-                    [(ngModel)]="editActionData.next" required>
-                    <option value="" disabled>Select sub form...</option>
-                    @for (item of subFormList; track item.id) {
-                      <option [value]="item.id">{{item.title}}
-                      </option>
-                    }
-                  </select>
-                </div>
-              }
-              @if (['url'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">URL</label>
-                  <input type="text" class="form-control" name="url" id="url"
-                    placeholder="ie: https://social.media.com/user/{{'{'}}{{'{'}}$.social_id{{'}'}}{{'}'}}"
-                    [(ngModel)]="editActionData.url">
-                </div>
-              }
-              @if (['route'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">URL</label>
-                  <input type="text" class="form-control" name="url" id="url"
-                    [(ngModel)]="editActionData.url">
-                </div>
-              }
-              @if (['function'].indexOf(editActionData.action)>-1) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Function</label>
+                  <label class="form-label">Pre-requisite</label>
                   <div class="mx-n3">
-                    <app-cm name="f" lang="javascript" [(ngModel)]="editActionData.f"
-                      label="Dataset Action Function"
-                      [extraAutoComplete]="extraAutoCompleteJs" subType="active"
-                      placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})"
-                      [linenumber]="true">
+                    <app-cm name="pre" lang="javascript" hideControl="true"
+                      label="Dataset Action Pre-requisite"
+                      [(ngModel)]="editActionData.pre" [linenumber]="true">
                     </app-cm>
                   </div>
                 </div>
-              }
-              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','prev','route','url'].includes(editActionData.action)) {
-                <div class="form-group mb-3">
-                  <label class="form-label">Params</label>
-                  <div class="mx-n3">
-                    <app-cm name="params" lang="javascript" [(ngModel)]="editActionData.params"
-                      label="Dataset Action Parameters"
-                      [extraAutoComplete]="extraAutoCompleteJs" subType="passive" [skipCheck]="true"
-                      placeholder="ie: {'entryId':$.$id}" [linenumber]="true">
-                    </app-cm>
-                  </div>
-                </div>
-              }
-              @if (['prev-view','prev-edit','prev-screen','prev-facet','view','view-single','edit','edit-single','approve','screen','facet','extend','prev','prev-prev','route','url'].includes(editActionData.action)) {
-                <div class="form-check form-switch mb-1">
-                  <input class="form-check-input" type="checkbox" id="inpop"
-                    [(ngModel)]="editActionData.inpop" name="inpop">
-                  <label class="form-check-label" for="inpop">Open in Modal Dialog</label>
-                </div>
-              }
-              <div class="form-group mb-3">
-                <label class="form-label">Pre-requisite</label>
-                <div class="mx-n3">
-                  <app-cm name="pre" lang="javascript" hideControl="true"
-                    label="Dataset Action Pre-requisite"
-                    [(ngModel)]="editActionData.pre" [linenumber]="true">
-                  </app-cm>
-                </div>
               </div>
-            </div>
-          </ng-template>
-        </li>
-        <li ngbNavItem>
-          <a ngbNavLink>Icon @if (editActionData.icon) {
-            <fa-icon [icon]="editActionData.icon|iconSplit"
-            [fixedWidth]="true"></fa-icon>
-          } *</a>
-          <ng-template ngbNavContent>
-            <div class="single-pane p-3">
-              <app-icon-picker [(model)]="editActionData.icon"
-              [showNone]="true"></app-icon-picker>
-            </div>
-          </ng-template>
-        </li>
-      </ul>
+            </ng-template>
+          </li>
+          <li ngbNavItem>
+            <a ngbNavLink>Icon @if (editActionData.icon) {
+              <fa-icon [icon]="editActionData.icon|iconSplit"
+              [fixedWidth]="true"></fa-icon>
+            } *</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane p-3">
+                <app-icon-picker [(model)]="editActionData.icon"
+                [showNone]="true"></app-icon-picker>
+              </div>
+            </ng-template>
+          </li>
+        </ul>
+      </div>
       <div [ngbNavOutlet]="nav"></div>
     </div>
     <div class="modal-footer justify-content-between">

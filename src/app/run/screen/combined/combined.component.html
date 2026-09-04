@@ -31,27 +31,29 @@
 
 @if (['tabs', 'pills', 'underline'].includes(screen()?.data?.nav)) {
   <div class="tab-simple mt-3">
-    <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
-      class="nav-{{screen()?.data?.nav}} justify-content-center" [class.limit-width]="!screen().wide">
-      @for (tab of screen()?.data?.comps; track $index) {
-        <li [ngbNavItem]="$index">
-          <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="setActiveTab(screen().id, $index)" queryParamsHandling="preserve">
-            @if (screen()?.data?.showIndex) {
-              <div style="float:left; height:20px; width:20px; background: var(--bs-secondary, #666); color: var(--bs-white, white); font-size:.8em; padding:0; margin-left:-5px; margin-top:1px; line-height:20px; text-align:center; margin-right:0.3em; border-radius:20px;">
-                {{ $index + 1 }}
-              </div>
-            }
-            @if (tab.icon) {
-              <fa-icon [icon]="tab.icon | iconSplit" [fixedWidth]="true"></fa-icon>
-            }
-            {{ tab.title }}
-          </a>
-          <ng-template ngbNavContent>
-            <ng-container *ngTemplateOutlet="compRender; context: { tab: tab, sId: tab.screenId, compType: tab.type, tabidx: $index, tabids: $index, tabfirst: $first, tablast: $last }"></ng-container>
-          </ng-template>
-        </li>
-      }
-    </ul>
+    <div class="nav-wrap py-3">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
+        class="nav-{{screen()?.data?.nav}} px-3 justify-content-center" [class.limit-width]="!screen().wide">
+        @for (tab of screen()?.data?.comps; track $index) {
+          <li [ngbNavItem]="$index">
+            <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="setActiveTab(screen().id, $index)" queryParamsHandling="preserve">
+              @if (screen()?.data?.showIndex) {
+                <div style="float:left; height:20px; width:20px; background: var(--bs-secondary, #666); color: var(--bs-white, white); font-size:.8em; padding:0; margin-left:-5px; margin-top:1px; line-height:20px; text-align:center; margin-right:0.3em; border-radius:20px;">
+                  {{ $index + 1 }}
+                </div>
+              }
+              @if (tab.icon) {
+                <fa-icon [icon]="tab.icon | iconSplit" [fixedWidth]="true"></fa-icon>
+              }
+              {{ tab.title }}
+            </a>
+            <ng-template ngbNavContent>
+              <ng-container *ngTemplateOutlet="compRender; context: { tab: tab, sId: tab.screenId, compType: tab.type, tabidx: $index, tabids: $index, tabfirst: $first, tablast: $last }"></ng-container>
+            </ng-template>
+          </li>
+        }
+      </ul>
+    </div>
     <div [ngbNavOutlet]="nav"></div>
   </div>
 }

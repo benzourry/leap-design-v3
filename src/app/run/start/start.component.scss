@@ -191,15 +191,15 @@ $transition-slow: 350ms ease-in-out;
       left: 0;
     }
     
-    .offcanvas-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 997;
-      width: 100%;
-      height: 100%;
-      opacity: 0.6;
-    }
+    // .offcanvas-overlay {
+    //   position: fixed;
+    //   top: 0;
+    //   left: 0;
+    //   z-index: 997;
+    //   width: 100%;
+    //   height: 100%;
+    //   opacity: 0.6;
+    // }
   }
 
   .app-info {
@@ -257,8 +257,20 @@ $transition-slow: 350ms ease-in-out;
     transition: top $transition-fast;
   }
 
-  &.active .app-nav {
-    top: 0;
+  &.active {
+    .app-nav {
+      top: 0;
+    }
+
+    // .offcanvas-overlay {
+    //   position: fixed;
+    //   top: 0;
+    //   left: 0;
+    //   z-index: 997;
+    //   width: 100%;
+    //   height: 100%;
+    //   opacity: 0.6;
+    // }
   }
 
   /* Desktop Topnav Override */
@@ -336,5 +348,17 @@ $transition-slow: 350ms ease-in-out;
       top: 0; 
       left: 0;
     }
+  }
+}
+
+.active {
+  .offcanvas-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 997;
+    width: 100%;
+    height: 100%;
+    opacity: 0.6;
   }
 }

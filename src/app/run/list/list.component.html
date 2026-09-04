@@ -230,8 +230,7 @@
       }
 
       <div [class.disabled]="itemLoading()">
-        <div [class.table-responsive]="!dataset()?.wide || asComp()"
-          [ngClass]="{'px-2 p-sm-0': dataset()?.x?.tblcard && !asComp()}" style="width:100%">
+        <div [class.table-responsive]="!dataset()?.wide || asComp()" style="width:100%">
           @if (entryList()?.length > 0) {
             <table class="table table-print ds-table mb-0"
               [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
@@ -283,7 +282,7 @@
                     @if (groupFieldCode()) {
                       <tr class="ds-group-header">
                         <td [attr.colspan]="totalColumn" style="padding:0">
-                          <button class="w-100 border-0 p-2 text-start d-flex flex-row bg-body-secondary text-body" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                          <button class="w-100 border-0 p-2 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                             <fa-icon [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                             <div class="ms-2">
                               @if (listKv?.key == 'undefined') {
@@ -383,17 +382,17 @@
 
                           @if (hasVisibleActions()) {
                             <td class="p-1 print-hide text-end ds-action">
-                              <div class="d-flex flex-row justify-content-end">
+                              <div class="d-flex flex-row justify-content-end ms-auto" style="gap:0.25rem;">
                                 @for (ac of actionsInline; track ac.id) {
                                   @if (i._actionVisible[ac.id]) {
                                     @if (ac.action == 'url' && !ac.inpop) {
-                                      <a class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
+                                      <a class="btn btn-sm bg-gradient text-nowrap" [ngClass]="ac.style"
                                         [href]="i._actionUrls[ac.id]"
                                         target="_blank">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </a>
                                     } @else {
-                                      <button type="button" class="btn btn-sm bg-gradient ms-1 text-nowrap" [ngClass]="ac.style"
+                                      <button type="button" class="btn btn-sm bg-gradient1 text-nowrap" [ngClass]="ac.style"
                                         (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </button>
@@ -403,7 +402,7 @@
 
                                 @if (actionsDropdown.length > 0) {
                                   <div class="dropdown-btn ds-action-dropdown" ngbDropdown container="body">
-                                    <button type="button" class="btn border btn-sm ms-1 border-secondary border-opacity-50"
+                                    <button type="button" class="btn border btn-sm border-secondary border-opacity-50"
                                       title="Actions" id="dropdownAction" ngbDropdownToggle>
                                       <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                                     </button>

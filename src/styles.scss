@@ -252,15 +252,14 @@ table.tblcard > .list-tmid > tr.ds-group-header {
 .section-group{ 
     // overflow:hidden; // hide horizontal scrollbar when in mobile device (somehow shown because not wrapped in container)
     // padding: 1rem 0rem; // on mobile device
-    padding:1rem 0;
-    // padding-top: 1rem;
-    // padding-top: 1rem; // on mobile device
-    // padding-bottom:1rem;
+    // padding:1rem 0; // revise
+    padding:0;
 }
 
 @media screen and (min-width: 640px) {
 .section-group{
-    padding:1rem 1rem 0rem; // on desktop, use padding
+    // padding:1rem 1rem 0rem; // on desktop, use padding
+    padding:0rem 1rem 0rem; // on desktop, use padding
   }
 }
 
@@ -349,17 +348,34 @@ ngb-pagination ul.pagination { justify-content: center; }
 .no-tabs .nav-tabs { display: none !important; }
 
 .tab-simple {
-  > .nav-tabs {
-    border-bottom: 2px solid var(--bs-border-color, #dadada); font-size: 0.95em;
-    .nav-item { margin-bottom: -2px; }
-    .nav-link {
-      border: 2px solid transparent; padding: 0.5rem 0.6rem;
-      border-top-left-radius: 0.45rem; border-top-right-radius: 0.45rem;
-      &.active { color: var(--bs-body-color, #495057); background-color: var(--bs-tertiary-bg, #f5f5f5); border-color: var(--bs-border-color, #dadada) var(--bs-border-color, #dadada) var(--bs-tertiary-bg, #f5f5f5); }
+  > .nav-wrap  {
+    > .nav-tabs {
+      border-bottom: 1.5px solid var(--bs-border-color, #dadada); font-size: 0.95em;
+      .nav-item { margin-bottom: -1.5px; }
+      .nav-link {
+        border: 1.5px solid transparent; padding: 0.5rem 0.6rem;
+        border-top-left-radius: 0.45rem; border-top-right-radius: 0.45rem;
+        &.active { 
+          color: var(--bs-body-color, #495057); 
+          background-color: var(--bs-tertiary-bg, #f5f5f5); 
+          border-color: var(--bs-border-color, #dadada) var(--bs-border-color, #dadada) var(--bs-tertiary-bg, #f5f5f5); 
+
+          /* FIX: Remove 45-degree corner artifact and maintain box height */
+          // border-bottom: none;
+          // padding-bottom: calc(0.5rem + 2px);
+        }
+      }
+      .nav-item.show .nav-link { 
+        color: var(--bs-body-color, #495057); 
+        background-color: var(--bs-tertiary-bg, #f5f5f5); 
+        border-color: var(--bs-border-color, #dadada) var(--bs-border-color, #dadada) var(--bs-tertiary-bg, #f5f5f5); 
+        /* FIX: Remove 45-degree corner artifact and maintain box height */
+          border-bottom: none;
+          // padding-bottom: calc(0.5rem + 2px);
+      }
     }
-    .nav-item.show .nav-link { color: var(--bs-body-color, #495057); background-color: var(--bs-tertiary-bg, #f5f5f5); border-color: var(--bs-border-color, #dadada) var(--bs-border-color, #dadada) var(--bs-tertiary-bg, #f5f5f5); }
+    > .nav-pills .nav-link.active { background: var(--bs-secondary-bg, #dadada); color: var(--bs-body-color, #495057); }
   }
-  > .nav-pills .nav-link.active { background: var(--bs-secondary-bg, #dadada); color: var(--bs-body-color, #495057); }
   > .tab-content { background: var(--bs-tertiary-bg, #f5f5f5); }
 }
 
@@ -374,7 +390,7 @@ ngb-pagination ul.pagination { justify-content: center; }
       &:focus, &.focus { outline: none; }
     }
   }
-  .accordion-body { padding: 0px; .single-pane { padding-top: 0px; } }
+  .accordion-body { padding: 0px;}
   > .collapse { display: none; &.show { display: block; } }
 }
 
@@ -642,4 +658,59 @@ ngb-pagination ul.pagination { justify-content: center; }
 .shake_me {
   display: inline-block; 
   animation: intermittent-shake 1.5s infinite ease-in-out;
+}
+
+
+@media (max-width: 639.98px) {
+  .tab-simple.tab-hscroll > .nav-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Apply padding here to prevent the wrapper from clipping the inner border */
+    padding-bottom: 1.5px; 
+    
+    /* Scroll Glow Variables */
+    --background-color: var(--bs-tertiary-bg, #f5f5f5);
+    --transparent: transparent;
+    --shadow-color: rgba(80, 205, 255, .3);
+    --shadow-size: 2em;
+
+    background:
+      linear-gradient(to right, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
+      radial-gradient(farthest-side at 0 50%, var(--shadow-color), var(--transparent)),
+      linear-gradient(to left, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
+      radial-gradient(farthest-side at 100% 50%, var(--shadow-color), var(--transparent)) 100%;
+    background-color: var(--background-color);
+    background-repeat: no-repeat;
+    background-attachment: local, scroll, local, scroll;
+    background-size: 100% 100%, var(--shadow-size) 100%, 100% 100%, var(--shadow-size) 100%;
+    
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > .nav-pills,
+    > .nav-underline,
+    > .nav-tabs {
+      min-width: max-content;
+      flex-wrap: nowrap !important;
+      justify-content: flex-start !important; 
+      
+      /* REMOVED: padding-bottom: 2px; from here */
+
+      .nav-item {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.row > div[class*="col-"]:last-child > .card,
+.row > div[class*="col-"]:last-child > .card-blank-style {
+  margin-bottom: 0 !important;
 }
