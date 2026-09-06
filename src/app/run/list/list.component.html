@@ -170,7 +170,7 @@
       } -->
 
       @if (dataset()?.x?.showSummary) {
-        <div class="px-2 pb-3">
+        <div class="px-3 pb-3">
           <!-- Added justify-content-center here -->
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
             
@@ -246,7 +246,7 @@
                   @if (dataset()?.showIndex) {
                     <th class="ds-index" style="width: 1%">#</th>
                   }
-                  @for (item of dataset()?.items; track item.id) {
+                  @for (item of dataset()?.items; track item.id; let isLast = $last) {
                     @if (columnVisible[item.id]) {
                       @if (item.type == 'list') {
                         <th class="ds-item {{item.code}}">
@@ -254,7 +254,7 @@
                         </th>
                       } @else {
                         @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-                        <th class="pointer ds-item" [class.text-primary]="sortField() == item.id"
+                        <th class="pointer ds-item" [class.last-ds-item]="isLast" [class.text-primary]="sortField() == item.id"
                           [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
                           (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">
                           {{item.label}}&nbsp;
@@ -281,18 +281,21 @@
                   <tbody class="list-tmid ds-tbody">
                     @if (groupFieldCode()) {
                       <tr class="ds-group-header">
-                        <td [attr.colspan]="totalColumn" style="padding:0">
+                        <td [attr.colspan]="totalColumn" style="padding:0;">
+                          <!-- <div class="display:flex"> -->
                           <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
-                            <fa-icon [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
-                            <div class="ms-2">
+                            <div>
                               @if (listKv?.key == 'undefined') {
                                 <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                               } @else {
                                 <span [innerHtml]="listKv?.key"></span>
                               }
                             </div>
-                            <div class="bg-secondary px-1 text-white ms-2 mb-auto" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div>
+                            <span class="ms-auto badge badge-pill text-bg-secondary" style="line-height:1rem">{{listKv?.value?.length}}</span>
+                            <!-- <div class="bg-secondary px-1 text-white ms-auto mb-auto badge" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div> -->
+                            <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                           </button>
+                          <!-- </div> -->
                         </td>
                       </tr>
                     }
@@ -310,11 +313,12 @@
                               {{preCount() + eIdx + 1}}
                             </td>
                           }
-                          @for (item of dataset().items; track item.id) {
+                          @for (item of dataset().items; track item.id; let isLast = $last) {
                             @if (i._isVisible[item.root + '.' + item.code]) {
                               @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
 
                               <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
+                                [class.last-ds-item]="isLast"
                                 [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
                                 [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
                                 

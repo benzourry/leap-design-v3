@@ -63,12 +63,12 @@ table.tbl-child {
   }
 }
 
-table.tblcard > .list-tmid > tr > td.td-list {
-  padding: 0 !important;
-  &::before {
-    padding: 0.5rem !important;
-  }
-}
+// table.tblcard > .list-tmid > tr > td.td-list {
+//   padding: 0 !important;
+//   &::before {
+//     padding: 0.5rem 1rem !important;
+//   }
+// }
 
 .ds-table .ds-thead {
   position: sticky;
@@ -155,6 +155,13 @@ table.tblcard > .list-tmid > tr > td.td-list {
     border-left: solid 5px var(--bs-border-color);
   }
 
+  table.tbl-child tr th{
+    padding-top:0;
+  }
+  // table.tbl-child tr:last-child td{
+  //   padding-bottom:0;
+  // }
+
   table.tblcard {
     border: 0;
     background-color: transparent !important;
@@ -234,12 +241,27 @@ table.tblcard > .list-tmid > tr > td.td-list {
           &.ds-index {
             font-weight: bold;
             padding: 0.35rem 1rem;
-            margin-top: 0.5rem;
+            // margin-top: 0.5rem;
             display: inline-block;
             border-bottom: none;
             font-size: 1rem;
             background-color: var(--bs-secondary-bg) !important;
             color: var(--bs-secondary-color) !important;
+
+            /* 1. Apply right-side radius to both by default */
+            // border-top-right-radius: var(--bs-border-radius);
+            border-bottom-right-radius: 0.5rem;
+            // box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
+          }
+
+          /* 2. Remove right-side radius from checkbox ONLY if the index exists right after it */
+          &.ds-check:has(+ .ds-index) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            
+            /* Reduce right padding so the checkbox and index sit closer together */
+            padding-right: 0.25rem; 
+            // clip-path: inset(-10px 0px -10px -10px);
           }
 
           &.ds-check {
@@ -248,13 +270,18 @@ table.tblcard > .list-tmid > tr > td.td-list {
 
           &.ds-status {
             background-color: var(--bs-secondary-bg);
-            margin-top: -1px;
+            margin: 0 1rem;
+            border-radius: 0.5rem;
+            padding-bottom: 0.25rem;
             display: block;
           }
 
           &.ds-item {
             &:first-child {
               padding-top: 20px;
+            }
+            &.last-ds-item::after {
+              display:none;
             }
 
             &::before {
