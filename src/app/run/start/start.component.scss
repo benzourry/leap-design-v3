@@ -148,7 +148,7 @@ $transition-slow: 350ms ease-in-out;
   opacity: 0;
   transition: opacity 350ms linear;
 
-  @media screen and (min-width: 640px) {
+  @media screen and (min-width: 768px) {
     display: none;
   }
 }
@@ -218,7 +218,7 @@ $transition-slow: 350ms ease-in-out;
   }
 
   /* Desktop Sidemenu Override */
-  @media screen and (min-width: 640px) {
+  @media screen and (min-width: 768px) {
     &.wrapper {
       display: flex;
     }
@@ -274,7 +274,7 @@ $transition-slow: 350ms ease-in-out;
   }
 
   /* Desktop Topnav Override */
-  @media screen and (min-width: 640px) {
+  @media screen and (min-width: 768px) {
     .app-menu {
       padding-bottom: 0;
     }

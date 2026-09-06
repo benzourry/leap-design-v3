@@ -30,7 +30,7 @@
 }
 
 @if (['tabs', 'pills', 'underline'].includes(screen()?.data?.nav)) {
-  <div class="tab-simple mt-3">
+  <div class="tab-simple tab-hscroll">
     <div class="nav-wrap py-3">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
         class="nav-{{screen()?.data?.nav}} px-3 justify-content-center" [class.limit-width]="!screen().wide">

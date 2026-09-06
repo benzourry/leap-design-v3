@@ -223,7 +223,7 @@ input.search-icon[type="search"] {
   }
 }
 
-@media screen and (min-width: 640px) {
+@media screen and (min-width: 768px) {
   .card.card-clean {
     border: initial;
     border-radius: 1rem; // on desktop, rounded
@@ -256,7 +256,7 @@ table.tblcard > .list-tmid > tr.ds-group-header {
     padding:0;
 }
 
-@media screen and (min-width: 640px) {
+@media screen and (min-width: 768px) {
 .section-group{
     // padding:1rem 1rem 0rem; // on desktop, use padding
     padding:0rem 1rem 0rem; // on desktop, use padding
@@ -661,7 +661,7 @@ ngb-pagination ul.pagination { justify-content: center; }
 }
 
 
-@media (max-width: 639.98px) {
+@media (max-width: 767.98px) {
   .tab-simple.tab-hscroll > .nav-wrap {
     overflow-x: auto;
     overflow-y: hidden;
@@ -711,6 +711,11 @@ ngb-pagination ul.pagination { justify-content: center; }
 
   [data-bs-theme="dark"] .tab-simple.tab-hscroll > .nav-wrap {
     --shadow-color: rgba(var(--bs-primary-rgb), 0.55); 
+  }
+
+  .card.card-clean{    
+    border-left: none !important;
+    border-right: none !important;
   }
 }
 
