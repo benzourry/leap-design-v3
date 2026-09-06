@@ -707,6 +707,14 @@ ngb-pagination ul.pagination { justify-content: center; }
         white-space: nowrap;
       }
     }
+
+    >.nav-underline {
+      border-bottom: 1.5px solid var(--bs-border-color);
+    }
+
+    &:has(.nav-pills){
+      border-bottom: 1.5px solid var(--bs-border-color);
+    }
   }
 
   [data-bs-theme="dark"] .tab-simple.tab-hscroll > .nav-wrap {
