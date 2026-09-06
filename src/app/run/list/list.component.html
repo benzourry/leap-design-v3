@@ -201,7 +201,7 @@
       }
 
       @if (dataset()?.x?.showGroupFilter && groupFieldCode() && !itemLoading()) {
-        <div class="px-2">
+        <div class="px-3">
           <div class="pb-1 small m-a" [class.limit-width]="!dataset()?.wide">
             <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
               [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter() == null}" (click)="groupFilter.set(null)">
@@ -282,7 +282,7 @@
                     @if (groupFieldCode()) {
                       <tr class="ds-group-header">
                         <td [attr.colspan]="totalColumn" style="padding:0">
-                          <button class="w-100 border-0 p-2 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                          <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                             <fa-icon [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                             <div class="ms-2">
                               @if (listKv?.key == 'undefined') {
@@ -382,7 +382,9 @@
 
                           @if (hasVisibleActions()) {
                             <td class="p-1 print-hide text-end ds-action">
-                              <div class="d-flex flex-row justify-content-end ms-auto" style="gap:0.25rem;">
+                              <div class="d-flex flex-row flex-nowrap justify-content-end ms-auto"
+                               [class.input-group]="dataset().x?.groupAction"
+                               [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
                                 @for (ac of actionsInline; track ac.id) {
                                   @if (i._actionVisible[ac.id]) {
                                     @if (ac.action == 'url' && !ac.inpop) {
@@ -470,7 +472,7 @@
         </div>
 
         @if (dataset().x?.bulkAction && (selectedEntries() | keyvalue).length > 0) {
-          <div class="px-2 d-flex align-items-center small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
+          <div class="px-3 d-flex align-items-center small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
             &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}}
             @if (dataset()?.canBlast) {
               <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap" (click)="bulkEmail(blastTpl, blastData())">
