@@ -241,7 +241,7 @@ table.tbl-child {
           &.ds-index {
             font-weight: bold;
             padding: 0.35rem 1rem;
-            // margin-top: 0.5rem;
+            margin-top: 0.5rem;
             display: inline-block;
             border-bottom: none;
             font-size: 1rem;
@@ -249,7 +249,7 @@ table.tbl-child {
             color: var(--bs-secondary-color) !important;
 
             /* 1. Apply right-side radius to both by default */
-            // border-top-right-radius: var(--bs-border-radius);
+            border-top-right-radius: 0.5rem;
             border-bottom-right-radius: 0.5rem;
             // box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
           }
