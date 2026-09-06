@@ -217,7 +217,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                         <h6 class="card-title m-0">
                           {{e.title}}
                           <div class="float-end d-flex">
-                            <span class="badge badge-pill text-bg-secondary">{{data() && data()[e.code]?.length}}</span>
+                            <span class="badge badge-pill text-bg-secondary mb-auto">{{data() && data()[e.code]?.length}}</span>
                             @if (e.x?.collapsible) {
                               <fa-icon class="ms-2" [icon]="['fas', e.x?.collapsed ? 'angle-down' : 'angle-up']"></fa-icon>
                             }

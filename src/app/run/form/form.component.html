@@ -332,7 +332,7 @@
                                 <h6 class="card-title m-0">
                                   {{e.title}} @if (e.x?.required) { <span>*</span> }
                                   <div class="float-end d-flex">
-                                    <span class="badge badge-pill text-bg-secondary">{{entry()?.data[e.code]?.length}}</span>
+                                    <span class="badge badge-pill text-bg-secondary mb-auto">{{entry()?.data[e.code]?.length}}</span>
                                     @if (e.x?.sortable) {
                                       <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort" (click)="$event.stopPropagation()">
                                         <div type="button" class="p-0 ms-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}" ngbDropdownToggle>
