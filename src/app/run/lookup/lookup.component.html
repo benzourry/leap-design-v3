@@ -11,15 +11,21 @@
     @if (!userUnauthorized()){
       <div class="centered fix-gutter" [class.limit-width]="!lookup()?.x?.wide">
         <div class="single-pane">
-          <div class="d-flex flex-row">
-            <div style="flex-grow:1">
+          <!-- <div class="d-flex flex-row"> -->
+
+
+  <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
+
+
+
+            <!-- <div style="flex-grow:1"> -->
               <input type="search" autocapitalize="none" class="form-control form-control-sm border border-2"
                 placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber())"
                 [(ngModel)]="searchText">
-            </div>
-            <div style="flex-shrink: 0;">
+            <!-- </div> -->
+            <!-- <div style="flex-shrink: 0;"> -->
               @if (lookup().sourceType=='db') {
-                <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                <button type="button" class="btn btn-sm border border-2 btn-primary ms-1"
                   [class.disabled]="offline()"
                   (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
                   <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -29,23 +35,33 @@
               <div ngbDropdown class="d-inline-block">
                 <button type="button" class="btn btn-sm border border-2 ms-1"
                   id="dropdownLookupEditor" ngbDropdownToggle>
-                  <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                  <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor">
+                <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor" class="shadow me-n1 mt-2">
                   <a ngbDropdownItem title="Export to Excel" target="blank"
                     href="{{base}}/report/export-lookup/{{lookup()?.id}}/xlsx">
                     <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> 
                     {{lang()=='ms'?'Export ke Excel':'Export to Excel'}}
                   </a>
                   <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
+                    (click)="getLookupEntryList(1)">
+                    <fa-icon [icon]="['fas','redo']" [fixedWidth]="true"></fa-icon> Reload Lookup
+                  </button>
+                  <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
                     (click)="resyncLookup(syncLookupTpl,lookup()?.id)">
-                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync
-                    Lookup
+                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync Lookup
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            <!-- </div> -->
+
+
+</div>
+
+
+
+
+          <!-- </div> -->
           @if (loading()) {
             <div class="p-4 text-center">
               <div class="lds-ellipsis">
@@ -100,11 +116,11 @@
                   </div>
                 </div>
 
-                <div class="text-center mb-2">
+                <!-- <div class="text-center mb-2">
                   <button type="button" class="btn btn-primary btn-sm rounded-pill" (click)="getLookupEntryList(1)">
                     <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reload
                   </button>
-                </div>
+                </div> -->
 
                 @if(duplicatedCodes.length>0){
                   <div class="alert alert-warning">

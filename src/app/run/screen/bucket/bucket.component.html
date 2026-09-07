@@ -1,12 +1,14 @@
 <div class="fix-gutter" [class.limit-width]="!screen().wide">
   <div class="single-pane">
     @if (bucket()) {
-      <div class="d-flex flex-row">
-        <div style="flex-grow: 1;">
-          <input type="search" class="form-control form-control-sm border border-2 bg-body-tertiary text-body" autocapitalize="none"
+      <!-- <div class="d-flex flex-row"> -->
+      <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm" style="gap:0.25rem;">
+
+        <!-- <div style="flex-grow: 1;"> -->
+          <input type="search" class="form-control form-control-sm border border-2" autocapitalize="none"
             placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
-        </div>
-        <div style="flex-shrink: 0;">
+        <!-- </div>
+        <div style="flex-shrink: 0;"> -->
           @if (screen().data?.enableUpload){
           <label class="form-label m-0">
             <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
@@ -26,7 +28,7 @@
               id="dropdownBucketEditor" ngbDropdownToggle>
               <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
             </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor">
+            <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor" class="shadow me-n1 mt-2">
               <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
                 (click)="initZip(initBucketZipTpl, bucket().id)">
                 <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
@@ -49,7 +51,7 @@
               </button>
             </div>
           </div>
-        </div>
+        <!-- </div> -->
       </div>
       @if (loading()) {
         <div class="p-4 text-center">

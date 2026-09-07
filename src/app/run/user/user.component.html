@@ -50,21 +50,23 @@
           </div>
         }@else{
           @if (!userUnauthorized()) {
-            <div class="d-flex flex-row">
-              <div style="flex-grow:1">
+            <!-- <div class="d-flex flex-row"> -->
+            <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
+
+              <!-- <div style="flex-grow:1"> -->
                 <input type="search"  autocapitalize="none" class="form-control form-control-sm border border-2"
                   placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
                   [(ngModel)]="searchText">
-              </div>
+              <!-- </div> -->
               @if (group?.appId==app().id){
-                <div style="flex-shrink: 0;">
-                    <button type="button" class="btn btn-sm border border-2 btn-outline-primary ms-1"
+                <!-- <div style="flex-shrink: 0;"> -->
+                    <button type="button" class="btn btn-sm border border-2 btn-primary ms-1"
                     [class.disabled]="offline()"
                     (click)="editAppUser(editAppUserTpl,{},true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                       {{lang()=='ms'?'Tambah Pengguna':'Add User'}}
                     </button>
-                </div>
+                <!-- </div> -->
               }
             </div>      
             @if (appUserList()?.length) {

@@ -154,7 +154,7 @@
 
 
 <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
-  <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
+  <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch position-relative"
     [class.input-group-sm]="asComp()" 
     [class.limit-width]="!dataset()?.wide">
     
@@ -172,12 +172,15 @@
     }
 
     @if (!dataset()?.x?.hideSearch) {
-      <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}" class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
-        [class.normal]="!asComp()" [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" (keyup.enter)="getEntryList(1)">
+      <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
+        class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
+        [class.normal]="!asComp()"
+        [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" 
+        (keyup.enter)="getEntryList(1)">
     }
 
     @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
-      <button type="button" class="btn border border-2 rounded-2 position-relative" [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
+      <button type="button" class="btn position-relative" [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
         <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
         @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white" style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div> }
       </button>
@@ -188,9 +191,9 @@
     <!-- ========================================== -->
 
     @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
-      <div ngbDropdown class="d-none d-sm-inline-block">
-        <button type="button" [class.btn-sm]="asComp()" class="btn border border-2 rounded-2 h-100" id="dropdownExport" ngbDropdownToggle><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon></button>
-        <div ngbDropdownMenu>
+      <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <button type="button" [class.btn-sm]="asComp()" class="btn h-100" id="dropdownExport" ngbDropdownToggle><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon></button>
+        <div ngbDropdownMenu class="shadow  smart-dropdown toolbar-aligned-menu mt-2">
           @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
           @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
           @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
@@ -199,30 +202,30 @@
     }
 
     @if (entryTotal() > 25) {
-      <div ngbDropdown class="d-none d-sm-inline-block">
-        <button type="button" class="btn border border-2 h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
-        <div ngbDropdownMenu>
+      <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <button type="button" class="btn h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
+        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
           @for (size of [25, 50, 100, 500]; track size) { <button type="button" (click)="pageSize.set(size); getEntryList(1)" ngbDropdownItem>{{size}}</button> }
         </div>
       </div>
     }
 
-    @if (dataset()?.canBlast) { <button type="button" class="btn border border-2 rounded-2 d-none d-sm-inline-block" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
-    @if (dataset()?.x?.canResync) { <button type="button" class="btn border border-2 rounded-2 d-none d-sm-inline-block" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
+    @if (dataset()?.canBlast) { <button type="button" class="btn d-none d-sm-inline-block" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
+    @if (dataset()?.x?.canResync) { <button type="button" class="btn d-none d-sm-inline-block" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
     
     @if (dataset()?.x?.tblcard && !asComp()) {
-      <div ngbDropdown class="d-none d-sm-inline-block">
-        <button type="button" class="btn border border-2 h-100" id="dropdownSort" ngbDropdownToggle><fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> <strong>{{sortFieldName()}}</strong></button>
-        <div ngbDropdownMenu>
+      <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <button type="button" class="btn h-100" id="dropdownSort" ngbDropdownToggle><fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> <strong>{{sortFieldName()}}</strong></button>
+        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
           @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
         </div>
       </div>
     }
 
     @if (dataset()?.x?.canGroup) {
-      <div ngbDropdown class="d-none d-sm-inline-block">
-        <button type="button" class="btn border border-2 h-100" id="dropdownGroup" ngbDropdownToggle><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{dataset()?.x?.groupFieldName}}</button>
-        <div ngbDropdownMenu>
+      <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <button type="button" class="btn h-100" id="dropdownGroup" ngbDropdownToggle><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{dataset()?.x?.groupFieldName}}</button>
+        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
           <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
           @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
         </div>
@@ -238,12 +241,12 @@
       entryTotal() > 25 || dataset()?.canBlast || dataset()?.x?.canResync ||
       (dataset()?.x?.tblcard && !asComp()) || dataset()?.x?.canGroup
     ) {
-      <div ngbDropdown class="d-inline-block d-sm-none h-100" placement="bottom-end">
-        <button type="button" class="btn border border-2 rounded-2 h-100" id="threeDotMenu" ngbDropdownToggle>
+      <div ngbDropdown class="d-inline-block d-sm-none h-100 position-static">
+        <button type="button" class="btn h-100" id="threeDotMenu" ngbDropdownToggle>
           <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
         </button>
 
-        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown">
+        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-1">
           
           @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
             <div class="dropdown-divider"></div>
