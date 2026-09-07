@@ -351,7 +351,7 @@ ngb-pagination ul.pagination { justify-content: center; }
   > .nav-wrap  {
     > .nav-tabs {
       border-bottom: 1.5px solid var(--bs-border-color, #dadada); font-size: 0.95em;
-      .nav-item { margin-bottom: -1.5px; }
+      // .nav-item { margin-bottom: 0; }
       .nav-link {
         border: 1.5px solid transparent; padding: 0.5rem 0.6rem;
         border-top-left-radius: 0.45rem; border-top-right-radius: 0.45rem;
