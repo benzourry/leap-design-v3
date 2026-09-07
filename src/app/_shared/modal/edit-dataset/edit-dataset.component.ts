@@ -5,7 +5,7 @@ import { FormService } from '../../../service/form.service';
 // import { LookupService } from '../../../service/lookup.service';
 import { btoaUTF, deepMerge, hashObject, splitAsList } from '../../utils';
 import { FilterPipe } from '../../pipe/filter.pipe';
-import { KeyValuePipe } from '@angular/common';
+import { JsonPipe, KeyValuePipe } from '@angular/common';
 import { EntryFilterComponent } from '../../component/entry-filter/entry-filter.component';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -22,8 +22,8 @@ import { GroupByPipe } from '../../pipe/group-by.pipe';
     styleUrls: ['./edit-dataset.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
-        FaIconComponent, NgSelectModule, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe,
-        FilterPipe, GroupByPipe]
+    FaIconComponent, NgSelectModule, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe,
+    FilterPipe, GroupByPipe]
 })
 export class EditDatasetComponent implements OnInit {
 
@@ -308,7 +308,10 @@ export class EditDatasetComponent implements OnInit {
       statusFilterForm[t.id] = {};
       var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
       splittedFilter.forEach(element => {
-        statusFilterForm[t.id][element] = true;
+        // only apply action specified in the tier or resubmitted or if always approve is enabled for always_approve
+        if ((t.actions[element] || element == 'resubmitted') || (t.alwaysApprove && element == 'always_approve')) {
+          statusFilterForm[t.id][element] = true;
+        }
       });
     });
     return statusFilterForm;

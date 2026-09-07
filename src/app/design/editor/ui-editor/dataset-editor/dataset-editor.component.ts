@@ -408,14 +408,9 @@ export class DatasetEditorComponent implements OnInit {
         this.editDatasetData = data;
         this.editDatasetData.appId = this.app.id;
 
-        // this.statusFilterForm = this.convertStatusToDisplay(data.statusFilter, form);
-
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then((rItem) => {
-
-                // rItem.statusFilter = this.convertDisplayToStatus(this.statusFilterForm);
-
 
                 this.datasetService.saveDataset(this.app.id, rItem)
                     .subscribe((res) => {

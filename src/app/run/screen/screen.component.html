@@ -35,7 +35,7 @@
   }
   @if (isAuthorized()) {
     @if ((screen()?.showAction||screen()?.canPrint||screen()?.data?.showSummary)) {
-      <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
+      <!-- <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
 
         <div class="toolbar title d-flex print-hide m-a pb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
           [class.input-group-sm]="asComp()" [class.justify-content-center]="!screen()?.showAction"
@@ -151,18 +151,188 @@
           </button>
           }
         </div>
+      </div> -->
+
+<div [class.px-3]="!asComp()" class="print-hide">
+  <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
+    [class.input-group-sm]="asComp()" [class.justify-content-center]="!screen()?.showAction"
+    [class.limit-width]="!screen()?.wide">
+    
+    @if (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)) {
+      
+      <!-- ========================================== -->
+      <!-- ALWAYS VISIBLE (Desktop & Mobile)          -->
+      <!-- ========================================== -->
+
+      @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
+        @if (!(form()?.data?.prev && !prevId)) {
+          <button type="button" class="btn btn-primary bg-gradient rounded-2 flex-grow-1 flex-sm-grow-0"
+            ngbTooltip="New Entry"
+            (click)="runAction('/form/'+form().data?.id+'/'+(form().prev?'prev':'add'),dataset()?.x?.inpopAdd, inPopTpl,prevId,form()?.data?.id,'form',form().prev?'prev':'add', _param)">
+            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+            {{dataset()?.x?.addLabel}}
+          </button>
+        }
+      }
+
+      @if (!dataset()?.x?.hideSearch) {
+        <input type="search" autocapitalize="none" id="search_screen_{{screen().id}}"
+          class="search-icon flex-grow-1 bg-body rounded-2 border border-2"
+          [class.normal]="!asComp()"
+          [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [(ngModel)]="searchText"
+          (keyup.enter)="loadDatasetEntry(dataset(), 1)">
+      }
+
+      @if (dataset()?.filters && dataset()?.filters.length > 0) {
+        <button type="button" class="btn border border-2 rounded-2 position-relative" [class.blue]="!filterIsEmpty()"
+          (click)="editFilter(editFilterTpl, filtersData(), true)">
+          <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
+          @if (!filterIsEmpty()) {
+            <div class="position-absolute bg-danger px-1 text-white"
+              style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div>
+          }
+        </button>
+      }
+
+      <!-- ========================================== -->
+      <!-- DESKTOP ONLY (Hidden on Mobile)            -->
+      <!-- ========================================== -->
+
+      @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
+        <div ngbDropdown class="d-none d-sm-inline-block">
+          <button type="button" [class.btn-sm]="asComp()" class="btn border border-2 rounded-2 h-100"
+            title="Export dataset" id="dropdownExport" ngbDropdownToggle>
+            <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownExport">
+            @if (dataset()?.exportXls) {
+              <a title="Export to Excel" ngbDropdownItem target="_blank"
+                href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
+                <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> Export {{lang()=='ms'?'ke':'to'}} Excel
+              </a>
+            }
+            @if (dataset()?.exportCsv) {
+              <a title="Export to CSV" ngbDropdownItem target="_blank"
+                href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
+                <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon> Export {{lang()=='ms'?'ke':'to'}} CSV
+              </a>
+            }
+            @if (dataset()?.exportPdf) {
+              <a title="Export to PDF" ngbDropdownItem target="_blank"
+                href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
+                <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon> Export {{lang()=='ms'?'ke':'to'}} PDF
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      @if (entryTotal() > 25 && screen()?.data?.paginate) {
+        <div ngbDropdown class="d-none d-sm-inline-block">
+          <button type="button" class="btn border border-2 rounded-2 h-100" title="Pagination size" id="dropdownPage" ngbDropdownToggle>
+            <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownPage">
+            <button type="button" title="25 items per page" (click)="pageSize.set(25);loadDatasetEntry(dataset(), 1)" ngbDropdownItem>25</button>
+            <button type="button" title="50 items per page" (click)="pageSize.set(50);loadDatasetEntry(dataset(), 1)" ngbDropdownItem>50</button>
+            <button type="button" title="100 items per page" (click)="pageSize.set(100);loadDatasetEntry(dataset(), 1)" ngbDropdownItem>100</button>
+          </div>
+        </div>
+      }
+
+      <div ngbDropdown class="d-none d-sm-inline-block ms-auto">
+        <button type="button" class="btn border border-2 rounded-2 h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
+          <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
+          <strong>{{sortFieldName()}}</strong>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownSort">
+          @for (item of dataset()?.items; track item.id) {
+            @if (item.label){
+              <button type="button" class="pointer" [class.text-primary]="sortField()==item.id" ngbDropdownItem
+                (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].includes(form()?.[item.root]?.items?.[item.code]?.type)?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                {{item.label}}&nbsp;
+                @if (sortField()==item.id && sortDir[item.id]!=null) {
+                  <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
+                }
+              </button>
+            }
+          }
+        </div>
       </div>
+    }
+
+    <!-- Print Button (Desktop) -->
+    @if (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type)) {
+      <button type="button" class="btn border border-2 rounded-2 position-relative d-none d-sm-inline-block" (click)="printReport()" [class.ms-auto]="!(screen()?.showAction && ['list','map','calendar'].includes(screen()?.type))">
+        <fa-icon [icon]="['fas','print']" [fixedWidth]="true"></fa-icon>
+      </button>
+    }
+
+    <!-- ========================================== -->
+    <!-- MOBILE ONLY: The 3-Dot Menu                -->
+    <!-- ========================================== -->
+    @if (
+      (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)) ||
+      (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type))
+    ) {
+      <div ngbDropdown class="d-inline-block d-sm-none h-100 ms-auto" placement="bottom-end">
+        <button type="button" class="btn border border-2 rounded-2 h-100" id="threeDotMenu" ngbDropdownToggle>
+          <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+        </button>
+
+        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown">
+          
+          @if (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)) {
+            
+            @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
+              @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
+              @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
+              @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
+            }
+
+            @if (entryTotal() > 25 && screen()?.data?.paginate) {
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
+              <button type="button" ngbDropdownItem [class.active]="pageSize() === 25" (click)="pageSize.set(25); loadDatasetEntry(dataset(), 1)">25 Items</button>
+              <button type="button" ngbDropdownItem [class.active]="pageSize() === 50" (click)="pageSize.set(50); loadDatasetEntry(dataset(), 1)">50 Items</button>
+              <button type="button" ngbDropdownItem [class.active]="pageSize() === 100" (click)="pageSize.set(100); loadDatasetEntry(dataset(), 1)">100 Items</button>
+            }
+
+            <div class="dropdown-divider"></div>
+            <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
+            @for (item of dataset()?.items; track item.id) {
+              @if (item.label) {
+                <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem 
+                  (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].includes(form()?.[item.root]?.items?.[item.code]?.type) ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">
+                  {{item.label}}
+                </button>
+              }
+            }
+          }
+
+          @if (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type)) {
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem (click)="printReport()"><fa-icon [icon]="['fas','print']" [fixedWidth]="true" class="me-2"></fa-icon> Print</button>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
 
       @if (dataset()?.x?.showSummary) {
         <div class="px-3 pb-3">
           <!-- Added justify-content-center here -->
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
 
-            <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+            <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
               {{lang()=='ms'?'Ringkasan':'Summary'}}
             </span>
 
-            <div class="vr opacity-25"></div>
+            <div class="vr opacity-25"></div> -->
 
             <div>
               {{lang()=='ms'?'Semua':'Total'}}:

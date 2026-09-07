@@ -510,7 +510,10 @@ export class DashboardEditorComponent implements OnInit {
       statusFilterForm[t.id] = {};
       var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
       splittedFilter.forEach(element => {
-        statusFilterForm[t.id][element] = true;
+        // only apply action specified in the tier or resubmitted or if always approve is enabled for always_approve
+        if ((t.actions[element] || element == 'resubmitted') || (t.alwaysApprove && element == 'always_approve')) {
+          statusFilterForm[t.id][element] = true;
+        }
       });
     });
     return statusFilterForm;

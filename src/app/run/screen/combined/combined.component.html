@@ -31,7 +31,7 @@
 
 @if (!screen()?.data?.nav || ['tabs', 'pills', 'underline'].includes(screen()?.data?.nav)) {
   <div class="tab-simple tab-hscroll">
-    <div class="nav-wrap py-3">
+    <div class="nav-wrap py-3" [class.pb-0]="['tabs','underline'].includes(screen()?.data?.nav)">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
         class="nav-{{screen()?.data?.nav??'pills'}} px-3 justify-content-center" [class.limit-width]="!screen().wide">
         @for (tab of screen()?.data?.comps; track $index) {
