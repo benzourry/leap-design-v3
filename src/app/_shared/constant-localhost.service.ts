@@ -53,7 +53,7 @@ export const OAUTH = {
     USER_UNBOX: null,
     TOKEN_GET: "http://10.28.114.194:8882/token/get", 
     PRIVACY_POLICY: "https://1drv.ms/b/s!AotEjBTyvtX0gq4fk6h2gVRugYo8tQ?e=e2HSrz",
-    SIGNIN_OPT:['unimas','unimasid','google','azuread','facebook','github','linkedin','twitter','local'],
+    SIGNIN_OPT:['unimas','unimasid','sarawakid','google','azuread','facebook','github','linkedin','twitter','local'],
     COGNA_VECTOR_DB:["chromadb","milvus","inmemory"]
 }
 
