@@ -246,7 +246,7 @@
           <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
         </button>
 
-        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-1">
+        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-2">
           
           @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
             <div class="dropdown-divider"></div>
@@ -509,20 +509,20 @@
                           }
 
                           @if (hasVisibleActions()) {
-                            <td class="p-1 print-hide text-end ds-action">
-                              <div class="d-flex flex-row flex-nowrap justify-content-end ms-auto"
+                            <td class="p-1 print-hide ds-action">
+                              <div class="d-flex flex-row flex-wrap ds-action-wrapper flex-sm-nowrap justify-content-start w-100"
                                [class.input-group]="dataset().x?.groupAction"
                                [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
                                 @for (ac of actionsInline; track ac.id) {
                                   @if (i._actionVisible[ac.id]) {
                                     @if (ac.action == 'url' && !ac.inpop) {
-                                      <a class="btn btn-responsive-sm bg-gradient text-nowrap" [ngClass]="ac.style"
+                                      <a class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
                                         [href]="i._actionUrls[ac.id]"
                                         target="_blank">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </a>
                                     } @else {
-                                      <button type="button" class="btn btn-responsive-sm bg-gradient1 text-nowrap" [ngClass]="ac.style"
+                                      <button type="button" class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
                                         (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </button>
@@ -531,27 +531,27 @@
                                 }
 
                                 <!-- 2. DROPDOWN ACTIONS UNWRAPPED (Mobile Only: d-inline-block d-md-none) -->
-                                @for (ac of actionsDropdown; track ac.id) {
+                                <!-- @for (ac of actionsDropdown; track ac.id) {
                                   @if (i._actionVisible[ac.id]) {
                                     @if (ac.action == 'url' && !ac.inpop) {
-                                      <a class="btn btn-responsive-sm bg-gradient text-nowrap d-inline-block d-md-none" [ngClass]="ac.style"
+                                      <a class="btn btn-responsive-sm bg-gradient text-nowrap d-inline-block d-sm-none" [ngClass]="ac.style"
                                         [href]="i._actionUrls[ac.id]" target="_blank">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </a>
                                     } @else {
-                                      <button type="button" class="btn btn-responsive-sm bg-gradient1 text-nowrap d-inline-block d-md-none" [ngClass]="ac.style"
+                                      <button type="button" class="btn btn-responsive-sm bg-gradient1 text-nowrap d-inline-block d-sm-none" [ngClass]="ac.style"
                                               (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
                                         <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                       </button>
                                     }
                                   }
-                                }
+                                } -->
 
                                 @if (actionsDropdown.length > 0) {
-                                  <div class="dropdown-btn ds-action-dropdown d-none d-md-block" ngbDropdown container="body">
-                                    <button type="button" class="btn border btn-responsive-sm border-secondary border-opacity-50"
+                                  <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
+                                    <button type="button" class="btn border btn-responsive-sm btn-action-more border-secondary border-opacity-50"
                                       title="Actions" id="dropdownAction" ngbDropdownToggle>
-                                      <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                                      <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                     <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
                                       @for (ac of actionsDropdown; track ac.id) {
