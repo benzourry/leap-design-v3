@@ -139,7 +139,7 @@
                     <button type="button" class="btn btn-round btn-primary" (click)="save()"
                       [disabled]="saving() || (form().validateSave && entryForm.invalid)">
                       <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                      {{form()?.x?.saveLbl ?? (lang() == 'ms' ? 'Simpan' : 'Save')}}
+                      {{form()?.x?.saveLbl || (lang() == 'ms' ? 'Simpan' : 'Save')}}
                       @if (saving()) {
                         <div class="spinner-border spinner-border-sm" role="status"></div>
                       }
@@ -633,7 +633,7 @@
                         @if (saving()) {
                           <div class="spinner-border spinner-border-sm" role="status"></div>
                         }
-                        {{form()?.x?.saveLbl ?? (lang() == 'ms' ? 'Simpan' : 'Save')}}
+                        {{form()?.x?.saveLbl || (lang() == 'ms' ? 'Simpan' : 'Save')}}
                       </button>
                       <button type="button" class="btn btn-round bg-white text-truncate" title="Proceed to next tab"
                         [disabled]="(form().x?.validateProgress && tForm?.invalid) || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]"
@@ -660,7 +660,7 @@
                       <button type="button" class="btn btn-round btn-primary text-truncate ms-1" (click)="save()"
                         [disabled]="saving() || (form().validateSave && entryForm.invalid)">
                         <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                        {{form()?.x?.saveLbl ?? (lang() == 'ms' ? 'Simpan' : 'Save')}}
+                        {{form()?.x?.saveLbl || (lang() == 'ms' ? 'Simpan' : 'Save')}}
                         @if (saving()) {
                           <div class="spinner-border spinner-border-sm" role="status"></div>
                         }

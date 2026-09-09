@@ -199,12 +199,12 @@
       <!-- ========================================== -->
 
       @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
-        <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
           <button type="button" [class.btn-sm]="asComp()" class="btn h-100"
             title="Export dataset" id="dropdownExport" ngbDropdownToggle>
             <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
           </button>
-          <div ngbDropdownMenu class="shadow toolbar-aligned-menu smart-dropdown mt-1" aria-labelledby="dropdownExport">
+          <div ngbDropdownMenu class="shadow toolbar-aligned-menu smart-dropdown mt-2" aria-labelledby="dropdownExport">
             @if (dataset()?.exportXls) {
               <a title="Export to Excel" ngbDropdownItem target="_blank"
                 href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
@@ -228,35 +228,37 @@
       }
 
       @if (entryTotal() > 25 && screen()?.data?.paginate) {
-        <div ngbDropdown class="d-none d-sm-inline-block position-static">
+        <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
           <button type="button" class="btn h-100" title="Pagination size" id="dropdownPage" ngbDropdownToggle>
             <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
           </button>
-          <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-1" aria-labelledby="dropdownPage">
+          <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2" aria-labelledby="dropdownPage">
             @for (size of [25, 50, 100, 500]; track size) { <button type="button" (click)="pageSize.set(size); loadDatasetEntry(dataset(), 1)" ngbDropdownItem>{{size}}</button> }
           </div>
         </div>
       }
 
-      <div ngbDropdown class="d-none d-sm-inline-block ms-auto position-static">
-        <button type="button" class="btn h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
-          <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
-          <strong>{{sortFieldName()}}</strong>
-        </button>
-        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-1" aria-labelledby="dropdownSort">
-          @for (item of dataset()?.items; track item.id) {
-            @if (item.label){
-              <button type="button" class="pointer" [class.text-primary]="sortField()==item.id" ngbDropdownItem
-                (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].includes(form()?.[item.root]?.items?.[item.code]?.type)?'.name':''),sortDir[item.id]=!sortDir[item.id])">
-                {{item.label}}&nbsp;
-                @if (sortField()==item.id && sortDir[item.id]!=null) {
-                  <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
-                }
-              </button>
+      @if (numberOfElements() > 0) {
+        <div ngbDropdown class="d-none d-sm-inline-block ms-auto position-static" display="static">
+          <button type="button" class="btn h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
+            <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
+            <strong>{{sortFieldName()}}</strong>
+          </button>
+          <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2" aria-labelledby="dropdownSort">
+            @for (item of dataset()?.items; track item.id) {
+              @if (item.label){
+                <button type="button" class="pointer" [class.text-primary]="sortField()==item.id" ngbDropdownItem
+                  (click)="sortByField(item.id,item.label,item.prefix+'.'+item.code+(['select', 'radio'].includes(form()?.[item.root]?.items?.[item.code]?.type)?'.name':''),sortDir[item.id]=!sortDir[item.id])">
+                  {{item.label}}&nbsp;
+                  @if (sortField()==item.id && sortDir[item.id]!=null) {
+                    <span>{{sortDir[item.id]?'&darr;':'&uarr;'}}</span>
+                  }
+                </button>
+              }
             }
-          }
+          </div>
         </div>
-      </div>
+      }
     }
 
     <!-- Print Button (Desktop) -->
@@ -273,12 +275,12 @@
       (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)) ||
       (screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type))
     ) {
-      <div ngbDropdown class="d-inline-block d-sm-none h-100 ms-auto position-static">
+      <div ngbDropdown class="d-inline-block d-sm-none h-100 ms-auto position-static" display="static">
         <button type="button" class="btn border border-2 rounded-2 h-100" id="threeDotMenu" ngbDropdownToggle>
           <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
         </button>
 
-        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow  toolbar-aligned-menu mt-1 smart-dropdown">
+        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow  toolbar-aligned-menu mt-2 smart-dropdown">
           
           @if (screen()?.showAction && ['list','map','calendar'].includes(screen()?.type)) {
             

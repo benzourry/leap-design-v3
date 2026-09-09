@@ -353,6 +353,7 @@ ngb-pagination ul.pagination { justify-content: center; }
       border-bottom: 1.5px solid var(--bs-border-color, #dadada); font-size: 0.95em;
       // .nav-item { margin-bottom: 0; }
       .nav-link {
+        margin-bottom: -1.5px;
         border: 1.5px solid transparent; padding: 0.5rem 0.6rem;
         border-top-left-radius: 0.45rem; border-top-right-radius: 0.45rem;
         &.active { 
@@ -731,3 +732,77 @@ ngb-pagination ul.pagination { justify-content: center; }
 .row > div[class*="col-"]:last-child > .card-blank-style {
   margin-bottom: 0 !important;
 }
+
+.toolbar {
+  padding: 0.25rem;
+  background-color: var(--bs-body-bg);
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.65rem;
+
+  // Hide when empty
+  &:not(:has(*)) {
+    display: none !important;
+  }
+
+  &:focus-within {
+    border-color: var(--bs-primary);
+  }
+
+  // Element resets
+  .btn,
+  input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  // Hover/Focus for specific buttons
+  .btn:not(.btn-primary, .btn-danger) {
+    &:hover,
+    &:focus {
+      color: var(--bs-primary);
+    }
+  }
+
+  input[type="search"] {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Aligned menu positioning
+  .toolbar-aligned-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    width: max-content;
+    min-width: 150px;
+    transform: none;
+  }
+}
+
+/* Automatically clean up orphaned dividers in dynamic dropdowns */
+.dropdown-menu .dropdown-divider:first-child,
+.dropdown-menu .dropdown-divider:last-child,
+.dropdown-menu .dropdown-divider + .dropdown-divider {
+  display: none !important;
+}
+
+// .nav-tabs .nav-link {
+//     margin-bottom: -1.5px;
+// }
+
+// .nav-tabs .nav-link.active,
+// .nav-tabs .nav-item.show .nav-link,
+// .tab-simple > .nav-wrap > .nav-tabs .nav-link.active {
+//   /* 
+//      Bootstrap's default overlap is -1px. On high-res screens or when scaled, 
+//      browsers calculate heights as decimals (e.g. 42.5px), leaving a 0.5px gap visible. 
+//      Pulling it down by -2px guarantees it completely covers the container's border. 
+//   */
+//   margin-bottom: -3px !important;
+  
+//   /* Ensure the tab physically renders on top of the container's border */
+//   position: relative !important;
+//   z-index: 10 !important;
+// }
