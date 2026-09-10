@@ -21,7 +21,6 @@
    THIRD-PARTY OVERRIDES (NG-DEEP)
    ========================================================================== */
 ::ng-deep {
-  /* Default table image size - keeps standard tables tidy */
   .table img {
     max-width: 150px !important;
   }
@@ -90,7 +89,6 @@ table.tbl-child {
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
 }
 
-/* Default table button styling */
 .tblcard .btn-responsive-sm {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
@@ -133,7 +131,7 @@ table.tbl-child {
 }
 
 /* ==========================================================================
-   MOBILE & CARD LAYOUT MIXIN
+   MOBILE & CARD LAYOUT MIXIN (Powered by CSS Grid)
    ========================================================================== */
 @mixin mobile-card-layout {
   table.tbl-child {
@@ -141,7 +139,8 @@ table.tbl-child {
     tr th { padding-top: 0; }
   }
 
-  table.tblcard {
+  /* Support multiple ways this mixin might be called (.forceCard or .tblcard) */
+  &, table.tblcard, table.forceCard {
     border: 0;
     background-color: transparent !important;
 
@@ -156,7 +155,6 @@ table.tbl-child {
       width: 1px;
     }
 
-    /* Aggregate Row */
     > .ds-agg > tr {
       display: block;
       background: var(--bs-body-bg);
@@ -166,12 +164,16 @@ table.tbl-child {
     }
 
     .ds-action {
-      padding: 0.5rem 1rem 1rem !important;
+      position: absolute !important;
+      bottom: 0;
+      left: 0;
+      width: 100%;
 
-      /* OVERRIDE INPUT-GROUP ON CARD LAYOUT */
+      padding: 0.5rem 1rem 1rem !important;
+      background: var(--bs-body-bg); /* Matches card background so scrolling text doesn't show through */
+
       .ds-action-wrapper {
         gap: 0.5rem !important;
-        
         > .btn, 
         > .ds-action-dropdown > .btn {
           flex: 0 0 auto !important; 
@@ -182,7 +184,6 @@ table.tbl-child {
       }
     }
 
-    /* Card Layout Action More Button */
     .btn-action-more {
       padding: 0.25rem 0;
       font-size: 1.2rem;
@@ -190,18 +191,48 @@ table.tbl-child {
       box-shadow: none !important;
     }
 
-    /* Shared Row Styling */
+    /* ---------------------------------------------------
+       GRID LAYOUT FOR CARDS (Handles both Mobile & Desktop)
+       --------------------------------------------------- */
+    > .list-tmid {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: 1fr; /* Mobile Default: 1 column flushed card */
+      
+      /* Desktop Breakpoint: Apply columns if specified in dataset */
+      @media screen and (min-width: 576px) {
+        &[data-grid="col-6"] { grid-template-columns: repeat(2, 1fr); }
+        &[data-grid="col-4"] { grid-template-columns: repeat(3, 1fr); }
+        &[data-grid="col-3"] { grid-template-columns: repeat(4, 1fr); }
+      }
+    }
+
+    /* Shared Row / Card Styling */
     > .list-tmid > tr,
     > .ds-agg > tr {
       &.ds-row {
         display: block;
-        margin-bottom: .5em;
+        // flex-direction: column;
+        margin-bottom: 0; /* Gap handles spacing natively in grid */
         overflow: hidden;
         background: var(--bs-body-bg);
+        height: 100%; /* Stretch equally in multi-column rows */
+        
+        position: relative; /* Anchor for the absolute action bar */
+        /* Optional: Gives card definition when laid out in multi-column desktop */
+       
+
+        &:has(.ds-action) {
+          padding-bottom: 4.5rem; 
+        }
+
       }
 
       &.ds-group-header {
+        grid-column: 1 / -1; /* Header spans across all columns */
         box-shadow: none;
+        border: none;
+        background: transparent;
         .acc-btn {
           background: transparent !important;
           font-size: 1rem;
@@ -211,16 +242,15 @@ table.tbl-child {
       &.selected-row {
         background-color: rgba(var(--bs-primary-rgb), 0.15);
         outline: solid 2px var(--bs-primary);
+        border-color: transparent;
 
         > td {
           background-color: transparent;
-
           &.ds-check,
           &.ds-index {
             background-color: rgb(var(--bs-primary-rgb)) !important;
             color: white !important;
           }
-
           &.ds-status {
             background-color: transparent; 
           }
@@ -244,9 +274,7 @@ table.tbl-child {
         }
 
         &.bg-transparent,
-        &.d-none {
-          display: none !important;
-        }
+        &.d-none { display: none !important; }
 
         &.ds-check,
         &.ds-index {
@@ -305,8 +333,7 @@ table.tbl-child {
             border-bottom: 1px solid var(--bs-border-color-translucent);
           }
 
-          /* --- SPECIAL CONTENT MODIFIERS (Title, Image, Tags) --- */
-          &.title, &.subtitle, &.image, &.tags {
+          &.title, &.subtitle, &.bleed, &.tags {
             text-align: start;
             &::before, &::after { display: none; }
           }
@@ -318,18 +345,41 @@ table.tbl-child {
           
           &.subtitle * { font-size: 1rem; }
           
-          &.image { 
-            margin: 0 0 0.5rem; /* Pulls image to the edges of the card */
-            padding: 0; 
-            
-            /* Overrides the global max-width: 150px rule specifically for card layout */
-            ::ng-deep img {
+          &.bleed { 
+            margin: 0 0 0.5rem; 
+            padding: 0;             
+            // max-height: 380px;
+            // overflow:hidden;
+            ::ng-deep .data-bleed {
               max-width: 100% !important; 
               width: 100%;
-              height: auto;
-              display: block; /* Prevents tiny whitespace gap under images */
+              display: block; 
+            }
+          }          
+          &.tags { 
+            margin: 0.5rem 1rem; 
+            padding: 0; 
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem; /* Spacing between multiple pills */
+
+            ::ng-deep .lookup-item {
+              display: inline-block; 
+              margin-right: 0.25rem;
+              margin-bottom: 0.25rem;
+              padding: 0.25rem 0.65rem;
+              font-size: 0.75rem; /* Slightly smaller text for tags */
+              font-weight: 500;
+              line-height: 1.2;
+              color: var(--bs-primary); /* Primary text */
+              background-color: rgba(var(--bs-primary-rgb), 0.1); /* Soft primary background */
+              border: 1px solid rgba(var(--bs-primary-rgb), 0.15); /* Subtle border */
+              border-radius: 50rem; /* Creates the fully rounded pill shape */
+              white-space: nowrap; /* Prevents text from breaking into two lines inside the pill */
             }
           }
+
+
         }
 
         > .clearfix { display: none; }
@@ -353,8 +403,6 @@ table.tbl-child {
 /* ==========================================================================
    APPLY MEDIA QUERIES & MIXINS
    ========================================================================== */
-
-/* Print Layout */
 @media print {
   .table-print {
     width: 100%;
@@ -369,6 +417,20 @@ table.tbl-child {
 /* Mobile Screens */
 @media screen and (max-width: 575.98px) {
   @include mobile-card-layout;
+}
+@media screen and (min-width: 576px) {
+  .ds-row{
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: var(--bs-border-radius, 0.5rem);
+  }
+  .ds-row.selected-row{
+    border:none;
+  }
+  .forceCard{    
+    .outer-pad{
+      padding: 0 1rem 1rem;
+    }
+  }
 }
 
 /* Forced Card View (Any screen size) */

@@ -1,4 +1,4 @@
-<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print">
+<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print" [class.forceCard]="dataset()?.x?.forceCard">
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>
@@ -14,297 +14,148 @@
         <div [outerHTML]="compileTpl(dataset().x?.pre, {$_: rawList()}) | safe:'html'"></div>
       }
       
-      <!-- <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
-        <div class="toolbar title d-flex print-hide m-a pb-3 flex-wrap align-items-stretch" style="gap:0.25rem;"
-          [class.input-group-sm]="asComp()" [class.limit-width]="!dataset()?.wide">
+      <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
+        <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch position-relative"
+          [class.input-group-sm]="asComp()" 
+          [class.limit-width]="!dataset()?.wide">
           
+          <!-- ========================================== -->
+          <!-- ALWAYS VISIBLE (Desktop & Mobile)          -->
+          <!-- ========================================== -->
+
           @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
             @if (!(form()?.data?.prev && !prevId)) {
-              <button type="button" class="btn btn-primary bg-gradient rounded-2" style="flex: 1 1 auto;" ngbTooltip="New Entry"
-                (click)="runAction('/form/'+form().data?.id+'/'+(form().data.prev?'prev':'add'),
-                dataset()?.x?.inpopAdd, inPopTpl, prevId, form()?.data?.id, 'form', form().data.prev?'prev':'add', _param)">
-                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{dataset()?.x?.addLabel}}
+              <button type="button" class="btn btn-primary bg-gradient rounded-2" ngbTooltip="New Entry"
+                (click)="runAction('/form/'+form().data?.id+'/'+(form().data.prev?'prev':'add'), dataset()?.x?.inpopAdd, inPopTpl, prevId, form()?.data?.id, 'form', form().data.prev?'prev':'add', _param)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> <span class="d-none d-sm-inline">{{dataset()?.x?.addLabel}}</span>
               </button>
             }
           }
 
           @if (!dataset()?.x?.hideSearch) {
             <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
-              class="search-icon bg-body rounded-2 border border-2"
-              style="flex: 100 1 auto;"
+              class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
               [class.normal]="!asComp()"
-              [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" 
-              [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+              [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" 
               (keyup.enter)="getEntryList(1)">
           }
 
           @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
-            <button type="button" class="btn border border-2 rounded-2 position-relative"
-              [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
+            <button type="button" class="btn position-relative" [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
-              @if (!filterIsEmpty()) {
-                <div class="position-absolute bg-danger px-1 text-white"
-                  style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div>
-              }
+              @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white" style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div> }
             </button>
           }
 
-          @if (dataset()?.canBlast) {
-            <button type="button" class="btn border border-2 rounded-2" (click)="blastEmail(blastTpl, blastData())">
-              <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
-            </button>
-          }
-
-          @if (dataset()?.x?.canResync) {
-            <button type="button" class="btn border border-2 rounded-2" title="Resync Dataset" [class.disabled]="offline()"
-              (click)="resyncDataset(dataset()?.id)">
-              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-            </button>
-          }
+          <!-- ========================================== -->
+          <!-- DESKTOP ONLY (Hidden on Mobile)            -->
+          <!-- ========================================== -->
 
           @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
-            <div ngbDropdown class="d-inline-block">
-              <button type="button" [class.btn-sm]="asComp()" class="btn border border-2 rounded-2 h-100" title="Export dataset" id="dropdownExport" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
-              </button>
-              <div ngbDropdownMenu aria-labelledby="dropdownExport">
-                @if (dataset()?.exportXls) {
-                  <a title="Export to Excel" ngbDropdownItem target="_blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
-                    <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
-                    Export {{lang()=='ms'?'ke':'to'}} Excel
-                  </a>
-                }
-                @if (dataset()?.exportCsv) {
-                  <a title="Export to CSV" ngbDropdownItem target="_blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
-                    <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true"></fa-icon>
-                    Export {{lang()=='ms'?'ke':'to'}} CSV
-                  </a>
-                }
-                @if (dataset()?.exportPdf) {
-                  <a title="Export to PDF" ngbDropdownItem target="_blank"
-                    href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">
-                    <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true"></fa-icon>
-                    Export {{lang()=='ms'?'ke':'to'}} PDF
-                  </a>
-                }
+            <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
+              <button type="button" [class.btn-sm]="asComp()" class="btn h-100" id="dropdownExport" ngbDropdownToggle><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon></button>
+              <div ngbDropdownMenu class="shadow  smart-dropdown toolbar-aligned-menu mt-2">
+                @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
+                @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
+                @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
               </div>
             </div>
           }
 
           @if (entryTotal() > 25) {
-            <div ngbDropdown class="d-inline-block">
-              <button type="button" class="btn border border-2 h-100" title="Pagination size" id="dropdownPage" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}
-              </button>
-              <div ngbDropdownMenu aria-labelledby="dropdownPage">
-                @for (size of [25, 50, 100, 500]; track size) {
-                  <button type="button" [title]="size + ' items per page'" (click)="pageSize.set(size); getEntryList(1)" ngbDropdownItem>
-                    {{size}}
-                  </button>
-                }
+            <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
+              <button type="button" class="btn h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
+              <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
+                @for (size of [25, 50, 100, 500]; track size) { <button type="button" (click)="pageSize.set(size); getEntryList(1)" ngbDropdownItem>{{size}}</button> }
               </div>
             </div>
           }
 
-          @if (dataset()?.x?.tblcard && !asComp()) {
-            <div ngbDropdown class="d-inline-block ms-auto d-sm-none">
-              <button type="button" class="btn border border-2 h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
-                <strong>{{sortFieldName()}}</strong>
-              </button>
-              <div ngbDropdownMenu aria-labelledby="dropdownSort">
-                @for (item of dataset()?.items; track item.id) {
-                  <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem
-                    (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">
-                    {{item.label}}&nbsp;
-                    @if (sortField() == item.id && sortDir[item.id] != null) {
-                      <span>{{sortDir[item.id] ? '&darr;' : '&uarr;'}}</span>
-                    }
-                  </button>
-                }
+          @if (dataset()?.canBlast) { <button type="button" class="btn d-none d-sm-inline-block" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
+          @if (dataset()?.x?.canResync) { <button type="button" class="btn d-none d-sm-inline-block" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
+          
+          @if (dataset()?.x?.tblcard && !asComp() && numberOfElements() > 0) {
+            <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
+              <button type="button" class="btn h-100" id="dropdownSort" ngbDropdownToggle><fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> <strong>{{sortFieldName()}}</strong></button>
+              <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
+                @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
               </div>
             </div>
           }
 
           @if (dataset()?.x?.canGroup) {
-            <div ngbDropdown class="d-inline-block">
-              <button type="button" class="btn border border-2 h-100" title="Group by" id="dropdownGroup" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
-                {{dataset()?.x?.groupFieldName}}
+            <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
+              <button type="button" class="btn h-100" id="dropdownGroup" ngbDropdownToggle><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{dataset()?.x?.groupFieldName}}</button>
+              <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
+                <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
+                @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
+              </div>
+            </div>
+          }
+
+          <!-- ========================================== -->
+          <!-- MOBILE ONLY: The 3-Dot Menu                -->
+          <!-- ========================================== -->
+          
+          @if (
+            (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) ||
+            entryTotal() > 25 || dataset()?.canBlast || dataset()?.x?.canResync ||
+            (dataset()?.x?.tblcard && !asComp()) || dataset()?.x?.canGroup
+          ) {
+            <div ngbDropdown class="d-inline-block d-sm-none h-100 position-static" display="static">
+              <button type="button" class="btn h-100" id="threeDotMenu" ngbDropdownToggle>
+                <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
               </button>
-              <div ngbDropdownMenu aria-labelledby="dropdownGroup">
-                <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">
-                  {{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}
-                </button>
-                @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) {
-                  <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1"
-                    [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem
-                    (click)="groupByField($index, gf.value, gf.key+'')">
-                    {{gf.value}}
-                  </button>
+
+              <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-2">
+                
+                @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
+                  @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
+                  @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
+                  @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
+                }
+
+                @if (entryTotal() > 25) {
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
+                  @for (size of [25, 50, 100, 500]; track size) { <button type="button" ngbDropdownItem [class.active]="pageSize() === size" (click)="pageSize.set(size); getEntryList(1)">{{size}} Items</button> }
+                }
+
+                @if (dataset()?.canBlast) { 
+                  <div class="dropdown-divider"></div>
+                  <button type="button" ngbDropdownItem (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true" class="me-2"></fa-icon> Blast Email</button> 
+                }
+                
+                @if (dataset()?.x?.canResync) { 
+                  <div class="dropdown-divider"></div>
+                  <button type="button" ngbDropdownItem [disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true" class="me-2"></fa-icon> Resync Dataset</button> 
+                }
+
+                @if (dataset()?.x?.tblcard && !asComp()) {
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
+                  @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
+                }
+
+                @if (dataset()?.x?.canGroup) {
+                  <div class="dropdown-divider"></div>
+                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="me-1"></fa-icon> Group By</h6>
+                  <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
+                  @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
                 }
               </div>
             </div>
           }
-        </div>
-      </div> -->
 
-
-<div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
-  <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch position-relative"
-    [class.input-group-sm]="asComp()" 
-    [class.limit-width]="!dataset()?.wide">
-    
-    <!-- ========================================== -->
-    <!-- ALWAYS VISIBLE (Desktop & Mobile)          -->
-    <!-- ========================================== -->
-
-    @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
-      @if (!(form()?.data?.prev && !prevId)) {
-        <button type="button" class="btn btn-primary bg-gradient rounded-2" ngbTooltip="New Entry"
-          (click)="runAction('/form/'+form().data?.id+'/'+(form().data.prev?'prev':'add'), dataset()?.x?.inpopAdd, inPopTpl, prevId, form()?.data?.id, 'form', form().data.prev?'prev':'add', _param)">
-          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> <span class="d-none d-sm-inline">{{dataset()?.x?.addLabel}}</span>
-        </button>
-      }
-    }
-
-    @if (!dataset()?.x?.hideSearch) {
-      <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
-        class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
-        [class.normal]="!asComp()"
-        [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" 
-        (keyup.enter)="getEntryList(1)">
-    }
-
-    @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
-      <button type="button" class="btn position-relative" [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
-        <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
-        @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white" style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div> }
-      </button>
-    }
-
-    <!-- ========================================== -->
-    <!-- DESKTOP ONLY (Hidden on Mobile)            -->
-    <!-- ========================================== -->
-
-    @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
-      <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
-        <button type="button" [class.btn-sm]="asComp()" class="btn h-100" id="dropdownExport" ngbDropdownToggle><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon></button>
-        <div ngbDropdownMenu class="shadow  smart-dropdown toolbar-aligned-menu mt-2">
-          @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
-          @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
-          @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
         </div>
       </div>
-    }
-
-    @if (entryTotal() > 25) {
-      <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
-        <button type="button" class="btn h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
-        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
-          @for (size of [25, 50, 100, 500]; track size) { <button type="button" (click)="pageSize.set(size); getEntryList(1)" ngbDropdownItem>{{size}}</button> }
-        </div>
-      </div>
-    }
-
-    @if (dataset()?.canBlast) { <button type="button" class="btn d-none d-sm-inline-block" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
-    @if (dataset()?.x?.canResync) { <button type="button" class="btn d-none d-sm-inline-block" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
-    
-    @if (dataset()?.x?.tblcard && !asComp() && numberOfElements() > 0) {
-      <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
-        <button type="button" class="btn h-100" id="dropdownSort" ngbDropdownToggle><fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> <strong>{{sortFieldName()}}</strong></button>
-        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
-          @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
-        </div>
-      </div>
-    }
-
-    @if (dataset()?.x?.canGroup) {
-      <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
-        <button type="button" class="btn h-100" id="dropdownGroup" ngbDropdownToggle><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{dataset()?.x?.groupFieldName}}</button>
-        <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
-          <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
-          @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
-        </div>
-      </div>
-    }
-
-    <!-- ========================================== -->
-    <!-- MOBILE ONLY: The 3-Dot Menu                -->
-    <!-- ========================================== -->
-    
-    @if (
-      (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) ||
-      entryTotal() > 25 || dataset()?.canBlast || dataset()?.x?.canResync ||
-      (dataset()?.x?.tblcard && !asComp()) || dataset()?.x?.canGroup
-    ) {
-      <div ngbDropdown class="d-inline-block d-sm-none h-100 position-static" display="static">
-        <button type="button" class="btn h-100" id="threeDotMenu" ngbDropdownToggle>
-          <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
-        </button>
-
-        <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-2">
-          
-          @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
-            <div class="dropdown-divider"></div>
-            <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
-            @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
-            @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
-            @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
-          }
-
-          @if (entryTotal() > 25) {
-            <div class="dropdown-divider"></div>
-            <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
-            @for (size of [25, 50, 100, 500]; track size) { <button type="button" ngbDropdownItem [class.active]="pageSize() === size" (click)="pageSize.set(size); getEntryList(1)">{{size}} Items</button> }
-          }
-
-          @if (dataset()?.canBlast) { 
-            <div class="dropdown-divider"></div>
-            <button type="button" ngbDropdownItem (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true" class="me-2"></fa-icon> Blast Email</button> 
-          }
-          
-          @if (dataset()?.x?.canResync) { 
-            <div class="dropdown-divider"></div>
-            <button type="button" ngbDropdownItem [disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true" class="me-2"></fa-icon> Resync Dataset</button> 
-          }
-
-          @if (dataset()?.x?.tblcard && !asComp()) {
-            <div class="dropdown-divider"></div>
-            <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
-            @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
-          }
-
-          @if (dataset()?.x?.canGroup) {
-            <div class="dropdown-divider"></div>
-            <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="me-1"></fa-icon> Group By</h6>
-            <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
-            @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
-          }
-        </div>
-      </div>
-    }
-
-  </div>
-</div>
       
-
 
       @if (dataset()?.x?.showSummary) {
         <div class="px-3 pb-3">
-          <!-- Added justify-content-center here -->
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
-            
-            <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-              {{lang()=='ms'?'Ringkasan':'Summary'}}
-            </span> -->
-            
-            <!-- Subtle vertical divider -->
-            <!-- <div class="vr opacity-25"></div> -->
-            
             <div>
               {{lang()=='ms'?'Semua':'Total'}}: 
               <span class="text-body fw-medium">{{entryTotal()}}</span>
@@ -319,7 +170,6 @@
               {{lang()=='ms'?'Halaman':'Pages'}}: 
               <span class="text-body fw-medium">{{entryPages()}}</span>
             </div>
-            
           </div>
         </div>
       }
@@ -348,341 +198,326 @@
   </div>
 
   @if (dataset() && !userUnauthorized()) {
-    <div class="centered position-relative outer-wrapper" [class.limit-width]="!dataset()?.wide">
-      @if (itemLoading()) {
-        <div class="header-colors"></div>
-      }
+    <div class="outer-pad">
+      <div class="centered position-relative outer-wrapper" [class.limit-width]="!dataset()?.wide">
+        @if (itemLoading()) {
+          <div class="header-colors"></div>
+        }
 
-      <div [class.disabled]="itemLoading()">
-        <div [class.table-responsive]="!dataset()?.wide || asComp()" style="width:100%">
-          @if (entryList()?.length > 0) {
-            <table class="table table-print ds-table mb-0"
-              [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
-              [ngClass]="{'tblcard': dataset()?.x?.tblcard && !asComp()}">
-              <thead class="bg-body-tertiary list-tmid ds-thead">
-                <tr>
-                  @if (dataset()?.x?.bulkAction) {
-                    <th class="ds-check" style="width: 1%">
-                      <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
-                        [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
-                    </th>
-                  }
-                  @if (dataset()?.showIndex) {
-                    <th class="ds-index" style="width: 1%">#</th>
-                  }
-                  @for (item of dataset()?.items; track item.id; let isLast = $last) {
-                    @if (columnVisible[item.id]) {
-                      @if (item.type == 'list') {
-                        <th class="ds-item {{item.code}}">
-                          <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-secondary"></fa-icon>&nbsp;{{item.label}}
-                        </th>
-                      } @else {
-                        @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-                        <th class="pointer ds-item" [class.last-ds-item]="isLast" [class.text-primary]="sortField() == item.id"
-                          [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
-                          (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">
-                          {{item.label}}&nbsp;
-                          @if (sortField() == item.id && sortDir[item.id] != null) {
-                            <span>{{sortDir[item.id] ? '&darr;' : '&uarr;'}}</span>
-                          }
-                        </th>
+        <div [class.disabled]="itemLoading()">
+          <div [class.table-responsive]="!dataset()?.wide || asComp()" style="width:100%">
+            @if (entryList()?.length > 0) {
+              <table class="table table-print ds-table mb-0"
+                [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
+                [ngClass]="{'tblcard': dataset()?.x?.tblcard && !asComp()}">
+                <thead class="bg-body-tertiary list-tmid ds-thead">
+                  <tr>
+                    @if (dataset()?.x?.bulkAction) {
+                      <th class="ds-check" style="width: 1%">
+                        <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
+                          [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
+                      </th>
+                    }
+                    @if (dataset()?.showIndex) {
+                      <th class="ds-index" style="width: 1%">#</th>
+                    }
+                    @for (item of dataset()?.items; track item.id; let isLast = $last) {
+                      @if (columnVisible[item.id]) {
+                        @if (item.type == 'list') {
+                          <th class="ds-item {{item.code}}">
+                            <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="text-secondary"></fa-icon>&nbsp;{{item.label}}
+                          </th>
+                        } @else {
+                          @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                          <th class="pointer ds-item" [class.last-ds-item]="isLast" [class.text-primary]="sortField() == item.id"
+                            [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
+                            (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">
+                            {{item.label}}&nbsp;
+                            @if (sortField() == item.id && sortDir[item.id] != null) {
+                              <span>{{sortDir[item.id] ? '&darr;' : '&uarr;'}}</span>
+                            }
+                          </th>
+                        }
                       }
                     }
-                  }
-                  @if (dataset()?.showStatus) {
-                    <th class="text-center ds-status">Status</th>
-                  }
-                  @if (hasVisibleActions()) {
-                    <th class="print-hide text-end" style="width: 5%">
-                      {{lang()=='ms'?'Tindakan':'Action'}}
-                    </th>
-                  }
-                </tr>
-              </thead>
-
-              @for (listKv of groupedEntryList(); track listKv.key) {
-                @if (!groupFilter() || groupFilter() == listKv?.key) {
-                  <tbody class="list-tmid ds-tbody">
-                    @if (groupFieldCode()) {
-                      <tr class="ds-group-header">
-                        <td [attr.colspan]="totalColumn" style="padding:0;">
-                          <!-- <div class="display:flex"> -->
-                          <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
-                            <div>
-                              @if (listKv?.key == 'undefined') {
-                                <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
-                              } @else {
-                                <span [innerHtml]="listKv?.key"></span>
-                              }
-                            </div>
-                            <span class="ms-auto mb-auto badge badge-pill text-bg-secondary" style="line-height:1rem">{{listKv?.value?.length}}</span>
-                            <!-- <div class="bg-secondary px-1 text-white ms-auto mb-auto badge" style="font-size: 11px; border-radius:3px; line-height:13px">{{listKv?.value?.length}}</div> -->
-                            <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
-                          </button>
-                          <!-- </div> -->
-                        </td>
-                      </tr>
+                    @if (dataset()?.showStatus) {
+                      <th class="text-center ds-status">Status</th>
                     }
+                    @if (hasVisibleActions()) {
+                      <th class="print-hide text-end" style="width: 5%">
+                        {{lang()=='ms'?'Tindakan':'Action'}}
+                      </th>
+                    }
+                  </tr>
+                </thead>
 
-                    @if (!hideGroup[listKv?.key]) {
-                      @for (i of listKv?.value; track i.id; let eIdx = $index) {
-                        <tr [ngClass]="i.currentStatus" class="ds-row" [class.selected-row]="checkSelect(i)" [ngClass]="rowClass[i.id]">
-                          @if (dataset()?.x?.bulkAction) {
-                            <td class="ds-check">
-                              <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)" [checked]="checkSelect(i)">
-                            </td>
-                          }
-                          @if (dataset()?.showIndex) {
-                            <td data-label="#" class="bg-secondary text-white ds-index">
-                              {{preCount() + eIdx + 1}}
-                            </td>
-                          }
-                          @for (item of dataset().items; track item.id; let isLast = $last) {
-                            @if (i._isVisible[item.root + '.' + item.code]) {
-                              @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                @for (listKv of groupedEntryList(); track listKv.key) {
+                  @if (!groupFilter() || groupFilter() == listKv?.key) {
+                    
+                    <!-- GRID ATTACHMENT: Data-grid reads the col-4 or col-6 attribute here for Desktop -->
+                    <tbody class="list-tmid ds-tbody" [attr.data-grid]="dataset()?.x?.cardSize">
+                      @if (groupFieldCode()) {
+                        <tr class="ds-group-header">
+                          <td [attr.colspan]="totalColumn" style="padding:0;">
+                            <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                              <div>
+                                @if (listKv?.key == 'undefined') {
+                                  <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
+                                } @else {
+                                  <span [innerHtml]="listKv?.key"></span>
+                                }
+                              </div>
+                              <span class="ms-auto mb-auto badge badge-pill text-bg-secondary" style="line-height:1rem">{{listKv?.value?.length}}</span>
+                              <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                            </button>
+                          </td>
+                        </tr>
+                      }
 
-                              <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
-                                [class.last-ds-item]="isLast"
-                                [ngClass]="item.x?.cardStyle"
-                                [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
-                                [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
-                                
-                                @if (['data','prev'].indexOf(item.root) > -1) {
-                                  @if (item.type == 'list') {
-                                    @if (i[item.root][item.code] && i[item.root][item.code].length > 0) {
-                                      <table class="table tbl-child m-0 table-flush small">
-                                        <thead>
-                                          <tr>
-                                            @for (fq of item.subs; track fq.code) {
-                                              <th class="bg-transparent">{{fq.label}}</th>
-                                            }
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          @for (ch of i[item.root][item.code]; track $index) {
+                      @if (!hideGroup[listKv?.key]) {
+                        @for (i of listKv?.value; track i.id; let eIdx = $index) {
+                          <!-- FIXED: Combined multiple [ngClass] directives -->
+                          <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)">
+                            @if (dataset()?.x?.bulkAction) {
+                              <td class="ds-check">
+                                <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)" [checked]="checkSelect(i)">
+                              </td>
+                            }
+                            @if (dataset()?.showIndex) {
+                              <td data-label="#" class="bg-secondary text-white ds-index">
+                                {{preCount() + eIdx + 1}}
+                              </td>
+                            }
+                            @for (item of dataset().items; track item.id; let isLast = $last) {
+                              @if (i._isVisible[item.root + '.' + item.code]) {
+                                @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+
+                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
+                                  [class.last-ds-item]="isLast"
+                                  [ngClass]="item.x?.cardStyle"
+                                  [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
+                                  [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
+                                  
+                                  @if (['data','prev'].indexOf(item.root) > -1) {
+                                    @if (item.type == 'list') {
+                                      @if (i[item.root][item.code] && i[item.root][item.code].length > 0) {
+                                        <table class="table tbl-child m-0 table-flush small">
+                                          <thead>
                                             <tr>
                                               @for (fq of item.subs; track fq.code) {
-                                                @let chField = form()[item.root]?.items[fq.code];
-                                                <td class="bg-transparent">
-                                                  @if (ch[fq.code]) {
-                                                    <field-view [field]="chField" [scopeId]="scopeId()" [lang]="lang()"
-                                                      [value]="ch._computedValues?.[item.root + '.' + fq.code]"
-                                                      [data]="{$:ch, $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
-                                                    </field-view>
-                                                  }
-                                                </td>
+                                                <th class="bg-transparent">{{fq.label}}</th>
                                               }
                                             </tr>
-                                          }
-                                        </tbody>
-                                      </table>
+                                          </thead>
+                                          <tbody>
+                                            @for (ch of i[item.root][item.code]; track $index) {
+                                              <tr>
+                                                @for (fq of item.subs; track fq.code) {
+                                                  @let chField = form()[item.root]?.items[fq.code];
+                                                  <td class="bg-transparent">
+                                                    @if (ch[fq.code]) {
+                                                      <field-view [field]="chField" [scopeId]="scopeId()" [lang]="lang()"
+                                                        [value]="ch._computedValues?.[item.root + '.' + fq.code]"
+                                                        [data]="{$:ch, $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                                      </field-view>
+                                                    }
+                                                  </td>
+                                                }
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      } @else {
+                                        <div class="p-2 text-body-tertiary">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
+                                      }
                                     } @else {
-                                      <div class="p-2 text-body-tertiary">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
+                                      <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
+                                        [value]="i._computedValues?.[item.root + '.' + item.code]"
+                                        [data]="{$:i[item.root], $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                      </field-view>
                                     }
                                   } @else {
                                     <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
-                                      [value]="i._computedValues?.[item.root + '.' + item.code]"
-                                      [data]="{$:i[item.root], $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                      [value]="i._computedValues?.[item.root + '.' + item.code]">
                                     </field-view>
                                   }
-                                } @else {
-                                  <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
-                                    [value]="i._computedValues?.[item.root + '.' + item.code]">
-                                  </field-view>
-                                }
-                                <div class="clearfix"></div>
+                                  <div class="clearfix"></div>
+                                </td>
+                              }
+                            }
+
+                            @if (dataset()?.showStatus) {
+                              @let tiers = form().data?.tiers;
+                              <td class="text-center ds-status">
+                                <step-wizard [tiers]="tiers" [user]="user()" [entry]="i" [approval]="i?.approval" type="mini"></step-wizard>
+                                <div class="mt-1 small" style="text-transform: capitalize;">
+                                  @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]) {
+                                    {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
+                                  } @else {
+                                    {{statusMap[i.currentStatus]?.[lang()] || i.currentStatus}}
+                                  }
+                                </div>
                               </td>
                             }
-                          }
 
-                          @if (dataset()?.showStatus) {
-                            @let tiers = form().data?.tiers;
-                            <td class="text-center ds-status">
-                              <step-wizard [tiers]="tiers" [user]="user()" [entry]="i" [approval]="i?.approval" type="mini"></step-wizard>
-                              <div class="mt-1 small" style="text-transform: capitalize;">
-                                @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]) {
-                                  {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
-                                } @else {
-                                  {{statusMap[i.currentStatus]?.[lang()] || i.currentStatus}}
-                                }
-                              </div>
-                            </td>
-                          }
-
-                          @if (hasVisibleActions()) {
-                            <td class="p-1 print-hide ds-action">
-                              <div class="d-flex flex-row flex-wrap ds-action-wrapper flex-sm-nowrap justify-content-start w-100"
-                               [class.input-group]="dataset().x?.groupAction"
-                               [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
-                                @for (ac of actionsInline; track ac.id) {
-                                  @if (i._actionVisible[ac.id]) {
-                                    @if (ac.action == 'url' && !ac.inpop) {
-                                      <a class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
-                                        [href]="i._actionUrls[ac.id]"
-                                        target="_blank">
-                                        <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                      </a>
-                                    } @else {
-                                      <button type="button" class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
-                                        (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
-                                        <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                      </button>
+                            @if (hasVisibleActions()) {
+                              <td class="p-1 print-hide ds-action">
+                                <div class="d-flex flex-row flex-wrap ds-action-wrapper flex-sm-nowrap justify-content-start w-100"
+                                [class.input-group]="dataset().x?.groupAction"
+                                [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
+                                  @for (ac of actionsInline; track ac.id) {
+                                    @if (i._actionVisible[ac.id]) {
+                                      @if (ac.action == 'url' && !ac.inpop) {
+                                        <a class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
+                                          [href]="i._actionUrls[ac.id]"
+                                          target="_blank">
+                                          <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                        </a>
+                                      } @else {
+                                        <button type="button" class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
+                                          (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
+                                          <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                        </button>
+                                      }
                                     }
                                   }
-                                }
 
-                                <!-- 2. DROPDOWN ACTIONS UNWRAPPED (Mobile Only: d-inline-block d-md-none) -->
-                                <!-- @for (ac of actionsDropdown; track ac.id) {
-                                  @if (i._actionVisible[ac.id]) {
-                                    @if (ac.action == 'url' && !ac.inpop) {
-                                      <a class="btn btn-responsive-sm bg-gradient text-nowrap d-inline-block d-sm-none" [ngClass]="ac.style"
-                                        [href]="i._actionUrls[ac.id]" target="_blank">
-                                        <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                      </a>
-                                    } @else {
-                                      <button type="button" class="btn btn-responsive-sm bg-gradient1 text-nowrap d-inline-block d-sm-none" [ngClass]="ac.style"
-                                              (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
-                                        <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                  @if (actionsDropdown.length > 0) {
+                                    <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
+                                      <button type="button" class="btn border btn-responsive-sm btn-action-more border-secondary border-opacity-50"
+                                        title="Actions" id="dropdownAction" ngbDropdownToggle>
+                                        <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
                                       </button>
-                                    }
-                                  }
-                                } -->
-
-                                @if (actionsDropdown.length > 0) {
-                                  <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
-                                    <button type="button" class="btn border btn-responsive-sm btn-action-more border-secondary border-opacity-50"
-                                      title="Actions" id="dropdownAction" ngbDropdownToggle>
-                                      <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
-                                    </button>
-                                    <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
-                                      @for (ac of actionsDropdown; track ac.id) {
-                                        @if (i._actionVisible[ac.id]) {
-                                          @if (ac.action == 'url' && !ac.inpop) {
-                                            <a ngbDropdownItem 
-                                              [href]="i._actionUrls[ac.id]"
-                                              target="_blank">
-                                              <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                            </a>
-                                          } @else {
-                                            <button type="button" ngbDropdownItem (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
-                                              <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                            </button>
+                                      <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
+                                        @for (ac of actionsDropdown; track ac.id) {
+                                          @if (i._actionVisible[ac.id]) {
+                                            @if (ac.action == 'url' && !ac.inpop) {
+                                              <a ngbDropdownItem 
+                                                [href]="i._actionUrls[ac.id]"
+                                                target="_blank">
+                                                <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                              </a>
+                                            } @else {
+                                              <button type="button" ngbDropdownItem (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
+                                                <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                              </button>
+                                            }
                                           }
                                         }
-                                      }
+                                      </div>
                                     </div>
-                                  </div>
-                                }
-                              </div>
-                            </td>
-                          }
-                        </tr>
+                                  }
+                                </div>
+                              </td>
+                            }
+                          </tr>
+                        }
                       }
-                    }
+                    </tbody>
+                  }
+                }
+
+                @if (hasAggColumn) {
+                  <tbody class="ds-agg">
+                    <tr>
+                      @if (dataset()?.x?.bulkAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                      @if (dataset()?.showIndex) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                      @for (item of dataset().items; track item.id; let isLast = $last) {
+                        @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                        @let aggTotalValue = aggColumnTotalValue[item.root + '.' + item.code];
+                        @let aggAvgValue = aggColumnAvgValue[item.root + '.' + item.code];
+
+                        <td class="text-end code-{{item.code}} ds-item" [class.last-ds-item]="isLast" [class.bg-transparent]="!aggTotalValue && !aggAvgValue" [attr.data-label]="item.label">
+                          @if (aggTotalValue || aggAvgValue) {
+                            <div class="d-flex flex-column align-items-end justify-content-center h-100 py-1">
+                              @if (aggTotalValue && aggColumnTotalField[item.root + '.' + item.code]) {
+                                <div class="small text-muted" style="line-height: 1;">Total</div>
+                                <div class="fw-semibold">
+                                  @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
+                                  {{fField?.format ? (aggTotalValue | number:fField?.format) : aggTotalValue}}
+                                  @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
+                                </div>
+                              }
+                              @if (aggAvgValue && aggColumnAvgField[item.root + '.' + item.code]) {
+                                <div class="small text-muted" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
+                                <div class="fw-semibold">
+                                  @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
+                                  {{fField?.format ? (aggAvgValue | number:fField?.format) : aggAvgValue}}
+                                  @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </td>
+                      }
+                      @if (dataset()?.showStatus) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                      @if (dataset()?.showAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                    </tr>
                   </tbody>
                 }
-              }
+              </table>
+            }
+          </div>
 
-              @if (hasAggColumn) {
-                <tbody class="ds-agg">
-                  <tr>
-                    @if (dataset()?.x?.bulkAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                    @if (dataset()?.showIndex) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                    @for (item of dataset().items; track item.id; let isLast = $last) {
-                      @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-                      @let aggTotalValue = aggColumnTotalValue[item.root + '.' + item.code];
-                      @let aggAvgValue = aggColumnAvgValue[item.root + '.' + item.code];
-
-                      <td class="text-end code-{{item.code}} ds-item" [class.last-ds-item]="isLast" [class.bg-transparent]="!aggTotalValue && !aggAvgValue" [attr.data-label]="item.label">
-                        @if (aggTotalValue || aggAvgValue) {
-                          <div class="d-flex flex-column align-items-end justify-content-center h-100 py-1">
-                            @if (aggTotalValue && aggColumnTotalField[item.root + '.' + item.code]) {
-                              <div class="small text-muted" style="line-height: 1;">Total</div>
-                              <div class="fw-semibold">
-                                @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
-                                {{fField?.format ? (aggTotalValue | number:fField?.format) : aggTotalValue}}
-                                @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
-                              </div>
-                            }
-                            @if (aggAvgValue && aggColumnAvgField[item.root + '.' + item.code]) {
-                              <div class="small text-muted" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
-                              <div class="fw-semibold">
-                                @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
-                                {{fField?.format ? (aggAvgValue | number:fField?.format) : aggAvgValue}}
-                                @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
-                              </div>
-                            }
-                          </div>
-                        }
-                      </td>
-                    }
-                    @if (dataset()?.showStatus) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                    @if (dataset()?.showAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                  </tr>
-                </tbody>
+          @if (dataset().x?.bulkAction && (selectedEntries() | keyvalue).length > 0) {
+            <div class="px-3 d-flex align-items-center small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
+              &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}}
+              @if (dataset()?.canBlast) {
+                <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap" (click)="bulkEmail(blastTpl, blastData())">
+                  <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> {{lang()=='ms' ? 'Hantar Emel' : 'Send Email'}}
+                </button>
               }
-            </table>
+              @for (ac of actionsBulk; track ac.id) {
+                @if (preCheck({}, ac.pre, true)) {
+                  @if (ac.action == 'delete') {
+                    <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap" (click)="bulkRemoveEntries()">
+                      <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                    </button>
+                  } @else if (ac.action == 'function') {
+                    <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap" [ngClass]="ac.style" [class.disabled]="offline()" (click)="bulkEvalRun(ac.f)">
+                      <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                    </button>
+                  } @else if (ac.action == 'retract') {
+                    <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap" [class.disabled]="offline()" [ngClass]="ac.style" (click)="bulkCancelEntry()">
+                      <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                    </button>
+                  }
+                }
+              }
+            </div>
+          }
+
+          @if (entryList()?.length == 0) {
+            <div class="detail">
+              <h3>{{lang()=='ms'?'Tiada rekod':'No record'}}</h3>
+              <p>{{lang()=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}</p>
+            </div>
+          }
+
+          @if (dataset().x?.post) {
+            <div [innerHtml]="compileTpl(dataset().x?.post, {$_: rawList()}) | safe:'html'"></div>
           }
         </div>
 
-        @if (dataset().x?.bulkAction && (selectedEntries() | keyvalue).length > 0) {
-          <div class="px-3 d-flex align-items-center small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
-            &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}}
-            @if (dataset()?.canBlast) {
-              <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap" (click)="bulkEmail(blastTpl, blastData())">
-                <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> {{lang()=='ms' ? 'Hantar Emel' : 'Send Email'}}
-              </button>
-            }
-            @for (ac of actionsBulk; track ac.id) {
-              @if (preCheck({}, ac.pre, true)) {
-                @if (ac.action == 'delete') {
-                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap" (click)="bulkRemoveEntries()">
-                    <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                  </button>
-                } @else if (ac.action == 'function') {
-                  <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap" [ngClass]="ac.style" [class.disabled]="offline()" (click)="bulkEvalRun(ac.f)">
-                    <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                  </button>
-                } @else if (ac.action == 'retract') {
-                  <button type="button" class="ms-2 btn bg-gradient btn-sm btn-round text-nowrap" [class.disabled]="offline()" [ngClass]="ac.style" (click)="bulkCancelEntry()">
-                    <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                  </button>
-                }
-              }
-            }
+        @if (entryPages() > 1) {
+          <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
+            <ngb-pagination 
+              [collectionSize]="entryTotal()" 
+              [pageSize]="pageSize()" 
+              [page]="pageNumber()" 
+              [maxSize]="10"
+              [rotate]="true" 
+              (pageChange)="pageNumber.set($event); getEntryList(pageNumber(), sort())" 
+              [boundaryLinks]="true"
+              [directionLinks]="true">
+              <ng-template ngbPaginationFirst><fa-icon [icon]="['fas','angle-double-left']"></fa-icon></ng-template>
+              <ng-template ngbPaginationPrevious><fa-icon [icon]="['fas','chevron-left']"></fa-icon></ng-template>
+              <ng-template ngbPaginationNext><fa-icon [icon]="['fas','chevron-right']"></fa-icon></ng-template>
+              <ng-template ngbPaginationLast><fa-icon [icon]="['fas','angle-double-right']"></fa-icon></ng-template>
+            </ngb-pagination>
           </div>
-        }
-
-        @if (entryList()?.length == 0) {
-          <div class="detail">
-            <h3>{{lang()=='ms'?'Tiada rekod':'No record'}}</h3>
-            <p>{{lang()=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}</p>
-          </div>
-        }
-
-        @if (dataset().x?.post) {
-          <div [innerHtml]="compileTpl(dataset().x?.post, {$_: rawList()}) | safe:'html'"></div>
         }
       </div>
-
-      @if (entryPages() > 1) {
-        <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
-          <ngb-pagination 
-            [collectionSize]="entryTotal()" 
-            [pageSize]="pageSize()" 
-            [page]="pageNumber()" 
-            [maxSize]="10"
-            [rotate]="true" 
-            (pageChange)="pageNumber.set($event); getEntryList(pageNumber(), sort())" 
-            [boundaryLinks]="true"
-            [directionLinks]="true">
-            <ng-template ngbPaginationFirst><fa-icon [icon]="['fas','angle-double-left']"></fa-icon></ng-template>
-            <ng-template ngbPaginationPrevious><fa-icon [icon]="['fas','chevron-left']"></fa-icon></ng-template>
-            <ng-template ngbPaginationNext><fa-icon [icon]="['fas','chevron-right']"></fa-icon></ng-template>
-            <ng-template ngbPaginationLast><fa-icon [icon]="['fas','angle-double-right']"></fa-icon></ng-template>
-          </ngb-pagination>
-        </div>
-      }
     </div>
   } @else {
     @if (!loading() && userUnauthorized()) {
@@ -692,6 +527,8 @@
     }
   }
 </div>
+
+<!-- Modal Templates have been omitted to save length, please keep your existing modals! -->
 
 <!-- Modal Templates -->
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">

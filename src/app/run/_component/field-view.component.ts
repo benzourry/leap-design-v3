@@ -41,7 +41,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         @if (['file'].includes(field()?.type)) {
           <span>
             @if (['image', 'imagemulti'].includes(field()?.subType)) {
-              <img loading="lazy" style="background: var(--bs-tertiary-bg); max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
+              <img class="data-bleed" loading="lazy" style="background: var(--bs-tertiary-bg); max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
             }
             @if (['other', 'othermulti'].includes(field()?.subType)) {
               <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
@@ -88,7 +88,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 
       @if (['text', 'simpleOption', 'speech'].includes(field()?.type)) {
         <div>
-          <div #textContainer class="print-expand"
+          <div #expandContainer class="print-expand"
             style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
             [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '150px'}"
             [class.fade-bottom]="!isReadMore() && isOverflowing()">
@@ -104,9 +104,21 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             </div>
           </div>
 
-          @if (isOverflowing()) {
-            <div class="text-start print-hide">
+          <!-- @if (isOverflowing()) {
+            <div class="text-start print-hide mt-1">
               <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())">
+                {{ 
+                  lang() === 'ms' 
+                    ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
+                    : (isReadMore() ? 'Less...' : 'More...') 
+                }}
+              </button>
+            </div>
+          } -->
+          @if (isOverflowing() || isReadMore()) {
+            <div class="text-start print-hide mt-1">
+              <button type="button" class="btn btn-xs btn-light border shadow-sm small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+              <!-- <button type="button" class="btn btn-xs btn-outline-secondary small p-1 m-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())"> -->
                 {{ 
                   lang() === 'ms' 
                     ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
@@ -122,13 +134,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         <span>
           @if (isArray(value())) {
             @for (c of value(); track $index) {
-              <div>
+              <div class="lookup-item">
                 <fa-icon [icon]="['far', 'check-square']" class="text-primary float-start"></fa-icon>
                 <div class="ms-4"><span [innerHtml]="c.name"></span></div>
               </div>
             }
           } @else {
-            <div>
+            <div class="lookup-item">
               <fa-icon [icon]="['far', 'check-square']" class="text-primary float-start"></fa-icon>
               <div class="ms-4"><span [innerHtml]="value()?.name"></span></div>
             </div>
@@ -159,7 +171,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           }
           @if (field()?.subType === 'qr') {
             <span>
-              <img loading="lazy" [src]="value() ? baseApi + '/form/qr?code=' + value() : 'assets/img/blank-qr.svg'" width="100%">
+              <img class="data-bleed" loading="lazy" [src]="value() ? baseApi + '/form/qr?code=' + value() : 'assets/img/blank-qr.svg'" width="100%">
             </span>
           }
         </span>
@@ -174,7 +186,6 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               [class.text-body-tertiary]="!value()">
             </fa-icon>
           } @else {
-            <!-- Switched to 'fas' for checked, and added conditional text colors -->
             <fa-icon 
               [icon]="value() ? ['fas', 'check-square'] : ['far', 'square']"
               [class.text-primary]="value()" 
@@ -222,7 +233,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       }
 
       @if (['radio'].includes(field()?.type)) {
-        <span>{{ value()?.name }}</span>
+        <span class="lookup-item">{{ value()?.name }}</span>
       }
 
       @if (['color'].includes(field()?.type)) {
@@ -235,17 +246,17 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             <div>
               @for (sv of value(); track $index) {
                 @if (!field()?.placeholder) {
-                  <div>{{ sv?.name }}</div>
+                  <div class="lookup-item">{{ sv?.name }}</div>
                 } @else {
-                  <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$': sv}) | safe:'html'"></div>
+                  <div class="card border-0 bg-transparent lookup-item" [innerHtml]="compileTpl(field()?.placeholder, {'$': sv}) | safe:'html'"></div>
                 }
               }
             </div>
           } @else {
             @if (!field()?.placeholder) {
-              <div>{{ value()?.name }}</div>
+              <div class="lookup-item">{{ value()?.name }}</div>
             } @else {
-              <div class="card border-0 bg-transparent" [innerHtml]="compileTpl(field()?.placeholder, {'$': value()}) | safe:'html'"></div>
+              <div class="card border-0 bg-transparent lookup-item" [innerHtml]="compileTpl(field()?.placeholder, {'$': value()}) | safe:'html'"></div>
             }
           }
         </span>
@@ -256,27 +267,64 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           @if (field().subType === 'multiple' && isArray(value())) {
             <div>
               @for (sv of value(); track $index) {
-                <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': sv}) : sv[field()?.bindLabel]) | safe:'html'"></div>
+                <div class="card border-0 bg-transparent lookup-item" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': sv}) : sv[field()?.bindLabel]) | safe:'html'"></div>
               }
             </div>
           } @else {
-            <div class="card border-0 bg-transparent" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': value()}) : value()[field()?.bindLabel]) | safe:'html'"></div>
+            <div class="card border-0 bg-transparent lookup-item" [innerHtml]="(field()?.placeholder ? compileTpl(field()?.placeholder, {'$': value()}) : value()[field()?.bindLabel]) | safe:'html'"></div>
           }
         </span>
       }
 
       @if (['file'].includes(field()?.type)) {
         <span>
-          @if (field().subType === 'image') {
-            <a class="thumbnail" [href]="field().x?.secure ? (getUrl('/entry/file/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" target="_blank">
-              <img loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-            </a>
-          } @else if (field().subType === 'imagemulti') {
-            <div class="img-grid-cont">
-              @for (vf of value(); track $index) {
-                <a class="img-grid-item" [href]="field().x?.secure ? (getUrl('/entry/file/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" target="_blank">
-                  <img loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" onError="this.src='./assets/img/placeholder-128.png'">
-                </a>
+          @if (['image', 'imagemulti'].includes(field().subType)) {
+            <div class="position-relative">
+              <div #expandContainer class="print-expand"
+                style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
+                [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '200px'}"
+                [class.fade-bottom-img]="!isReadMore() && isOverflowing()">
+                
+                @if (field().subType === 'image') {
+                  <a class="thumbnail d-block" [href]="field().x?.secure ? (getUrl('/entry/file/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" target="_blank">
+                    <img class="data-bleed" loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+                  </a>
+                } @else if (field().subType === 'imagemulti') {
+                  <div class="img-grid-cont">
+                    @for (vf of value(); track $index) {
+                      <a class="img-grid-item" [href]="field().x?.secure ? (getUrl('/entry/file/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" target="_blank">
+                        <img class="data-bleed" loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', vf) | secure | async) : getUrl('/entry/file/inline/', vf)" onError="this.src='./assets/img/placeholder-128.png'">
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- @if (isOverflowing()) {
+                <div class="text-start print-hide mt-1">
+                  <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+                    <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
+                    {{ 
+                      lang() === 'ms' 
+                        ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
+                        : (isReadMore() ? 'Hide' : 'View Full Image') 
+                    }}
+                  </button>
+                </div>
+              } -->
+              @if (isOverflowing() || isReadMore()) {
+                <!-- ADDED: position-absolute, bottom-0, start-0, z-index -->
+                <div class="position-absolute bottom-0 start-0 p-1 print-hide" style="z-index: 10;">
+                  <!-- UPDATED: btn-light shadow-sm to pop over image -->
+                  <button type="button" class="btn btn-xs btn-light border shadow-sm small p-1 m-2" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+                    <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
+                    {{ 
+                      lang() === 'ms' 
+                        ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
+                        : (isReadMore() ? 'Hide' : 'View Full Image') 
+                    }}
+                  </button>
+                </div>
               }
             </div>
           } @else if (field().subType === 'othermulti') {
@@ -296,16 +344,48 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       }
 
       @if (['imagePreview'].includes(field()?.type)) {
-        <span>
-          <a class="thumbnail" [href]="value()" target="_blank">
-            <img loading="lazy" [src]="value()" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
-          </a>
-        </span>
+        <div>
+          <div #expandContainer class="print-expand"
+            style="overflow:hidden; transition: max-height 0.25s ease-in-out;" 
+            [ngStyle]="{'max-height': isReadMore() ? (contentHeight() + 'px') : '200px'}"
+            [class.fade-bottom-img]="!isReadMore() && isOverflowing()">
+            
+            <a class="thumbnail d-block" [href]="value()" target="_blank">
+              <img class="data-bleed" loading="lazy" [src]="value()" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+            </a>
+          </div>
+
+          <!-- @if (isOverflowing()) {
+            <div class="text-start print-hide mt-1">
+              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+                <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
+                {{ 
+                  lang() === 'ms' 
+                    ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
+                    : (isReadMore() ? 'Hide' : 'View Full Image') 
+                }}
+              </button>
+            </div>
+          } -->
+          @if (isOverflowing() || isReadMore()) {
+            <div class="text-start print-hide mt-1">
+              <button type="button" class="btn btn-xs btn-light border shadow-sm small p-1 m-2" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+              <!-- <button type="button" class="btn btn-xs btn-outline-secondary small p-1 m-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())"> -->
+                <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
+                {{ 
+                  lang() === 'ms' 
+                    ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
+                    : (isReadMore() ? 'Hide' : 'View Full Image') 
+                }}
+              </button>
+            </div>
+          }
+        </div>
       }
 
       @if (['map'].includes(field()?.type)) {
         @defer (prefetch on idle) {
-          <app-ng-leaflet [readOnly]="true" [value]="value()"
+          <app-ng-leaflet class="data-bleed" [readOnly]="true" [value]="value()"
             [useCurrentPos]="false" [baseMapServerUri]="field().x?.customMapServer" [multiple]="field()?.subType === 'multiple'">
           </app-ng-leaflet>
         } @loading {
@@ -386,13 +466,20 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     }
 
+    /* Sharper fade for images so it doesn't blur the whole picture */
+    .fade-bottom-img {
+      -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    }
+
     @media print {
       .print-expand {
         max-height: none !important;
         overflow: visible !important;
       }
       
-      .fade-bottom {
+      .fade-bottom,
+      .fade-bottom-img {
         -webkit-mask-image: none !important;
         mask-image: none !important;
       }
@@ -422,16 +509,22 @@ export class FieldViewComponent implements OnInit {
   isOverflowing = signal<boolean>(false);
   contentHeight = signal<number>(2000);
 
-  textContainer = viewChild<ElementRef<HTMLElement>>('textContainer');
+  // Renamed to expandContainer to handle both text and image divs
+  expandContainer = viewChild<ElementRef<HTMLElement>>('expandContainer');
 
   constructor() {
     effect((onCleanup) => {
-      const el = this.textContainer()?.nativeElement;
+      const el = this.expandContainer()?.nativeElement;
 
       if (el) {
         const observer = new ResizeObserver(() => {
           const exactHeight = el.scrollHeight;
-          this.isOverflowing.set(exactHeight > 150);
+          
+          // Image threshold is 200px, Text threshold is 150px
+          const isImage = this.field()?.type === 'file' || this.field()?.type === 'imagePreview';
+          const threshold = isImage ? 200 : 150;
+          
+          this.isOverflowing.set(exactHeight > threshold);
           this.contentHeight.set(exactHeight);
         });
 
