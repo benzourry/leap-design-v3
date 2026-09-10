@@ -177,7 +177,7 @@
         <!-- SECTION GROUP TEMPLATE -->
         <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-isPre="isPre" let-isPost="isPost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
-          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id" [ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}">
+          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id" > <!--[ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}"-->
             <div class="centered" [class.limit-width]="!form()?.x?.wide">
               <div class="row" [ngStyle]="{'justify-content': form().align}">
                 @for (e of sectionMap()[tab?.id]; track e.id; let lastSection = $last) {

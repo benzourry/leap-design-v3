@@ -348,6 +348,9 @@ ngb-pagination ul.pagination { justify-content: center; }
 .no-tabs .nav-tabs { display: none !important; }
 
 .tab-simple {
+  &:not(:has(.nav-item)) {
+    display: none !important;
+  }
   > .nav-wrap  {
     > .nav-tabs {
       border-bottom: 1.5px solid var(--bs-border-color, #dadada); font-size: 0.95em;
