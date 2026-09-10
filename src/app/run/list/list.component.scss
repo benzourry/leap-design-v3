@@ -21,10 +21,11 @@
    THIRD-PARTY OVERRIDES (NG-DEEP)
    ========================================================================== */
 ::ng-deep {
+  /* Default table image size - keeps standard tables tidy */
   .table img {
     max-width: 150px !important;
   }
-  
+
   .browser-window {
     .modal-dialog {
       height: calc(100% - 60px) !important;
@@ -63,13 +64,6 @@ table.tbl-child {
   }
 }
 
-// table.tblcard > .list-tmid > tr > td.td-list {
-//   padding: 0 !important;
-//   &::before {
-//     padding: 0.5rem 1rem !important;
-//   }
-// }
-
 .ds-table .ds-thead {
   position: sticky;
   top: 0;
@@ -83,19 +77,25 @@ table.tbl-child {
       top: 1em;
       bottom: 1em;
       left: -1px;
-      // width: 1px;
-      // background: var(--bs-border-color);
       border-left: solid 1px var(--bs-border-color);
     }
   }
 }
 
 /* ==========================================================================
-   COMPONENTS & ACTIONS
+   COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE)
    ========================================================================== */
 .ds-action .btn {
   border-radius: 2rem;
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
+}
+
+/* Default table button styling */
+.tblcard .btn-responsive-sm {
+  --bs-btn-padding-y: 0.25rem;
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-font-size: 0.875rem;
+  border-radius: 0.5rem;
 }
 
 .ds-action-items {
@@ -109,12 +109,9 @@ table.tbl-child {
   pointer-events: none;
 }
 
-.toolbar:not(:has(*)) {
-  display: none !important;
-}
-
+.toolbar:not(:has(*)),
 .status-filter-tier:not(:has(.form-check)) {
-  display: none;
+  display: none !important;
 }
 
 .ds-check .form-check-input {
@@ -136,32 +133,13 @@ table.tbl-child {
 }
 
 /* ==========================================================================
-   MEDIA QUERIES
+   MOBILE & CARD LAYOUT MIXIN
    ========================================================================== */
-@media print {
-  .table-print {
-    width: 100%;
-    
-    tr td,
-    tr th {
-      padding: 0.5em;
-      font-size: 0.7em;
-      border: 1px solid var(--bs-border-color);
-    }
-  }
-}
-
-@media screen and (max-width: 576px) {
+@mixin mobile-card-layout {
   table.tbl-child {
     border-left: solid 5px var(--bs-border-color);
+    tr th { padding-top: 0; }
   }
-
-  table.tbl-child tr th{
-    padding-top:0;
-  }
-  // table.tbl-child tr:last-child td{
-  //   padding-bottom:0;
-  // }
 
   table.tblcard {
     border: 0;
@@ -178,36 +156,41 @@ table.tbl-child {
       width: 1px;
     }
 
-    /* 1. Add specific card boundary styling for the aggregate row */
+    /* Aggregate Row */
     > .ds-agg > tr {
       display: block;
-      // margin-top: 1rem;
-      // margin-bottom: 0.5rem;
       background: var(--bs-body-bg);
       border: 2px dashed var(--bs-border-color);
       border-width: 2px 0;
-      // border-radius: var(--bs-border-radius);
       overflow: hidden;
     }
 
     .ds-action {
       padding: 0.5rem 1rem 1rem !important;
 
-      /* OVERRIDE INPUT-GROUP ON MOBILE */
+      /* OVERRIDE INPUT-GROUP ON CARD LAYOUT */
       .ds-action-wrapper {
-        gap: 0.5rem !important; /* Overrides the inline [style.gap]="'0'" */
+        gap: 0.5rem !important;
         
         > .btn, 
         > .ds-action-dropdown > .btn {
-          flex: 0 0 auto !important; /* Stops buttons from stretching full width */
+          flex: 0 0 auto !important; 
           width: auto !important;
-          margin-left: 0 !important; /* Removes Bootstrap's joined negative margin */
-          border-radius: 2rem !important; /* Restores your custom pill shape */
+          margin-left: 0 !important; 
+          border-radius: 2rem !important; 
         }
       }
     }
 
-    /* 2. Group .list-tmid and .ds-agg so they share all the same td and .ds-item styles */
+    /* Card Layout Action More Button */
+    .btn-action-more {
+      padding: 0.25rem 0;
+      font-size: 1.2rem;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Shared Row Styling */
     > .list-tmid > tr,
     > .ds-agg > tr {
       &.ds-row {
@@ -260,7 +243,6 @@ table.tbl-child {
           border-bottom: 0;
         }
 
-        /* Hide empty placeholder columns completely on mobile (Used by ds-agg) */
         &.bg-transparent,
         &.d-none {
           display: none !important;
@@ -272,26 +254,19 @@ table.tbl-child {
           padding: 0.35rem 1rem;
           margin: 1rem 0 0.5rem;
           display: inline-block;
-          border-bottom: none;
           font-size: 1rem;
           background-color: var(--bs-secondary-bg) !important;
           color: var(--bs-secondary-color) !important;
-          border-top-right-radius: 0.5rem;
-          border-bottom-right-radius: 0.5rem;
-          // border: solid 1px var(--bs-border-color);
-          // border-left: none;
+          border-radius: 0 0.5rem 0.5rem 0;
         }
 
         &.ds-check:has(+ .ds-index) {
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
+          border-radius: 0;
           padding-right: 0.25rem; 
-          border-right:none;
+          border-right: none;
         }
 
-        &.ds-check {
-          text-align: left;
-        }
+        &.ds-check { text-align: left; }
 
         &.ds-status {
           background-color: var(--bs-secondary-bg);
@@ -302,12 +277,9 @@ table.tbl-child {
         }
 
         &.ds-item {
-          &:first-child {
-            padding-top: 20px;
-          }
-          &.last-ds-item::after {
-            display:none;
-          }
+          &:first-child { padding-top: 20px; }
+          
+          &.last-ds-item::after,
           &:not(:has(~ .ds-item:not(.bg-transparent, .d-none)))::after {
             display: none;
           }
@@ -332,11 +304,35 @@ table.tbl-child {
             height: 0;
             border-bottom: 1px solid var(--bs-border-color-translucent);
           }
+
+          /* --- SPECIAL CONTENT MODIFIERS (Title, Image, Tags) --- */
+          &.title, &.subtitle, &.image, &.tags {
+            text-align: start;
+            &::before, &::after { display: none; }
+          }
+          
+          &.title {
+            padding-bottom: 0;
+            * { font-size: 1.5rem; }
+          }
+          
+          &.subtitle * { font-size: 1rem; }
+          
+          &.image { 
+            margin: 0 0 0.5rem; /* Pulls image to the edges of the card */
+            padding: 0; 
+            
+            /* Overrides the global max-width: 150px rule specifically for card layout */
+            ::ng-deep img {
+              max-width: 100% !important; 
+              width: 100%;
+              height: auto;
+              display: block; /* Prevents tiny whitespace gap under images */
+            }
+          }
         }
 
-        > .clearfix {
-          display: none;
-        }
+        > .clearfix { display: none; }
 
         > field-view {
           font-size: 0.9rem;
@@ -354,27 +350,28 @@ table.tbl-child {
   }
 }
 
+/* ==========================================================================
+   APPLY MEDIA QUERIES & MIXINS
+   ========================================================================== */
 
-@media (min-width: 576px) {
-  .tblcard .btn-responsive-sm {
-    --bs-btn-padding-y: 0.25rem;
-    --bs-btn-padding-x: 0.5rem;
-    --bs-btn-font-size: 0.875rem;
-    // --bs-btn-border-radius: var(--bs-border-radius-sm);
-    border-radius: 0.5rem;
+/* Print Layout */
+@media print {
+  .table-print {
+    width: 100%;
+    tr td, tr th {
+      padding: 0.5em;
+      font-size: 0.7em;
+      border: 1px solid var(--bs-border-color);
+    }
   }
 }
 
-@media (max-width: 575.98px) {
-  .tblcard .btn-action-more {
-    padding: 0.25rem 0;
-    font-size: 1.2rem;
-    border:none !important;
-    box-shadow: none !important;
-  }
+/* Mobile Screens */
+@media screen and (max-width: 575.98px) {
+  @include mobile-card-layout;
 }
 
-/* Ensures the wrapper doesn't trap the positioning */
-// .dropdown-wrapper-static {
-//   position: static !important;
-// }
+/* Forced Card View (Any screen size) */
+.forceCard {
+  @include mobile-card-layout;
+}

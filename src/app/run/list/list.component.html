@@ -443,6 +443,7 @@
 
                               <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
                                 [class.last-ds-item]="isLast"
+                                [ngClass]="item.x?.cardStyle"
                                 [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
                                 [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
                                 
