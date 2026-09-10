@@ -140,7 +140,7 @@ table.tbl-child {
   }
 
   /* Support multiple ways this mixin might be called (.forceCard or .tblcard) */
-  &, table.tblcard, table.forceCard {
+  table.tblcard {
     border: 0;
     background-color: transparent !important;
 
