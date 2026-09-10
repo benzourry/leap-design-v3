@@ -41,7 +41,7 @@
           }
 
           @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
-            <button type="button" class="btn position-relative" [class.blue]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
+            <button type="button" class="btn position-relative" [class.text-primary]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
               @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white" style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div> }
             </button>

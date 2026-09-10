@@ -1,17 +1,7 @@
-/* ==========================================================================
-   VARIABLES & GLOBAL UTILITIES
-   ========================================================================== */
-:root {
-  --bs-border-radius: 8px;
-}
-
-.blue { color: var(--bs-primary); }
+:root { --bs-border-radius: 8px; }
+// .blue { color: var(--bs-primary); }
 .selected-row { background-color: rgba(var(--bs-primary-rgb), 0.15); }
-.dropdown-toggle::after { display: none; }
 
-/* ==========================================================================
-   THIRD-PARTY OVERRIDES (NG-DEEP)
-   ========================================================================== */
 ::ng-deep {
   .table img { max-width: 150px !important; }
   .browser-window {
@@ -20,9 +10,6 @@
   }
 }
 
-/* ==========================================================================
-   GLOBAL TABLE STYLING
-   ========================================================================== */
 table tr:not(.ds-group-header) {
   td:first-child, th:first-child { padding-left: 1rem; }
   td:last-child, th:last-child { padding-right: 1rem !important; }
@@ -42,17 +29,14 @@ table.tbl-child {
   }
 }
 
-.tab-simple:not(:has(.nav-item)) { display: none !important; }
-
-/* ==========================================================================
-   COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE)
-   ========================================================================== */
 .btn-responsive-sm {
   --bs-btn-padding-y: 0.25rem; --bs-btn-padding-x: 0.5rem; --bs-btn-font-size: 0.875rem; border-radius: 0.5rem;
 }
 
 .ds-action-wrapper {
-  flex-wrap: nowrap !important; justify-content: flex-end !important; min-width: max-content; 
+  flex-wrap: nowrap !important;
+  justify-content: flex-end !important; 
+  min-width: max-content; 
 }
 
 .ds-action-items {
@@ -67,132 +51,132 @@ table.tbl-child {
 }
 
 .input-group > .btn ~ .ds-action-dropdown {
-  display: flex; > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
+  display: flex; 
+  > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
 }
 
-/* ==========================================================================
-   MOBILE & CARD LAYOUT MIXIN (Optimized to Prevent Output Bloat)
-   ========================================================================== */
-@mixin mobile-card-rules {
-  border: 0; background-color: transparent !important;
+@mixin mobile-card-layout {
+  table.tbl-child {
+    border-left: solid 5px var(--bs-border-color);
+    th { padding-top: 0; }
+  }
 
-  .ds-thead { border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
-  
-  .ds-agg > tr { display: block; background: var(--bs-body-bg); border: 2px dashed var(--bs-border-color); border-width: 2px 0; overflow: hidden; }
-  
-  .btn-action-more { padding: 0.25rem 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
+  table.tblcard {
+    border: 0; background-color: transparent !important;
 
-  .list-tmid.row { display: flex; flex-wrap: wrap; }
-
-  .ds-row {
-    display: block; position: relative; margin-bottom: 0; background: transparent !important; border: none !important;
-
-    &::before {
-      content: ''; position: absolute; top: 0; bottom: 0;
-      left: calc(var(--bs-gutter-x, 1.5rem) * 0.5); right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
-      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color-translucent); border-radius: var(--bs-border-radius, 0.5rem); z-index: 0;
+    .ds-thead {
+      border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px;
     }
-    &:has(.ds-action) { padding-bottom: 4.5rem; }
-  }
 
-  .ds-group-header {
-    width: 100%; flex: 0 0 100%; box-shadow: none; border: none; background: transparent;
-    .acc-btn { background: transparent !important; font-size: 1rem; }
-  }
-
-  .selected-row {
-    background-color: transparent !important; outline: none !important;
-    &::before { background-color: rgba(var(--bs-primary-rgb), 0.15); outline: solid 2px var(--bs-primary); }
-    > td {
-      background-color: transparent;
-      &.ds-check, &.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
-      &.ds-status { background-color: transparent; }
+    .ds-agg > tr {
+      display: block; background: var(--bs-body-bg); border: 2px dashed var(--bs-border-color); border-width: 2px 0; overflow: hidden;
     }
-  }
 
-  /* Safely targets both regular and aggregate cells without mutating inner tables */
-  .list-tmid > tr > td, .ds-agg > tr > td {
-    width: 100%; flex: 0 0 100%; position: relative; z-index: 1; border-bottom: none; font-size: .8em;
-    background-color: transparent; text-align: right; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
-    &:last-child { border-bottom: 0; }
-    &.bg-transparent, &.d-none { display: none !important; }
-  }
-
-  .ds-check, .ds-index {
-    width: auto; flex: 0 0 auto; font-weight: bold; padding: 0.35rem 1rem; margin: 1rem 0 0.5rem;
-    display: flex; align-items: center; justify-content: center; font-size: 1rem;
-    background-color: var(--bs-secondary-bg) !important; color: var(--bs-secondary-color) !important; border-radius: 0 0.5rem 0.5rem 0;
-  }
-  .ds-check:has(+ .ds-index) { border-radius: 0; padding-right: 0.25rem; border-right: none; }
-  .ds-check { text-align: left; }
-
-  .ds-status {
-    width: calc(100% - 2rem); flex: 0 0 calc(100% - 2rem); background-color: var(--bs-secondary-bg);
-    margin: 0.5rem 1rem; border-radius: 0.5rem; padding-bottom: 0.25rem; display: block;
-  }
-
-  .ds-action {
-    position: absolute !important; bottom: 0; width: auto; z-index: 2;
-    left: calc(var(--bs-gutter-x, 1.5rem) * 0.5); right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
-    padding: 0.5rem 1rem 1rem !important; background: linear-gradient(to bottom, transparent, var(--bs-body-bg) 20%);
-    border-radius: 0 0 var(--bs-border-radius, 0.5rem) var(--bs-border-radius, 0.5rem);
+    .ds-action {
+      position: absolute !important; bottom: 0; left: 0; width: 100%; padding: 0.5rem 1rem 1rem !important; background: var(--bs-body-bg);
+    }
 
     .ds-action-wrapper {
       gap: 0.5rem !important; flex-wrap: wrap !important; justify-content: flex-start !important;
-      > .btn, > .ds-action-dropdown > .btn { flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; border-radius: 2rem !important; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07); }
-    }
-  }
-
-  .ds-item {
-    &:first-child { padding-top: 20px; }
-    &.last-ds-item::after, &:not(:has(~ .ds-item:not(.bg-transparent, .d-none)))::after { display: none; }
-    
-    &::before { content: attr(data-label); text-transform: none; font-weight: 600; color: var(--bs-secondary-color); text-align: left; flex: 0 1 auto; max-width: 50%; word-wrap: break-word; }
-    &::after { content: ''; position: absolute; bottom: 0; left: 1rem; right: 1rem; height: 0; border-bottom: 1px solid var(--bs-border-color-translucent); }
-
-    &.title, &.subtitle, &.bleed, &.tags { text-align: start; &::before, &::after { display: none; } }
-    &.title { padding-bottom: 0; * { font-size: 1.5rem; } }
-    &.subtitle * { font-size: 1rem; }
-    &.bleed { margin: 0 0 0.5rem; padding: 0; ::ng-deep .data-bleed { max-width: 100% !important; width: 100%; display: block; } }
-
-    &.tags { 
-      margin: 0.5rem 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; 
-      ::ng-deep .lookup-item {
-        display: inline-block; padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 500; line-height: 1.2;
-        color: var(--bs-primary); background-color: rgba(var(--bs-primary-rgb), 0.1); border: 1px solid rgba(var(--bs-primary-rgb), 0.15); border-radius: 50rem; white-space: nowrap; 
+      > .btn, > .ds-action-dropdown > .btn {
+        flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; border-radius: 2rem !important; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
       }
     }
-  }
 
-  .clearfix { display: none; }
+    .btn-action-more { padding: 0.25rem 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
 
-  field-view {
-    font-size: 0.9rem; flex: 1 1 auto; min-width: 0; display: block;
-    ::ng-deep .d-flex { justify-content: flex-end; text-align: right; }
+    .ds-tbody {
+      display: grid; gap: 0.75rem; grid-template-columns: 1fr; 
+      @media screen and (min-width: 576px) {
+        &[data-grid="col-6"] { grid-template-columns: repeat(2, 1fr); }
+        &[data-grid="col-4"] { grid-template-columns: repeat(3, 1fr); }
+        &[data-grid="col-3"] { grid-template-columns: repeat(4, 1fr); }
+      }
+    }
+
+    .ds-row {
+      display: block; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
+      &:has(.ds-action) { padding-bottom: 4.5rem; }
+    }
+
+    .ds-group-header {
+      grid-column: 1 / -1; box-shadow: none; border: none; background: transparent;
+      .acc-btn { background: transparent !important; font-size: 1rem; }
+    }
+
+    .selected-row {
+      background-color: transparent !important; outline: none !important;
+      &::before {
+        content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); outline: solid 2px var(--bs-primary); z-index: 0; pointer-events: none;
+      }
+      td.ds-check, td.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
+    }
+
+    td {
+      border-bottom: none; font-size: .8em; background-color: transparent; text-align: right; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; position: relative; z-index: 1;
+      &:last-child { border-bottom: 0; }
+      &.bg-transparent, &.d-none { display: none !important; }
+    }
+
+    .ds-check, .ds-index {
+      font-weight: bold; padding: 0.35rem 1rem; margin: 1rem 0 0.5rem; display: inline-block; font-size: 1rem; background-color: var(--bs-secondary-bg) !important; color: var(--bs-secondary-color) !important; border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .ds-check {
+      text-align: left;
+      &:has(+ .ds-index) { border-radius: 0; padding-right: 0.25rem; border-right: none; }
+    }
+
+    .ds-status {
+      background-color: var(--bs-secondary-bg); margin: 0.5rem 1rem; border-radius: 0.5rem; padding-bottom: 0.25rem; display: block;
+    }
+
+    .ds-item {
+      &:first-child { padding-top: 20px; }
+      &.last-ds-item::after, &:not(:has(~ .ds-item:not(.bg-transparent, .d-none)))::after { display: none; }
+      
+      &::before { content: attr(data-label); text-transform: none; font-weight: 600; color: var(--bs-secondary-color); text-align: left; flex: 0 1 auto; max-width: 50%; word-wrap: break-word; }
+      &::after { content: ''; position: absolute; bottom: 0; left: 1rem; right: 1rem; height: 0; border-bottom: 1px solid var(--bs-border-color-translucent); }
+
+      &.title, &.subtitle, &.bleed, &.tags { text-align: start; &::before, &::after { display: none; } }
+      &.title { padding-bottom: 0; * { font-size: 1.5rem; } }
+      &.subtitle * { font-size: 1rem; }
+      &.bleed { margin: 0 0 0.5rem; padding: 0; ::ng-deep .data-bleed { max-width: 100% !important; width: 100%; display: block; } }
+      
+      &.tags { 
+        margin: 0.5rem 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem; 
+        ::ng-deep .lookup-item { display: inline-block; padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 500; line-height: 1.2; color: var(--bs-primary); background-color: rgba(var(--bs-primary-rgb), 0.1); border: 1px solid rgba(var(--bs-primary-rgb), 0.15); border-radius: 50rem; white-space: nowrap; }
+      }
+    }
+
+    .clearfix { display: none; }
+
+    field-view {
+      font-size: 0.9rem; flex: 1 1 auto; min-width: 0; display: block;
+      ::ng-deep .d-flex { justify-content: flex-end; text-align: right; }
+    }
   }
 }
 
-/* ==========================================================================
-   APPLY MEDIA QUERIES & MIXINS
-   ========================================================================== */
 @media print {
-  .table-print { width: 100%; tr td, tr th { padding: 0.5em; font-size: 0.7em; border: 1px solid var(--bs-border-color); } }
+  .table-print {
+    width: 100%;
+    tr td, tr th { padding: 0.5em; font-size: 0.7em; border: 1px solid var(--bs-border-color); }
+  }
 }
 
-/* Card Mode Application */
 @media screen and (max-width: 575.98px) {
-  table.tbl-child { border-left: solid 5px var(--bs-border-color); th { padding-top: 0; } }
-  table.tblcard { @include mobile-card-rules; }
-}
-
-.forceCard {
-  table.tbl-child { border-left: solid 5px var(--bs-border-color); th { padding-top: 0; } }
-  table { @include mobile-card-rules; }
+  @include mobile-card-layout;
 }
 
 @media screen and (min-width: 576px) {
-  table:not(.forceCard):not(.tblcard) .ds-row {
+  .ds-row {
     border: 1px solid var(--bs-border-color-translucent); border-radius: var(--bs-border-radius, 0.5rem);
   }
+  .ds-row.selected-row { border: none; }
   .forceCard .outer-pad { padding: 0 1rem 1rem; }
+}
+
+.forceCard {
+  @include mobile-card-layout;
 }

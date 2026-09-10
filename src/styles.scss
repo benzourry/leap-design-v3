@@ -794,6 +794,9 @@ ngb-pagination ul.pagination { justify-content: center; }
   display: none !important;
 }
 
+.dropdown-toggle::after { display: none; }
+
+
 // .nav-tabs .nav-link {
 //     margin-bottom: -1.5px;
 // }
