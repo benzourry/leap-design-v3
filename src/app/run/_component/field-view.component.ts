@@ -41,7 +41,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         @if (['file'].includes(field()?.type)) {
           <span>
             @if (['image', 'imagemulti'].includes(field()?.subType)) {
-              <img class="data-bleed" loading="lazy" style="background: var(--bs-tertiary-bg); max-height:250px; object-fit: contain;" src="assets/img/placeholder-128.png" width="100%" />
+              <img class="data-bleed" loading="lazy" style="background: var(--bs-tertiary-bg); max-height:200px; object-fit: cover;" src="assets/img/placeholder-128.png" width="100%" />
             }
             @if (['other', 'othermulti'].includes(field()?.subType)) {
               <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
