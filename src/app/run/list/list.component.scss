@@ -1,6 +1,4 @@
-/* ==========================================================================
-   VARIABLES & GLOBAL UTILITIES
-   ========================================================================== */
+/* VARIABLES & GLOBAL UTILITIES */
 :root {
   --bs-border-radius: 8px;
 }
@@ -17,9 +15,7 @@
   display: none;
 }
 
-/* ==========================================================================
-   THIRD-PARTY OVERRIDES (NG-DEEP)
-   ========================================================================== */
+/* THIRD-PARTY OVERRIDES (NG-DEEP) */
 ::ng-deep {
   .table img {
     max-width: 150px !important;
@@ -35,9 +31,7 @@
   }
 }
 
-/* ==========================================================================
-   GLOBAL TABLE STYLING
-   ========================================================================== */
+/* GLOBAL TABLE STYLING */
 table tr:not(.ds-group-header) {
   td:first-child,
   th:first-child { padding-left: 1rem; }
@@ -59,13 +53,11 @@ table.tbl-child {
   }
 }
 
-/* ==========================================================================
-   COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE)
-   ========================================================================== */
+/* COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE) */
 .ds-action-wrapper {
   flex-wrap: nowrap !important;
-  justify-content: flex-end !important; /* Aligns right to match the text-end header */
-  min-width: max-content; /* Forces the column to stretch rather than wrap the buttons */
+  justify-content: flex-end !important;
+  min-width: max-content; 
 }
 
 .btn-responsive-sm {
@@ -88,9 +80,7 @@ table.tbl-child {
   > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
 }
 
-/* ==========================================================================
-   MOBILE & CARD LAYOUT MIXIN (Flattened to minimize compiled CSS bloat)
-   ========================================================================== */
+/* MOBILE & CARD LAYOUT MIXIN (Flattened to minimize compiled CSS bloat) */
 @mixin mobile-card-layout {
   table.tbl-child {
     border-left: solid 5px var(--bs-border-color);
@@ -198,9 +188,7 @@ table.tbl-child {
   }
 }
 
-/* ==========================================================================
-   APPLY MEDIA QUERIES & MIXINS
-   ========================================================================== */
+/* APPLY MEDIA QUERIES & MIXINS */
 @media print {
   .table-print {
     width: 100%;
