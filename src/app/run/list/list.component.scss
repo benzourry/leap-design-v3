@@ -1,4 +1,4 @@
-:root { --bs-border-radius: 8px; }
+:root { --bs-border-radius: 0.5rem; }
 // .blue { color: var(--bs-primary); }
 .selected-row { background-color: rgba(var(--bs-primary-rgb), 0.15); }
 
@@ -29,8 +29,8 @@ table.tbl-child {
   }
 }
 
-.btn-responsive-sm {
-  --bs-btn-padding-y: 0.25rem; --bs-btn-padding-x: 0.5rem; --bs-btn-font-size: 0.875rem; border-radius: 0.5rem;
+.btn-sm {
+  border-radius: 0.5rem;
 }
 
 .ds-action-wrapper {

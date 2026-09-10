@@ -368,13 +368,13 @@
                                   @for (ac of actionsInline; track ac.id) {
                                     @if (i._actionVisible[ac.id]) {
                                       @if (ac.action == 'url' && !ac.inpop) {
-                                        <a class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
+                                        <a class="btn btn-sm text-nowrap" [ngClass]="ac.style"
                                           [href]="i._actionUrls[ac.id]"
                                           target="_blank">
                                           <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                         </a>
                                       } @else {
-                                        <button type="button" class="btn btn-responsive-sm text-nowrap" [ngClass]="ac.style"
+                                        <button type="button" class="btn btn-sm text-nowrap" [ngClass]="ac.style"
                                           (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
                                           <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                         </button>
@@ -384,7 +384,7 @@
 
                                   @if (actionsDropdown.length > 0) {
                                     <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
-                                      <button type="button" class="btn border btn-responsive-sm btn-action-more border-secondary border-opacity-50"
+                                      <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50"
                                         title="Actions" id="dropdownAction" ngbDropdownToggle>
                                         <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
                                       </button>
