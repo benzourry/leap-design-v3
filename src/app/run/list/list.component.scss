@@ -84,12 +84,8 @@ table.tbl-child {
 /* ==========================================================================
    COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE)
    ========================================================================== */
-.ds-action .btn {
-  border-radius: 2rem;
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
-}
 
-.tblcard .btn-responsive-sm {
+.btn-responsive-sm {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-font-size: 0.875rem;
@@ -131,7 +127,7 @@ table.tbl-child {
 }
 
 /* ==========================================================================
-   MOBILE & CARD LAYOUT MIXIN (Powered by CSS Grid)
+   MOBILE & CARD LAYOUT MIXIN
    ========================================================================== */
 @mixin mobile-card-layout {
   table.tbl-child {
@@ -139,7 +135,6 @@ table.tbl-child {
     tr th { padding-top: 0; }
   }
 
-  /* Support multiple ways this mixin might be called (.forceCard or .tblcard) */
   table.tblcard {
     border: 0;
     background-color: transparent !important;
@@ -170,16 +165,19 @@ table.tbl-child {
       width: 100%;
 
       padding: 0.5rem 1rem 1rem !important;
-      background: var(--bs-body-bg); /* Matches card background so scrolling text doesn't show through */
+      background: var(--bs-body-bg); 
 
       .ds-action-wrapper {
         gap: 0.5rem !important;
+        flex-wrap: wrap !important; /* Force wrap even if flex-sm-nowrap is on the HTML */
+        
         > .btn, 
         > .ds-action-dropdown > .btn {
           flex: 0 0 auto !important; 
           width: auto !important;
           margin-left: 0 !important; 
-          border-radius: 2rem !important; 
+          border-radius: 2rem !important; /* Enforce pill shape in card mode */
+          box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07); /* Add shadow back to buttons */
         }
       }
     }
@@ -197,9 +195,8 @@ table.tbl-child {
     > .list-tmid {
       display: grid;
       gap: 0.75rem;
-      grid-template-columns: 1fr; /* Mobile Default: 1 column flushed card */
+      grid-template-columns: 1fr; 
       
-      /* Desktop Breakpoint: Apply columns if specified in dataset */
       @media screen and (min-width: 576px) {
         &[data-grid="col-6"] { grid-template-columns: repeat(2, 1fr); }
         &[data-grid="col-4"] { grid-template-columns: repeat(3, 1fr); }
@@ -212,24 +209,20 @@ table.tbl-child {
     > .ds-agg > tr {
       &.ds-row {
         display: block;
-        // flex-direction: column;
-        margin-bottom: 0; /* Gap handles spacing natively in grid */
+        margin-bottom: 0; 
         overflow: hidden;
         background: var(--bs-body-bg);
-        height: 100%; /* Stretch equally in multi-column rows */
+        height: 100%; 
         
-        position: relative; /* Anchor for the absolute action bar */
-        /* Optional: Gives card definition when laid out in multi-column desktop */
-       
-
+        position: relative; 
+        
         &:has(.ds-action) {
           padding-bottom: 4.5rem; 
         }
-
       }
 
       &.ds-group-header {
-        grid-column: 1 / -1; /* Header spans across all columns */
+        grid-column: 1 / -1; 
         box-shadow: none;
         border: none;
         background: transparent;
@@ -348,8 +341,6 @@ table.tbl-child {
           &.bleed { 
             margin: 0 0 0.5rem; 
             padding: 0;             
-            // max-height: 380px;
-            // overflow:hidden;
             ::ng-deep .data-bleed {
               max-width: 100% !important; 
               width: 100%;
@@ -361,25 +352,23 @@ table.tbl-child {
             padding: 0; 
             display: flex;
             flex-wrap: wrap;
-            gap: 0.35rem; /* Spacing between multiple pills */
+            gap: 0.35rem; 
 
             ::ng-deep .lookup-item {
               display: inline-block; 
               margin-right: 0.25rem;
               margin-bottom: 0.25rem;
               padding: 0.25rem 0.65rem;
-              font-size: 0.75rem; /* Slightly smaller text for tags */
+              font-size: 0.75rem; 
               font-weight: 500;
               line-height: 1.2;
-              color: var(--bs-primary); /* Primary text */
-              background-color: rgba(var(--bs-primary-rgb), 0.1); /* Soft primary background */
-              border: 1px solid rgba(var(--bs-primary-rgb), 0.15); /* Subtle border */
-              border-radius: 50rem; /* Creates the fully rounded pill shape */
-              white-space: nowrap; /* Prevents text from breaking into two lines inside the pill */
+              color: var(--bs-primary); 
+              background-color: rgba(var(--bs-primary-rgb), 0.1); 
+              border: 1px solid rgba(var(--bs-primary-rgb), 0.15); 
+              border-radius: 50rem; 
+              white-space: nowrap; 
             }
           }
-
-
         }
 
         > .clearfix { display: none; }

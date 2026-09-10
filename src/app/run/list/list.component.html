@@ -362,7 +362,7 @@
 
                             @if (hasVisibleActions()) {
                               <td class="p-1 print-hide ds-action">
-                                <div class="d-flex flex-row flex-wrap ds-action-wrapper flex-sm-nowrap justify-content-start w-100"
+                                <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
                                 [class.input-group]="dataset().x?.groupAction"
                                 [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
                                   @for (ac of actionsInline; track ac.id) {
