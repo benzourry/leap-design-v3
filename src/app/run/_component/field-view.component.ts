@@ -41,7 +41,10 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         @if (['file'].includes(field()?.type)) {
           <span>
             @if (['image', 'imagemulti'].includes(field()?.subType)) {
-              <img class="data-bleed" loading="lazy" style="background: var(--bs-tertiary-bg); max-height:200px; object-fit: cover;" src="assets/img/placeholder-128.png" width="100%" />
+              <div class="data-bleed d-flex justify-content-center align-items-center text-body-tertiary" 
+                  style="background: var(--bs-secondary-bg); height: 200px; width: 100%;">
+                <fa-icon [icon]="['fas', 'image']" class="fs-1"></fa-icon>
+              </div>
             }
             @if (['other', 'othermulti'].includes(field()?.subType)) {
               <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
@@ -468,8 +471,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 
     /* Sharper fade for images so it doesn't blur the whole picture */
     .fade-bottom-img {
-      -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     }
 
     @media print {

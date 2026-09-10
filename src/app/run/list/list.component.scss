@@ -46,8 +46,8 @@ table.tbl-child {
 .ds-action-dropdown:has(.ds-action-items:empty) { opacity: 0.4; pointer-events: none; }
 .toolbar:not(:has(*)), .status-filter-tier:not(:has(.form-check)) { display: none !important; }
 
-.ds-check .form-check-input {
-  width: 1.5rem !important; height: 1.5rem !important; border-width: 1.5px !important; border-radius: 0.375rem; cursor: pointer; margin: 0; 
+.ds-check input {
+  width: 1.5rem; height: 1.5rem; border-width: 1.5px; border-radius: 0.375rem; cursor: pointer; margin: 0; 
 }
 
 .input-group > .btn ~ .ds-action-dropdown {
@@ -73,7 +73,7 @@ table.tbl-child {
     }
 
     .ds-action {
-      position: absolute !important; bottom: 0; left: 0; width: 100%; padding: 0.5rem 1rem 1rem !important; background: var(--bs-body-bg);
+      position: absolute !important; bottom: 0; left: 0; width: 100%; padding: 0.5rem 1rem 1rem !important;
     }
 
     .ds-action-wrapper {
@@ -83,7 +83,7 @@ table.tbl-child {
       }
     }
 
-    .btn-action-more { padding: 0.25rem 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
+    .btn-action-more { padding: 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
 
     .ds-tbody {
       display: grid; gap: 0.75rem; grid-template-columns: 1fr; 
@@ -96,6 +96,7 @@ table.tbl-child {
 
     .ds-row {
       display: block; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
+      outline: 1px solid rgba(var(--bs-secondary-bg-rgb,0.3));
       &:has(.ds-action) { padding-bottom: 4.5rem; }
     }
 
@@ -105,11 +106,15 @@ table.tbl-child {
     }
 
     .selected-row {
-      background-color: transparent !important; outline: none !important;
+      background-color: transparent !important;
+      // outline: none !important;
+      // outline: solid 2px var(--bs-primary);
       &::before {
-        content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); outline: solid 2px var(--bs-primary); z-index: 0; pointer-events: none;
+        content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); 
+        // outline: solid 2px var(--bs-primary); 
+        z-index: 0; pointer-events: none;
       }
-      td.ds-check, td.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
+      td.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
     }
 
     td {
@@ -118,13 +123,36 @@ table.tbl-child {
       &.bg-transparent, &.d-none { display: none !important; }
     }
 
+    // .ds-check, .ds-index {
+      
+    //   margin: 1rem; 
+    //   display: inline-block;
+    //   border-radius: 2rem;
+    // }
+
+/* Push the card content down so it doesn't collide with the pill */
+    .ds-row:has(.ds-check, .ds-index) { padding-top: 3.8rem; }
+
     .ds-check, .ds-index {
-      font-weight: bold; padding: 0.35rem 1rem; margin: 1rem 0 0.5rem; display: inline-block; font-size: 1rem; background-color: var(--bs-secondary-bg) !important; color: var(--bs-secondary-color) !important; border-radius: 0 0.5rem 0.5rem 0;
+      position: absolute; top: 1rem; left: 1rem;
+      border-radius: 2rem; margin: 0;
+    }
+
+    .ds-index {
+      background: var(--bs-secondary-bg) !important; 
+      color: inherit !important; /* Overrides HTML text-white to match the dark text in your image */
+      padding: 0.35rem 0.75rem; z-index: 1; font-weight: 600;
     }
 
     .ds-check {
-      text-align: left;
-      &:has(+ .ds-index) { border-radius: 0; padding-right: 0.25rem; border-right: none; }
+      z-index: 2; padding: 0.2rem !important;
+      input { border-radius: 50%; margin: 0; }
+      & + .ds-index { padding-left: 3rem; } /* Pushes the index number right when checkbox exists */
+    }
+
+    .ds-check input{
+      border-radius: 2rem;
+      // width:2rem; height: 2rem;
     }
 
     .ds-status {
@@ -139,7 +167,7 @@ table.tbl-child {
       &::after { content: ''; position: absolute; bottom: 0; left: 1rem; right: 1rem; height: 0; border-bottom: 1px solid var(--bs-border-color-translucent); }
 
       &.title, &.subtitle, &.bleed, &.tags { text-align: start; &::before, &::after { display: none; } }
-      &.title { padding-bottom: 0; * { font-size: 1.5rem; } }
+      &.title { padding-bottom: 0; * { font-size: 1.4rem; line-height: 1.2; } }
       &.subtitle * { font-size: 1rem; }
       &.bleed { margin: 0 0 0.5rem; padding: 0; ::ng-deep .data-bleed { max-width: 100% !important; width: 100%; display: block; } }
       
@@ -171,10 +199,16 @@ table.tbl-child {
 
 @media screen and (min-width: 576px) {
   .ds-row {
-    border: 1px solid var(--bs-border-color-translucent); border-radius: var(--bs-border-radius, 0.5rem);
+    // outline: 1.5px solid var(--bs-border-color-translucent); 
+    border-radius: 0.65rem;
   }
-  .ds-row.selected-row { border: none; }
+  // .ds-row.selected-row { 
+    // border: none; outline: 1.5px solid var(--bs-primary-rgb) 
+  // }
   .forceCard .outer-pad { padding: 0 1rem 1rem; }
+  .forceCard .ds-bulk{
+      margin-top: 1rem;
+    }
 }
 
 .forceCard {

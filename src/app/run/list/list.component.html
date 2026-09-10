@@ -459,9 +459,10 @@
             }
           </div>
 
-          @if (dataset().x?.bulkAction && (selectedEntries() | keyvalue).length > 0) {
-            <div class="px-3 d-flex align-items-center small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
-              &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}}
+          @let selectedEntriesLength = (selectedEntries() | keyvalue).length;
+          @if (dataset().x?.bulkAction && selectedEntriesLength>0) {
+            <div class="px-3 d-flex align-items-center ds-bulk small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
+              &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}} ({{selectedEntriesLength}})
               @if (dataset()?.canBlast) {
                 <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap" (click)="bulkEmail(blastTpl, blastData())">
                   <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> {{lang()=='ms' ? 'Hantar Emel' : 'Send Email'}}
@@ -483,6 +484,8 @@
                     </button>
                   }
                 }
+              }@empty {
+                <span class="fst-italic ms-3 text-muted">{{lang()=='ms' ? 'Tiada tindakan kelompok tersedia' : 'No bulk action available'}}</span>
               }
             </div>
           }
