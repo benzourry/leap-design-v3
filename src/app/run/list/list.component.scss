@@ -1,42 +1,19 @@
-/* VARIABLES & GLOBAL UTILITIES */
-:root {
-  --bs-border-radius: 8px;
-}
+:root { --bs-border-radius: 8px; }
+.blue { color: var(--bs-primary); }
+.selected-row { background-color: rgba(var(--bs-primary-rgb), 0.15); }
+.dropdown-toggle::after { display: none; }
 
-.blue {
-  color: var(--bs-primary);
-}
-
-.selected-row {
-  background-color: rgba(var(--bs-primary-rgb), 0.15);
-}
-
-.dropdown-toggle::after {
-  display: none;
-}
-
-/* THIRD-PARTY OVERRIDES (NG-DEEP) */
 ::ng-deep {
-  .table img {
-    max-width: 150px !important;
-  }
-
+  .table img { max-width: 150px !important; }
   .browser-window {
-    .modal-dialog {
-      height: calc(100% - 60px) !important;
-    }
-    .modal-content {
-      height: 100%;
-    }
+    .modal-dialog { height: calc(100% - 60px) !important; }
+    .modal-content { height: 100%; }
   }
 }
 
-/* GLOBAL TABLE STYLING */
 table tr:not(.ds-group-header) {
-  td:first-child,
-  th:first-child { padding-left: 1rem; }
-  td:last-child,
-  th:last-child { padding-right: 1rem !important; }
+  td:first-child, th:first-child { padding-left: 1rem; }
+  td:last-child, th:last-child { padding-right: 1rem !important; }
 }
 
 table.tbl-child {
@@ -53,15 +30,14 @@ table.tbl-child {
   }
 }
 
-/* COMPONENTS & ACTIONS (DEFAULT / DESKTOP TABLE STYLE) */
-.ds-action-wrapper {
-  flex-wrap: nowrap !important;
-  justify-content: flex-end !important;
-  min-width: max-content; 
-}
-
 .btn-responsive-sm {
   --bs-btn-padding-y: 0.25rem; --bs-btn-padding-x: 0.5rem; --bs-btn-font-size: 0.875rem; border-radius: 0.5rem;
+}
+
+.ds-action-wrapper {
+  flex-wrap: nowrap !important;
+  justify-content: flex-end !important; 
+  min-width: max-content; 
 }
 
 .ds-action-items {
@@ -80,7 +56,6 @@ table.tbl-child {
   > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
 }
 
-/* MOBILE & CARD LAYOUT MIXIN (Flattened to minimize compiled CSS bloat) */
 @mixin mobile-card-layout {
   table.tbl-child {
     border-left: solid 5px var(--bs-border-color);
@@ -90,7 +65,6 @@ table.tbl-child {
   table.tblcard {
     border: 0; background-color: transparent !important;
 
-    /* Flatted Selectors */
     .ds-thead {
       border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px;
     }
@@ -104,15 +78,13 @@ table.tbl-child {
     }
 
     .ds-action-wrapper {
-      gap: 0.5rem !important; 
-      flex-wrap: wrap !important;
-      justify-content: flex-start !important;
+      gap: 0.5rem !important; flex-wrap: wrap !important; justify-content: flex-start !important;
       > .btn, > .ds-action-dropdown > .btn {
         flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; border-radius: 2rem !important; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
       }
     }
 
-    .btn-action-more { padding: 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
+    .btn-action-more { padding: 0.25rem 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
 
     .ds-tbody {
       display: grid; gap: 0.75rem; grid-template-columns: 1fr; 
@@ -136,8 +108,7 @@ table.tbl-child {
     .selected-row {
       background-color: transparent !important; outline: none !important;
       &::before {
-        content: ''; position: absolute; inset: 0;
-        background-color: rgba(var(--bs-primary-rgb), 0.15); outline: solid 2px var(--bs-primary); z-index: 0; pointer-events: none;
+        content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); outline: solid 2px var(--bs-primary); z-index: 0; pointer-events: none;
       }
       td.ds-check, td.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
     }
@@ -188,7 +159,6 @@ table.tbl-child {
   }
 }
 
-/* APPLY MEDIA QUERIES & MIXINS */
 @media print {
   .table-print {
     width: 100%;
@@ -196,7 +166,6 @@ table.tbl-child {
   }
 }
 
-/* Mobile Screens */
 @media screen and (max-width: 575.98px) {
   @include mobile-card-layout;
 }
@@ -209,7 +178,6 @@ table.tbl-child {
   .forceCard .outer-pad { padding: 0 1rem 1rem; }
 }
 
-/* Forced Card View (Any screen size) */
 .forceCard {
   @include mobile-card-layout;
 }
