@@ -58,7 +58,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   imports: [FormsModule, PageTitleComponent, StepWizardComponent, FormViewComponent, NgbAccordionDirective, NgbAccordionItem,
     NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton, NgbCollapse, NgbAccordionCollapse, NgbAccordionBody,
     NgTemplateOutlet, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, RouterLink, NgbNavContent, NgbNavOutlet,
-    NgStyle, NgClass, FaIconComponent, FieldViewComponent, FieldEditComponent,
+    NgStyle, FaIconComponent, FieldViewComponent, FieldEditComponent,
     forwardRef(() => ListComponent), forwardRef(() => ScreenComponent),
     DatePipe, IconSplitPipe,
     NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,

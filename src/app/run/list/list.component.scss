@@ -1,6 +1,10 @@
-:root { --bs-border-radius: 0.5rem; }
-// .blue { color: var(--bs-primary); }
-.selected-row { background-color: rgba(var(--bs-primary-rgb), 0.15); }
+:root {
+  --bs-border-radius: 0.5rem;
+}
+
+.selected-row {
+  background-color: rgba(var(--bs-primary-rgb), 0.15);
+}
 
 ::ng-deep {
   .table img { max-width: 150px !important; }
@@ -25,7 +29,9 @@ table.tbl-child {
   position: sticky; top: 0; z-index: 1;
   th {
     position: relative;
-    &::before { content: ''; position: absolute; top: 1em; bottom: 1em; left: -1px; border-left: solid 1px var(--bs-border-color); }
+    &::before {
+      content: ''; position: absolute; top: 1em; bottom: 1em; left: -1px; border-left: solid 1px var(--bs-border-color);
+    }
   }
 }
 
@@ -36,11 +42,13 @@ table.tbl-child {
 .ds-action-wrapper {
   flex-wrap: nowrap !important;
   justify-content: flex-end !important; 
-  min-width: max-content; 
+  // min-width: max-content; 
 }
 
 .ds-action-items {
-  border-radius: 8px !important; box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05), 0px 12px 50px 0px rgba(0, 0, 0, 0.10); margin: 2px 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05), 0px 12px 50px 0px rgba(0, 0, 0, 0.10);
+  margin: 2px 0 !important;
 }
 
 .ds-action-dropdown:has(.ds-action-items:empty) { opacity: 0.4; pointer-events: none; }
@@ -55,10 +63,13 @@ table.tbl-child {
   > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
 }
 
+.td-list { padding: 0; }
+
 @mixin mobile-card-layout {
   table.tbl-child {
     border-left: solid 5px var(--bs-border-color);
     th { padding-top: 0; }
+    td { padding: 0.25rem 0.5rem; }
   }
 
   table.tblcard {
@@ -73,11 +84,11 @@ table.tbl-child {
     }
 
     .ds-action {
-      position: absolute !important; bottom: 0; left: 0; width: 100%; padding: 0.5rem 1rem 1rem !important;
+      display:flex; position: relative !important; margin-top: auto; width: 100%; padding: 0.5rem 1rem 1rem !important;
     }
 
     .ds-action-wrapper {
-      gap: 0.5rem !important; flex-wrap: wrap !important; justify-content: flex-start !important;
+      gap: 0.35rem !important; flex-wrap: wrap !important; justify-content: flex-start !important;
       > .btn, > .ds-action-dropdown > .btn {
         flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; border-radius: 2rem !important; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
       }
@@ -96,70 +107,56 @@ table.tbl-child {
 
     .ds-row {
       display: block; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
-      outline: 1px solid rgba(var(--bs-secondary-bg-rgb,0.3));
-      &:has(.ds-action) { padding-bottom: 4.5rem; }
+      outline: 1px solid rgba(var(--bs-secondary-bg-rgb, 0.3));
+      
+      // &:has(.ds-action) { padding-bottom: 3.8rem; }
+      /* Push the card content down so it doesn't collide with the pill */
+      &:has(.ds-check, .ds-index) { padding-top: 3.8rem; }
+
+      > td { border-bottom: none; font-size: 0.8em; background-color: transparent; }
+      
+      > .ds-status {
+        background-color: var(--bs-secondary-bg); margin: 0.5rem 1rem; border-radius: 0.5rem; padding-bottom: 0.25rem; display: block;
+      }
     }
 
     .ds-group-header {
+      > td { border-bottom: none; font-size: 0.8em; background-color: transparent; display:flex; }
+
       grid-column: 1 / -1; box-shadow: none; border: none; background: transparent;
       .acc-btn { background: transparent !important; font-size: 1rem; }
     }
 
     .selected-row {
       background-color: transparent !important;
-      // outline: none !important;
-      // outline: solid 2px var(--bs-primary);
       &::before {
         content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); 
-        // outline: solid 2px var(--bs-primary); 
         z-index: 0; pointer-events: none;
       }
       td.ds-index { background-color: rgb(var(--bs-primary-rgb)) !important; color: white !important; }
     }
 
-    td {
-      border-bottom: none; font-size: .8em; background-color: transparent; text-align: right; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; position: relative; z-index: 1;
-      &:last-child { border-bottom: 0; }
-      &.bg-transparent, &.d-none { display: none !important; }
-    }
-
-    // .ds-check, .ds-index {
-      
-    //   margin: 1rem; 
-    //   display: inline-block;
-    //   border-radius: 2rem;
-    // }
-
-/* Push the card content down so it doesn't collide with the pill */
-    .ds-row:has(.ds-check, .ds-index) { padding-top: 3.8rem; }
-
     .ds-check, .ds-index {
-      position: absolute; top: 1rem; left: 1rem;
-      border-radius: 2rem; margin: 0;
+      position: absolute; top: 1rem; left: 1rem; border-radius: 2rem; margin: 0;
     }
 
     .ds-index {
       background: var(--bs-secondary-bg) !important; 
-      color: inherit !important; /* Overrides HTML text-white to match the dark text in your image */
+      color: inherit !important;
       padding: 0.35rem 0.75rem; z-index: 1; font-weight: 600;
     }
 
     .ds-check {
       z-index: 2; padding: 0.2rem !important;
-      input { border-radius: 50%; margin: 0; }
-      & + .ds-index { padding-left: 3rem; } /* Pushes the index number right when checkbox exists */
-    }
-
-    .ds-check input{
-      border-radius: 2rem;
-      // width:2rem; height: 2rem;
-    }
-
-    .ds-status {
-      background-color: var(--bs-secondary-bg); margin: 0.5rem 1rem; border-radius: 0.5rem; padding-bottom: 0.25rem; display: block;
+      input { border-radius: 2rem; margin: 0; }
+      & + .ds-index { padding-left: 3rem; }
     }
 
     .ds-item {
+      text-align: right; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; position: relative; z-index: 1;
+      
+      &.bg-transparent, &.d-none { display: none !important; }
+      
       &:first-child { padding-top: 20px; }
       &.last-ds-item::after, &:not(:has(~ .ds-item:not(.bg-transparent, .d-none)))::after { display: none; }
       
@@ -198,17 +195,11 @@ table.tbl-child {
 }
 
 @media screen and (min-width: 576px) {
-  .ds-row {
-    // outline: 1.5px solid var(--bs-border-color-translucent); 
-    border-radius: 0.65rem;
+  .ds-row { border-radius: 0.65rem; }
+  .forceCard {
+    .outer-pad { padding: 0 1rem 1rem; }
+    .ds-bulk { margin-top: 1rem; }
   }
-  // .ds-row.selected-row { 
-    // border: none; outline: 1.5px solid var(--bs-primary-rgb) 
-  // }
-  .forceCard .outer-pad { padding: 0 1rem 1rem; }
-  .forceCard .ds-bulk{
-      margin-top: 1rem;
-    }
 }
 
 .forceCard {
