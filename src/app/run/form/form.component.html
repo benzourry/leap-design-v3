@@ -29,11 +29,12 @@
         }
 
         <div class="form-wrapper" [class.prev-row]="form()?.x?.prevRow">
-          @if (form().prev && prevEntry && !form()?.x?.hidePrev) {
+          @let showPrev = form().prev && prevEntry && !form()?.x?.hidePrev;
+          @if (showPrev) {
             @if (!prevLoading()) {
-              <div class="form-previous">
+              <div class="form-previous pb-3">
                 <form-view [form]="form().prev" [data]="prevEntry?.data" [entry]="prevEntry"
-                  [evalContextFn]="getEvalContext" [$action$]="_action" [$this$]="_this" [$param$]="_param">
+                  [evalContextFn]="getEvalContext" [$action$]="_action + '_formview'" [$this$]="_thisPrev" [$param$]="_param">
                 </form-view>
               </div>
             } @else {
@@ -45,7 +46,7 @@
             }
           }
 
-          <div class="form-current">
+          <div class="form-current" [class.pt-3]="showPrev">
             @if (form().nav == 'accordions' && form().tabs?.length > 0) {
               @if (sectionMap()[-1]?.length > 0) {
                 @let tabPre = {id:-1, sortOrder:-1, title:"(head)"};

@@ -72,6 +72,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   private popStateSubscription: () => void;
   private windowKey: string;
+  private prevWindowKey: string;
 
   private destroyRef = inject(DestroyRef);
   private userService = inject(UserService);
@@ -140,6 +141,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
   prevSignalKey: string = '';
 
   _this = createProxy({}, () => this.cdr.markForCheck());
+  _thisPrev = createProxy({}, () => this.cdr.markForCheck());
 
   readonly entryForm = viewChild<NgForm>('entryForm');
 
@@ -290,22 +292,12 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
         return of(form); 
       }),
       tap(form => {
+        this.windowKey = this.setupWindowProxy(
+          this.windowKey, 
+          '_this_' + this.scopeId(), 
+          this._this
+        );
 
-        const newWindowKey = '_this_' + this.scopeId();
-
-        // Clean up old window key if action or formId changed
-        if (this.windowKey && this.windowKey !== newWindowKey) {
-          Reflect.deleteProperty(window, this.windowKey);
-        }
-
-        this.windowKey = newWindowKey;
-
-        Object.keys(this._this).forEach(key => delete this._this[key]);
-
-        Reflect.defineProperty(window, this.windowKey, {
-          get: () => this._this,
-          configurable: true,
-        });
 
         this.formLoaded.emit(form);
         this.form.set(form);
@@ -589,6 +581,13 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
           this.prevEntry = res;
           this.entry.update(e => ({ ...e, prev: res.data }));
           this.getDataFiles('prev', res.id);
+
+          this.prevWindowKey = this.setupWindowProxy(
+            this.prevWindowKey, 
+            '_this_' + this.scopeId() + '_formview', 
+            this._thisPrev
+          );
+
           this.initForm(form?.onView, res.data, form, res);
         }
         this.prevLoading.set(false);
@@ -1492,7 +1491,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     const passive = {
       $editable$: additionalData?.$editable$ ?? true,
       $app$: this.app(),
-      $_: this.entryProxy,
+      $_: entry,
       $: data,
       $$_: approval,
       $$: Object.values(approval || {}).map((appr: any) => appr?.data),
@@ -1547,7 +1546,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   private compiledEvalCache = new Map<string, Function>();
 
-  _eval = (data: any, v: string, form: any, entryWrapper = this.entry()) => {
+  _eval = (data: any, v: string, form: any, entryWrapper = this.entryProxy as any) => {
     const bindings = this.getEvalContext(entryWrapper, data, entryWrapper?.approval, form, true, {});
     const argNames = Object.keys(bindings);
     
@@ -2070,6 +2069,36 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     });
   }
 
+  private setupWindowProxy(currentKey: string, newKey: string, proxyObj: any): string {
+    // 1. Clean up old window key if it changed, ensuring we only delete our own instance
+    if (currentKey && currentKey !== newKey) {
+      if ((window as any)[currentKey] === proxyObj) {
+        Reflect.deleteProperty(window, currentKey);
+      }
+    }
+
+    // 2. Clear out the proxy object's existing keys
+    Object.keys(proxyObj).forEach(key => delete proxyObj[key]);
+
+    // 3. Define the new key on the global window object
+    Reflect.defineProperty(window, newKey, {
+      get: () => proxyObj,
+      configurable: true,
+    });
+
+    return newKey; // Return the new key so we can save it to the component state
+  }
+
+  private cleanupWindowProxy(windowKey: string, proxyObj: any) {
+    // Safely delete the window property on component destroy
+    if (windowKey && (window as any)[windowKey] === proxyObj) {
+      const deleted = Reflect.deleteProperty(window, windowKey);
+      if (!deleted) {
+        (window as any)[windowKey] = undefined; // Fallback for older browsers
+      }
+    }
+  }
+
   canDeactivate() {
     return !(this.form()?.x?.askNavigate && this.entryForm()?.dirty); 
   }
@@ -2085,11 +2114,9 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       this.popStateSubscription();
     }
 
-    if (this.windowKey) {
-      const deleted = Reflect.deleteProperty(window, this.windowKey);
-      if (!deleted) {
-        (window as any)[this.windowKey] = undefined;
-      }
-    }
+    // DRY Cleanup!
+    this.cleanupWindowProxy(this.windowKey, this._this);
+    this.cleanupWindowProxy(this.prevWindowKey, this._thisPrev);
+
   }
 }

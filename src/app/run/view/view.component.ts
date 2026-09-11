@@ -426,6 +426,8 @@ private digestTimer: any;
 
 
   _this: any = createProxy({}, () => this.$digest$());
+  
+  _thisPrev: any = createProxy({}, () => this.$digest$());
 
   getEvalContext = (entry: any, data: any, appr: any, form: any, includeActive: boolean = false, additionalData: any = {}) => {
 
@@ -695,6 +697,13 @@ private digestTimer: any;
             tap((prevEntry) => {
               this.prevEntry = prevEntry;
               this.getDataFiles('prev', res.prev?.$id);
+
+                  // 3. Register global window reference using Reflect
+              Reflect.defineProperty(window, '_this_' + this.scopeId() + '_formview', {
+                get: () => this._thisPrev,
+                configurable: true,
+              });
+
               this.initForm(form.prev?.onView, this.prevEntry, form.prev);
               this.prevLoading.set(false);
             }),
@@ -1284,11 +1293,19 @@ checkTier(tier) {
       if (!Reflect.deleteProperty(window, key)) {
         (window as any)[key] = undefined;
       }
+     const keyPrev = '_this_' + this.registeredScopeId +'_formview';
+      if (!Reflect.deleteProperty(window, keyPrev)) {
+        (window as any)[keyPrev] = undefined;
+      }
     }
 
     // 2. Clear proxy state keys to release memory
     if (this._this) {
       Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+    // 2. Clear proxy state keys to release memory
+    if (this._thisPrev) {
+      Object.keys(this._thisPrev).forEach(key => delete this._thisPrev[key]);
     }
     
     // Safety cleanup of memory leak proxy
