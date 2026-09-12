@@ -796,6 +796,21 @@ ngb-pagination ul.pagination { justify-content: center; }
 
 .dropdown-toggle::after { display: none; }
 
+/* Constrain the dropdown menu width to fit within the screen */
+.dropdown-menu {
+  max-width: calc(100vw - 2rem); /* Leaves a 1rem margin on the sides */
+  overflow: hidden; /* Ensures child elements don't break the border radius */
+}
+
+/* Force long text to truncate with an ellipsis */
+.dropdown-item,.dropdown-header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; /* Required for text-overflow to work properly on inline elements */
+  width: 100%;
+}
+
 
 // .nav-tabs .nav-link {
 //     margin-bottom: -1.5px;
