@@ -106,7 +106,7 @@ table.tbl-child {
     }
 
     .ds-row {
-      display: block; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
+      display: flex; flex-direction: column; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
       outline: 1px solid rgba(var(--bs-secondary-bg-rgb, 0.3));
       
       // &:has(.ds-action) { padding-bottom: 3.8rem; }
