@@ -588,7 +588,19 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
             this._thisPrev
           );
 
-          this.initForm(form?.onView, res.data, form, res);
+          // this.initForm(form?.onView, res.data, form, res);
+          this.initForm(
+            form?.onView, 
+            res.data, 
+            form, 
+            res, 
+            { 
+              $this$: this._thisPrev, 
+              $_: res, 
+              $action$: this._action + '_formview' 
+            }, 
+            this.scopeId() + '_formview'
+          );
         }
         this.prevLoading.set(false);
       }),
@@ -1463,11 +1475,22 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     this.filterItems();
   }
 
-  async initForm(js, data, form, entryWrapper = this.entry()) {
+  // async initForm(js, data, form, entryWrapper = this.entry()) {
+  //   let res = undefined;
+  //   let jsTxt = this.compileTpl(js, {})
+  //   try {
+  //     res = await this._eval(data, jsTxt, form, entryWrapper); 
+  //   } catch (e) { this.logService.log(`{form-${this.form().title}-initForm}-${e}`) }
+  //   this.filterTabs();
+  //   this.filterItems();
+  //   return res;
+  // }
+
+  async initForm(js, data, form, entryWrapper = this.entryProxy as any, additionalData: any = {}, sId: string = this.scopeId()) {
     let res = undefined;
-    let jsTxt = this.compileTpl(js, {})
+    let jsTxt = this.compileTpl(js, additionalData, sId); 
     try {
-      res = await this._eval(data, jsTxt, form, entryWrapper); 
+      res = await this._eval(data, jsTxt, form, entryWrapper, additionalData); 
     } catch (e) { this.logService.log(`{form-${this.form().title}-initForm}-${e}`) }
     this.filterTabs();
     this.filterItems();
@@ -1505,6 +1528,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       $el$: this.getElProxy(targetForm),
       // $form$: form || this.form(),
       $form$: this.getFormProxy(targetForm),
+      // though this._this is here, it will be overridden with additionalData in other part (ie: initForm)
       $this$: this._this,
       $param$: this.param(),
       $base$: this.base,
@@ -1546,8 +1570,23 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
   private compiledEvalCache = new Map<string, Function>();
 
-  _eval = (data: any, v: string, form: any, entryWrapper = this.entryProxy as any) => {
-    const bindings = this.getEvalContext(entryWrapper, data, entryWrapper?.approval, form, true, {});
+  // _eval = (data: any, v: string, form: any, entryWrapper = this.entryProxy as any) => {
+  //   const bindings = this.getEvalContext(entryWrapper, data, entryWrapper?.approval, form, true, {});
+  //   const argNames = Object.keys(bindings);
+    
+  //   const cacheKey = `${argNames.join(',')}_${v}`;
+    
+  //   let fn = this.compiledEvalCache.get(cacheKey);
+  //   if (!fn) {
+  //     fn = new Function(...argNames, `return ${v}`);
+  //     this.compiledEvalCache.set(cacheKey, fn);
+  //   }  
+  //   return fn(...Object.values(bindings));
+  // }
+
+  _eval = (data: any, v: string, form: any, entryWrapper = this.entryProxy as any, additionalData: any = {}) => {
+    // Pass additionalData into the context builder!
+    const bindings = this.getEvalContext(entryWrapper, data, entryWrapper?.approval, form, true, additionalData);
     const argNames = Object.keys(bindings);
     
     const cacheKey = `${argNames.join(',')}_${v}`;
@@ -1925,13 +1964,27 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       });
   }
 
-  compileTpl = (code, additionalData) => {
-    let obj = Object.assign(additionalData, {
-      $user$: this.user(), $: this.entry()?.data, $_: this.entry(),
+  // compileTpl = (code, additionalData) => {
+  //   let obj = Object.assign(additionalData, {
+  //     $user$: this.user(), $: this.entry()?.data, $_: this.entry(),
+  //     $prev$: this.entry()?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi,
+  //     $this$: this._this, $param$: this._param, $ngForm$: this.entryForm()
+  //   });
+  //   return compileTpl(code, obj, this.scopeId())
+  // }
+
+  compileTpl = (code: string, additionalData: any = {}, sId: string = this.scopeId()) => {
+    let obj = Object.assign({
+      $user$: this.user(), $: this.entry()?.data, $_: this.entryProxy,
       $prev$: this.entry()?.prev, $base$: this.base, $baseUrl$: this.baseUrl(), $baseApi$: this.baseApi,
       $this$: this._this, $param$: this._param, $ngForm$: this.entryForm()
-    });
-    return compileTpl(code, obj, this.scopeId())
+    }, additionalData); // <-- additionalData overrides defaults here!
+    
+    // Safely binds the dynamic key using whichever $this$ won the merge
+    obj[`_this_${sId}`] = obj.$this$;
+    obj['_conf'] = this.appConfig;
+    
+    return compileTpl(code, obj, sId);
   }
 
   // reorder(items, index, op) {

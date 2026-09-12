@@ -152,7 +152,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                       @if (data()) {
                                         <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, data())"
                                         [scopeId]="scopeId()" [lang]="lang()"
-                                        [data]="evalContextFn()(entry(), data(), {}, form())"></field-view>
+                                        [data]="buildCompileData(data())"></field-view>
                                       }
                                     </p>
                                   </div>
@@ -161,7 +161,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                     @if (data()) {
                                       <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, data())"
                                       [scopeId]="scopeId()" [lang]="lang()"
-                                      [data]="evalContextFn()(entry(), data(), {}, form())"></field-view>
+                                      [data]="buildCompileData(data())"></field-view>
                                     }
                                   </div>
                                 }
@@ -280,7 +280,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                               }
                                               @if (field.type === 'static') {
                                                 <field-view [timestamp]="timestamp()" [field]="field" [value]="getVal(field, child)" [scopeId]="scopeId()" [lang]="lang()" 
-                                                  [data]="evalContextFn()(entry(), child, {}, form())"></field-view>
+                                                  [data]="buildCompileData(child)"></field-view>
                                               }                                       
                                           </td>
                                         }
@@ -339,7 +339,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                               <label class="label-span form-label">{{field?.label}}</label>
                                             }
                                             <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"  [lang]="lang()"
-                                              [data]="evalContextFn()(entry(), child, {}, this.form())"></field-view>
+                                              [data]="buildCompileData(child)"></field-view>
                                           }
                                         </div>
                                       }
@@ -594,6 +594,28 @@ export class FormViewComponent implements OnInit {
     
     const argValues = Object.values(bindings);
     return fn(...argValues);
+  }
+
+  buildCompileData(dataContext: any) {
+    // 1. Get base bindings and inject FormView's isolated variables
+    let bindings = this.evalContextFn()(
+      this.entry(),
+      dataContext,
+      {},
+      this.form(),
+      false,
+      {
+        $this$: this.$this$(),
+        $action$: this.$action$()
+      }
+    );
+
+    // 2. Bind the specific scopeId alias so utils.ts doesn't search the window!
+    const sId = this.scopeId();
+    bindings[`_this_${sId}`] = this.$this$();
+    bindings.timestamp = this.timestamp();
+
+    return bindings;
   }
 
   collapseSection(e: any) {
