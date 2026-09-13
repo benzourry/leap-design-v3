@@ -63,6 +63,15 @@
     font-weight: bold;
 }
 
+.label-span{    // duplicate of mobile-surface-label in form-edit 
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.125rem;
+    letter-spacing: 0.0125rem;
+    text-transform: none; 
+}
+
 
 
 // table.tblcard > .list-tmid > tr.ds-group-header {

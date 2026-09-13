@@ -399,6 +399,10 @@ export class NaviComponent implements OnInit {
 
   editGroupData: any;
   editGroup(content, group, isNew) {
+    
+    if (!group.x) {
+        group['x'] = {};
+    }
     this.editGroupData = group;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content)

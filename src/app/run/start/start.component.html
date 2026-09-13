@@ -110,8 +110,10 @@
       } @else {
         <div class="wrapper" [ngClass]="app()?.layout || 'sidemenu'"
           [class.noframe]="frameless() || app()?.x?.noframe" 
-          [class.nomod]="navis().length == 0"
+          [class.nomod]="sideNavGroups().length == 0"
           [class.topgap]="app()?.x?.topgap"
+          [class.has-bottom-nav]="bottomNavGroups().length > 0"
+          [class.is-start-page]="isStartPage()"
           [class.active]="sidebarActive()">
           
           @if (navis().length > 0) {
@@ -151,69 +153,63 @@
                   <div class="clearfix"></div>
                 </a>
               </div>
-              
-              <div class="app-menu">
-                @for (group of navis(); track $index) {
+              <div class="app-menu position-relative">
+                <!-- OPTIMIZATION 1: Loop only through sideNavGroups -->
+                @for (group of navis(); track group.id) {
                   @if (preGroup()[group.id]) {
-                    <div class="menu">
+                    <div class="menu" [class.sidebar-bottom-menu]="group.x?.type === 'bottom'">
                       <div class="menu-heading d-flex justify-content-between align-items-center px-3"
-                        (click)="toggleNav($index)"
-                        [class.active]="navToggle()?.[$index]">
+                        (click)="toggleNav(group.id)"
+                        [class.active]="navToggle()?.[group.id]">
                         {{group.title}}
-                        <fa-icon class="ms-1" [icon]="['fas', navToggle()?.[$index] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
+                        <fa-icon class="ms-1" [icon]="['fas', navToggle()?.[group.id] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
                       </div>
                       
-                      <!-- <div> -->
-                      <!-- @if (navToggle()[$index]) { -->
-                        <div [ngbCollapse]="!navToggle()?.[$index]" class="menu-items mb-1">
-                          @for (item of group.items; track item.id) {
-                            @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
-                            
-                            @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
-                              <div>
-                                
-                                @if (['external', 'internal'].includes(item.type)) {
-                                  <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
-                                    [target]="item.type === 'external' ? '_blank' : ''">
-                                    <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                    <div class="menu-text">{{item.title}}</div>
-                                  </a>
-                                } @else {
+                      <div [ngbCollapse]="!navToggle()?.[group.id]" class="menu-items mb-1">
+                        @for (item of group.items; track item.id) {
+                          @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                          
+                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                            <div>
+                              @if (['external', 'internal'].includes(item.type)) {
+                                <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                  [target]="item.type === 'external' ? '_blank' : ''">
+                                  <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  <div class="menu-text">{{item.title}}</div>
+                                </a>
+                              } @else {
+                                @let linkPath = 
+                                  item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                  item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                  item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                  item.type === 'start' ? preurl() + '/start' :
+                                  item.type === 'lambda' ? preurl() + '/webui/' + item.url :
+                                  preurl() + '/' + item.type + '/' + (item.screenId ?? '');
                                   
-                                  @let linkPath = 
-                                    item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
-                                    item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
-                                    item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
-                                    item.type === 'start' ? preurl() + '/start' :
-                                    item.type === 'lambda' ? preurl() + '/webui/' + item.url :
-                                    preurl() + '/' + item.type + '/' + (item.screenId ?? '');
-                                    
-                                  @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+                                @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
 
-                                  <a [routerLink]="linkPath"
-                                    [skipLocationChange]="item.x?.slc"
-                                    [routerLinkActiveOptions]="{ exact: isExactMatch }"
-                                    [class.disabled]="offline() || naviDataItem?.inactive"
-                                    (click)="hideSb()" 
-                                    routerLinkActive="active"
-                                    class="position-relative" 
-                                    style="padding-right: 42px;">
-                                    <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
-                                    <div class="menu-text">{{item.title}}</div>
+                                <a [routerLink]="linkPath"
+                                  [skipLocationChange]="item.x?.slc"
+                                  [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                  [class.disabled]="offline() || naviDataItem?.inactive"
+                                  (click)="hideSb()" 
+                                  routerLinkActive="active"
+                                  class="position-relative" 
+                                  style="padding-right: 42px;">
+                                  <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  <div class="menu-text">{{item.title}}</div>
 
-                                    @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
-                                      <span class="badge position-absolute fw-bold">
-                                        {{ badge()[item.type + '_' + item.screenId] }}
-                                      </span>
-                                    }
-                                  </a>
-                                }
-                              </div>
-                            }
+                                  @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
+                                    <span class="badge position-absolute fw-bold">
+                                      {{ badge()[item.type + '_' + item.screenId] }}
+                                    </span>
+                                  }
+                                </a>
+                              }
+                            </div>
                           }
-                        </div>
-                      <!-- } -->
-                      <!-- </div> -->
+                        }
+                      </div>
                     </div>
                   }
                 }
@@ -224,6 +220,66 @@
                 <app-theme-toggle [lang]="lang()"></app-theme-toggle>
               </div>
             </div>
+
+            <!-- FLOATING PILLS BOTTOM NAVIGATION -->
+            @if (bottomNavGroups().length > 0) {
+              <div class="bottom-nav-container print-hide" 
+                [class.is-start-page]="isStartPage()">
+                <div class="bottom-nav-scroll">
+                  
+                  <!-- OPTIMIZATION 3: Loop only through bottomNavGroups & track by ID -->
+                  @for (group of bottomNavGroups(); track group.id) {
+                    @if (preGroup()[group.id]) {
+                      <div class="bottom-nav-wrapper">
+                        <div class="bottom-nav-group" tabindex="0">
+                        @for (item of group.items; track item.id) {
+                          @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                            
+                            @if (['external', 'internal'].includes(item.type)) {
+                              <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                [target]="item.type === 'external' ? '_blank' : ''" class="bottom-nav-item">
+                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
+                                <span>{{item.title}}</span>
+                              </a>
+                            } @else {
+                              @let linkPath = 
+                                item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                item.type === 'start' ? preurl() + '/start' :
+                                item.type === 'lambda' ? preurl() + '/webui/' + item.url :
+                                preurl() + '/' + item.type + '/' + (item.screenId ?? '');
+                              
+                              @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+
+                              <a [routerLink]="linkPath"
+                                [skipLocationChange]="item.x?.slc"
+                                [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                [class.disabled]="offline() || naviDataItem?.inactive"
+                                (click)="hideSb()" 
+                                routerLinkActive="active"
+                                class="bottom-nav-item">
+                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
+                                <span>{{item.title}}</span>
+                                @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
+                                  <span class="badge position-absolute rounded-pill bg-danger">
+                                    {{ badge()[item.type + '_' + item.screenId] }}
+                                  </span>
+                                }
+                              </a>
+                            }
+                          }
+                        }
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+            <!-- END FLOATING PILLS BOTTOM NAVIGATION -->
+
           }
           
           <div class="offcanvas-overlay" (click)="sidebarActive.set(false)">

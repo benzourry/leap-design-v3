@@ -78,7 +78,13 @@
             <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
               <button type="button" class="btn h-100" id="dropdownSort" ngbDropdownToggle><fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> <strong>{{sortFieldName()}}</strong></button>
               <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
-                @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
+                @for (item of dataset()?.items; track item.id) { 
+                  @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                  @if (fField?.type !== 'static') {
+                    <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> 
+                  }
+                }
+                <!-- @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> } -->
               </div>
             </div>
           }
@@ -136,7 +142,13 @@
                 @if (dataset()?.x?.tblcard && !asComp()) {
                   <div class="dropdown-divider"></div>
                   <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
-                  @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> }
+                  @for (item of dataset()?.items; track item.id) { 
+                    @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                    @if (fField?.type !== 'static') {
+                      <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> 
+                    }
+                  }                  
+                  <!-- @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> } -->
                 }
 
                 @if (dataset()?.x?.canGroup) {

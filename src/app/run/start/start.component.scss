@@ -362,3 +362,114 @@ $transition-slow: 350ms ease-in-out;
     opacity: 0.6;
   }
 }
+
+.app-menu .menu-bottom {
+  position:absolute;
+  bottom:0;
+}
+
+// .has-bottom-nav ::ng-deep .viewport{
+//   padding-bottom: 5rem !important;
+// }
+
+/* ==========================================================================
+   FLOATING PILLS BOTTOM NAVIGATION
+   ========================================================================== */
+   /* 1. When peeking, disable links. The tap falls through to the .bottom-nav-group! */
+.bottom-nav-container:not(.is-start-page):not(:focus-within) .bottom-nav-item {
+  pointer-events: none;
+}
+.bottom-nav-container {
+  /* Changed bottom: 20px to bottom: 0 to compensate for the padding below */
+  // position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  // z-index: 995; width: 100%; max-width: 450px; pointer-events: none;
+
+  /* Default to -3rem for non-start pages */
+  position: fixed; 
+  bottom: -4.5rem; 
+  left: 50%; 
+  transform: translateX(-50%);
+  z-index: 995; width: 100%; max-width: 450px; pointer-events: none;
+  
+  /* Add a smooth transition so it slides up/down nicely! */
+  transition: bottom 300ms ease-in-out;
+
+  /* When on the start page, slide up to 0 */
+&.is-start-page,
+  &:focus-within {
+    bottom: 0;
+  }
+  
+  .bottom-nav-scroll {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    scrollbar-width: none; 
+    &::-webkit-scrollbar { display: none; } 
+  }
+
+  .bottom-nav-wrapper {
+    display: flex; 
+    justify-content: center; 
+    flex: 0 0 100%; 
+    scroll-snap-align: center;
+    pointer-events: auto;
+    /* Added 25px top/bottom padding so the shadow doesn't get clipped! */
+    padding: 1rem; 
+  }
+
+  .bottom-nav-group {
+    display: flex; justify-content: center; gap: 1.25rem; 
+    background: var(--bs-body-bg); 
+    border: solid 1px rgba(255, 255, 255, 0.08);
+    border-radius: 1rem; padding:0.875rem 0.875rem 0.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+
+  .bottom-nav-item {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    color: var(--bs-body-color); text-decoration: none; font-size: 0.75rem; opacity: 0.6;
+    min-width: 50px; 
+    flex: 1;           /* Forces all items to take up an equal share of the space */
+  // min-width: 70px;
+    
+    span { max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+    &.active, &:hover { opacity: 1; color: var(--bs-primary); }
+    .badge { top: -2px; right: -5px; font-size: 0.6rem; }
+  }
+}
+
+[data-bs-theme="dark"] .bottom-nav-group { box-shadow: 0 4px 15px rgba(0,0,0,0.5); border:solid 1px rgba(255,255,255, 0.08) }
+
+@media (min-width: 768px) {
+  .wrapper.sidemenu:not(.noframe) .bottom-nav-container { left: calc(50% + ($nav-width / 2)); }
+}
+
+/* ==========================================================================
+   RESPONSIVE BOTTOM NAV TOGGLING
+   ========================================================================== */
+
+/* 1. Hide the "bottom" menus in the sidebar on mobile, show them on desktop */
+.sidebar-bottom-menu {
+  display: none;
+  
+  @media screen and (min-width: 768px) {
+    display: block; /* Turns into a normal menu on desktop! */
+  }
+}
+
+/* 2. Hide the floating pills entirely on desktop */
+@media screen and (min-width: 768px) {
+  .bottom-nav-container {
+    display: none !important;
+  }
+}
+
+/* 3. Ensure the bottom viewport padding is ONLY applied on mobile 
+      so desktop users don't get 6rem of empty space at the bottom */
+@media screen and (max-width: 767.98px) {
+  .has-bottom-nav ::ng-deep .viewport {
+    padding-bottom: 3rem !important; 
+  }
+  .has-bottom-nav.is-start-page ::ng-deep .viewport {
+    padding-bottom: 6rem !important; 
+  }
+}

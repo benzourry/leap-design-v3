@@ -360,6 +360,23 @@
           name="title" required>
         </div>
         <div class="form-group mb-3">
+          <label class="form-label">Group Type *</label>
+          <div>
+            <div class="">
+              <input class="btn-check" type="radio" value="menu" id="grouptype-menu" name="grouptype-menu"
+                [(ngModel)]="editGroupData.x.type" required>
+              <label for="grouptype-menu" class="btn btn-outline-secondary me-1 mb-1">
+                Menu</label>
+
+              <input class="btn-check" type="radio" value="bottom" id="grouptype-bottom" name="grouptype-bottom"
+                [(ngModel)]="editGroupData.x.type" required>
+              <label for="grouptype-bottom" class="btn btn-outline-secondary me-1 mb-1">
+                Bottom</label>
+                
+            </div>
+          </div>
+        </div>
+        <div class="form-group mb-3">
           <label class="form-label">Access available for</label>
           <div class="d-flex">
             <ng-select class="flex-grow-1" [items]="accessList" bindLabel="name" [multiple]="true" bindValue="id" placeholder="Anyone"

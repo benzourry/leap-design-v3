@@ -244,7 +244,7 @@
                                         <div [class]="field?.size || 'col-sm-12'" [class.mt-0]="field?.subType == 'clearfix'" [hidden]="field.hidden || (field?.x?.facet?.[_action] || section.x?.facet?.[_action]) == 'hidden'">
                                           @if (field.type != 'static') {
                                             <div class="form-group">
-                                              @if (field?.subType != 'clearfix' && !field?.hideLabel) { <label class="label-span form-label">{{field?.label}}</label> }
+                                              @if (field?.subType != 'clearfix' && !field?.hideLabel) { <div class="label-span form-label">{{field?.label}}</div> }
                                               <p class="form-control-static mb-0">
                                                 <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()"></field-view>
                                               </p>

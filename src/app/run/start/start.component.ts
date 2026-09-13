@@ -48,11 +48,12 @@ import { ThemeToggleComponent } from "../_component/theme-toggle.component";
   templateUrl: './start.component.html',
   styleUrls: ['./start.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgbCollapse,
-    NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe, ThemeToggleComponent]
+  imports: [
+    RouterLink, FaIconComponent, RegisterComponent, PageTitleComponent, NgbCollapse,
+    NgClass, NgStyle, RouterLinkActive, RouterOutlet, SafePipe, IconSplitPipe, ThemeToggleComponent
+  ]
 })
 export class StartComponent implements OnInit, OnDestroy {
-
 
   private userService = inject(UserService);
   private swPush = inject(SwPush);
@@ -70,25 +71,15 @@ export class StartComponent implements OnInit, OnDestroy {
   private logService = inject(LogService);
   private entryService = inject(EntryService);
   private cdr = inject(ChangeDetectorRef);
-  private destroyRef = inject(DestroyRef); // Used for modern subscription cleanup
+  private destroyRef = inject(DestroyRef);
 
-  // Signals for state management
+  // --- Signals & Computed States ---
   appLoading = signal<boolean>(false);
-  validPath = computed(() => !!this.app());
-  offline = signal<boolean>(false);
-  sidebarActive = signal<boolean>(false);
-  frameless = computed(() => (getQuery('noframe') || localStorage.getItem('noframe')) === 'true');
-  pushDismissed = signal(localStorage.getItem('pushDismissed') === '1');
-  maintenance = computed(() => {
-    const app = this.app();
-    const path = window.location.host;
-    return !this.editMode && !!app && !app.live && !path.includes('--dev');
-  });
-  darkMode = signal<boolean>(false);
   app = signal<any>(null);
-  lang = computed(() => this.app().x?.lang);
   user = signal<any>(null);
   navis = signal<any[]>([]);
+  sideNavGroups = computed(() => this.navis().filter(g => g.x?.type !== 'bottom'));
+  bottomNavGroups = computed(() => this.navis().filter(g => g.x?.type === 'bottom'));
   naviData = signal<any>(null);
   badge = signal<any>({});
   appUserList = signal<any[]>([]);
@@ -96,53 +87,52 @@ export class StartComponent implements OnInit, OnDestroy {
   preGroup = signal<Record<string, boolean>>({});
   preItem = signal<Record<string, boolean>>({});
   navToggle = signal<Record<number, boolean>>({});
-  // appConfig: any = this.runService.appConfig;
-  get appConfig(): any {
-    return this.runService.appConfig;
-  }
-
-  baseUrl = computed(() => {
-    return (
-      location.protocol +
-      '//' +
-      location.hostname +
-      (location.port ? ':' + location.port : '') +
-      '/#' +
-      this.preurl()
-    );
-  });
-  startPage = computed(() => this.app()?.startPage ?? 'start');
-  isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
+  offline = signal<boolean>(false);
+  sidebarActive = signal<boolean>(false);
+  pushDismissed = signal(localStorage.getItem('pushDismissed') === '1');
+  darkMode = signal<boolean>(false);
   screen = signal<any>(null);
   mailboxBadge = signal<number>(0);
+  preurl = signal<string>('');
+  
+  // Computed values
+  validPath = computed(() => !!this.app());
+  lang = computed(() => this.app()?.x?.lang);
+  startPage = computed(() => this.app()?.startPage ?? 'start');
+  currentPath = signal<string>(this.router.url.split('?')[0]);
+  isStartPage = computed(() => {
+    const start = this.startPage();
+    const current = this.currentPath();
+    // Checks if the current URL ends with the start page
+    return current.endsWith('/' + start) || current === '/' + start;
+  });
+  isPeekExpanded = signal<boolean>(false);
+
+  frameless = computed(() => (getQuery('noframe') || localStorage.getItem('noframe')) === 'true');
+  isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
+  showEdit = this.isDev; // Removed duplicate computation
+  
+  maintenance = computed(() => {
+    const app = this.app();
+    const path = window.location.host;
+    return !this.editMode && !!app && !app.live && !path.includes('--dev');
+  });
+
+  baseUrl = computed(() => `${location.protocol}//${location.hostname}${location.port ? ':' + location.port : ''}/#${this.preurl()}`);
 
   // --- Cookie Banner Signals ---
   private readonly cookieConsentName = 'app_cookie_consent';
-  
-  // Tracks if the user has already made a choice (either accepted or rejected)
   cookieConsentStatus = signal<boolean>(false); 
+  showCookieBanner = computed(() => !!this.app()?.x?.cookieBanner && !this.cookieConsentStatus());
 
-  // Automatically calculates if the banner should be shown based on app config AND user consent
-  showCookieBanner = computed(() => {
-    const hasBannerConfig = !!this.app()?.x?.cookieBanner;
-    const hasConsented = this.cookieConsentStatus();
-    return hasBannerConfig && !hasConsented;
-  });
-
-
-
+  // --- Constants & Variables ---
   readonly baseApi = baseApi;
   readonly base = base;
   readonly VAPID_PUBLIC_KEY = 'BIRiQCpjtaORtlvwZ7FzFkf8V799iGvEX1kQtO86y-BdiGpAMvXN4UDU1DWEqrpPEAiDDVilG8WKk62NjFc1Opo';
 
-  firstActiveSet: boolean = false;
+  get appConfig(): any { return this.runService.appConfig; }
 
   editMode: boolean = false;
-  // badge: any;
-  active = false;
-  path: string;
-
-  preurl = signal<string>('');
   appId: number;
   $param$: any = {};
   accessToken: string = '';
@@ -158,66 +148,42 @@ export class StartComponent implements OnInit, OnDestroy {
     
     this.utilityService.testOnline$()
       .pipe(takeUntilDestroyed())
-      .subscribe((online) => this.offline.set(!online));
+      .subscribe(online => this.offline.set(!online));
       
     this.swPush.notificationClicks
       .pipe(takeUntilDestroyed())
-      .subscribe((arg) => {
-        console.log(
-          'Action: ' + arg.action,
-          'Notification data: ' + arg.notification.data,
-          'Notification data.url: ' + arg.notification.data.url,
-          'Notification data.body: ' + arg.notification.body
-        );
+      .subscribe(arg => {
+        console.log('Action: ' + arg.action, 'Notification data:', arg.notification.data);
       });
   }
 
   ngOnInit() {
-
-    // Check if the user already has the cookie set
     this.cookieConsentStatus.set(!!this.getCookie(this.cookieConsentName));
-
     window.localStorage.setItem('noframe', String(this.frameless()));
-
     this.accessToken = this.userService.getToken();
 
-    // might also consider using proxy and $digest$ for any changes
-    // this.appConfig = this.runService.appConfig; 
+    Reflect.defineProperty(window, '_conf', { get: () => this.appConfig, configurable: true });
+    Reflect.defineProperty(window, '_this_start', { get: () => this._this, configurable: true });
 
-    Reflect.defineProperty(window, '_conf', {
-      get: () => this.appConfig,
-      configurable: true // Required so Reflect.deleteProperty can remove it later
-    });
-
-    Reflect.defineProperty(window, '_this_start', {
-      get: () => this._this,
-      configurable: true
-    });
-
-    // Flattened the nested subscriptions using switchMap
+    // Flattened user > params fetching
     this.userService.getUser().pipe(
       takeUntilDestroyed(this.destroyRef),
       tap((user) => {
         this.user.set(user);
-        this.userService.setUser(user); // Preserving V2 specific setting
+        this.userService.setUser(user);
         this.runService.$user.set(user);
-        // console.log("loaded user", user)
       }),
       switchMap(() => this.route.params)
     ).subscribe((params: Params) => {
       this.$param$ = params;
       this.appId = params['appId'];
+      
       if (this.appId) {
         this.preurl.set(`/run/${this.appId}`);
         this.runService.$preurl.set(this.preurl());
+        this.editMode = true;
         this.getApp(this.appId);
         this.getStart(this.appId);
-
-        if (!this.frameless()) {
-          this.getNavis(this.appId, this.user().email);
-          this.getNaviData(this.appId, this.user().email);
-        }
-        this.editMode = true;
       } else {
         this.getAppByPath(this.getPath());
       }
@@ -225,80 +191,197 @@ export class StartComponent implements OnInit, OnDestroy {
 
     this.pageTitleService.openAnnounced$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(opened => {
-        this.sidebarActive.set(opened)
-      });
+      .subscribe(opened => this.sidebarActive.set(opened));
 
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((event: NavigationEnd) => {
-        // Check if navigated to root
+      .subscribe((event) => {
+        this.isPeekExpanded.set(false);
+        this.currentPath.set(event.urlAfterRedirects.split('?')[0]);
         if (this.router.url === '/' || this.router.url === '') {
-          // Wait for app() to be available, or use a fallback
           const startPage = this.app()?.startPage || 'start';
-          // Prevent infinite loop if already at startPage
           if (this.router.url !== `/${startPage}`) {
             this.router.navigate([startPage], {
               relativeTo: this.route,
               queryParams: this.route.snapshot.queryParams,
-              replaceUrl: true // Optional: replaces history entry
+              replaceUrl: true
             });
           }
         }
       });
   }
 
-  getStart(id: number) {
-    if (id) {
-      this.runService.getStartBadge(id, this.user().email)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(res => {
-          this.badge.set(res);
-        });
+  // --- Unified App Initialization ---
+  private async processAppResponse(res: any, isByPath: boolean = false) {
+    this.app.set(res);
+    dayjs.locale(this.lang() === 'ms' ? 'ms-my' : 'en');
+    this.runService.$app.set(res);
+    
+    // Set Title (Fix: Now applies to both path and ID fetches)
+    this.titleService.setTitle(res.title);
+
+    const email = this.user()?.email;
+
+    if (!this.frameless()) {
+      this.getNavis(res.id, email);
+      this.getNaviData(res.id, email);
     }
+
+    if (res.layout === 'topnav') this.navToggle.set({});
+
+    if (res.once) {
+      this.runService.getRunScreen(res.once)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(screen => this.screen.set(screen));
+    }
+
+    this.runService.countUnreadNotification(res.id, email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(badge => this.mailboxBadge.set(badge));
+
+    this.checkPush(res);
+
+    // Initial routing logic
+    let currentUrl = this.router.url.split('?')[0].replace(this.preurl(), '').replace(/\//g, '');
+    if (!currentUrl) {
+      const target = res.startPage ? [res.startPage] : ['start'];
+      this.router.navigate(target, { 
+        relativeTo: this.route, 
+        queryParams: this.route.snapshot.queryParams,
+        replaceUrl: true 
+      });
+    }
+
+    await this.initScreen(res.f);
+    this.appLoading.set(false);
   }
 
+  getAppByPath(path: string) {
+    this.appLoading.set(true);
+    this.runService.getRunAppByPath(path, { email: this.user()?.email })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => this.processAppResponse(res, true),
+        error: () => this.appLoading.set(false)
+      });
+  }
 
+  getApp(id: number) {
+    this.appLoading.set(true);
+    this.runService.getRunApp(id, { email: this.user()?.email })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.runService.getAppUserByEmail(id, { email: this.user()?.email })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(appUserList => this.appUserList.set(appUserList));
+          
+          this.processAppResponse(res, false);
+        },
+        error: () => this.appLoading.set(false)
+      });
+  }
+
+  getStart(id: number) {
+    if (!id) return;
+    this.runService.getStartBadge(id, this.user()?.email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.badge.set(res));
+  }
+
+  // --- Push Notifications ---
   dismissPush() {
     localStorage.setItem("pushDismissed", "1");
     this.pushDismissed.set(true);
   }
 
-  // toggleNav(index: number): void {
-  //   const currentState = this.navToggle();
-  //   this.navToggle.set({ ...currentState, [index]: !currentState[index] });
-  // }
+  checkPush(app: any) {
+    if (!app?.canPush) return;
+    this.swPush.subscription
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe(sub => {
+        if (sub) {
+          this.actualSub = sub;
+          this.pushService.checkPush(sub.endpoint)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(res => this.pushSub = res);
+        }
+      });
+  }
 
-  toggleNav(index: number) {
+  subscribePush() {
+    this.swPush.requestSubscription({ serverPublicKey: this.VAPID_PUBLIC_KEY })
+      .then(sub => {
+        this.actualSub = sub;
+        this.pushService.subscribePush(this.user().id, sub)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(res => this.pushSub = res);
+      })
+      .catch(err => { this.pushSubError = { err }; console.log(err); });
+  }
+
+  // --- Navigation & Menus ---
+  toggleNav(groupId: number) {
     if (this.app()?.layout === 'topnav') {
-      // Top Nav Mode: Exclusive dropdown behavior (closes others)
-      const isCurrentlyOpen = this.navToggle()[index];
-      this.navToggle.set(isCurrentlyOpen ? {} : { [index]: true });
+      const isCurrentlyOpen = this.navToggle()[groupId];
+      this.navToggle.set(isCurrentlyOpen ? {} : { [groupId]: true });
     } else {
-      // Side Menu Mode: Independent accordion behavior
-      this.navToggle.update(state => ({
-        ...state,
-        [index]: !state[index]
-      }));
+      this.navToggle.update(state => ({ ...state, [groupId]: !state[groupId] }));
     }
   }
 
-  saveAppUser(selectedRoles) {
-    var payload = {
-      email: this.user().email,
+  getNavis(id: number, email: string) {
+    this.runService.getNavis(id, email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.navis.set(res);
+        this.runService.$navis.set(res);
+        this.runPre();
+        
+        const naviObj: any = {};
+        res.forEach(n => {
+          n.items.forEach(i => {
+            if (!naviObj[i.type]) naviObj[i.type] = {};
+            naviObj[i.type][i.screenId] = this.preItem()[i.id];
+          });
+        });
+        this.runService.$naviPerm.set(naviObj);
+      });
+  }
+
+  getNaviData(id: number, email: string) {
+    this.runService.getNaviData(id, email)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.naviData.set(res);
+        this.runService.$naviData.set(res);
+        this.runPre();
+      });
+  }
+
+  hideSb() { setTimeout(() => this.sidebarActive.set(false), 300); }
+  
+  toggleDark() { this.darkMode.set(!this.darkMode()); }
+
+  // --- User Management ---
+  saveAppUser(selectedRoles: any) {
+    const payload = {
+      email: this.user()?.email,
       groups: selectedRoles,
-      name: this.user.name,
+      name: this.user()?.name, // Fix: Use signal value correctly
       autoReg: false
-    }
+    };
+    
     this.runService.regAppUser(this.app().id, payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
         this.user.set(res.user);
         this.userService.setUser(res.user);
         this.runService.$user.set(res.user);
+        
         if (!this.frameless()) {
           this.getNavis(this.app().id, this.user().email);
           this.getNaviData(this.app().id, this.user().email);
@@ -306,40 +389,8 @@ export class StartComponent implements OnInit, OnDestroy {
       });
   }
 
-  checkPush(app) {
-    if (app.canPush) {
-      this.swPush.subscription
-        .pipe(
-          take(1),
-          takeUntilDestroyed(this.destroyRef)
-        )
-        .subscribe(sub => {
-          if (sub) {
-            this.actualSub = sub;
-            this.pushService.checkPush(sub.endpoint)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe(res => this.pushSub = res)
-          }
-        })
-    }
-  }
-
-  subscribePush() {
-    this.swPush.requestSubscription({
-      serverPublicKey: this.VAPID_PUBLIC_KEY
-    })
-      .then(sub => {
-        this.actualSub = sub;
-        this.pushService.subscribePush(this.user().id, sub)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(res => this.pushSub = res);
-      })
-      .catch(err => { this.pushSubError = { err: err }; console.log(err) });
-
-  }
-
   onceDone() {
-    this.runService.onceDone(this.app().id, this.user().email, true)
+    this.runService.onceDone(this.app().id, this.user()?.email, true)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
@@ -347,252 +398,94 @@ export class StartComponent implements OnInit, OnDestroy {
           this.userService.setUser(res);
           this.runService.$user.set(res);
         },
-        error: err => {
-          this.user().once = true;
-          this.userService.setUser(this.user);
-        }
-      })
-  }
-
-  logout() {
-    this.userService.logout();
-  }
-
-
-  getPath() {
-    if (window.location.host.indexOf(domainBase) > -1) {
-      return 'path:' + window.location.host.match(domainRegex)[1];
-    } else {
-      return 'domain:' + window.location.hostname;
-    }
-  }
-
-  hideSb() {
-    setTimeout(() => { this.sidebarActive.set(false) }, 300)
-  }
-  getAppByPath(path) {
-    this.appLoading.set(true);
-    this.runService.getRunAppByPath(path, { email: this.user().email })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: async (res) => {
-          this.app.set(res);
-          const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
-          dayjs.locale(currentLang);
-
-          this.runService.$app.set(res);
-          if (!this.frameless()) {
-            this.getNavis(res.id, this.user().email);
-            this.getNaviData(res.id, this.user().email);
-          }
-          if (this.app().layout == 'topnav') {
-            this.navToggle.set({});
-          }
-          this.titleService.setTitle(this.app().title);
-          if (this.app().once) {
-            this.runService.getRunScreen(this.app().once)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe(screen => this.screen.set(screen));
-          }
-
-          // still need this for initial loading
-          let url = this.router.url.split('?')[0].replace('/', ''); // utk check nya da /path x kt url. Mn xda, navigate ke startPage or /start
-          if (res.startPage && !url) {
-            this.router.navigate([res.startPage], { 
-              relativeTo: this.route, 
-              queryParams: this.route.snapshot.queryParams,
-              replaceUrl: true
-            });
-          } else {
-            this.router.navigate(['start'], { 
-              relativeTo: this.route,
-              replaceUrl: true 
-            });
-          }
-
-          this.runService.countUnreadNotification(this.app().id, this.user().email)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(res => {
-              this.mailboxBadge.set(res);
-            });
-
-          this.checkPush(this.app());
-          await this.initScreen(this.app().f);
-          this.appLoading.set(false);
-        },
-        error: (err) => {
-          // this.validPath.set(false);
-          this.appLoading.set(false);
+        error: () => {
+          this.user.update(u => ({ ...u, once: true }));
+          this.userService.setUser(this.user());
         }
       });
   }
 
-  getApp(id) {
-    this.appLoading.set(true);
-    this.runService.getRunApp(id, { email: this.user().email })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: async (res) => {
-          this.app.set(res);
-          const currentLang = this.lang() === 'ms' ? 'ms-my' : 'en';
-          dayjs.locale(currentLang);
+  logout() { this.userService.logout(); }
 
-          this.runService.$app.set(res);
-
-          this.runService.getAppUserByEmail(id, { email: this.user().email })
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(appUserList => {
-              this.appUserList.set(appUserList);
-            });
-
-          if (res.layout == 'topnav') {
-            this.navToggle.set({});
-          }
-          if (res.once) {
-            this.runService.getRunScreen(res.once)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe(screen => this.screen.set(screen));
-          }
-          this.checkPush(res);
-          await this.initScreen(res.f);
-          this.appLoading.set(false);
-
-          // this.startPage.set(res.startPage??'start');
-
-          // utk check nya da /path x kt url. Mn xda, navigate ke startPage or /start
-          // utk run dari designer nya xjln, sbb sentiasa da /run/<app-id>
-          let url = this.router.url.split('?')[0]
-            .replace(this.preurl(), '')
-            .replace('/', '');
-
-          if (!url) {
-            if (res.startPage) {
-              this.router.navigate([res.startPage], { 
-                relativeTo: this.route, 
-                queryParams: this.route.snapshot.queryParams,
-                replaceUrl: true
-              });
-            } else {
-              this.router.navigate(['start'], { 
-                relativeTo: this.route,
-                replaceUrl: true 
-              });
-            }
-          }
-
-          this.runService.countUnreadNotification(this.app().id, this.user().email)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(res => {
-              this.mailboxBadge.set(res);
-          });
-        },
-        error: (err) => this.appLoading.set(false)
-      })
+  // --- Utilities & Expressions ---
+  getPath() {
+    if (window.location.host.indexOf(domainBase) > -1) {
+      return 'path:' + window.location.host.match(domainRegex)[1];
+    }
+    return 'domain:' + window.location.hostname;
   }
 
-  getNavis(id, email) {
-    this.runService.getNavis(id, email)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.navis.set(res);
-        this.runService.$navis.set(res);
-        this.runPre();
-        var naviObj = {}
-        res.forEach(n => {
-          n.items.forEach(i => {
-            if (!naviObj[i.type]) naviObj[i.type] = {};
-            naviObj[i.type][i.screenId] = this.preItem()[i.id];
-          })
-        })
-        this.runService.$naviPerm.set(naviObj);
-      })
-  }
-
-  getNaviData(id, email) {
-    this.runService.getNaviData(id, email)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.naviData.set(res);
-        this.runService.$naviData.set(res);
-        this.runPre();
-      })
-  }
-
-  toggleDark() {
-    this.darkMode.set(!this.darkMode);
-    // localStorage.setItem("darkMode",this.darkMode+"");
-  }
-  
   designUrl = computed(() => {
     const split = location.hash.split('/');
     const appId = split[2]?.replace(/\D/g, '');
     if (!appId) return { url: '', query: undefined };
 
-    if (split[3]) {
-      if (['form', 'dataset', 'dashboard', 'screen'].includes(split[3])) {
-        return {
-          url: `/design/${appId}/ui/${split[3]}`,
-          query: { id: split[4] },
-        };
-      } else if (['profile'].includes(split[3])) {
-        return {
-          url: `/design/${appId}/`,
-          query: undefined,
-        };
-      } else if (['start'].includes(split[3])) {
-        return {
-          url: `/design/${appId}/ui/navi`,
-          query: undefined,
-        };
-      } else if (['mailbox'].includes(split[3])) {
-        return {
-          url: `/design/${appId}/`,
-          query: undefined,
-        };
-      } else if (['webui','web'].includes(split[3])) {
-        return {
-          url: `/design/${appId}/lambda`,
-          query: undefined,
-        };
-      } else {
-        return {
-          url: `/design/${appId}/${split[3]}`,
-          query: { id: split[4] },
-        };
-      }
-    } else {
-      return {
-        url: `/design/${appId}/`,
-        query: undefined,
-      };
+    const type = split[3];
+    const id = split[4];
+
+    if (type) {
+      if (['form', 'dataset', 'dashboard', 'screen'].includes(type)) return { url: `/design/${appId}/ui/${type}`, query: { id } };
+      if (['profile', 'mailbox'].includes(type)) return { url: `/design/${appId}/`, query: undefined };
+      if (['start'].includes(type)) return { url: `/design/${appId}/ui/navi`, query: undefined };
+      if (['webui','web'].includes(type)) return { url: `/design/${appId}/lambda`, query: undefined };
+      return { url: `/design/${appId}/${type}`, query: { id } };
     }
+    return { url: `/design/${appId}/`, query: undefined };
   });
 
-
-  preCheck(f) {
+  preCheck(f: any) {
     let res = undefined;
     try {
       if (f.pre) {
-        let pre = f.pre.trim();
-        res = this._pre(pre);//new Function('$', '$prev$', '$user$', 'return ' + f.pre)(this.entry.data, this.entry && this.entry.prev, this.user);
+        res = this._pre(f.pre.trim());
       }
-    } catch (e) { this.logService.log(`{start-[${f?.title}]-precheck}-${e.message}`) }
+    } catch (e) { this.logService.log(`{start-[${f?.title}]-precheck}-${e.message}`); }
     return !f.pre || res;
   }
+
+  // runPre(): void {
+  //   const updatedPreGroup = { ...this.preGroup() };
+  //   const updatedPreItem = { ...this.preItem() };
+    
+  //   // Fix: Preserve existing toggle state so $digest doesn't close active tabs
+  //   const updatedNavToggle = { ...this.navToggle() }; 
+  //   const isEmpty = Object.keys(updatedNavToggle).length === 0;
+  //   let firstActiveSet = !isEmpty;
+
+  //   this.navis()?.forEach((group, index) => {
+  //     updatedPreGroup[group.id] = this.preCheck(group);
+
+  //     if (!firstActiveSet && updatedPreGroup[group.id]) {
+  //       firstActiveSet = true;
+  //       updatedNavToggle[index] = true;
+  //     }
+
+  //     group.items?.forEach((item) => {
+  //       updatedPreItem[item.id] = this.preCheck(item);
+  //     });
+  //   });
+
+  //   this.preGroup.set(updatedPreGroup);
+  //   this.preItem.set(updatedPreItem);
+  //   this.navToggle.set(updatedNavToggle);
+  // }
 
   runPre(): void {
     const updatedPreGroup = { ...this.preGroup() };
     const updatedPreItem = { ...this.preItem() };
-    const updatedNavToggle = {};
+    
+    // Preserve existing toggle state so $digest doesn't close active tabs
+    const updatedNavToggle = { ...this.navToggle() }; 
+    const isEmpty = Object.keys(updatedNavToggle).length === 0;
+    let firstActiveSet = !isEmpty;
 
-    let firstActiveSet = false;
-
-    this.navis()?.forEach((group, index) => {
+    this.navis()?.forEach((group) => {
       updatedPreGroup[group.id] = this.preCheck(group);
 
-      if (!firstActiveSet && updatedPreGroup[group.id]) {
+      // FIX: Use group.id instead of index, and ensure bottom navs don't steal the active state
+      if (!firstActiveSet && updatedPreGroup[group.id] && group.x?.type !== 'bottom') {
         firstActiveSet = true;
-        updatedNavToggle[index] = true;
+        updatedNavToggle[group.id] = true;
       }
 
       group.items?.forEach((item) => {
@@ -605,14 +498,12 @@ export class StartComponent implements OnInit, OnDestroy {
     this.navToggle.set(updatedNavToggle);
   }
 
-  // --- DRY Caching and Context Engine ---
-
+  // --- Dynamic Eval Logic ---
   private compiledEvalCache = new Map<string, Function>();
   private preCache = new Map<string, Function>();
 
   private executeEval(code: string, bindings: Record<string, any>, cache: Map<string, Function>) {
     if (!code) return undefined;
-    
     const argNames = Object.keys(bindings);
     const cacheKey = `${argNames.join(',')}_${code}`;
     
@@ -621,12 +512,10 @@ export class StartComponent implements OnInit, OnDestroy {
       fn = new Function(...argNames, `return ${code}`);
       cache.set(cacheKey, fn);
     }
-    
     return fn(...Object.values(bindings));
   }
 
   getEvalContext = (isPassive: boolean = false, additionalParams: any = {}) => {
-    // Properties shared across ALL evaluations
     const passive = {
       $app$: this.app(),
       $user$: this.user(),
@@ -643,14 +532,11 @@ export class StartComponent implements OnInit, OnDestroy {
 
     if (isPassive) return passive;
 
-    // Properties only needed for active evaluation (_eval)
     return {
       ...passive,
       setTimeout: this._setTimeout,
       setInterval: this._setInterval,
-      $_: {},
-      $: {},
-      $prev$: {},
+      $_: {}, $: {}, $prev$: {},
       $http$: this.httpGet,
       $post$: this.httpPost,
       $endpoint$: this.endpointGet,
@@ -660,14 +546,11 @@ export class StartComponent implements OnInit, OnDestroy {
       $update$: this.updateField,
       $updateLookup$: this.updateLookup,
       $toast$: this.$toast$,
-      dayjs,
-      echarts: null,
+      dayjs, echarts: null,
       $live$: this.runService?.$live$(this.liveSubscription(), this.$digest$),
       $merge$: deepMerge,
       $web$: this.runService.web,
-      $go: null,
-      $pop: null,
-      $q$: this.$q,
+      $go: null, $pop: null, $q$: this.$q,
       $showNav$: this.openNav
     };
   }
@@ -682,114 +565,92 @@ export class StartComponent implements OnInit, OnDestroy {
   }
 
   _eval = async (v: string) => {
-    const bindings = this.getEvalContext(false);
-    return this.executeEval(v, bindings, this.compiledEvalCache);
+    return this.executeEval(v, this.getEvalContext(false), this.compiledEvalCache);
   }
 
-
-  compileTpl(html, data) {
-    var f = "";
+  compileTpl(html: string, data: any) {
     try {
-      f = compileTpl(html, data,'start');
+      return compileTpl(html, data, 'start');
     } catch (e) {
-      this.logService.log(`{start-compiletpl}-${e.message}`)
+      this.logService.log(`{start-compiletpl}-${e.message}`);
+      return "";
     }
-    return f;
   }
 
-  async initScreen(js) {
+  async initScreen(js: string) {
+    if (!js) return;
     let res = undefined;
-    let jsTxt = this.compileTpl(js, { $param$: this.$param$, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl(), $baseApi$: baseApi })
+    const jsTxt = this.compileTpl(js, { 
+      $param$: this.$param$, $this$: this._this, $user$: this.user(), 
+      $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl(), $baseApi$: baseApi 
+    });
+    
     try {
-      res = await this._eval(jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry.data, this.entry && this.entry.prev, this.user, this.httpGet);
-    } catch (e) { this.logService.log(`{start-${this.app().title}-initNavi}-${e.message}`) }
+      res = await this._eval(jsTxt);
+    } catch (e) { 
+      this.logService.log(`{start-${this.app()?.title}-initNavi}-${e.message}`); 
+    }
     this.runPre();
     return res;
   }
 
-  httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
-  httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
-  endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
+  httpGet = (url: string, callback: any, error: any) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
+  httpPost = (url: string, body: any, callback: any, error: any) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
+  endpointGet = (code: string, params: any, callback: any, error: any) => lastValueFrom(this.runService.endpointGet(code, this.app()?.id, params, callback, error).pipe(tap(() => this.$digest$())));
 
   loadScript = loadScript;
+  $toast$ = (content: any, opt: any) => this.toastService.show(content, opt);
+  log = (log: any) => this.logService.log(JSON.stringify(log));
 
   $digest$ = () => {
     this.runService.$startTimestamp.set(Date.now());
     this.runPre();
-    this.cdr.detectChanges()
+    this.cdr.detectChanges();
   }
 
-  $toast$ = (content, opt) => this.toastService.show(content, opt);
-
-  log = (log) => this.logService.log(JSON.stringify(log));
-
-  elMap: any = {}
-  $q = (el) => {
-    if (!this.elMap[el]) {
-      this.elMap[el] = document.querySelector(el);
-    }
+  elMap: any = {};
+  $q = (el: string) => {
+    if (!this.elMap[el]) this.elMap[el] = document.querySelector(el);
     return this.elMap[el];
   }
 
-  openNav = (opened: boolean) => {
-    this.pageTitleService.open(opened);
+  openNav = (opened: boolean) => this.pageTitleService.open(opened);
+
+  updateField = (entryId: number, value: any, callback: any, error: any) => {
+    return lastValueFrom(this.entryService.updateField(entryId, value, this.appId).pipe(
+      tap({ next: callback, error }),
+      tap(() => this.runService.$startTimestamp.set(Date.now())), 
+      first()
+    ));
   }
 
-
-  updateField = (entryId, value, callback, error) => {
-    return lastValueFrom(this.entryService.updateField(entryId, value, this.appId)
-      .pipe(
-        tap({ next: callback, error: error }),
-        tap(() => {
-          this.runService.$startTimestamp.set(Date.now())
-        }), first()
-      ));
-  }
-
-  updateLookup = (entryId, value, callback, error) => {
-    return lastValueFrom(this.entryService.updateLookup(entryId, value, this.appId)
-      .pipe(
-        tap({ next: callback, error: error }),
-        tap(() => {
-          this.runService.$startTimestamp.set(Date.now())
-        }), first()
-      ));
+  updateLookup = (entryId: number, value: any, callback: any, error: any) => {
+    return lastValueFrom(this.entryService.updateLookup(entryId, value, this.appId).pipe(
+      tap({ next: callback, error }),
+      tap(() => this.runService.$startTimestamp.set(Date.now())), 
+      first()
+    ));
   }
 
   timeoutList: any[] = [];
-  _setTimeout = (functionRef, delay, ...param) => {
-    let timeoutId = setTimeout(() => {
-      functionRef();
-      this.$digest$();
-    }, delay, ...param)
+  _setTimeout = (functionRef: Function, delay: number, ...param: any[]) => {
+    const timeoutId = setTimeout(() => { functionRef(); this.$digest$(); }, delay, ...param);
     this.timeoutList.push(timeoutId);
   }
 
   intervalList: any[] = [];
-  _setInterval = (functionRef, delay, ...param) => {
-    let intervalId = setInterval(() => {
-      functionRef();
-      this.$digest$();
-    }, delay, ...param)
+  _setInterval = (functionRef: Function, delay: number, ...param: any[]) => {
+    const intervalId = setInterval(() => { functionRef(); this.$digest$(); }, delay, ...param);
     this.intervalList.push(intervalId);
   }
 
+  dismissAllModal() { this.modalService.dismissAll(''); }
 
-  showEdit = computed(() => {
-    const email = this.userService.getActualUser()?.email;
-    return this.app()?.email?.includes(email) ?? false;
-  });
-
-  dismissAllModal() {
-    this.modalService.dismissAll('');
-  }
-
-  // --- Cookie Management Methods ---
+  // --- Cookies ---
   private getCookie(name: string): string | null {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
+    return parts.length === 2 ? parts.pop()?.split(';').shift() || null : null;
   }
 
   private setCookie(name: string, value: string, days: number) {
@@ -812,16 +673,12 @@ export class StartComponent implements OnInit, OnDestroy {
     this.cookieConsentStatus.set(true);
   }
 
-  // Closes the banner without setting a cookie (it will reappear on next refresh)
-  dismissCookies() {
-    this.cookieConsentStatus.set(true); 
-  }
+  dismissCookies() { this.cookieConsentStatus.set(true); }
 
   ngOnDestroy() {
-    Object.keys(this.liveSubscription()).forEach(key => this.liveSubscription()[key].unsubscribe());//.forEach(sub => sub.unsubscribe());
-    this.intervalList.forEach(i => clearInterval(i));
-    this.timeoutList.forEach(i => clearTimeout(i));
-
+    Object.values(this.liveSubscription()).forEach(sub => sub.unsubscribe());
+    this.intervalList.forEach(clearInterval);
+    this.timeoutList.forEach(clearTimeout);
     this.runService.appConfig = {};
     // Global cleanup
     const confDeleted = Reflect.deleteProperty(window, '_conf');
