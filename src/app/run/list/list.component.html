@@ -1,4 +1,4 @@
-<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print" [class.forceCard]="dataset()?.x?.forceCard">
+<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print"  [class.as-comp]="asComp()" [class.forceCard]="dataset()?.x?.forceCard">
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>

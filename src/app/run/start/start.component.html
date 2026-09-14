@@ -223,15 +223,18 @@
 
             <!-- FLOATING PILLS BOTTOM NAVIGATION -->
             @if (bottomNavGroups().length > 0) {
-              <div class="bottom-nav-container print-hide" 
+
+              <div class="bottom-nav-container print-hide" [ngStyle]="{'color': app()?.theme}"
                 [class.is-start-page]="isStartPage()">
-                <div class="bottom-nav-scroll">
+
+
+                <div class="bottom-nav-scroll" (scroll)="onBottomNavScroll($event)">
                   
                   <!-- OPTIMIZATION 3: Loop only through bottomNavGroups & track by ID -->
                   @for (group of bottomNavGroups(); track group.id) {
                     @if (preGroup()[group.id]) {
                       <div class="bottom-nav-wrapper">
-                        <div class="bottom-nav-group" tabindex="0">
+                        <div class="bottom-nav-group mt-auto" tabindex="0">
                         @for (item of group.items; track item.id) {
                           @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
                           @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
@@ -276,7 +279,13 @@
                     }
                   }
                 </div>
+                <div class="bottom-nav-indicators">
+                  @for (group of bottomNavGroups(); track group.id; let i = $index) {
+                    <div class="dot" [class.active]="activeBottomNavIndex() === i" [style.background-color]="activeBottomNavIndex() === i?app()?.theme:null"></div>
+                  }
+                </div>              
               </div>
+
             }
             <!-- END FLOATING PILLS BOTTOM NAVIGATION -->
 

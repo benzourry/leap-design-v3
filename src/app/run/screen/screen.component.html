@@ -1,5 +1,5 @@
 @if (screen()) {
-<div id="screen-{{screen()?.id}}" #screenviewport class="viewport position-relative"
+<div id="screen-{{screen()?.id}}" #screenviewport class="viewport position-relative" [class.as-comp]="asComp()"
   [class.map-fullscreen]="screen()?.data?.fullscreen" [class.full-viewport-page]="['chatbot'].includes(screen()?.type)">
   <!-- !asComp() &&  -->
   @if (!screen()?.data?.hideTitle && !hideTitle()) {

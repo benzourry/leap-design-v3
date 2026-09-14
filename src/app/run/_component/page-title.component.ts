@@ -28,7 +28,7 @@ import { PageTitleService } from '../../_shared/service/page-title-service';
       }@else{
         <fa-icon class="nav-close" [icon]="['fas','times']" (click)="dismiss()"></fa-icon>
       }
-      <div class="title-text" (click)="open(true)"><ng-content></ng-content></div>
+      <div class="title-text"><ng-content></ng-content></div>
       `,
     styleUrls: ['./page-title.component.scss'],
     imports: [FaIconComponent]

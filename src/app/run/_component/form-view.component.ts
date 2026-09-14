@@ -101,7 +101,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 }
 
 <ng-template #sectionGroup let-tab="tab" let-isPre="isPre" let-isPost="isPost">
-  <div class="single-pane section-group" [ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}">
+  <div class="single-pane section-group" [ngClass]="{'mb-md-3 mb-2': isPre, 'mt-md-3 mt-2': isPost}">
     <div class="fix-gutter centered" [class.limit-width]="!form()?.x?.wide">
       <div class="row" [ngStyle]="{'justify-content': form()?.align}">
         @for (e of this.sectionMap[tab?.id]; track e.id; let lastSection = $last) {
@@ -109,7 +109,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             @if (e.type === 'section') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
-                   class="mb-md-3 mb-1" [ngClass]="e.style">
+                   class="mb-md-3 mb-2" [ngClass]="e.style">
                   @if (!e.hideHeader) {
                     <div class="card-header p-3" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
@@ -205,7 +205,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
             @if (e.type === 'list') {
               <div [ngClass]="e.size || 'col-sm-12'" [hidden]="e.hidden || e.x?.facet?.['view'] === 'hidden'">
                 <div id="section_{{e.code}}" [class.no-hr]="e.x?.collapsed" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
-                  class="mb-md-3 mb-1"  [ngClass]="e.style">
+                  class="mb-md-3 mb-2"  [ngClass]="e.style">
                   @if (!e.hideHeader) {
                     <div class="card-header p-3 bordered" [class.px-0]="e.x?.blankStyle"
                       (click)="e.x?.collapsible ? collapseSection(e) : null"
@@ -369,7 +369,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   `,
   styles: [
     `.form-group > label, .custom-checkbox > label { font-size: 14px; font-weight: 600; }`,
-    `.label-span { opacity: 0.7; font-size: 0.95em; margin-bottom: 0.3rem; }`,
+    `.label-span { opacity: 0.7; font-size: 0.85em; margin-bottom: 0.3rem; font-weight:600; }`,
     `
       /* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
       .section-group:not(:has(.row > *:not([hidden]))) {

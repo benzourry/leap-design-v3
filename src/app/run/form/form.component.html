@@ -187,7 +187,7 @@
                       <div [class]="e.size || 'col-sm-12'"
                         [class.disabled]="e.enabledFor && !e.enabledFor.includes(user().email)"
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-md-3 mb-1" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-md-3 mb-2" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
@@ -319,7 +319,7 @@
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
                         
                         <!-- ⚠️ IMPORTANT: List-level ngModelGroup for validation scoping -->
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-1 mb-sm-3" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-2 mb-sm-3" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {

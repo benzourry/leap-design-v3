@@ -207,6 +207,7 @@ input.search-icon[type="search"] {
       right: 0px; left: 0px;
       margin: 0 1rem;
       bottom: -1px;
+      opacity: .5;
     }
   }
   
@@ -778,11 +779,12 @@ ngb-pagination ul.pagination { justify-content: center; }
   // Aligned menu positioning
   .toolbar-aligned-menu {
     position: absolute;
+    border-radius: 0.65rem;
     top: 100%;
     right: 0;
     left: auto;
     width: max-content;
-    min-width: 150px;
+    min-width: 100px;
     transform: none;
   }
 }
