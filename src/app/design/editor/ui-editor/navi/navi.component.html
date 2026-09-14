@@ -153,7 +153,7 @@
             }
             <div class="row">
               <div class="col-12 text-center p-2 mb-3">
-                <a class="p-2 pointer text-decoration-none" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length}, true)">
+                <a class="p-2 pointer text-decoration-none" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length,x:{type:'menu'}}, true)">
                   <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                   Add Group
                 </a>
@@ -365,13 +365,17 @@
             <div class="">
               <input class="btn-check" type="radio" value="menu" id="grouptype-menu" name="grouptype-menu"
                 [(ngModel)]="editGroupData.x.type" required>
-              <label for="grouptype-menu" class="btn btn-outline-secondary me-1 mb-1">
-                Menu</label>
+              <label for="grouptype-menu" class="btn btn-outline-secondary me-1 mb-1 text-start">
+                <div class="fw-bold">Menu</div>
+                <div class="small">Normal top/side<br/> menu navigation</div>
+              </label>
 
               <input class="btn-check" type="radio" value="bottom" id="grouptype-bottom" name="grouptype-bottom"
                 [(ngModel)]="editGroupData.x.type" required>
-              <label for="grouptype-bottom" class="btn btn-outline-secondary me-1 mb-1">
-                Bottom</label>
+              <label for="grouptype-bottom" class="btn btn-outline-secondary me-1 mb-1 text-start">
+                <div class="fw-bold">Bottom</div>
+                <div class="small">Show as bottom<br/> bar when in mobile</div>
+              </label>
                 
             </div>
           </div>

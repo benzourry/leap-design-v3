@@ -401,7 +401,7 @@ export class NaviComponent implements OnInit {
   editGroup(content, group, isNew) {
     
     if (!group.x) {
-        group['x'] = {};
+        group['x'] = {type:'menu'};
     }
     this.editGroupData = group;
     history.pushState(null, null, window.location.href);
