@@ -640,9 +640,12 @@ export class FieldEditComponent extends ElementBase<any> {
     const target = event.target as HTMLElement;
 
     // 2. Prevent double-firing if clicking directly on an interactive child element
-    if (target.closest('input, textarea, button, a, label, .ng-select, .angular-editor-textarea, .clear-btn, .prefix-btn, .suffix-btn')) {
+    if (target.closest('input, textarea, select, button, a, label, ngb-datepicker, .ng-select, .angular-editor-textarea, .clear-btn, .prefix-btn, .suffix-btn')) {
       return;
     }
+    // if (target.closest('input, textarea, button, a, label, .ng-select, .angular-editor-textarea, .clear-btn, .prefix-btn, .suffix-btn')) {
+    //   return;
+    // }
 
     event.preventDefault();
     const container = this.el.nativeElement;

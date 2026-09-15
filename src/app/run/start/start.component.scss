@@ -369,7 +369,7 @@ $transition-slow: 350ms ease-in-out;
 
   .bottom-nav-indicators {
     position: absolute;
-    bottom: 5px;
+    bottom: 0.5rem;
     width:100%;
     opacity: 0;
     display: flex;
@@ -378,8 +378,8 @@ $transition-slow: 350ms ease-in-out;
     transition: all 250ms ease-in-out;
     
     .dot {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.4);
       transition: all 250ms ease-in-out;
@@ -439,7 +439,7 @@ $transition-slow: 350ms ease-in-out;
   touch-action: pan-x; /* Blocks vertical dragging, only allows horizontal swiping! */
   
   /* Push down by a FIXED amount so it peeks perfectly (no percentages!) */
-  transform: translateY(90%); 
+  transform: translateY(85%); 
   
   transition: all 250ms ease-in-out;
 }
@@ -448,7 +448,7 @@ $transition-slow: 350ms ease-in-out;
 .bottom-nav-container.is-start-page .bottom-nav-group,
 .bottom-nav-container:focus-within .bottom-nav-group {
   max-height: 10rem; /* Unlocks height to reveal wrapped rows */
-  transform: translateY(0); /* Pulls fully up into view */
+  transform: translateY(-10%); /* Pulls fully up into view */
   .bottom-nav-item{
      opacity: 0.6;
      &.active, &:hover { opacity: 1;}
@@ -459,13 +459,14 @@ $transition-slow: 350ms ease-in-out;
 .bottom-nav-item {
   position: relative; display: flex; flex-direction: column; align-items: center;
   color: var(--bs-body-color); text-decoration: none; font-size: 0.65rem; opacity: 0.2;
-  min-width: 50px; flex: 1; 
+  min-width: 50px; flex: 0 0 auto; width:75px;
   span {
     //  max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;
     max-width: 70px;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 4px;
+    padding-top:5px;
+    margin-top: auto;
     text-align: center;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -474,8 +475,8 @@ $transition-slow: 350ms ease-in-out;
     line-height: 1.2;
     
   }
-  &.active, &:hover {color: var(--bs-primary);}
-  .badge { top: -2px; right: -5px; font-size: 0.6rem; }
+  &.active, &:hover {color: var(--bs-color-primary);}
+  .badge { top: -8px;right: 5px;font-size: 0.6rem; }
 }
 
 [data-bs-theme="dark"] .bottom-nav-group { box-shadow: 0 4px 15px rgba(0,0,0,0.5); border:solid 1px rgba(255,255,255, 0.08) }
