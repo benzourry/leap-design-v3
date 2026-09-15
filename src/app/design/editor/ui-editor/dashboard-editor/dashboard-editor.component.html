@@ -27,15 +27,15 @@
           </div>
           <div class="ps-3 d-flex align-items-center ms-auto">
             <div>
-              <button type="button" class="btn btn-sm border border-2 ms-1"
+              <button type="button" class="btn btn-sm border border-1-5 ms-1"
                 (click)="editDashboard(editDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1 me-1"
+              <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1"
                 (click)="removeDashboard(removeDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
               </button>
-              <a class="btn btn-sm border border-2 border-success btn-outline-success"
+              <a class="btn btn-sm border border-1-5 border-success btn-outline-success"
                 routerLink="/run/{{app?.id}}/dashboard/{{curDashboard.id}}">
                 <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
               </a>
@@ -58,7 +58,7 @@
           {
           <div [ngClass]="e.size" cdkDrag>
 
-            <div class="card element h-100 bg-body-tertiary text-body border-2 overflow-hidden" [ngClass]="e.altClass"
+            <div class="card element h-100 bg-body-tertiary text-body border-1-5 overflow-hidden" [ngClass]="e.altClass"
               [ngStyle]="{'min-height.px':e.height?e.height-100:350}">
 
               <div class="card-body pointer element d-flex justify-content-center around-0 w-100">
@@ -231,7 +231,7 @@
                     @for (a of e?.x?.drillFields; track $index) {
                     <div class="col-auto pe-0 position-relative gy-2" [class.cursor-move]="editDrillFields[e.id]" cdkDrag
                       [cdkDragDisabled]="!editDrillFields[e.id]" (click)="curField[e.id]=a.code">
-                      <div class="input-group input-group-sm border border-2 rounded"
+                      <div class="input-group input-group-sm border border-1-5 rounded"
                         [class.border-primary]="curField[e.id]==a.code">
                         <span class="input-group-text border-0 bg-body">
                           {{a.label}}

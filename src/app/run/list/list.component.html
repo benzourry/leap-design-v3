@@ -1,4 +1,4 @@
-<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print"  [class.as-comp]="asComp()" [class.forceCard]="dataset()?.x?.forceCard">
+<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print"  [class.as-comp]="asComp()" [class.forceCard]="dataset()?.x?.forceCard || isMobile()">
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>
@@ -14,8 +14,8 @@
         <div [outerHTML]="compileTpl(dataset().x?.pre, {$_: rawList()}) | safe:'html'"></div>
       }
       
-      <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide">
-        <div class="toolbar title d-flex print-hide m-a mb-3 flex-wrap align-items-stretch position-relative"
+      <div [class.px-3]="!asComp()" class="print-hide">
+        <div class="toolbar title d-flex print-hide m-a mb-2 flex-wrap align-items-stretch position-relative"
           [class.input-group-sm]="asComp()" 
           [class.limit-width]="!dataset()?.wide">
           
@@ -34,7 +34,7 @@
 
           @if (!dataset()?.x?.hideSearch) {
             <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
-              class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
+              class="search-icon bg-body rounded-2 border border-1-5" style="flex: 1 1 0%; min-width: 0;"
               [class.normal]="!asComp()"
               [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" 
               (keyup.enter)="getEntryList(1)">
@@ -166,7 +166,7 @@
       
 
       @if (dataset()?.x?.showSummary) {
-        <div class="px-3 pb-3">
+        <div class="px-3 pb-2">
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
             <div>
               {{lang()=='ms'?'Semua':'Total'}}: 
@@ -380,13 +380,13 @@
                                   @for (ac of actionsInline; track ac.id) {
                                     @if (i._actionVisible[ac.id]) {
                                       @if (ac.action == 'url' && !ac.inpop) {
-                                        <a class="btn btn-sm text-nowrap" [ngClass]="ac.style"
+                                        <a class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
                                           [href]="i._actionUrls[ac.id]"
                                           target="_blank">
                                           <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                         </a>
                                       } @else {
-                                        <button type="button" class="btn btn-sm text-nowrap" [ngClass]="ac.style"
+                                        <button type="button" class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
                                           (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
                                           <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
                                         </button>

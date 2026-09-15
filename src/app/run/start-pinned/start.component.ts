@@ -200,10 +200,6 @@ export class StartComponent implements OnInit, OnDestroy {
       )
       .subscribe((event) => {
         this.isPeekExpanded.set(false);
-        // Force the browser to drop focus from the bottom nav!
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
         this.currentPath.set(event.urlAfterRedirects.split('?')[0]);
         if (this.router.url === '/' || this.router.url === '') {
           const startPage = this.app()?.startPage || 'start';
@@ -216,19 +212,6 @@ export class StartComponent implements OnInit, OnDestroy {
           }
         }
       });
-  }
-
-  // Add this near your other signals
-  activeBottomNavIndex = signal<number>(0);
-
-  // Add this method anywhere in your class
-  onBottomNavScroll(event: Event) {
-    const target = event.target as HTMLElement;
-    // Calculate which item is currently centered
-    const index = Math.round(target.scrollLeft / target.clientWidth);
-    if (this.activeBottomNavIndex() !== index) {
-      this.activeBottomNavIndex.set(index);
-    }
   }
 
   // --- Unified App Initialization ---
@@ -500,7 +483,7 @@ export class StartComponent implements OnInit, OnDestroy {
       updatedPreGroup[group.id] = this.preCheck(group);
 
       // FIX: Use group.id instead of index, and ensure bottom navs don't steal the active state
-      if (!firstActiveSet && updatedPreGroup[group.id]) {  //&& group.x?.type !== 'bottom'
+      if (!firstActiveSet && updatedPreGroup[group.id] && group.x?.type !== 'bottom') {
         firstActiveSet = true;
         updatedNavToggle[group.id] = true;
       }

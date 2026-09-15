@@ -99,32 +99,32 @@
               @if (bucket) {
                 <div class="d-flex flex-row">
                   <div style="flex-grow: 1;">
-                    <input type="search" class="form-control form-control-sm border border-2"
+                    <input type="search" class="form-control form-control-sm border border-1-5"
                       autocapitalize="none"
                       placeholder="Filter list" (keyup.enter)="getFileList(1,params)"
                       [(ngModel)]="searchTextFile">
                   </div>
                   <div style="flex-shrink: 0;">
                     <button type="button" title="Edit bucket"
-                      class="btn border border-2 btn-outline-secondary btn-sm ms-1"
+                      class="btn border border-1-5 btn-outline-secondary btn-sm ms-1"
                       (click)="editBucket(editBucketTpl,bucket,false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <label class="form-label m-0">
                       <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
                       @if (!importLoading) {
-                        <div class="btn border border-2 btn-outline-primary btn-sm ms-1">
+                        <div class="btn border border-1-5 btn-outline-primary btn-sm ms-1">
                           <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Upload File
                         </div>
                       }
                       @if (importLoading) {
-                        <button type="button" class="btn border border-2 btn-outline-primary btn-sm ms-1" disabled>
+                        <button type="button" class="btn border border-1-5 btn-outline-primary btn-sm ms-1" disabled>
                           <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Uploading...
                         </button>
                       }
                     </label>
                     <div ngbDropdown class="d-inline-block">
-                      <button type="button" class="btn border border-2 btn-sm ms-1"
+                      <button type="button" class="btn border border-1-5 btn-sm ms-1"
                         title="More bucket actions" id="dropdownBucketEditor" ngbDropdownToggle>
                         <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                       </button>

@@ -8,7 +8,7 @@
     </page-title>
   }
 <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
-  <div class="single-pane">
+  <div class="single-pane pt-0">
     <div>
       @if (!hasGroupId()) {
         <div class="text-center mb-1">
@@ -54,13 +54,13 @@
             <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
 
               <!-- <div style="flex-grow:1"> -->
-                <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-2"
+                <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
                   placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
                   [(ngModel)]="searchText">
               <!-- </div> -->
               @if (group?.appId==app().id){
                 <!-- <div style="flex-shrink: 0;"> -->
-                    <button type="button" class="btn btn-sm border border-2 btn-primary ms-1"
+                    <button type="button" class="btn btn-sm border border-1-5 btn-primary ms-1"
                     [class.disabled]="offline()"
                     (click)="editAppUser(editAppUserTpl,{},true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -70,26 +70,7 @@
               }
             </div>      
             @if (appUserList()?.length) {
-              <!-- <div class="px-2 py-2">
-                <div class="m-auto py-1 px-3 rounded-2 bg-dark text-white small shadow-sm" style="max-width:500px;">
-                  <div class="row">
-                    <div class="col d-flex align-items-center">
-                      <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
-                    </div>
-                    <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
-                      <div class="d-sm-inline">{{appUserTotal()}}</div>
-                    </div>
-                    <div class="col">{{lang()=='ms'?'Dipapar':'Shown'}}:
-                      <div class="d-sm-inline">{{numberOfElements()}}</div>
-                    </div>
-                    <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
-                      <div class="d-sm-inline">{{entryPages()}}</div>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
-
-              <div class="px-2 py-3">
+              <div class="px-2 py-2">
                 <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
                   
                   <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
@@ -113,10 +94,10 @@
             }
             <div class="table-responsive">
               @if (appUserList()?.length) {
-                <table class="table table-bordered">
+                <table class="table table-bordered mb-0">
                   <thead>
                     <tr>
-                      <th class="tblcol-check" style="width: 1%">
+                      <th class="tblcol-check ps-3" style="width: 1%">
                         <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
                           (click)="checkAllUsers(checkAll.checked)">
                       <th style="width: 5%">{{lang()=='ms'?'GAMBAR':'PHOTO'}}</th>
@@ -130,7 +111,7 @@
                     @for (appUser of appUserList(); track $index) {
                       <tr [class.table-info]="appUser.status=='pending'"
                         [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" [ngClass]="appUser.altClass">
-                        <td class="p-1"><input type="checkbox" class="form-check-input"
+                        <td class="p-1 ps-3"><input type="checkbox" class="form-check-input"
                           (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"></td>
                         <td class="p-1"><img src="{{appUser.user.imageUrl}}" width="58"
                           onerror="this.src='assets/img/avatar-big.png'"></td>
@@ -207,6 +188,7 @@
                 </table>
               }
             </div>
+            
             @if (selectedUsers?.size>0) {
               <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
                 &#8627; With Selected

@@ -5,7 +5,7 @@
       <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm" style="gap:0.25rem;">
 
         <!-- <div style="flex-grow: 1;"> -->
-          <input type="search" class="form-control form-control-sm border border-2" autocapitalize="none"
+          <input type="search" class="form-control form-control-sm border border-1-5" autocapitalize="none"
             placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
         <!-- </div>
         <div style="flex-shrink: 0;"> -->
@@ -13,18 +13,18 @@
           <label class="form-label m-0">
             <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
             @if (!importLoading()) {
-            <div class="btn border border-2 btn-outline-primary btn-sm ms-1">
+            <div class="btn border border-1-5 btn-outline-primary btn-sm ms-1">
               <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
             </div>
             }@else {
-            <button type="button" class="btn border border-2 btn-outline-primary btn-sm ms-1" disabled>
+            <button type="button" class="btn border border-1-5 btn-outline-primary btn-sm ms-1" disabled>
               <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Memuatnaik':'Uploading'}}...
             </button>
             }
           </label>
           }
           <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-2 btn-sm ms-1" title="More bucket actions"
+            <button type="button" class="btn border border-1-5 btn-sm ms-1" title="More bucket actions"
               id="dropdownBucketEditor" ngbDropdownToggle>
               <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
             </button>

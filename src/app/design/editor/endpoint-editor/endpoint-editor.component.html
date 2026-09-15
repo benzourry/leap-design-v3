@@ -111,16 +111,16 @@
                 </div>
                 <div class="d-flex flex-row">
                   @if (endpoint && (endpoint.email?.indexOf(user.email)>-1) && (endpoint.app?.id == appId)) {
-                    <button type="button" class="btn border border-2 btn-outline-secondary btn-sm"
+                    <button type="button" class="btn border border-1-5 btn-outline-secondary btn-sm"
                       (click)="editEndpoint(editEndpointTpl,endpoint,false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn border border-2 btn-outline-danger btn-sm ms-1"
+                    <button type="button" class="btn border border-1-5 btn-outline-danger btn-sm ms-1"
                       (click)="removeEndpoint(removeEndpointTpl,endpoint)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
                   }
-                  <button type="button" class="btn border border-2 border-success btn-outline-success btn-sm ms-1" (click)="runEndpoint()">
+                  <button type="button" class="btn border border-1-5 border-success btn-outline-success btn-sm ms-1" (click)="runEndpoint()">
                     <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                   </button>
                 </div>

@@ -26,20 +26,20 @@
           <!-- <div class="btn-group btn-group-toggle" name="sourceType"> -->
             <input type="radio" class="btn-check" value="db" #sourceType="ngModel" name="sourceTypeDb"
               id="sourceTypeDb" [(ngModel)]="_lookup.sourceType" [required]="true">
-            <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeDb" (click)="setLocal()">
+            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeDb" (click)="setLocal()">
               Database
               <div><small>Key-in locally</small></div>
             </label>
             <input type="radio" class="btn-check" value="rest" #sourceType="ngModel" name="sourceTypeRest"
               id="sourceTypeRest" [(ngModel)]="_lookup.sourceType" [required]="true">
-            <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeRest">
+            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeRest">
               RESTFul
               <div><small>Load via endpoint</small></div>
             </label>
             <input type="radio" class="btn-check" value="proxy" #sourceType="ngModel" name="sourceTypeProxy"
               id="sourceTypeProxy" [(ngModel)]="_lookup.sourceType" 
               [required]="true">
-            <label class="btn btn-outline-secondary border-2 me-1 mb-1 text-start" for="sourceTypeProxy">
+            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeProxy">
               Proxy
               <div><small>Proxy other lookup</small></div>
             </label>

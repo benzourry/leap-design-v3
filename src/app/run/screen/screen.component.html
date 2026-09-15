@@ -37,8 +37,8 @@
     @if ((screen()?.showAction||screen()?.canPrint||screen()?.data?.showSummary)) {
       @let showToolbar = screen()?.showAction && ['list','map','calendar'].includes(screen()?.type);
       @let showPrint = screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type);
-      <div [class.px-3]="!asComp()" [class.pt-3]="!asComp()" class="print-hide text-center">
-        <div class="toolbar title print-hide m-a mb-3 flex-wrap align-items-stretch position-relative"
+      <div [class.px-3]="!asComp()" [class.pt-2]="!asComp()" class="print-hide text-center">
+        <div class="toolbar title print-hide m-a mb-2 flex-wrap align-items-stretch position-relative"
           [class.d-inline-block]="!showToolbar"
           [class.d-flex]="showToolbar"
           [class.input-group-sm]="asComp()" [class.justify-content-center]="!screen()?.showAction"
@@ -62,7 +62,7 @@
 
             @if (!dataset()?.x?.hideSearch) {
               <input type="search" autocapitalize="none" id="search_screen_{{screen().id}}"
-                class="search-icon bg-body rounded-2 border border-2" style="flex: 1 1 0%; min-width: 0;"
+                class="search-icon bg-body rounded-2 border border-1-5" style="flex: 1 1 0%; min-width: 0;"
                 [class.normal]="!asComp()"
                 [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [(ngModel)]="searchText"
                 (keyup.enter)="loadDatasetEntry(dataset(), 1)">
@@ -158,7 +158,7 @@
           <!-- ========================================== -->
           @if (showToolbar || showPrint) {
             <div ngbDropdown class="d-inline-block d-sm-none h-100 ms-auto position-static" display="static">
-              <button type="button" class="btn border border-2 rounded-2 h-100" id="threeDotMenu" ngbDropdownToggle>
+              <button type="button" class="btn border border-1-5 rounded-2 h-100" id="threeDotMenu" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
               </button>
 
@@ -208,7 +208,7 @@
       </div>
 
       @if (dataset()?.x?.showSummary) {
-        <div class="px-3 pb-3">
+        <div class="px-3 pb-2">
           <!-- Added justify-content-center here -->
           <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
 
@@ -409,14 +409,14 @@
 
         @if (action.inpop && popObj[action.action.id]) {
         <!-- Trigger Popup directly -->
-        <button type="button" class="btn btn-secondary m-1 rounded-pill border-2"
+        <button type="button" class="btn btn-secondary m-1 rounded-pill border-1-5"
           (click)="d(); popObj[action.action.id](action.param)">
           {{action.label}}
         </button>
         } @else {
         <!-- Fallback to standard anchor tag for absolute navigation -->
         <a [href]="goObj[action.action.id] ? goObj[action.action.id] + (goObj[action.action.id].includes('?') ? '&' : '?') + 'entryId=' + action.param.entryId : action.url"
-          class="btn btn-secondary m-1 rounded-pill border-2" (click)="d()">
+          class="btn btn-secondary m-1 rounded-pill border-1-5" (click)="d()">
           {{action.label}}
         </a>
         }

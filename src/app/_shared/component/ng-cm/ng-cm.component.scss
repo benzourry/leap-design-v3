@@ -284,3 +284,9 @@
   transform: translateY(-50%) scaleX(1.5) scaleY(1.5);
   z-index: 101;
 }
+
+::ng-deep .cm-editor {
+  .cm-selectionBackground, .cm-content ::selection {
+    background-color: rgba(var(--bs-primary-rgb), 0.25) !important;
+  }
+}

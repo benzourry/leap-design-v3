@@ -37,8 +37,11 @@ export class LookupComponent implements OnInit {
     lookupEntryList = signal<any[]>([]);
     lookup = signal<any>({});
     entryPageNumber = signal<number>(1);
+    lookupEntryPageSize = signal<number>(0);
     lookupEntryPages = signal<number>(0);
     lookupEntryElements = signal<number>(0);
+    
+  preCount = computed(() => this.lookupEntryPageSize() * Math.max(0, this.entryPageNumber() - 1));
 
     appId: number;
     user = computed<any>(() => this.runService.$user());
@@ -289,6 +292,7 @@ export class LookupComponent implements OnInit {
                     this.loading.set(false);
                     this.lookupEntryTotal.set(response.page?.totalElements);
                     this.lookupEntryPages.set(response.page?.totalPages);
+                    this.lookupEntryPageSize.set(response.page?.size);
                     this.lookupEntryElements.set(response.content?.length);
                     this.lookupEntryList.set(response.content);
                     this.hasLoadList.set(true);
@@ -419,6 +423,60 @@ export class LookupComponent implements OnInit {
                     })
             })
 
+    }
+
+
+     selectedEntries = signal<Record<number, any>>({});
+
+    checkAllEntry(checked: boolean) {
+        this.selectedEntries.update(current => {
+        const newSelection = { ...current };
+        if (checked) {
+            this.lookupEntryList().forEach(e => (newSelection[e.id] = e));
+        } else {
+            this.lookupEntryList().forEach(e => delete newSelection[e.id]);
+        }
+        return newSelection;
+        });
+    }
+
+    toggleSelect(i: any) {
+        this.selectedEntries.update(current => {
+        const newSelection = { ...current };
+        if (newSelection[i.id]) {
+            delete newSelection[i.id];
+        } else {
+            newSelection[i.id] = i;
+        }
+        return newSelection;
+        });
+    }
+
+    checkAllInput = signal<boolean>(false);
+
+    bulkRemoveEntries() {
+        const selectedKeys = Object.keys(this.selectedEntries()).map(Number);
+        const isMs = this.lang() === 'ms';
+
+        if (confirm(isMs ? 'Anda pasti untuk membuang semua entri ini?' : 'Remove all ' + selectedKeys.length + ' entries?')) {
+        //   this.entryService.bulkDelete(selectedKeys, this.user().email)
+        //     .pipe(takeUntilDestroyed(this.destroyRef))
+        //     .subscribe({
+        //       next: () => {
+        //         this.selectedEntries.set({});
+        //         this.checkAllInput.set(false);
+
+        //         const newPage = (this.numberOfElements() === selectedKeys.length && this.pageNumber() === this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber();
+        //         this.pageNumber.set(Math.max(1, newPage));
+        //         this.getEntryList(this.pageNumber());
+        //         this.toastService.show(isMs ? 'Entri berjaya dibuang' : 'Entries removed successfully', { classname: 'bg-success text-light' });
+        //       }
+        //     });
+        }
+    }
+
+    checkSelect(i: any) {
+        return !!this.selectedEntries()[i.id];
     }
 
     getUrl(pre, path) {

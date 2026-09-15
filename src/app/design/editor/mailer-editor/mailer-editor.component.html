@@ -150,15 +150,15 @@
                 </div>
                 @if (mailer) {
                   <div class="d-flex flex-row">
-                    <button type="button" class="btn border border-2 btn-sm btn-outline-secondary"
+                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary"
                       (click)="openHistory(notiListTpl, mailer.id)">
                       <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn border border-2 btn-sm btn-outline-secondary ms-1"
+                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary ms-1"
                       (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn border border-2 btn-sm btn-outline-danger ms-1"
+                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-danger ms-1"
                       (click)="removeMailer(removeMailerTpl,mailer)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>

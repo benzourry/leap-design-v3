@@ -53,27 +53,27 @@
                 }
               </div>
               <div>
-                <a type="button" class="btn btn-sm border border-2 ms-1"
+                <a type="button" class="btn btn-sm border border-1-5 ms-1"
                  title="Download Entry JSON" [class.disabled]="offline"
                   href="{{base}}/report/export-data/{{curDataset.id}}/json" target="_blank">
                     <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
                 </a>
-                <button type="button" class="btn btn-sm border border-2 ms-1"
+                <button type="button" class="btn btn-sm border border-1-5 ms-1"
                  title="Resync Dataset" [class.disabled]="offline"
                   (click)="resyncDataset(curDataset?.id)">
                     <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-2 ms-1"
+                <button type="button" class="btn btn-sm border border-1-5 ms-1"
                 title="Edit dataset"
                   (click)="editDataset(editDatasetTpl,curDataset, false, form)">
                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
+                <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
                 title="Remove dataset"
                   (click)="removeDataset(removeDatasetTpl,curDataset)">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <a class="btn btn-sm border border-2 border-success btn-outline-success ms-1"
+                <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
                 title="Run dataset"
                   routerLink="/run/{{app?.id}}/dataset/{{curDataset.id}}">
                   <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
@@ -237,7 +237,7 @@
                   }
                 </div>
               }
-              <div class="p-2 border border-2 rounded mb-3">
+              <div class="p-2 border border-1-5 rounded mb-3">
                 <div class="row width-auto align-items-center g-2" cdkDropList
                   cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
@@ -245,7 +245,7 @@
                     <div class="col-auto pe-0 position-relative cursor-move"
                       cdkDrag [cdkDragDisabled]="curAction!=a.id"
                       (click)="curAction=a.id">
-                      <div class="input-group input-group-sm border border-2 rounded"
+                      <div class="input-group input-group-sm border border-1-5 rounded"
                         [class.border-primary]="curAction==a.id">
                         <span class="input-group-text border-0 bg-body-tertiary text-body">
                           @if (a.icon) {
@@ -369,7 +369,7 @@
                       } @else {
                         <div class="param-badge pb-1" style="margin-left:0px;">
                           <div
-                            class="p-2 py-1 ms-1 border border-2 rounded-1 position-relative bg-body-tertiary text-body">
+                            class="p-2 py-1 ms-1 border border-1-5 rounded-1 position-relative bg-body-tertiary text-body">
                             {{h.key}}
                           </div>
                         </div>

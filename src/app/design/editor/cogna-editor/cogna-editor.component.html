@@ -98,7 +98,7 @@
           <div class="d-flex flex-row mt-2">
             @if (cogna.email.indexOf(user.email)>-1) {
             <div ngbDropdown>
-              <button type="button" class="btn btn-sm border border-2" id="cognaEditor" ngbDropdownToggle>
+              <button type="button" class="btn btn-sm border border-1-5" id="cognaEditor" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
               </button>
               <div ngbDropdownMenu aria-labelledby="cognaEditor" style="min-width:340px">
@@ -123,23 +123,23 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
               (click)="editCogna(editCognaTpl,cogna,false)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
             </button>
-            <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1"
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
               title="Re-initialize models" (click)="reinitCogna(cogna)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
             </button>
-            <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1" title="Search vector DB"
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Search vector DB"
               (click)="openSearchDb(searchDbTpl, cogna)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
             </button>
-            <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-1" title="Chat history"
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Chat history"
               (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [class.disabled]="offline">
               <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
             </button>
-            <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1"
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
               (click)="removeCogna(removeCognaTpl,cogna)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
             </button>
@@ -164,7 +164,7 @@
         <div class="row g-2 mt-1">
           <div class="col-sm-4 col-lg-3">
             @if(['txtgen'].includes(cogna.type)){
-            <div class="card overflow-hidden border border-2 mb-2">
+            <div class="card overflow-hidden border border-1-5 mb-2">
               <div class="card-header p-2">
                 <div class="text-body-secondary text-strong col">Embedding</div>
               </div>
@@ -190,7 +190,7 @@
             }
             @if(['txtgen','txtext','imggen','imgcls'].includes(cogna.type) || (['txtcls'].includes(cogna.type) &&
             cogna.data?.txtclsLlm)){
-            <div class="card overflow-hidden border border-2 mb-2">
+            <div class="card overflow-hidden border border-1-5 mb-2">
               <div class="card-header p-2">
                 <div class="text-body-secondary text-strong col">Inference</div>
               </div>
@@ -243,7 +243,7 @@
             }
 
             @if(['txtext'].includes(cogna.type)){
-            <div class="card overflow-hidden border border-2 mb-2">
+            <div class="card overflow-hidden border border-1-5 mb-2">
               <div class="card-header p-2">
                 <div class="text-body-secondary text-strong col">Fields to extract</div>
               </div>
@@ -276,7 +276,7 @@
             </div>
             }
             @if(['imgcls'].includes(cogna.type) && imgclsCat.length>0){
-            <div class="card overflow-hidden border border-2 mb-2">
+            <div class="card overflow-hidden border border-1-5 mb-2">
               <div class="card-header p-2">
                 <div class="text-body-secondary text-strong col">SynSet ({{imgclsLen}} classes)</div>
               </div>
@@ -297,7 +297,7 @@
 
             @if (['txtcls'].includes(cogna.type) && cogna.data?.txtclsLlm){
 
-            <div class="card overflow-hidden border border-2 mb-2">
+            <div class="card overflow-hidden border border-1-5 mb-2">
               <div class="card-header p-2">
                 <div class="text-body-secondary text-strong col">
                   @if (classifyWhat){
@@ -325,11 +325,11 @@
             }
 
             @if(['txtgen'].includes(cogna.type) || (['txtcls'].includes(cogna.type) && !cogna.data?.txtclsLlm)){
-            <div class="card border border-2 mb-2" [class.border-success]="ingestSuccess[cogna.id]=='true'"
+            <div class="card border border-1-5 mb-2" [class.border-success]="ingestSuccess[cogna.id]=='true'"
               [class.border-danger]="ingestSuccess[cogna.id]=='false'">
               <div class="card-header p-2">
                 @if (cogna.sources?.length>0){
-                <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-auto float-end"
+                <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
                   title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading()[cogna.id]">
                   @if (ingestLoading()[cogna.id]) {
                   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -416,7 +416,7 @@
               </div>
             </div>
 
-            <div class="card border border-2 mb-2">
+            <div class="card border border-1-5 mb-2">
               <div class="card-header p-2">
                 Tools
                 <div class="small">{{cogna.tools?.length}} tools</div>
@@ -452,7 +452,7 @@
               </div>
             </div>
 
-            <div class="card border border-2 mb-2">
+            <div class="card border border-1-5 mb-2">
               <div class="card-header p-2">
                 Model Context Protocol (MCP)
                 <div class="small">{{cogna.mcps?.length}} MCP Server</div>
@@ -488,9 +488,9 @@
               </div>
             </div>
 
-            <div class="card border border-2 mb-2">
+            <div class="card border border-1-5 mb-2">
               <div class="card-header p-2">
-                <button type="button" class="btn btn-sm border border-2 btn-outline-secondary ms-auto float-end"
+                <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
                   title="Clear vector collection" (click)="clearDb(cogna)" [class.disabled]="clearDbLoading">
                   @if (clearDbLoading) {
                   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -517,7 +517,7 @@
             }
 
             @if(['master'].includes(cogna.type)){
-            <div class="card border border-2 mb-2">
+            <div class="card border border-1-5 mb-2">
               <div class="card-header p-2">
                 Sub Agents
                 <div class="small">{{cogna.subs?.length}} tools</div>
@@ -561,7 +561,7 @@
                   Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})
                 </div>
                 <div ngbDropdown class="ms-auto d-inline-block">
-                  <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-auto"
+                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-auto"
                     title="Clear chat memory" ngbDropdownToggle>
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Memory
                   </button>
@@ -1032,33 +1032,33 @@
                 <div name="lang" class="text-body">
                   <input type="radio" class="btn-check" id="txtgen" name="txtgen" value="txtgen" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="txtgen" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                  <label for="txtgen" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                     Generate<br />Text
                   </label>
                   <input type="radio" class="btn-check" id="txtcls" name="txtcls" value="txtcls"
                     (click)="editCognaData.vectorStoreType='chromadb'" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="txtcls" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                  <label for="txtcls" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                     Classify<br />Text
                   </label>
                   <input type="radio" class="btn-check" id="txtext" name="txtext" value="txtext" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="txtext" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                  <label for="txtext" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                     Extract<br />Data
                   </label>
                   <input type="radio" class="btn-check" id="imggen" name="imggen" value="imggen" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="imggen" class="btn btn-outline-secondary border-2 me-1 mb-1" (click)="setImgGenModels()">
+                  <label for="imggen" class="btn btn-outline-secondary border-1-5 me-1 mb-1" (click)="setImgGenModels()">
                     Generate<br />Image
                   </label>
                   <input type="radio" class="btn-check" id="imgcls" name="imgcls" value="imgcls" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="imgcls" class="btn btn-outline-secondary border-2 me-1 mb-1" (click)="setImgClsModels()">
+                  <label for="imgcls" class="btn btn-outline-secondary border-1-5 me-1 mb-1" (click)="setImgClsModels()">
                     Classify<br />Image
                   </label>
                   <input type="radio" class="btn-check" id="master" name="master" value="master" #cognaType="ngModel"
                     [(ngModel)]="editCognaData.type" [required]="true">
-                  <label for="master" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                  <label for="master" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                     Master<br />Agent
                   </label>
                 </div>
@@ -1594,19 +1594,19 @@
                   <input type="radio" class="btn-check" id="naive" name="naive" [value]="undefined" #augmentor="ngModel"
                     [ngModel]="editCognaData && editCognaData.augmentor"
                     (ngModelChange)="editCognaData && (editCognaData.augmentor = $event)">
-                  <label for="naive" class="btn btn-outline-secondary border-2 me-2">
+                  <label for="naive" class="btn btn-outline-secondary border-1-5 me-2">
                     Naive<br />(Default)
                   </label>
                   <input type="radio" class="btn-check" id="compressor" name="compressor" value="compressor"
                     #augmentor="ngModel" [ngModel]="editCognaData && editCognaData.augmentor"
                     (ngModelChange)="editCognaData && (editCognaData.augmentor = $event)">
-                  <label for="compressor" class="btn btn-outline-secondary border-2 me-2">
+                  <label for="compressor" class="btn btn-outline-secondary border-1-5 me-2">
                     Query<br />Compression
                   </label>
                   <input type="radio" class="btn-check" id="rerank" name="rerank" value="rerank" #augmentor="ngModel"
                     [ngModel]="editCognaData && editCognaData.augmentor"
                     (ngModelChange)="editCognaData && (editCognaData.augmentor = $event)">
-                  <label for="rerank" class="btn btn-outline-secondary border-2 me-2">
+                  <label for="rerank" class="btn btn-outline-secondary border-1-5 me-2">
                     Cohere<br />Re-Rank
                   </label>
                 </div>
@@ -1680,7 +1680,7 @@
                     #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType"
                     (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
                     [disabled]="!allowedVectorStoreType.includes('milvus')">
-                  <label for="db_milvus" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
+                  <label for="db_milvus" class="btn btn-outline-secondary border-1-5 me-2" style="min-width:100px">
                     <img [src]="dbMap['milvus'].logo" height="30">
                     <br />
                     Milvus
@@ -1689,7 +1689,7 @@
                     #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType"
                     (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
                     [disabled]="!allowedVectorStoreType.includes('inmemory')">
-                  <label for="db_chromadb" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
+                  <label for="db_chromadb" class="btn btn-outline-secondary border-1-5 me-2" style="min-width:100px">
                     <img [src]="dbMap['chromadb'].logo" height="30">
                     <br />
                     ChromaDB
@@ -1698,7 +1698,7 @@
                     #vectorStore="ngModel" [ngModel]="editCognaData && editCognaData.vectorStoreType"
                     (ngModelChange)="editCognaData && (editCognaData.vectorStoreType = $event)" [required]="true"
                     [disabled]="!allowedVectorStoreType.includes('chromadb')">
-                  <label for="db_inmemory" class="btn btn-outline-secondary border-2 me-2" style="min-width:100px">
+                  <label for="db_inmemory" class="btn btn-outline-secondary border-1-5 me-2" style="min-width:100px">
                     <img [src]="dbMap['inmemory'].logo" height="30">
                     <br />
                     InMemory
@@ -1802,18 +1802,18 @@
         <div name="src" class="text-body">
           <input type="radio" class="btn-check" id="type-dataset" name="type" #srcType="ngModel"
             [(ngModel)]="editSrcData.type" value="dataset" [required]="true">
-          <label for="type-dataset" class="btn btn-outline-secondary border-2 me-2">
+          <label for="type-dataset" class="btn btn-outline-secondary border-1-5 me-2">
             Dataset
           </label>
           @if(cogna.type=='txtgen'){
           <input type="radio" class="btn-check" id="type-bucket" name="type" #srcType="ngModel"
             [(ngModel)]="editSrcData.type" value="bucket" [required]="true">
-          <label for="type-bucket" class="btn btn-outline-secondary border-2 me-2">
+          <label for="type-bucket" class="btn btn-outline-secondary border-1-5 me-2">
             Bucket
           </label>
           <input type="radio" class="btn-check" id="type-url" name="type" #srcType="ngModel"
             [(ngModel)]="editSrcData.type" value="url" [required]="true">
-          <label for="type-url" class="btn btn-outline-secondary border-2 me-2">
+          <label for="type-url" class="btn btn-outline-secondary border-1-5 me-2">
             Website
           </label>
           }

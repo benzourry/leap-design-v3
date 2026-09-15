@@ -86,15 +86,15 @@
                   }
                 </div>
                 <div>
-                  <button type="button" class="btn btn-sm border border-2 ms-1"
+                  <button type="button" class="btn btn-sm border border-1-5 ms-1"
                     (click)="editScreen(editScreenTpl,curScreen, false)">
                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                   </button>
-                  <button type="button" class="btn btn-sm border border-2 btn-outline-danger ms-1 me-1"
+                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1"
                     (click)="removeScreen(removeScreenTpl,curScreen)">
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                   </button>
-                  <a class="btn btn-sm border border-2 border-success btn-outline-success"
+                  <a class="btn btn-sm border border-1-5 border-success btn-outline-success"
                     routerLink="/run/{{app?.id}}/screen/{{curScreen.id}}">
                     <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                   </a>
@@ -673,21 +673,21 @@
                                   <div class="">
                                     <input class="btn-check" type="radio" value="tabs" id="nav-tabs"
                                       name="nav-tabs" [(ngModel)]="curScreen.data.nav" required>
-                                    <label for="nav-tabs" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                                    <label for="nav-tabs" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Tabbed</label>
                                     <input class="btn-check" type="radio" value="pills" id="nav-pills"
                                       name="nav-pills" [(ngModel)]="curScreen.data.nav"
                                       required>
-                                    <label for="nav-pills" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                                    <label for="nav-pills" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Pills</label>
                                     <input class="btn-check" type="radio" value="underline" id="nav-underline"
                                       name="nav-underline" [(ngModel)]="curScreen.data.nav"
                                       required>
-                                    <label for="nav-underline" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                                    <label for="nav-underline" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Underline</label>
                                     <input class="btn-check" type="radio" value="accordions" id="nav-acc"
                                       name="nav-acc" [(ngModel)]="curScreen.data.nav" required>
-                                    <label for="nav-acc" class="btn btn-outline-secondary border-2 me-1 mb-1">
+                                    <label for="nav-acc" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Accordion</label>
                                   </div>
                                 </div>
@@ -701,7 +701,7 @@
 
                               <div class="form-group mt-3">
                                 <label class="form-label">Components</label>
-                                <div class="list-group border border-secondary border-2" style="border-style:dashed !important;" cdkDropList
+                                <div class="list-group border border-secondary border-1-5" style="border-style:dashed !important;" cdkDropList
                                 [cdkDropListData]="curScreen.data?.comps"
                                 cdkDropListOrientation="vertical"
                                 (cdkDropListDropped)="dropSubs($event, 'comps')">
@@ -776,19 +776,19 @@
                                   <div name="lang" class="text-body">
                                     <input type="radio" class="btn-check" id="type-user" name="type-user" value="user" #type="ngModel"
                                       [(ngModel)]="curScreen.data.bucketType" [required]="true">
-                                    <label for="type-user" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                                    <label for="type-user" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       User Bucket
                                       <div><small>Files by users</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="type-all" name="type-all" value="all" #type="ngModel"
                                       [(ngModel)]="curScreen.data.bucketType" [required]="true">
-                                    <label for="type-all" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                                    <label for="type-all" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       All Files
                                       <div><small>All files in bucket</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="type-custom" name="type-custom" value="custom" #type="ngModel" 
                                       [(ngModel)]="curScreen.data.bucketType" [required]="true">
-                                    <label for="type-custom" class="btn btn-outline-secondary border-2 me-2 mb-1 text-start">
+                                    <label for="type-custom" class="btn btn-outline-secondary border-1-5 me-2 mb-1 text-start">
                                       Custom
                                       <div><small>Custom filters</small></div>
                                     </label>

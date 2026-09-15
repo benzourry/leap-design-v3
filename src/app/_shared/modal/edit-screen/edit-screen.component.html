@@ -35,7 +35,7 @@
           <div class="col-6 col-sm-4">
               <input type="radio" class="btn-check" id="type-{{type.code}}" name="{{type.code}}"
                 [(ngModel)]="_editScreenData.type" [value]="type.code" required>
-              <label for="type-{{type.code}}" class="btn btn-outline-secondary border-2 text-start p-2 py-1 w-100 h-100" 
+              <label for="type-{{type.code}}" class="btn btn-outline-secondary border-1-5 text-start p-2 py-1 w-100 h-100" 
                 (click)="resetLinkedData(_editScreenData)">
                 <fa-icon [icon]="type.icon" size="2x" class="float-start mt-1"></fa-icon>
                 <div style="margin-left:40px;">

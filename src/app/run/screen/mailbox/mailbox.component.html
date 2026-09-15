@@ -1,6 +1,6 @@
 <div class="p-1">
     <div class="p-1">
-        <input type="search" class="search-icon flex-grow-1 bg-body-tertiary text-body rounded-2 border border-2 py-2" style="width:100%;" placeholder="Start typing and press Enter to search..."
+        <input type="search" class="search-icon flex-grow-1 bg-body-tertiary text-body rounded-2 border border-1-5 py-2" style="width:100%;" placeholder="Start typing and press Enter to search..."
             (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
     </div>
     <div class="mailbox-main g-2" [class.notif-shown]="notif()?.id">

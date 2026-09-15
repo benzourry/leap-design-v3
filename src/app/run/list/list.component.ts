@@ -217,7 +217,16 @@ export class ListComponent implements OnInit, OnDestroy {
   private activeDatasetReq?: Subscription;
   private activeListReq?: Subscription;
 
+  // 1. Create a signal for the mobile state
+  isMobile = signal(false);
+  private mediaQueryList: MediaQueryList | null = null;
+  private mediaQueryListener: (e: MediaQueryListEvent) => void;
+
   constructor() {
+    this.mediaQueryListener = (e: MediaQueryListEvent) => {
+      this.isMobile.set(e.matches);
+    };
+    
     this.utilityService
       .testOnline$()
       .pipe(takeUntilDestroyed())
@@ -256,6 +265,14 @@ export class ListComponent implements OnInit, OnDestroy {
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
     // this.appConfig = this.runService.appConfig;
+    // 2. Setup the native browser media query
+    this.mediaQueryList = window.matchMedia('(max-width: 575.98px)');
+    
+    // Set the initial value
+    this.isMobile.set(this.mediaQueryList.matches);
+    
+    // Listen for crosses over the 575.98px threshold
+    this.mediaQueryList.addEventListener('change', this.mediaQueryListener);
   }
 
   userUnauthorized = computed(() => {
@@ -1266,6 +1283,11 @@ export class ListComponent implements OnInit, OnDestroy {
     // 3. Clear proxy target keys to release memory
     if (this._this) {
       Object.keys(this._this).forEach(key => delete this._this[key]);
+    }
+
+    // 3. Cleanup
+    if (this.mediaQueryList) {
+      this.mediaQueryList.removeEventListener('change', this.mediaQueryListener);
     }
   }
 }

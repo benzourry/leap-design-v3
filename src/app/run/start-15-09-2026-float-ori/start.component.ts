@@ -500,7 +500,7 @@ export class StartComponent implements OnInit, OnDestroy {
       updatedPreGroup[group.id] = this.preCheck(group);
 
       // FIX: Use group.id instead of index, and ensure bottom navs don't steal the active state
-      if (!firstActiveSet && updatedPreGroup[group.id]) {  //&& group.x?.type !== 'bottom'
+      if (!firstActiveSet && updatedPreGroup[group.id]) {
         firstActiveSet = true;
         updatedNavToggle[group.id] = true;
       }

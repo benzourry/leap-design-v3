@@ -10,58 +10,43 @@
   @if (lookup) {
     @if (!userUnauthorized()){
       <div class="centered fix-gutter" [class.limit-width]="!lookup()?.x?.wide">
-        <div class="single-pane">
-          <!-- <div class="d-flex flex-row"> -->
+        <div class="single-pane pt-0">
+          <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
 
-
-  <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
-
-
-
-            <!-- <div style="flex-grow:1"> -->
-              <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-2"
-                placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber())"
-                [(ngModel)]="searchText">
-            <!-- </div> -->
-            <!-- <div style="flex-shrink: 0;"> -->
-              @if (lookup().sourceType=='db') {
-                <button type="button" class="btn btn-sm border border-2 btn-primary ms-1"
-                  [class.disabled]="offline()"
-                  (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
-                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                  {{lang()=='ms'?'Tambah Data':'Add Data'}}
+            <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
+              placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber())"
+              [(ngModel)]="searchText">
+            @if (lookup().sourceType=='db') {
+              <button type="button" class="btn btn-sm border border-1-5 btn-primary ms-1"
+                [class.disabled]="offline()"
+                (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                {{lang()=='ms'?'Tambah Data':'Add Data'}}
+              </button>
+            }
+            <div ngbDropdown class="d-inline-block">
+              <button type="button" class="btn btn-sm border border-1-5 ms-1"
+                id="dropdownLookupEditor" ngbDropdownToggle>
+                <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor" class="shadow me-n1 mt-2">
+                <a ngbDropdownItem title="Export to Excel" target="blank"
+                  href="{{base}}/report/export-lookup/{{lookup()?.id}}/xlsx">
+                  <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> 
+                  {{lang()=='ms'?'Export ke Excel':'Export to Excel'}}
+                </a>
+                <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
+                  (click)="getLookupEntryList(1)">
+                  <fa-icon [icon]="['fas','redo']" [fixedWidth]="true"></fa-icon> Reload Lookup
                 </button>
-              }
-              <div ngbDropdown class="d-inline-block">
-                <button type="button" class="btn btn-sm border border-2 ms-1"
-                  id="dropdownLookupEditor" ngbDropdownToggle>
-                  <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+                <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
+                  (click)="resyncLookup(syncLookupTpl,lookup()?.id)">
+                  <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync Lookup
                 </button>
-                <div ngbDropdownMenu aria-labelledby="dropdownLookupEditor" class="shadow me-n1 mt-2">
-                  <a ngbDropdownItem title="Export to Excel" target="blank"
-                    href="{{base}}/report/export-lookup/{{lookup()?.id}}/xlsx">
-                    <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon> 
-                    {{lang()=='ms'?'Export ke Excel':'Export to Excel'}}
-                  </a>
-                  <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
-                    (click)="getLookupEntryList(1)">
-                    <fa-icon [icon]="['fas','redo']" [fixedWidth]="true"></fa-icon> Reload Lookup
-                  </button>
-                  <button type="button" ngbDropdownItem title="Resync Lookup" [class.disabled]="offline()"
-                    (click)="resyncLookup(syncLookupTpl,lookup()?.id)">
-                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync Lookup
-                  </button>
-                </div>
               </div>
-            <!-- </div> -->
+            </div>
+          </div>
 
-
-</div>
-
-
-
-
-          <!-- </div> -->
           @if (loading()) {
             <div class="p-4 text-center">
               <div class="lds-ellipsis">
@@ -73,78 +58,45 @@
             </div>
           }
           @if (!loading() && hasLoadList()) {
-              @if (lookupEntryList()?.length) {
-
-                <!-- <div class="px-2 py-2">
-                  <div class="m-auto py-1 px-3 rounded-2 bg-body-tertiary border text-body small shadow-sm" style="max-width:500px;">
-                    <div class="row">
-                      <div class="col d-flex align-items-center">
-                        <strong>{{lang()=='ms'?'Ringkasan':'Summary'}}</strong>
-                      </div>
-                      <div class="col">{{lang()=='ms'?'Semua':'Total'}}:
-                        <div class="d-sm-inline">{{lookupEntryTotal()}}</div>
-                      </div>
-                      <div class="col">{{lang()=='ms'?'Dipapar':'Shown'}}:
-                        <div class="d-sm-inline">{{lookupEntryElements()}}</div>
-                      </div>
-                      <div class="col">{{lang()=='ms'?'Halaman':'Pages'}}:
-                        <div class="d-sm-inline">{{lookupEntryPages()}}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
-
-                <div class="px-2 py-3">
-                  <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
-                    
-                    <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                      {{lang()=='ms'?'Ringkasan':'Summary'}}
-                    </span>
-                    <div class="vr opacity-25"></div>                     -->
-                    <div>
-                      {{lang()=='ms'?'Semua':'Total'}}: 
-                      <span class="text-body fw-medium">{{lookupEntryTotal()}}</span>
-                    </div>                    
-                    <div>
-                      {{lang()=='ms'?'Dipapar':'Shown'}}: 
-                      <span class="text-body fw-medium">{{lookupEntryElements()}}</span>
-                    </div>                    
-                    <div>
-                      {{lang()=='ms'?'Halaman':'Pages'}}: 
-                      <span class="text-body fw-medium">{{lookupEntryPages()}}</span>
-                    </div>                    
-                  </div>
+            @if (lookupEntryList()?.length) {
+              <div class="px-2 py-2">
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
+                  <div>
+                    {{lang()=='ms'?'Semua':'Total'}}: 
+                    <span class="text-body fw-medium">{{lookupEntryTotal()}}</span>
+                  </div>                    
+                  <div>
+                    {{lang()=='ms'?'Dipapar':'Shown'}}: 
+                    <span class="text-body fw-medium">{{lookupEntryElements()}}</span>
+                  </div>                    
+                  <div>
+                    {{lang()=='ms'?'Halaman':'Pages'}}: 
+                    <span class="text-body fw-medium">{{lookupEntryPages()}}</span>
+                  </div>                    
                 </div>
+              </div>
+              @if(duplicatedCodes.length>0){
+                <div class="alert alert-warning">
+                  <h5>Warning: Duplicate entries detected</h5>
+                  <p>Please review and resolve the duplicate codes below to avoid unexpected system behavior.</p>
+                  <ul class="mb-0">
+                    @for(item of duplicatedCodes; track $index) {
+                      <li>{{item.code}} - {{item.name}}
+                        @if(lookup().sourceType=='db') {
+                          <button type="button" class="btn btn-xs btn-outline-secondary ms-2"
+                            [class.disabled]="offline()"
+                            (click)="editLookupEntry(editLookupEntryTpl,item, false)">
+                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                            Edit Entry
+                          </button>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
 
-                <!-- <div class="text-center mb-2">
-                  <button type="button" class="btn btn-primary btn-sm rounded-pill" (click)="getLookupEntryList(1)">
-                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reload
-                  </button>
-                </div> -->
-
-                @if(duplicatedCodes.length>0){
-                  <div class="alert alert-warning">
-                    <h5>Warning: Duplicate entries detected</h5>
-                    <p>Please review and resolve the duplicate codes below to avoid unexpected system behavior.</p>
-                    <ul class="mb-0">
-                      @for(item of duplicatedCodes; track $index) {
-                        <li>{{item.code}} - {{item.name}}
-                          @if(lookup().sourceType=='db') {
-                            <button type="button" class="btn btn-xs btn-outline-secondary ms-2"
-                              [class.disabled]="offline()"
-                              (click)="editLookupEntry(editLookupEntryTpl,item, false)">
-                              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                              Edit Entry
-                            </button>
-                          }
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                }
-
-
-            <div class="table-responsive">
+              <!-- <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                   <thead>
                     <tr>
@@ -251,12 +203,136 @@
                     }
                   </tbody>
                 </table>
-            </div>
-              }
+              </div> -->
+              <div class="table-responsive">
+                <table class="table ds-table tblcard table-desktop-bordered">
+                  <thead class="ds-thead">
+                    <tr>
+                      <th class="ds-check" style="width: 1%">
+                        <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
+                          [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
+                      </th>
+                      <th class="ds-index" style="width: 1%">#</th>
+                      @if (!lookup()?.x?.codeHidden){
+                        <th class="w-10">{{lookup()?.x?.codeLbl||'CODE'}}</th>
+                      }
+                      <th class="w-90">{{lookup()?.x?.nameLbl||'NAME'}}</th>
+                      @if(!lookup()?.x?.extraDisabled){
+                        <th class="w-10">{{lookup()?.x?.extraLbl||'EXTRA'}}</th>
+                      }
+                      @if (lookup().dataEnabled) {
+                        <th class="w-10">DATA</th>
+                      }
+                      <th style="width: 5%" class="print-hide text-end">&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody class="ds-tbody">
+                    @for (entry of lookupEntryList(); track $index; let eIdx = $index) {
+                      <tr class="ds-row"
+                        [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
+                        [ngClass]="entry.altClass">
+
+                        <td class="ds-check">
+                          <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
+                        </td>
+                        
+                        <td data-label="#" class="bg-secondary text-white ds-index">
+                          {{preCount() + eIdx + 1}}
+                        </td>
+                        
+                        @if (!lookup().x?.codeHidden){
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">{{entry.code}}</td>
+                        }
+                        
+                        <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">{{entry.name}}</td>
+                        
+                        @if(!lookup()?.x?.extraDisabled){
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">{{entry.extra}}</td>
+                        }
+                        
+                        @if (lookup().dataEnabled) {
+                          <td class="ds-item td-list" data-label="DATA">
+                            @if (entry.data) {
+                              <table width="100%" class="table extra-data-tbl tbl-child m-0 table-flush small">
+                                <tbody>
+                                  @for (o of entry.data|keyvalue; track $index) {
+                                    <tr>
+                                      <td class="col-1" style="font-weight:600">{{o.key}}</td>
+                                      <td>
+                                        @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
+                                          <span [innerHtml]="o.value"></span>
+                                        }@else if (mapDataFields()[o.key]=='lookup') {
+                                          <span>{{o.value?.name}}</span>
+                                        }@else if (mapDataFields()[o.key]=='multiplelookup') {
+                                          @if (o.value && o.value.length>0) {
+                                              <div class="list-group list-group-sm small">            
+                                                @for(v of o.value; track $index) {
+                                                  <div class="list-group-item p-1 px-2">{{v.name}}</div>
+                                                }
+                                              </div>
+                                          }
+                                        }@else if (mapDataFields()[o.key]=='number') {
+                                          <span>{{o.value}}</span>
+                                        }@else if (mapDataFields()[o.key]=='date') {
+                                          <span>{{o.value|date:'medium':'':angularLocale()}}</span>
+                                        }@else if (mapDataFields()[o.key]=='file') {
+                                          <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
+                                        }@else {
+                                          <span>{{o.value}}</span>
+                                        }
+                                      </td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            }
+                          </td>
+                        }
+                        
+                       <td class="text-nowrap ds-action print-hide p-1">
+                          <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100 gap-1">
+                            @if (lookup().sourceType=='db') {
+                              
+                              <button type="button" class="btn btn-outline-danger btn-sm text-nowrap"
+                                [class.disabled]="offline()"
+                                (click)="removeLookupEntry(removeLookupEntryTpl,entry)">
+                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                <span class="d-inline-block d-sm-none ms-1 pe-1">Remove</span>
+                              </button>
+
+                              <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap me-auto" [class.disabled]="offline()"
+                                (click)="editLookupEntry(editLookupEntryTpl,entry, false)">
+                                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                <span class="d-inline-block d-sm-none ms-1 pe-1">Edit</span>
+                              </button>
+
+                              @if (!$first) {
+                                <button type="button" class="btn btn-sm"
+                                  (click)="reorderItem($index, -1)">
+                                  <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                              }
+                              @if (!$last) {
+                                <button type="button" class="btn btn-sm"
+                                  (click)="reorderItem($index, 1)">
+                                  <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                              }
+                            }
+                            @if (['rest','proxy'].indexOf(lookup().sourceType)>-1) {
+                              <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           }
           @if ((lookupEntryList()?.length) > 0 && hasLoadList()) {
-            <div class="text-center d-flex justify-content-center pagination-rounded"
-              >
+            <div class="text-center d-flex justify-content-center pagination-rounded">
               @if (lookupEntryTotal()>pageSize) {
                 <ngb-pagination [collectionSize]="lookupEntryTotal()"
                   [pageSize]="pageSize" [(page)]="entryPageNumber" [maxSize]="10"

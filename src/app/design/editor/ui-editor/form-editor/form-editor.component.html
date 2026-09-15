@@ -7,14 +7,14 @@
             <h4>Please select form to edit from the list or</h4>
             <div class="d-flex flex-row justify-content-center mt-3">
               <button type="button"
-                class="m-1 p-2 rounded-2 border-2 bg-body border btn d-flex flex-column align-items-center"
+                class="m-1 p-2 rounded-2 border-1-5 bg-body border btn d-flex flex-column align-items-center"
                 (click)="editForm(editFormTpl,newForm, true)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                 <div>New Form</div>
               </button>
               <button type="button"
-                class="m-1 p-2 rounded-2 border-2 bg-body border btn d-flex flex-column align-items-center"
+                class="m-1 p-2 rounded-2 border-1-5 bg-body border btn d-flex flex-column align-items-center"
                 (click)="cloneForm(cloneFormTpl)" style="width:140px"
                 [class.disabled]="offline">
                 <fa-icon style="font-size:1.2em" [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
@@ -367,6 +367,7 @@
                                                           name="fn-{{f.id}}"
                                                           scopeId="form_{{curForm.id}}_design"
                                                           [field]="field"
+                                                          [data]="{$:{},$_:{},$prev$:{},$$:{},$$_:{}}"
                                                           [lookupList]="lookup[f.code]"
                                                           [(ngModel)]="mod[f.code]"
                                                           [always]="true"
@@ -414,7 +415,7 @@
                                                           </h4>
                                                           @if (field.type=='dataset') {
                                                             <button
-                                                              class="btn btn-sm btn-round border border-2 ms-1"
+                                                              class="btn btn-sm btn-round border border-1-5 ms-1"
                                                               (click)="editDataset(editDatasetTpl,field.dataSource)">
                                                               <fa-icon
                                                                 [icon]="['fas','pencil-alt']"
@@ -937,7 +938,7 @@
                   <li class="nav-item me-1 mt-3 ms-auto">
                     <div>
                       <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-sm border border-2" id="dropdownFormEditor"
+                        <button type="button" class="btn btn-sm border border-1-5" id="dropdownFormEditor"
                           title="More actions" ngbDropdownToggle>
                           <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                         </button>
@@ -981,11 +982,11 @@
                           </button>
                         </div>
                       </div>
-                      <button type="button" class="btn btn-sm border border-2 ms-1"
+                      <button type="button" class="btn btn-sm border border-1-5 ms-1"
                         (click)="editForm(editFormTpl,curForm,false)">
                         <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                       </button>
-                      <a class="btn btn-sm border border-2 border-success btn-outline-success ms-1"
+                      <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
                         routerLink="/run/{{app?.id}}/form/{{curForm.id}}/add">
                         <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                       </a>
@@ -1120,19 +1121,19 @@
                     <div name="lang" class="text-body">
                       <input type="radio" class="btn-check" id="type-section" name="type-section" value="section" #type="ngModel"
                         [(ngModel)]="editSectionData.type" [required]="true">
-                      <label for="type-section" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      <label for="type-section" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                         Section
                         <div><small>Normal section</small></div>
                       </label>
                       <input type="radio" class="btn-check" id="type-list" name="type-list" value="list" #type="ngModel"
                         [(ngModel)]="editSectionData.type" [required]="true">
-                      <label for="type-list" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      <label for="type-list" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                         Child
                         <div><small>Child section</small></div>
                       </label>
                       <input type="radio" class="btn-check" id="type-approval" name="type-section" value="approval" #type="ngModel" 
                         [(ngModel)]="editSectionData.type" [required]="true">
-                      <label for="type-approval" class="btn btn-outline-secondary border-2 me-1 mb-1 text-start">
+                      <label for="type-approval" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                         Approval
                         <div><small>Used for approval</small></div>
                       </label>

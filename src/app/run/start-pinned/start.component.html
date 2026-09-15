@@ -1,0 +1,333 @@
+<ng-template #statusScreen let-msg="msg">
+  <div class="d-flex justify-content-center align-items-center flex-column wrapper" style="height:100%; text-align: center;">
+    <div class="p-3 text-muted">
+      <h4>{{ msg }}</h4>
+    </div>
+    <button type="button" class="btn btn-round btn-secondary" (click)="logout()">
+      {{app()?.x?.lang == 'ms' ? 'Log keluar' : 'Logout'}}
+    </button>
+  </div>
+</ng-template>
+
+@if (!user() || appLoading()) {
+  <div class="p-5 text-center d-flex justify-content-center align-items-center" style="height: 100vh;">
+    <div class="lds-ellipsis">
+      <div></div><div></div><div></div><div></div>
+    </div>
+  </div>
+} @else {
+
+  @if (app()?.canPush && !pushSub && !pushDismissed()) {
+    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+      <div class="float-start p-1" style="padding:0.4em">
+        {{lang() == 'ms' ? 'Terima Pemberitahuan' : 'Subscribe to Notification'}}
+      </div>
+      <button type="button" class="btn btn-sm btn-light ms-1 float-end px-2" (click)="dismissPush()">✕</button>
+      <button type="button" class="btn btn-sm btn-light float-end px-2" (click)="subscribePush()">
+        {{lang() == 'ms' ? 'Terima' : 'Subscribe'}}
+      </button>
+      <div class="clearfix"></div>
+    </div>
+  }
+  
+  @if (app()?.canPush && pushSubError && !pushDismissed()) {
+    <div class="print-hide" style="background:grey;padding:0.5em; color: white; font-size: .9em;">
+      <div class="p-1" style="padding:0.4em">{{pushSubError.err}}</div>
+    </div>
+  }
+
+  @if (isDev() && editMode) {
+    <a class="edit-mode btn btn-round btn-sm btn-success m-2" [routerLink]="designUrl().url"
+      [queryParams]="designUrl().query"  (click)="dismissAllModal()">
+      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+    </a>
+  }
+
+  @if (app()?.reg && user()?.status !== 'approved') {
+    @if (!user()?.status) {
+      <div class="d-flex justify-content-center align-items-center flex-column wrapper p-4" style="height:100%;">
+        @defer(prefetch on idle) {
+          <app-register [app]="app()" [user]="user()" (cancel)="logout()" (done)="saveAppUser($event)"></app-register>
+        } @loading {
+          <div class="text-center m-5">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (user()?.status === 'pending') {
+      <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Permohonan akses masih menunggu kelulusan' : 'Your access request still pending' }"></ng-container>
+    } @else if (user()?.status === 'rejected') {
+      <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Permohonan akses anda telah ditolak' : 'Your access request has been rejected' }"></ng-container>
+    }
+  } @else if (user()?.status === 'rejected') {
+    <ng-container *ngTemplateOutlet="statusScreen; context: { msg: app()?.x?.lang == 'ms' ? 'Akses anda telah dihentikan' : 'Your access has been blocked' }"></ng-container>
+  } @else {
+    
+    @if (!maintenance()) {
+    
+      @if (app()?.once && !user()?.once && screen()?.id) {
+        <div class="nomod">
+          <page-title>
+            <h4 class="m-0" [innerHtml]="screen().title"></h4>
+            @if (screen().description) {
+              <div class="mt-1" [innerHtml]="screen().description"></div>
+            }
+          </page-title>
+          <div class="single-pane section-to-print" style="padding-bottom: 5em;">
+            @let data = screen()?.data;
+            @let tplContext = {
+              $param$: $param$,
+              $this$: _this,
+              $user$: user(),
+              $conf$: appConfig,
+              $base$: base,
+              $baseUrl$: baseUrl(),
+              $baseApi$: baseApi,
+              $showNav$: openNav
+            };
+
+            <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
+              @if (data?.pretext) {
+                <div [innerHtml]="compileTpl(data.pretext, tplContext) | safe:'html'"></div>
+              }
+              
+              <div [ngClass]="data?.parentclass" 
+                  [innerHtml]="compileTpl(data?.content, tplContext) | safe:'html'">
+              </div>
+              
+              @if (data?.posttext) {
+                <div [innerHtml]="compileTpl(data.posttext, tplContext) | safe:'html'"></div>
+              }
+            </div>
+          </div>
+          <div class="text-center fixed-bottom p-3" style="z-index:12;background:linear-gradient(rgba(245,245,245, 0),rgba(245,245,245, .8),rgba(245,245,245, 1));">
+            <button type="button" class="btn btn-primary btn-round px-3" (click)="onceDone()">{{app()?.x?.lang == 'ms' ? 'Ya, saya terima' : 'Yes, I accept'}}</button>
+          </div>
+        </div>
+        
+      } @else {
+        <div class="wrapper" [ngClass]="app()?.layout || 'sidemenu'"
+          [class.noframe]="frameless() || app()?.x?.noframe" 
+          [class.nomod]="sideNavGroups().length == 0"
+          [class.topgap]="app()?.x?.topgap"
+          [class.has-bottom-nav]="bottomNavGroups().length > 0"
+          [class.is-start-page]="isStartPage()"
+          [class.active]="sidebarActive()">
+          
+          @if (navis().length > 0) {
+            <div class="app-nav" [ngStyle]="{'background-color':app()?.theme}" [style]="app()?.x?.menuCss" [class.dark-mode-nav]="darkMode()">
+              
+              
+
+              <div class="app-info p-3">
+                <div class="app-title position-relative">
+                  
+                  <a class="text-white text-decoration-none" routerLink="{{preurl()}}/{{startPage()}}">
+                    <h4 class="mb-0 pe-4">{{app()?.title}}</h4>
+                  </a>
+
+                  
+                  
+                  @if (app()?.x.mailbox){
+                    <a class="text-white position-absolute top-0 end-0 mt-1" [class.disabled]="!mailboxBadge()" 
+                        [style.opacity]="!mailboxBadge()? '0.4' : '0.9'" 
+                        [routerLink]="preurl() + '/mailbox'" (click)="hideSb()" title="Inbox" style="opacity: 0.9;">
+                      <fa-icon [icon]="['fas', 'inbox']" size="lg"></fa-icon>
+                      
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25em 0.4em;">
+                        {{ mailboxBadge() }}
+                      </span>
+                    </a>
+                  }
+                  
+                  @if (app()?.description) {
+                    <div class="mt-2 pe-4">{{app()?.description}}</div>
+                  }
+                </div>
+                <a class="app-user mt-3 pointer d-block text-white" [style.right.px]="app()?.x?.mailbox?55:20" (click)="hideSb()" [routerLink]="preurl() + '/profile'">
+                  <img [src]="user().imageUrl" (error)="$any($event.target).src='assets/img/avatar-big.png'"
+                    class="rounded-circle me-2 float-start" style="width:36px;height:36px;">
+                  <div class="nobreak" style="margin-left:40px;padding-top:5px;">{{user()?.email}}</div>
+                  <div class="clearfix"></div>
+                </a>
+              </div>
+              <div class="app-menu position-relative">
+                <!-- OPTIMIZATION 1: Loop only through sideNavGroups -->
+                @for (group of navis(); track group.id) {
+                  @if (preGroup()[group.id]) {
+                    <div class="menu" [class.sidebar-bottom-menu]="group.x?.type === 'bottom'">
+                      <div class="menu-heading d-flex justify-content-between align-items-center px-3"
+                        (click)="toggleNav(group.id)"
+                        [class.active]="navToggle()?.[group.id]">
+                        {{group.title}}
+                        <fa-icon class="ms-1" [icon]="['fas', navToggle()?.[group.id] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
+                      </div>
+                      
+                      <div [ngbCollapse]="!navToggle()?.[group.id]" class="menu-items mb-1">
+                        @for (item of group.items; track item.id) {
+                          @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                          
+                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                            <div>
+                              @if (['external', 'internal'].includes(item.type)) {
+                                <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                  [target]="item.type === 'external' ? '_blank' : ''">
+                                  <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  <div class="menu-text">{{item.title}}</div>
+                                </a>
+                              } @else {
+                                @let linkPath = 
+                                  item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                  item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                  item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                  item.type === 'start' ? preurl() + '/start' :
+                                  item.type === 'lambda' ? preurl() + '/webui/' + item.url :
+                                  preurl() + '/' + item.type + '/' + (item.screenId ?? '');
+                                  
+                                @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+
+                                <a [routerLink]="linkPath"
+                                  [skipLocationChange]="item.x?.slc"
+                                  [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                  [class.disabled]="offline() || naviDataItem?.inactive"
+                                  (click)="hideSb()" 
+                                  routerLinkActive="active"
+                                  class="position-relative" 
+                                  style="padding-right: 42px;">
+                                  <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                                  <div class="menu-text">{{item.title}}</div>
+
+                                  @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
+                                    <span class="badge position-absolute fw-bold">
+                                      {{ badge()[item.type + '_' + item.screenId] }}
+                                    </span>
+                                  }
+                                </a>
+                              }
+                            </div>
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+                <div class="clearfix"></div>
+              </div>
+
+              <div class="dark-mode-toggle" style="height:50px; overflow:hidden; text-align:right;padding:15px;">
+                <app-theme-toggle [lang]="lang()"></app-theme-toggle>
+              </div>
+            </div>
+
+
+          }
+          
+          <div class="offcanvas-overlay" (click)="sidebarActive.set(false)">
+            <fa-icon class="overlay-close" [icon]="['fas','times']"></fa-icon>
+          </div>
+          
+          <div id="_viewport" class="content" [class.dark-mode]="darkMode()" (click)="app()?.layout === 'sidemenu' || navToggle.set({})">
+            <router-outlet></router-outlet>
+            <!-- FLOATING PILLS BOTTOM NAVIGATION -->
+            @if (bottomNavGroups().length > 0) {
+              <div class="bottom-nav-container print-hide" 
+                [class.is-start-page]="isStartPage()">
+                <div class="bottom-nav-scroll">
+                  
+                  <!-- OPTIMIZATION 3: Loop only through bottomNavGroups & track by ID -->
+                  @for (group of bottomNavGroups(); track group.id) {
+                    @if (preGroup()[group.id]) {
+                      <div class="bottom-nav-wrapper">
+                        <div class="bottom-nav-group" tabindex="0">
+                        @for (item of group.items; track item.id) {
+                          @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                            
+                            @if (['external', 'internal'].includes(item.type)) {
+                              <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                [target]="item.type === 'external' ? '_blank' : ''" class="bottom-nav-item">
+                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
+                                <span>{{item.title}}</span>
+                              </a>
+                            } @else {
+                              @let linkPath = 
+                                item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                item.type === 'start' ? preurl() + '/start' :
+                                item.type === 'lambda' ? preurl() + '/webui/' + item.url :
+                                preurl() + '/' + item.type + '/' + (item.screenId ?? '');
+                              
+                              @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+
+                              <a [routerLink]="linkPath"
+                                [skipLocationChange]="item.x?.slc"
+                                [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                [class.disabled]="offline() || naviDataItem?.inactive"
+                                (click)="hideSb()" 
+                                routerLinkActive="active"
+                                class="bottom-nav-item">
+                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
+                                <span>{{item.title}}</span>
+                                @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
+                                  <span class="badge position-absolute rounded-pill bg-danger">
+                                    {{ badge()[item.type + '_' + item.screenId] }}
+                                  </span>
+                                }
+                              </a>
+                            }
+                          }
+                        }
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+            <!-- END FLOATING PILLS BOTTOM NAVIGATION -->
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="d-flex justify-content-center align-items-center flex-column wrapper m-a p-3">
+        <div class="text-center text-muted mt-5">
+          <h4>{{lang() == 'ms' ? 'Aplikasi ini sedang diselenggara' : 'This app is under maintenance'}}</h4>
+        </div>
+      </div>
+    }  
+  }
+}
+
+@if (showCookieBanner()) {
+    <div class="print-hide position-fixed bottom-0 end-0 m-3 m-md-4 bg-body-tertiary text-body shadow-lg rounded-3 border p-3 p-md-4" 
+        style="width: calc(100% - 2rem); max-width: 420px; z-index: 9999;">
+      
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h6 class="m-0 fw-bold fs-6">
+          {{ lang() == 'ms' ? 'Keutamaan Kuki' : 'Cookie Preferences' }}
+        </h6>
+        <button type="button" class="btn btn-sm btn-outline-secondary border-0" style="padding: 0.15rem 0.4rem;" (click)="dismissCookies()" aria-label="Close">
+          <fa-icon [icon]="['fas', 'times']"></fa-icon>
+        </button>
+      </div>
+
+      <p class="text-body-secondary mb-3 small" style="line-height: 1.5;">
+        {{ lang() == 'ms' 
+          ? 'Laman web ini menggunakan kuki untuk meningkatkan pengalaman pengguna. Kami memerlukan persetujuan anda untuk menggunakan sesetengah kuki ini.' 
+          : 'This website uses cookies to improve user experience. We need your consent to use some of the cookies.' 
+        }}
+      </p>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm px-3 rounded-2 fw-medium" (click)="acceptCookies()">
+          {{ lang() == 'ms' ? 'Terima Semua' : 'Accept All' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-2 fw-medium" (click)="rejectCookies()">
+          {{ lang() == 'ms' ? 'Tolak Semua' : 'Reject All' }}
+        </button>
+      </div>
+    </div>
+  }
