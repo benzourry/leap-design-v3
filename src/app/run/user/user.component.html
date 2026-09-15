@@ -52,15 +52,9 @@
           @if (!userUnauthorized()) {
             <!-- <div class="d-flex flex-row"> -->
             <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
-
-              <!-- <div style="flex-grow:1"> -->
-                <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
-                  placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
-                  [(ngModel)]="searchText">
-              <!-- </div> -->
               @if (group?.appId==app().id){
                 <!-- <div style="flex-shrink: 0;"> -->
-                    <button type="button" class="btn btn-sm border border-1-5 btn-primary ms-1"
+                    <button type="button" class="btn btn-sm border border-1-5 btn-primary"
                     [class.disabled]="offline()"
                     (click)="editAppUser(editAppUserTpl,{},true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -68,6 +62,12 @@
                     </button>
                 <!-- </div> -->
               }
+
+              <!-- <div style="flex-grow:1"> -->
+                <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
+                  placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
+                  [(ngModel)]="searchText">
+              <!-- </div> -->
             </div>      
             @if (appUserList()?.length) {
               <div class="px-2 py-2">
