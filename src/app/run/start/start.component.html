@@ -221,73 +221,101 @@
               </div>
             </div>
 
-            <!-- FLOATING PILLS BOTTOM NAVIGATION -->
+            <!-- PINNED BOTTOM NAVIGATION -->
             @if (bottomNavGroups().length > 0) {
 
               <div class="bottom-nav-container print-hide" [ngStyle]="{'color': app()?.theme}"
                 [class.is-start-page]="isStartPage()">
 
-
-                <div class="bottom-nav-scroll" (scroll)="onBottomNavScroll($event)">
+                <!-- Pinned Bottom Sheet Panel -->
+                <div class="bottom-nav-panel" tabindex="0">
                   
-                  <!-- OPTIMIZATION 3: Loop only through bottomNavGroups & track by ID -->
-                  @for (group of bottomNavGroups(); track group.id) {
-                    @if (preGroup()[group.id]) {
-                      <div class="bottom-nav-wrapper">
-                        <div class="bottom-nav-group mt-auto" tabindex="0">
-                        @for (item of group.items; track item.id) {
-                          @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
-                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
-                            
-                            @if (['external', 'internal'].includes(item.type)) {
-                              <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
-                                [target]="item.type === 'external' ? '_blank' : ''" class="bottom-nav-item">
-                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
-                                <span>{{item.title}}</span>
-                              </a>
-                            } @else {
-                              @let linkPath = 
-                                item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
-                                item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
-                                item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
-                                item.type === 'start' ? preurl() + '/start' :
-                                item.type === 'lambda' ? preurl() + '/webui/' + item.url :
-                                preurl() + '/' + item.type + '/' + (item.screenId ?? '');
-                              
-                              @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+                  <!-- UX Optimization: Visual peek handle -->
+                  <div class="bottom-nav-drag-handle"></div>
 
-                              <a [routerLink]="linkPath"
-                                [skipLocationChange]="item.x?.slc"
-                                [routerLinkActiveOptions]="{ exact: isExactMatch }"
-                                [class.disabled]="offline() || naviDataItem?.inactive"
-                                (click)="hideSb()" 
-                                routerLinkActive="active"
-                                class="bottom-nav-item">
-                                <fa-icon [icon]="item.icon|iconSplit" size="2x" [fixedWidth]="true"></fa-icon>
-                                <span>{{item.title}}</span>
-                                @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
-                                  <span class="badge position-absolute rounded-pill bg-danger">
-                                    {{ badge()[item.type + '_' + item.screenId] }}
-                                  </span>
-                                }
-                              </a>
+                  <div class="bottom-nav-scroll" (scroll)="onBottomNavScroll($event)">
+                    
+                    @for (group of bottomNavGroups(); track group.id) {
+                      @if (preGroup()[group.id]) {
+                        <div class="bottom-nav-wrapper">
+                          <div class="bottom-nav-group mt-auto">
+                          @for (item of group.items; track item.id) {
+                            @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
+                            @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                              
+                              @if (['external', 'internal'].includes(item.type)) {
+                                <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                  [target]="item.type === 'external' ? '_blank' : ''" class="bottom-nav-item">
+                                  <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
+                                  <span>{{item.title}}</span>
+                                </a>
+                              } @else {
+                                @let linkPath = 
+                                  item.type === 'form' ? preurl() + '/form/' + item.screenId + '/add' :
+                                  item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
+                                  item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
+                                  item.type === 'start' ? preurl() + '/start' :
+                                  item.type === 'lambda' ? preurl() + '/webui/' + item.url :
+                                  preurl() + '/' + item.type + '/' + (item.screenId ?? '');
+                                
+                                @let isExactMatch = ['dataset', 'dashboard', 'lookup', 'screen', 'user'].includes(item.type);
+
+                                <a [routerLink]="linkPath"
+                                  [skipLocationChange]="item.x?.slc"
+                                  [routerLinkActiveOptions]="{ exact: isExactMatch }"
+                                  [class.disabled]="offline() || naviDataItem?.inactive"
+                                  (click)="hideSb()" 
+                                  routerLinkActive="active"
+                                  class="bottom-nav-item">
+                                  <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
+                                  <span>{{item.title}}</span>
+                                  @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
+                                    <span class="badge position-absolute rounded-pill bg-danger">
+                                      {{ badge()[item.type + '_' + item.screenId] }}
+                                    </span>
+                                  }
+                                </a>
+                              }
                             }
                           }
-                        }
+                          </div>
                         </div>
+                      }
+                    }
+                  </div>
+                  
+                  <!-- 2. Footer Row (Hamburger, Indicators, Theme Toggle) -->
+                  <div class="bottom-nav-footer">
+                    
+                    <!-- Left: Hamburger Menu (Only visible if side menu items exist) -->
+                    @if (sideNavGroups().length > 0) {
+                      <div class="footer-action footer-action-left" (click)="sidebarActive.set(true); $event.stopPropagation()">
+                        <fa-icon [icon]="['fas', 'bars']" size="lg"></fa-icon>
                       </div>
                     }
-                  }
+
+                    <!-- Center: Indicators -->
+                    <div class="bottom-nav-indicators">
+                      @for (group of bottomNavGroups(); track group.id; let i = $index) {
+                        <div class="dot" 
+                             [class.active]="activeBottomNavIndex() === i" 
+                             [style.background-color]="activeBottomNavIndex() === i ? app()?.theme : null">
+                          <span class="group-title">{{ group.title }}</span>
+                        </div>
+                      }
+                    </div> 
+
+                    <!-- Right: Theme Toggle -->
+                    <div class="footer-action footer-action-right" (click)="$event.stopPropagation()">
+                      <app-theme-toggle [lang]="lang()"></app-theme-toggle>
+                    </div>
+
+                  </div>           
                 </div>
-                <div class="bottom-nav-indicators">
-                  @for (group of bottomNavGroups(); track group.id; let i = $index) {
-                    <div class="dot" [class.active]="activeBottomNavIndex() === i" [style.background-color]="activeBottomNavIndex() === i?app()?.theme:null"></div>
-                  }
-                </div>              
               </div>
 
             }
-            <!-- END FLOATING PILLS BOTTOM NAVIGATION -->
+            <!-- END PINNED BOTTOM NAVIGATION -->
 
           }
           

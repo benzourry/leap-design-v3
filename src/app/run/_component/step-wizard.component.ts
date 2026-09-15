@@ -84,14 +84,14 @@ import { NgClass } from '@angular/common';
   }
   .wizardstep .step {
       flex:1;
-      font-size: 12px;
+      font-size: 11px;
       position: relative;
       text-align: center;
   }
   .wizardstep .step span{
       display: block;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       margin: 0 auto;
       border-radius: 50%;
       line-height: 24px;

@@ -76,12 +76,12 @@ table.tbl-child {
   }
 }
 
-@media screen and (min-width: 576px) {
-  .ds-row { border-radius: 0.65rem; }
-  .forceCard {
-    .outer-pad { padding: 0 1rem 1rem; }
-    .ds-bulk { margin-top: 1rem; }
-  }
+/* Applied globally to ensure consistency between mobile and desktop forceCard */
+.ds-row { border-radius: 0.65rem; }
+
+.forceCard {
+  .outer-pad { padding: 0 1rem 1rem; }
+  .ds-bulk { margin-top: 1rem; }
 }
 
 /* 100% DRY Card Layout - Applied to BOTH mobile and forced cards */
@@ -116,8 +116,10 @@ table.tbl-child {
 
     .btn-action-more { padding: 1px 0 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
 
-    .ds-tbody {
-      display: grid; gap: 0.5rem; grid-template-columns: 1fr; margin-bottom:0.5rem;
+.ds-tbody {
+      display: grid; 
+      gap: 1rem; /* INCREASED from 0.5rem for better visual breathing room */
+      grid-template-columns: 1fr; margin-bottom:0.5rem;
       @media screen and (min-width: 576px) {
         &[data-grid="col-6"] { grid-template-columns: repeat(2, 1fr); }
         &[data-grid="col-4"] { grid-template-columns: repeat(3, 1fr); }
@@ -127,10 +129,11 @@ table.tbl-child {
 
     .ds-row {
       display: flex; flex-direction: column; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
-      outline: 1px solid rgba(var(--bs-secondary-bg-rgb, 0.3));
       
-      // &:has(.ds-action) { padding-bottom: 3.8rem; }
-      /* Push the card content down so it doesn't collide with the pill */
+      /* OPTIMIZATION: Swapped outline for a softer border and subtle shadow */
+      // border: 1.5px solid var(--bs-border-color-translucent);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      
       &:has(.ds-check, .ds-index) { padding-top: 3.8rem; }
 
       > td { border-bottom: none; font-size: 0.8em; background-color: transparent; }
@@ -149,6 +152,7 @@ table.tbl-child {
 
     .selected-row {
       background-color: transparent !important;
+      border-color:var(--bs-primary);
       &::before {
         content: ''; position: absolute; inset: 0; background-color: rgba(var(--bs-primary-rgb), 0.15); 
         z-index: 0; pointer-events: none;
@@ -200,6 +204,27 @@ table.tbl-child {
     field-view {
       font-size: 0.9rem; flex: 1 1 auto; min-width: 0; display: block;
       ::ng-deep .d-flex { justify-content: flex-end; text-align: right; }
+    }
+  }
+}
+
+/* Horizontal scroll with mask-image for Group Filter on mobile */
+@media screen and (max-width: 575.98px) {
+  .group-filter-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Fade out the right edge to indicate scrollability */
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    
+    /* Allow the last item to be scrolled fully out of the faded zone */
+    padding-right: 2rem !important;
+
+    /* Hide scrollbar for a cleaner look */
+    scrollbar-width: none; /* Firefox */
+    &::-webkit-scrollbar {
+      display: none; /* Chrome/Safari/Opera */
     }
   }
 }

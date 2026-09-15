@@ -669,7 +669,6 @@ ngb-pagination ul.pagination { justify-content: center; }
 .tab-simple .nav-pills .nav-item .nav-link{
   border-radius: 2rem;
 }
-
 @media (max-width: 767.98px) {
   .tab-simple.tab-hscroll > .nav-wrap {
     overflow-x: auto;
@@ -679,21 +678,13 @@ ngb-pagination ul.pagination { justify-content: center; }
     /* Apply padding here to prevent the wrapper from clipping the inner border */
     padding-bottom: 1.5px; 
     
-    /* Scroll Glow Variables */
-    --background-color: var(--bs-tertiary-bg, #f5f5f5);
-    --transparent: transparent;
-    --shadow-color: rgba(var(--bs-primary-rgb), 0.35);
-    --shadow-size: 1.8em;
+    /* ADDED: Mask-image fade effect */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
 
-    background:
-      linear-gradient(to right, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
-      radial-gradient(farthest-side at 0 50%, var(--shadow-color), var(--transparent)),
-      linear-gradient(to left, var(--background-color), var(--background-color), var(--transparent) calc(var(--shadow-size) * 2)),
-      radial-gradient(farthest-side at 100% 50%, var(--shadow-color), var(--transparent)) 100%;
-    background-color: var(--background-color);
-    background-repeat: no-repeat;
-    background-attachment: local, scroll, local, scroll;
-    background-size: 100% 100%, var(--shadow-size) 100%, 100% 100%, var(--shadow-size) 100%;
+    /* Optional: Add horizontal padding so the first/last tabs can be scrolled fully out of the faded zone */
+    // padding-left: 1.5rem;
+    // padding-right: 1.5rem;
     
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -707,9 +698,6 @@ ngb-pagination ul.pagination { justify-content: center; }
     > .nav-tabs {
       min-width: max-content;
       flex-wrap: nowrap !important;
-      // justify-content: flex-start !important; 
-      
-      /* REMOVED: padding-bottom: 2px; from here */
 
       .nav-item {
         flex: 0 0 auto;
@@ -726,9 +714,7 @@ ngb-pagination ul.pagination { justify-content: center; }
     }
   }
 
-  [data-bs-theme="dark"] .tab-simple.tab-hscroll > .nav-wrap {
-    --shadow-color: rgba(var(--bs-primary-rgb), 0.55); 
-  }
+  /* Note: The dark mode override is no longer needed because the mask works perfectly on all background colors */
 
   .card.card-clean{    
     border-left: none !important;
@@ -812,6 +798,10 @@ ngb-pagination ul.pagination { justify-content: center; }
   text-overflow: ellipsis;
   display: block; /* Required for text-overflow to work properly on inline elements */
   width: 100%;
+}
+
+.list-summary{
+  font-size: 0.825rem;
 }
 
 

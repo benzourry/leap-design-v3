@@ -12,19 +12,19 @@
       <div class="centered fix-gutter" [class.limit-width]="!lookup()?.x?.wide">
         <div class="single-pane pt-0">
           <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
+            @if (lookup().sourceType=='db') {
+                <button type="button" class="btn btn-sm border rounded-2 border-1-5 btn-primary"
+                  [class.disabled]="offline()"
+                  (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Tambah Data':'Add Data'}}
+                </button>
+              }
 
             <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
               placeholder="Filter list" (keyup.enter)="getLookupEntryList(entryPageNumber())"
               [(ngModel)]="searchText">
-            @if (lookup().sourceType=='db') {
-              <button type="button" class="btn btn-sm border border-1-5 btn-primary ms-1"
-                [class.disabled]="offline()"
-                (click)="editLookupEntry(editLookupEntryTpl,{enabled:1},true)">
-                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Tambah Data':'Add Data'}}
-              </button>
-            }
-            <div ngbDropdown class="d-inline-block">
+             <div ngbDropdown class="d-inline-block">
               <button type="button" class="btn btn-sm border border-1-5 ms-1"
                 id="dropdownLookupEditor" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
@@ -230,7 +230,7 @@
                     @for (entry of lookupEntryList(); track $index; let eIdx = $index) {
                       <tr class="ds-row"
                         [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
-                        [ngClass]="entry.altClass">
+                        [ngClass]="entry.altClass"  [class.selected-row]="checkSelect(entry)">
 
                         <td class="ds-check">
                           <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
@@ -257,8 +257,8 @@
                                 <tbody>
                                   @for (o of entry.data|keyvalue; track $index) {
                                     <tr>
-                                      <td class="col-1" style="font-weight:600">{{o.key}}</td>
-                                      <td>
+                                      <td class="col-1 bg-transparent" style="font-weight:600">{{o.key}}</td>
+                                      <td class="bg-transparent">
                                         @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
                                           <span [innerHtml]="o.value"></span>
                                         }@else if (mapDataFields()[o.key]=='lookup') {

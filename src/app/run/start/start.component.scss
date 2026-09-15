@@ -349,58 +349,65 @@ $transition-slow: 350ms ease-in-out;
 }
 
 /* ==========================================================================
-   FLOATING PILLS BOTTOM NAVIGATION
+   PINNED BOTTOM NAVIGATION
    ========================================================================== */
 /* 1. Prevent accidental clicks while peeking */
 .bottom-nav-container:not(.is-start-page):not(:focus-within) .bottom-nav-item {
   pointer-events: none;
 }
 
-/* 2. Anchor the main container firmly to the bottom */
+/* 2. Base container firmly spans the bottom */
 .bottom-nav-container {
   position: fixed; 
   bottom: 0; 
-  left: 50%; 
-  transform: translateX(-50%); /* Only handle X centering here */
+  left: 0; 
   z-index: 995; 
   width: 100%; 
-  pointer-events: none;
-  transition:all 250ms ease-in-out;
-
-  .bottom-nav-indicators {
-    position: absolute;
-    bottom: 0.725rem;
-    width:100%;
-    opacity: 0;
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    transition: all 250ms ease-in-out;
-    
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;/* Automatically dark in light mode, and white in dark mode */
-      background: rgba(var(--bs-body-color-rgb), 0.25);
-      transition: all 250ms ease-in-out;
-      /* Soft shadow that adapts to the background */
-      // box-shadow: 0 0 5px rgba(var(--bs-body-bg-rgb), 0.5);
-      
-      &.active {
-        background: var(--bs-primary); /* Uses your theme's primary color */
-        width: 20px; /* Stretches into a pill shape for the active item */
-        border-radius: 4px;
-        // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Slight depth for active pill */
-      }
-    }
-  }
-
-  &.is-start-page .bottom-nav-indicators,
-  &:focus-within .bottom-nav-indicators{
-    opacity: 1;
-  }
+  pointer-events: none; 
 }
 
+/* 3. Sliding Bottom Sheet Panel */
+.bottom-nav-panel {
+  background: var(--bs-body-bg-rgb,0.5);
+  backdrop-filter: blur(18px);
+  // border-radius: 1.25rem 1.25rem 0 0;
+  border: 1px solid rgba(0,0,0, 0.08);
+  border-bottom: none;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  
+  /* Push down but leave exactly 24px exposed for the peek */
+  transform: translateY(calc(100% - 24px)); 
+  transition: transform 250ms ease-in-out;
+  
+  /* Respect iOS safe area */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+:host-context([data-bs-theme="dark"]) .bottom-nav-panel {
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.5); 
+  border-color: rgba(255,255,255, 0.08);
+}
+
+/* 4. Visual Handle for Peeking */
+.bottom-nav-drag-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(var(--bs-body-color-rgb), 0.2);
+  border-radius: 2px;
+  margin: 10px auto;
+}
+
+/* 5. Reveal Action */
+.bottom-nav-container.is-start-page .bottom-nav-panel,
+.bottom-nav-container:focus-within .bottom-nav-panel {
+  transform: translateY(0); 
+}
+
+/* 6. Scrolling Constraints */
 .bottom-nav-scroll {
   display: flex; 
   overflow-x: auto; 
@@ -408,83 +415,158 @@ $transition-slow: 350ms ease-in-out;
   scrollbar-width: none; 
   overscroll-behavior: contain;
   &::-webkit-scrollbar { display: none; } 
-  overflow-y: hidden;
-  touch-action: pan-x; /* Blocks vertical dragging, only allows horizontal swiping! */
-  padding-top:1rem;
+  touch-action: pan-x;
+  padding: 0.5rem 0;
 }
 
 .bottom-nav-wrapper {
   display: flex; 
   justify-content: center; 
   flex: 0 0 100%; 
+  max-width: 100%; 
   scroll-snap-align: center;
-  padding: 1rem; 
+  
+  /* REMOVED padding here. We will handle spacing inside the group so the fade works properly. */
 }
 
-/* 3. Handle the Peeking & Wrapping Logic on the Group */
 .bottom-nav-group {
-  // width: calc(100% - 4rem);
   display: flex; 
-  justify-content: center; 
-  gap: 1.25rem; 
-  flex-wrap: wrap; 
-  background: var(--bs-body-bg); 
-  pointer-events: auto;
-  border: solid 1.5px rgba(0,0,0, 0.08);
-  border-radius: 0.725rem; 
-  padding: 0.875rem 0.875rem 0.5rem;
-  box-shadow: 0 0px 15px rgba(0,0,0,0.1);
-
-  /* Lock height to exactly 1 row (hides wrapped items) */
-  max-height: 4.8rem; 
-
-  overflow-y: hidden;
-  touch-action: pan-x; /* Blocks vertical dragging, only allows horizontal swiping! */
+  justify-content: safe center; 
+  gap: 1rem; 
+  width: 100%; 
   
-  /* Push down by a FIXED amount so it peeks perfectly (no percentages!) */
-  transform: translateY(85%); 
+  overflow-x: auto; 
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  /* ADDED: Padding moved here. This creates space so fully scrolled items escape the fade zone. */
+  padding: 0 1.5rem; 
   
-  transition: all 250ms ease-in-out;
+  /* ADDED: The fading effect */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
 }
 
-:host-context([data-bs-theme="dark"]) .bottom-nav-group { 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-  border:solid 1px rgba(255,255,255, 0.08) 
+/* 8. Indicators */
+/* 8. Indicators (Text Pill Variant) */
+.bottom-nav-footer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  /* Removed width: 100% */
 }
 
-/* 4. When tapped or on start page: expand height and pull up */
-.bottom-nav-container.is-start-page .bottom-nav-group,
-.bottom-nav-container:focus-within .bottom-nav-group {
-  max-height: 10rem; /* Unlocks height to reveal wrapped rows */
-  transform: translateY(-20%); /* Pulls fully up into view */
-  .bottom-nav-item{
-     opacity: 0.6;
-     &.active, &:hover { opacity: 1;}
+/* Side Actions (Hamburger & Theme) */
+.footer-action {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  color: var(--bs-body-color);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 250ms ease;
+  /* Removed pointer-events: auto (it's the default behavior) */
+
+  /* Nested SCSS for modifiers */
+  &.footer-action-left {
+    left: 1.5rem;
+    transform: translateY(-50%);
+  }
+
+  &.footer-action-right {
+    right: 1.5rem;
+    transform: translateY(-50%) scale(0.85); 
+    transform-origin: right center;
   }
 }
 
-/* 5. Items remain untouched */
+/* Center Indicators */
+.bottom-nav-indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+  opacity: 0;
+  transition: opacity 250ms ease;
+  min-height: 20px;
+  /* Removed justify-content: center (container wraps to content width anyway) */
+  
+  .dot {
+    display: flex; /* Changed from inline-flex (flex items behave correctly regardless) */
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background-color: var(--bs-secondary-color, rgba(128, 128, 128, 0.6)); 
+    box-shadow: 0 1px 2px rgba(0,0,0, 0.1); 
+    overflow: hidden;
+    
+    height: 8px;
+    min-width: 8px;
+    max-width: 8px; 
+    /* Removed padding: 0 (it's 0 by default) */
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    .group-title {
+      color: #fff; 
+      font-size: 10px; 
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 150ms ease;
+    }
+    
+    &.active {
+      height: 20px; 
+      max-width: 150px; 
+      padding: 0 10px; 
+      box-shadow: 0 1px 3px rgba(0,0,0, 0.2); 
+      background-color: var(--bs-primary); 
+      
+      .group-title {
+        opacity: 1;
+        transition-delay: 100ms; 
+      }
+    }
+  }
+}
+
+/* 9. Smart Fade-in Logic (Highly optimized using SCSS parent nesting) */
+.bottom-nav-container {
+  &.is-start-page, &:focus-within {
+    .bottom-nav-indicators, .footer-action {
+      opacity: 1;
+    }
+  }
+}
+
+/* 9. Item Rules */
 .bottom-nav-item {
   position: relative; display: flex; flex-direction: column; align-items: center;
-  color: var(--bs-body-color); text-decoration: none; font-size: 0.65rem; opacity: 0.2;
-  min-width: 50px; flex: 0 0 auto; width:75px;
+  color: var(--bs-body-color); text-decoration: none; font-size: 0.65rem; opacity: 0.7;
+  flex: 0 0 auto; width: 75px;
+  
+    padding: 0.5rem;
+    background: var(--bs-body-bg);
+    border-radius: 1rem;
+
   span {
-    //  max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;
     max-width: 70px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-top:5px;
+    padding-top: 5px;
     margin-top: auto;
     text-align: center;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    overflow: hidden;
     line-height: 1.2;
-    
   }
-  &.active, &:hover {color: var(--bs-color-primary);}
-  .badge { top: -8px;right: 5px;font-size: 0.6rem; }
+
+  &.active, &:hover { color: var(--bs-body-color); opacity: 1; }
+  
+  .badge { top: -8px; right: 5px;  font-size: 0.6rem;}
 }
 
 
@@ -513,11 +595,26 @@ $transition-slow: 350ms ease-in-out;
 }
 
 /* 3. Ensure the bottom viewport padding is ONLY applied on mobile so desktop users don't get 6rem of empty space at the bottom */
+// @media screen and (max-width: 767.98px) {
+//   .has-bottom-nav ::ng-deep .viewport:not(.as-comp) {
+//     padding-bottom: 2rem !important; 
+//   }
+//   .has-bottom-nav.is-start-page ::ng-deep .viewport:not(.as-comp) {
+//     padding-bottom: 6.5rem !important; 
+//   }
+// }
+
 @media screen and (max-width: 767.98px) {
-  .has-bottom-nav ::ng-deep .viewport:not(.as-comp) {
-    padding-bottom: 2rem !important; 
+  
+  /* 1. Base padding when the nav is just "peeking" */
+  .wrapper.has-bottom-nav .content {
+    padding-bottom: 1.5rem !important; 
   }
-  .has-bottom-nav.is-start-page ::ng-deep .viewport:not(.as-comp) {
-    padding-bottom: 6.5rem !important; 
+
+  /* 2. Extra padding when the nav is fully expanded on the start page */
+  .wrapper.has-bottom-nav.is-start-page .content {
+    /* Adjust this value based on how many items you have and your exact font sizes.
+       11rem usually clears the panel + indicators + safe area perfectly. */
+    padding-bottom: 10.6rem !important; 
   }
 }

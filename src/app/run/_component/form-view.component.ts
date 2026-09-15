@@ -62,7 +62,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
     <ng-container *ngTemplateOutlet="sectionGroup; context:{tab: tabPre, isPre:true}"></ng-container>
   }
   <div class="tab-simple tab-hscroll">
-    <div class="nav-wrap py-3">
+    <div class="nav-wrap pb-3">
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="'view' + navIndex()"
         [class.limit-width]="!form()?.x?.wide"
         class="nav-{{form().nav}} justify-content-center px-3 d-print-none centered">

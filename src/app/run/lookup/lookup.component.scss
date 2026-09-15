@@ -80,7 +80,7 @@
 
     .ds-row {
       display: flex; flex-direction: column; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
-      outline: 1px solid rgba(var(--bs-secondary-bg-rgb, 0.3));
+      border: 1.5px solid rgba(var(--bs-secondary-bg-rgb, 0.3));
       border-radius: 0.725rem;
       
       // &:has(.ds-action) { padding-bottom: 3.8rem; }

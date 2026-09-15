@@ -22,7 +22,7 @@
       @if (form() && (!(formInactive() && ['add','prev'].includes(action())) && isAuthorized() && !invalidFacet() && !editWithoutId())) {
         @if (!form()?.hideStatus) {
           @if (entry()?.id && form()?.tiers?.length>0) {
-            <div class="limit-width centered mt-3">
+            <div class="limit-width centered">
               <step-wizard [user]="user()" [tiers]="form()?.tiers" [approval]="entry()?.approval" [entry]="entry()"></step-wizard>
             </div>
           }
@@ -96,7 +96,7 @@
               }
 
               <div class="tab-simple tab-hscroll">
-                <div class="nav-wrap py-3">
+                <div class="nav-wrap pb-3">
                   <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="_action + _navIndex()"
                     [class.limit-width]="!form()?.x?.wide" [hidden]="!filteredTabs()?.length"
                     class="nav-{{form().nav}} justify-content-center centered px-3" [class.pe-none]="form().x?.progression && form().x?.noPageSkip">
