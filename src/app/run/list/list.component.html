@@ -273,7 +273,7 @@
                       @if (groupFieldCode()) {
                         <tr class="ds-group-header mb-n2">
                           <td [attr.colspan]="totalColumn" style="padding:0;">
-                            <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                               <div>
                                 @if (listKv?.key == 'undefined') {
                                   <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>

@@ -347,7 +347,6 @@ $transition-slow: 350ms ease-in-out;
   position:absolute;
   bottom:0;
 }
-
 /* ==========================================================================
    PINNED BOTTOM NAVIGATION
    ========================================================================== */
@@ -356,34 +355,22 @@ $transition-slow: 350ms ease-in-out;
   pointer-events: none;
 }
 
-/* 2. Base container firmly spans the bottom */
+/* 2. Base container */
 .bottom-nav-container {
-  position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  z-index: 995; 
-  width: 100%; 
-  pointer-events: none; 
+  z-index: 995; /* Overrides fixed-bottom default of 1030 if needed */
 }
 
 /* 3. Sliding Bottom Sheet Panel */
 .bottom-nav-panel {
-  background: var(--bs-body-bg-rgb,0.5);
+  background: var(--bs-body-bg-rgb, 0.5);
   backdrop-filter: blur(18px);
-  // border-radius: 1.25rem 1.25rem 0 0;
   border: 1px solid rgba(0,0,0, 0.08);
-  border-bottom: none;
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
   outline: none;
   
   /* Push down but leave exactly 24px exposed for the peek */
   transform: translateY(calc(100% - 24px)); 
   transition: transform 250ms ease-in-out;
-  
-  /* Respect iOS safe area */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -398,7 +385,6 @@ $transition-slow: 350ms ease-in-out;
   height: 4px;
   background: rgba(var(--bs-body-color-rgb), 0.2);
   border-radius: 2px;
-  margin: 10px auto;
 }
 
 /* 5. Reveal Action */
@@ -409,57 +395,30 @@ $transition-slow: 350ms ease-in-out;
 
 /* 6. Scrolling Constraints */
 .bottom-nav-scroll {
-  display: flex; 
-  overflow-x: auto; 
   scroll-snap-type: x mandatory;
   scrollbar-width: none; 
   overscroll-behavior: contain;
-  &::-webkit-scrollbar { display: none; } 
   touch-action: pan-x;
-  padding: 0.5rem 0;
+  &::-webkit-scrollbar { display: none; } 
 }
 
 .bottom-nav-wrapper {
-  display: flex; 
-  justify-content: center; 
   flex: 0 0 100%; 
-  max-width: 100%; 
   scroll-snap-align: center;
-  
-  /* REMOVED padding here. We will handle spacing inside the group so the fade works properly. */
 }
 
 .bottom-nav-group {
-  display: flex; 
-  justify-content: safe center; 
-  gap: 1rem; 
-  width: 100%; 
+  justify-content: safe center; /* Restored to fix scrolling overflow */
   
-  overflow-x: auto; 
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 
-  /* ADDED: Padding moved here. This creates space so fully scrolled items escape the fade zone. */
-  padding: 0 1.5rem; 
-  
-  /* ADDED: The fading effect */
+  /* Fading effect mask */
   -webkit-mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
 }
 
-/* 8. Indicators */
-/* 8. Indicators (Text Pill Variant) */
-.bottom-nav-footer {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-  margin-bottom: 1rem;
-  /* Removed width: 100% */
-}
-
-/* Side Actions (Hamburger & Theme) */
+/* 8. Indicators & Footer */
 .footer-action {
   position: absolute;
   top: 50%;
@@ -468,9 +427,7 @@ $transition-slow: 350ms ease-in-out;
   cursor: pointer;
   opacity: 0;
   transition: opacity 250ms ease;
-  /* Removed pointer-events: auto (it's the default behavior) */
 
-  /* Nested SCSS for modifiers */
   &.footer-action-left {
     left: 1.5rem;
     transform: translateY(-50%);
@@ -483,29 +440,22 @@ $transition-slow: 350ms ease-in-out;
   }
 }
 
-/* Center Indicators */
 .bottom-nav-indicators {
-  display: flex;
-  align-items: center;
-  gap: 8px; 
   opacity: 0;
   transition: opacity 250ms ease;
   min-height: 20px;
-  /* Removed justify-content: center (container wraps to content width anyway) */
   
   .dot {
-    display: flex; /* Changed from inline-flex (flex items behave correctly regardless) */
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 12px;
     background-color: var(--bs-secondary-color, rgba(128, 128, 128, 0.6)); 
     box-shadow: 0 1px 2px rgba(0,0,0, 0.1); 
     overflow: hidden;
-    
     height: 8px;
     min-width: 8px;
     max-width: 8px; 
-    /* Removed padding: 0 (it's 0 by default) */
     transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     
     .group-title {
@@ -532,7 +482,7 @@ $transition-slow: 350ms ease-in-out;
   }
 }
 
-/* 9. Smart Fade-in Logic (Highly optimized using SCSS parent nesting) */
+/* Smart Fade-in Logic */
 .bottom-nav-container {
   &.is-start-page, &:focus-within {
     .bottom-nav-indicators, .footer-action {
@@ -543,14 +493,11 @@ $transition-slow: 350ms ease-in-out;
 
 /* 9. Item Rules */
 .bottom-nav-item {
-  position: relative; display: flex; flex-direction: column; align-items: center;
-  color: var(--bs-body-color); text-decoration: none; font-size: 0.65rem; opacity: 0.7;
-  flex: 0 0 auto; width: 75px;
+  font-size: 0.65rem; 
+  opacity: 0.7;
+  flex: 0 0 auto; 
+  width: 75px;
   
-    padding: 0.5rem;
-    background: var(--bs-body-bg);
-    border-radius: 1rem;
-
   span {
     max-width: 70px;
     padding-top: 5px;
@@ -564,11 +511,17 @@ $transition-slow: 350ms ease-in-out;
     line-height: 1.2;
   }
 
-  &.active, &:hover { color: var(--bs-body-color); opacity: 1; }
+  /* We only need to toggle opacity now, text-body handles the color */
+  &.active, &:hover { 
+    opacity: 1; 
+  }
   
-  .badge { top: -8px; right: 5px;  font-size: 0.6rem;}
+  .badge { 
+    top: -8px; 
+    right: 5px;  
+    font-size: 0.6rem;
+  }
 }
-
 
 @media (min-width: 768px) {
   .wrapper.sidemenu:not(.noframe) .bottom-nav-container { left: calc(50% + ($nav-width / 2)); }
@@ -577,44 +530,16 @@ $transition-slow: 350ms ease-in-out;
 /* ==========================================================================
    RESPONSIVE BOTTOM NAV TOGGLING
    ========================================================================== */
-
-/* 1. Hide the "bottom" menus in the sidebar on mobile, show them on desktop */
 .sidebar-bottom-menu {
   display: none;
-  
-  @media screen and (min-width: 768px) {
-    display: block; /* Turns into a normal menu on desktop! */
-  }
+  @media screen and (min-width: 768px) { display: block; }
 }
 
-/* 2. Hide the floating pills entirely on desktop */
 @media screen and (min-width: 768px) {
-  .bottom-nav-container {
-    display: none !important;
-  }
+  .bottom-nav-container { display: none !important; }
 }
-
-/* 3. Ensure the bottom viewport padding is ONLY applied on mobile so desktop users don't get 6rem of empty space at the bottom */
-// @media screen and (max-width: 767.98px) {
-//   .has-bottom-nav ::ng-deep .viewport:not(.as-comp) {
-//     padding-bottom: 2rem !important; 
-//   }
-//   .has-bottom-nav.is-start-page ::ng-deep .viewport:not(.as-comp) {
-//     padding-bottom: 6.5rem !important; 
-//   }
-// }
 
 @media screen and (max-width: 767.98px) {
-  
-  /* 1. Base padding when the nav is just "peeking" */
-  .wrapper.has-bottom-nav .content {
-    padding-bottom: 1.5rem !important; 
-  }
-
-  /* 2. Extra padding when the nav is fully expanded on the start page */
-  .wrapper.has-bottom-nav.is-start-page .content {
-    /* Adjust this value based on how many items you have and your exact font sizes.
-       11rem usually clears the panel + indicators + safe area perfectly. */
-    padding-bottom: 10.6rem !important; 
-  }
+  .wrapper.has-bottom-nav .content { padding-bottom: 1.5rem !important; }
+  .wrapper.has-bottom-nav.is-start-page .content { padding-bottom: 10.6rem !important; }
 }

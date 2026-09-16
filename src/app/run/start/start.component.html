@@ -224,28 +224,29 @@
             <!-- PINNED BOTTOM NAVIGATION -->
             @if (bottomNavGroups().length > 0) {
 
-              <div class="bottom-nav-container print-hide" [ngStyle]="{'color': app()?.theme}"
+              <div class="bottom-nav-container print-hide fixed-bottom pe-none" [ngStyle]="{'color': app()?.theme}"
                 [class.is-start-page]="isStartPage()">
 
                 <!-- Pinned Bottom Sheet Panel -->
-                <div class="bottom-nav-panel" tabindex="0">
+                <div class="bottom-nav-panel d-flex flex-column border-bottom-0 pe-auto" tabindex="0">
                   
                   <!-- UX Optimization: Visual peek handle -->
-                  <div class="bottom-nav-drag-handle"></div>
+                  <div class="bottom-nav-drag-handle mx-auto my-2"></div>
 
-                  <div class="bottom-nav-scroll" (scroll)="onBottomNavScroll($event)">
+                  <div class="bottom-nav-scroll d-flex overflow-x-auto pb-2" (scroll)="onBottomNavScroll($event)">
                     
                     @for (group of bottomNavGroups(); track group.id) {
                       @if (preGroup()[group.id]) {
-                        <div class="bottom-nav-wrapper">
-                          <div class="bottom-nav-group mt-auto">
+                        <div class="bottom-nav-wrapper d-flex justify-content-center mw-100">
+                          <div class="bottom-nav-group d-flex gap-3 w-100 overflow-x-auto px-4 pt-3 mt-auto">
                           @for (item of group.items; track item.id) {
                             @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
                             @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
                               
                               @if (['external', 'internal'].includes(item.type)) {
                                 <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
-                                  [target]="item.type === 'external' ? '_blank' : ''" class="bottom-nav-item">
+                                  [target]="item.type === 'external' ? '_blank' : ''" 
+                                  class="bottom-nav-item text-body position-relative d-flex flex-column align-items-center text-decoration-none p-2 bg-body rounded-4">
                                   <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
                                   <span>{{item.title}}</span>
                                 </a>
@@ -266,7 +267,7 @@
                                   [class.disabled]="offline() || naviDataItem?.inactive"
                                   (click)="hideSb()" 
                                   routerLinkActive="active"
-                                  class="bottom-nav-item">
+                                  class="bottom-nav-item text-body position-relative d-flex flex-column align-items-center text-decoration-none p-2 bg-body rounded-4">
                                   <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
                                   <span>{{item.title}}</span>
                                   @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
@@ -285,9 +286,9 @@
                   </div>
                   
                   <!-- 2. Footer Row (Hamburger, Indicators, Theme Toggle) -->
-                  <div class="bottom-nav-footer">
+                  <div class="bottom-nav-footer position-relative d-flex justify-content-center align-items-center py-2 mb-2">
                     
-                    <!-- Left: Hamburger Menu (Only visible if side menu items exist) -->
+                    <!-- Left: Hamburger Menu -->
                     @if (sideNavGroups().length > 0) {
                       <div class="footer-action footer-action-left" (click)="sidebarActive.set(true); $event.stopPropagation()">
                         <fa-icon [icon]="['fas', 'bars']" size="lg"></fa-icon>
@@ -295,7 +296,7 @@
                     }
 
                     <!-- Center: Indicators -->
-                    <div class="bottom-nav-indicators">
+                    <div class="bottom-nav-indicators d-flex align-items-center gap-2">
                       @for (group of bottomNavGroups(); track group.id; let i = $index) {
                         <div class="dot" 
                              [class.active]="activeBottomNavIndex() === i" 
