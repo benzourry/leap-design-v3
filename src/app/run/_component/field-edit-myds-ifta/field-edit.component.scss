@@ -233,11 +233,16 @@ angular-editor {
       box-shadow: none !important;
       outline: none !important; 
       padding: 0 !important;
-      height: auto !important;
+      height: auto;
       min-height: 1.5rem !important; 
       font-size: 1rem !important; 
       color: var(--bs-body-color) !important;
       border-radius: 0 !important;
+    }
+    /* Target the textarea itself when it has the form-control class */
+    textarea.form-control,
+    .angular-editor-textarea {
+      resize: vertical; /* Explicitly enables up/down resizing */
     }
 
     .form-control:focus, 

@@ -67,7 +67,7 @@
               @if (act !== 'approve') {
                 <div class="text-end">
                   @if (trails().length > 0 && !formVal?.x?.hideTrail) {
-                  <button type="button" class="btn btn-round btn-outline-secondary btn-sm print-hide"
+                  <button type="button" class="btn btn-round bg-body text-secondary small btn-sm print-hide"
                     (click)="viewTrail(viewTrailTpl)">{{lang() == 'ms' ? 'Lihat Jejak' : 'View Trails'}}</button>
                   }
                   @if (getKeys(entry?.txHash).length > 0 && formVal?.x?.wallet) {

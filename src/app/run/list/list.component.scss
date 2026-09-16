@@ -26,7 +26,6 @@ table.tbl-child {
 }
 
 .ds-table .ds-thead {
-  position: sticky; top: 0; z-index: 1;
   th {
     position: relative;
     &::before {
@@ -39,14 +38,13 @@ table.tbl-child {
   border-radius: 0.5rem;
 }
 
-.forceCard .btn-sm:not(:has(.empty-text)){
-  padding-right:0.785rem;
-}
+// .forceCard .btn-sm:not(:has(.empty-text)){
+//   padding-right:0.785rem;
+// }
 
 .ds-action-wrapper {
   flex-wrap: nowrap !important;
   justify-content: flex-end !important; 
-  // min-width: max-content; 
 }
 
 .ds-action-items {
@@ -110,15 +108,17 @@ table.tbl-child {
     .ds-action-wrapper {
       gap: 0.35rem !important; flex-wrap: wrap !important; justify-content: flex-start !important;
       > .btn, > .ds-action-dropdown > .btn {
-        flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; border-radius: 2rem !important; box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
+        flex: 0 0 auto !important; width: auto !important; margin-left: 0 !important; 
+        border-radius: 0.5rem !important; 
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.07);
       }
     }
 
     .btn-action-more { padding: 1px 0 0; font-size: 1.2rem; border: none !important; box-shadow: none !important; }
 
-.ds-tbody {
+  .ds-tbody {
       display: grid; 
-      gap: 1rem; /* INCREASED from 0.5rem for better visual breathing room */
+      gap: 1rem;
       grid-template-columns: 1fr; margin-bottom:0.5rem;
       @media screen and (min-width: 576px) {
         &[data-grid="col-6"] { grid-template-columns: repeat(2, 1fr); }
@@ -130,8 +130,6 @@ table.tbl-child {
     .ds-row {
       display: flex; flex-direction: column; margin-bottom: 0; overflow: hidden; background: var(--bs-body-bg); height: 100%; position: relative; 
       
-      /* OPTIMIZATION: Swapped outline for a softer border and subtle shadow */
-      // border: 1.5px solid var(--bs-border-color-translucent);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       
       &:has(.ds-check, .ds-index) { padding-top: 3.8rem; }
@@ -161,7 +159,7 @@ table.tbl-child {
     }
 
     .ds-check, .ds-index {
-      position: absolute; top: 1rem; left: 1rem; border-radius: 2rem; margin: 0;
+      position: absolute; top: 1rem; left: 1rem; border-radius: 8px; margin: 0;
     }
 
     .ds-index {
@@ -172,7 +170,7 @@ table.tbl-child {
 
     .ds-check {
       z-index: 2; padding: 0.2rem !important;
-      input { border-radius: 2rem; margin: 0; }
+      input { border-radius: 6px; margin: 0; }
       & + .ds-index { padding-left: 3rem; }
     }
 

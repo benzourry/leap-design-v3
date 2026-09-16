@@ -15,7 +15,7 @@
       }
       
       <div [class.px-3]="!asComp()" class="print-hide">
-        <div class="toolbar title d-flex print-hide m-a mb-2 flex-wrap align-items-stretch position-relative"
+        <div class="toolbar title d-flex print-hide m-auto mb-2 flex-wrap align-items-stretch position-relative"
           [class.input-group-sm]="asComp()" 
           [class.limit-width]="!dataset()?.wide">
           
@@ -34,7 +34,7 @@
 
           @if (!dataset()?.x?.hideSearch) {
             <input type="search" autocapitalize="none" id="search_ds_{{dataset().id}}"
-              class="search-icon bg-body rounded-2 border border-1-5" style="flex: 1 1 0%; min-width: 0;"
+              class="search-icon bg-body rounded-2 border border-1-5 flex-grow-1" style="min-width: 0;"
               [class.normal]="!asComp()"
               [placeholder]="lang()=='ms'?'Tapis senarai':'Filter list'" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" 
               (keyup.enter)="getEntryList(1)">
@@ -43,7 +43,7 @@
           @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
             <button type="button" class="btn position-relative" [class.text-primary]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
-              @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white" style="font-size: 11px; top:2px; right:2px; border-radius:3px; line-height:13px">{{filterSize()}}</div> }
+              @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white rounded-1" style="font-size: 11px; top:2px; right:2px; line-height:13px">{{filterSize()}}</div> }
             </button>
           }
 
@@ -84,7 +84,6 @@
                     <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> 
                   }
                 }
-                <!-- @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> } -->
               </div>
             </div>
           }
@@ -147,8 +146,7 @@
                     @if (fField?.type !== 'static') {
                       <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(fField.type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> 
                     }
-                  }                  
-                  <!-- @for (item of dataset()?.items; track item.id) { <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem (click)="sortByField(item.id, item.label, item.prefix + '.' + item.code + (['select', 'radio'].indexOf(form()[item.root]?.items[item.code].type) > -1 ? '.name' : ''), sortDir[item.id] = !sortDir[item.id])">{{item.label}}</button> } -->
+                  }                 
                 }
 
                 @if (dataset()?.x?.canGroup) {
@@ -188,9 +186,7 @@
 
       @if (dataset()?.x?.showGroupFilter && groupFieldCode() && !itemLoading() && numberOfElements() > 0) {
         <div class="px-3 group-filter-wrapper">
-          <!-- Added flex-sm-wrap here -->
-          <div class="group-filter-scroll pb-1 small m-a d-flex flex-nowrap flex-sm-wrap align-items-center" [class.limit-width]="!dataset()?.wide">
-            <!-- Added mb-1 back to buttons for desktop row spacing -->
+          <div class="group-filter-scroll pb-1 small m-auto d-flex flex-nowrap flex-sm-wrap align-items-center" [class.limit-width]="!dataset()?.wide">
             <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2 text-nowrap flex-shrink-0"
               [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter() == null}" (click)="groupFilter.set(null)">
               <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Semua':'All'}}
@@ -219,16 +215,16 @@
         }
 
         <div [class.disabled]="itemLoading()">
-          <div [class.table-responsive]="!dataset()?.wide || asComp()" style="width:100%">
+          <div [class.table-responsive]="!dataset()?.wide || asComp()" class="w-100">
             @if (entryList()?.length > 0) {
               <table class="table table-print ds-table mb-0"
                 [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
                 [ngClass]="{'tblcard': dataset()?.x?.tblcard && !asComp()}">
-                <thead class="bg-body-tertiary list-tmid ds-thead">
+                <thead class="bg-body-tertiary list-tmid ds-thead sticky-top z-1">
                   <tr>
                     @if (dataset()?.x?.bulkAction) {
                       <th class="ds-check" style="width: 1%">
-                        <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
+                        <input type="checkbox" class="form-check-input small mb-1" #checkAll
                           [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
                       </th>
                     }
@@ -268,12 +264,11 @@
                 @for (listKv of groupedEntryList(); track listKv.key) {
                   @if (!groupFilter() || groupFilter() == listKv?.key) {
                     
-                    <!-- GRID ATTACHMENT: Data-grid reads the col-4 or col-6 attribute here for Desktop -->
                     <tbody class="list-tmid ds-tbody" [attr.data-grid]="dataset()?.x?.cardSize">
                       @if (groupFieldCode()) {
                         <tr class="ds-group-header mb-n2">
-                          <td [attr.colspan]="totalColumn" style="padding:0;">
-                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                          <td [attr.colspan]="totalColumn" class="p-0">
+                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                               <div>
                                 @if (listKv?.key == 'undefined') {
                                   <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
@@ -281,7 +276,7 @@
                                   <span [innerHtml]="listKv?.key"></span>
                                 }
                               </div>
-                              <span class="ms-auto mb-auto badge badge-pill text-bg-secondary" style="line-height:1rem">{{listKv?.value?.length}}</span>
+                              <span class="ms-auto badge rounded-pill bg-body text-secondary fw-normal text-center" style="line-height:1rem,min-width: 2rem;">{{listKv?.value?.length}}</span>
                               <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                             </button>
                           </td>
@@ -290,7 +285,6 @@
 
                       @if (!hideGroup[listKv?.key]) {
                         @for (i of listKv?.value; track i.id; let eIdx = $index) {
-                          <!-- FIXED: Combined multiple [ngClass] directives -->
                           <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)">
                             @if (dataset()?.x?.bulkAction) {
                               <td class="ds-check">
@@ -305,8 +299,9 @@
                             @for (item of dataset().items; track item.id; let isLast = $last) {
                               @if (i._isVisible[item.root + '.' + item.code]) {
                                 @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-
-                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
+                                
+                                <!-- Restored td-list for user customization hooks, combined with BS5 p-0 -->
+                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'" [class.p-0]="item.type == 'list'"
                                   [class.last-ds-item]="isLast"
                                   [ngClass]="item.x?.cardStyle"
                                   [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
@@ -364,7 +359,7 @@
                               @let tiers = form().data?.tiers;
                               <td class="text-center ds-status">
                                 <step-wizard [tiers]="tiers" [user]="user()" [entry]="i" [approval]="i?.approval" type="mini"></step-wizard>
-                                <div class="mt-1 small" style="text-transform: capitalize;">
+                                <div class="mt-1 small text-capitalize">
                                   @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]) {
                                     {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
                                   } @else {
@@ -378,7 +373,8 @@
                               <td class="p-1 print-hide ds-action">
                                 <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
                                 [class.input-group]="dataset().x?.groupAction"
-                                [style.gap]="dataset().x?.groupAction ? '0' : '0.25rem'">
+                                [class.gap-0]="dataset().x?.groupAction"
+                                [class.gap-1]="!dataset().x?.groupAction">
                                   @for (ac of actionsInline; track ac.id) {
                                     @if (i._actionVisible[ac.id]) {
                                       @if (ac.action == 'url' && !ac.inpop) {
@@ -475,7 +471,7 @@
 
           @let selectedEntriesLength = (selectedEntries() | keyvalue).length;
           @if (dataset().x?.bulkAction && selectedEntriesLength>0) {
-            <div class="px-3 d-flex align-items-center ds-bulk small py-2 bg-body" style="border-bottom:solid 1px var(--bs-border-color)">
+            <div class="px-3 d-flex align-items-center ds-bulk small py-2 bg-body border-bottom">
               &#8627; {{lang()=='ms' ? 'Dengan yang dipilih' : 'With Selected'}} ({{selectedEntriesLength}})
               @if (dataset()?.canBlast) {
                 <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap" (click)="bulkEmail(blastTpl, blastData())">
@@ -544,8 +540,6 @@
     }
   }
 </div>
-
-<!-- Modal Templates have been omitted to save length, please keep your existing modals! -->
 
 <!-- Modal Templates -->
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
@@ -635,9 +629,6 @@
         }
       </div>
     }
-
-
-
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
@@ -734,7 +725,7 @@
 </ng-template>
 
 <ng-template #inPopTpl let-c="close" let-d="dismiss">
-  <div style="background: var(--bs-tertiary-bg);" [style.margin-bottom.px]="inPopType() == 'screen' ? 0 : -68">
+  <div class="bg-body-tertiary" [style.margin-bottom.px]="inPopType() == 'screen' ? 0 : -68">
     @if (['form'].indexOf(inPopType()!) > -1) {
       @defer (prefetch on idle) {
         <app-form 
@@ -780,8 +771,8 @@
   <div class="modal-header">
     <h4 class="modal-title">{{actionTitle()}}</h4>
   </div>
-  <div style="background: var(--bs-tertiary-bg); overflow-x: auto; height:100%">
-    <iframe [src]="actionUrl() | safe:'resourceUrl'" title="actionTitle" style="width:100%; height:100%;"></iframe>
+  <div class="bg-body-tertiary overflow-x-auto h-100">
+    <iframe [src]="actionUrl() | safe:'resourceUrl'" title="actionTitle" class="w-100 h-100 border-0"></iframe>
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>

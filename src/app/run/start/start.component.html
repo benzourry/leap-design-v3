@@ -231,14 +231,14 @@
                 <div class="bottom-nav-panel d-flex flex-column border-bottom-0 pe-auto" tabindex="0">
                   
                   <!-- UX Optimization: Visual peek handle -->
-                  <div class="bottom-nav-drag-handle mx-auto my-2"></div>
+                  <div class="bottom-nav-drag-handle mx-auto mt-2"></div>
 
                   <div class="bottom-nav-scroll d-flex overflow-x-auto pb-2" (scroll)="onBottomNavScroll($event)">
                     
                     @for (group of bottomNavGroups(); track group.id) {
                       @if (preGroup()[group.id]) {
                         <div class="bottom-nav-wrapper d-flex justify-content-center mw-100">
-                          <div class="bottom-nav-group d-flex gap-3 w-100 overflow-x-auto px-4 pt-3 mt-auto">
+                          <div class="bottom-nav-group d-flex gap-2 w-100 overflow-x-auto px-4 pt-3 mt-auto">
                           @for (item of group.items; track item.id) {
                             @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
                             @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {

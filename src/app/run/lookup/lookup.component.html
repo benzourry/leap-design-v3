@@ -241,13 +241,13 @@
                         </td>
                         
                         @if (!lookup().x?.codeHidden){
-                          <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">{{entry.code}}</td>
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">@if(entry.code){ {{entry.code}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
                         }
                         
-                        <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">{{entry.name}}</td>
+                        <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">@if(entry.code){ {{entry.name}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
                         
                         @if(!lookup()?.x?.extraDisabled){
-                          <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">{{entry.extra}}</td>
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">@if(entry.extra){ {{entry.extra}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
                         }
                         
                         @if (lookup().dataEnabled) {
@@ -285,6 +285,8 @@
                                   }
                                 </tbody>
                               </table>
+                            }@else {
+                              <span class="text-body-tertiary fst-italic">Not available</span>
                             }
                           </td>
                         }

@@ -722,9 +722,15 @@ ngb-pagination ul.pagination { justify-content: center; }
   }
 }
 
-.row > div[class*="col-"]:last-child > .card,
-.row > div[class*="col-"]:last-child > .card-blank-style {
-  margin-bottom: 0 !important;
+// .row > div[class*="col-"]:last-child > .card,
+// .row > div[class*="col-"]:last-child > .card-blank-style {
+//   margin-bottom: 0 !important;
+// }
+
+/* Target the last visible column's card */
+.row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card,
+.row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card-blank-style {
+    margin-bottom: 0 !important;
 }
 
 .toolbar {
