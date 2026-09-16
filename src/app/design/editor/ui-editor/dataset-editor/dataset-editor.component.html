@@ -192,21 +192,21 @@
 <!-- ADD THIS: Card Layout Preview Section (Using Native list-component SCSS) -->
                   <div class="mt-4 mb-3">
                     <!-- Clickable Header for Collapse/Expand -->
-                    <div class="d-flex justify-content-between align-items-center mb-2" 
+                    <div class="d-flex align-items-center mb-2" 
                          style="cursor: pointer;" 
                          (click)="showCardPreview = !showCardPreview">
                       <h6 class="m-0 user-select-none">
                         <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-secondary me-1"></fa-icon> 
-                        Card Layout Preview (Click to {{showCardPreview?'hide':'show'}})
+                        Card Layout Preview
                       </h6>
-                      <button type="button" class="btn btn-sm btn-link text-secondary p-0 text-decoration-none">
+                      <button type="button" class="btn btn-sm btn-link ms-3 text-secondary p-0 text-decoration-none">
                         <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true"></fa-icon>
                       </button>
                     </div>
                     
                     @if (showCardPreview) {
                       <!-- Utilizing your existing .forceCard and .tblcard CSS! -->
-                      <div class="forceCard position-relative mt-2 ms-4">
+                      <div class="forceCard position-relative mt-2">
                         <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
                           <table class="table tblcard w-100 m-0">
                             <tbody class="ds-tbody">
