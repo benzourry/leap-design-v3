@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@ang
 import { FormService } from '../../../../service/form.service';
 // import { LookupService } from '../../../../service/lookup.service';
 import { MailerService } from '../../../../service/mailer.service';
-import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { AppService } from '../../../../service/app.service';
 // import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe } from '@angular/common';
+import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe, JsonPipe } from '@angular/common';
 // import { HttpParams } from '@angular/common/http';
 import { DatasetService } from '../../../../service/dataset.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -37,7 +37,7 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
         './dataset-editor.component.scss'],
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
         FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
-        NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, 
+        NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem,
         KeyValuePipe, IconSplitPipe]
 })
 export class DatasetEditorComponent implements OnInit {
@@ -724,6 +724,12 @@ export class DatasetEditorComponent implements OnInit {
                     this.cdr.detectChanges(); // <--- Add here
                 });
         }
+    }
+
+    showCardPreview: boolean = false;
+    hasDropdown(actions: any[]): boolean {
+        if (!actions || !Array.isArray(actions)) return false;
+        return actions.some(a => a.type === 'dropdown');
     }
 
 }

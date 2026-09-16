@@ -187,6 +187,148 @@
                       }
                     </div>
                   </div>
+
+
+<!-- ADD THIS: Card Layout Preview Section (Using Native list-component SCSS) -->
+                  <div class="mt-4 mb-3">
+                    <!-- Clickable Header for Collapse/Expand -->
+                    <div class="d-flex justify-content-between align-items-center mb-2" 
+                         style="cursor: pointer;" 
+                         (click)="showCardPreview = !showCardPreview">
+                      <h6 class="m-0 user-select-none">
+                        <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-secondary me-1"></fa-icon> 
+                        Card Layout Preview (Click to {{showCardPreview?'hide':'show'}})
+                      </h6>
+                      <button type="button" class="btn btn-sm btn-link text-secondary p-0 text-decoration-none">
+                        <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                    </div>
+                    
+                    @if (showCardPreview) {
+                      <!-- Utilizing your existing .forceCard and .tblcard CSS! -->
+                      <div class="forceCard position-relative mt-2 ms-4">
+                        <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
+                          <table class="table tblcard w-100 m-0">
+                            <tbody class="ds-tbody">
+                              <tr class="ds-row">
+                                
+                                <!-- Native Checkbox -->
+                                @if (curDataset.x?.bulkAction) {
+                                  <td class="ds-check">
+                                    <input type="checkbox" disabled class="form-check-input pointer-events-none">
+                                  </td>
+                                }
+                                
+                                <!-- Native Index -->
+                                @if (curDataset.showIndex) {
+                                  <td data-label="#" class="ds-index">1</td>
+                                }
+                                
+                                <!-- Native Items Loop -->
+                                @for (item of curDataset.items; track item.id; let isLast = $last) {
+                                  @let fType = form[item.root]?.items[item.code]?.type;
+                                  
+                                  <td class="ds-item code-{{item.code}}" 
+                                      style="cursor: pointer;"
+                                      title="Click to edit column settings"
+                                      (click)="editItem(editItemTpl, item)"
+                                      [class.last-ds-item]="isLast"
+                                      [ngClass]="item.x?.cardStyle"
+                                      [attr.data-label]="item.label" [attr.code]="item.code">
+                                    
+                                    @if (item.x?.cardStyle === 'bleed') {
+                                      @if (fType === 'static') {
+                                        <div class="bg-secondary-subtle data-bleed w-100" style="height: 2rem;"></div>
+                                      } @else {
+                                        <div class="bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center data-bleed w-100" style="height: 140px;">
+                                          @if (fType === 'map') {
+                                            <fa-icon [icon]="['fas', 'map-marked-alt']" size="3x" class="opacity-50"></fa-icon>
+                                          } @else {
+                                            <!-- Defaults to image icon for 'file' or undefined -->
+                                            <fa-icon [icon]="['fas', 'image']" size="3x" class="opacity-50"></fa-icon>
+                                          }
+                                        </div>
+                                      }
+                                    } @else if (item.x?.cardStyle === 'title') {
+                                      <!-- Wrapped in div to satisfy the &.title * CSS selector -->
+                                      <div>{{item.label}} Data</div>
+                                    } @else if (item.x?.cardStyle === 'subtitle') {
+                                      <!-- Wrapped in div to satisfy the &.subtitle * CSS selector -->
+                                      <div>{{item.label}} detail text</div>
+                                    } @else if (item.x?.cardStyle === 'tags') {
+                                      <!-- Leverages your ::ng-deep .lookup-item CSS -->
+                                      <span class="lookup-item">{{item.label}} 1</span>
+                                      <span class="lookup-item">{{item.label}} 2</span>
+                                    } @else {
+                                      <div class="text-end text-truncate" style="max-width: 50%;">Sample Value</div>
+                                    }
+                                    <div class="clearfix"></div>
+                                  </td>
+                                }
+
+                                <!-- Native Status -->
+                                @if (curDataset.showStatus) {
+                                  <td class="text-center ds-status pt-2 pb-2">
+                                    <!-- Mocking the <step-wizard> dots -->
+                                    <div class="d-flex justify-content-center align-items-center gap-1 mt-1 mb-1">
+                                      <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
+                                      <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
+                                      <div class="border border-secondary rounded-circle" style="width: 10px; height: 10px; opacity: 0.3;"></div>
+                                    </div>
+                                    <!-- Mocking the status label -->
+                                    <div class="small text-capitalize text-body-secondary">Submitted</div>
+                                  </td>
+                                }
+
+                                <!-- Native Actions -->
+                                @if (curDataset.showAction && curDataset.actions?.length > 0) {
+                                  <td class="p-1 ds-action">
+                                    <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
+                                         [class.input-group]="curDataset.x?.groupAction"
+                                         [class.gap-0]="curDataset.x?.groupAction"
+                                         [class.gap-1]="!curDataset.x?.groupAction">
+                                      
+                                      @for (ac of curDataset.actions; track ac.id) {
+                                        @if (ac.type !== 'dropdown' && ac.type !== 'bulk') {
+                                          <button type="button" class="btn btn-sm text-nowrap flex-shrink-0 shadow-sm" [ngClass]="ac.style">
+                                            @if (ac.icon) { <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon> }
+                                            {{ac.label || 'Action'}}
+                                          </button>
+                                        }
+                                      }
+
+                                      <!-- Using the fast and robust TS helper -->
+                                      @if (hasDropdown(curDataset.actions)) {
+                                        <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
+                                          <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50 bg-body shadow-sm" ngbDropdownToggle>
+                                            <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+                                          </button>
+                                          <div ngbDropdownMenu class="ds-action-items shadow-sm border-0 py-1" style="border-radius: 8px;">
+                                            @for (ac of curDataset.actions; track ac.id) {
+                                              @if (ac.type === 'dropdown') {
+                                                <button type="button" ngbDropdownItem class="small">
+                                                  @if (ac.icon) { <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true" class="text-secondary me-2"></fa-icon> }
+                                                  {{ac.label || 'Action'}}
+                                                </button>
+                                              }
+                                            }
+                                          </div>
+                                        </div>
+                                      }
+                                    </div>
+                                  </td>
+                                }
+
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  <!-- END Card Layout Preview -->
+
+
                   <div>
                     Default Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong>
                   </div>
