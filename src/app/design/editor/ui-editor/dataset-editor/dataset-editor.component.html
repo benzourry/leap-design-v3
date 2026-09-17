@@ -210,7 +210,8 @@
                         <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
                           <table class="table tblcard w-100 m-0">
                             <tbody class="ds-tbody">
-                              <tr class="ds-row">
+                              <!-- ADDED cdkDropList and the existing dropField method -->
+                              <tr class="ds-row" cdkDropList (cdkDropListDropped)="dropField($event, curDataset)">
                                 
                                 <!-- Native Checkbox -->
                                 @if (curDataset.x?.bulkAction) {
@@ -228,15 +229,48 @@
                                 @for (item of curDataset.items; track item.id; let isLast = $last) {
                                   @let fType = form[item.root]?.items[item.code]?.type;
                                   
-                                  <td class="ds-item code-{{item.code}}" 
-                                      style="cursor: pointer;"
-                                      title="Click to edit column settings"
+                                  <!-- ADDED cdkDrag here, updated title tooltip -->
+                                  <td class="ds-item code-{{item.code}} preview-edit-item" 
+                                      cdkDrag
+                                      title="Click to edit, or drag to reorder"
                                       (click)="editItem(editItemTpl, item)"
                                       [class.last-ds-item]="isLast"
+                                      [class.td-list]="item.type === 'list'"
                                       [ngClass]="item.x?.cardStyle"
                                       [attr.data-label]="item.label" [attr.code]="item.code">
                                     
-                                    @if (item.x?.cardStyle === 'bleed') {
+                                    @if (item.type === 'list') {
+                                      
+                                      <!-- Mock Child Table for 'list' type -->
+                                      @if (item.subs && item.subs.length > 0) {
+                                        <table class="table tbl-child m-0 table-flush small">
+                                          <thead>
+                                            <tr>
+                                              @for (fq of item.subs; track fq.code) {
+                                                <th class="bg-transparent">{{fq.label}}</th>
+                                              }
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <!-- Mock Row 1 -->
+                                            <tr>
+                                              @for (fq of item.subs; track fq.code) {
+                                                <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 1</td>
+                                              }
+                                            </tr>
+                                            <!-- Mock Row 2 -->
+                                            <tr>
+                                              @for (fq of item.subs; track fq.code) {
+                                                <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 2</td>
+                                              }
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      } @else {
+                                        <div class="p-2 text-body-tertiary">No sub-columns added yet</div>
+                                      }
+
+                                    } @else if (item.x?.cardStyle === 'bleed') {
                                       @if (fType === 'static') {
                                         <div class="bg-secondary-subtle data-bleed w-100" style="height: 2rem;"></div>
                                       } @else {
@@ -244,24 +278,21 @@
                                           @if (fType === 'map') {
                                             <fa-icon [icon]="['fas', 'map-marked-alt']" size="3x" class="opacity-50"></fa-icon>
                                           } @else {
-                                            <!-- Defaults to image icon for 'file' or undefined -->
                                             <fa-icon [icon]="['fas', 'image']" size="3x" class="opacity-50"></fa-icon>
                                           }
                                         </div>
                                       }
                                     } @else if (item.x?.cardStyle === 'title') {
-                                      <!-- Wrapped in div to satisfy the &.title * CSS selector -->
                                       <div>{{item.label}} Data</div>
                                     } @else if (item.x?.cardStyle === 'subtitle') {
-                                      <!-- Wrapped in div to satisfy the &.subtitle * CSS selector -->
                                       <div>{{item.label}} detail text</div>
                                     } @else if (item.x?.cardStyle === 'tags') {
-                                      <!-- Leverages your ::ng-deep .lookup-item CSS -->
                                       <span class="lookup-item">{{item.label}} 1</span>
                                       <span class="lookup-item">{{item.label}} 2</span>
                                     } @else {
                                       <div class="text-end text-truncate" style="max-width: 50%;">Sample Value</div>
                                     }
+                                    
                                     <div class="clearfix"></div>
                                   </td>
                                 }
@@ -269,13 +300,11 @@
                                 <!-- Native Status -->
                                 @if (curDataset.showStatus) {
                                   <td class="text-center ds-status pt-2 pb-2">
-                                    <!-- Mocking the <step-wizard> dots -->
                                     <div class="d-flex justify-content-center align-items-center gap-1 mt-1 mb-1">
                                       <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
                                       <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
                                       <div class="border border-secondary rounded-circle" style="width: 10px; height: 10px; opacity: 0.3;"></div>
                                     </div>
-                                    <!-- Mocking the status label -->
                                     <div class="small text-capitalize text-body-secondary">Submitted</div>
                                   </td>
                                 }

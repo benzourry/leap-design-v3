@@ -72,7 +72,12 @@
     text-transform: none; 
 }
 
-
+/* Target .tab-simple that immediately follows a .section-group 
+   containing at least one column that is NOT hidden */
+// .section-group:has([class*="col-"]:not([hidden]) .card) + .tab-simple,
+// .section-group:has([class*="col-"]:not([hidden]) .card-blank-style) + .tab-simple {
+//     margin-top: 1rem !important; /* Equivalent to Bootstrap's mt-3 */
+// }
 
 // table.tblcard > .list-tmid > tr.ds-group-header {
 //     box-shadow: none;

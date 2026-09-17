@@ -728,8 +728,8 @@ ngb-pagination ul.pagination { justify-content: center; }
 // }
 
 /* Target the last visible column's card */
-.row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card,
-.row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card-blank-style {
+.section-group:not(.is-pre-post) .row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card,
+.section-group:not(.is-pre-post) .row > div[class*=col-]:not([hidden]):not(:has(~ div[class*=col-]:not([hidden]))) > .card-blank-style {
     margin-bottom: 0 !important;
 }
 
@@ -807,7 +807,7 @@ ngb-pagination ul.pagination { justify-content: center; }
 }
 
 .list-summary{
-  font-size: 0.825rem;
+  font-size: 0.785rem;
 }
 
 

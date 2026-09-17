@@ -178,7 +178,7 @@
         <!-- SECTION GROUP TEMPLATE -->
         <ng-template #sectionGroup let-tab="tab" let-tabidx="tabidx" let-isPrePost="isPrePost" let-isPre="isPre" let-isPost="isPost" let-tabids="tabids" let-tabfirst="tabfirst" let-tablast="tablast">
           <!-- ⚠️ IMPORTANT: ngModelGroup creates an isolated validation boundary -->
-          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id" > <!--[ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}"-->
+          <div class="single-pane section-group" #tForm="ngModelGroup" [ngModelGroup]="'tab' + tab.id" [class.is-pre-post]="isPrePost" > <!--[ngClass]="{'mb-md-3 mb-1': isPre, 'mt-md-3 mt-1': isPost}"-->
             <div class="centered" [class.limit-width]="!form()?.x?.wide">
               <div class="row" [ngStyle]="{'justify-content': form().align}">
                 @for (e of sectionMap()[tab?.id]; track e.id; let lastSection = $last) {
@@ -187,7 +187,8 @@
                       <div [class]="e.size || 'col-sm-12'"
                         [class.disabled]="e.enabledFor && !e.enabledFor.includes(user().email)"
                         [hidden]="e.hidden || (e.x?.facet?.[_action] == 'hidden')">
-                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" class="mb-md-3 mb-2" [class]="classSection()[e.id]"
+                        <div id="section_{{e.code}}" [class.card-blank-style]="e.x?.blankStyle" [class.card]="!e.x?.blankStyle" [class.card-clean]="!e.x?.blankStyle" 
+                          class="mb-md-3 mb-2" [class]="classSection()[e.id]"
                           [class.no-hr]="e.x?.collapsed || (sectionErrorExpanded[e.id] && sForm.invalid)" #sForm="ngModelGroup" [ngModelGroup]="'section' + e.id">
                           
                           @if (!e.hideHeader) {
@@ -636,7 +637,7 @@
                         }
                         {{form()?.x?.saveLbl || (lang() == 'ms' ? 'Simpan' : 'Save')}}
                       </button>
-                      <button type="button" class="btn btn-round bg-white text-truncate" title="Proceed to next tab"
+                      <button type="button" class="btn btn-round btn-secondary text-truncate" title="Proceed to next tab"
                         [disabled]="(form().x?.validateProgress && tForm?.invalid) || saving() || !disabledTabs()[filteredTabs()[tabidx+1]?.id]"
                         (click)="progNext(tabidx)">
                         {{filteredTabs()[tabidx+1]?.title}}

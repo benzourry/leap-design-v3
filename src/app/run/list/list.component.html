@@ -301,7 +301,7 @@
                                 @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
                                 
                                 <!-- Restored td-list for user customization hooks, combined with BS5 p-0 -->
-                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'" [class.p-0]="item.type == 'list'"
+                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
                                   [class.last-ds-item]="isLast"
                                   [ngClass]="item.x?.cardStyle"
                                   [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
