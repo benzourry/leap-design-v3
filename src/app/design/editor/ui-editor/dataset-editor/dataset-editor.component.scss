@@ -1,4 +1,4 @@
-@import '../../../../run/list/list.component.scss';
+@use '../../../../run/list/list.component' as *;
 
 .active-outline {
   outline: 0;
@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: row;
   background: var(--bs-body-bg, #fff);
-  border-radius: 5px;
+  border-radius: 0.65rem;
   width: fit-content;
   overflow-y: hidden;
 }

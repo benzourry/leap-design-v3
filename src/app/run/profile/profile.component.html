@@ -11,7 +11,7 @@
       <div class="card">
         <div class="list-group list-group-flush">
           @if (app()?.x?.userFromApp) {
-            <div class="list-group-item bg-light text-muted">
+            <div class="list-group-item bg-light text-secondary">
               <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"> </fa-icon> 
               {{lang()=='ms'?'Profil pengguna diurus dalam aplikasi lain':'User profile is managed in other app'}}              
             </div>
@@ -73,11 +73,11 @@
         </button>
       </div>
       @if (app()?.id) {
-        <div class="repo-title mt-3 text-center text-muted">
+        <div class="repo-title mt-3 text-center text-secondary">
           {{lang()=='ms'?'Notifikasi':'Notifications'}}
         </div>
         @if (notifList().length==0) {
-          <h4 class="p-4 text-muted text-center">{{lang()=='ms'?
+          <h4 class="p-4 text-secondary text-center">{{lang()=='ms'?
           'Tiada notifikasi buat masa sekarang':
           'No notification at the moment'}}</h4>
         }@else{
@@ -85,7 +85,7 @@
             <div class="list-group list-group-flush">
               @for (n of notifList(); track n.id) {
                 <div class="list-group-item nobreak"
-                  [class.list-group-item-info]="!n.receipt?.[user()?.email]" [class.text-muted]="n.receipt?.[user()?.email]"
+                  [class.list-group-item-info]="!n.receipt?.[user()?.email]" [class.text-secondary]="n.receipt?.[user()?.email]"
                   (click)="openNotif(notifTpl,n)">
                   <span class="">{{cleanText(n.content)}}</span>
                   <div class="small">{{n.timestamp|date:'':angularLocale()}}</div>
@@ -96,7 +96,7 @@
         }
       }
       @if (pushSubs().length>0) {
-        <div class="repo-title mt-3 text-center text-muted">
+        <div class="repo-title mt-3 text-center text-secondary">
           {{lang()=='ms'?'Penerimaan Pemberitahuan':'Push Notification Subscription'}}
           <div class="small">{{lang()=='ms'?'Klik untuk nyahterima':'Click to unsubscribe'}}</div>
         </div>

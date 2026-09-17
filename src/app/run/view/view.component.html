@@ -14,7 +14,7 @@
     </page-title>
   }
   @if (loading()) {
-    <div class="p-4 text-muted text-center">
+    <div class="p-4 text-secondary text-center">
       <div class="lds-ellipsis">
         <div></div>
         <div></div>
@@ -40,7 +40,7 @@
                   </div>
                 }
               } @else {
-                <div class="p-4 text-muted text-center">
+                <div class="p-4 text-secondary text-center">
                   <div class="lds-ellipsis">
                     <div></div>
                     <div></div>
@@ -71,7 +71,7 @@
                     (click)="viewTrail(viewTrailTpl)">{{lang() == 'ms' ? 'Lihat Jejak' : 'View Trails'}}</button>
                   }
                   @if (getKeys(entry?.txHash).length > 0 && formVal?.x?.wallet) {
-                    <button type="button" class="btn ms-1 btn-round btn-outline-secondary text-success btn-sm print-hide"
+                    <button type="button" class="btn ms-1 btn-round bg-body text-success btn-sm print-hide"
                     (click)="viewTxHash(viewTxHashTpl)">
                       <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon> {{lang() == 'ms' ? 'Direkod' : 'Recorded'}}
                     </button>
@@ -79,7 +79,7 @@
                 </div>
               }
               @if (act === 'approve' && (entry?.currentStatus === 'drafted' || entry?.currentEdit)) {
-                <div class="detail text-muted">
+                <div class="detail text-secondary">
                   <h3>{{app().x?.lang === 'ms' ? 'Tiada tindakan diperlukan' : 'No action required'}}</h3>
                 </div>
               }
@@ -357,7 +357,7 @@
                                   </div>
                                 }
                               } @else {
-                                <h5 class="text-muted p-2">{{lang() === 'ms' ? 'Status disembunyikan' : 'Status hidden'}}</h5>
+                                <h5 class="text-secondary p-2">{{lang() === 'ms' ? 'Status disembunyikan' : 'Status hidden'}}</h5>
                               }
                             </div>
                           }
@@ -390,7 +390,7 @@
           </div>
         </form>
       } @else {
-        <div class="p-3 align-center text-center text-muted">
+        <div class="p-3 align-center text-center text-secondary">
           <h5>{{app().x?.lang === 'ms' ? 'Entri tidak wujud' : 'Entry doesn\'t exist'}}</h5>
           <p class="mt-3">
             @if (formVal?.single) {
@@ -411,7 +411,7 @@
       }
     } @else {
       @if (!isAuthorized()) {
-        <div class="detail text-muted">
+        <div class="detail text-secondary">
           <h3>{{unAuthorizedMsg}}</h3>
         </div>
       }

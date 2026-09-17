@@ -34,7 +34,7 @@
                                 @if (i?.title?.trim()) {
                                   {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
                                 } @else {
-                                  <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                  <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
                                 }
                               </a>
                             }
@@ -45,7 +45,7 @@
                         @if ((restrictedForms | filter:searchText).length > 0) {
                           <div class="">
                             <!-- 2. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                            <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                            <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
                               (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none;">
                               <fa-icon [icon]="['fas', showRestrictedForms ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                               Restricted Forms ({{restrictedForms.length}})
@@ -55,7 +55,7 @@
                               <div>
                                 @for (i of restrictedForms; track i.id) {
                                   <!-- 3. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate text-muted bg-body-secondary" 
+                                  <a class="element text-truncate text-secondary bg-body-secondary" 
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"
@@ -96,7 +96,7 @@
                   <div ngbAccordionCollapse>
                     @if (counts().dataset>1){
                       <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
-                        <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
+                        <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
                         <div class="ms-auto btn-group-xs small group-by-toggle">
                           <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
                             name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
@@ -116,7 +116,7 @@
                       <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
                         @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
                           @if (datasetGroupBy && dsKv?.key) {
-                            <div class="element fw-bold text-muted text-capitalize">{{dsKv?.key}}</div>
+                            <div class="element fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
                           }
                           
                           @for (i of dsKv?.value; track i.id) {
@@ -134,7 +134,7 @@
                                 @if (i?.title?.trim()) {
                                   {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
                                 } @else {
-                                  <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                  <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
                                 }
                             </a>
                           }
@@ -145,7 +145,7 @@
                       @if ((restrictedDatasets | filter:searchText).length > 0) {
                         <div>
                           <!-- 4. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                          <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                          <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
                             (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none;">
                             <fa-icon [icon]="['fas', showRestrictedDatasets ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                             From Restricted Forms ({{restrictedDatasets.length}})
@@ -155,7 +155,7 @@
                             <div>
                               @for (i of restrictedDatasets; track i.id) {
                                 <!-- 5. Changed bg-light to bg-body-secondary -->
-                                <a class="element pointer text-truncate text-muted bg-body-secondary" 
+                                <a class="element pointer text-truncate text-secondary bg-body-secondary" 
                                   title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
                                   routerLinkActive="active" 
                                   [routerLink]="['/design', app.id, 'ui', 'dataset']" 
@@ -211,7 +211,7 @@
                                     @if (i?.title?.trim()) {
                                       {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
                                     }@else{
-                                      <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                      <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
                                     }
                                 </a>
                               }
@@ -235,7 +235,7 @@
                     <div ngbAccordionCollapse>
                       @if (counts().screen>1){
                         <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
-                          <div class="align-self-center me-1 text-muted">Group&nbsp;by</div>
+                          <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
                           <div class="ms-auto btn-group-xs small group-by-toggle">
                             <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
                               name="scgb-ungroup" [(ngModel)]="screenGroupBy">
@@ -252,7 +252,7 @@
                         <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderScreen($event, editableScreens)">
                           @for (scKv of (editableScreens | filter:searchText) | groupBy:screenGroupBy; track $index) {
                             @if (screenGroupBy && scKv?.key) {
-                              <div class="element fw-bold text-muted text-capitalize">{{scKv?.key}}</div>
+                              <div class="element fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>
                             }
                             
                             @for (i of scKv?.value; track i.id) {
@@ -271,7 +271,7 @@
                                   @if (i?.title?.trim()) {
                                     {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
                                   } @else {
-                                    <span class="font-italic text-muted">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
                                   }
                                 </a>
                               }
@@ -283,7 +283,7 @@
                         @if ((restrictedScreens | filter:searchText).length > 0) {
                           <div>
                             <!-- 6. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                            <button type="button" class="btn btn-sm w-100 text-start text-muted d-flex align-items-center bg-body-secondary border-0" 
+                            <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
                               (click)="showRestrictedScreens = !showRestrictedScreens" style="box-shadow: none;">
                               <fa-icon [icon]="['fas', showRestrictedScreens ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                               Restricted Screens ({{restrictedScreens.length}})
@@ -293,7 +293,7 @@
                               <div>
                                 @for (i of restrictedScreens; track i.id) {
                                   <!-- 7. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate text-muted bg-body-secondary" 
+                                  <a class="element text-truncate text-secondary bg-body-secondary" 
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"

@@ -18,7 +18,7 @@
                 (click)="toggleItem(field, fm, formHolder()[fm].id, sec.section.type, getPrefix(fm, sec.section))"
                 [checked]="checkItem(field, fm)">
               <label class="form-check-label" for="filter{{f.code}}{{fm}}" [class.fst-italic]="sec.section.id == -1">
-                <span class="text-muted">{{sec.section.title}} - </span>{{field.label}}
+                <span class="text-secondary">{{sec.section.title}} - </span>{{field.label}}
               </label>
 
               @let allowDynamic = !noDynamicTypes.includes(field.type);

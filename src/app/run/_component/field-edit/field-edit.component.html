@@ -78,7 +78,7 @@
                 [required]="f.v?.required" [placeholder]="placeholder">
               </angular-editor>
             } @loading {
-              <div class="text-center p-3 text-muted">Loading editor...</div>
+              <div class="text-center p-3 text-secondary">Loading editor...</div>
             }
           </div>
         }
@@ -437,7 +437,7 @@
               }
             </div>
           }
-          @if (!lookupList() || lookupList().length==0) { <div class="text-muted">Option not available</div> }
+          @if (!lookupList() || lookupList().length==0) { <div class="text-secondary">Option not available</div> }
           @if (!hideAddAction() && f.x?.addEntryEnabled){
             <div class="mt-1">
               <button type="button" class="btn btn-xs rounded-2 btn-outline-secondary" (click)="triggerAddAction('')">
@@ -463,7 +463,7 @@
                     [class.disabled]="f.readOnly || isDisabled(i)">{{i}}</label>
                 }
               </div>
-              @if (!f?.options) { <div class="text-muted">Option not available</div> }
+              @if (!f?.options) { <div class="text-secondary">Option not available</div> }
             </div>
           </div>
         }
@@ -478,7 +478,7 @@
               </div>
             }
           </div>
-          @if (!f?.options) { <div class="text-muted">Option not available</div> }
+          @if (!f?.options) { <div class="text-secondary">Option not available</div> }
         }
         @if (f.subType=='select') {
           <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [id]="uid" [(ngModel)]="value"
@@ -486,7 +486,7 @@
             (change)="valueChanged($event)" (focus)="selectFocused($event)" [name]="uid" [readonly]="f.readOnly" 
             [required]="f.v?.required" [placeholder]="(f.label||'&nbsp;') + (f?.v?.required?' *':' ')">
           </ng-select>
-          @if (!f?.options) { <div class="text-muted">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
+          @if (!f?.options) { <div class="text-secondary">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
         }
       }
 
@@ -829,7 +829,7 @@
     }
 
     @if (f.hint) {
-      <small class="val-text form-text text-muted d-block mt-1">
+      <small class="val-text form-text text-secondary d-block mt-1">
         <fa-icon [icon]="['fas','info-circle']" class="float-start"></fa-icon>
         <div class="ms-4">{{f.hint}}</div>
       </small>

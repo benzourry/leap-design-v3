@@ -25,7 +25,7 @@
     @if (user()?.status=='pending') {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
+        <div class="p-3 text-secondary">
           <h4>{{app().x?.lang=='ms'?'Permohonan akses masih menunggu kelulusan':'Your access request still pending'}}</h4>
         </div>
         <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
@@ -34,7 +34,7 @@
     @if (user()?.status=='rejected') {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
+        <div class="p-3 text-secondary">
           <h4>{{app().x?.lang=='ms'?'Permohonan akses anda telah ditolak':'Your access request has been rejected'}}</h4>
         </div>
         <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>
@@ -44,7 +44,7 @@
     @if(user()?.status=='rejected'){
       <div class="d-flex justify-content-center align-items-center flex-column wrapper"
         style="height:100%; text-align: center;">
-        <div class="p-3 text-muted">
+        <div class="p-3 text-secondary">
           <h4>{{app().x?.lang=='ms'?'Akses anda telah dihentikan':'Your access has been blocked'}}</h4>
         </div>
         <button type="button" class="btn btn-round btn-secondary" (click)="logout()">{{app().x?.lang=='ms'?'Log keluar':'Logout'}}</button>

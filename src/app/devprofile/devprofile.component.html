@@ -75,18 +75,18 @@
 </div>
 </div>
 @if (appId) {
-  <div class="repo-title mt-3 text-center text-muted">
+  <div class="repo-title mt-3 text-center text-secondary">
     Notifications
   </div>
   @if (notifList.length==0) {
-    <h4 class="p-4 text-muted text-center">No notification at the moment</h4>
+    <h4 class="p-4 text-secondary text-center">No notification at the moment</h4>
   }
   @if (notifList.length>0) {
     <div class="card mt-2">
       <div class="list-group list-group-flush">
         @for (n of notifList; track n.id) {
           <div class="list-group-item nobreak" [class.list-group-item-info]="n.status=='new'"
-            [class.text-muted]="n.status=='read'" (click)="openNotif(notifTpl,n)">
+            [class.text-secondary]="n.status=='read'" (click)="openNotif(notifTpl,n)">
             <span class="">{{cleanText(n.content)}}</span>
             <div class="small">{{n.timestamp|date}}</div>
           </div>
@@ -96,7 +96,7 @@
   }
 }
 @if (pushSubs.length>0) {
-  <div class="repo-title mt-3 text-center text-muted">
+  <div class="repo-title mt-3 text-center text-secondary">
     Push Notification Subscription
     <div class="small">Click to unsubscribe</div>
   </div>
@@ -104,7 +104,7 @@
   <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> Unsubscribe from Push Notification
   <div><small>{{sub.userAgent}}</small></div>
 </a> -->
-<!-- <h4 class="p-4 text-muted text-center" *ngIf="notifList.length==0">No notification at the moment</h4> -->
+<!-- <h4 class="p-4 text-secondary text-center" *ngIf="notifList.length==0">No notification at the moment</h4> -->
 <div class="card mt-2">
   <div class="list-group list-group-flush">
     @for (sub of pushSubs; track $index) {

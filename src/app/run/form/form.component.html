@@ -13,7 +13,7 @@
     }
 
     @if (loading()) {
-      <div class="p-4 text-muted text-center">
+      <div class="p-4 text-secondary text-center">
         <div class="lds-ellipsis">
           <div></div><div></div><div></div><div></div>
         </div>
@@ -38,7 +38,7 @@
                 </form-view>
               </div>
             } @else {
-              <div class="p-4 text-muted text-center">
+              <div class="p-4 text-secondary text-center">
                 <div class="lds-ellipsis">
                   <div></div><div></div><div></div><div></div>
                 </div>
@@ -253,7 +253,7 @@
                                           } @else { <field-view [field]="field" [lang]="lang()" [value]="data[field.code]" [scopeId]="scopeId()" [data]="compileData"></field-view> }
                                         </div>
                                       } @else {
-                                        <field-edit [loading]="lookupLoading()[field.code]" id="fn-{{field.id}}-{{index_child}}" [scopeId]="scopeId()" [lang]="lang()" 
+                                        <field-edit [loading]="lookupLoading()[field.code]" [id]="'fn-'+field.id+'-'+index_child" [scopeId]="scopeId()" [lang]="lang()" 
                                           [fileProgress]="uploadProgress()[field.code + (index ?? '') + (index_child ?? '')]" 
                                           [extractLoading]="extractLoading()[field.code + (index ?? '') + (index_child ?? '')]" 
                                           [class.mt-0]="field.subType == 'clearfix'" 
@@ -337,7 +337,7 @@
                                     <span class="badge badge-pill text-bg-secondary mb-auto">{{entry()?.data[e.code]?.length}}</span>
                                     @if (e.x?.sortable) {
                                       <div ngbDropdown class="d-inline-block" [class.disabled]="!e.x?.userSort" (click)="$event.stopPropagation()">
-                                        <div type="button" class="p-0 ms-2 text-muted fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}" ngbDropdownToggle>
+                                        <div type="button" class="p-0 ms-2 text-secondary fw-normal text-truncate" style="max-width:260px;" title="Sort items" id="dropdownSort-{{e.id}}" ngbDropdownToggle>
                                           <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon> {{sectionSort()[e.code]?.label}} ({{sectionSort()[e.code]?.dir ?? 'asc'}})
                                         </div>
                                         <div ngbDropdownMenu class="mt-2" style="max-width:260px;">
@@ -401,7 +401,7 @@
                                                 <fa-icon [icon]="['fas', !hideGroup()[e.code + listKv?.key] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
                                                 <div class="ms-2">
                                                   @if (listKv?.key == 'undefined') {
-                                                    <span class="text-muted fst-italic">{{lang() == 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                                    <span class="text-secondary fst-italic">{{lang() == 'ms' ? 'Tiada data' : 'Data not available'}}</span>
                                                   } @else {
                                                     <span [innerHtml]="listKv?.key"></span>
                                                   }
@@ -431,6 +431,16 @@
                                               @if ((e.x?.facet?.[_action]) != 'view') {
                                                 <td class="p-1 print-hide text-end">
                                                   <div class="d-flex">
+                                                    @if (!e.inline) {
+                                                      <button type="button" class="btn btn-info btn-round btn-sm ms-1" (click)="editChild(editChildTpl, e, child, false)">
+                                                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                                      </button>
+                                                    }
+                                                    @if (!e.x?.sticky) {
+                                                      <button type="button" class="btn btn-info btn-round btn-sm ms-1" (click)="removeChild(e, child.__index)">
+                                                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                                      </button>
+                                                    }
                                                     @if (e.orderable) {
                                                       @if (!$first_c) {
                                                         <button type="button" class="btn btn-light btn-round btn-sm ms-1" (click)="reorder(entry()?.data[e.code], child.__index, -1)">
@@ -442,16 +452,6 @@
                                                           <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
                                                         </button>
                                                       }
-                                                    }
-                                                    @if (!e.inline) {
-                                                      <button type="button" class="btn btn-info btn-round btn-sm ms-1" (click)="editChild(editChildTpl, e, child, false)">
-                                                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                                                      </button>
-                                                    }
-                                                    @if (!e.x?.sticky) {
-                                                      <button type="button" class="btn btn-info btn-round btn-sm ms-1" (click)="removeChild(e, child.__index)">
-                                                        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                                                      </button>
                                                     }
                                                   </div>
                                                 </td>
@@ -470,7 +470,7 @@
                                       <fa-icon [icon]="['fas', !hideGroup()[e.code + listKv?.key] ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
                                       <div class="ms-2">
                                         @if (listKv?.key == 'undefined') {
-                                          <span class="text-muted fst-italic">{{lang() == 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                          <span class="text-secondary fst-italic">{{lang() == 'ms' ? 'Tiada data' : 'Data not available'}}</span>
                                         } @else {
                                           <span [innerHtml]="listKv?.key"></span>
                                         }
@@ -698,7 +698,7 @@
         </ng-template>
       } @else {
         @if (formInactive() && ['add','prev'].includes(action())) {
-          <div class="detail text-muted">
+          <div class="detail text-secondary">
             <h3>{{lang() == 'ms' ? 'Borang tidak aktif' : 'Form inactive'}}</h3>
             <p>{{lang() == 'ms' ? 'Borang cuma boleh diakses' : 'Form can only be accessed'}}
               @if (form()?.startDate) {
@@ -711,17 +711,17 @@
           </div>
         }
         @if (!isAuthorized()) {
-          <div class="detail text-muted">
+          <div class="detail text-secondary">
             <h3>{{unAuthorizedMsg()}}</h3>
           </div>
         }
         @if (invalidFacet()) {
-          <div class="detail text-muted">
+          <div class="detail text-secondary">
             <h3>{{lang() == 'ms' ? 'Facet borang tidak sah: ' + invalidFacetKey() : 'Invalid form facet: ' + invalidFacetKey()}}</h3>
           </div>
         }
         @if (editWithoutId()) {
-          <div class="detail text-muted">
+          <div class="detail text-secondary">
             <h3>{{lang() == 'ms' ? 'Id atau parameter entry tidak disertakan' : 'Entry id or parameter is not provided'}}</h3>
           </div>
         }
@@ -783,7 +783,7 @@
                 </div>
               } @else {
                 <!-- ⚠️ IMPORTANT: 'name' and 'id' must combine field.id and index_child/index to ensure unique form controls in arrays/lists. -->
-                <field-edit [loading]="lookupLoading()[field.code]" id="fn-{{field.id}}-{{index_child}}" 
+                <field-edit [loading]="lookupLoading()[field.code]" [id]="'fn-'+field.id+'-'+index_child" 
                   [scopeId]="scopeId()" [lang]="lang()" 
                   [fileProgress]="uploadProgress()[field.code + (index ?? '') + (index_child ?? '')]" 
                   [extractLoading]="extractLoading()[field.code + (index ?? '') + (index_child ?? '')]" 

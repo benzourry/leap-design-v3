@@ -1,6 +1,6 @@
 <ng-template #statusScreen let-msg="msg">
   <div class="d-flex justify-content-center align-items-center flex-column wrapper" style="height:100%; text-align: center;">
-    <div class="p-3 text-muted">
+    <div class="p-3 text-secondary">
       <h4>{{ msg }}</h4>
     </div>
     <button type="button" class="btn btn-round btn-secondary" (click)="logout()">
@@ -293,7 +293,7 @@
       }
     } @else {
       <div class="d-flex justify-content-center align-items-center flex-column wrapper m-a p-3">
-        <div class="text-center text-muted mt-5">
+        <div class="text-center text-secondary mt-5">
           <h4>{{lang() == 'ms' ? 'Aplikasi ini sedang diselenggara' : 'This app is under maintenance'}}</h4>
         </div>
       </div>

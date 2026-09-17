@@ -1,42 +1,98 @@
-.tblcol-check{
-    padding:0.4em;
+@use '../list/list-tblcard' as *;
+
+// Preserved to prevent !important bootstrap padding overrides on the checkbox column
+.tblcol-check { 
+  padding: 0.4em; 
 }
 
-.table .form-check-input{
-    height:1.3rem; width:1.3rem;
+.dropdown-toggle::after { 
+  display: none; 
 }
 
-// .toolbar:not(:has(*)){
-//   display:none !important;
-// }
+// =========================================
+// MOBILE CARD VIEW 
+// =========================================
+@media screen and (max-width: 575.98px) {
+  @include shared-tblcard-styles;
+  
+  table.tblcard {
+    &.table-bordered > :not(caption) > * > * {
+      border-width: 0 !important;
+      border-color: transparent !important; 
+    }
 
-//   .toolbar {
-//     background-color: var(--bs-body-bg);
-//     border-radius: 0.5rem;
-//     border: 2px solid var(--bs-border-color);
-//     padding: 0.25rem;
-//     // gap:0 !important;
+    .ds-row {
+      display: grid !important;
+      grid-template-columns: 85px 1fr !important;
+      border-radius: 0.75rem !important; 
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+      padding-top: 3.5rem; 
+      margin-bottom: 1rem !important;
+      
+      > td::after { 
+        display: none !important; 
+      }
+    }
 
-//     &:focus-within {
-//       border-color: var(--bs-primary);
-//     }
+    .ds-check {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+    }
 
-//     .btn, input{
-//       border:none !important;
-//       box-shadow: none !important;
-//       outline: none !important;
-//     }
+    // Consolidated hidden labels
+    .photo-cell, .info-cell {
+      &::before { display: none !important; }
+    }
 
-//     .btn:not(.btn-primary):not(.btn-danger):hover,
-//     .btn:not(.btn-primary):not(.btn-danger):focus {
-//       color: var(--bs-primary);
-//     }
+    .photo-cell {
+      grid-column: 1;
+      grid-row: 1;
+      padding: 0 0 0 1rem !important; 
+      display: flex;
+      justify-content: flex-start;
+    }
 
-//     input[type="search"] {
-//       flex: 1 1 0%; min-width: 0;
-//     }
-//   }
+    .info-cell {
+      grid-column: 2;
+      grid-row: 1;
+      padding: 0 1rem 0 0.5rem !important;
+      text-align: left !important;
+      display: block !important;
+    }
 
-.dropdown-toggle::after {
-    display: none;
+    .status-cell {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin: 0.5rem 1rem !important;
+      justify-content: center !important; 
+      text-align: center !important;
+    }
+
+    .ds-action {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      padding-top: 0.5rem !important;
+    }
+  }
+}
+
+// =========================================
+// DESKTOP TABLE VIEW 
+// =========================================
+// Restored to ensure mobile layout stays untampered while properly formatting desktop.
+@media screen and (min-width: 576px) {
+  table.ds-table tr:not(.ds-group-header) {
+    td:first-child, th:first-child { 
+      padding-left: 1rem; 
+    }
+  }
+
+  .table-desktop-bordered > :not(caption) > * > * {
+    border: 1px solid var(--bs-border-color);
+  }
+  .ds-bulk{
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
 }

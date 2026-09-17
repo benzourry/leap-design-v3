@@ -205,13 +205,16 @@
                 </table>
               </div> -->
               <div class="table-responsive">
-                <table class="table ds-table tblcard table-desktop-bordered">
+                <table class="table ds-table tblcard table-desktop-bordered mb-0">
                   <thead class="ds-thead">
                     <tr>
-                      <th class="ds-check" style="width: 1%">
-                        <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
-                          [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
-                      </th>
+                      
+                      @if(lookup().sourceType=='db') {
+                        <th class="ds-check" style="width: 1%">
+                          <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
+                            [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
+                        </th>
+                      }
                       <th class="ds-index" style="width: 1%">#</th>
                       @if (!lookup()?.x?.codeHidden){
                         <th class="w-10">{{lookup()?.x?.codeLbl||'CODE'}}</th>
@@ -232,9 +235,12 @@
                         [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
                         [ngClass]="entry.altClass"  [class.selected-row]="checkSelect(entry)">
 
-                        <td class="ds-check">
-                          <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
-                        </td>
+
+                        @if(lookup().sourceType=='db') {
+                          <td class="ds-check">
+                            <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
+                          </td>
+                        }
                         
                         <td data-label="#" class="bg-secondary text-white ds-index">
                           {{preCount() + eIdx + 1}}
@@ -252,7 +258,7 @@
                         
                         @if (lookup().dataEnabled) {
                           <td class="ds-item td-list" data-label="DATA">
-                            @if (entry.data) {
+                            @if (entry.data && !isObjectEmpty(entry.data)) {
                               <table width="100%" class="table extra-data-tbl tbl-child m-0 table-flush small">
                                 <tbody>
                                   @for (o of entry.data|keyvalue; track $index) {
@@ -331,6 +337,22 @@
                   </tbody>
                 </table>
               </div>
+
+              <!-- ADD BULK ACTION PANEL HERE -->
+              @if (selectedCount() > 0) {
+                <div class="p-3 small bg-body mb-2 ds-bulk" style="border-radius: 0.75rem;">
+                  <div class="p-1">&#8627; With Selected ({{selectedCount()}})</div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-danger btn-sm btn-round text-nowrap"
+                      [class.disabled]="offline()"
+                      (click)="bulkRemoveEntries()">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                      {{lang()=='ms'?'Padam Pilihan':'Delete Selected'}}
+                    </button>
+                  </div>
+                </div>
+              }
+
             }
           }
           @if ((lookupEntryList()?.length) > 0 && hasLoadList()) {

@@ -31,14 +31,11 @@
           </div>
         </div>
         }
-        <!-- {{group|json}}
-        {{groupId()}},{{group?.appId}},{{app.id}} -->
         @if (!(group?.appId==app().id || groupId()==-1 || groupId()==null)){
-        <!-- @if (group?.appId!=app.id && groupId()!=-1 && groupId()!=null){ -->
           <div class="text-danger text-center">
             {{lang()=='ms'?'Kumpulan pengguna dalam app lain':'User group is in the other app'}}
           </div>
-        }                
+        }               
         @if (loading()) {
           <div class="p-4 text-center">
             <div class="lds-ellipsis">
@@ -50,33 +47,22 @@
           </div>
         }@else{
           @if (!userUnauthorized()) {
-            <!-- <div class="d-flex flex-row"> -->
             <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
               @if (group?.appId==app().id){
-                <!-- <div style="flex-shrink: 0;"> -->
-                    <button type="button" class="btn btn-sm border border-1-5 rounded-2 btn-primary"
-                    [class.disabled]="offline()"
-                    (click)="editAppUser(editAppUserTpl,{},true)">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                      {{lang()=='ms'?'Tambah Pengguna':'Add User'}}
-                    </button>
-                <!-- </div> -->
+                  <button type="button" class="btn btn-sm border border-1-5 rounded-2 btn-primary"
+                  [class.disabled]="offline()"
+                  (click)="editAppUser(editAppUserTpl,{},true)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                    {{lang()=='ms'?'Tambah Pengguna':'Add User'}}
+                  </button>
               }
-
-              <!-- <div style="flex-grow:1"> -->
-                <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
-                  placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
-                  [(ngModel)]="searchText">
-              <!-- </div> -->
+              <input type="search"  autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
+                placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
+                [(ngModel)]="searchText">
             </div>      
             @if (appUserList()?.length) {
               <div class="px-2 py-2">
                 <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
-                  
-                  <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                    {{lang()=='ms'?'Ringkasan':'Summary'}}
-                  </span>
-                  <div class="vr opacity-25"></div>                     -->
                   <div>
                     {{lang()=='ms'?'Semua':'Total'}}: 
                     <span class="text-body fw-medium">{{appUserTotal()}}</span>
@@ -94,34 +80,45 @@
             }
             <div class="table-responsive">
               @if (appUserList()?.length) {
-                <table class="table table-bordered mb-0">
-                  <thead>
+                <!-- Restored table-desktop-bordered to protect mobile styles -->
+                <table class="table mb-0 tblcard ds-table table-desktop-bordered">
+                  <thead class="ds-thead">
                     <tr>
                       <th class="tblcol-check ps-3" style="width: 1%">
-                        <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
+                        <input type="checkbox" class="form-check-input" style="font-size:14px; width: 1.3rem; height: 1.3rem;" #checkAll
                           (click)="checkAllUsers(checkAll.checked)">
+                      </th>
                       <th style="width: 5%">{{lang()=='ms'?'GAMBAR':'PHOTO'}}</th>
                       <th class="w-10">{{lang()=='ms'?'PENGGUNA':'USER'}}</th>
                       <th style="width: 5%">STATUS</th>
-                      <!-- <th class="w-10">GROUP</th> -->
                       <th style="width: 5%">&nbsp;</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="ds-tbody">
                     @for (appUser of appUserList(); track $index) {
-                      <tr [class.table-info]="appUser.status=='pending'"
-                        [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" [ngClass]="appUser.altClass">
-                        <td class="p-1 ps-3"><input type="checkbox" class="form-check-input"
-                          (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"></td>
-                        <td class="p-1"><img src="{{appUser.user.imageUrl}}" width="58"
-                          onerror="this.src='assets/img/avatar-big.png'"></td>
-                        <td>
-                          <div>{{appUser.user.name}}</div>
-                          <div class="small">
+                      <tr class="ds-row" 
+                        [class.selected-row]="checkSelect(appUser)"
+                        [class.table-info]="appUser.status=='pending'"
+                        [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" 
+                        [ngClass]="appUser.altClass">
+                        
+                        <td class="ds-check">
+                          <input type="checkbox" class="form-check-input" style="width: 1.3rem; height: 1.3rem;"
+                          (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)">
+                        </td>
+
+                        <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'GAMBAR':'PHOTO'">
+                          <img src="{{appUser.user.imageUrl}}" width="64"
+                          onerror="this.src='assets/img/avatar-big.png'" class="rounded">
+                        </td>
+
+                        <td class="ds-item info-cell" [attr.data-label]="lang()=='ms'?'PENGGUNA':'USER'">
+                          <div class="fw-bold fs-6">{{appUser.user.name}}</div>
+                          <div class="subtitle mt-1">
                             <div>{{appUser.user.email}}</div>
                             <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium':'':angularLocale()}}
                               @if (!appUser.user.firstLogin) {
-                                <span class="text-muted">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
+                                <span class="text-secondary">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
                               }
                             </div>
                             <div>{{lang()=='ms'?'Jenis akaun':'Account type'}}: 
@@ -129,58 +126,61 @@
                                 <fa-icon [icon]="provider[appUser.user.provider]"
                                 [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
                               } @else {
-                                <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
+                                <span class="text-secondary">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
                               }
                             </div>
                           </div>
-                          <div class="mt-1">
-                            @for (tag of appUser.tags; track $index) {
-                              <div style="font-size:0.9em"
-                              class="d-inline-block me-1 border bg-light rounded px-1">{{tag}}</div>
-                            }
-                          </div>
+                          @if (appUser.tags?.length) {
+                            <div class="tags mt-2">
+                              @for (tag of appUser.tags; track $index) {
+                                <span class="lookup-item">{{tag}}</span>
+                              }
+                            </div>
+                          }
                         </td>
-                        <td>{{appUser.status}}</td>
-                        <td class="text-nowrap">
-                          @if (group?.appId==app().id || groupId()==-1 || groupId()==null){
-                            <div>
-                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+
+                        <td class="ds-item ds-status status-cell">
+                          {{appUser.status}}
+                        </td>
+
+                        <td class="ds-action text-nowrap p-1">
+                          <!-- Flex utility applied directly. Button radiuses leverage standard .rounded-3 -->
+                          <div class="d-flex w-100" style="gap: 0.275rem;">
+                            @if (group?.appId==app().id || groupId()==-1 || groupId()==null){
+                              <button type="button" class="btn btn-outline-danger btn-sm rounded-3"
                                 [class.disabled]="offline()"
                                 (click)="removeAppUser(removeAppUserTpl,appUser)">
                                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                               </button>
-                              <!-- Xpat pake edit sebab appUser pecah2, bukan merge cgek user w/ multiple groups -->
-                              <button type="button" class="btn btn-secondary btn-sm me-1 btn-round" [class.disabled]="offline()"
+                              <button type="button" class="btn btn-outline-secondary btn-sm rounded-3"
+                                [class.disabled]="offline()"
                                 (click)="approveAppUser(approveAppUserTpl,appUser)">
                                 <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                                <span class="d-inline-block d-sm-none">Status</span>
                               </button>
-                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
+                              <button type="button" class="btn btn-outline-secondary btn-sm me-auto rounded-3"
                                 [class.disabled]="offline()"
                                 (click)="editUser(editUserTpl,appUser)">
                                 <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
                               </button>
                               @if (cs!=-1) {
-                                <div class="mt-1">
                                   @if (!$first) {
-                                    <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
+                                    <button type="button" class="btn btn-sm px-1 rounded-3"
                                       (click)="reorderItem($index, -1)">
-                                      <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
-                                      </fa-icon>
+                                      <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   }
                                   @if (!$last) {
-                                    <button type="button" class="btn btn-secondary btn-round btn-sm"
+                                    <button type="button" class="btn btn-sm px-1 rounded-3"
                                       (click)="reorderItem($index, 1)">
-                                      <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
-                                      </fa-icon>
+                                      <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   }
-                                </div>
                               }
-                            </div>
-                          }@else {
-                            <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                          }
+                            }@else {
+                              <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" class="m-2"></fa-icon>
+                            }
+                          </div>
                         </td>
                       </tr>
                     }
@@ -190,22 +190,26 @@
             </div>
             
             @if (selectedUsers?.size>0) {
-              <div class="px-2 d-flex align-items-center small py-2 bg-white" style="border-bottom:solid 1px #ccc">
-                &#8627; With Selected
-                <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
-                  (click)="blastEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
-                [fixedWidth]="true"></fa-icon> Send Email</button>
-                <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
-                  (click)="bulkRemoveUser()">
-                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Buang Pengguna':'Remove User'}}</button>
-                <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
-                  (click)="changeProvider(changeProviderTpl)">
-                {{lang()=='ms'?'Tukar Penyedia':'Change Provider'}}</button>
+              <!-- Background and radius handled via bootstrap and inline -->
+              <div class="p-3 small bg-body ds-bulk" style="border-radius: 0.75rem;">
+                <div class="p-1">&#8627; With Selected</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="button" class="btn btn-secondary btn-sm btn-round text-nowrap"
+                    (click)="blastEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
+                  [fixedWidth]="true"></fa-icon> Send Email</button>
+                  <button type="button" class="me-2 btn btn-danger btn-sm btn-round text-nowrap"
+                    (click)="bulkRemoveUser()">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Buang Pengguna':'Remove User'}}</button>
+                  <button type="button" class="me-2 btn btn-danger btn-sm btn-round text-nowrap"
+                    (click)="changeProvider(changeProviderTpl)">
+                  {{lang()=='ms'?'Tukar Penyedia':'Change Provider'}}</button>
+                </div>
               </div>
             }
+            <!-- (Pagination and Modals omitted for brevity, no class adjustments were needed there) -->
             @if ((appUserList()?.length) > 0) {
-              <div class="text-center d-flex justify-content-center pagination-rounded">
+              <div class="text-center d-flex justify-content-center pagination-rounded mt-3">
                 @if (appUserTotal()>pageSize) {
                   <ngb-pagination [collectionSize]="appUserTotal()" [pageSize]="pageSize"
                     [(page)]="pageNumber" [maxSize]="10" (pageChange)="getAppUserList(pageNumber(),params)"
@@ -239,7 +243,7 @@
               </div>
             }
           }@else {
-            <div class="detail text-muted">
+            <div class="detail text-secondary mt-5 text-center">
               <h3>{{app()?.x?.lang=='ms'?'Anda tidak mempunyai akses kepada kumpulan pengguna ini':
               'You are not authorized to access this user group'}}</h3>
             </div>
@@ -407,7 +411,7 @@
             @if (approveAppUserData().group){
             {{approveAppUserData().group?.name}}
             }@else {
-              <span class="text-muted fst-italic">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
+              <span class="text-secondary fst-italic">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
             }
           </p>
         </div>
@@ -486,7 +490,7 @@
           <div class="col-md-6">
             <p class="form-control-static">
               @if (!removeAppUserData().group){
-                <span class="text-muted">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
+                <span class="text-secondary">{{lang()=='ms'?'Tidak didaftarkan dalam mana-mana kumpulan':'Not assigned to any group'}}</span>
               }
               {{removeAppUserData().group?.name}}
             </p>
@@ -557,12 +561,12 @@
             @for (u of selectedUsersArray; track $index) {
               <div class="list-group-item">
                 {{u.user.name}}
-                <div class="text-muted small">{{u.user.email}} - 
+                <div class="text-secondary small">{{u.user.email}} - 
                   @if (u.user?.provider){
                     <fa-icon [icon]="provider[u.user.provider]"
                     [fixedWidth]="true"></fa-icon> {{u.user.provider}}
                   } @else {
-                    <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
+                    <span class="text-secondary">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
                   }
                 </div>
               </div>
@@ -601,12 +605,12 @@
         @for (u of selectedUsersArray; track $index) {
           <div class="list-group-item">
             {{u.user.name}}
-            <div class="text-muted small">{{u.user.email}} -               
+            <div class="text-secondary small">{{u.user.email}} -               
               @if (u.user?.provider){
                 <fa-icon [icon]="provider[u.user.provider]"
                 [fixedWidth]="true"></fa-icon> {{u.user.provider}}
               } @else {
-                <span class="text-muted">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
+                <span class="text-secondary">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
               }
             </div>
           </div>

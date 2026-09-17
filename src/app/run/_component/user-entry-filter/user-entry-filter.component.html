@@ -114,7 +114,7 @@
         <select class="form-select" name="{{baseKey}}"
           [class.disabled]="presetFilters()[bindKey]"
           [(ngModel)]="filtersData()[bindKey]">
-          <option [ngValue]="undefined" class="text-muted">Unset</option>
+          <option [ngValue]="undefined" class="text-secondary">Unset</option>
           @for (item of field.options|asList; track $index) {
             <option [value]="item">{{item}}</option>
           }

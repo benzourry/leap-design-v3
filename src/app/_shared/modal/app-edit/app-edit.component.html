@@ -264,13 +264,13 @@
                   <label class="form-label">Use local user from other app</label>
                   <select class="form-select" name="userFromApp"
                     [(ngModel)]="_data.x.userFromApp">
-                    <option [ngValue]="undefined" class="text-muted">Use own local user</option>
+                    <option [ngValue]="undefined" class="text-secondary">Use own local user</option>
                     @for (app of otherAppList(); track app.id) {
                       <option [ngValue]="app.id">{{app.title}}</option>
                     }
                   </select>
                   @if(_data.x.userFromApp){
-                    <div class="small text-muted mt-2">Merge user's groups from this app with groups from the above app</div>
+                    <div class="small text-secondary mt-2">Merge user's groups from this app with groups from the above app</div>
                   }
                 </div>
               </div>
@@ -369,7 +369,7 @@
                 <div class="form-group mb-3">
                   <label class="form-label">One-off Screen (display once after first login)</label>
                   <select class="form-select" name="once" [(ngModel)]="_data.once">
-                    <option [ngValue]="undefined" class="text-muted">No term (skip)</option>
+                    <option [ngValue]="undefined" class="text-secondary">No term (skip)</option>
                     @for (p of screens(); track p.id) {
                       <option [ngValue]="p.id">{{p.title}}</option>
                     }
@@ -439,7 +439,7 @@
                   <select class="form-select" name="appGroup"
                     [compareWith]="compareByIdFn" 
                     [(ngModel)]="_data.group">
-                    <option [ngValue]="undefined" class="text-muted">Ungroup</option>
+                    <option [ngValue]="undefined" class="text-secondary">Ungroup</option>
                     @for (app of appGroups(); track app.id) {
                       <option [ngValue]="app">{{app.name}}</option>
                     }

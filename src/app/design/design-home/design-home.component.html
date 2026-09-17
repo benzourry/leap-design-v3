@@ -51,7 +51,7 @@
 
         @if (!tplLoading()) {
           @if (tplTotal() === 0) {
-            <div class="p-2 text-muted text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
+            <div class="p-2 text-secondary text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
               No other template available
             </div>
           } @else {
@@ -145,7 +145,7 @@
         
       @if (!itemLoading()) {
         @if (itemTotal() === 0) {
-          <div class="p-4 text-muted text-center">
+          <div class="p-4 text-secondary text-center">
             <h1>:(</h1>
             <h4>No application available</h4>
           </div>
@@ -166,7 +166,7 @@
                   [class.border-primary]="groupFilter() === gf.key" 
                   (click)="groupFilter.set(gf.key)">
                   @if (gf?.key === 'undefined') {
-                    <span class="text-muted fst-italic"> Ungrouped</span>
+                    <span class="text-secondary fst-italic"> Ungrouped</span>
                   } @else {
                     {{ gf?.key }}
                   }
@@ -183,7 +183,7 @@
                     @if (dsKv.key !== 'undefined') {
                       <span>{{ dsKv.key }}</span>
                     } @else {
-                      <span class="fst-italic text-muted">Ungrouped</span>
+                      <span class="fst-italic text-secondary">Ungrouped</span>
                     }
                   </div>
         
@@ -305,7 +305,7 @@
 </ng-template>
 
 <ng-template #loadingSpinner>
-  <div class="text-muted text-center d-flex" style="width: 160px;margin: 8px;">
+  <div class="text-secondary text-center d-flex" style="width: 160px;margin: 8px;">
     <div class="lds-ellipsis">
       <div></div>
       <div></div>

@@ -96,7 +96,7 @@
                       <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading fields information...</span>
                       </div>
-                      <div class="text-muted">Loading fields information...</div>
+                      <div class="text-secondary">Loading fields information...</div>
                     </div>
                   } @else {
                     @if (formHolder[fm]) {
@@ -120,7 +120,7 @@
                                       (click)="toggleItem(_editDatasetData,'items',formHolder[fm]?.items[f.code],fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
                                       [checked]="checkItem(_editDatasetData.items,formHolder[fm]?.items[f.code],fm)">
                                       <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                                      class="text-muted">{{s.section.title}} - </span>
+                                      class="text-secondary">{{s.section.title}} - </span>
                                     {{formHolder[fm]?.items[f.code].label}}</label>
                                   } @else {
                                     @if (s.tier) {
@@ -131,7 +131,7 @@
                                         [hidden]="formHolder[fm]?.items[f.code].type=='static'">
                                         <label class="form-check-label"
                                           for="{{f.code}}-{{s.tier?.id}}"><span
-                                        class="text-muted">{{s.section.title}} - </span>
+                                        class="text-secondary">{{s.section.title}} - </span>
                                         {{formHolder[fm]?.items[f.code].label}}
                                       ^</label>
                                     }
@@ -147,7 +147,7 @@
                                   (click)="toggleItem(_editDatasetData,'items',s.section,fm,formHolder[fm].id,s.section.type,getPrefix(fm,s.section))"
                                   [checked]="checkItem(_editDatasetData.items,s.section,fm)">
                               <label class="form-check-label" for="{{s.section.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                                  class="text-muted">
+                                  class="text-secondary">
                                   <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true"></fa-icon>                           
                                   {{s.section.title}}</span></label>
 
@@ -162,7 +162,7 @@
                                             (click)="toggleChildItem(_editDatasetData.items, s.section.code,formHolder[fm]?.items[f.code])"
                                             [checked]="checkChildItem(_editDatasetData.items, s.section.code,formHolder[fm]?.items[f.code])">
                                             <label class="form-check-label" for="{{f.code}}-{{fm}}" [class.fst-italic]="s.section.id==-1"><span
-                                            class="text-muted">{{s.section.title}} - </span>
+                                            class="text-secondary">{{s.section.title}} - </span>
                                           {{formHolder[fm]?.items[f.code].label}}</label>
                                       </div>
                                     }
@@ -406,7 +406,7 @@
                         <label class="form-check-label" for="forceCard">Force card view on desktop</label>
                       </div>
                       <div class="form-group mt-2">
-                        <label class="form-label text-muted small mb-1">Desktop Card Columns</label>
+                        <label class="form-label text-secondary small mb-1">Desktop Card Columns</label>
                         <select class="form-select form-select-sm w-auto" name="cardSize" [(ngModel)]="_editDatasetData.x.cardSize">
                           <option [ngValue]="null">1 Column (Default)</option>
                           <option value="col-6">2 Columns</option>
@@ -460,7 +460,7 @@
                           <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllGroupFields()">All</button>
                           <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAllGroupFields()">None</button>
                         </div>        
-                        <label class="text-muted mb-1">Allowed data grouping column *</label>
+                        <label class="text-secondary mb-1">Allowed data grouping column *</label>
                       </div>
                       <div style="max-height:300px;overflow-y:auto; font-size:14px;">
                         @for(gf of groupableFields|groupBy:'formTitle'; track $index; let $gindex=$index){
@@ -624,7 +624,7 @@
                   </div>
                   @if (_editDatasetData.showAction) {
                     <div style="margin-left:2.1em">
-                      <span class="text-muted">Please use the new Dataset Action</span>
+                      <span class="text-secondary">Please use the new Dataset Action</span>
                     </div>
                   }
                   <div class="form-check form-switch mb-1">
@@ -718,7 +718,7 @@
                       [linenumber]="true">
                     </app-cm>
                   </div>
-                  <span class="text-muted small">
+                  <span class="text-secondary small">
                     Value specified in custom query builder will be used if not specified in Query Parameter, Preset Filter or User Filter
                   </span>
                 </div>

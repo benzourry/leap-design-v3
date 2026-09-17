@@ -24,7 +24,7 @@
   }
 </ng-template>
 
-<div class="field-edit form-group position-relative" [ngClass]="f.altClass">
+<div class="field-edit form-group position-relative {{f.code}}" [ngClass]="f.altClass">
   
   <div [class.mobile-field-surface]="!(f.type === 'btn' || f.type === 'static')"
        [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
@@ -83,7 +83,7 @@
                     [required]="f.v?.required" [placeholder]="placeholder">
                   </angular-editor>
                 } @loading {
-                  <div class="text-center p-3 text-muted">Loading editor...</div>
+                  <div class="text-center p-3 text-secondary">Loading editor...</div>
                 }
               </div>
             }
@@ -299,7 +299,7 @@
                   }
                 } @else {
                   @if (value) {
-                    <div class="mt-2 text-muted small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
+                    <div class="mt-2 text-secondary small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
                   }
                 }
               }
@@ -374,7 +374,7 @@
                   }
                 } @else {
                   @if (value) {
-                    <div class="mt-2 text-muted small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
+                    <div class="mt-2 text-secondary small" [innerHtml]="compileTpl(f.placeholder,{'$':value})|safe:'html'"></div>
                   }
                 }
               }
@@ -420,7 +420,7 @@
                   }
                 </div>
               }
-              @if (!lookupList() || lookupList().length==0) { <div class="text-muted small mt-1">Option not available</div> }
+              @if (!lookupList() || lookupList().length==0) { <div class="text-secondary small mt-1">Option not available</div> }
               @if (!hideAddAction() && f.x?.addEntryEnabled){
                 <div class="mt-2">
                   <button type="button" class="btn btn-sm rounded-pill btn-outline-secondary px-3" (click)="triggerAddAction('')">
@@ -443,7 +443,7 @@
                       for="{{uid}}-{{$index}}"
                       [class.disabled]="f.readOnly || isDisabled(i)">{{i}}</label>
                   }@empty {
-                    <div class="text-muted small mt-1">Option not available</div>
+                    <div class="text-secondary small mt-1">Option not available</div>
                   }
                 </div>
               </div>
@@ -457,7 +457,7 @@
                     <label class="form-check-label d-block" for="{{uid}}-{{$index}}">{{i}}</label>
                   </div>
                 }@empty {
-                  <div class="text-muted small mt-1">Option not available</div>
+                  <div class="text-secondary small mt-1">Option not available</div>
                 }
               </div>
               <!-- @if (!f?.options) {  } -->
@@ -469,7 +469,7 @@
                 (change)="valueChanged($event)" (focus)="selectFocused($event)" [name]="uid" [readonly]="f.readOnly" 
                 [required]="f.v?.required" [placeholder]="' '">
               </ng-select>
-              }@else { <div class="text-muted small mt-1">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
+              }@else { <div class="text-secondary small mt-1">{{lang()=='ms'?'Pilihan tidak tersedia':'Option not available'}}</div> }
             }
           }
 
@@ -499,7 +499,7 @@
                         [accept]="f.v?.accept" [required]="!value && f?.v?.required" />
                       
                       @if (!value) {
-                        <div class="nobreak text-muted">
+                        <div class="nobreak text-secondary">
                           <fa-icon [icon]="['fas','upload']" [fixedWidth]="true" class="me-2"></fa-icon> {{f.placeholder||'Browse files...'}}
                         </div>
                       } @else {
@@ -535,7 +535,7 @@
                       [accept]="f.v?.accept" [required]="!value && f?.v?.required" />
                     
                     @if (!value) {
-                      <div class="nobreak text-muted">
+                      <div class="nobreak text-secondary">
                         <fa-icon [icon]="['fas','upload']" [fixedWidth]="true" class="me-2"></fa-icon> {{f.placeholder||'Browse files...'}}
                       </div>
                     } @else {
@@ -569,7 +569,7 @@
                   [multiple]="f.subType == 'imagemulti'" [required]="!value && f?.v?.required" accept="image/*" />
 
                 @if (!value) {
-                  <label class="image-preview-bleed empty d-block text-center text-muted cursor-pointer py-4" for="{{uid}}">
+                  <label class="image-preview-bleed empty d-block text-center text-secondary cursor-pointer py-4" for="{{uid}}">
                     <fa-icon [icon]="['fas','image']" class="fs-2 mb-1 opacity-50 d-block"></fa-icon>
                     <div class="fw-medium">{{lang()=='ms'?'Klik untuk muatnaik':'Tap to upload image'}}</div>
                   </label>
@@ -627,7 +627,7 @@
                   (valueChange)="valueChanged($event)"></app-ng-leaflet>
               </div>
             } @loading {
-              <div class="text-center p-4 text-muted"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
+              <div class="text-center p-4 text-secondary"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
             }
           } -->
           @case ('map') {
@@ -639,7 +639,7 @@
                   (valueChange)="valueChanged($event)"></app-ng-leaflet>
               </div>
             } @loading {
-              <div class="text-center p-4 text-muted"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
+              <div class="text-center p-4 text-secondary"><div class="spinner-grow spinner-grow-sm text-primary me-2" role="status"></div>Loading map...</div>
             }
           }
 
@@ -647,7 +647,7 @@
             @defer (prefetch on idle) {
               <app-speech-to-text class="smyds mt-1" [field]="f" [extractLoading]="extractLoading()"  [class.extracting]="extractLoading()" [(value)]="value" (valueChange)="valueChanged($event)" [lang]="lang()" [defaultLang]="f.x?.defLang"></app-speech-to-text>
             } @loading {
-              <div class="text-center p-3 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>Loading...</div>
+              <div class="text-center p-3 text-secondary"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>Loading...</div>
             }
           }
 
@@ -663,7 +663,7 @@
                       <div class="form-control smyds text-danger bg-danger-subtle"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" class="me-2"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
                     } @else {
                       @if (!value) {
-                        <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-muted"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                        <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-secondary"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
                       } @else {
                         <div class="form-control smyds fw-bold">{{value}}</div>
                       }
@@ -679,7 +679,7 @@
                     <div class="form-control smyds text-danger bg-danger-subtle"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" class="me-2"></fa-icon> {{lang()=='ms'?'Gagal membaca kod QR':'Failed to read QR code'}}</div>
                   } @else {
                     @if (!value) {
-                      <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-muted"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
+                      <div class="form-control smyds"><fa-icon [icon]="['fas','qrcode']" class="me-2 text-secondary"></fa-icon> {{f.placeholder||'Scan or Upload QR Code'}}</div>
                     } @else {
                       <div class="form-control smyds fw-bold">{{value}}</div>
                     }
@@ -733,7 +733,7 @@
     }
 
     @if (f.hint) {
-      <small class="val-text text-muted d-flex align-items-start">
+      <small class="val-text text-secondary d-flex align-items-start">
         <fa-icon [icon]="['fas','info-circle']" class="me-2 opacity-75 flex-shrink-0" ></fa-icon>
         <span>{{f.hint}}</span>
       </small>

@@ -257,7 +257,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                         }  
                                         <div class="ms-2">
                                           @if (listKv?.key === 'undefined') {
-                                            <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                            <span class="text-secondary fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
                                           } @else {
                                             {{listKv?.key}}
                                           }
@@ -303,7 +303,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                               }  
                               <div class="ms-2">
                                 @if (listKv?.key === 'undefined') {
-                                  <span class="text-muted fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
+                                  <span class="text-secondary fst-italic"> {{lang() === 'ms' ? 'Tiada data' : 'Data not available'}}</span>
                                 } @else {
                                   {{listKv?.key}}
                                 }

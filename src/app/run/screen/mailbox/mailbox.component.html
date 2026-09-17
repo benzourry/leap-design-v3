@@ -26,7 +26,8 @@
                                     justify-content-center" style="height:40px; width:40px; font-weight:bold">A</div>
                                     <div class="text-truncate text-start" [class.text-white]="n?.id == notif()?.id" style="margin-left:50px;">
                                         <span class="">{{cleanText(n.content)}}</span>
-                                        <div class="small">{{n.timestamp|date:'':angularLocale()}}</div>
+                                        <div class="small text-secondary text-opacity-75">{{n.timestamp|date:'medium':'':angularLocale()}}</div>
+                                        <!-- <div class="small">{{n.timestamp|date:'':angularLocale()}}</div> -->
                                     </div>
                                 </button>
                             }

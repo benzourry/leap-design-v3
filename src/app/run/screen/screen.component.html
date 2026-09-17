@@ -168,7 +168,7 @@
                   
                   @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
                     <div class="dropdown-divider"></div>
-                    <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
+                    <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
                     @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
                     @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
                     @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user().email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
@@ -176,7 +176,7 @@
 
                   @if (entryTotal() > 25 && screen()?.data?.paginate) {
                     <div class="dropdown-divider"></div>
-                    <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
+                    <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
                     @for (size of [25, 50, 100, 500]; track size) { <button type="button" ngbDropdownItem [class.active]="pageSize() === size" (click)="pageSize.set(size); loadDatasetEntry(dataset(), 1)">{{size}} Items</button> }
 
                     <!-- <button type="button" ngbDropdownItem [class.active]="pageSize() === 25" (click)="pageSize.set(25); loadDatasetEntry(dataset(), 1)">25 Items</button>
@@ -185,7 +185,7 @@
                   }
 
                   <div class="dropdown-divider"></div>
-                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
+                  <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
                   @for (item of dataset()?.items; track item.id) {
                     @if (item.label) {
                       <button type="button" class="pointer" [class.text-primary]="sortField() == item.id" ngbDropdownItem 

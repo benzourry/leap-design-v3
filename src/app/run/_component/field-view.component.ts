@@ -98,11 +98,11 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             
             <div>
               @if (field().x?.prefix && !field().x?.prefixPost) {
-                <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
+                <span class="text-secondary me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
               }
               <span [morphHtml]="nl2brSafe(value())"></span>
               @if (field().x?.suffix && !field().x?.suffixPost) {
-                <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
+                <span class="text-secondary ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
               }
             </div>
           </div>
@@ -159,7 +159,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
         <span>
           @if (field().subType === 'text') {
             @if (field().x?.prefix && !field().x?.prefixPost) {
-              <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
+              <span class="text-secondary me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
             }
             <span>
               @if(field()?.format) {
@@ -169,7 +169,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
               }
             </span>
             @if (field().x?.suffix && !field().x?.suffixPost) {
-              <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
+              <span class="text-secondary ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
             }
           }
           @if (field()?.subType === 'qr') {
@@ -202,7 +202,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       @if (['number', 'scaleTo5', 'scaleTo10', 'scale'].includes(field()?.type)) {
         <span>
           @if (field().x?.prefix && !field().x?.prefixPost) {
-            <span class="text-muted me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
+            <span class="text-secondary me-05" [innerHtml]="compiledPrefix()|safe:'html'"></span>
           }
           <span>
             {{ formattedValue() }}
@@ -213,7 +213,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             }
           </span>
           @if (field().x?.suffix && !field().x?.suffixPost) {
-            <span class="text-muted ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
+            <span class="text-secondary ms-05" [innerHtml]="compiledSuffix()|safe:'html'"></span>
           }
         </span>
       }

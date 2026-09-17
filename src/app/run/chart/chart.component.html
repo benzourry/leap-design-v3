@@ -75,7 +75,7 @@
                         [class.drill-link]="chart().x?.drill && d.value != 0" 
                         [class.text-decoration-underline]="chart().x?.drill && d.value != 0"
                         (click)="chart().x?.drill && d.value != 0 ? onChartClick({name: d.name, value: d.value}) : null">
-                      <span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span>
+                      <span class="me-05 text-secondary">{{chart().x?.prefix}}</span>{{chart().x?.format ? (d.value | number: chart().x.format) : d.value}}<span class="ms-05 text-secondary">{{chart().x?.suffix}}</span>
                     </td>
 
                     @if (chart().showAgg && chart().x?.percentage) {
@@ -120,7 +120,7 @@
                           [class.drill-link]="chart().x?.drill && dv != 0" 
                           [class.text-decoration-underline]="chart().x?.drill && dv != 0"
                           (click)="chart().x?.drill && dv != 0 ? onChartClick({name: chartDataset()?.data[0][$index+1], seriesName: d[0], value: dv}) : null">
-                        <span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span>
+                        <span class="me-05 text-secondary">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05 text-secondary">{{chart().x?.suffix}}</span>
                       </td>
                     }
 
@@ -139,7 +139,7 @@
                       <td class="bg-body-secondary text-body-emphasis fw-bold text-end"><span class="me-05">{{chart().x?.prefix}}</span>{{chart().x?.format ? (dv | number: chart().x.format) : dv}}<span class="ms-05">{{chart().x?.suffix}}</span></td>
                     }
                     <td class="text-end">
-                      <strong><span class="me-05 text-muted">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05 text-muted">{{chart().x?.suffix}}</span></strong>
+                      <strong><span class="me-05 text-secondary">{{chart().x?.prefix}}</span>{{chart().x?.format ? (chartDataset()?._a | number: chart().x.format) : chartDataset()?._a}}<span class="ms-05 text-secondary">{{chart().x?.suffix}}</span></strong>
                     </td>
                     @if (chart().showAgg && chart().x?.percentage) {
                       <td class="text-end">100.00</td>
@@ -154,7 +154,7 @@
     </div>
   }@else{
     <div class="d-flex justify-content-center" [ngStyle]="{'height':maxState()?'auto':(chart().height+'px'||'450px')}">
-      <span class="align-self-center text-muted">{{lang()=='ms'?'Tiada data':'No data'}}</span>
+      <span class="align-self-center text-secondary">{{lang()=='ms'?'Tiada data':'No data'}}</span>
     </div>
   }
 </div>

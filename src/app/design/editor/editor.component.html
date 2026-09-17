@@ -101,11 +101,11 @@
       </div>
     </div>
   } @else {
-    <div class="p-3 text-center text-muted"><h4>You are not authorized to access <strong>{{app()?.title}}</strong> app design</h4></div>
+    <div class="p-3 text-center text-secondary"><h4>You are not authorized to access <strong>{{app()?.title}}</strong> app design</h4></div>
   }
 } @else {
   @if (!loading()) {
-    <div class="p-3 text-center text-muted"><h4>No app found with ID: {{appId}}</h4></div>
+    <div class="p-3 text-center text-secondary"><h4>No app found with ID: {{appId}}</h4></div>
   }
 }
 

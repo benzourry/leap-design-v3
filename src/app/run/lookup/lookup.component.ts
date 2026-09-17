@@ -18,6 +18,7 @@ import { PageTitleComponent } from '../_component/page-title.component';
 import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 import { NgSelectComponent } from '@ng-select/ng-select';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'app-lookup',
@@ -428,6 +429,8 @@ export class LookupComponent implements OnInit {
 
      selectedEntries = signal<Record<number, any>>({});
 
+     selectedCount = computed(() => Object.keys(this.selectedEntries()).length);
+
     checkAllEntry(checked: boolean) {
         this.selectedEntries.update(current => {
         const newSelection = { ...current };
@@ -459,19 +462,35 @@ export class LookupComponent implements OnInit {
         const isMs = this.lang() === 'ms';
 
         if (confirm(isMs ? 'Anda pasti untuk membuang semua entri ini?' : 'Remove all ' + selectedKeys.length + ' entries?')) {
-        //   this.entryService.bulkDelete(selectedKeys, this.user().email)
-        //     .pipe(takeUntilDestroyed(this.destroyRef))
-        //     .subscribe({
-        //       next: () => {
-        //         this.selectedEntries.set({});
-        //         this.checkAllInput.set(false);
+            
+            // 1. Loop through selected keys and map to removeEntry requests
+            const removeRequests = selectedKeys.map(id => this.lookupService.removeEntry(id, null));
 
-        //         const newPage = (this.numberOfElements() === selectedKeys.length && this.pageNumber() === this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber();
-        //         this.pageNumber.set(Math.max(1, newPage));
-        //         this.getEntryList(this.pageNumber());
-        //         this.toastService.show(isMs ? 'Entri berjaya dibuang' : 'Entries removed successfully', { classname: 'bg-success text-light' });
-        //       }
-        //     });
+            // 2. Execute all requests in parallel
+            forkJoin(removeRequests)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                    next: () => {
+                        // 3. Clear selections
+                        this.selectedEntries.set({});
+                        this.checkAllInput.set(false);
+
+                        // 4. Calculate new page (if we deleted everything on the last page, go back one page)
+                        const newPage = (this.lookupEntryElements() === selectedKeys.length && this.entryPageNumber() === this.lookupEntryPages()) 
+                            ? this.entryPageNumber() - 1 
+                            : this.entryPageNumber();
+                        
+                        this.entryPageNumber.set(Math.max(1, newPage));
+                        
+                        // 5. Reload the list and show toast
+                        this.getLookupEntryList(this.entryPageNumber());
+                        this.toastService.show(isMs ? 'Entri berjaya dibuang' : 'Entries removed successfully', { classname: 'bg-success text-light' });
+                    },
+                    error: () => {
+                        this.toastService.show(isMs ? 'Gagal membuang beberapa entri' : 'Failed to remove some entries', { classname: 'bg-danger text-light' });
+                        this.getLookupEntryList(this.entryPageNumber()); // Refresh to get the actual remaining state
+                    }
+                });
         }
     }
 
@@ -481,6 +500,15 @@ export class LookupComponent implements OnInit {
 
     getUrl(pre, path) {
         return baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
+    }
+
+    isObjectEmpty(obj) {
+        for (const prop in obj) {
+            if (Object.hasOwn(obj, prop)) {
+            return false; // Found a property, not empty
+            }
+        }
+        return true;
     }
 
     compareByCodeFn = (a, b): boolean => (a && a.code) === (b && b.code);

@@ -116,7 +116,7 @@
                 
                 @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
                   <div class="dropdown-divider"></div>
-                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
+                  <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
                   @if (dataset()?.exportXls) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/xlsx?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} Excel</a> }
                   @if (dataset()?.exportCsv) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/csv?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} CSV</a> }
                   @if (dataset()?.exportPdf) { <a ngbDropdownItem target="_blank" href="{{base}}/report/export/{{dataset()?.id}}/pdf?email={{user()?.email}}&filters={{filtersEncoded()}}&searchText={{searchTextEncoded()}}&@cond={{filtersCond}}&{{confValueEncoded()}}">Export {{lang()=='ms'?'ke':'to'}} PDF</a> }
@@ -124,7 +124,7 @@
 
                 @if (entryTotal() > 25) {
                   <div class="dropdown-divider"></div>
-                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
+                  <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true" class="me-1"></fa-icon> Page Size ({{pageSize()}})</h6>
                   @for (size of [25, 50, 100, 500]; track size) { <button type="button" ngbDropdownItem [class.active]="pageSize() === size" (click)="pageSize.set(size); getEntryList(1)">{{size}} Items</button> }
                 }
 
@@ -140,7 +140,7 @@
 
                 @if (dataset()?.x?.tblcard && !asComp()) {
                   <div class="dropdown-divider"></div>
-                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
+                  <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','sort']" [fixedWidth]="true" class="me-1"></fa-icon> Sort: {{sortFieldName()}}</h6>
                   @for (item of dataset()?.items; track item.id) { 
                     @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
                     @if (fField?.type !== 'static') {
@@ -151,7 +151,7 @@
 
                 @if (dataset()?.x?.canGroup) {
                   <div class="dropdown-divider"></div>
-                  <h6 class="dropdown-header text-muted small"><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="me-1"></fa-icon> Group By</h6>
+                  <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="me-1"></fa-icon> Group By</h6>
                   <button type="button" class="pointer fst-italic" ngbDropdownItem (click)="groupByField(null, null, null)">{{lang()=='ms' ? 'Nyahkumpul' : 'Ungroup'}}</button>
                   @for (gf of dataset()?.x?.groupFields | keyvalue; track gf.key) { <button type="button" class="pointer" [class.fst-italic]="['currentStatus','submissionDate'].indexOf(gf.key+'') > -1" [class.text-primary]="groupFieldCode() == gf.key" ngbDropdownItem (click)="groupByField($index, gf.value, gf.key+'')">{{gf.value}}</button> }
                 }
@@ -195,7 +195,7 @@
               <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2 text-nowrap flex-shrink-0"
                 [ngClass]="{'bg-info-subtle text-primary border-primary': groupFilter() == gf.key}" (click)="groupFilter.set(gf.key)">
                 @if (gf?.key == 'undefined') {
-                  <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
+                  <span class="text-secondary fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                 } @else {
                   <span [innerHtml]="gf?.key"></span>
                 }
@@ -268,10 +268,10 @@
                       @if (groupFieldCode()) {
                         <tr class="ds-group-header mb-n2">
                           <td [attr.colspan]="totalColumn" class="p-0">
-                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-secondary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-tertiary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                               <div>
                                 @if (listKv?.key == 'undefined') {
-                                  <span class="text-muted fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
+                                  <span class="text-secondary fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
                                 } @else {
                                   <span [innerHtml]="listKv?.key"></span>
                                 }
@@ -441,19 +441,19 @@
                           @if (aggTotalValue || aggAvgValue) {
                             <div class="d-flex flex-column align-items-end justify-content-center h-100 py-1">
                               @if (aggTotalValue && aggColumnTotalField[item.root + '.' + item.code]) {
-                                <div class="small text-muted" style="line-height: 1;">Total</div>
+                                <div class="small text-secondary" style="line-height: 1;">Total</div>
                                 <div class="fw-semibold">
-                                  @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
+                                  @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
                                   {{fField?.format ? (aggTotalValue | number:fField?.format) : aggTotalValue}}
-                                  @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
+                                  @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
                                 </div>
                               }
                               @if (aggAvgValue && aggColumnAvgField[item.root + '.' + item.code]) {
-                                <div class="small text-muted" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
+                                <div class="small text-secondary" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
                                 <div class="fw-semibold">
-                                  @if (fField.x?.prefix) { <span class="text-muted me-05">{{fField.x?.prefix}}</span> }
+                                  @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
                                   {{fField?.format ? (aggAvgValue | number:fField?.format) : aggAvgValue}}
-                                  @if (fField.x?.suffix) { <span class="text-muted ms-05">{{fField.x?.suffix}}</span> }
+                                  @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
                                 </div>
                               }
                             </div>
@@ -495,7 +495,7 @@
                   }
                 }
               }@empty {
-                <span class="fst-italic ms-3 text-muted">{{lang()=='ms' ? 'Tiada tindakan kelompok tersedia' : 'No bulk action available'}}</span>
+                <span class="fst-italic ms-3 text-secondary">{{lang()=='ms' ? 'Tiada tindakan kelompok tersedia' : 'No bulk action available'}}</span>
               }
             </div>
           }
@@ -534,7 +534,7 @@
     </div>
   } @else {
     @if (!loading() && userUnauthorized()) {
-      <div class="detail text-muted">
+      <div class="detail text-secondary">
         <h3>{{lang()=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
       </div>
     }

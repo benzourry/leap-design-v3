@@ -54,7 +54,7 @@
       'imagePreview':imagePreview,'file':file,'eval':eval,'static':static,'qr':qr,'modelPicker':modelPicker,'checkboxOption':checkboxOption, 'btn':btn, 'color':color, 'map':map}[field().type]">
     </ng-container>
     @if (field().hint) {
-      <small class="val-text form-text text-muted d-block">
+      <small class="val-text form-text text-secondary d-block">
         <fa-icon [icon]="['fas','info-circle']"></fa-icon>
         <span>{{field().hint}}</span>
       </small>
@@ -522,7 +522,7 @@
       </div>
     }
     @if (!lookupList() || lookupList().length==0) {
-      <div class="text-muted">
+      <div class="text-secondary">
         Option not available
       </div>
     }
@@ -562,7 +562,7 @@
           }
         </div>
         @if (!field()?.options) {
-          <div class="text-muted">
+          <div class="text-secondary">
             Option not available
           </div>
         }
@@ -596,7 +596,7 @@
         }
       </div>
       @if (!field()?.options) {
-        <div class="text-muted">
+        <div class="text-secondary">
           Option not available
         </div>
       }
@@ -614,7 +614,7 @@
       </ng-select>
     </label>
     @if (!field()?.options) {
-      <div class="text-muted">
+      <div class="text-secondary">
         Option not available
       </div>
     }
