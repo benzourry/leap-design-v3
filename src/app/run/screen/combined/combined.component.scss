@@ -1,0 +1,28 @@
+.swipe-area {
+  touch-action: pan-y;
+  width: 100%;
+  overflow-x: hidden; 
+  position: relative;
+  /* Force hardware acceleration on the wrapper */
+  will-change: transform, opacity;
+  min-height: calc(100vh - 118px - 24px); // 100% - navtab - padding bottom viewport
+}
+
+/* Animate the WRAPPER directly, avoiding NgBootstrap conflicts */
+.swipe-area.slide-dir-left {
+  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+.swipe-area.slide-dir-right {
+  animation: slideInFromLeft 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes slideInFromRight {
+  0% { transform: translateX(100%); opacity: 0.5; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  0% { transform: translateX(-100%); opacity: 0.5; }
+  100% { transform: translateX(0); opacity: 1; }
+}

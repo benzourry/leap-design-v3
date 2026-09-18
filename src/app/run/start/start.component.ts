@@ -107,6 +107,7 @@ export class StartComponent implements OnInit, OnDestroy {
     return current.endsWith('/' + start) || current === '/' + start;
   });
   isPeekExpanded = signal<boolean>(false);
+  activeBottomNavIndex = signal<number>(0);
 
   frameless = computed(() => (getQuery('noframe') || localStorage.getItem('noframe')) === 'true');
   isDev = computed(() => this.app()?.email?.includes(this.userService.getActualUser()?.email) ?? false);
@@ -218,8 +219,21 @@ export class StartComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Add this near your other signals
-  activeBottomNavIndex = signal<number>(0);
+  touchStartY:number = 0;
+
+  onBottomSwipeStart(event: TouchEvent){
+    this.touchStartY = event.changedTouches[0].screenY;
+  }
+
+  onBottomSwipeEnd(event: TouchEvent, panel: HTMLElement){
+    const touchEndY = event.changedTouches[0].screenY;
+    const swipeDistance = this.touchStartY - touchEndY;
+    if (swipeDistance>20){
+      panel.focus()
+    }else if(swipeDistance<-20){
+      panel.blur()
+    }
+  }
 
   // Add this method anywhere in your class
   onBottomNavScroll(event: Event) {

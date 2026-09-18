@@ -36,7 +36,7 @@
       <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" [activeId]="getActiveTab(screen().id)"
         class="nav-{{screen()?.data?.nav??'pills'}} px-3 justify-content-center" [class.limit-width]="!screen().wide">
         @for (tab of screen()?.data?.comps; track $index) {
-          <li [ngbNavItem]="$index">
+          <li [ngbNavItem]="$index" #tabItem>
             <a ngbNavLink [routerLink]="[]" [queryParams]="{ tab: $index }" (click)="setActiveTab(screen().id, $index)" queryParamsHandling="preserve">
               @if (screen()?.data?.showIndex) {
                 <div style="float:left; height:20px; width:20px; background: var(--bs-secondary, #666); color: var(--bs-white, white); font-size:.8em; padding:0; margin-left:-5px; margin-top:1px; line-height:20px; text-align:center; margin-right:0.3em; border-radius:20px;">
@@ -55,7 +55,13 @@
         }
       </ul>
     </div>
-    <div [ngbNavOutlet]="nav" class="pt-3"></div>
+    <div class="swipe-area" 
+     [class.slide-dir-left]="swipeDirection() === 'left'" 
+     [class.slide-dir-right]="swipeDirection() === 'right'"
+     (touchstart)="onTouchStart($event)" 
+     (touchend)="onTouchEnd($event)">
+      <div [ngbNavOutlet]="nav" class="pt-3"></div>
+    </div>
   </div>
 }
 
