@@ -159,17 +159,21 @@
 }
 
 .preview-edit-item {
-  cursor: grab;
   transition: all 0.2s ease-in-out;
-  border-radius: 0.25rem; 
+  border-radius: 0.25rem;
   
-  &:active {
-    cursor: grabbing;
-  }
-  
-  &:hover {
-    background-color: rgba(var(--bs-primary-rgb), 0.08) !important;
-    box-shadow: inset 0 0 0 1px rgba(var(--bs-primary-rgb), 0.2);
+  /* Only apply interaction styling when editing is enabled */
+  &.is-editable {
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+    }
+    
+    &:hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.08) !important;
+      box-shadow: inset 0 0 0 1px rgba(var(--bs-primary-rgb), 0.2);
+    }
   }
 }
 

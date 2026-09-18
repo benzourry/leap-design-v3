@@ -60,5 +60,24 @@ export class ThemeService {
 
     // Apply Bootstrap 5's theme attribute to the root HTML tag
     document.documentElement.setAttribute('data-bs-theme', resolvedTheme);
+
+    // Update the meta theme-color to match bg-body
+    this.updateMetaThemeColor(resolvedTheme);
+  }
+
+  private updateMetaThemeColor(resolvedTheme: string): void {
+    // Standard Bootstrap 5 bg-body hex codes. Update these if your app uses custom background colors.
+    // const themeColor = resolvedTheme === 'dark' ? '#212529' : '#ffffff';
+    const themeColor = resolvedTheme === 'dark' ? '#2b2f34' : '#f8f9fa';
+    let metaThemeTag = document.querySelector('meta[name="theme-color"]');
+
+    if (metaThemeTag) {
+      metaThemeTag.setAttribute('content', themeColor);
+    } else {
+      metaThemeTag = document.createElement('meta');
+      metaThemeTag.setAttribute('name', 'theme-color');
+      metaThemeTag.setAttribute('content', themeColor);
+      document.head.appendChild(metaThemeTag);
+    }
   }
 }

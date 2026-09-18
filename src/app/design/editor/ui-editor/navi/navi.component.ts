@@ -204,6 +204,12 @@ export class NaviComponent implements OnInit {
           icon: 'fas:th'
         });
         this.palettes.push({
+          title: 'My Profile',
+          type: 'profile',
+          screenId: undefined,
+          icon: 'far:user'
+        });
+        this.palettes.push({
           title: 'Manage All User ',
           type: 'user',
           screenId: undefined,

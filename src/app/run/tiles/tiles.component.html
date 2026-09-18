@@ -113,6 +113,13 @@
                             <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
                           </a>
                         }
+                        @case ('profile') {
+                          <a class="s-icon" routerLink="{{preurl()}}/profile"
+                            [skipLocationChange]="item.x?.slc"
+                            routerLinkActive="active">
+                            <ng-container *ngTemplateOutlet="navIconContent; context: { item: item, naviDataItem: naviDataItem }"></ng-container>
+                          </a>
+                        }
                         @case ('lambda') {
                           <a class="s-icon" routerLink="{{preurl()}}/~/{{item.url}}"
                             [skipLocationChange]="item.x?.slc"

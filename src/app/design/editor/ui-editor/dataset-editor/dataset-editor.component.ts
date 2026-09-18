@@ -727,6 +727,7 @@ export class DatasetEditorComponent implements OnInit {
     }
 
     showCardPreview: boolean = false;
+    enableCardPreviewEdit: boolean = false;
     hasDropdown(actions: any[]): boolean {
         if (!actions || !Array.isArray(actions)) return false;
         return actions.some(a => a.type === 'dropdown');

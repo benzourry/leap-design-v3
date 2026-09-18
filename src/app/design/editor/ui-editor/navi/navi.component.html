@@ -68,7 +68,7 @@
                     <div class="list-group-item icon element p-2 ps-3" cdkDrag
                       [ngClass]="item.altClass">
                       <span class="element-item"
-                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','lambda','user','start'].indexOf(item.type)==-1">
+                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','lambda','user','start','profile'].indexOf(item.type)==-1">
                         <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit"
                           [fixedWidth]="true">
                         </fa-icon>
@@ -94,6 +94,8 @@
                             <small class="text-body-secondary">/webui/{{item.url}}</small>
                           }@else if (item.type=='start') {
                             <small class="text-body-secondary">/start</small>
+                         }@else if (item.type=='profile') {
+                            <small class="text-body-secondary">/profile</small>
                           }@else if (item.type=='external'||item.type=='internal') {
                             <small class="text-body-secondary">{{item.url}}</small>
                           }
@@ -179,7 +181,7 @@
                     @for (item of group.items; track $index) {
                       @let naviDataItem = naviData[item.type+'-'+item.screenId];
                       @if (!naviDataItem?.access||naviDataItem?.access.users.indexOf(viewAs||'*')>-1) {
-                        @if (!naviDataItem && ['external','internal','user','start', 'lambda'].indexOf(item.type)==-1) {
+                        @if (!naviDataItem && ['external','internal','user','start','profile','lambda'].indexOf(item.type)==-1) {
                           <div class="s-icon text-danger disabled"
                             >
                             <fa-icon [icon]="['fas','exclamation-triangle']" size="3x"
@@ -188,7 +190,7 @@
                             <div class="title">{{item.title}}</div>
                           </div>
                         }
-                        @if (naviDataItem || ['external','internal','user','start', 'lambda'].indexOf(item.type)>-1) {
+                        @if (naviDataItem || ['external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
                           @if (item.type=='form') {
                             <a class="s-icon text-body"
                               [class.disabled]="naviDataItem?.inactive">
@@ -260,7 +262,7 @@
                               }
                             </a>
                           }
-                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start','lambda'].indexOf(item.type)>-1) {
+                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
                             <ng-container>
                               <a class="s-icon text-body">
                                 <fa-icon [icon]="item.icon|iconSplit" size="3x"

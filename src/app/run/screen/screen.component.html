@@ -37,7 +37,7 @@
     @if ((screen()?.showAction||screen()?.canPrint||screen()?.data?.showSummary)) {
       @let showToolbar = screen()?.showAction && ['list','map','calendar'].includes(screen()?.type);
       @let showPrint = screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type);
-      <div [class.px-3]="!asComp()" [class.pt-2]="!asComp()" class="print-hide text-center">
+      <div [class.px-3]="!asComp()" class="print-hide text-center"> <!-- [class.pt-2]="!asComp()"-->
         <div class="toolbar title print-hide m-a mb-2 flex-wrap align-items-stretch position-relative"
           [class.d-inline-block]="!showToolbar"
           [class.d-flex]="showToolbar"

@@ -169,7 +169,7 @@
                         @for (item of group.items; track item.id) {
                           @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
                           
-                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                          @if ((naviDataItem || ['external','internal','user', 'lambda', 'start', 'profile'].includes(item.type)) && preItem()[item.id]) {
                             <div>
                               @if (['external', 'internal'].includes(item.type)) {
                                 <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
@@ -183,6 +183,7 @@
                                   item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
                                   item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
                                   item.type === 'start' ? preurl() + '/start' :
+                                  item.type === 'profile' ? preurl() + '/profile' :
                                   item.type === 'lambda' ? preurl() + '/webui/' + item.url :
                                   preurl() + '/' + item.type + '/' + (item.screenId ?? '');
                                   
@@ -241,7 +242,7 @@
                           <div class="bottom-nav-group d-flex gap-2 w-100 overflow-x-auto px-4 pt-3 mt-auto">
                           @for (item of group.items; track item.id) {
                             @let naviDataItem = naviData()?.[item.type + '-' + item.screenId];
-                            @if ((naviDataItem || ['external','internal','user', 'lambda', 'start'].includes(item.type)) && preItem()[item.id]) {
+                            @if ((naviDataItem || ['external','internal','user', 'lambda', 'start', 'profile'].includes(item.type)) && preItem()[item.id]) {
                               
                               @if (['external', 'internal'].includes(item.type)) {
                                 <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
@@ -256,6 +257,7 @@
                                   item.type === 'form-single' ? preurl() + '/form/' + item.screenId + '/edit-single' :
                                   item.type === 'view-single' ? preurl() + '/form/' + item.screenId + '/view' :
                                   item.type === 'start' ? preurl() + '/start' :
+                                  item.type === 'profile' ? preurl() + '/profile' :
                                   item.type === 'lambda' ? preurl() + '/webui/' + item.url :
                                   preurl() + '/' + item.type + '/' + (item.screenId ?? '');
                                 
@@ -268,7 +270,12 @@
                                   (click)="hideSb()" 
                                   routerLinkActive="active"
                                   class="bottom-nav-item text-body position-relative d-flex flex-column align-items-center text-decoration-none p-2 bg-body rounded-4">
-                                  <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
+                                  @if (item.type=='profile'){
+                                    <img [src]="user().imageUrl" (error)="$any($event.target).src='assets/img/avatar-big.png'"
+                                      class="rounded-circle float-start" style="width:36px;height:36px;">
+                                  }@else {
+                                    <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
+                                  }                                  
                                   <span>{{item.title}}</span>
                                   @if (badge()[item.type + '_' + item.screenId]!==undefined && item.x?.menuBadge) {
                                     <span class="badge position-absolute rounded-pill bg-danger">

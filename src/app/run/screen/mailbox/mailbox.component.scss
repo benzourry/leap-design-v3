@@ -10,7 +10,7 @@
     flex: 1;
     flex-shrink: 1;
     overflow: hidden;
-    padding: 0.25rem;
+    // padding: 0.25rem;
 }
 
 .notif-shown .mailbox-list-wrapper {
@@ -31,5 +31,15 @@
         .mailbox-content-wrapper {
             display: block;
         }
+    }
+}
+
+:host-context(.is-embedded) .mailbox-viewport {
+    padding-top: 1rem;
+}
+
+.mailbox-list-wrapper {
+    .list-group-item {
+        border-color: rgba(var(--bs-body-color-rgb), 0.15) !important;
     }
 }

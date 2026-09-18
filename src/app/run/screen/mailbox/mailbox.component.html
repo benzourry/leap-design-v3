@@ -1,9 +1,19 @@
-<div class="p-1">
-    <div class="p-1">
-        <input type="search" class="search-icon flex-grow-1 bg-body-tertiary text-body rounded-2 border border-1-5 py-2" style="width:100%;" placeholder="Start typing and press Enter to search..."
-            (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
+<div class="px-3 mailbox-viewport">
+
+    <div class="toolbar title d-flex print-hide m-auto mb-2 flex-wrap align-items-stretch position-relative">
+        <input type="search" autocapitalize="none" id="search_mailbox"
+              class="search-icon bg-body rounded-2 normal border border-1-5 flex-grow-1" style="min-width: 0;"
+              [placeholder]="lang()=='ms'?'Mula menaip dan tekan Enter untuk mencari...':'Start typing and press Enter to search...'" 
+              (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
     </div>
-    <div class="mailbox-main g-2" [class.notif-shown]="notif()?.id">
+
+
+    <!-- <div class="toolbar">
+        <input type="search" class="search-icon flex-grow-1 bg-body-tertiary text-body rounded-3 border border-1-5 py-2" style="width:100%;" 
+        placeholder="Start typing and press Enter to search..."
+            (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
+    </div> -->
+    <div class="mailbox-main gap-2" [class.notif-shown]="notif()?.id">
         <div class="mailbox-list-wrapper">
             <div>
                 @for (kv of list()|groupBy:'dateFmt'; track $index) {
@@ -16,7 +26,7 @@
                         }
                     </button>
                     @if(!hideMailOn()[kv.key]){
-                       <div class="list-group">
+                       <div class="list-group rounded-3">
                             @for (n of kv.value; track n.id) {
                                 <button class="list-group-item nobreak p-2 cursor-pointer maillist"
                                     [class.bg-primary]="n?.id == notif()?.id"
@@ -26,7 +36,7 @@
                                     justify-content-center" style="height:40px; width:40px; font-weight:bold">A</div>
                                     <div class="text-truncate text-start" [class.text-white]="n?.id == notif()?.id" style="margin-left:50px;">
                                         <span class="">{{cleanText(n.content)}}</span>
-                                        <div class="small text-secondary text-opacity-75">{{n.timestamp|date:'medium':'':angularLocale()}}</div>
+                                        <div class="small text-secondary text-opacity-75" [class.text-white]="n?.id == notif()?.id">{{n.timestamp|date:'medium':'':angularLocale()}}</div>
                                         <!-- <div class="small">{{n.timestamp|date:'':angularLocale()}}</div> -->
                                     </div>
                                 </button>
@@ -48,7 +58,7 @@
         @if (notif()){
             <div class="mailbox-content-wrapper">
                 <div class="mb-3">
-                    <button class="btn btn-outline-secondary btn-rounded fs-5" (click)="notif.set(null)">
+                    <button class="btn bg-body text-secondary rounded-pill fs-5" (click)="notif.set(null)">
                         <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
                         {{lang()=='ms'?'Kembali':'Back'}}
                     </button>

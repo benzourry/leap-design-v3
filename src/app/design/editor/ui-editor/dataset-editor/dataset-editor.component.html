@@ -193,18 +193,27 @@
                     <!-- ADD THIS: Card Layout Preview Section (Using Native list-component SCSS) -->
                     <div class="mt-4 mb-3">
                       <!-- Clickable Header for Collapse/Expand -->
-                      <div class="d-flex align-items-center mb-2" 
+                      <div class="d-flex align-items-center" 
                           style="cursor: pointer;" 
                           (click)="showCardPreview = !showCardPreview">
                         <h6 class="m-0 user-select-none">
                           <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-secondary me-1"></fa-icon>Card Layout Preview
                         </h6>
+
+                        <!-- ADDED: Checkbox right before the caret if expanded -->
+
                         <button type="button" class="btn btn-sm btn-link ms-3 text-secondary p-0 text-decoration-none">
                           <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true"></fa-icon>
                         </button>
                       </div>
                       
                       @if (showCardPreview) {
+                        @if (showCardPreview) {
+                          <div class="form-check m-0 ms-4 mb-2">
+                            <input class="form-check-input" type="checkbox" id="enableCardEdit" [(ngModel)]="enableCardPreviewEdit">
+                            <label class="form-check-label small user-select-none text-secondary" for="enableCardEdit">Enable Card Edit</label>
+                          </div>
+                        }
                         <!-- Utilizing your existing .forceCard and .tblcard CSS! -->
                         <div class="forceCard position-relative mt-2">
                           <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
@@ -230,10 +239,21 @@
                                     @let fType = form[item.root]?.items[item.code]?.type;
                                     
                                     <!-- ADDED cdkDrag here, updated title tooltip -->
-                                    <td class="ds-item code-{{item.code}} preview-edit-item" 
+                                    <!-- <td class="ds-item code-{{item.code}} preview-edit-item" 
                                         cdkDrag
                                         title="Click to edit, or drag to reorder"
                                         (click)="editItem(editItemTpl, item)"
+                                        [class.last-ds-item]="isLast"
+                                        [class.td-list]="item.type === 'list'"
+                                        [ngClass]="item.x?.cardStyle"
+                                        [attr.data-label]="item.label" [attr.code]="item.code"> -->
+
+                                    <td class="ds-item code-{{item.code}} preview-edit-item" 
+                                        cdkDrag 
+                                        [cdkDragDisabled]="!enableCardPreviewEdit"
+                                        [class.is-editable]="enableCardPreviewEdit"
+                                        [title]="enableCardPreviewEdit ? 'Click to edit, or drag to reorder' : ''"
+                                        (click)="enableCardPreviewEdit && editItem(editItemTpl, item)"
                                         [class.last-ds-item]="isLast"
                                         [class.td-list]="item.type === 'list'"
                                         [ngClass]="item.x?.cardStyle"

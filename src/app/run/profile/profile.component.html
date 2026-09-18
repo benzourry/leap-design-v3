@@ -8,7 +8,7 @@
         <img src="{{user()?.imageUrl}}" class="rounded mb-2" onError="this.src='assets/img/avatar-big.png'"
           style="max-width:100px;">
       </div>
-      <div class="card">
+      <div class="card rounded-3 overflow-hidden">
         <div class="list-group list-group-flush">
           @if (app()?.x?.userFromApp) {
             <div class="list-group-item bg-light text-secondary">
@@ -68,7 +68,7 @@
       </div>
 
       <div class="mt-3">
-        <button class="btn btn-danger w-100" role="button" (click)="logout()">
+        <button class="btn btn-danger w-100 rounded-3" role="button" (click)="logout()">
             <fa-icon [icon]="['fas','sign-out-alt']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Log keluar':'Logout'}}
         </button>
       </div>
@@ -81,7 +81,7 @@
           'Tiada notifikasi buat masa sekarang':
           'No notification at the moment'}}</h4>
         }@else{
-          <div class="card mt-2">
+          <div class="card rounded-3 overflow-hidden mt-2">
             <div class="list-group list-group-flush">
               @for (n of notifList(); track n.id) {
                 <div class="list-group-item nobreak"
@@ -100,7 +100,7 @@
           {{lang()=='ms'?'Penerimaan Pemberitahuan':'Push Notification Subscription'}}
           <div class="small">{{lang()=='ms'?'Klik untuk nyahterima':'Click to unsubscribe'}}</div>
         </div>
-        <div class="card mt-2">
+        <div class="card rounded-3 overflow-hidden mt-2">
           <div class="list-group list-group-flush">
             @for (sub of pushSubs(); track $index) {
               <div class="list-group-item nobreak" [class.list-group-item-primary]="sub.endpoint == actualSub?.endpoint"

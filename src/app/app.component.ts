@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter, map } from 'rxjs';
 import { LogService } from './_shared/service/log.service';
@@ -34,7 +34,7 @@ import { ThemeService } from './_shared/service/theme.service';
     styleUrls: ['./app.component.scss'],
     imports: [RouterOutlet, ToastsContainer, FaIconComponent]
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
 
   private swUpdate = inject(SwUpdate)
   private utilityService = inject(UtilityService)
@@ -75,6 +75,12 @@ export class AppComponent {
         });
       }
     })
+  }
+  ngOnInit(): void {
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('is-embedded');
+      document.body.classList.add('is-embedded');
+    }
   }
 
   clearLogs(){
