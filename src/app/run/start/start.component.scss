@@ -368,8 +368,8 @@ $transition-slow: 350ms ease-in-out;
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
   outline: none;
   
-  /* Push down but leave exactly 32px exposed for the peek */
-  transform: translateY(calc(100% - 32px)); 
+  /* Push down but leave exactly 24px exposed for the peek */
+  transform: translateY(calc(100% - 24px)); 
   transition: transform 250ms ease-in-out;
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -385,7 +385,6 @@ $transition-slow: 350ms ease-in-out;
   height: 4px;
   background: rgba(var(--bs-body-color-rgb), 0.5);
   border-radius: 2px;
-  margin: 0.725rem 0;
 }
 
 /* 5. Reveal Action */
@@ -541,6 +540,6 @@ $transition-slow: 350ms ease-in-out;
 }
 
 @media screen and (max-width: 767.98px) {
-  .wrapper.has-bottom-nav .content { padding-bottom: 2rem !important; }
-  .wrapper.has-bottom-nav.is-start-page .content { padding-bottom: 10.65rem !important; }
+  .wrapper.has-bottom-nav .content { padding-bottom: 1.5rem !important; }
+  .wrapper.has-bottom-nav.is-start-page .content { padding-bottom: 10.15rem !important; }
 }

@@ -5,7 +5,7 @@
   position: relative;
   /* Force hardware acceleration on the wrapper */
   will-change: transform, opacity;
-  min-height: calc(100vh - 118px - 32px); // 100% - navtab - padding bottom viewport
+  min-height: calc(100vh - 118px - 24px); // 100% - navtab - padding bottom viewport
 }
 
 /* Animate the WRAPPER directly, avoiding NgBootstrap conflicts */
