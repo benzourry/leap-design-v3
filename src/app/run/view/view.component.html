@@ -28,9 +28,10 @@
         <form class="m-p-4" name="frmObj" novalidate onsubmit="return false;">
           @if (act !== 'approve') {
             <div class="form-wrapper">
+              @let showPrev = formVal?.prev && prevEntry && !formVal?.x?.hidePrev;
               @if (!prevLoading()) {   
-                @if (formVal?.prev && prevEntry && !formVal?.x?.hidePrev) {
-                  <div class="form-previous" style="border-bottom:solid 2px var(--bs-border-color)">
+                @if (showPrev) {
+                  <div class="form-previous pb-3" style="border-bottom:solid 2px var(--bs-border-color)">
                     <form-view [form]="formVal?.prev" [entry]="prevEntry" [data]="prevEntry?.data"
                       [evalContextFn]="getEvalContext" [lang]="lang()"
                       [$this$]="_thisPrev" [$param$]="param()"
@@ -50,7 +51,7 @@
                 </div>
               }
               @if (formVal) {
-                <div class="form-current">
+                <div class="form-current" [class.pt-3]="showPrev">
                   <form-view [form]="formVal" [entry]="entry" [data]="entry?.data" 
                     [$this$]="_this" [$param$]="param()"
                     [navIndex]="_navIndex()"
