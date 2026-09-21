@@ -24,7 +24,7 @@
   }
 </ng-template>
 
-<div class="field-edit form-group position-relative {{f.code}}" [ngClass]="f.altClass">
+<div class="field-edit form-group position-relative el-{{f.code}}" [ngClass]="f.altClass">
   
   <div [class.mobile-field-surface]="!(f.type === 'btn' || f.type === 'static')"
        [class.is-invalid]="isInvalid || (m?.touched && isRichLenErr)" 
