@@ -294,6 +294,8 @@ export class ListComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.itemLoading.set(true);
 
+    this.lastResStr = '';
+
     this.entryList.set([]);
     this.selectedEntries.set({});
     this.searchText.set('');

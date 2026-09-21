@@ -669,7 +669,11 @@ ngb-pagination ul.pagination { justify-content: center; }
   display: inline-block; 
   animation: intermittent-shake 1.5s infinite ease-in-out;
 }
-
+// .tab-simple .tab-pane{
+//   width: 100%;
+//   flex-shrink: 0;
+//   flex-basis: 100%;
+// }
 .tab-simple .nav-pills .nav-item .nav-link{
   border-radius: 2rem;
 }
