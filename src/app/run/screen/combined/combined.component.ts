@@ -146,7 +146,8 @@ export class CombinedComponent {
     private scrollToActiveTab(index: number) {
         setTimeout(() => {
             const tab = this.tabItems()[index]?.nativeElement;
-            const container = tab?.parentElement;
+            
+            const container = tab?.closest('.nav-wrap, .tab-hscroll, .tab-simple') || tab?.closest('ul.nav');
 
             if (!tab || !container) return; // Exit if elements aren't found
 
