@@ -133,12 +133,19 @@ export class ProfileComponent implements OnInit {
   }
 
   removeAcc() {
-    this.runService.removeAcc(-1, this.user().email)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(user => {
-        this.toastService.show("Your account has been successfully removed", { classname: 'bg-success text-light' });
-        this.logout();
-      })
+    if (confirm("Are you sure you want to permanently remove your account? This action cannot be undone.")) {
+      this.runService.removeAcc(-1, this.user().email)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: user => {
+            this.toastService.show("Your account has been successfully removed", { classname: 'bg-success text-light' });
+            this.logout();
+          },
+          error: err => {
+            this.toastService.show("Failed to remove account", { classname: 'bg-danger text-light' });
+          }
+        });
+    }
   }
 
   pushSubs = signal<any>([]);

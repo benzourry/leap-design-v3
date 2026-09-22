@@ -216,7 +216,7 @@
 
         <div [class.disabled]="itemLoading()">
           <div [class.table-responsive]="!dataset()?.wide || asComp()" class="w-100">
-            @if (entryList()?.length > 0) {
+            @if (entryList()?.length > 0 || itemLoading()) {
               <table class="table table-print ds-table mb-0"
                 [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
                 [ngClass]="{'tblcard': dataset()?.x?.tblcard && !asComp()}">
@@ -261,209 +261,236 @@
                   </tr>
                 </thead>
 
-                @for (listKv of groupedEntryList(); track listKv.key) {
-                  @if (!groupFilter() || groupFilter() == listKv?.key) {
-                    
-                    <tbody class="list-tmid ds-tbody" [attr.data-grid]="dataset()?.x?.cardSize">
-                      @if (groupFieldCode()) {
-                        <tr class="ds-group-header mb-n2">
-                          <td [attr.colspan]="totalColumn" class="p-0">
-                            <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-tertiary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
-                              <div>
-                                @if (listKv?.key == 'undefined') {
-                                  <span class="text-secondary fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
-                                } @else {
-                                  <span [innerHtml]="listKv?.key"></span>
-                                }
-                              </div>
-                              <span class="ms-auto badge rounded-pill bg-body text-secondary fw-normal text-center" style="line-height:1rem,min-width: 2rem;">{{listKv?.value?.length}}</span>
-                              <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
-                            </button>
-                          </td>
-                        </tr>
-                      }
+                <!-- 2. SKELETON LOADER TBODY -->
+                @if (itemLoading() && (!entryList() || entryList()?.length === 0)) {
+                  <tbody class="list-tmid ds-tbody placeholder-glow" [attr.data-grid]="dataset()?.x?.cardSize">
+                    @for (dummy of [1,2,3,4,5,6]; track dummy) {
+                      <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                        @if (dataset()?.x?.bulkAction) { <td class="ds-check"><span class="placeholder col-12 rounded"></span></td> }
+                        @if (dataset()?.showIndex) { <td class="ds-index"><span class="placeholder col-12 rounded"></span></td> }
+                        
+                        @for (item of dataset().items; track item.id; let isLast = $last) {
+                          @if (columnVisible[item.id]) {
+                            <td class="ds-item code-{{item.code}}" [class.last-ds-item]="isLast" [ngClass]="item.x?.cardStyle" [attr.data-label]="item.label">
+                              <!-- Create semi-random widths for the placeholders to look natural -->
+                              <span class="placeholder rounded" [ngClass]="'col-' + (3 + ((dummy + $index) % 7))"></span>
+                              @if (item.type === 'list') {
+                                <br><span class="placeholder rounded mt-1" [ngClass]="'col-' + (2 + ((dummy + $index + 2) % 5))"></span>
+                              }
+                            </td>
+                          }
+                        }
+                        @if (dataset()?.showStatus) { <td class="text-center ds-status"><span class="placeholder col-8 rounded mt-sm-2"></span></td> }
+                        @if (hasVisibleActions()) { <td class="p-1 print-hide ds-action"><span class="placeholder col-10 rounded mt-sm-2"></span></td> }
+                      </tr>
+                    }
+                  </tbody>
+                } @else {
 
-                      @if (!hideGroup[listKv?.key]) {
-                        @for (i of listKv?.value; track i.id; let eIdx = $index) {
-                          <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)">
-                            @if (dataset()?.x?.bulkAction) {
-                              <td class="ds-check">
-                                <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)" [checked]="checkSelect(i)">
-                              </td>
-                            }
-                            @if (dataset()?.showIndex) {
-                              <td data-label="#" class="bg-secondary text-white ds-index">
-                                {{preCount() + eIdx + 1}}
-                              </td>
-                            }
-                            @for (item of dataset().items; track item.id; let isLast = $last) {
-                              @if (i._isVisible[item.root + '.' + item.code]) {
-                                @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-                                
-                                <!-- Restored td-list for user customization hooks, combined with BS5 p-0 -->
-                                <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
-                                  [class.last-ds-item]="isLast"
-                                  [ngClass]="item.x?.cardStyle"
-                                  [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
-                                  [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
+                  @for (listKv of groupedEntryList(); track listKv.key) {
+                    @if (!groupFilter() || groupFilter() == listKv?.key) {
+                      
+                      <tbody class="list-tmid ds-tbody" [attr.data-grid]="dataset()?.x?.cardSize">
+                        @if (groupFieldCode()) {
+                          <tr class="ds-group-header mb-n2">
+                            <td [attr.colspan]="totalColumn" class="p-0">
+                              <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-tertiary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                                <div>
+                                  @if (listKv?.key == 'undefined') {
+                                    <span class="text-secondary fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
+                                  } @else {
+                                    <span [innerHtml]="listKv?.key"></span>
+                                  }
+                                </div>
+                                <span class="ms-auto badge rounded-pill bg-body text-secondary fw-normal text-center" style="line-height:1rem,min-width: 2rem;">{{listKv?.value?.length}}</span>
+                                <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                            </td>
+                          </tr>
+                        }
+
+                        @if (!hideGroup[listKv?.key]) {
+                          @for (i of listKv?.value; track i.id; let eIdx = $index) {
+                            <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)">
+                              @if (dataset()?.x?.bulkAction) {
+                                <td class="ds-check">
+                                  <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)" [checked]="checkSelect(i)">
+                                </td>
+                              }
+                              @if (dataset()?.showIndex) {
+                                <td data-label="#" class="bg-secondary text-white ds-index">
+                                  {{preCount() + eIdx + 1}}
+                                </td>
+                              }
+                              @for (item of dataset().items; track item.id; let isLast = $last) {
+                                @if (i._isVisible[item.root + '.' + item.code]) {
+                                  @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
                                   
-                                  @if (['data','prev'].indexOf(item.root) > -1) {
-                                    @if (item.type == 'list') {
-                                      @if (i[item.root][item.code] && i[item.root][item.code].length > 0) {
-                                        <table class="table tbl-child m-0 table-flush small">
-                                          <thead>
-                                            <tr>
-                                              @for (fq of item.subs; track fq.code) {
-                                                <th class="bg-transparent">{{fq.label}}</th>
-                                              }
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            @for (ch of i[item.root][item.code]; track $index) {
+                                  <!-- Restored td-list for user customization hooks, combined with BS5 p-0 -->
+                                  <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
+                                    [class.last-ds-item]="isLast"
+                                    [ngClass]="item.x?.cardStyle"
+                                    [class.text-end]="['number','scaleTo5','scaleTo10','scale'].indexOf(fField?.type) > -1"
+                                    [attr.data-label]="item.label" [attr.data-code]="item.code" [attr.code]="item.code">
+                                    
+                                    @if (['data','prev'].indexOf(item.root) > -1) {
+                                      @if (item.type == 'list') {
+                                        @if (i[item.root][item.code] && i[item.root][item.code].length > 0) {
+                                          <table class="table tbl-child m-0 table-flush small">
+                                            <thead>
                                               <tr>
                                                 @for (fq of item.subs; track fq.code) {
-                                                  @let chField = form()[item.root]?.items[fq.code];
-                                                  <td class="bg-transparent">
-                                                    @if (ch[fq.code]) {
-                                                      <field-view [field]="chField" [scopeId]="scopeId()" [lang]="lang()"
-                                                        [value]="ch._computedValues?.[item.root + '.' + fq.code]"
-                                                        [data]="{$:ch, $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
-                                                      </field-view>
-                                                    }
-                                                  </td>
+                                                  <th class="bg-transparent">{{fq.label}}</th>
                                                 }
                                               </tr>
-                                            }
-                                          </tbody>
-                                        </table>
+                                            </thead>
+                                            <tbody>
+                                              @for (ch of i[item.root][item.code]; track $index) {
+                                                <tr>
+                                                  @for (fq of item.subs; track fq.code) {
+                                                    @let chField = form()[item.root]?.items[fq.code];
+                                                    <td class="bg-transparent">
+                                                      @if (ch[fq.code]) {
+                                                        <field-view [field]="chField" [scopeId]="scopeId()" [lang]="lang()"
+                                                          [value]="ch._computedValues?.[item.root + '.' + fq.code]"
+                                                          [data]="{$:ch, $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                                        </field-view>
+                                                      }
+                                                    </td>
+                                                  }
+                                                </tr>
+                                              }
+                                            </tbody>
+                                          </table>
+                                        } @else {
+                                          <div class="p-2 text-body-tertiary">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
+                                        }
                                       } @else {
-                                        <div class="p-2 text-body-tertiary">{{lang()=='ms'?'Tiada data':'Data not available'}}</div>
+                                        <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
+                                          [value]="i._computedValues?.[item.root + '.' + item.code]"
+                                          [data]="{$:i[item.root], $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                        </field-view>
                                       }
                                     } @else {
                                       <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
-                                        [value]="i._computedValues?.[item.root + '.' + item.code]"
-                                        [data]="{$:i[item.root], $_:i, $prev$:i.prev, $base$:base, $baseUrl$:baseUrl, $baseApi$:baseApi, $this$:_this, $param$:_param, $user$:user(), $conf$:appConfig}">
+                                        [value]="i._computedValues?.[item.root + '.' + item.code]">
                                       </field-view>
                                     }
-                                  } @else {
-                                    <field-view [field]="fField" [scopeId]="scopeId()" [lang]="lang()"
-                                      [value]="i._computedValues?.[item.root + '.' + item.code]">
-                                    </field-view>
-                                  }
-                                  <div class="clearfix"></div>
+                                    <div class="clearfix"></div>
+                                  </td>
+                                }
+                              }
+
+                              @if (dataset()?.showStatus) {
+                                @let tiers = form().data?.tiers;
+                                <td class="text-center ds-status">
+                                  <step-wizard [tiers]="tiers" [user]="user()" [entry]="i" [approval]="i?.approval" type="mini"></step-wizard>
+                                  <div class="mt-1 small text-capitalize">
+                                    @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]) {
+                                      {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
+                                    } @else {
+                                      {{statusMap[i.currentStatus]?.[lang()] || i.currentStatus}}
+                                    }
+                                  </div>
                                 </td>
                               }
-                            }
 
-                            @if (dataset()?.showStatus) {
-                              @let tiers = form().data?.tiers;
-                              <td class="text-center ds-status">
-                                <step-wizard [tiers]="tiers" [user]="user()" [entry]="i" [approval]="i?.approval" type="mini"></step-wizard>
-                                <div class="mt-1 small text-capitalize">
-                                  @if (tiersMap[i.currentTierId]?.actions[i.currentStatus]) {
-                                    {{tiersMap[i.currentTierId]?.actions[i.currentStatus]?.label}}
-                                  } @else {
-                                    {{statusMap[i.currentStatus]?.[lang()] || i.currentStatus}}
-                                  }
-                                </div>
-                              </td>
-                            }
-
-                            @if (hasVisibleActions()) {
-                              <td class="p-1 print-hide ds-action">
-                                <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
-                                [class.input-group]="dataset().x?.groupAction"
-                                [class.gap-0]="dataset().x?.groupAction"
-                                [class.gap-1]="!dataset().x?.groupAction">
-                                  @for (ac of actionsInline; track ac.id) {
-                                    @if (i._actionVisible[ac.id]) {
-                                      @if (ac.action == 'url' && !ac.inpop) {
-                                        <a class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
-                                          [href]="i._actionUrls[ac.id]"
-                                          target="_blank">
-                                          <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                        </a>
-                                      } @else {
-                                        <button type="button" class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
-                                          (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
-                                          <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                        </button>
+                              @if (hasVisibleActions()) {
+                                <td class="p-1 print-hide ds-action">
+                                  <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
+                                  [class.input-group]="dataset().x?.groupAction"
+                                  [class.gap-0]="dataset().x?.groupAction"
+                                  [class.gap-1]="!dataset().x?.groupAction">
+                                    @for (ac of actionsInline; track ac.id) {
+                                      @if (i._actionVisible[ac.id]) {
+                                        @if (ac.action == 'url' && !ac.inpop) {
+                                          <a class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
+                                            [href]="i._actionUrls[ac.id]"
+                                            target="_blank">
+                                            <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                          </a>
+                                        } @else {
+                                          <button type="button" class="btn btn-sm text-nowrap" [ngClass]="ac.style" [class.empty-text]="!ac.label?.trim()"
+                                            (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
+                                            <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                          </button>
+                                        }
                                       }
                                     }
-                                  }
 
-                                  @if (actionsDropdown.length > 0) {
-                                    <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
-                                      <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50"
-                                        title="Actions" id="dropdownAction" ngbDropdownToggle>
-                                        <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
-                                      </button>
-                                      <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
-                                        @for (ac of actionsDropdown; track ac.id) {
-                                          @if (i._actionVisible[ac.id]) {
-                                            @if (ac.action == 'url' && !ac.inpop) {
-                                              <a ngbDropdownItem 
-                                                [href]="i._actionUrls[ac.id]"
-                                                target="_blank">
-                                                <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                              </a>
-                                            } @else {
-                                              <button type="button" ngbDropdownItem (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
-                                                <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
-                                              </button>
+                                    @if (actionsDropdown.length > 0) {
+                                      <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
+                                        <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50"
+                                          title="Actions" id="dropdownAction" ngbDropdownToggle>
+                                          <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+                                        </button>
+                                        <div class="ds-action-items" ngbDropdownMenu aria-labelledby="dropdownAction">
+                                          @for (ac of actionsDropdown; track ac.id) {
+                                            @if (i._actionVisible[ac.id]) {
+                                              @if (ac.action == 'url' && !ac.inpop) {
+                                                <a ngbDropdownItem 
+                                                  [href]="i._actionUrls[ac.id]"
+                                                  target="_blank">
+                                                  <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                                </a>
+                                              } @else {
+                                                <button type="button" ngbDropdownItem (click)="executeRowAction(ac, i, inPopTpl, openUrlTpl)">
+                                                  <fa-icon [icon]="ac.icon | iconSplit" [fixedWidth]="true"></fa-icon> {{ac.label}}
+                                                </button>
+                                              }
                                             }
                                           }
-                                        }
+                                        </div>
                                       </div>
-                                    </div>
-                                  }
-                                </div>
-                              </td>
-                            }
-                          </tr>
+                                    }
+                                  </div>
+                                </td>
+                              }
+                            </tr>
+                          }
                         }
-                      }
+                      </tbody>
+                    }
+                  }
+
+                  @if (hasAggColumn) {
+                    <tbody class="ds-agg">
+                      <tr>
+                        @if (dataset()?.x?.bulkAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                        @if (dataset()?.showIndex) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                        @for (item of dataset().items; track item.id; let isLast = $last) {
+                          @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
+                          @let aggTotalValue = aggColumnTotalValue[item.root + '.' + item.code];
+                          @let aggAvgValue = aggColumnAvgValue[item.root + '.' + item.code];
+
+                          <td class="text-end code-{{item.code}} ds-item" [class.last-ds-item]="isLast" [class.bg-transparent]="!aggTotalValue && !aggAvgValue" [attr.data-label]="item.label">
+                            @if (aggTotalValue || aggAvgValue) {
+                              <div class="d-flex flex-column align-items-end justify-content-center h-100 py-1">
+                                @if (aggTotalValue && aggColumnTotalField[item.root + '.' + item.code]) {
+                                  <div class="small text-secondary" style="line-height: 1;">Total</div>
+                                  <div class="fw-semibold">
+                                    @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
+                                    {{fField?.format ? (aggTotalValue | number:fField?.format) : aggTotalValue}}
+                                    @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
+                                  </div>
+                                }
+                                @if (aggAvgValue && aggColumnAvgField[item.root + '.' + item.code]) {
+                                  <div class="small text-secondary" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
+                                  <div class="fw-semibold">
+                                    @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
+                                    {{fField?.format ? (aggAvgValue | number:fField?.format) : aggAvgValue}}
+                                    @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </td>
+                        }
+                        @if (dataset()?.showStatus) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                        @if (dataset()?.showAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
+                      </tr>
                     </tbody>
                   }
-                }
-
-                @if (hasAggColumn) {
-                  <tbody class="ds-agg">
-                    <tr>
-                      @if (dataset()?.x?.bulkAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                      @if (dataset()?.showIndex) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                      @for (item of dataset().items; track item.id; let isLast = $last) {
-                        @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
-                        @let aggTotalValue = aggColumnTotalValue[item.root + '.' + item.code];
-                        @let aggAvgValue = aggColumnAvgValue[item.root + '.' + item.code];
-
-                        <td class="text-end code-{{item.code}} ds-item" [class.last-ds-item]="isLast" [class.bg-transparent]="!aggTotalValue && !aggAvgValue" [attr.data-label]="item.label">
-                          @if (aggTotalValue || aggAvgValue) {
-                            <div class="d-flex flex-column align-items-end justify-content-center h-100 py-1">
-                              @if (aggTotalValue && aggColumnTotalField[item.root + '.' + item.code]) {
-                                <div class="small text-secondary" style="line-height: 1;">Total</div>
-                                <div class="fw-semibold">
-                                  @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
-                                  {{fField?.format ? (aggTotalValue | number:fField?.format) : aggTotalValue}}
-                                  @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
-                                </div>
-                              }
-                              @if (aggAvgValue && aggColumnAvgField[item.root + '.' + item.code]) {
-                                <div class="small text-secondary" style="line-height: 1;" [class.mt-2]="aggTotalValue">Average</div>
-                                <div class="fw-semibold">
-                                  @if (fField.x?.prefix) { <span class="text-secondary me-05">{{fField.x?.prefix}}</span> }
-                                  {{fField?.format ? (aggAvgValue | number:fField?.format) : aggAvgValue}}
-                                  @if (fField.x?.suffix) { <span class="text-secondary ms-05">{{fField.x?.suffix}}</span> }
-                                </div>
-                              }
-                            </div>
-                          }
-                        </td>
-                      }
-                      @if (dataset()?.showStatus) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                      @if (dataset()?.showAction) { <td class="bg-transparent d-none d-sm-table-cell"></td> }
-                    </tr>
-                  </tbody>
                 }
               </table>
             }
@@ -500,7 +527,7 @@
             </div>
           }
 
-          @if (entryList()?.length == 0) {
+          @if (entryList()?.length === 0 && !itemLoading()) {
             <div class="detail">
               <h3>{{lang()=='ms'?'Tiada rekod':'No record'}}</h3>
               <p>{{lang()=='ms'?'Data tidak tersedia buat masa ini':'The data is currently not available'}}</p>

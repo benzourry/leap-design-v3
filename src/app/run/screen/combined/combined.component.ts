@@ -145,15 +145,15 @@ export class CombinedComponent {
 
     private scrollToActiveTab(index: number) {
         setTimeout(() => {
-            const tabsArray = this.tabItems(); // Call the signal
-            
-            if (tabsArray[index]) {
-                tabsArray[index].nativeElement.scrollIntoView({
-                    behavior: 'smooth', 
-                    inline: 'center',   
-                    block: 'nearest'    
-                });
-            }
+            const tab = this.tabItems()[index]?.nativeElement;
+            const container = tab?.parentElement;
+
+            if (!tab || !container) return; // Exit if elements aren't found
+
+            container.scrollTo({
+                left: tab.offsetLeft - container.clientWidth / 2 + tab.clientWidth / 2,
+                behavior: 'smooth'
+            });
         }, 50);
     }
 

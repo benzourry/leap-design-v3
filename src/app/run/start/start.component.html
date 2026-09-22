@@ -332,7 +332,9 @@
             <fa-icon class="overlay-close" [icon]="['fas','times']"></fa-icon>
           </div>
           
-          <div id="_viewport" class="content" [class.dark-mode]="darkMode()" (click)="app()?.layout === 'sidemenu' || navToggle.set({})">
+          <div id="_viewport" class="content"
+           [class.dark-mode]="darkMode()" 
+           (click)="app()?.layout === 'sidemenu' || navToggle.set({})">
             <router-outlet></router-outlet>
           </div>
         </div>

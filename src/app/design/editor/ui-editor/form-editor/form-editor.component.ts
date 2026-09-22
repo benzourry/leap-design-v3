@@ -362,6 +362,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     otherAppList: any[] = [];
     ngOnInit() {
 
+        this.destroyRef.onDestroy(() => {
+            if (this.curFormId) {
+                delete (window as any)['_this_form_' + this.curFormId + '_design'];
+            }
+        });
+
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
@@ -694,6 +700,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         }
                         );
                 }
+
+                Reflect.defineProperty(window, '_this_form_' + res.id + '_design', {
+                    get: () => {},
+                    configurable: true
+                }); 
+
                 this.loadTrails(this.curForm.id, 1);
                 this.cdr.detectChanges();
                 // }

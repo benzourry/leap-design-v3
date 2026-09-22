@@ -50,6 +50,14 @@
       border-color: transparent !important; 
     }
   }
+
+  table.extra-data-tbl tr td:last-child{padding-right: 0;}
+  table.extra-data-tbl tr:first-child td{
+    padding-top: 0;
+  }
+  table.extra-data-tbl tr:last-child td{
+    padding-bottom: 0;
+  }
 }
 
 .ds-action-wrapper .btn-sm { border-radius: 0.5rem; }

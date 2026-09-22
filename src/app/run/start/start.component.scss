@@ -547,3 +547,44 @@ $transition-slow: 350ms ease-in-out;
   .wrapper.has-bottom-nav .content { padding-bottom: 1.5rem !important; }
   .wrapper.has-bottom-nav.is-start-page .content { padding-bottom: 10.15rem !important; }
 }
+
+/* ==========================================================================
+   NATIVE PAGE TRANSITION (View Transitions API)
+   ========================================================================== */
+.wrapper .content { view-transition-name: page; }
+
+::ng-deep {
+  /* Disable default crossfade flash */
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+
+  /* OLD page: Dims into background */
+  ::view-transition-old(page) {
+    animation: page-out 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  /* NEW page: Slides UP over old page */
+  ::view-transition-new(page) {
+    animation: page-in 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    z-index: 2;
+    background: var(--bs-body-bg); 
+    box-shadow: 0 -10px 20px rgba(0,0,0,0.1); 
+  }
+}
+
+/* Base Animation (Desktop & Large Screens - No Scale) */
+@keyframes page-in { 
+  0% { transform: translateY(150px); opacity: 0; } 
+}
+@keyframes page-out { 
+  100% { opacity: 0.5; } 
+}
+
+/* Mobile Overrides (Injects the Scale Effect) */
+@media screen and (max-width: 767.98px) {
+  @keyframes page-in { 
+    0% { transform: translateY(150px) scale(0.95); opacity: 0; } 
+  }
+  @keyframes page-out { 
+    100% { transform: scale(0.96); opacity: 0.5; } 
+  }
+}

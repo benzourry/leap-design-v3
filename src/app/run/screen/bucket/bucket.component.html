@@ -1,32 +1,28 @@
 <div class="fix-gutter" [class.limit-width]="!screen().wide">
-  <div class="single-pane">
+  <div class="single-pane pt-0">
     @if (bucket()) {
-      <!-- <div class="d-flex flex-row"> -->
-      <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm" style="gap:0.25rem;">
-
-        <!-- <div style="flex-grow: 1;"> -->
-          <input type="search" class="form-control form-control-sm border border-1-5" autocapitalize="none"
-            placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
-        <!-- </div>
-        <div style="flex-shrink: 0;"> -->
+      <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
           @if (screen().data?.enableUpload){
-          <label class="form-label m-0">
+          <label class="m-0 d-flex">
             <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
             @if (!importLoading()) {
-            <div class="btn border border-1-5 btn-outline-primary btn-sm ms-1">
+            <div class="btn btn-sm border border-1-5 rounded-2 btn-primary">
               <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
             </div>
             }@else {
-            <button type="button" class="btn border border-1-5 btn-outline-primary btn-sm ms-1" disabled>
+            <button type="button" class="btn border border-1-5 rounded-2 btn-primary" disabled>
               <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Memuatnaik':'Uploading'}}...
             </button>
             }
           </label>
           }
+          <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
+            placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
+
           <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-1-5 btn-sm ms-1" title="More bucket actions"
+            <button type="button" class="btn border border-1-5 btn-sm rounded-2 bg-white" title="More bucket actions"
               id="dropdownBucketEditor" ngbDropdownToggle>
-              <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor" class="shadow me-n1 mt-2">
               <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
@@ -51,8 +47,9 @@
               </button>
             </div>
           </div>
-        <!-- </div> -->
+          
       </div>
+      
       @if (loading()) {
         <div class="p-4 text-center">
           <div class="lds-ellipsis">
@@ -63,7 +60,7 @@
           </div>
         </div>
       }@else{
-        <div class="mt-1">
+        <div class="mt-3">
           <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}" (click)="bySStatus(undefined)">
             {{lang()=='ms'?'Semua':'All'}}
@@ -81,6 +78,7 @@
             {{lang()=='ms'?'Kuarantin':'Quarantined'}}
           </button>
         </div>
+        
         <div class="position-relative">
           @if (itemLoading()) {
             <div class="header-colors"></div>
@@ -89,10 +87,10 @@
           <div [class.disabled]="itemLoading()">
             <div class="table-responsive">
               @if (bucketFileList()?.length) {
-                <table class="table table-bordered">
-                  <thead>
+                <table class="table mb-0 tblcard ds-table table-desktop-bordered">
+                  <thead class="ds-thead">
                     <tr>
-                      <th style="width: 10%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
+                      <th style="width: 5%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
                       <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
                       <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
                       @if (screen().data?.enableDelete){
@@ -100,21 +98,22 @@
                       }
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="ds-tbody">
                     @for (bucketFile of bucketFileList(); track bucketFile.id) {
-                    <tr [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
-                      <td>
+                    <tr class="ds-row" [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
+                      <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
                         @if (bucketFile.fileType.indexOf('image')>-1) {
-                        <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="58"
-                          onerror="this.src='assets/img/placeholder-128.png'">
+                        <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="64"
+                          onerror="this.src='assets/img/placeholder-128.png'" class="rounded w-100">
                         } @else {
-                        <span class="text-body-secondary text-center">
-                          {{lang()=='ms'?'Tiada Paparan Tersedia':'No Preview Available'}}</span>
+                        <div class="text-body-secondary text-center p-2 text-center">
+                          {{lang()=='ms'?'Tiada Paparan':'No Preview'}}</div>
                         }
                       </td>
-                      <td>
-                        <div>{{bucketFile.fileName}}</div>
-                        <div class="small">
+                      
+                      <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
+                        <div class="fw-bold fs-6">{{bucketFile.fileName}}</div>
+                        <div class="subtitle mt-1">
                           <div>
                             @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
                             <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank">{{bucketFile.fileUrl}}</a>
@@ -137,21 +136,24 @@
                             {{bucketFile.smessage}}
                             @if (bucketFile.sstatus=='FOUND'){
                             <div class="mt-2">
-                              <button class="btn btn-outline-light btn-sm" (click)="quarantine(bucketFile.id)">Quarantine</button>
+                              <button class="btn btn-outline-danger btn-sm rounded-3" (click)="quarantine(bucketFile.id)">Quarantine</button>
                             </div>
                             }
-                            <div></div>
                           </div>
                           }@else {
-                          {{bucketFile.smessage}}
+                          <div class="text-secondary mt-1">{{bucketFile.smessage}}</div>
                           }
                         </div>
                       </td>
-                      <td>{{bucketFile.email}}</td>
+                      
+                      <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
+                        {{bucketFile.email}}
+                      </td>
+                      
                       @if (screen().data?.enableDelete){
-                      <td class="text-nowrap">
-                        <div>
-                          <button type="button" class="btn btn-secondary me-1 btn-sm btn-round" [class.disabled]="offline()"
+                      <td class="ds-action text-nowrap p-1">
+                        <div class="d-flex w-100" style="gap: 0.275rem;">
+                          <button type="button" class="btn btn-outline-danger btn-sm rounded-3" [class.disabled]="offline()"
                             (click)="removeBucketFile(removeBucketFileTpl,bucketFile)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
@@ -167,8 +169,9 @@
           </div>
         </div>
       }
+      
       @if ((bucketFileList()?.length) > 0) {
-      <div class="text-center d-flex justify-content-center pagination-rounded">
+      <div class="text-center d-flex justify-content-center pagination-rounded mt-3">
         @if (bucketFileTotal()>pageSize) {
         <ngb-pagination [collectionSize]="bucketFileTotal()" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
           (pageChange)="getFileList(pageNumber(),params)" [boundaryLinks]="false" [directionLinks]="false">
@@ -188,8 +191,9 @@
         }
       </div>
       }
+      
       @if (bucketFileList()?.length == 0 && !loading()) {
-      <div class="details">
+      <div class="details my-5">
         <h3>{{lang()=='ms'?'Tiada data':'No data'}}</h3>
         <p> {{lang()=='ms'?'Tiada fail dimuatnaik ke dalam bucket ini':'There is no file uploaded to this bucket'}}.
           <br /> {{lang()=='ms'?'Anda boleh muatnaik fail dengan klik pada butang Muatnaik':'You can upload new file by clicking on the Upload button'}}.
@@ -197,8 +201,8 @@
       </div>
       }
     }@else{
-    <div class="text-body-secondary">
-      <h3>{{lang()=='ms'?'Sili pilih Bucket dari senarai':"Please select Bucket from the list on the left to view it's data"}}.</h3>
+    <div class="text-body-secondary mt-5 text-center">
+      <h3>{{lang()=='ms'?'Sila pilih Bucket dari senarai':"Please select Bucket from the list on the left to view its data"}}.</h3>
     </div>
     }
   </div>
