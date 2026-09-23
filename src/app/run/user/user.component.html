@@ -1,51 +1,52 @@
 <div class="viewport ">
-  @if (!hideTitle()) {
-    <page-title>
-      <h4>{{lang()=='ms'?'Senarai Pengguna':'User List'}}
-      @if (group) {
-        <span>: {{group.name}}</span>
-      }</h4>
-    </page-title>
-  }
-<div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
-  <div class="single-pane pt-0">
-    <div>
-      @if (!hasGroupId()) {
-        <div class="text-center mb-1">
-          <div>
-            <button type="button" class="btn btn-sm btn-round btn-outline-warning ms-1 mb-1" [class.active]="cs==-1"
-              (click)="getPendingList()">
-              {{lang()=='ms'?'Menunggu Kelulusan':'Pending'}}
-            </button>
-            @for (g of groupList(); track g.id) {
-              <button type="button" class="btn btn-sm btn-round btn-outline-info ms-1 mb-1" [class.active]="cs==g.id"
-                (click)="getGroupList(g)">
-                {{g.name}}
-              </button>
-            }
-            <button type="button" class="btn btn-sm btn-round btn-outline-secondary ms-1 mb-1" [class.active]="cs==null"
-                (click)="getGroupList(null)">
-              <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
-              {{lang()=='ms'?'Semua Pengguna':'All Users'}}
-            </button>
-          </div>
-        </div>
-        }
-        @if (!(group?.appId==app().id || groupId()==-1 || groupId()==null)){
-          <div class="text-danger text-center">
-            {{lang()=='ms'?'Kumpulan pengguna dalam app lain':'User group is in the other app'}}
-          </div>
-        }               
-        @if (loading()) {
-          <div class="p-4 text-center">
-            <div class="lds-ellipsis">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
+  @if (groupLoading()) {
+    <div class="p-5 text-center">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  } @else {
+
+    @if (!hideTitle()) {
+      <page-title>
+        <h4>{{lang()=='ms'?'Senarai Pengguna':'User List'}}
+        @if (group) {
+          <span>: {{group.name}}</span>
+        }</h4>
+      </page-title>
+    }
+    
+    <div class="centered fix-gutter" [class.limit-width]="!screen()?.wide">
+      <div class="single-pane pt-0">
+        <div>
+          @if (!hasGroupId()) {
+            <div class="text-center mb-1">
+              <div>
+                <button type="button" class="btn btn-sm btn-round btn-outline-warning ms-1 mb-1" [class.active]="cs==-1"
+                  (click)="getPendingList()">
+                  {{lang()=='ms'?'Menunggu Kelulusan':'Pending'}}
+                </button>
+                @for (g of groupList(); track g.id) {
+                  <button type="button" class="btn btn-sm btn-round btn-outline-info ms-1 mb-1" [class.active]="cs==g.id"
+                    (click)="getGroupList(g)">
+                    {{g.name}}
+                  </button>
+                }
+                <button type="button" class="btn btn-sm btn-round btn-outline-secondary ms-1 mb-1" [class.active]="cs==null"
+                    (click)="getGroupList(null)">
+                  <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Semua Pengguna':'All Users'}}
+                </button>
+              </div>
             </div>
-          </div>
-        }@else{
+          }
+          
+          @if (!(group?.appId==app().id || groupId()==-1 || groupId()==null)){
+            <div class="text-danger text-center">
+              {{lang()=='ms'?'Kumpulan pengguna dalam app lain':'User group is in the other app'}}
+            </div>
+          }               
+          
           @if (!userUnauthorized()) {
             <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
               @if (group?.appId==app().id){
@@ -60,27 +61,28 @@
                 placeholder="Filter list"  (keyup.enter)="getAppUserList(1,params)"
                 [(ngModel)]="searchText">
             </div>      
-            @if (appUserList()?.length) {
+            
+            @if (!userLoading() && appUserList()?.length) {
               <div class="px-2 py-2">
                 <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
                   <div>
                     {{lang()=='ms'?'Semua':'Total'}}: 
                     <span class="text-body fw-medium">{{appUserTotal()}}</span>
-                  </div>                    
+                  </div>                  
                   <div>
                     {{lang()=='ms'?'Dipapar':'Shown'}}: 
                     <span class="text-body fw-medium">{{numberOfElements()}}</span>
-                  </div>                    
+                  </div>                  
                   <div>
                     {{lang()=='ms'?'Halaman':'Pages'}}: 
                     <span class="text-body fw-medium">{{entryPages()}}</span>
-                  </div>                    
+                  </div>                  
                 </div>
               </div>
             }
+            
             <div class="table-responsive">
-              @if (appUserList()?.length) {
-                <!-- Restored table-desktop-bordered to protect mobile styles -->
+              @if (appUserList()?.length > 0 || userLoading()) {
                 <table class="table mb-0 tblcard ds-table table-desktop-bordered">
                   <thead class="ds-thead">
                     <tr>
@@ -94,103 +96,131 @@
                       <th style="width: 5%">&nbsp;</th>
                     </tr>
                   </thead>
-                  <tbody class="ds-tbody">
-                    @for (appUser of appUserList(); track $index) {
-                      <tr class="ds-row" 
-                        [class.selected-row]="checkSelect(appUser)"
-                        [class.table-info]="appUser.status=='pending'"
-                        [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" 
-                        [ngClass]="appUser.altClass">
-                        
-                        <td class="ds-check">
-                          <input type="checkbox" class="form-check-input" style="width: 1.3rem; height: 1.3rem;"
-                          (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)">
-                        </td>
-
-                        <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'GAMBAR':'PHOTO'">
-                          <img src="{{appUser.user.imageUrl}}" width="64"
-                          onerror="this.src='assets/img/avatar-big.png'" class="rounded">
-                        </td>
-
-                        <td class="ds-item info-cell" [attr.data-label]="lang()=='ms'?'PENGGUNA':'USER'">
-                          <div class="fw-bold fs-6 mt-n1">{{appUser.user.name}}</div>
-                          <div class="subtitle mt-1">
-                            <div>{{appUser.user.email}}</div>
-                            <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium':'':angularLocale()}}
-                              @if (!appUser.user.firstLogin) {
-                                <span class="text-secondary">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
-                              }
+                  
+                  @if (userLoading() && (!appUserList() || appUserList()?.length === 0)) {
+                    <tbody class="ds-tbody placeholder-glow">
+                      @for (dummy of [1,2,3,4,5]; track dummy) {
+                        <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                          <td class="ds-check">
+                            <span class="placeholder col-12 rounded" style="width: 1.3rem; height: 1.3rem;"></span>
+                          </td>
+                          <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'GAMBAR':'PHOTO'">
+                            <span class="placeholder rounded" style="width: 64px; height: 64px; display: inline-block;"></span>
+                          </td>
+                          <td class="ds-item info-cell" [attr.data-label]="lang()=='ms'?'PENGGUNA':'USER'">
+                            <div class="placeholder rounded mb-1" [ngClass]="'col-' + (3 + ((dummy + $index) % 4))"></div>
+                            <div class="subtitle mt-1">
+                              <div class="placeholder rounded mt-1" [ngClass]="'col-' + (4 + ((dummy + $index) % 5))"></div><br>
+                              <div class="placeholder rounded mt-1 col-3"></div><br>
+                              <div class="placeholder rounded mt-1 col-2"></div>
                             </div>
-                            <div>{{lang()=='ms'?'Jenis akaun':'Account type'}}: 
-                              @if (appUser.user?.provider){
-                                <fa-icon [icon]="provider[appUser.user.provider]"
-                                [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
-                              } @else {
-                                <span class="text-secondary">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
-                              }
-                            </div>
-                          </div>
-                          @if (appUser.tags?.length) {
-                            <div class="tags mt-2">
-                              @for (tag of appUser.tags; track $index) {
-                                <span class="lookup-item">{{tag}}</span>
-                              }
-                            </div>
-                          }
-                        </td>
+                          </td>
+                          <td class="ds-item ds-status status-cell">
+                            <span class="placeholder col-8 rounded"></span>
+                          </td>
+                          <td class="ds-action text-nowrap p-1">
+                            <span class="placeholder col-10 rounded mt-sm-1"></span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  } @else {
+                    <tbody class="ds-tbody">
+                      @for (appUser of appUserList(); track $index) {
+                        <tr class="ds-row" 
+                          [class.selected-row]="checkSelect(appUser)"
+                          [class.table-info]="appUser.status=='pending'"
+                          [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" 
+                          [ngClass]="appUser.altClass">
+                          
+                          <td class="ds-check">
+                            <input type="checkbox" class="form-check-input" style="width: 1.3rem; height: 1.3rem;"
+                            (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)">
+                          </td>
 
-                        <td class="ds-item ds-status status-cell">
-                          {{appUser.status}}
-                        </td>
+                          <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'GAMBAR':'PHOTO'">
+                            <img src="{{appUser.user.imageUrl}}" width="64"
+                            onerror="this.src='assets/img/avatar-big.png'" class="rounded">
+                          </td>
 
-                        <td class="ds-action text-nowrap p-1">
-                          <!-- Flex utility applied directly. Button radiuses leverage standard .rounded-3 -->
-                          <div class="d-flex w-100" style="gap: 0.275rem;">
-                            @if (group?.appId==app().id || groupId()==-1 || groupId()==null){
-                              <button type="button" class="btn btn-outline-danger btn-sm rounded-3"
-                                [class.disabled]="offline()"
-                                (click)="removeAppUser(removeAppUserTpl,appUser)">
-                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                              </button>
-                              <button type="button" class="btn btn-outline-secondary btn-sm rounded-3"
-                                [class.disabled]="offline()"
-                                (click)="approveAppUser(approveAppUserTpl,appUser)">
-                                <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
-                                <span class="d-inline-block d-sm-none">Status</span>
-                              </button>
-                              <button type="button" class="btn btn-outline-secondary btn-sm me-auto rounded-3"
-                                [class.disabled]="offline()"
-                                (click)="editUser(editUserTpl,appUser)">
-                                <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
-                              </button>
-                              @if (cs!=-1) {
-                                  @if (!$first) {
-                                    <button type="button" class="btn btn-sm px-1 rounded-3"
-                                      (click)="reorderItem($index, -1)">
-                                      <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
-                                    </button>
-                                  }
-                                  @if (!$last) {
-                                    <button type="button" class="btn btn-sm px-1 rounded-3"
-                                      (click)="reorderItem($index, 1)">
-                                      <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
-                                    </button>
-                                  }
-                              }
-                            }@else {
-                              <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" class="m-2"></fa-icon>
+                          <td class="ds-item info-cell" [attr.data-label]="lang()=='ms'?'PENGGUNA':'USER'">
+                            <div class="fw-bold fs-6 mt-n1">{{appUser.user.name}}</div>
+                            <div class="subtitle mt-1">
+                              <div>{{appUser.user.email}}</div>
+                              <div>{{lang()=='ms'?'Login pertama':'First login'}}: {{appUser.user.firstLogin|date:'medium':'':angularLocale()}}
+                                @if (!appUser.user.firstLogin) {
+                                  <span class="text-secondary">{{lang()=='ms'?'Belum login':'No login yet'}}</span>
+                                }
+                              </div>
+                              <div>{{lang()=='ms'?'Jenis akaun':'Account type'}}: 
+                                @if (appUser.user?.provider){
+                                  <fa-icon [icon]="provider[appUser.user.provider]"
+                                  [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
+                                } @else {
+                                  <span class="text-secondary">{{lang()=='ms'?'Tiada penyedia ditetapkan':'No provider specified'}}</span> 
+                                }
+                              </div>
+                            </div>
+                            @if (appUser.tags?.length) {
+                              <div class="tags mt-2">
+                                @for (tag of appUser.tags; track $index) {
+                                  <span class="lookup-item">{{tag}}</span>
+                                }
+                              </div>
                             }
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
+                          </td>
+
+                          <td class="ds-item ds-status status-cell">
+                            {{appUser.status}}
+                          </td>
+
+                          <td class="ds-action text-nowrap p-1">
+                            <div class="d-flex w-100" style="gap: 0.275rem;">
+                              @if (group?.appId==app().id || groupId()==-1 || groupId()==null){
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-3"
+                                  [class.disabled]="offline()"
+                                  (click)="removeAppUser(removeAppUserTpl,appUser)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-3"
+                                  [class.disabled]="offline()"
+                                  (click)="approveAppUser(approveAppUserTpl,appUser)">
+                                  <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                                  <span class="d-inline-block d-sm-none">Status</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-auto rounded-3"
+                                  [class.disabled]="offline()"
+                                  (click)="editUser(editUserTpl,appUser)">
+                                  <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
+                                </button>
+                                @if (cs!=-1) {
+                                    @if (!$first) {
+                                      <button type="button" class="btn btn-sm px-1 rounded-3"
+                                        (click)="reorderItem($index, -1)">
+                                        <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                                      </button>
+                                    }
+                                    @if (!$last) {
+                                      <button type="button" class="btn btn-sm px-1 rounded-3"
+                                        (click)="reorderItem($index, 1)">
+                                        <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                                      </button>
+                                    }
+                                }
+                              }@else {
+                                <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" class="m-2"></fa-icon>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  }
                 </table>
               }
             </div>
             
-            @if (selectedUsers?.size>0) {
-              <!-- Background and radius handled via bootstrap and inline -->
+            @if (!userLoading() && selectedUsers?.size>0) {
               <div class="p-3 small bg-body ds-bulk" style="border-radius: 0.75rem;">
                 <div class="p-1">&#8627; With Selected</div>
                 <div class="d-flex flex-wrap gap-2">
@@ -207,8 +237,8 @@
                 </div>
               </div>
             }
-            <!-- (Pagination and Modals omitted for brevity, no class adjustments were needed there) -->
-            @if ((appUserList()?.length) > 0) {
+
+            @if (!userLoading() && (appUserList()?.length) > 0) {
               <div class="text-center d-flex justify-content-center pagination-rounded mt-3">
                 @if (appUserTotal()>pageSize) {
                   <ngb-pagination [collectionSize]="appUserTotal()" [pageSize]="pageSize"
@@ -230,10 +260,11 @@
                 }
               </div>
             }
-            @if (appUserList()?.length == 0 && !loading()) {
+            
+            @if (!userLoading() && appUserList()?.length == 0) {
               <div class="details my-5">
                 <h3>{{lang()=='ms'?'Tiada pengguna':'No user'}}</h3>
-                @if (groupId) {
+                @if (groupId()) {
                   <p> {{lang()=='ms'?'Tiada pengguna ditetapkan untuk kumpulan ini':'There is no user assigned to this group'}}.
                     <br /> {{lang()=='ms'?'Anda boleh menambah pengguna dengan klik butang Tambah':'You can assign a new user by clicking on the Add button'}}.
                   </p>
@@ -242,16 +273,15 @@
                 }
               </div>
             }
-          }@else {
+          } @else {
             <div class="detail text-secondary mt-5 text-center">
-              <h3>{{app()?.x?.lang=='ms'?'Anda tidak mempunyai akses kepada kumpulan pengguna ini':
-              'You are not authorized to access this user group'}}</h3>
+              <h3>{{app()?.x?.lang=='ms'?'Anda tidak mempunyai akses kepada kumpulan pengguna ini':'You are not authorized to access this user group'}}</h3>
             </div>
           }
-        }
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>
 
 <ng-template #editAppUserTpl let-c="close" let-d="dismiss">
@@ -390,6 +420,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #approveAppUserTpl let-c="close" let-d="dismiss">
   <div #approveAppUserForm="ngForm" ngForm>
     <div class="modal-header">
@@ -466,6 +497,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #removeAppUserTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -506,6 +538,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #editUserTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -548,6 +581,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #changeProviderTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -594,6 +628,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #blastTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
     <h4 class="modal-title">{{lang()=='ms'?'Hantar Emel':'Blast Email'}}</h4>

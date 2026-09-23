@@ -1,83 +1,80 @@
 <div class="fix-gutter" [class.limit-width]="!screen().wide">
   <div class="single-pane pt-0">
-    @if (bucket()) {
-      <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
-          @if (screen().data?.enableUpload){
-          <label class="m-0 d-flex">
-            <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
-            @if (!importLoading()) {
-            <div class="btn btn-sm border border-1-5 rounded-2 btn-primary">
-              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
-            </div>
-            }@else {
-            <button type="button" class="btn border border-1-5 rounded-2 btn-primary" disabled>
-              <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Memuatnaik':'Uploading'}}...
-            </button>
-            }
-          </label>
-          }
-          <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
-            placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
-
-          <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-sm h-100" title="More bucket actions"
-              id="dropdownBucketEditor" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor" class="shadow me-n1 mt-2">
-              <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
-                (click)="initZip(initBucketZipTpl, bucket().id)">
-                <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Cipta fail Zip':'Initialize Zip'}}
-              </button>
-              <button type="button" title="Bucket Stat" ngbDropdownItem (click)="bucketStat(bucketStatTpl)"
-                [class.disabled]="offline()">
-                <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Statistik Bucket':'Bucket Statistics'}}
-              </button>
-              <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline()"
-                (click)="reorganize(bucket().id)">
-                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Susun semula fail Bucket':'Reorganize Bucket files'}}
-              </button>
-              <button type="button" title="View anti-virus scanning logs" ngbDropdownItem
-                [disabled]="!serverInfo.avEnabled" (click)="openAvLogs(avLogListTpl, bucket().id)">
-                <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                {{lang()=='ms'?'Imbas Anti-virus':'Anti-virus Scan'}}
-              </button>
-            </div>
-          </div>
-          
+    @if (bucketLoading()) {
+      <div class="p-5 text-center">
+        <div class="spinner-grow text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
-      
-      @if (loading()) {
-        <div class="p-4 text-center">
-          <div class="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
-      }@else{
+    } @else {
+      @if (bucket()) {
+        <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
+            @if (screen().data?.enableUpload){
+            <label class="m-0 d-flex">
+              <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
+              @if (!importLoading()) {
+              <div class="btn btn-sm border border-1-5 rounded-2 btn-primary">
+                <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
+              </div>
+              }@else {
+              <button type="button" class="btn border border-1-5 rounded-2 btn-primary" disabled>
+                <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Memuatnaik':'Uploading'}}...
+              </button>
+              }
+            </label>
+            }
+            <input type="search" autocapitalize="none" class="search-icon form-control form-control-sm border border-1-5"
+              placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
 
-        <div class="px-2 py-2">
-          <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
-            <div>
-              {{lang()=='ms'?'Semua':'Total'}}: 
-              <span class="text-body fw-medium">{{bucketFileTotal()}}</span>
-            </div>                  
-            <div>
-              {{lang()=='ms'?'Dipapar':'Shown'}}: 
-              <span class="text-body fw-medium">{{bucketFileElements()}}</span>
-            </div>                  
-            <div>
-              {{lang()=='ms'?'Halaman':'Pages'}}: 
-              <span class="text-body fw-medium">{{bucketFilePages()}}</span>
-            </div>                  
-          </div>
+            <div ngbDropdown class="d-inline-block">
+              <button type="button" class="btn btn-sm h-100" title="More bucket actions"
+                id="dropdownBucketEditor" ngbDropdownToggle>
+                  <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBucketEditor" class="shadow me-n1 mt-2">
+                <button type="button" title="Initialize bucket zipping process" ngbDropdownItem
+                  (click)="initZip(initBucketZipTpl, bucket().id)">
+                  <fa-icon [icon]="['far','file-archive']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Cipta fail Zip':'Initialize Zip'}}
+                </button>
+                <button type="button" title="Bucket Stat" ngbDropdownItem (click)="bucketStat(bucketStatTpl)"
+                  [class.disabled]="offline()">
+                  <fa-icon [icon]="['fas','tachometer-alt']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Statistik Bucket':'Bucket Statistics'}}
+                </button>
+                <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline()"
+                  (click)="reorganize(bucket().id)">
+                  <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Susun semula fail Bucket':'Reorganize Bucket files'}}
+                </button>
+                <button type="button" title="View anti-virus scanning logs" ngbDropdownItem
+                  [disabled]="!serverInfo.avEnabled" (click)="openAvLogs(avLogListTpl, bucket().id)">
+                  <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                  {{lang()=='ms'?'Imbas Anti-virus':'Anti-virus Scan'}}
+                </button>
+              </div>
+            </div>
+            
         </div>
-
+        
+        @if (!fileLoading() && bucketFileList()?.length) {
+          <div class="px-2 py-2">
+            <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
+              <div>
+                {{lang()=='ms'?'Semua':'Total'}}: 
+                <span class="text-body fw-medium">{{bucketFileTotal()}}</span>
+              </div>                  
+              <div>
+                {{lang()=='ms'?'Dipapar':'Shown'}}: 
+                <span class="text-body fw-medium">{{bucketFileElements()}}</span>
+              </div>                  
+              <div>
+                {{lang()=='ms'?'Halaman':'Pages'}}: 
+                <span class="text-body fw-medium">{{bucketFilePages()}}</span>
+              </div>                  
+            </div>
+          </div>
+        }
 
         <div class="py-1">
           <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
@@ -99,24 +96,48 @@
         </div>
         
         <div class="position-relative">
-          @if (itemLoading()) {
-            <div class="header-colors"></div>
-          }
-
-          <div [class.disabled]="itemLoading()">
-            <div class="table-responsive">
-              @if (bucketFileList()?.length) {
-                <table class="table mb-0 tblcard ds-table table-desktop-bordered">
-                  <thead class="ds-thead">
-                    <tr>
-                      <th style="width: 5%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
-                      <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
-                      <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
-                      @if (screen().data?.enableDelete){
-                      <th style="width: 5%">&nbsp;</th>
-                      }
-                    </tr>
-                  </thead>
+          <div class="table-responsive">
+            @if (bucketFileList()?.length > 0 || fileLoading()) {
+              <table class="table mb-0 tblcard ds-table table-desktop-bordered">
+                <thead class="ds-thead">
+                  <tr>
+                    <th style="width: 5%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
+                    <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
+                    <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
+                    @if (screen().data?.enableDelete){
+                    <th style="width: 5%">&nbsp;</th>
+                    }
+                  </tr>
+                </thead>
+                
+                @if (fileLoading() && (!bucketFileList() || bucketFileList()?.length === 0)) {
+                  <tbody class="ds-tbody placeholder-glow">
+                    @for (dummy of [1,2,3,4,5]; track dummy) {
+                      <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                        <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
+                          <span class="placeholder rounded" style="width: 64px; height: 64px; display: inline-block;"></span>
+                        </td>
+                        <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
+                          <div class="placeholder rounded mb-1" [ngClass]="'col-' + (3 + ((dummy + $index) % 4))"></div>
+                          <div class="subtitle mt-1">
+                            <div class="placeholder rounded mt-1" [ngClass]="'col-' + (6 + ((dummy + $index) % 3))"></div><br>
+                            <div class="placeholder rounded mt-1 col-4"></div><br>
+                            <div class="placeholder rounded mt-1 col-3"></div><br>
+                            <div class="placeholder rounded mt-1 col-2"></div>
+                          </div>
+                        </td>
+                        <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
+                          <span class="placeholder col-8 rounded"></span>
+                        </td>
+                        @if (screen().data?.enableDelete){
+                          <td class="ds-action text-nowrap p-1">
+                            <span class="placeholder col-10 rounded mt-sm-1"></span>
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                } @else {
                   <tbody class="ds-tbody">
                     @for (bucketFile of bucketFileList(); track bucketFile.id) {
                     <tr class="ds-row" [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
@@ -155,12 +176,6 @@
                             </div>
                           }
                           
-                          <!-- @if (bucketFile.itemLabel) {
-                          <div><span class="text-secondary">{{lang()=='ms'?'Dari Input':'From input'}}:</span> {{bucketFile.itemLabel}}</div>
-                          }
-                          @if (bucketFile.entryId) {
-                          <div>For entry #{{bucketFile.entryId}}</div>
-                          } -->
                           @if(['FOUND'].includes(bucketFile.sstatus)){
                           <div class="fw-bold mt-2">
                             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
@@ -194,51 +209,52 @@
                     </tr>
                     }
                   </tbody>
-                </table>
                 }
-            </div>
+              </table>
+            }
           </div>
         </div>
-      }
-      
-      @if ((bucketFileList()?.length) > 0) {
-      <div class="text-center d-flex justify-content-center pagination-rounded mt-3">
-        @if (bucketFileTotal()>pageSize) {
-        <ngb-pagination [collectionSize]="bucketFileTotal()" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
-          (pageChange)="getFileList(pageNumber(),params)" [boundaryLinks]="false" [directionLinks]="false">
-          <ng-template ngbPaginationFirst>
-            <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
-          </ng-template>
-          <ng-template ngbPaginationPrevious>
-            <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
-          </ng-template>
-          <ng-template ngbPaginationNext>
-            <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
-          </ng-template>
-          <ng-template ngbPaginationLast>
-            <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
-          </ng-template>
-        </ngb-pagination>
+        
+        @if (!fileLoading() && (bucketFileList()?.length) > 0) {
+        <div class="text-center d-flex justify-content-center pagination-rounded mt-3">
+          @if (bucketFileTotal()>pageSize) {
+          <ngb-pagination [collectionSize]="bucketFileTotal()" [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
+            (pageChange)="getFileList(pageNumber(),params)" [boundaryLinks]="false" [directionLinks]="false">
+            <ng-template ngbPaginationFirst>
+              <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationPrevious>
+              <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationNext>
+              <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+            </ng-template>
+            <ng-template ngbPaginationLast>
+              <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+            </ng-template>
+          </ngb-pagination>
+          }
+        </div>
         }
+        
+        @if (!fileLoading() && bucketFileList()?.length == 0) {
+        <div class="details my-5">
+          <h3>{{lang()=='ms'?'Tiada data':'No data'}}</h3>
+          <p> {{lang()=='ms'?'Tiada fail dimuatnaik ke dalam bucket ini':'There is no file uploaded to this bucket'}}.
+            <br /> {{lang()=='ms'?'Anda boleh muatnaik fail dengan klik pada butang Muatnaik':'You can upload new file by clicking on the Upload button'}}.
+          </p>
+        </div>
+        }
+      }@else{
+      <div class="text-body-secondary mt-5 text-center">
+        <h3>{{lang()=='ms'?'Sila pilih Bucket dari senarai':"Please select Bucket from the list on the left to view its data"}}.</h3>
       </div>
       }
-      
-      @if (bucketFileList()?.length == 0 && !loading()) {
-      <div class="details my-5">
-        <h3>{{lang()=='ms'?'Tiada data':'No data'}}</h3>
-        <p> {{lang()=='ms'?'Tiada fail dimuatnaik ke dalam bucket ini':'There is no file uploaded to this bucket'}}.
-          <br /> {{lang()=='ms'?'Anda boleh muatnaik fail dengan klik pada butang Muatnaik':'You can upload new file by clicking on the Upload button'}}.
-        </p>
-      </div>
-      }
-    }@else{
-    <div class="text-body-secondary mt-5 text-center">
-      <h3>{{lang()=='ms'?'Sila pilih Bucket dari senarai':"Please select Bucket from the list on the left to view its data"}}.</h3>
-    </div>
     }
   </div>
 </div>
 
+<!-- Modal templates remain exactly the same -->
 <ng-template #removeBucketFileTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">

@@ -44,11 +44,14 @@ import { of } from 'rxjs';
 })
 export class UserComponent implements OnInit {
 
-  private destroyRef = inject(DestroyRef); // Injected for modern memory leak prevention
+  private destroyRef = inject(DestroyRef);
 
   offline = signal<boolean>(false);
 
-  loading = signal<boolean>(false);
+  // Separated Loading States
+  groupLoading = signal<boolean>(true); 
+  userLoading = signal<boolean>(false);
+
   appUserTotal = signal<number>(0);  
   numberOfElements = signal<number>(0);
   entryPages = signal<number>(0);
@@ -176,12 +179,15 @@ export class UserComponent implements OnInit {
       this.hasGroupId.set(true);
       this.runService.getGroup(this.groupId())
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(res => {
-          this.group = res;
-          this.getGroupList(this.group);
+        .subscribe({
+          next: (res) => {
+            this.group = res;
+            this.groupLoading.set(false);
+            this.getGroupList(this.group);
+          },
+          error: () => this.groupLoading.set(false)
         });
     } else {
-      // Flattened the double-subscription bug using standard if/else logic
       this.route.params
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((params: Params) => {
@@ -192,21 +198,28 @@ export class UserComponent implements OnInit {
             this.hasGroupId.set(true);
             this.runService.getGroup(groupId)
               .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe(res => {
-                this.group = res;
-                this.getGroupList(this.group);
+              .subscribe({
+                next: (res) => {
+                  this.group = res;
+                  this.groupLoading.set(false);
+                  this.getGroupList(this.group);
+                },
+                error: () => this.groupLoading.set(false)
               });
           } else {
             this.runService.getGroupAllList({ appId: this.app()?.id })
               .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe(res => {
-                this.groupList.set(res);
-                this.groupMap = res.reduce((map, obj) => { map[obj.id] = obj; return map }, {});
+              .subscribe({
+                next: (res) => {
+                  this.groupList.set(res);
+                  this.groupMap = res.reduce((map, obj) => { map[obj.id] = obj; return map }, {});
+                  this.groupLoading.set(false);
+                },
+                error: () => this.groupLoading.set(false)
               });
             this.getPendingList();
           }
 
-          // Independently fetch mailer list whenever params change
           this.runService.getMailerList({ appId: this.app()?.id })
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
@@ -315,6 +328,8 @@ export class UserComponent implements OnInit {
 
 
   getAppUserList(pageNumber, params) {
+    this.userLoading.set(true); 
+
     Object.assign(params, {
       page: pageNumber - 1,
       size: this.pageSize,
@@ -323,15 +338,19 @@ export class UserComponent implements OnInit {
     })
     this.pageNumber.set(pageNumber);
     this.params = params;
+
     this.runService.getAppUserList(this.app()?.id, params)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.appUserList.set(res.content);
-        this.appUserTotal.set(res.page?.totalElements);        
-        this.numberOfElements.set(res.content?.length);
-        this.entryPages.set(res.page?.totalPages);
-      })
-
+      .subscribe({
+        next: (res) => {
+          this.userLoading.set(false); 
+          this.appUserList.set(res.content);
+          this.appUserTotal.set(res.page?.totalElements);        
+          this.numberOfElements.set(res.content?.length);
+          this.entryPages.set(res.page?.totalPages);
+        },
+        error: () => this.userLoading.set(false) 
+      });
   }
 
   checkValue(cId, data) {
@@ -409,7 +428,6 @@ export class UserComponent implements OnInit {
         return { id: val.id, sortOrder: $index  + ((this.pageNumber()-1) * this.pageSize) }
       });
       
-    // Execute and clean up internally, rather than returning the Subscription
     this.runService.saveUserOrder(list)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe();
@@ -421,7 +439,7 @@ export class UserComponent implements OnInit {
 
     items.forEach((i, $index) => {
       i.sortOrder = $index;
-    }); // ensure current sortorder using index, to prevent jumping ordering
+    }); 
 
     var temp = items[index + op];
     var tempSortOrder = items[index + op].sortOrder;
@@ -501,5 +519,4 @@ export class UserComponent implements OnInit {
           })
       }, res => { });
   }
-
 }

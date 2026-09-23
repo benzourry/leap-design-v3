@@ -13,7 +13,7 @@ import { RunService } from '../../_service/run.service';
 @Component({
     selector: 'app-mailbox',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [DatePipe], // <-- Required to inject DatePipe properly
+    providers: [DatePipe], 
     imports: [SafePipe, FormsModule, NgbPagination, DatePipe, FontAwesomeModule, GroupByPipe],
     templateUrl: './mailbox.component.html',
     styleUrl: './mailbox.component.scss'
@@ -23,10 +23,12 @@ export class MailboxComponent implements OnInit {
   appId = computed<number | null>(() => this.runService.$app()?.id || null);
   app = computed<any>(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang);
-  // lang = input<string>('en');
   angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
   user = computed<any>(() => this.runService.$user());
   email = computed<string>(() => this.user()?.email || '');
+
+  // 1. ADDED LOADING SIGNAL
+  loading = signal<boolean>(true);
 
   listSearchText: string = "";
   list = signal<any[]>([]);
@@ -34,7 +36,6 @@ export class MailboxComponent implements OnInit {
   listPageSize: number = 25;
   pageNumber = signal<number>(1);
 
-  // Converted to signals for perfect OnPush UI rendering
   isReadMore = signal<Record<string, boolean>>({});
   hideMailOn = signal<Record<string, boolean>>({});
   notif = signal<any>(null);
@@ -42,7 +43,7 @@ export class MailboxComponent implements OnInit {
   private runService = inject(RunService);
   private toastService = inject(ToastService);
   private datePipe = inject(DatePipe);
-  private destroyRef = inject(DestroyRef); // For memory leak prevention
+  private destroyRef = inject(DestroyRef); 
 
   constructor() { }
 
@@ -51,6 +52,7 @@ export class MailboxComponent implements OnInit {
   }
 
   loadNotiList(pageNumber: number) {
+    this.loading.set(true); // 2. SET TO TRUE BEFORE FETCHING
     this.pageNumber.set(pageNumber);
     let param: any = {
       searchText: this.listSearchText,
@@ -62,14 +64,18 @@ export class MailboxComponent implements OnInit {
 
     this.runService.getNotificationByParams(this.appId()!, param)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        let mappedList = res.content.map((n: any) => ({
-            ...n,
-            dateFmt: this.datePipe.transform(n.timestamp, 'E, dd-MM-yyyy', '', this.angularLocale()),
-        }));
-        
-        this.list.set(mappedList);
-        this.listTotal.set(res.page?.totalElements || 0);
+      .subscribe({
+        next: (res) => {
+          let mappedList = res.content.map((n: any) => ({
+              ...n,
+              dateFmt: this.datePipe.transform(n.timestamp, 'E, dd-MM-yyyy', '', this.angularLocale()),
+          }));
+          
+          this.list.set(mappedList);
+          this.listTotal.set(res.page?.totalElements || 0);
+          this.loading.set(false); // 3. SET TO FALSE WHEN DONE
+        },
+        error: () => this.loading.set(false) // 4. FAIL GRACEFULLY
       });
   }
 
@@ -80,7 +86,6 @@ export class MailboxComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res2) => {
-          // Fixed pagination bug: reload current page, not previous page
           this.loadNotiList(this.pageNumber());
         },
         error: (err) => {
@@ -89,7 +94,6 @@ export class MailboxComponent implements OnInit {
       });
   }
 
-  // Helper methods to update Record signals cleanly from HTML
   toggleReadMore(id: string) {
     this.isReadMore.update(prev => ({ ...prev, [id]: !prev[id] }));
   }

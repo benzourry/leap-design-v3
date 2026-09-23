@@ -33,7 +33,9 @@ export class LookupComponent implements OnInit {
 
     offline = signal<boolean>(false);
 
-    loading = signal<boolean>(false);
+    lookupLoading = signal<boolean>(true);
+    lookupEntryLoading = signal<boolean>(false);
+
     lookupEntryTotal = signal<number>(0);
     lookupEntryList = signal<any[]>([]);
     lookup = signal<any>({});
@@ -42,7 +44,7 @@ export class LookupComponent implements OnInit {
     lookupEntryPages = signal<number>(0);
     lookupEntryElements = signal<number>(0);
     
-  preCount = computed(() => this.lookupEntryPageSize() * Math.max(0, this.entryPageNumber() - 1));
+    preCount = computed(() => this.lookupEntryPageSize() * Math.max(0, this.entryPageNumber() - 1));
 
     appId: number;
     user = computed<any>(() => this.runService.$user());
@@ -70,7 +72,7 @@ export class LookupComponent implements OnInit {
     private location = inject(PlatformLocation)
     private utilityService = inject(UtilityService)
     private cdr = inject(ChangeDetectorRef);
-    private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
+    private destroyRef = inject(DestroyRef); 
 
     constructor() {
         this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -79,7 +81,6 @@ export class LookupComponent implements OnInit {
             .pipe(takeUntilDestroyed())
             .subscribe(online => this.offline.set(!online));
             
-        // Use effect to reactively watch the lookupId model input if it changes
         effect(() => {
             const currentId = this.lookupId();
             if (currentId) {
@@ -89,7 +90,6 @@ export class LookupComponent implements OnInit {
     }
 
     ngOnInit() {
-        // Fallback to listening for route parameters if lookupId is not provided
         this.route.params
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
@@ -100,20 +100,17 @@ export class LookupComponent implements OnInit {
             });
     }
 
-
     _lookupEntry:any = {};
     lookupEntryFields: any[];
     lookupEntryFieldsOrphan: any;
-    // editLookupEntryDataFieldsOrphan = signal<any>({});
+
     editLookupEntry(content, lookupEntry, isNew) {
         if (this.lookup().dataEnabled) {
             if (!lookupEntry.data) {
                 lookupEntry.data = {}
             }
             this.lookupEntryFields = this.fieldsAsList(this.lookup().dataFields);
-            // this.editLookupEntryDataFields = this.fieldsAsList(this.lookup().dataFields));
             this.lookupEntryFieldsOrphan = this.fieldsExistOrphan(lookupEntry.data);
-            // this.editLookupEntryDataFieldsOrphan.set(this.fieldsExistOrphan(lookupEntry.data));
         }
         this._lookupEntry = lookupEntry;
 
@@ -142,6 +139,7 @@ export class LookupComponent implements OnInit {
                     })
             }, res => { })
     }
+    
     isNumber = (val) => typeof val === 'number';
     
     fieldsAsMap = (str: string) => {
@@ -225,59 +223,59 @@ export class LookupComponent implements OnInit {
 
     hasLoadList = signal<boolean>(false);
 
-    // userUnauthorized = signal<boolean>(false);
     userUnauthorized = computed(() => {
         const accessList = this.lookup().accessList;
         const userGroups = Object.keys(this.user()?.groups||{});
         
         if (accessList?.length > 0) {
           const intercept = accessList.filter((v) => userGroups.includes(v + ""));
-          return intercept.length === 0; // Unauthorized if no matching groups
+          return intercept.length === 0; 
         }      
-        return false; // Default to false if accessList is empty or undefined
+        return false; 
     });
 
-    // lookupDataFields = [];
     lookupDataFields = computed(()=>this.lookup().dataEnabled ? this.fieldsAsList(this.lookup().dataFields) : []);
-    // mapDataFields = {};
     mapDataFields = computed(()=>this.lookup().dataEnabled ? this.fieldsAsMap(this.lookup().dataFields) : {});
     
     requestParams = signal<any>({});
     params = signal<string[]>([]);
     
     loadLookup(id:number) {
-        // this.lookupId = id;
+        this.lookupLoading.set(true);
         this.lookupService.getLookup(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(lookup => {
-                this.requestParams.set({});
-                this.lookup.set(lookup);
+            .subscribe({
+                next: lookup => {
+                    this.requestParams.set({});
+                    this.lookup.set(lookup);
 
-                if (lookup.sourceType == 'rest') {
-                    let g = lookup.endpoint?.match(/\{(.[^{]+)\}/ig);
-                    const paramsList: string[] = [];
-                    g?.forEach(element => {
-                        if (!element.includes('_secret')){
-                            paramsList.push(element.replace(/([{}\s]+)/ig, ''));
-                        }
-                    });
-                    this.params.set(paramsList);
+                    if (lookup.sourceType == 'rest') {
+                        let g = lookup.endpoint?.match(/\{(.[^{]+)\}/ig);
+                        const paramsList: string[] = [];
+                        g?.forEach(element => {
+                            if (!element.includes('_secret')){
+                                paramsList.push(element.replace(/([{}\s]+)/ig, ''));
+                            }
+                        });
+                        this.params.set(paramsList);
+                        this.hasLoadList.set(false);
+                    }
+
                     this.hasLoadList.set(false);
-                }
+                    this.lookupLoading.set(false);
 
-                this.hasLoadList.set(false);
-                if (lookup.sourceType=='db'){
-                    this.getLookupEntryList(this.entryPageNumber());
-                }       
-        
-            })
-
+                    if (lookup.sourceType=='db'){
+                        this.getLookupEntryList(this.entryPageNumber());
+                    }       
+                },
+                error: () => this.lookupLoading.set(false)
+            });
     }
 
     endpointPromptTpl = viewChild('endpointPromptTpl');
     
     getLookupEntryList(pageNumber) {
-        this.loading.set(true);
+        this.lookupEntryLoading.set(true);
         this.entryPageNumber.set(pageNumber);
         let params:any = {
             page: pageNumber - 1,
@@ -290,7 +288,7 @@ export class LookupComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (response) => {
-                    this.loading.set(false);
+                    this.lookupEntryLoading.set(false);
                     this.lookupEntryTotal.set(response.page?.totalElements);
                     this.lookupEntryPages.set(response.page?.totalPages);
                     this.lookupEntryPageSize.set(response.page?.size);
@@ -299,7 +297,7 @@ export class LookupComponent implements OnInit {
                     this.hasLoadList.set(true);
                     this.findDuplicateCode();
                 }, error: (err) => {
-                    this.loading.set(false);
+                    this.lookupEntryLoading.set(false);
                     this.hasLoadList.set(true);
                 }
             });
@@ -313,7 +311,7 @@ export class LookupComponent implements OnInit {
                 .result.then(data => {
                     run(data);
                 }).catch(err => {
-                    this.loading.set(false);
+                    this.lookupEntryLoading.set(false);
                 });
             }else{
                 run({});
@@ -328,11 +326,9 @@ export class LookupComponent implements OnInit {
         const contentArray = this.lookupEntryList();
         const seenCodes = new Set();
         const duplicateEntries = contentArray.filter(item => {
-            // If the Set already has the code, it's a duplicate
             if (seenCodes.has(item.code)) {
                 return true; 
             }
-            // Otherwise, add it to our tracking Set
             seenCodes.add(item.code);
             return false;
         });
@@ -343,7 +339,6 @@ export class LookupComponent implements OnInit {
     reorderItem(index, op) {
         this.lookupEntryList.set(this.reorder(this.lookupEntryList(), index, op));
 
-        // Trigger the swapEnd class change after a delay
         setTimeout(() => {
             this.lookupEntryList.update((currentList) => {
             const updatedList = [...currentList];
@@ -361,7 +356,7 @@ export class LookupComponent implements OnInit {
 
         items.forEach((i, $index) => {
             i.sortOrder = $index;
-        }); // ensure current sortorder using index, to prevent jumping ordering
+        });
 
         var temp = items[index + op];
         var tempSortOrder = items[index + op].sortOrder;
@@ -383,8 +378,6 @@ export class LookupComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe();
     }
-
-
 
     uploadFile($event, data, key) {
         if ($event.target.files && $event.target.files.length) {
@@ -426,7 +419,6 @@ export class LookupComponent implements OnInit {
 
     }
 
-
      selectedEntries = signal<Record<number, any>>({});
 
      selectedCount = computed(() => Object.keys(this.selectedEntries()).length);
@@ -463,32 +455,27 @@ export class LookupComponent implements OnInit {
 
         if (confirm(isMs ? 'Anda pasti untuk membuang semua entri ini?' : 'Remove all ' + selectedKeys.length + ' entries?')) {
             
-            // 1. Loop through selected keys and map to removeEntry requests
             const removeRequests = selectedKeys.map(id => this.lookupService.removeEntry(id, null));
 
-            // 2. Execute all requests in parallel
             forkJoin(removeRequests)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: () => {
-                        // 3. Clear selections
                         this.selectedEntries.set({});
                         this.checkAllInput.set(false);
 
-                        // 4. Calculate new page (if we deleted everything on the last page, go back one page)
                         const newPage = (this.lookupEntryElements() === selectedKeys.length && this.entryPageNumber() === this.lookupEntryPages()) 
                             ? this.entryPageNumber() - 1 
                             : this.entryPageNumber();
                         
                         this.entryPageNumber.set(Math.max(1, newPage));
                         
-                        // 5. Reload the list and show toast
                         this.getLookupEntryList(this.entryPageNumber());
                         this.toastService.show(isMs ? 'Entri berjaya dibuang' : 'Entries removed successfully', { classname: 'bg-success text-light' });
                     },
                     error: () => {
                         this.toastService.show(isMs ? 'Gagal membuang beberapa entri' : 'Failed to remove some entries', { classname: 'bg-danger text-light' });
-                        this.getLookupEntryList(this.entryPageNumber()); // Refresh to get the actual remaining state
+                        this.getLookupEntryList(this.entryPageNumber()); 
                     }
                 });
         }
@@ -499,13 +486,13 @@ export class LookupComponent implements OnInit {
     }
 
     getUrl(pre, path) {
-        return baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
+        return baseApi + pre + encodeURIComponent(path); 
     }
 
     isObjectEmpty(obj) {
         for (const prop in obj) {
             if (Object.hasOwn(obj, prop)) {
-            return false; // Found a property, not empty
+            return false;
             }
         }
         return true;

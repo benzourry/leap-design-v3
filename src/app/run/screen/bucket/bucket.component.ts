@@ -1,19 +1,7 @@
 // Copyright (C) 2018 Razif Baital
 // 
 // This file is part of LEAP.
-// 
-// LEAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-// 
-// LEAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
+// ... (Standard License Header)
 
 import { DatePipe, DecimalPipe, NgClass, NgStyle, PlatformLocation } from '@angular/common';
 import { Component, computed, inject, input, signal, DestroyRef } from '@angular/core';
@@ -46,13 +34,15 @@ export class BucketComponent {
   lang = computed(() => this.app().x?.lang);
   angularLocale = computed(() => this.lang() === 'ms' ? 'ms-MY' : 'en-US');
 
-  loading = signal<boolean>(false);
+  // Separated Loading States
+  bucketLoading = signal<boolean>(true);
+  fileLoading = signal<boolean>(false);
+
   bucketList = signal<any[]>([]);
   bucketId:number;
   screen = input<any>();
   
   bucket = signal<any>(null);
-  itemLoading = signal<boolean>(false);
   appId: number;
   rand: number;
   baseApi = baseApi;
@@ -63,7 +53,7 @@ export class BucketComponent {
   private runService = inject(RunService)
   private toastService = inject(ToastService)
   private utilityService = inject(UtilityService)
-  private destroyRef = inject(DestroyRef); // Injected for subscription cleanup
+  private destroyRef = inject(DestroyRef); 
 
   constructor() {
     this.location.onPopState(() => this.modalService.dismissAll(''));
@@ -94,23 +84,22 @@ export class BucketComponent {
 
   avLogList:any[]=[];
 
-
   loadBucket(id) {
-    this.loading.set(true);
+    this.bucketLoading.set(true); // Ensure config loader is true
     this.bucketId = id;
     this.runService.getBucket(id)
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: bucket => {
         this.bucket.set(bucket);
+        this.bucketLoading.set(false); // Config is ready!
         this.getFileList(1, {
           bucket: this.bucketId
-        })
+        });
         this.loadAvLogList(id);
-        this.loading.set(false);
       },
       error: error => {
-        this.loading.set(false);
+        this.bucketLoading.set(false);
         this.toastService.show(this.lang()=='ms'?'Bucket tidak berjaya dimuatkan':"Failed to load bucket", { classname: 'bg-danger text-light' });
       }
     });
@@ -125,7 +114,7 @@ export class BucketComponent {
   searchTextFile: string = "";
   
   getFileList(pageNumber, params) {
-    this.itemLoading.set(true);
+    this.fileLoading.set(true); // Turn on file loading skeleton
     
     // Fix: Avoid mutating the original 'params' object to prevent parameter pollution on subsequent calls
     let fetchParams = {
@@ -150,16 +139,15 @@ export class BucketComponent {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next:res => {
-        this.itemLoading.set(false);
+        this.fileLoading.set(false); // Skeletons out, actual data in
         this.bucketFileList.set(res.content);
-                    // this.lookupEntryTotal.set(response.page?.totalElements);
         this.bucketFilePages.set(res.page?.totalPages);
         this.bucketFilePageSize.set(res.page?.size);
         this.bucketFileElements.set(res.content?.length);
         this.bucketFileTotal.set(res.page?.totalElements);
       },
       error: error => {
-        this.itemLoading.set(false);
+        this.fileLoading.set(false);
         this.toastService.show(this.lang()=='ms'?"Fail bucket tidak berjaya dimuatkan":"Failed to load bucket files", { classname: 'bg-danger text-light' });
       }
     })
@@ -186,7 +174,7 @@ export class BucketComponent {
 
   importLoading = signal<boolean>(false);
   uploadFile($event) {
-    if ($event.target.files && $event.target.files.length) {
+    if ($event.target.files &&$event.target.files.length) {
       this.importLoading.set(true);
       this.runService.uploadFile(this.bucket().id, this.app().id, $event.target.files[0], this.user().email)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -354,8 +342,6 @@ export class BucketComponent {
     )
     .subscribe({
       next: res => {
-        // this.scanLoading[bucket.id]=false;
-        // this.loadAvLogList(bucket.id);
       }, 
       error: err => {
         this.scanLoading[bucket.id]=false;
