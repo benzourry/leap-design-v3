@@ -110,7 +110,7 @@ import { NgClass } from '@angular/common';
       content: '';
       position: absolute;
       background-color: var(--bs-border-color, #7d7d7d);
-      top: 15px;
+      top: 13px;
       left: -50%;
       z-index: -1;
   }

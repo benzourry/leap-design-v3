@@ -172,7 +172,8 @@
                           @if ((naviDataItem || ['external','internal','user', 'lambda', 'start', 'profile'].includes(item.type)) && preItem()[item.id]) {
                             <div>
                               @if (['external', 'internal'].includes(item.type)) {
-                                <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                <!-- <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})" -->
+                                <a [href]="item.compiledUrl"
                                   [target]="item.type === 'external' ? '_blank' : ''">
                                   <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                   <div class="menu-text">{{item.title}}</div>
@@ -246,7 +247,8 @@
                             @if ((naviDataItem || ['external','internal','user', 'lambda', 'start', 'profile'].includes(item.type)) && preItem()[item.id]) {
                               
                               @if (['external', 'internal'].includes(item.type)) {
-                                <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})"
+                                <!-- <a [href]="compileTpl(item.url, {$this$:_this,$user$:user(), $conf$:appConfig,$base$:base, $baseUrl$:baseUrl(), $baseApi$:baseApi})" -->
+                                <a [href]="item.compiledUrl"
                                   [target]="item.type === 'external' ? '_blank' : ''" 
                                   class="bottom-nav-item text-body position-relative d-flex flex-column align-items-center text-decoration-none p-2 bg-body rounded-4">
                                   <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
@@ -334,6 +336,7 @@
           
           <div id="_viewport" class="content"
            [class.dark-mode]="darkMode()" 
+           [class.is-routing]="isRouting()"
            (click)="app()?.layout === 'sidemenu' || navToggle.set({})">
             <router-outlet></router-outlet>
           </div>

@@ -118,6 +118,9 @@ export class BucketComponent {
 
   params: any;
   bucketFileTotal = signal<number>(0);
+  bucketFileElements = signal<number>(0);
+  bucketFilePages = signal<number>(0);
+  bucketFilePageSize = signal<number>(0);
   bucketFileList = signal<any[]>([]);
   searchTextFile: string = "";
   
@@ -149,6 +152,10 @@ export class BucketComponent {
       next:res => {
         this.itemLoading.set(false);
         this.bucketFileList.set(res.content);
+                    // this.lookupEntryTotal.set(response.page?.totalElements);
+        this.bucketFilePages.set(res.page?.totalPages);
+        this.bucketFilePageSize.set(res.page?.size);
+        this.bucketFileElements.set(res.content?.length);
         this.bucketFileTotal.set(res.page?.totalElements);
       },
       error: error => {

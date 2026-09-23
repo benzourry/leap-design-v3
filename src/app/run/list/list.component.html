@@ -41,7 +41,7 @@
           }
 
           @if ((dataset()?.filters && dataset()?.filters.length > 0) || dataset()?.x?.enableStatusFilter) {
-            <button type="button" class="btn position-relative" [class.text-primary]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
+            <button type="button" class="btn position-relative" [class.btn-sm]="asComp()" [class.text-primary]="!filterIsEmpty()" (click)="editFilter(editFilterTpl, filtersData())">
               <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
               @if (!filterIsEmpty()) { <div class="position-absolute bg-danger px-1 text-white rounded-1" style="font-size: 11px; top:2px; right:2px; line-height:13px">{{filterSize()}}</div> }
             </button>
@@ -64,15 +64,15 @@
 
           @if (entryTotal() > 25) {
             <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
-              <button type="button" class="btn h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
+              <button type="button" [class.btn-sm]="asComp()" class="btn h-100" id="dropdownPage" ngbDropdownToggle><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> {{pageSize()}}</button>
               <div ngbDropdownMenu class="shadow toolbar-aligned-menu mt-2">
                 @for (size of [25, 50, 100, 500]; track size) { <button type="button" (click)="pageSize.set(size); getEntryList(1)" ngbDropdownItem>{{size}}</button> }
               </div>
             </div>
           }
 
-          @if (dataset()?.canBlast) { <button type="button" class="btn d-none d-sm-inline-block" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
-          @if (dataset()?.x?.canResync) { <button type="button" class="btn d-none d-sm-inline-block" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
+          @if (dataset()?.canBlast) { <button type="button" class="btn d-none d-sm-inline-block" [class.btn-sm]="asComp()" (click)="blastEmail(blastTpl, blastData())"><fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon></button> }
+          @if (dataset()?.x?.canResync) { <button type="button" class="btn d-none d-sm-inline-block" [class.btn-sm]="asComp()" [class.disabled]="offline()" (click)="resyncDataset(dataset()?.id)"><fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon></button> }
           
           @if (dataset()?.x?.tblcard && !asComp() && numberOfElements() > 0) {
             <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
@@ -215,7 +215,7 @@
         }
 
         <div [class.disabled]="itemLoading()">
-          <div [class.table-responsive]="!dataset()?.wide || asComp()" class="w-100">
+          <div [class.table-responsive]="!dataset()?.wide || asComp()" class="overflow-auto w-100">
             @if (entryList()?.length > 0 || itemLoading()) {
               <table class="table table-print ds-table mb-0"
                 [class.has-both]="dataset()?.x?.bulkAction && dataset()?.showAction"
@@ -265,7 +265,7 @@
                 @if (itemLoading() && (!entryList() || entryList()?.length === 0)) {
                   <tbody class="list-tmid ds-tbody placeholder-glow" [attr.data-grid]="dataset()?.x?.cardSize">
                     @for (dummy of [1,2,3,4,5,6]; track dummy) {
-                      <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                      <tr class="ds-row bg-body-tertiary bg-opacity-10" [class.has-check-or-index]="dataset()?.x?.bulkAction || dataset()?.showIndex">
                         @if (dataset()?.x?.bulkAction) { <td class="ds-check"><span class="placeholder col-12 rounded"></span></td> }
                         @if (dataset()?.showIndex) { <td class="ds-index"><span class="placeholder col-12 rounded"></span></td> }
                         
@@ -311,7 +311,8 @@
 
                         @if (!hideGroup[listKv?.key]) {
                           @for (i of listKv?.value; track i.id; let eIdx = $index) {
-                            <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)">
+                            <tr class="ds-row" [ngClass]="[i.currentStatus || '', rowClass[i.id] || '']" [class.selected-row]="checkSelect(i)"
+                              [class.has-check-or-index]="dataset()?.x?.bulkAction || dataset()?.showIndex">
                               @if (dataset()?.x?.bulkAction) {
                                 <td class="ds-check">
                                   <input type="checkbox" class="form-check-input" (click)="toggleSelect(i)" [checked]="checkSelect(i)">

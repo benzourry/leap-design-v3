@@ -51,6 +51,11 @@
     }
   }
 
+  .td-list{
+    flex-direction: column;
+  }
+  // .td-list::before{display: none;}
+
   table.extra-data-tbl tr td:last-child{padding-right: 0;}
   table.extra-data-tbl tr:first-child td{
     padding-top: 0;

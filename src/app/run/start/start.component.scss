@@ -367,6 +367,9 @@ $transition-slow: 350ms ease-in-out;
   border: 1px solid rgba(0,0,0, 0.08);
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
   outline: none;
+
+  will-change: transform; /* Offloads the blur processing to the GPU */
+  -webkit-transform: translateZ(0); /* Safari hardware acceleration hack */
   
   /* Push down but leave exactly 24px exposed for the peek */
   transform: translateY(calc(100% - 24px)); 
@@ -551,40 +554,42 @@ $transition-slow: 350ms ease-in-out;
 /* ==========================================================================
    NATIVE PAGE TRANSITION (View Transitions API)
    ========================================================================== */
-.wrapper .content { view-transition-name: page; }
+.wrapper .content.is-routing { view-transition-name: page; }
 
 ::ng-deep {
   /* Disable default crossfade flash */
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 
-  /* OLD page: Dims into background */
+  /* 1. Define base variables (Desktop default: no scale) */
+  ::view-transition-old(page), ::view-transition-new(page) {
+    --scale-start: 1; 
+    --scale-end: 1;
+  }
+
+  /* 2. Mobile override (Activates the scale effect) */
+  @media (max-width: 767.98px) {
+    ::view-transition-new(page) { --scale-start: 0.95; }
+    ::view-transition-old(page) { --scale-end: 0.96; }
+  }
+
+  /* 3. Apply the single animation set */
   ::view-transition-old(page) {
     animation: page-out 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
-
-  /* NEW page: Slides UP over old page */
   ::view-transition-new(page) {
     animation: page-in 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    z-index: 2;
+    z-index: 2; 
     background: var(--bs-body-bg); 
     box-shadow: 0 -10px 20px rgba(0,0,0,0.1); 
   }
 }
 
-/* Base Animation (Desktop & Large Screens - No Scale) */
+/* 4. One set of keyframes powered by dynamic variables */
 @keyframes page-in { 
-  0% { transform: translateY(150px); opacity: 0; } 
+  0% { transform: translateY(150px) scale(var(--scale-start)); opacity: 0; } 
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 @keyframes page-out { 
-  100% { opacity: 0.5; } 
-}
-
-/* Mobile Overrides (Injects the Scale Effect) */
-@media screen and (max-width: 767.98px) {
-  @keyframes page-in { 
-    0% { transform: translateY(150px) scale(0.95); opacity: 0; } 
-  }
-  @keyframes page-out { 
-    100% { transform: scale(0.96); opacity: 0.5; } 
-  }
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(var(--scale-end)); opacity: 0.5; } 
 }

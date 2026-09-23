@@ -43,6 +43,7 @@ import { FieldViewComponent } from '../_component/field-view.component';
 import { PageTitleComponent } from '../_component/page-title.component';
 import { StepWizardComponent } from '../_component/step-wizard.component';
 import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-entry-filter.component';
+import { ViewportService } from '../../_shared/service/viewport.service';
 
 @Component({
   selector: 'app-list',
@@ -74,6 +75,7 @@ export class ListComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+  private viewport = inject(ViewportService);
 
   groupByPipe = new GroupByPipe();
 
@@ -87,7 +89,7 @@ export class ListComponent implements OnInit, OnDestroy {
   datasetLoaded = output<any>();
 
   dataset = signal<any>(null);
-  _datasetId!: number;
+  // _datasetId!: number;
   entryList = signal<any[]>([]);
   groupedEntryList = computed(() =>
     this.groupByPipe.transform(this.entryList(), this.getPathForGrouping(this.groupFieldCode()))
@@ -218,26 +220,33 @@ export class ListComponent implements OnInit, OnDestroy {
   private activeListReq?: Subscription;
 
   // 1. Create a signal for the mobile state
-  isMobile = signal(false);
-  private mediaQueryList: MediaQueryList | null = null;
-  private mediaQueryListener: (e: MediaQueryListEvent) => void;
+  // isMobile = signal(false);
+  isMobile = this.viewport.isMobile;
+  // private mediaQueryList: MediaQueryList | null = null;
+  // private mediaQueryListener: (e: MediaQueryListEvent) => void;
 
   constructor() {
-    this.mediaQueryListener = (e: MediaQueryListEvent) => {
-      this.isMobile.set(e.matches);
-    };
+    // this.mediaQueryListener = (e: MediaQueryListEvent) => {
+    //   this.isMobile.set(e.matches);
+    // };
     
     this.utilityService
       .testOnline$()
       .pipe(takeUntilDestroyed())
       .subscribe(online => this.offline.set(!online));
 
+    // effect(() => {
+    //   const currentDatasetId = this.datasetId();
+    //   if (this._datasetId !== currentDatasetId && currentDatasetId) {
+    //     this._datasetId = currentDatasetId;
+    //     this.getDataset(currentDatasetId);
+    //   }
+    // });
     effect(() => {
-      const currentDatasetId = this.datasetId();
-      if (this._datasetId !== currentDatasetId && currentDatasetId) {
-        this._datasetId = currentDatasetId;
-        this.getDataset(currentDatasetId);
-      }
+        const id = this.datasetId();
+        if (id) {
+            untracked(() => this.getDataset(id));
+        }
     });
 
     effect(() => {
@@ -266,13 +275,13 @@ export class ListComponent implements OnInit, OnDestroy {
     this.accessToken = this.userService.getToken();
     // this.appConfig = this.runService.appConfig;
     // 2. Setup the native browser media query
-    this.mediaQueryList = window.matchMedia('(max-width: 575.98px)');
+    // this.mediaQueryList = window.matchMedia('(max-width: 575.98px)');
     
-    // Set the initial value
-    this.isMobile.set(this.mediaQueryList.matches);
+    // // Set the initial value
+    // this.isMobile.set(this.mediaQueryList.matches);
     
-    // Listen for crosses over the 575.98px threshold
-    this.mediaQueryList.addEventListener('change', this.mediaQueryListener);
+    // // Listen for crosses over the 575.98px threshold
+    // this.mediaQueryList.addEventListener('change', this.mediaQueryListener);
   }
 
   userUnauthorized = computed(() => {
@@ -1288,8 +1297,8 @@ export class ListComponent implements OnInit, OnDestroy {
     }
 
     // 3. Cleanup
-    if (this.mediaQueryList) {
-      this.mediaQueryList.removeEventListener('change', this.mediaQueryListener);
-    }
+    // if (this.mediaQueryList) {
+    //   this.mediaQueryList.removeEventListener('change', this.mediaQueryListener);
+    // }
   }
 }

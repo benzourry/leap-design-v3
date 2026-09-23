@@ -7,7 +7,7 @@
       }
     </page-title>
   }
-  @if (lookup) {
+  @if (lookup()) {
     @if (!userUnauthorized()){
       <div class="centered fix-gutter" [class.limit-width]="!lookup()?.x?.wide">
         <div class="single-pane pt-0">
@@ -47,43 +47,34 @@
             </div>
           </div>
 
-          @if (loading()) {
-            <div class="p-4 text-center">
-              <div class="lds-ellipsis">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-            </div>
-          }
-          @if (!loading() && hasLoadList()) {
-            @if (lookupEntryList()?.length) {
+          @if (hasLoadList() || loading()) {
+            
+            @if (!loading() && lookupEntryList()?.length) {
               <div class="px-2 py-2">
                 <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
                   <div>
                     {{lang()=='ms'?'Semua':'Total'}}: 
                     <span class="text-body fw-medium">{{lookupEntryTotal()}}</span>
-                  </div>                    
+                  </div>                  
                   <div>
                     {{lang()=='ms'?'Dipapar':'Shown'}}: 
                     <span class="text-body fw-medium">{{lookupEntryElements()}}</span>
-                  </div>                    
+                  </div>                  
                   <div>
                     {{lang()=='ms'?'Halaman':'Pages'}}: 
                     <span class="text-body fw-medium">{{lookupEntryPages()}}</span>
-                  </div>                    
+                  </div>                  
                 </div>
               </div>
               @if(duplicatedCodes.length>0){
-                <div class="alert alert-warning">
+                <div class="alert alert-warning rounded-3">
                   <h5>Warning: Duplicate entries detected</h5>
-                  <p>Please review and resolve the duplicate codes below to avoid unexpected system behavior.</p>
-                  <ul class="mb-0">
+                  <p class="small">Please review and resolve the duplicate codes below to avoid unexpected system behavior.</p>
+                  <ul class="mb-0 list-group list-group-flush mx-n3 small">
                     @for(item of duplicatedCodes; track $index) {
-                      <li>{{item.code}} - {{item.name}}
+                      <li class="list-group-item bg-transparent d-flex py-1">{{item.code}} - {{item.name}}
                         @if(lookup().sourceType=='db') {
-                          <button type="button" class="btn btn-xs btn-outline-secondary ms-2"
+                          <button type="button" class="btn btn-xs btn-outline-secondary ms-auto"
                             [class.disabled]="offline()"
                             (click)="editLookupEntry(editLookupEntryTpl,item, false)">
                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
@@ -95,127 +86,20 @@
                   </ul>
                 </div>
               }
+            }
 
-              <!-- <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                  <thead>
-                    <tr>
-                      @if (!lookup()?.x?.codeHidden){
-                        <th class="w-10">{{lookup()?.x?.codeLbl||'CODE'}}</th>
-                      }
-                      <th class="w-90">{{lookup()?.x?.nameLbl||'NAME'}}</th>
-                      @if(!lookup()?.x?.extraDisabled){
-                        <th class="w-10">{{lookup()?.x?.extraLbl||'EXTRA'}}</th>
-                      }
-                      @if (lookup().dataEnabled) {
-                        <th class="w-10">DATA</th>
-                      }
-                      <th style="width: 5%">&nbsp;</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (entry of lookupEntryList(); track $index) {
-                      <tr
-                        [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
-                        [ngClass]="entry.altClass">
-                        @if (!lookup().x?.codeHidden){
-                          <td>{{entry.code}}</td>
-                        }
-                        <td>{{entry.name}}</td>
-                        @if(!lookup()?.x?.extraDisabled){
-                          <td>{{entry.extra}}</td>
-                        }
-                        @if (lookup().dataEnabled) {
-                          <td class="p-0">
-                            @if (entry.data) {
-                              <table width="100%" class="table extra-data-tbl m-0">
-                                <tbody>
-                                  @for (o of entry.data|keyvalue; track $index) {
-                                    <tr>
-                                      <td class="col-1" style="font-weight:500">{{o.key}}</td>
-                                      <td>
-                                        @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
-                                          <span [innerHtml]="o.value"></span>
-                                        }@else if (mapDataFields()[o.key]=='lookup') {
-                                          <span>{{o.value?.name}}</span>
-                                        }@else if (mapDataFields()[o.key]=='multiplelookup') {
-                                          @if (o.value && o.value.length>0) {
-                                              <div class="list-group list-group-sm small">            
-                                                @for(v of o.value; track $index) {
-                                                  <div class="list-group-item p-1 px-2">{{v.name}}</div>
-                                                }
-                                              </div>
-                                            }
-                                        }@else if (mapDataFields()[o.key]=='number') {
-                                          <span>{{o.value}}</span>
-                                        }@else if (mapDataFields()[o.key]=='date') {
-                                          <span>{{o.value|date:'medium':'':angularLocale()}}</span>
-                                        }@else if (mapDataFields()[o.key]=='file') {
-                                          <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
-                                        }@else {
-                                          <span>{{o.value}}</span>
-                                        }
-                                      </td>
-                                    </tr>
-                                  }
-                                </tbody>
-                              </table>
-                            }
-                          </td>
-                        }
-                        <td class="text-nowrap">
-                          @if (lookup().sourceType=='db') {
-                            <div>
-                              <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
-                                [class.disabled]="offline()"
-                                (click)="removeLookupEntry(removeLookupEntryTpl,entry)">
-                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                              </button>
-                              <button type="button" class="btn btn-secondary btn-sm btn-round" [class.disabled]="offline()"
-                                (click)="editLookupEntry(editLookupEntryTpl,entry, false)">
-                                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                              </button>
-                              <div class="mt-1">
-                                @if (!$first) {
-                                  <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
-                                    (click)="reorderItem($index, -1)">
-                                    <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
-                                    </fa-icon>
-                                  </button>
-                                }
-                                @if (!$last) {
-                                  <button type="button" class="btn btn-secondary btn-round btn-sm"
-                                    (click)="reorderItem($index, 1)">
-                                    <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
-                                    </fa-icon>
-                                  </button>
-                                }
-                              </div>
-                            </div>
-                          }
-                          @if (['rest','proxy'].indexOf(lookup().sourceType)>-1) {
-                            <fa-icon [icon]="['fas','lock']"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div> -->
+            @if (lookupEntryList()?.length > 0 || loading()) {
               <div class="table-responsive">
                 <table class="table ds-table tblcard table-desktop-bordered mb-0">
                   <thead class="ds-thead">
                     <tr>
-                      
                       @if(lookup().sourceType=='db') {
                         <th class="ds-check" style="width: 1%">
                           <input type="checkbox" class="form-check-input" style="font-size:14px; margin-bottom:0.2em" #checkAll
                             [ngModel]="checkAllInput()" (click)="checkAllEntry(checkAll.checked)">
                         </th>
                       }
-                      <th class="ds-index" style="width: 1%">#</th>
+                      <!-- <th class="ds-index" style="width: 1%">#</th> -->
                       @if (!lookup()?.x?.codeHidden){
                         <th class="w-10">{{lookup()?.x?.codeLbl||'CODE'}}</th>
                       }
@@ -229,117 +113,148 @@
                       <th style="width: 5%" class="print-hide text-end">&nbsp;</th>
                     </tr>
                   </thead>
-                  <tbody class="ds-tbody">
-                    @for (entry of lookupEntryList(); track $index; let eIdx = $index) {
-                      <tr class="ds-row"
-                        [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
-                        [ngClass]="entry.altClass"  [class.selected-row]="checkSelect(entry)">
-
-
-                        @if(lookup().sourceType=='db') {
-                          <td class="ds-check">
-                            <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
+                  
+                  @if (loading() && (!lookupEntryList() || lookupEntryList()?.length === 0)) {
+                    <tbody class="ds-tbody placeholder-glow">
+                      @for (dummy of [1,2,3,4,5,6]; track dummy) {
+                        <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                          @if(lookup().sourceType=='db') { <td class="ds-check"><span class="placeholder col-12 rounded"></span></td> }
+                          <!-- <td data-label="#" class="bg-secondary text-white ds-index"><span class="placeholder col-12 rounded"></span></td> -->
+                          @if (!lookup()?.x?.codeHidden){
+                            <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">
+                              <span class="placeholder rounded" [ngClass]="'col-' + (4 + ((dummy + $index) % 4))"></span>
+                            </td>
+                          }
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">
+                            <span class="placeholder rounded" [ngClass]="'col-' + (5 + ((dummy + $index) % 6))"></span>
                           </td>
-                        }
-                        
-                        <td data-label="#" class="bg-secondary text-white ds-index">
-                          {{preCount() + eIdx + 1}}
-                        </td>
-                        
-                        @if (!lookup().x?.codeHidden){
-                          <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">@if(entry.code){ {{entry.code}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
-                        }
-                        
-                        <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">@if(entry.code){ {{entry.name}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
-                        
-                        @if(!lookup()?.x?.extraDisabled){
-                          <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">@if(entry.extra){ {{entry.extra}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
-                        }
-                        
-                        @if (lookup().dataEnabled) {
-                          <td class="ds-item td-list" data-label="DATA">
-                            @if (entry.data && !isObjectEmpty(entry.data)) {
-                              <table width="100%" class="table extra-data-tbl tbl-child m-0 table-flush small">
-                                <tbody>
-                                  @for (o of entry.data|keyvalue; track $index) {
-                                    <tr>
-                                      <td class="col-1 bg-transparent" style="font-weight:600">{{o.key}}</td>
-                                      <td class="bg-transparent">
-                                        @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
-                                          <span [innerHtml]="o.value"></span>
-                                        }@else if (mapDataFields()[o.key]=='lookup') {
-                                          <span>{{o.value?.name}}</span>
-                                        }@else if (mapDataFields()[o.key]=='multiplelookup') {
-                                          @if (o.value && o.value.length>0) {
-                                              <div class="list-group list-group-sm small">            
-                                                @for(v of o.value; track $index) {
-                                                  <div class="list-group-item p-1 px-2">{{v.name}}</div>
-                                                }
-                                              </div>
+                          @if(!lookup()?.x?.extraDisabled){
+                            <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">
+                              <span class="placeholder rounded" [ngClass]="'col-' + (3 + ((dummy + $index + 1) % 5))"></span>
+                            </td>
+                          }
+                          @if (lookup().dataEnabled) {
+                            <td class="ds-item td-list" data-label="DATA">
+                              <span class="placeholder rounded" [ngClass]="'col-' + (6 + ((dummy + $index) % 5))"></span>
+                              <br><span class="placeholder rounded mt-1" [ngClass]="'col-' + (4 + ((dummy + $index + 2) % 4))"></span>
+                            </td>
+                          }
+                          <td class="text-nowrap ds-action print-hide p-1"><span class="placeholder col-10 rounded mt-sm-1"></span></td>
+                        </tr>
+                      }
+                    </tbody>
+                  } @else {
+                    <tbody class="ds-tbody">
+                      @for (entry of lookupEntryList(); track $index; let eIdx = $index) {
+                        <tr class="ds-row"
+                          [class.lookup-disabled]="lookup().sourceType=='db' && !entry.enabled"
+                          [ngClass]="entry.altClass"  [class.selected-row]="checkSelect(entry)">
+
+                          @if(lookup().sourceType=='db') {
+                            <td class="ds-check">
+                              <input type="checkbox" class="form-check-input" (click)="toggleSelect(entry)" [checked]="checkSelect(entry)">
+                            </td>
+                          }
+
+                          <!-- <td data-label="#" class="bg-secondary text-white ds-index">
+                            {{preCount() + eIdx + 1}}
+                          </td> -->
+
+                          @if (!lookup().x?.codeHidden){
+                            <td class="ds-item" [attr.data-label]="lookup()?.x?.codeLbl||'CODE'">@if(entry.code){ {{entry.code}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
+                          }
+
+                          <td class="ds-item" [attr.data-label]="lookup()?.x?.nameLbl||'NAME'">@if(entry.code){ {{entry.name}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
+
+                          @if(!lookup()?.x?.extraDisabled){
+                            <td class="ds-item" [attr.data-label]="lookup()?.x?.extraLbl||'EXTRA'">@if(entry.extra){ {{entry.extra}} }@else{<span class="text-body-tertiary fst-italic">Not available</span>}</td>
+                          }
+
+                          @if (lookup().dataEnabled) {
+                            <td class="ds-item td-list" data-label="DATA">
+                              @if (entry.data && !isObjectEmpty(entry.data)) {
+                                <table width="100%" class="table extra-data-tbl tbl-child m-0 table-flush small">
+                                  <tbody>
+                                    @for (o of entry.data|keyvalue; track $index) {
+                                      <tr>
+                                        <td class="col-1 bg-transparent text-wrap" style="font-weight:600">{{o.key}}</td>
+                                        <td class="bg-transparent text-break">
+                                          @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
+                                            <span [innerHtml]="o.value"></span>
+                                          }@else if (mapDataFields()[o.key]=='lookup') {
+                                            <span>{{o.value?.name}}</span>
+                                          }@else if (mapDataFields()[o.key]=='multiplelookup') {
+                                            @if (o.value && o.value.length>0) {
+                                                <div class="list-group list-group-sm small">            
+                                                  @for(v of o.value; track $index) {
+                                                    <div class="list-group-item p-1 px-2">{{v.name}}</div>
+                                                  }
+                                                </div>
+                                              }
+                                          }@else if (mapDataFields()[o.key]=='number') {
+                                            <span>{{o.value}}</span>
+                                          }@else if (mapDataFields()[o.key]=='date') {
+                                            <span>{{o.value|date:'medium':'':angularLocale()}}</span>
+                                          }@else if (mapDataFields()[o.key]=='file') {
+                                            <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
+                                          }@else {
+                                            <span>{{o.value}}</span>
                                           }
-                                        }@else if (mapDataFields()[o.key]=='number') {
-                                          <span>{{o.value}}</span>
-                                        }@else if (mapDataFields()[o.key]=='date') {
-                                          <span>{{o.value|date:'medium':'':angularLocale()}}</span>
-                                        }@else if (mapDataFields()[o.key]=='file') {
-                                          <span><a [href]="getUrl('/entry/file/',o.value)">{{o.value}}</a></span>
-                                        }@else {
-                                          <span>{{o.value}}</span>
-                                        }
-                                      </td>
-                                    </tr>
-                                  }
-                                </tbody>
-                              </table>
-                            }@else {
-                              <span class="text-body-tertiary fst-italic">Not available</span>
-                            }
+                                        </td>
+                                      </tr>
+                                    }
+                                  </tbody>
+                                </table>
+                              }@else {
+                                <span class="text-body-tertiary fst-italic">Not available</span>
+                              }
+                            </td>
+                          }
+
+                         <td class="text-nowrap ds-action print-hide p-1">
+                            <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100 gap-1">
+                              @if (lookup().sourceType=='db') {
+
+                                <button type="button" class="btn btn-outline-danger btn-sm text-nowrap"
+                                  [class.disabled]="offline()"
+                                  (click)="removeLookupEntry(removeLookupEntryTpl,entry)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                  <span class="d-inline-block d-sm-none ms-1 pe-1">Remove</span>
+                                </button>
+
+                                <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap me-auto" [class.disabled]="offline()"
+                                  (click)="editLookupEntry(editLookupEntryTpl,entry, false)">
+                                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                  <span class="d-inline-block d-sm-none ms-1 pe-1">Edit</span>
+                                </button>
+
+                                @if (!$first) {
+                                  <button type="button" class="btn btn-sm"
+                                    (click)="reorderItem($index, -1)">
+                                    <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                }
+                                @if (!$last) {
+                                  <button type="button" class="btn btn-sm"
+                                    (click)="reorderItem($index, 1)">
+                                    <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                }
+                              }
+                              @if (['rest','proxy'].indexOf(lookup().sourceType)>-1) {
+                                <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+                              }
+                            </div>
                           </td>
-                        }
-                        
-                       <td class="text-nowrap ds-action print-hide p-1">
-                          <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100 gap-1">
-                            @if (lookup().sourceType=='db') {
-                              
-                              <button type="button" class="btn btn-outline-danger btn-sm text-nowrap"
-                                [class.disabled]="offline()"
-                                (click)="removeLookupEntry(removeLookupEntryTpl,entry)">
-                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                                <span class="d-inline-block d-sm-none ms-1 pe-1">Remove</span>
-                              </button>
-
-                              <button type="button" class="btn btn-outline-secondary btn-sm text-nowrap me-auto" [class.disabled]="offline()"
-                                (click)="editLookupEntry(editLookupEntryTpl,entry, false)">
-                                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                                <span class="d-inline-block d-sm-none ms-1 pe-1">Edit</span>
-                              </button>
-
-                              @if (!$first) {
-                                <button type="button" class="btn btn-sm"
-                                  (click)="reorderItem($index, -1)">
-                                  <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
-                                </button>
-                              }
-                              @if (!$last) {
-                                <button type="button" class="btn btn-sm"
-                                  (click)="reorderItem($index, 1)">
-                                  <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
-                                </button>
-                              }
-                            }
-                            @if (['rest','proxy'].indexOf(lookup().sourceType)>-1) {
-                              <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
+                        </tr>
+                      }
+                    </tbody>
+                  }
                 </table>
               </div>
 
               <!-- ADD BULK ACTION PANEL HERE -->
-              @if (selectedCount() > 0) {
+              @if (!loading() && selectedCount() > 0) {
                 <div class="p-3 small bg-body mb-2 ds-bulk" style="border-radius: 0.75rem;">
                   <div class="p-1">&#8627; With Selected ({{selectedCount()}})</div>
                   <div class="d-flex flex-wrap gap-2">
@@ -355,12 +270,13 @@
 
             }
           }
-          @if ((lookupEntryList()?.length) > 0 && hasLoadList()) {
+
+          @if (!loading() && (lookupEntryList()?.length) > 0 && hasLoadList()) {
             <div class="text-center d-flex justify-content-center pagination-rounded">
               @if (lookupEntryTotal()>pageSize) {
                 <ngb-pagination [collectionSize]="lookupEntryTotal()"
-                  [pageSize]="pageSize" [(page)]="entryPageNumber" [maxSize]="10"
-                  (pageChange)="getLookupEntryList(entryPageNumber())" boundaryLinks="false" directionLinks="false">
+                  [pageSize]="pageSize" [page]="entryPageNumber()" [maxSize]="10"
+                  (pageChange)="getLookupEntryList($event)" boundaryLinks="false" directionLinks="false">
                   <ng-template ngbPaginationFirst>
                     <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
                   </ng-template>
@@ -377,6 +293,7 @@
               }
             </div>
           }
+
           @if (!loading() && !hasLoadList()) {
             <div class="details my-5">
               <h3>{{lang()=='ms'?'Data tidak dimuatkan':'Data is not loaded'}}</h3>
@@ -386,7 +303,7 @@
               }
             </div>
           }
-          @if (lookupEntryList() == 0 && !loading() && hasLoadList()) {
+          @if (lookupEntryList()?.length === 0 && !loading() && hasLoadList()) {
             <div class="details my-5">
               <h3>{{lang()=='ms'?'Tiada data untuk':'No data for'}} {{lookup().name}}</h3>
               <button type="button" class="btn btn-primary btn-sm rounded-pill" (click)="getLookupEntryList(1)">
@@ -527,13 +444,13 @@
                         }
                       </select>
                     }@else if (e.type=='lookup') {
-                      <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap[e.opts]" 
+                      <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap()[e.opts]" 
                         [virtualScroll]="true" 
                         bindLabel="name" placeholder="No value" [(ngModel)]="_lookupEntry.data[e.key]"
                         name="value_{{$index}}">
                       </ng-select>
                     }@else if (e.type=='multiplelookup') {
-                      <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap[e.opts]" 
+                      <ng-select style="width:100%" class="ng-select-sm" [items]="lookupListMap()[e.opts]" 
                         [virtualScroll]="true" 
                         [multiple]="true"
                         bindLabel="name" placeholder="No value" [(ngModel)]="_lookupEntry.data[e.key]"
@@ -662,7 +579,7 @@
           <div class="form-group mb-3">
             <label class="form-label">{{b}}</label>
             <input type="text" class="form-control" [(ngModel)]="requestParams()[b]"
-              name="{{lookup.id}}-data-{{b}}" id="{{lookup.id}}-data-{{b}}">
+              name="{{lookup()?.id}}-data-{{b}}" id="{{lookup()?.id}}-data-{{b}}">
           </div>
         }
       </div>

@@ -20,7 +20,7 @@
             placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
 
           <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn border border-1-5 btn-sm rounded-2 bg-white" title="More bucket actions"
+            <button type="button" class="btn btn-sm h-100" title="More bucket actions"
               id="dropdownBucketEditor" ngbDropdownToggle>
                 <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
             </button>
@@ -60,7 +60,26 @@
           </div>
         </div>
       }@else{
-        <div class="mt-3">
+
+        <div class="px-2 py-2">
+          <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
+            <div>
+              {{lang()=='ms'?'Semua':'Total'}}: 
+              <span class="text-body fw-medium">{{bucketFileTotal()}}</span>
+            </div>                  
+            <div>
+              {{lang()=='ms'?'Dipapar':'Shown'}}: 
+              <span class="text-body fw-medium">{{bucketFileElements()}}</span>
+            </div>                  
+            <div>
+              {{lang()=='ms'?'Halaman':'Pages'}}: 
+              <span class="text-body fw-medium">{{bucketFilePages()}}</span>
+            </div>                  
+          </div>
+        </div>
+
+
+        <div class="py-1">
           <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
             [ngClass]="{'bg-info-subtle text-primary border-primary': !sStatus}" (click)="bySStatus(undefined)">
             {{lang()=='ms'?'Semua':'All'}}
@@ -112,24 +131,36 @@
                       </td>
                       
                       <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
-                        <div class="fw-bold fs-6">{{bucketFile.fileName}}</div>
+                        <div class="fw-bold fs-6 mt-n1">{{bucketFile.fileName}}</div>
                         <div class="subtitle mt-1">
-                          <div>
+                          <div class="mb-1">
                             @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
                             <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank">{{bucketFile.fileUrl}}</a>
                             }@else {
                             {{bucketFile.fileUrl}}
                             }
                           </div>
-                          <div>{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}: {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</div>
-                          <div>{{lang()=='ms'?'Saiz Fail':'File size'}}: {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
-                          <div>{{lang()=='ms'?'Jenis Fail':'File type'}}: {{bucketFile.fileType}}</div>
-                          @if (bucketFile.itemLabel) {
-                          <div>{{lang()=='ms'?'Dari Input':'From input'}}: {{bucketFile.itemLabel}}</div>
+                          <div><span class="text-secondary">{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}:</span> {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</div>
+                          <div><span class="text-secondary">{{lang()=='ms'?'Saiz Fail':'File size'}}:</span> {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
+                          <div><span class="text-secondary">{{lang()=='ms'?'Jenis Fail':'File type'}}:</span> <span class="text-uppercase"> {{bucketFile.fileType?.split('/').pop() || bucketFile.fileType}}</span></div>
+                          
+                          @if (bucketFile.itemLabel || bucketFile.entryId) {
+                            <div class="d-flex flex-wrap gap-2 mt-2 mb-1">
+                              @if (bucketFile.itemLabel) {
+                                <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','edit']" class="me-1 opacity-75"></fa-icon> {{lang()=='ms'?'Dari Input':'From input'}}: {{bucketFile.itemLabel}}</span>
+                              }
+                              @if (bucketFile.entryId) {
+                                <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','hashtag']" class="me-1 opacity-75"></fa-icon> For entry #{{bucketFile.entryId}}</span>
+                              }
+                            </div>
+                          }
+                          
+                          <!-- @if (bucketFile.itemLabel) {
+                          <div><span class="text-secondary">{{lang()=='ms'?'Dari Input':'From input'}}:</span> {{bucketFile.itemLabel}}</div>
                           }
                           @if (bucketFile.entryId) {
                           <div>For entry #{{bucketFile.entryId}}</div>
-                          }
+                          } -->
                           @if(['FOUND'].includes(bucketFile.sstatus)){
                           <div class="fw-bold mt-2">
                             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>

@@ -1,6 +1,6 @@
 @mixin shared-tblcard-styles {
   table.tbl-child {
-    border-left: solid 5px var(--bs-border-color);
+    border-left: solid 4px var(--bs-border-color);
     th { padding-top: 0; }
     td { padding: 0.25rem 0.5rem; }
   }
@@ -93,7 +93,7 @@
 
     .ds-item {
       border-bottom: none;
-      text-align: right; padding: 0.375rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; position: relative; z-index: 1;
+      text-align: right; padding: 0.375rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; position: relative; z-index: 1;
       
       &.bg-transparent, &.d-none { display: none !important; }
       

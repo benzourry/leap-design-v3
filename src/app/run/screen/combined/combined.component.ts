@@ -4,7 +4,7 @@
 // ... (Standard License Header)
 
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, forwardRef, inject, input, signal, untracked, DestroyRef, viewChildren, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, forwardRef, inject, input, signal, untracked, DestroyRef, viewChildren, ElementRef, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { 
@@ -24,6 +24,7 @@ import { LookupComponent } from '../../lookup/lookup.component';
 import { UserComponent } from '../../user/user.component';
 import { RunService } from '../../_service/run.service';
 import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
+import { ViewportService } from '../../../_shared/service/viewport.service';
 
 @Component({
     selector: 'app-combined',
@@ -40,7 +41,7 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
         NgbAccordionCollapse, NgbAccordionBody, NgbNav, 
         NgbNavItem, NgbNavItemRole, NgbNavLink, 
         NgbNavLinkBase, NgbNavContent, NgbNavOutlet,
-        
+
         forwardRef(() => ListComponent), 
         forwardRef(() => DashboardComponent),
         forwardRef(() => FormComponent), 
@@ -51,12 +52,13 @@ import { IconSplitPipe } from '../../../_shared/pipe/icon-split.pipe';
     ]
 })
 export class CombinedComponent {
-    
+
     private runService = inject(RunService);
     private cdr = inject(ChangeDetectorRef);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
-    private destroyRef = inject(DestroyRef); // 👈 Optimization: Memory management
+    private destroyRef = inject(DestroyRef); 
+    private viewport = inject(ViewportService);
 
     screen = input<any>();
     param = input<any>();
@@ -69,10 +71,15 @@ export class CombinedComponent {
     swipeDirection = signal<'left' | 'right' | 'none'>('none');
 
     tabItems = viewChildren<ElementRef>('tabItem');
-    
+
     isAnimating = false;
     private animTimeout: any;
     private routeTimeout: any;
+
+    // Mobile state trackers
+    isMobile = this.viewport.isMobile;
+    // private mediaQueryList: MediaQueryList | null = null;
+    // private mediaQueryListener: (e: MediaQueryListEvent) => void;
 
     // Touch coordinate trackers
     touchStartX = 0;
@@ -81,17 +88,20 @@ export class CombinedComponent {
     touchEndY = 0;
 
     constructor() {
+        // this.mediaQueryListener = (e: MediaQueryListEvent) => {
+        //     this.isMobile.set(e.matches);
+        // };
+
         effect(() => {
             const currentScreen = this.screen();
             const urlTab = this.param()?.['tab'];
-            
+
             if (currentScreen?.id) {
                 let tabChanged = false;
 
                 untracked(() => {
                     if (urlTab !== undefined) {
                         const targetIdx = Number(urlTab);
-                        // Optimization: Only update and trigger CD if the URL dictates a new tab
                         if (this.getActiveTab(currentScreen.id) !== targetIdx) {
                             this.setActiveTab(currentScreen.id, targetIdx);
                             tabChanged = true;
@@ -105,19 +115,24 @@ export class CombinedComponent {
             }
         });
 
-        // Optimization: Cleanup timeouts to prevent memory leaks or ghost navigations
         this.destroyRef.onDestroy(() => {
             clearTimeout(this.animTimeout);
             clearTimeout(this.routeTimeout);
         });
     }
 
+    // ngOnInit() {
+    //     // Setup media query listener (matches Bootstrap 'sm' breakpoint)
+    //     this.mediaQueryList = window.matchMedia('(max-width: 575.98px)');
+    //     this.isMobile.set(this.mediaQueryList.matches);
+    //     this.mediaQueryList.addEventListener('change', this.mediaQueryListener);
+    // }
+
     setActiveTab(screenId: string, index: number) {
         const currentIdx = this.getActiveTab(screenId);
-        
+
         if (currentIdx === index) return; 
-        
-        // Determine animation direction
+
         if (index > currentIdx) {
             this.swipeDirection.set('left');
         } else if (index < currentIdx) {
@@ -128,17 +143,15 @@ export class CombinedComponent {
 
         this.scrollToActiveTab(index);
 
-        // Lock swiping while the CSS transition plays
         this.isAnimating = true;
         clearTimeout(this.animTimeout);
-        
-        // Reset to a clean baseline after animation finishes
+
         this.animTimeout = setTimeout(() => {
             this.isAnimating = false;
             this.swipeDirection.set('none'); 
         }, 350);
     }
-    
+
     getActiveTab(screenId: string): number {
         return this.activeTab()[screenId] ?? 0;
     }
@@ -146,7 +159,6 @@ export class CombinedComponent {
     private scrollToActiveTab(index: number) {
         setTimeout(() => {
             const tab = this.tabItems()[index]?.nativeElement;
-            
             const container = tab?.closest('.nav-wrap, .tab-hscroll, .tab-simple') || tab?.closest('ul.nav');
 
             if (!tab || !container) return; // Exit if elements aren't found
@@ -160,28 +172,31 @@ export class CombinedComponent {
 
     // Touch Event Handlers
     onTouchStart(event: TouchEvent) {
+        if (!this.isMobile()) return; // <-- Early exit if not mobile
+
         this.touchStartX = event.changedTouches[0].screenX;
         this.touchStartY = event.changedTouches[0].screenY;
     }
 
     onTouchEnd(event: TouchEvent) {
+        if (!this.isMobile()) return; // <-- Early exit if not mobile
+
         this.touchEndX = event.changedTouches[0].screenX;
         this.touchEndY = event.changedTouches[0].screenY;
         this.handleSwipe();
     }
 
     handleSwipe() {
-        if (this.isAnimating) return; // Prevent rapid-swipe glitching
+        if (this.isAnimating) return; 
 
         const swipeThreshold = 50;
         const diffX = this.touchEndX - this.touchStartX;
         const diffY = this.touchEndY - this.touchStartY;
 
-        // Ensure swipe is horizontal and meets threshold length
         if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
             const screenData = this.screen();
             const comps = screenData?.data?.comps;
-            
+
             if (!screenData?.id || !comps || comps.length === 0) return;
 
             const currentIdx = this.getActiveTab(screenData.id) || 0;
@@ -194,10 +209,8 @@ export class CombinedComponent {
             }
 
             if (targetIdx !== currentIdx) {
-                // 1. Trigger the visual tab change and animation immediately
                 this.setActiveTab(screenData.id, targetIdx);
-                
-                // 2. Delay the URL update until AFTER the 300ms animation finishes
+
                 clearTimeout(this.routeTimeout);
                 this.routeTimeout = setTimeout(() => {
                     this.router.navigate([], {
@@ -210,4 +223,10 @@ export class CombinedComponent {
             }
         }
     }
+
+    // ngOnDestroy() {
+    //     if (this.mediaQueryList) {
+    //         this.mediaQueryList.removeEventListener('change', this.mediaQueryListener);
+    //     }
+    // }
 }
