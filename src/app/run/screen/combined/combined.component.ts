@@ -156,17 +156,39 @@ export class CombinedComponent {
         return this.activeTab()[screenId] ?? 0;
     }
 
+    // private scrollToActiveTab(index: number) {
+    //     setTimeout(() => {
+    //         const tab = this.tabItems()[index]?.nativeElement;
+    //         const container = tab?.closest('.nav-wrap, .tab-hscroll, .tab-simple') || tab?.closest('ul.nav');
+
+    //         if (!tab || !container) return; // Exit if elements aren't found
+
+    //         container.scrollTo({
+    //             left: tab.offsetLeft - container.clientWidth / 2 + tab.clientWidth / 2,
+    //             behavior: 'smooth'
+    //         });
+    //     }, 50);
+    // }
+
     private scrollToActiveTab(index: number) {
         setTimeout(() => {
             const tab = this.tabItems()[index]?.nativeElement;
-            const container = tab?.closest('.nav-wrap, .tab-hscroll, .tab-simple') || tab?.closest('ul.nav');
+            // const container = tab?.closest('.nav-wrap, .tab-hscroll, .tab-simple') || tab?.closest('ul.nav');
+            const container = tab?.closest('.tab-hscroll, .nav-wrap') || tab?.closest('ul.nav');
 
-            if (!tab || !container) return; // Exit if elements aren't found
+            if (!tab || !container) return;
 
-            container.scrollTo({
-                left: tab.offsetLeft - container.clientWidth / 2 + tab.clientWidth / 2,
-                behavior: 'smooth'
-            });
+            // Grab exact screen coordinates
+            const tRect = tab.getBoundingClientRect(), cRect = container.getBoundingClientRect();
+
+            // ⚡ PWA FIX: Bypass buggy native JS API using CSS scrollBehavior
+            container.style.scrollBehavior = 'smooth';
+            
+            // Calculate center and scroll in one step using +=
+            container.scrollLeft += (tRect.left - cRect.left) - (cRect.width / 2) + (tRect.width / 2);
+
+            // Clean up CSS override after animation
+            setTimeout(() => container.style.scrollBehavior = '', 350);
         }, 50);
     }
 

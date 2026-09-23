@@ -362,19 +362,21 @@ $transition-slow: 350ms ease-in-out;
 
 /* 3. Sliding Bottom Sheet Panel */
 .bottom-nav-panel {
-  background: var(--bs-body-bg-rgb, 0.5);
+  // background: var(--bs-body-bg-rgb, 0.5);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(0,0,0, 0.08);
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
   outline: none;
 
   will-change: transform; /* Offloads the blur processing to the GPU */
-  -webkit-transform: translateZ(0); /* Safari hardware acceleration hack */
+  transform: translateY(calc(100% - 24px)) translateZ(0);
+  // -webkit-transform: translateZ(0); /* Safari hardware acceleration hack */
   
   /* Push down but leave exactly 24px exposed for the peek */
-  transform: translateY(calc(100% - 24px)); 
+  // transform: translateY(calc(100% - 24px)); 
   transition: transform 250ms ease-in-out;
   padding-bottom: env(safe-area-inset-bottom);
+  view-transition-name: bottom-panel;
 }
 
 :host-context([data-bs-theme="dark"]) .bottom-nav-panel {
@@ -394,7 +396,7 @@ $transition-slow: 350ms ease-in-out;
 /* 5. Reveal Action */
 .bottom-nav-container.is-start-page .bottom-nav-panel,
 .bottom-nav-container:focus-within .bottom-nav-panel {
-  transform: translateY(0); 
+  transform: translateY(0) translateZ(0); 
 }
 
 /* 6. Scrolling Constraints */
@@ -557,39 +559,30 @@ $transition-slow: 350ms ease-in-out;
 .wrapper .content.is-routing { view-transition-name: page; }
 
 ::ng-deep {
-  /* Disable default crossfade flash */
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 
-  /* 1. Define base variables (Desktop default: no scale) */
   ::view-transition-old(page), ::view-transition-new(page) {
-    --scale-start: 1; 
-    --scale-end: 1;
+    animation: 450ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
   }
 
-  /* 2. Mobile override (Activates the scale effect) */
-  @media (max-width: 767.98px) {
-    ::view-transition-new(page) { --scale-start: 0.95; }
-    ::view-transition-old(page) { --scale-end: 0.96; }
+  ::view-transition-old(page) { 
+    animation-name: v-out; 
   }
-
-  /* 3. Apply the single animation set */
-  ::view-transition-old(page) {
-    animation: page-out 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
+  
   ::view-transition-new(page) {
-    animation: page-in 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-name: v-in; 
     z-index: 2; 
     background: var(--bs-body-bg); 
-    box-shadow: 0 -10px 20px rgba(0,0,0,0.1); 
+    box-shadow: 0 -20px 40px rgba(0,0,0,0.15);
   }
 }
 
-/* 4. One set of keyframes powered by dynamic variables */
-@keyframes page-in { 
-  0% { transform: translateY(150px) scale(var(--scale-start)); opacity: 0; } 
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+@keyframes v-in {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
 }
-@keyframes page-out { 
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(var(--scale-end)); opacity: 0.5; } 
+
+@keyframes v-out {
+  0% { transform: translateY(0); filter: brightness(1); }
+  100% { transform: translateY(-8%); filter: brightness(0.65); }
 }
