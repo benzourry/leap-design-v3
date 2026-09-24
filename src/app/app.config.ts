@@ -14,7 +14,16 @@ export const appConfig: ApplicationConfig = {
         // provideZoneChangeDetection({ eventCoalescing: true }), 
         provideZonelessChangeDetection(),
         provideBrowserGlobalErrorListeners(),
-        provideRouter(routes, withHashLocation(),withViewTransitions()), 
+        provideRouter(routes, withHashLocation(), 
+          withViewTransitions({
+            onViewTransitionCreated: ({ transition }) => {
+              // 2. Remove the safe mode class only AFTER the transition animation is totally done
+              transition.finished.finally(() => {
+                document.body.classList.remove('vt-safe-mode');
+              });
+            }
+          })
+        ), 
         provideHttpClient(withInterceptorsFromDi()), 
         {
           provide: HTTP_INTERCEPTORS,
