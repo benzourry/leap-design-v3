@@ -1,4 +1,5 @@
-<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print"  [class.as-comp]="asComp()" [class.forceCard]="dataset()?.x?.forceCard || isMobile()">
+<div id="dataset-{{dataset()?.id}}" class="viewport section-to-print"  [class.as-comp]="asComp()" [class.forceCard]="dataset()?.x?.forceCard || isMobile()"
+  appPullToRefresh [pullDisabled]="asComp()" (onRefresh)="forceRefresh()" >
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>

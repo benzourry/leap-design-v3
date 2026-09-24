@@ -2,7 +2,8 @@
   <div id="screen-{{screen()?.id}}" #screenviewport class="viewport position-relative" 
     [class.as-comp]="asComp()"
     [class.map-fullscreen]="screen()?.data?.fullscreen" 
-    [class.full-viewport-page]="['chatbot'].includes(screen()?.type)">
+    [class.full-viewport-page]="['chatbot'].includes(screen()?.type)"
+    appPullToRefresh [pullDisabled]="asComp()" (onRefresh)="reloadScreenConfig()">
     
     @if (!screen()?.data?.hideTitle && !hideTitle()) {
       @let tplContext = {

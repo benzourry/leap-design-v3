@@ -56,6 +56,7 @@ import { LookupService } from '../_service/lookup.service';
 import { RunService } from '../_service/run.service';
 import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive';
 import { ListComponent } from '../list/list.component';
+import { PullToRefreshDirective } from '../../_shared/directive/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-screen',
@@ -67,7 +68,7 @@ import { ListComponent } from '../list/list.component';
   imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
     ChatbotComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FullCalendarModule,
     forwardRef(() => FormComponent), forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), forwardRef(() => ListComponent),
-    NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle,
+    NgSelectModule, SafePipe, NgbDropdown, NgbDropdownToggle, PullToRefreshDirective,
     MorphHtmlDirective,
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, BucketComponent, NgLeafletComponent, MailboxComponent, CombinedComponent]
 })
@@ -196,6 +197,20 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
+  }
+
+  reloadScreenConfig() {
+    const id = this.screenId();
+    if (id) {
+      // 1. Delete the static cache to force a fresh network request
+      ScreenComponent.screenCache.delete(id);
+      
+      // 2. Fetch the screen config again
+      this.getScreen(id);
+      
+      // Optional: Tiny native-feeling feedback
+      // this.toastService.show(this.lang() === 'ms' ? 'Mengemas kini...' : 'Refreshing...', { classname: 'bg-dark text-light', delay: 1500 });
+    }
   }
 
   private activeCalReq?: Subscription;

@@ -44,6 +44,7 @@ import { PageTitleComponent } from '../_component/page-title.component';
 import { StepWizardComponent } from '../_component/step-wizard.component';
 import { UserEntryFilterComponent } from '../_component/user-entry-filter/user-entry-filter.component';
 import { ViewportService } from '../../_shared/service/viewport.service';
+import { PullToRefreshDirective } from '../../_shared/directive/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-list',
@@ -59,7 +60,7 @@ import { ViewportService } from '../../_shared/service/viewport.service';
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
     NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, 
     UserEntryFilterComponent, AngularEditorModule, forwardRef(() => FormComponent), 
-    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe
+    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe, PullToRefreshDirective
   ]
 })
 export class ListComponent implements OnInit, OnDestroy {
@@ -1024,6 +1025,15 @@ export class ListComponent implements OnInit, OnDestroy {
   screenLoaded(screen: any) { this.inPopTitle.set(screen?.title); }
 
   fclose() {}
+
+  forceRefresh() {
+    // Clear the cache and force a fresh network request
+    console.log("pull to refresh")
+    if (this.datasetId()) {
+      ListComponent.datasetCache.delete(this.datasetId());
+      this.getDataset(this.datasetId());
+    }
+  }
 
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key]?.unsubscribe());
