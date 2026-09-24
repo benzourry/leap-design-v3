@@ -6,7 +6,7 @@ import { Directive, ElementRef, HostListener, input, output } from '@angular/cor
 })
 export class PullToRefreshDirective {
   onRefresh = output<void>();
-  pullDisabled = input<boolean>(false); // 👈 Added input flag
+  pullDisabled = input<boolean>(false);
 
   private startY = -1;
   private isPulling = false;
@@ -14,23 +14,31 @@ export class PullToRefreshDirective {
 
   constructor(private el: ElementRef<HTMLElement>) {}
 
-  private isScrolled(target: HTMLElement): boolean {
-    return !!target.closest('*')?.scrollTop || window.scrollY > 0 || document.documentElement.scrollTop > 0;
+  // Walk up the DOM tree to check if ANY ancestor container is scrolled
+  private getScrollTop(node: HTMLElement | null): number {
+    let el = node;
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (el.scrollTop > 0) return el.scrollTop;
+      el = el.parentElement;
+    }
+    return window.scrollY || document.documentElement.scrollTop || 0;
   }
 
   @HostListener('touchstart', ['$event'])
   onTouchStart(e: TouchEvent) {
-    if (this.pullDisabled()) return; // 👈 Skip if disabled
-    this.startY = this.isScrolled(e.target as HTMLElement) ? -1 : e.touches[0].clientY;
+    if (this.pullDisabled()) return;
+    // Only capture touch if the user is at the absolute top (scrollTop <= 0)
+    this.startY = this.getScrollTop(e.target as HTMLElement) <= 0 ? e.touches[0].clientY : -1;
   }
 
   @HostListener('touchmove', ['$event'])
   onTouchMove(e: TouchEvent) {
-    if (this.pullDisabled() || this.startY < 0) return; // 👈 Skip if disabled
+    if (this.pullDisabled() || this.startY < 0) return;
 
     const dist = e.touches[0].clientY - this.startY;
 
-    if (dist > 0 && !this.isScrolled(e.target as HTMLElement)) {
+    // Must be pulling DOWN (dist > 0) AND still at the top
+    if (dist > 0 && this.getScrollTop(e.target as HTMLElement) <= 0) {
       this.isPulling = true;
       if (e.cancelable) e.preventDefault();
 
@@ -48,6 +56,7 @@ export class PullToRefreshDirective {
         this.clearTimer();
       }
     } else {
+      // Swiping UP or container is scrolled -> release immediately for native scrolling
       this.onTouchEnd();
     }
   }
