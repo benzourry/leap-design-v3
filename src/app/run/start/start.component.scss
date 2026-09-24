@@ -558,6 +558,7 @@ $transition-slow: 350ms ease-in-out;
    ========================================================================== */
 /* FIX: ::ng-deep must be on the outside to target document.body */
 ::ng-deep .vt-safe-mode .wrapper .content {
+  pointer-events: none;
   /* 1. Hide all iframes */
   iframe {
     display: none !important;
@@ -578,10 +579,15 @@ $transition-slow: 350ms ease-in-out;
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   
   /* ADD THIS: Black background behind the transition */
-  ::view-transition-group(page) { background-color: #000; }
+  ::view-transition-group(page) { 
+    background-color: #000;
+    // mix-blend-mode: normal;
+  }
 
   ::view-transition-old(page), ::view-transition-new(page) {
-    animation: 450ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    animation: 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    /* 3. HARDWARE ACCELERATION: Force the animation onto the GPU compositor thread */
+    will-change: transform, opacity;
   }
 
   ::view-transition-old(page) { 
@@ -597,7 +603,7 @@ $transition-slow: 350ms ease-in-out;
 }
 
 @keyframes v-in {
-  0% { transform: translateY(100%); }
+  0% { transform: translateY(60%); }
   100% { transform: translateY(0); }
 }
 

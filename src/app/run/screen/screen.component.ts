@@ -61,7 +61,7 @@ import { ListComponent } from '../list/list.component';
   selector: 'app-screen',
   templateUrl: './screen.component.html',
   styleUrls: ['./screen.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush, // messed up compileTpl
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
   { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
   imports: [PageTitleComponent, FormsModule, FaIconComponent, NgClass, UserEntryFilterComponent, ScanComponent,
@@ -99,8 +99,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
   entryListLoading = signal<boolean>(false);
   form = signal<any>({});
   lookupIds: any;
-  lookupKey = {};
-  lookup = {};
+  lookupKey: any = {};
+  lookup: any = {};
   base: string = base;
   baseApi: string = baseApi;
   baseUrl: string = '';
@@ -110,7 +110,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   screenId = input<number>();
   _screenId: number;
   entryId = input<number>();
-  _entryId: number; // use private variable to store entryId
+  _entryId: number; 
   _startTimestamp: number = 0;
   asComp = input<boolean>();
   hideTitle = input<boolean>(false);
@@ -122,7 +122,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   prevSignalKey: string = '';
 
-  // appConfig: any = this.runService.appConfig;
+  // STATIC CACHE
+  private static screenCache = new Map<number, Observable<any>>();
+
   get appConfig(): any {
     return this.runService.appConfig;
   }
@@ -194,7 +196,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
-    // this.appConfig = this.runService.appConfig;
   }
 
   private activeCalReq?: Subscription;
@@ -216,12 +217,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
       },
       height: 640,
       plugins: [dayGridPlugin, timeGridPlugin],
-      events: (info, success, failure) => {
+      events: (info: any, success: any, failure: any) => {
         var ds = this.screen().dataset;
 
         let filtersAll: any = {};
 
-        var calFilter = {};
+        var calFilter: any = {};
         if (this.screen().data.start) {
           calFilter['$.' + this.screen().data.start + '~between'] = info.start.valueOf() + ',' + info.end.valueOf();
         }
@@ -231,7 +232,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
         filtersAll = Object.assign(filtersAll, this.filtersData(), calFilter, this._param);
 
-        let params = {
+        let params: any = {
           email: this.user().email,
           searchText: this.searchText(),
           filters: JSON.stringify(filtersAll),
@@ -262,7 +263,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
             this.entryList.set(res.content);
             var events = this.entryList().filter(e => e.data[this.screen().data.start])
               .map(e => {
-                // var acLink = ac ? this.buildGo(e.id)[ac.id] : `#${this.preurl}/form/${ds.form.id}/view?entryId=${e.id}`;
                 var eventObj: any = {
                   title: this.screen().data?.titleTpl ?
                     this.compileTpl(this.screen()?.data?.titleTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id), $popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
@@ -270,7 +270,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
                   start: e.data[this.screen().data.start],
                   end: e.data[this.screen().data.end] ? e.data[this.screen().data.end] : e.data[this.screen().data.start],
                   id: e.id,
-                  // display:'block', // default will be dot, block is rectangle color
                   backgroundColor: this.randomHsl()
                 };
                 if (!this.screen().data?.titleTpl) {
@@ -286,86 +285,76 @@ export class ScreenComponent implements OnInit, OnDestroy {
             this.loading.set(false);
           })
       },
-      // this is flexible, but it will remove make default event styling (like rectangle color background)
-      // eventContent: function( info ) {
-      //   return {html: info.event.title};
-      // },
       eventClick: this.eventClick.bind(this)
     }
 
     this.loading.set(false);
   }
 
-
   options: any = {}
 
   private activeScreenReq?: Subscription;
   getScreen(screenId: any) {
     if (this.activeScreenReq) this.activeScreenReq.unsubscribe();
-    // console.log("getScreen", screenId)
     this.loading.set(true);
 
-    // ✅ FIX 1: Clear signals synchronously to prevent "ghost renders" of old screens
-    // using the new scopeId before the HTTP request returns.
     this.screen.set(null);
     this.dataset.set({});
     this.entry.set({});
 
-    this.activeScreenReq = this.runService.getRunScreen(screenId)
+    // 🚀 STATIC CACHE LOGIC
+    if (!ScreenComponent.screenCache.has(screenId)) {
+      const request$ = this.runService.getRunScreen(screenId).pipe(
+        shareReplay(1)
+      );
+      ScreenComponent.screenCache.set(screenId, request$);
+    }
+
+    this.activeScreenReq = ScreenComponent.screenCache.get(screenId)!
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.screen.set(res);
-        this.dataset.set({});
-        this.entry.set({});
-        // this._this = {};
-        this.loading.set(false);
+      .subscribe({
+        next: res => {
+          this.screen.set(res);
+          this.dataset.set({});
+          this.entry.set({});
+          this.loading.set(false);
 
-        // RIGHT NOW, ALL SCREEN GO THROUGH THIS.
-        // let intercept = this.screen().accessList?.filter(v => Object.keys(this.user.groups).includes(v + ""));
-        // if (this.screen().accessList?.length > 0 && intercept.length == 0) {
-        //   // && !this.app()?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
-        //   this.userUnauthorized = true;
-        // }
+          this.goObj = this.buildGo(this._entryId, true);
+          this.goObjWParam = this.buildGo(this._entryId);
+          this.popObj = this.buildPop(this._entryId, true);
 
-        // ...CHANGE TO CHECKING INSIDE IF TYPE CONDITION
-        // UPDATE. NO, DONT CONFUSE SCREEN ACCESS VS FORM ACCESS. SCREEN HAS IT'S OWN ACCESS SETTING
-        // this.isAuthorized = this.checkAuthorized(this.screen, this.user, null);
+          if (this.registeredScopeId) {
+            const popupKey = '_popup_' + this.registeredScopeId;
+            const thisKey = '_this_' + this.registeredScopeId;
 
-
-        this.goObj = this.buildGo(this._entryId, true);
-        this.goObjWParam = this.buildGo(this._entryId);
-        this.popObj = this.buildPop(this._entryId, true);
-
-
-        // 2. Remove old window references using Reflect with safety fallback
-        if (this.registeredScopeId) {
-          const popupKey = '_popup_' + this.registeredScopeId;
-          const thisKey = '_this_' + this.registeredScopeId;
-
-          if (!Reflect.deleteProperty(window, popupKey)) {
-            (window as any)[popupKey] = undefined;
+            if (!Reflect.deleteProperty(window, popupKey)) {
+              (window as any)[popupKey] = undefined;
+            }
+            if (!Reflect.deleteProperty(window, thisKey)) {
+              (window as any)[thisKey] = undefined;
+            }
           }
-          if (!Reflect.deleteProperty(window, thisKey)) {
-            (window as any)[thisKey] = undefined;
-          }
+          
+          this.registeredScopeId = this.scopeId();
+
+          Reflect.defineProperty(window, '_popup_' + this.scopeId(), {
+            get: () => this.popObj,
+            configurable: true
+          });
+
+          Reflect.defineProperty(window, '_this_' + this.scopeId(), {
+            get: () => this._this,
+            configurable: true
+          });
+
+          this.refreshScreen();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          ScreenComponent.screenCache.delete(screenId); // Remove failed requests from cache
+          this.loading.set(false);
         }
-        
-        this.registeredScopeId = this.scopeId();
-
-        // 3. Register new window properties using Reflect
-        Reflect.defineProperty(window, '_popup_' + this.scopeId(), {
-          get: () => this.popObj,
-          configurable: true
-        });
-
-        Reflect.defineProperty(window, '_this_' + this.scopeId(), {
-          get: () => this._this,
-          configurable: true
-        });
-
-        this.refreshScreen();
-        this.cdr.detectChanges();
-      })
+      });
   }
 
   refreshScreen() {
@@ -412,24 +401,24 @@ export class ScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  async initScreen(js) {
+  async initScreen(js: string) {
     let jsTxt = this.compileTpl(js, { $: this.entry()?.data, $prev$: this.entry()?.prev, $_: this.entry(), $go: this.buildGo(this.entry()?.id), $popup: this.buildPop(this.entry()?.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
 
     let res = undefined;
     try {
-      res = await this._eval(this.entry(), jsTxt);// new Function('$', '$prev$', '$user$', '$http$', 'return ' + f)(this.entry().data, this.entry && this.entry().prev, this.user, this.httpGet);
+      res = await this._eval(this.entry(), jsTxt);
     } catch (e) { this.logService.log(`{screen-${this.screen().title}-initScreen}-${e}`) }
     return res;
   }
 
   loadScript = loadScript;
 
-  $toast$ = (content, opt) => this.toastService.show(content, opt);
+  $toast$ = (content: any, opt: any) => this.toastService.show(content, opt);
 
-  log = (log) => this.logService.log(JSON.stringify(log));
+  log = (log: any) => this.logService.log(JSON.stringify(log));
 
   elMap: any = {}
-  $q = (el) => {
+  $q = (el: string) => {
     if (!this.elMap[el]) {
       this.elMap[el] = document.querySelector(el);
     }
@@ -460,39 +449,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
       cache.set(cacheKey, fn);
     }
     
-    return fn(...Object.values(bindings));
+    // SAFE EVAL FIX: Guarantees arguments map correctly to object keys
+    return fn(...argNames.map(key => bindings[key]));
   }
 
-  //   private wrapObservable<T>(obs: Observable<T>): Observable<T> & PromiseLike<T> {
-  //     const thenable = obs as any;
-  
-  //     // We attach a .then() method to the Observable
-  //     // This makes 'await' treat the Observable like a Promise
-  //     thenable.then = (resolve: any, reject: any) => 
-  //       firstValueFrom(obs).then(resolve, reject);  
-  //     return thenable;
-  //   }
-  
-  // private _hybridWebCache: any = null;
-  // get hybridWeb() {
-  //   if (!this._hybridWebCache) {
-  //     this._hybridWebCache = {
-  //       get: (url: string, opts?: any) => this.wrapObservable(this.http.get(url, opts)),
-  //       post: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.post(url, body, opts)),
-  //       put: (url: string, body: any, opts?: any) => this.wrapObservable(this.http.put(url, body, opts)),
-  //       delete: (url: string, opts?: any) => this.wrapObservable(this.http.delete(url, opts)),
-  //     };
-  //   }
-  //   return this._hybridWebCache;
-  // }
-
   getEvalContext = (entry: any, data: any, isPassive: boolean = false, additionalParams: any = {}) => {
-    // Properties shared across ALL evaluations (_pre, _eval, _qrEval)
     const passive = {
       $app$: this.app,
       $screen$: this.screen,
-      $_: entry,
-      $: data,
+      $_: entry,$: data,
       $prev$: entry?.prev,
       $user$: this.user(),
       $conf$: this.runService?.appConfig,
@@ -510,7 +475,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
     if (isPassive) return passive;
 
-    // Properties only needed for active evaluations (_eval, _qrEval)
     return {
       ...passive,
       setTimeout: this._setTimeout,
@@ -561,25 +525,25 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   // --- End DRY Engine ---
 
-  httpGet = (url, callback, error) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
-  httpPost = (url, body, callback, error) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
-  endpointGet = (code, params, callback, error) => lastValueFrom(this.runService.endpointGet(code, this.screen().appId, params, callback, error).pipe(tap(() => this.$digest$())))
+  httpGet = (url: string, callback: any, error: any) => lastValueFrom(this.runService.httpGet(url, callback, error).pipe(tap(() => this.$digest$())));
+  httpPost = (url: string, body: any, callback: any, error: any) => lastValueFrom(this.runService.httpPost(url, body, callback, error).pipe(tap(() => this.$digest$())));
+  endpointGet = (code: string, params: any, callback: any, error: any) => lastValueFrom(this.runService.endpointGet(code, this.screen().appId, params, callback, error).pipe(tap(() => this.$digest$())))
 
-  uploadFile = (obj, callback, error) => lastValueFrom(this.entryService.uploadAttachmentOnce(obj.file, obj.itemId, obj.bucketId, this.app()?.id, obj.file.name)
+  uploadFile = (obj: any, callback: any, error: any) => lastValueFrom(this.entryService.uploadAttachmentOnce(obj.file, obj.itemId, obj.bucketId, this.app()?.id, obj.file.name)
     .pipe(tap({ next: callback, error: error }), first()));
 
   $digest$ = () => {
     this.cdr.detectChanges()
   }
 
-  updateField = (entryId, value, callback, error) => {
+  updateField = (entryId: number, value: any, callback: any, error: any) => {
     return lastValueFrom(this.entryService.updateField(entryId, value, this.screen()?.appId)
       .pipe(
         tap({ next: callback, error: error }), first()
       ));
   }
 
-  updateLookup = (entryId, value, callback, error) => {
+  updateLookup = (entryId: number, value: any, callback: any, error: any) => {
     return lastValueFrom(this.entryService.updateLookup(entryId, value, this.screen()?.appId)
       .pipe(
         tap({ next: callback, error: error }), first()
@@ -587,7 +551,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   timeoutList: any[] = [];
-  _setTimeout = (functionRef, delay, ...param) => {
+  _setTimeout = (functionRef: Function, delay: number, ...param: any[]) => {
     let timeoutId = setTimeout(() => {
       functionRef();
       this.$digest$();
@@ -596,7 +560,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   intervalList: any[] = [];
-  _setInterval = (functionRef, delay, ...param) => {
+  _setInterval = (functionRef: Function, delay: number, ...param: any[]) => {
     let intervalId = setInterval(() => {
       functionRef();
       this.$digest$();
@@ -604,25 +568,17 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.intervalList.push(intervalId);
   }
 
-  ///// Actions
-  // navigate
-  // Edit, Form
   goObj: any = {};
   goObjWParam: any = {};
   popObj: any = {};
   popObjWParam: any = {};
 
-  // Perlu called directly dlm template supaya dpt replace per entry
-  // mn include ?entryId= tkt da problem utk yg xperlu entryId cth yg just pass param
-  // mn x include, banyak yg sediaada problem
   buildGo(entryId: any, noParam?: boolean) {
     const obj: any = {};
-    
-    // 1. Calculate repeated strings ONCE at the top
     const basePath = `#${this.preurl}`;
     const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
 
-    this.screen().actions?.forEach(ac => {
+    this.screen().actions?.forEach((ac: any) => {
       const next = ac.next;
       let path = '';
 
@@ -684,10 +640,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       let facet: string | null = null;
       let requiresParam = false;
 
-      // 1. Group the actions to determine their type, facet, and parameter needs
       switch (ac.nextType) {
-        
-        // --- Form/View Routes WITH Parameters ---
         case 'view':
           type = 'view';
           facet = 'view';
@@ -696,7 +649,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         case 'edit':
         case 'prev':
           type = 'form';
-          facet = ac.nextType; // 'edit' or 'prev'
+          facet = ac.nextType; 
           requiresParam = true;
           break;
         case 'facet':
@@ -704,8 +657,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
           facet = ac.x?.nextFacet;
           requiresParam = true;
           break;
-
-        // --- Form/View Routes WITHOUT Parameters ---
         case 'form':
           type = 'form';
           facet = 'add';
@@ -718,8 +669,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
           type = 'form';
           facet = 'edit-single';
           break;
-
-        // --- Screen Routes ---
         case 'screen':
           type = 'screen';
           requiresParam = true;
@@ -727,34 +676,19 @@ export class ScreenComponent implements OnInit, OnDestroy {
         case 'static':
           type = 'screen';
           break;
-
-        // --- Direct Resources (No params, Null facet) ---
         case 'dataset':
         case 'dashboard':
         case 'lookup':
         case 'user':
           type = ac.nextType;
           break;
-
         default:
-          return; // Skip unknown action types
+          return; 
       }
 
-      // 2. Define the popup function ONCE using the variables resolved above
-      // pop[ac.id] = (entryId?: any) => {
-      //   // Resolve params lazily when the user actually clicks the popup
-      //   const params = requiresParam && !noParam 
-      //       ? { entryId: entryId ?? eId } 
-      //       : {};
-
-      //   return this.inPop(this.inPopTpl(), entryId, ac, type, facet, params);
-      // };
-
-
-      // 2. Define the popup function ONCE using the variables resolved above
       pop[ac.id] = (param?: any) => {
         let params: any = {};
-        let targetEntryId = eId; // Default fallback
+        let targetEntryId = eId; 
 
         // If the passed parameter is an object, use it directly as the params
         if (param !== null && typeof param === 'object' && !Array.isArray(param)) {
@@ -778,8 +712,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return pop;
   }
 
-  //// store param ->
-
   inPopEntryId = signal<number>(null);
   inPopType = signal<string>('');
   inPopFacet = signal<string>('');
@@ -801,36 +733,20 @@ export class ScreenComponent implements OnInit, OnDestroy {
       this.inPopParams.set(finalParams);
     }
 
-    // params = action.params ? this._pre(this.entry(), action.params, false) : params;
-    // // console.log("params", params);
-
-    // if (params) {
-    //   params.entryId = entryId;
-    //   this.inPopParams.set(params);
-    // }
-
     history.pushState(null, null, window.location.href);
 
     return this.modalService.open(content, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
-
         console.log("lde: inPop result", res);
-        // this.getScreen(this.screen().id);
-        // this.getEntryList(this.pageNumber(),this.sort);
         return res;
       }, err => {
-
         console.log("lde: inPop dismissed", err);
-        // this.getScreen(this.screen().id);
         throw err;
       }).finally(() => {
-        // this.refreshScreen();
       });
-
   }
 
-  // #### ATTEMPT TO UNIFY POPUP AND NAVIGATE
-  runAction(url, inpop, content, entryId, formId, type, facet, params) {
+  runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
     if (inpop) {
       this.inPop(content, entryId, { next: formId }, type, facet, params)
     } else {
@@ -848,11 +764,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
 
   private activeEntryReq?: Subscription;
-  loadFormEntry(fId) {
+  loadFormEntry(fId: any) {
     if (this.activeEntryReq) this.activeEntryReq.unsubscribe();
     if (this._entryId) {
       this.loading.set(true);
-      // Flatted Nested Subscription
       this.activeEntryReq = this.entryService.getEntry(this._entryId, fId).pipe(
         takeUntilDestroyed(this.destroyRef),
         switchMap(res => {
@@ -899,10 +814,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       let userAuthorized = false;
       let condAuthorized = false;
 
-      let intercept = screen?.accessList?.filter(v => Object.keys(user?.groups || {}).includes(v + ""));
+      let intercept = screen?.accessList?.filter((v: any) => Object.keys(user?.groups || {}).includes(v + ""));
       if (intercept.length > 0) {
-        // this.form().accessList?.length == 0 || 
-        // && !this.app()?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
         groupAuthorized = true;
       } else {
         this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
@@ -922,17 +835,16 @@ export class ScreenComponent implements OnInit, OnDestroy {
           this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
         }
       }
-      // console.log("user", userAuthorized, "approver", approverAuthorized, "group", groupAuthorized, "cond", condAuthorized)
       return groupAuthorized || approverAuthorized || userAuthorized || condAuthorized;
     } else {
       return true;
     }
   }
 
-  sortDir = {};
+  sortDir: any = {};
   sortField = signal<number>(null);
   sortFieldName = signal<string>(null);
-  sortByField(id, name, field: string, dir: boolean) {
+  sortByField(id: number, name: string, field: string, dir: boolean) {
     this.sortField.set(id);
     this.sortFieldName.set(name);
     this.loadDatasetEntry(this.dataset(), this.pageNumber(), field + '~' + (dir ? 'asc' : 'desc'));
@@ -951,23 +863,19 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   prevId: number;
 
-  // searchTextEncoded: string = "";
   entryList = signal<any[]>([]);
   entryTotal = signal<number>(0);
   filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({ ...this.filtersData(), ...this.param() })));
   confValueEncoded = computed(() => {
     const filters = this.dataset()?.presetFilters;
     
-    // 1. Early return to flatten the code (removes unnecessary indentation)
     if (!filters) return '';
 
     const scopeId = this.scopeId();
     const params: Record<string, string> = {}; 
 
     for (const [k, v] of Object.entries(filters)) {
-      // 2. Stricter type-checking instead of casting
       if (typeof v === 'string' && v.includes("$conf$")) {
-        // 3. Removed redundant `(v as string) ?? ''` because we just verified it's a string
         params[k] = compileTpl(v, {}, scopeId);
       }
     }
@@ -977,19 +885,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
   searchText = signal<string>('');
   searchTextEncoded = computed(() => encodeURIComponent(this.searchText()));
 
-  // filtersEncoded;
   pageSize = signal<number>(25);
   pageNumber = signal<number>(1);
-  // last: boolean; first: boolean; 
   numberOfElements = signal<number>(null);
   sort = signal<string | null>(null);
   entryPages = signal<number>(0);
   filtersByUserAndStorage: any = {};
-  // innerHTML:any = ""
-  // dataset:any={}
 
   private activeListReq?: Subscription;
-  loadDatasetEntry(ds, pageNumber, sort?) {
+  loadDatasetEntry(ds: any, pageNumber: number, sort?: any) {
     if (ds) {
       if (this.activeListReq) this.activeListReq.unsubscribe();
       this.sort.set(sort);
@@ -1000,7 +904,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
       this.entryList.set([]);
 
-      let params = {
+      let params: any = {
         email: this.user().email,
         searchText: this.searchText(),
         filters: JSON.stringify(filtersAll),
@@ -1013,7 +917,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         Object.keys(ds.presetFilters)
           .filter(k => (ds.presetFilters[k] + "").includes("$conf$"))
           .forEach(k => {
-            params[k] = this.compileTpl(ds.presetFilters[k] ?? '', { $user$: this.user(), $conf$: this.appConfig, $: {}, $_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this._this, $param$: this._param })
+            params[k] = this.compileTpl(ds.presetFilters[k] ?? '', { $user$: this.user(), $conf$: this.appConfig, $: {},$_: {}, $prev$: {}, $base$: this.base, $baseUrl$: this.baseUrl, $baseApi$: this.baseApi, $this$: this._this, $param$: this._param })
           })
       }
 
@@ -1086,31 +990,28 @@ export class ScreenComponent implements OnInit, OnDestroy {
           id: e.id,
           latitude: latitude,
           longitude: longitude,
-          // title: e.data[this.screen().data.title],
-          title: this.compileTpl(this.screen()?.data?.popupTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id), $popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi }),
-          marker: this.compileTpl(this.screen()?.data?.icon, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id), $popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
+          title: this.compileTpl(this.screen()?.data?.popupTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi }),
+          marker: this.compileTpl(this.screen()?.data?.icon, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
         }
       })
-    // console.log(this.mapList)
     this.timestamp.set(Date.now());
   }
 
   calOptions: any;
 
-  eventClick(info) {
+  eventClick(info: any) {
     var event = info.event;
     if (event?.id) {
       var actions = this.screen()?.actions;
       if (actions?.length > 0) {
         this.actionLinks.set([]);
-        let actionLinks = [];
+        let actionLinks: any[] = [];
         
-        actions.forEach(action => {
+        actions.forEach((action: any) => {
           let url = this.goObj[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", event?.id)) : {};
           param.entryId = event?.id;
           
-          // Added 'action' and 'inpop' flag to the array so we can reference them when clicked
           actionLinks.push({ 
             action: action,
             inpop: action.x?.inpop,
@@ -1146,33 +1047,32 @@ export class ScreenComponent implements OnInit, OnDestroy {
           this.showActionOptions()
         }
       } else {
-        this.toastService.show("No action specified for calendar");
+        this.toastService.show("No action specified for calendar", { classname: 'bg-warning text-dark' });
       }
     }
   }
 
   randomHsl = () => `hsla(${Math.random() * 360}, 60%, 40%, 1)`;
 
-  runEntry(entryId) {
+  runEntry(entryId: any) {
     this._entryId = entryId;
     this.loadFormEntry(this.screen()?.form?.id);
     this.router.navigate([this.preurl, 'screen', this.screen().id], { queryParams: { entryId: entryId } });
   }
 
-  // qrPause:boolean = false;
   readonly scanner = viewChild<ScanComponent>('scanner');
   showActions: boolean = false;
   actionLinks = signal<any[]>([]);
   
-  qrValueChange(code, screen) {
+  qrValueChange(code: any, screen: any) {
     if (code) {
       var actions = screen?.actions;
       if (actions?.length > 0) {
 
         this.actionLinks.set([]);
-        let actionLinks = [];
+        let actionLinks: any[] = [];
         
-        actions.forEach(action => {
+        actions.forEach((action: any) => {
           let url = this.goObj[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", code)) : {};
           
@@ -1189,7 +1089,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
           // if only 1 action, immediately navigate
           if (actionLinks[0].type == 'fn') {
             this._qrEval(code, actionLinks[0].f);
-            this.scanner().resume(); // This unlocks the scanner and plays the video
+            this.scanner().resume(); 
           } else {
             // Safety check just in case goObj hasn't loaded properly
             if (actionLinks[0].url) {
@@ -1217,19 +1117,18 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   editFilterItems: any;
   filtersCond: string = "AND";
-  editFilter(content, data) {
+  editFilter(content: any, data: any) {
     this.filtersData.set({ ...data });
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(res => {
         this.filtersData.set({ ...res });
-        // localStorage.setItem("filter-" + this.dataset().id, JSON.stringify(this.filtersData()));
         this.loadDatasetEntry(this.screen().dataset, 1);
       }, res => { });
   }
 
-  readonly optTpl = viewChild('showOptTpl');
-  readonly viewport = viewChild('screenviewport');
+  readonly optTpl = viewChild<TemplateRef<any>>('showOptTpl');
+  readonly viewport = viewChild<any>('screenviewport');
   showActionOptions() {
     history.pushState(null, null, window.location.href);
     this.modalService.open(this.optTpl(), {
@@ -1249,7 +1148,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   filterSize = computed(() => Object.keys(this.filtersData()).length);
 
   getAsList = splitAsList;
-  compileTpl(html, data) {
+  compileTpl(html: string, data: any) {
     delete data.$popup;
     var f = "";
     try {
@@ -1260,7 +1159,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return f;
   }
 
-  preCheck(entry, code, bulk) {
+  preCheck(entry: any, code: string, bulk: any) {
     let res = undefined;
     try {
       res = this._pre(entry, code, bulk);
@@ -1269,11 +1168,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   getLookupInFilter() {
-    this.dataset().filters.forEach(f => {
+    this.dataset().filters?.forEach((f: any) => {
       let ds = this.form()[f.root]?.items[f.code]?.dataSource;
       let dsInit = this.form()[f.root]?.items[f.code]?.dataSourceInit;
       let type = this.form()[f.root]?.items[f.code]?.type;
-      if (ds) { // only load filter with ds, which is lookup
+      if (ds) { 
         this.lookupKey[f.code] = {
           ds: ds,
           type: type
@@ -1289,10 +1188,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   private activeLookupSubs = new Map<string, Subscription>();
 
-  _getLookup = (code, param, cb?, err?) => {
+  _getLookup = (code: string, param: any, cb?: any, err?: any) => {
     if (code) {
       if (this.activeLookupSubs.has(code)) {
-        this.activeLookupSubs.get(code).unsubscribe();
+        this.activeLookupSubs.get(code)!.unsubscribe();
       }
 
       const sub = this._getLookupObs(code, param, cb, err)
@@ -1312,7 +1211,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   lookupDataObs: any = {}
-  _getLookupObs(code, param, cb?, err?): Observable<any> {
+  _getLookupObs(code: string, param: any, cb?: any, err?: any): Observable<any> {
 
     var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
     // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
@@ -1322,8 +1221,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
     if (this.lookupDataObs[cacheId]) {
       return this.lookupDataObs[cacheId]
     }
-    // start loading
-    // console.log('loading '+this.lookupKey[code],code);
     if (this.lookupKey[code].type == 'modelPicker') {
       param = Object.assign(param || {}, { email: this.user().email });
       this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
@@ -1331,7 +1228,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
           tap({ next: cb, error: err }), first(), shareReplay(1)
         )
     } else {
-      // param = Object.assign(param || {}, { sort: 'id,asc' });
       param = Object.assign(param || {}, {});
       this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
         .pipe(
@@ -1344,24 +1240,18 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   linkify = linkify;
 
-  // getIcon = (str) => str ? str.split(":") : ['far', 'question-circle'];
-
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());
-    // this.liveSubscription.forEach(sub => sub.unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));
     this.timeoutList.forEach(i => clearTimeout(i));
 
 
 
-    // ✅ FIX 3: Use the tracker to delete the exact properties we registered
+    // Use the tracker to delete the exact properties we registered
     if (this.registeredScopeId) {
       Reflect.deleteProperty(window, '_popup_' + this.registeredScopeId);
       Reflect.deleteProperty(window, '_this_' + this.registeredScopeId);
     }
-
-    // delete window['_popup_' + this.scopeId()];
-    // delete window['_this_' + this.scopeId()];
 
     this.elMap = {};
 
@@ -1371,5 +1261,4 @@ export class ScreenComponent implements OnInit, OnDestroy {
     // delete (window as any).$popup;
     // delete (window as any).$this;
   }
-
 }

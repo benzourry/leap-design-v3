@@ -2,9 +2,14 @@
   <div>
     @if (!asComp() && !hideTitle()) {
       <page-title>
-        <h4 class="m-0" [innerHtml]="compileTpl(dataset()?.title, {}) | safe:'html'"></h4>
-        @if (dataset()?.description) {
-          <div class="mt-1" [innerHtml]="compileTpl(dataset()?.description, {}) | safe:'html'"></div>
+        @if (loading() && !dataset()) {
+          <h4 class="m-0 placeholder-glow"><span class="placeholder col-5 col-sm-3 rounded"></span></h4>
+          <div class="mt-1 placeholder-glow"><span class="placeholder col-8 col-sm-5 rounded"></span></div>
+        } @else {
+          <h4 class="m-0" [innerHtml]="compileTpl(dataset()?.title, {}) | safe:'html'"></h4>
+          @if (dataset()?.description) {
+            <div class="mt-1" [innerHtml]="compileTpl(dataset()?.description, {}) | safe:'html'"></div>
+          }
         }
       </page-title>
     }
@@ -19,10 +24,7 @@
           [class.input-group-sm]="asComp()" 
           [class.limit-width]="!dataset()?.wide">
           
-          <!-- ========================================== -->
-          <!-- ALWAYS VISIBLE (Desktop & Mobile)          -->
-          <!-- ========================================== -->
-
+          <!-- ALWAYS VISIBLE (Desktop & Mobile) -->
           @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
             @if (!(form()?.data?.prev && !prevId)) {
               <button type="button" class="btn btn-primary bg-gradient rounded-2" ngbTooltip="New Entry"
@@ -47,10 +49,7 @@
             </button>
           }
 
-          <!-- ========================================== -->
-          <!-- DESKTOP ONLY (Hidden on Mobile)            -->
-          <!-- ========================================== -->
-
+          <!-- DESKTOP ONLY (Hidden on Mobile) -->
           @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
             <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
               <button type="button" [class.btn-sm]="asComp()" class="btn h-100" id="dropdownExport" ngbDropdownToggle><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon></button>
@@ -98,10 +97,7 @@
             </div>
           }
 
-          <!-- ========================================== -->
-          <!-- MOBILE ONLY: The 3-Dot Menu                -->
-          <!-- ========================================== -->
-          
+          <!-- MOBILE ONLY: The 3-Dot Menu -->
           @if (
             (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) ||
             entryTotal() > 25 || dataset()?.canBlast || dataset()?.x?.canResync ||
@@ -113,7 +109,6 @@
               </button>
 
               <div ngbDropdownMenu aria-labelledby="threeDotMenu" class="shadow smart-dropdown toolbar-aligned-menu mt-2">
-                
                 @if (dataset()?.exportXls || dataset()?.exportCsv || dataset()?.exportPdf) {
                   <div class="dropdown-divider"></div>
                   <h6 class="dropdown-header text-secondary small"><fa-icon [icon]="['fas','file-export']" [fixedWidth]="true" class="me-1"></fa-icon> Export</h6>
@@ -158,11 +153,9 @@
               </div>
             </div>
           }
-
         </div>
       </div>
       
-
       @if (dataset()?.x?.showSummary) {
         <div class="px-3 pb-2">
           <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">
@@ -170,12 +163,10 @@
               {{lang()=='ms'?'Semua':'Total'}}: 
               <span class="text-body fw-medium">{{entryTotal()}}</span>
             </div>
-            
             <div>
               {{lang()=='ms'?'Dipapar':'Shown'}}: 
               <span class="text-body fw-medium">{{numberOfElements()}}</span>
             </div>
-            
             <div>
               {{lang()=='ms'?'Halaman':'Pages'}}: 
               <span class="text-body fw-medium">{{entryPages()}}</span>
@@ -207,13 +198,15 @@
     }
   </div>
 
-  @if (dataset() && !userUnauthorized()) {
+  @if (loading()) {
+    <div class="outer-pad pt-2">
+      <div class="centered position-relative outer-wrapper" [class.limit-width]="true">
+        <div class="header-colors"></div>
+      </div>
+    </div>
+  } @else if (dataset() && !userUnauthorized()) {
     <div class="outer-pad">
       <div class="centered position-relative outer-wrapper" [class.limit-width]="!dataset()?.wide">
-        @if (itemLoading()) {
-          <div class="header-colors"></div>
-        }
-
         <div [class.disabled]="itemLoading()">
           <div [class.table-responsive]="!dataset()?.wide || asComp()" class="overflow-auto w-100">
             @if (entryList()?.length > 0 || itemLoading()) {
@@ -261,9 +254,9 @@
                   </tr>
                 </thead>
 
-                <!-- 2. SKELETON LOADER TBODY -->
+                <!-- SKELETON LOADER TBODY -->
                 @if (itemLoading() && (!entryList() || entryList()?.length === 0)) {
-                  <tbody class="list-tmid ds-tbody placeholder-glow" [attr.data-grid]="dataset()?.x?.cardSize">
+                  <!-- <tbody class="list-tmid ds-tbody placeholder-glow" [attr.data-grid]="dataset()?.x?.cardSize">
                     @for (dummy of [1,2,3,4,5,6]; track dummy) {
                       <tr class="ds-row bg-body-tertiary bg-opacity-10" [class.has-check-or-index]="dataset()?.x?.bulkAction || dataset()?.showIndex">
                         @if (dataset()?.x?.bulkAction) { <td class="ds-check"><span class="placeholder col-12 rounded"></span></td> }
@@ -272,7 +265,6 @@
                         @for (item of dataset().items; track item.id; let isLast = $last) {
                           @if (columnVisible[item.id]) {
                             <td class="ds-item code-{{item.code}}" [class.last-ds-item]="isLast" [ngClass]="item.x?.cardStyle" [attr.data-label]="item.label">
-                              <!-- Create semi-random widths for the placeholders to look natural -->
                               <span class="placeholder rounded" [ngClass]="'col-' + (3 + ((dummy + $index) % 7))"></span>
                               @if (item.type === 'list') {
                                 <br><span class="placeholder rounded mt-1" [ngClass]="'col-' + (2 + ((dummy + $index + 2) % 5))"></span>
@@ -284,17 +276,46 @@
                         @if (hasVisibleActions()) { <td class="p-1 print-hide ds-action"><span class="placeholder col-10 rounded mt-sm-2"></span></td> }
                       </tr>
                     }
+                  </tbody> -->
+                  <tbody class="list-tmid ds-tbody placeholder-glow" [attr.data-grid]="dataset()?.x?.cardSize">
+                    @for (d of [1,2,3,4,5,6]; track d) {
+                      <tr class="ds-row bg-body-tertiary bg-opacity-10" [class.has-check-or-index]="dataset()?.x?.bulkAction || dataset()?.showIndex">
+                        @if (dataset()?.x?.bulkAction) { <td class="ds-check"><span class="placeholder col-12 rounded"></span></td> }
+                        @if (dataset()?.showIndex) { <td class="ds-index"><span class="placeholder col-12 rounded"></span></td> }
+                        
+                        @for (item of dataset().items; track item.id; let isLast = $last, i = $index) {
+                          @if (columnVisible[item.id]) {
+                            @let style = item.x?.cardStyle || '';
+                            
+                            <td class="ds-item code-{{item.code}}" [class.last-ds-item]="isLast" [ngClass]="style" [attr.data-label]="item.label">
+                              @if (style.includes('bleed')) {
+                                <div class="data-bleed placeholder w-100 m-0" style="height:160px; border-radius:0;"></div>
+                              } @else if (style.includes('tags')) {
+                                <span class="placeholder rounded-pill col-3"></span>
+                                <span class="placeholder rounded-pill col-4"></span>
+                                <span class="placeholder rounded-pill col-2"></span>
+                              } @else {
+                                <span class="placeholder rounded" [ngClass]="style.includes('title') ? 'col-' + (7+((d+i)%5)) : 'col-' + (3+((d+i)%7))"></span>
+                                @if (item.type === 'list') {
+                                  <br><span class="placeholder rounded mt-1" [ngClass]="'col-' + (2+((d+i+2)%5))"></span>
+                                }
+                              }
+                            </td>
+                          }
+                        }
+                        @if (dataset()?.showStatus) { <td class="text-center ds-status"><span class="placeholder col-8 rounded mt-sm-2"></span></td> }
+                        @if (hasVisibleActions()) { <td class="p-1 print-hide ds-action"><span class="placeholder col-10 rounded mt-sm-2"></span></td> }
+                      </tr>
+                    }
                   </tbody>
                 } @else {
-
                   @for (listKv of groupedEntryList(); track listKv.key) {
                     @if (!groupFilter() || groupFilter() == listKv?.key) {
-                      
                       <tbody class="list-tmid ds-tbody" [attr.data-grid]="dataset()?.x?.cardSize">
                         @if (groupFieldCode()) {
                           <tr class="ds-group-header mb-n2">
                             <td [attr.colspan]="totalColumn" class="p-0">
-                              <button class="w-100 border-0 p-2 px-sm-3 text-start d-flex flex-row align-items-center bg-body-tertiary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
+                              <button [class.px-sm-3]="!asComp()" class="w-100 border-0 p-2 text-start d-flex flex-row align-items-center bg-body-tertiary text-body acc-btn" (click)="hideGroup[listKv?.key] = !hideGroup[listKv?.key]">
                                 <div>
                                   @if (listKv?.key == 'undefined') {
                                     <span class="text-secondary fst-italic">{{lang()=='ms'?'Tiada data':'Data not available'}}</span>
@@ -302,7 +323,7 @@
                                     <span [innerHtml]="listKv?.key"></span>
                                   }
                                 </div>
-                                <span class="ms-auto badge rounded-pill bg-body text-secondary fw-normal text-center" style="line-height:1rem,min-width: 2rem;">{{listKv?.value?.length}}</span>
+                                <span class="ms-auto badge rounded-pill bg-body text-secondary fw-normal text-center" style="line-height:1rem;min-width: 2rem;">{{listKv?.value?.length}}</span>
                                 <fa-icon class="ms-2" [icon]="!hideGroup[listKv?.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
                               </button>
                             </td>
@@ -327,7 +348,6 @@
                                 @if (i._isVisible[item.root + '.' + item.code]) {
                                   @let fField = (['data','prev'].indexOf(item.root) > -1) ? form()[item.root]?.items[item.code] : form().data?.items[item.code];
                                   
-                                  <!-- Restored td-list for user customization hooks, combined with BS5 p-0 -->
                                   <td class="ds-item code-{{item.code}}" [class.td-list]="item.type == 'list'"
                                     [class.last-ds-item]="isLast"
                                     [ngClass]="item.x?.cardStyle"
@@ -560,16 +580,14 @@
         }
       </div>
     </div>
-  } @else {
-    @if (!loading() && userUnauthorized()) {
-      <div class="detail text-secondary">
-        <h3>{{lang()=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
-      </div>
-    }
+  } @else if (!loading() && userUnauthorized()) {
+    <div class="detail text-secondary">
+      <h3>{{lang()=='ms'?'Akses dataset tidak dibenarkan':'Access to the dataset is not allowed'}}</h3>
+    </div>
   }
 </div>
 
-<!-- Modal Templates -->
+<!-- Modal Templates (Remains Structurally Identical) -->
 <ng-template #editFilterTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
     <h4 class="modal-title">{{lang()=='ms'?'Tapis':'Filter'}} <span [innerHtml]="compileTpl(dataset()?.title)"></span></h4>
@@ -597,7 +615,7 @@
     @if(dataset()?.x?.enableStatusFilter){
       <label class="form-label">{{lang()=='ms'?'Tapis mengikut status':'Filter by status'}}</label>
       <div>
-        @if(statusFilterFormActual['-1'].drafted){
+        @if(statusFilterFormActual['-1']?.drafted){
           <div class="form-check">
             <input [(ngModel)]="statusFilterForm['-1'].drafted"
               [disabled]="!statusFilterFormActual['-1'].drafted"
@@ -606,7 +624,7 @@
             <label class="form-check-label" for="draftedFilter11">{{lang()=='ms'?'Didraf':'Drafted'}}</label>
           </div>
         }
-        @if (form().data?.tiers?.length>0 && statusFilterFormActual['-1'].submitted) {
+        @if (form().data?.tiers?.length>0 && statusFilterFormActual['-1']?.submitted) {
           <div class="form-check">
             <input [(ngModel)]="statusFilterForm['-1'].submitted"
               [disabled]="!statusFilterFormActual['-1'].submitted"
@@ -732,7 +750,14 @@
         <label class="form-check-label" for="showHint">{{lang()=='ms'?'Petunjuk':'Hint'}}</label>
       </div>
       <div class="mx-n2">
-        <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content" #formField="ngModel" [(ngModel)]="blastData().content"></angular-editor>
+        @defer (prefetch on idle) {
+          <angular-editor class="clean" [config]="editorConfig" id="mailblast-content" name="content" #formField="ngModel" [(ngModel)]="blastData().content"></angular-editor>
+        } @placeholder {
+          <div class="p-3 text-center text-secondary border rounded bg-body-tertiary">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            {{lang()=='ms'?'Memuatkan editor...':'Loading editor...'}}
+          </div>
+        }
       </div>
     </div>
     <div class="form-group mb-3">

@@ -32,7 +32,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
   imports: [FaIconComponent, NgStyle, AsyncPipe, DatePipe, MorphHtmlDirective, SafePipe, DecimalPipe, SecurePipe, NgLeafletComponent],
   providers: [DecimalPipe],
   template: `
-    @if (value() === undefined || value() === null) {
+    <!-- @if (value() === undefined || value() === null) { -->
+    @if (value() === undefined || value() === null || value() === '' || (isArray(value()) && value().length === 0)) {
       <span>
         @if (!['static', 'file', 'btn', 'checkbox'].includes(field()?.type)) {
           <span class="text-body-tertiary">{{ lang() === 'ms' ? 'Tiada data' : 'Data not available' }}</span>
@@ -107,21 +108,9 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             </div>
           </div>
 
-          <!-- @if (isOverflowing()) {
-            <div class="text-start print-hide mt-1">
-              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())">
-                {{ 
-                  lang() === 'ms' 
-                    ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
-                    : (isReadMore() ? 'Less...' : 'More...') 
-                }}
-              </button>
-            </div>
-          } -->
           @if (isOverflowing() || isReadMore()) {
             <div class="text-start print-hide mt-1">
               <button type="button" class="btn btn-xs btn-light shadow-sm small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
-              <!-- <button type="button" class="btn btn-xs btn-outline-secondary small p-1 m-1" style="font-size:0.8rem" (click)="isReadMore.set(!isReadMore())"> -->
                 {{ 
                   lang() === 'ms' 
                     ? (isReadMore() ? 'Kurang...' : 'Lebih...') 
@@ -174,7 +163,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
           }
           @if (field()?.subType === 'qr') {
             <span>
-              <img class="data-bleed" loading="lazy" [src]="value() ? baseApi + '/form/qr?code=' + value() : 'assets/img/blank-qr.svg'" width="100%">
+              <img class="data-bleed qr-img" loading="lazy" [src]="value() ? baseApi + '/form/qr?code=' + value() : 'assets/img/blank-qr.svg'">
             </span>
           }
         </span>
@@ -290,7 +279,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
                 
                 @if (field().subType === 'image') {
                   <a class="thumbnail d-block" [href]="field().x?.secure ? (getUrl('/entry/file/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" target="_blank">
-                    <img class="data-bleed" loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+                    <img class="data-bleed single-img" loading="lazy" [src]="field().x?.secure ? (getUrl('/entry/file/inline/', value()) | secure | async) : getUrl('/entry/file/inline/', value())" onError="this.src='./assets/img/placeholder-128.png'">
                   </a>
                 } @else if (field().subType === 'imagemulti') {
                   <div class="img-grid-cont">
@@ -303,20 +292,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
                 }
               </div>
 
-              <!-- @if (isOverflowing()) {
-                <div class="text-start print-hide mt-1">
-                  <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
-                    <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
-                    {{ 
-                      lang() === 'ms' 
-                        ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
-                        : (isReadMore() ? 'Hide' : 'View Full Image') 
-                    }}
-                  </button>
-                </div>
-              } -->
               @if (isOverflowing() || isReadMore()) {
-                <!-- ADDED: position-absolute, bottom-0, start-0, z-index -->
                 <div class="position-absolute bottom-0 start-0 print-hide" style="z-index: 10;">
                   <button type="button" class="btn btn-xs btn-light shadow-sm small p-1 m-3" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
                     <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
@@ -353,26 +329,13 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
             [class.fade-bottom-img]="!isReadMore() && isOverflowing()">
             
             <a class="thumbnail d-block" [href]="value()" target="_blank">
-              <img class="data-bleed" loading="lazy" [src]="value()" style="max-width:100%" onError="this.src='./assets/img/placeholder-128.png'">
+              <img class="data-bleed single-img" loading="lazy" [src]="value()" onError="this.src='./assets/img/placeholder-128.png'">
             </a>
           </div>
 
-          <!-- @if (isOverflowing()) {
-            <div class="text-start print-hide mt-1">
-              <button type="button" class="btn btn-xs btn-outline-secondary small p-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
-                <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
-                {{ 
-                  lang() === 'ms' 
-                    ? (isReadMore() ? 'Sembunyi' : 'Lihat Penuh') 
-                    : (isReadMore() ? 'Hide' : 'View Full Image') 
-                }}
-              </button>
-            </div>
-          } -->
           @if (isOverflowing() || isReadMore()) {
             <div class="text-start print-hide mt-1">
               <button type="button" class="btn btn-xs btn-light shadow-sm small p-1 m-3" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
-              <!-- <button type="button" class="btn btn-xs btn-outline-secondary small p-1 m-1" style="font-size:0.8rem; border-radius: 50rem; padding: 0.2rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())"> -->
                 <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
                 {{ 
                   lang() === 'ms' 
@@ -401,6 +364,22 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
     }
   `,
   styles: [`
+    /* IMAGE CLS PREVENTION RULES */
+    img.data-bleed {
+      background-color: var(--bs-secondary-bg);
+    }
+    .qr-img {
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      width: 100%;
+    }
+    .single-img {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+    }
+
     .line-clamp {
       display: -webkit-box;
       -webkit-line-clamp: 6;
@@ -425,6 +404,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       overflow: hidden;
       display:flex;
       align-items: center;
+      background-color: var(--bs-secondary-bg);
     }
 
     .img-grid-item img {

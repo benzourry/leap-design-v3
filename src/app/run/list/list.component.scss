@@ -18,15 +18,9 @@
   }
 }
 
-table tr:not(.ds-group-header) {
+.viewport:not(.as-comp) table tr:not(.ds-group-header) {
   td:first-child, th:first-child { padding-left: 1rem; }
   td:last-child, th:last-child { padding-right: 1rem !important; }
-}
-
-.as-comp table tr:not(.ds-group-header) {
-  td:first-child, th:first-child { padding-left: 0; }
-  td:last-child, th:last-child { padding-right: 0 !important; } 
-  // (Change 'unset' to your original fallback padding if needed)
 }
 
 table.tbl-child {

@@ -17,7 +17,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { forkJoin, lastValueFrom, Observable, of, Subscription, tap, map, catchError } from 'rxjs';
+import { forkJoin, lastValueFrom, Observable, of, Subscription, tap, map, catchError, shareReplay } from 'rxjs';
 import dayjs from 'dayjs';
 
 import { base, baseApi } from '../../_shared/constant.service';
@@ -200,6 +200,8 @@ export class ListComponent implements OnInit, OnDestroy {
   private registeredScopeId: string | null = null;
   private lastResStr: string = '';
 
+  private static datasetCache = new Map<number, Observable<any>>();
+
   isMobile = this.viewport.isMobile;
 
   private readonly EVAL_PARAMS = [
@@ -303,7 +305,14 @@ export class ListComponent implements OnInit, OnDestroy {
     this.registeredScopeId = this.scopeId();
     Reflect.defineProperty(window, '_this_' + this.scopeId(), { get: () => this._this, configurable: true }); 
         
-    this.activeDatasetReq = this.runService.getRunDataset(id)
+    if (!ListComponent.datasetCache.has(id)) {
+      const request$ = this.runService.getRunDataset(id).pipe(
+        shareReplay(1)
+      );
+      ListComponent.datasetCache.set(id, request$);
+    }
+
+    this.activeDatasetReq = ListComponent.datasetCache.get(id)!
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
@@ -341,7 +350,11 @@ export class ListComponent implements OnInit, OnDestroy {
           this.loading.set(false); 
           this.getEntryList(1);
         },
-        error: () => { this.loading.set(false); this.itemLoading.set(false); }
+        error: () => { 
+          ListComponent.datasetCache.delete(id);
+          this.loading.set(false); 
+          this.itemLoading.set(false); 
+        }
       });
   }
 
@@ -445,11 +458,6 @@ export class ListComponent implements OnInit, OnDestroy {
     };
     this.actionsInline.forEach(processAction);
     this.actionsDropdown.forEach(processAction);
-
-    // [...this.actionsInline, ...this.actionsDropdown].forEach(ac => {
-    //   e._actionVisible[ac.id] = checkAction(ac);
-    //   if (ac.action === 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
-    // });
 
     dataset.items?.forEach((item: any) => {
       const uniqueKey = `${item.root}.${item.code}`;
@@ -812,6 +820,7 @@ export class ListComponent implements OnInit, OnDestroy {
   resyncDataset(dsId: number) {
     const isMs = this.lang() === 'ms';
     if (confirm(isMs ? 'Anda pasti untuk menyelaraskan data menggunakan dataset ini?' : 'Are you sure you want to resynchronize data using this dataset?')) {
+      ListComponent.datasetCache.delete(dsId);
       this.runService.resyncDataset(this.dataset()?.id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
