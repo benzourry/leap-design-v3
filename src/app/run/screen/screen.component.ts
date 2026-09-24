@@ -1291,7 +1291,6 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   _getLookup = (code, param, cb?, err?) => {
     if (code) {
-      // 1. Kill pending lookups to prevent Typeahead race conditions
       if (this.activeLookupSubs.has(code)) {
         this.activeLookupSubs.get(code).unsubscribe();
       }

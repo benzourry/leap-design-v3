@@ -17,7 +17,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { forkJoin, lastValueFrom, Observable, of, Subscription, switchMap, tap, map, catchError } from 'rxjs';
+import { forkJoin, lastValueFrom, Observable, of, Subscription, tap, map, catchError } from 'rxjs';
 import dayjs from 'dayjs';
 
 import { base, baseApi } from '../../_shared/constant.service';
@@ -59,7 +59,7 @@ import { ViewportService } from '../../_shared/service/viewport.service';
     NgbDropdownMenu, NgbDropdownItem, NgbDropdownButtonItem, NgClass, FieldViewComponent, StepWizardComponent,
     NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, 
     UserEntryFilterComponent, AngularEditorModule, forwardRef(() => FormComponent), 
-    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe, KeyValuePipe
+    forwardRef(() => ViewComponent), forwardRef(() => ScreenComponent), SafePipe, KeyValuePipe, IconSplitPipe, DecimalPipe
   ]
 })
 export class ListComponent implements OnInit, OnDestroy {
@@ -89,7 +89,7 @@ export class ListComponent implements OnInit, OnDestroy {
   datasetLoaded = output<any>();
 
   dataset = signal<any>(null);
-  // _datasetId!: number;
+  
   entryList = signal<any[]>([]);
   groupedEntryList = computed(() =>
     this.groupByPipe.transform(this.entryList(), this.getPathForGrouping(this.groupFieldCode()))
@@ -99,8 +99,6 @@ export class ListComponent implements OnInit, OnDestroy {
   preCount = computed(() => this.pageSize() * Math.max(0, this.pageNumber() - 1));
   itemLoading = signal<boolean>(false);
   offline = signal<boolean>(false);
-
-  
 
   filtersEncoded = computed(() => encodeURIComponent(JSON.stringify({ ...this.filtersData(), ...this._param })));
   confValueEncoded = computed(() => {
@@ -122,8 +120,8 @@ export class ListComponent implements OnInit, OnDestroy {
   searchTextEncoded = computed(() => encodeURIComponent(this.searchText()));
   sort = signal<string | null>(null);
 
-  statusFilterForm:any = {}
-  statusFilterFormActual:any = {}
+  statusFilterForm: any = {};
+  statusFilterFormActual: any = {};
 
   entryIndex: Record<number, number> = {};
   rowClass: Record<number, string> = {};
@@ -161,7 +159,7 @@ export class ListComponent implements OnInit, OnDestroy {
   aggColumnAvgValue: Record<string, number> = {};
   hasAggColumn: boolean = false;
 
-  statusMap = {
+  statusMap: Record<string, { ms: string; en: string }> = {
     drafted: { ms: 'Didraf', en: 'Drafted' },
     submitted: { ms: 'Dihantar', en: 'Submitted' },
     resubmitted: { ms: 'Dihantar semula', en: 'Resubmitted' }
@@ -173,29 +171,14 @@ export class ListComponent implements OnInit, OnDestroy {
   columnVisible: Record<string, boolean> = {};
 
   editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
+    editable: true, spellcheck: true, height: 'auto', minHeight: '0', maxHeight: 'auto',
+    width: 'auto', minWidth: '0', translate: 'yes', enableToolbar: true, showToolbar: true,
+    placeholder: 'Enter text here...', defaultParagraphSeparator: '', defaultFontName: '', defaultFontSize: '',
     fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' }
+      { class: 'arial', name: 'Arial' }, { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' }, { class: 'comic-sans-ms', name: 'Comic Sans MS' }
     ],
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'bottom',
+    uploadWithCredentials: false, sanitize: false, toolbarPosition: 'bottom',
     toolbarHiddenButtons: [['fontName'], ['customClasses', 'insertVideo', 'insertImage', 'removeFormat', 'toggleEditorMode']]
   };
 
@@ -207,46 +190,36 @@ export class ListComponent implements OnInit, OnDestroy {
   };
 
   _this = createProxy({}, () => this.cdr.markForCheck());
-  // appConfig: any = this.runService.appConfig;
-  get appConfig(): any {
-    return this.runService.appConfig;
-  }
+  get appConfig(): any { return this.runService.appConfig; }
 
-  
   dayjs = dayjs;
   ServerDate = ServerDate;
 
   private activeDatasetReq?: Subscription;
   private activeListReq?: Subscription;
+  private registeredScopeId: string | null = null;
+  private lastResStr: string = '';
 
-  // 1. Create a signal for the mobile state
-  // isMobile = signal(false);
   isMobile = this.viewport.isMobile;
-  // private mediaQueryList: MediaQueryList | null = null;
-  // private mediaQueryListener: (e: MediaQueryListEvent) => void;
+
+  private readonly EVAL_PARAMS = [
+    '$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$http$', '$post$', 
+    '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', 
+    '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 
+    'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$'
+  ];
+
+  private readonly PRE_PARAMS = [
+    '$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$this$', '$param$', 
+    '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$'
+  ];
 
   constructor() {
-    // this.mediaQueryListener = (e: MediaQueryListEvent) => {
-    //   this.isMobile.set(e.matches);
-    // };
-    
-    this.utilityService
-      .testOnline$()
-      .pipe(takeUntilDestroyed())
-      .subscribe(online => this.offline.set(!online));
+    this.utilityService.testOnline$().pipe(takeUntilDestroyed()).subscribe(online => this.offline.set(!online));
 
-    // effect(() => {
-    //   const currentDatasetId = this.datasetId();
-    //   if (this._datasetId !== currentDatasetId && currentDatasetId) {
-    //     this._datasetId = currentDatasetId;
-    //     this.getDataset(currentDatasetId);
-    //   }
-    // });
     effect(() => {
         const id = this.datasetId();
-        if (id) {
-            untracked(() => this.getDataset(id));
-        }
+        if (id) untracked(() => this.getDataset(id));
     });
 
     effect(() => {
@@ -257,31 +230,38 @@ export class ListComponent implements OnInit, OnDestroy {
         this._param = param;
         this._startTimestamp = startTimestamp;
 
-        if (this._param?.['$prev$.$id']) {
-          this.prevId = this._param['$prev$.$id'];
-        }
-
-        untracked(() => {
-          this.getEntryList(this.pageNumber(), this.sort());
-        });
+        if (this._param?.['$prev$.$id']) this.prevId = this._param['$prev$.$id'];
+        untracked(() => this.getEntryList(this.pageNumber(), this.sort()));
       }
     });
-
   }
 
   ngOnInit() {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
-    // this.appConfig = this.runService.appConfig;
-    // 2. Setup the native browser media query
-    // this.mediaQueryList = window.matchMedia('(max-width: 575.98px)');
+  }
+
+  convertStatusToDisplay(status: any, form: any, root: string) {
+    const statusFilterForm: any = { '-1': {} };
+    (status?.['-1']?.split(",") || []).forEach((el: string) => statusFilterForm['-1'][el] = true);
     
-    // // Set the initial value
-    // this.isMobile.set(this.mediaQueryList.matches);
-    
-    // // Listen for crosses over the 575.98px threshold
-    // this.mediaQueryList.addEventListener('change', this.mediaQueryListener);
+    form[root]?.tiers?.forEach((t: any) => {
+      statusFilterForm[t.id] = {};
+      (status?.[t.id]?.split(",") || []).forEach((el: string) => {
+        if (t.actions[el] || el === 'resubmitted' || (t.alwaysApprove && el === 'always_approve')) {
+          statusFilterForm[t.id][el] = true;
+        }
+      });
+    });
+    return statusFilterForm;
+  }
+
+  convertDisplayToStatus(statusFilterList: any) {
+    return Object.entries(statusFilterList || {}).reduce((acc: any, [tierId, actions]) => {
+      acc[tierId] = Object.entries(actions as object).filter(([, val]) => val).map(([key]) => key).join(",");
+      return acc;
+    }, {});
   }
 
   userUnauthorized = computed(() => {
@@ -289,20 +269,19 @@ export class ListComponent implements OnInit, OnDestroy {
     const user = this.user();
     if (!dataset || !user) return false;
 
-    const intercept = dataset.accessList?.filter((v: any) =>
-      Object.keys(user.groups || {}).includes(v + '')
-    );
+    const intercept = dataset.accessList?.filter((v: any) => Object.keys(user.groups || {}).includes(v + ''));
     return dataset.accessList?.length > 0 && intercept.length === 0;
   });
-
-  private registeredScopeId: string | null = null;
 
   getDataset(id: number) {
     if (this.activeDatasetReq) this.activeDatasetReq.unsubscribe();
 
     this.loading.set(true);
     this.itemLoading.set(true);
-
+    this.dataset.set(null);
+    this.entryTotal.set(0);
+    this.numberOfElements.set(0);
+    this.entryPages.set(0);
     this.lastResStr = '';
 
     this.entryList.set([]);
@@ -314,68 +293,39 @@ export class ListComponent implements OnInit, OnDestroy {
     this.sort.set(null);
     this.checkAllInput.set(false);
 
-    // 1. Wipe previous script variables to prevent cross-dataset contamination
-    if (this._this) {
-      Object.keys(this._this).forEach(key => delete this._this[key]);
-    }
-
-    // 2. Unregister previous scope's window property
+    if (this._this) Object.keys(this._this).forEach(key => delete this._this[key]);
+    
     if (this.registeredScopeId) {
       const oldKey = '_this_' + this.registeredScopeId;
-      if (!Reflect.deleteProperty(window, oldKey)) {
-        (window as any)[oldKey] = undefined;
-      }
+      if (!Reflect.deleteProperty(window, oldKey)) (window as any)[oldKey] = undefined;
     }
 
     this.registeredScopeId = this.scopeId();
-
-    // 3. Register new scoped window property
-    Reflect.defineProperty(window, '_this_' + this.scopeId(), {
-      get: () => this._this,
-      configurable: true
-    }); 
+    Reflect.defineProperty(window, '_this_' + this.scopeId(), { get: () => this._this, configurable: true }); 
         
-    // Fetch ONLY the dataset first (removed switchMap)
     this.activeDatasetReq = this.runService.getRunDataset(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
-          
-
-
           this.dataset.set(res);
-          this.totalColumn = res.items.length
-            + (res?.x?.bulkAction ? 1 : 0)
-            + (res?.showIndex ? 1 : 0)
-            + (res?.showStatus ? 1 : 0)
-            + (res?.showAction ? 1 : 0);
-
+          this.totalColumn = res.items.length + (res?.x?.bulkAction ? 1 : 0) + (res?.showIndex ? 1 : 0) + 
+                             (res?.showStatus ? 1 : 0) + (res?.showAction ? 1 : 0);
           this.groupFieldCode.set(res.x?.defGroupField);
           this.pageSize.set(res.x?.defPageSize || 25);
+          
           this.actionsInline = res.actions.filter((f: any) => f.type === 'inline');
           this.actionsDropdown = res.actions.filter((f: any) => f.type === 'dropdown');
           this.actionsBulk = res.actions.filter((f: any) => f.type === 'bulk');
 
           this.columnVisible = {};
-          res.items?.forEach((item: any) => {
-            this.columnVisible[item.id] = this.preCheck({}, item.pre, false);
-          });
+          res.items?.forEach((item: any) => this.columnVisible[item.id] = this.preCheck({}, item.pre, false));
 
-          this.form.set({
-            data: {
-              ...res.form,
-              items: deepMerge(this.builtInItems, res.form.items)
-            },
-            prev: res.form.prev || null
-          });
-
+          this.form.set({ data: { ...res.form, items: deepMerge(this.builtInItems, res.form.items) }, prev: res.form.prev || null });
 
           if (res.x?.enableStatusFilter){
             this.statusFilterFormActual = this.convertStatusToDisplay(res.statusFilter, this.form(), 'data');
             this.statusFilterForm = this.convertStatusToDisplay(res.statusFilter, this.form(), 'data');
           }
-
-          
 
           this.getLookupInFilter();
 
@@ -388,18 +338,10 @@ export class ListComponent implements OnInit, OnDestroy {
           this.tiersMap = {};
           res.form.tiers.forEach((t: any) => (this.tiersMap[t.id] = t));
 
-          // Dataset metadata is loaded, turn off main loader
           this.loading.set(false); 
-
-          // 👇 REUSE getEntryList HERE 👇
-          // Now that dataset() is populated, this will safely pass the early exit check
-          // and emit your changed event on the first load!
           this.getEntryList(1);
         },
-        error: () => {
-          this.loading.set(false);
-          this.itemLoading.set(false);
-        }
+        error: () => { this.loading.set(false); this.itemLoading.set(false); }
       });
   }
 
@@ -410,38 +352,28 @@ export class ListComponent implements OnInit, OnDestroy {
 
   rawList = signal<any[]>([]);
 
-  private lastResStr: string = '';
-
   getEntryList(pageNumber: number, sort?: any) {
     const dataset = this.dataset();
     if (!dataset?.id) return;
 
     if (this.activeListReq) this.activeListReq.unsubscribe();
-
     this.sort.set(sort);
     this.itemLoading.set(true);
 
     const filtersAll = { ...this.filtersData(), ...this._param };
     const params: any = {
-      email: this.user()?.email,
-      searchText: this.searchText(),
-      filters: JSON.stringify(filtersAll),
-      page: pageNumber - 1,
-      size: this.pageSize(),
-      ...this._pre({}, dataset.x?.initParam, false),
-      '@cond': this.filtersCond
+      email: this.user()?.email, searchText: this.searchText(), filters: JSON.stringify(filtersAll),
+      page: pageNumber - 1, size: this.pageSize(), '@cond': this.filtersCond,
+      ...this._pre({}, dataset.x?.initParam, false)
     };
 
     if (this.sort()) params['sorts'] = this.sort();
-
     if (dataset?.x?.enableStatusFilter) params.status = JSON.stringify(this.convertDisplayToStatus(this.statusFilterForm));
 
     if (dataset.presetFilters) {
       const scopeId = this.scopeId();
       for (const [k, v] of Object.entries(dataset.presetFilters)) {
-        if (String(v).includes('$conf$')) {
-          params[k] = compileTpl((v as string) ?? '', {}, scopeId);
-        }
+        if (String(v).includes('$conf$')) params[k] = compileTpl((v as string) ?? '', {}, scopeId);
       }
     }
 
@@ -449,20 +381,14 @@ export class ListComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {
-          
-// --- FIX START ---
-          // Stringify the raw API response BEFORE calculateRowMetadata pollutes it.
           const currentResStr = JSON.stringify(res);
-          
           if (this.lastResStr === currentResStr) {
             this.itemLoading.set(false);
-            return; // Break the infinite loop! Data is identical.
+            return;
           }
           this.lastResStr = currentResStr;
-          // --- FIX END ---
 
           const content = res.content || [];
-
           this.rawList.set(res);
           this.entryTotal.set(res.page?.totalElements);
           this.pageSize.set(res.page?.size || this.pageSize());
@@ -501,46 +427,45 @@ export class ListComponent implements OnInit, OnDestroy {
   calculateRowMetadata(e: any) {
     const dataset = this.dataset();
     if (!dataset) return;
-    const scopeId = this.scopeId();
 
-    e._isVisible = {};
-    e._computedValues = {};
-    e._actionVisible = {};
-    e._actionUrls = {}; // <--- ADD THIS
+    e._isVisible = e._isVisible || {};
+    e._computedValues = e._computedValues || {};
+    e._actionVisible = e._actionVisible || {};
+    e._actionUrls = e._actionUrls || {}; 
 
-    const rowClassTemplate = dataset.x?.rowClass ?? '';
-    this.rowClass[e.id] = compileTpl(rowClassTemplate, { $: e?.data, $_: e, $prev$: e?.prev }, scopeId);
+    this.rowClass[e.id] = compileTpl(dataset.x?.rowClass ?? '', { $: e?.data, $_: e, $prev$: e?.prev }, this.scopeId());
 
     const checkAction = (ac: any) => !this.isActionOfflineDisabled(ac.action) && this.preCheck(e, ac.pre, false);
 
-    this.actionsInline.forEach(ac => { 
-      e._actionVisible[ac.id] = checkAction(ac); 
-      if (ac.action == 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
-    });
-    this.actionsDropdown.forEach(ac => { 
-      e._actionVisible[ac.id] = checkAction(ac); 
-      if (ac.action == 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
-    });
+    const processAction = (ac: any) => {
+      e._actionVisible[ac.id] = checkAction(ac);
+      if (ac.action === 'url') {
+        e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
+      }
+    };
+    this.actionsInline.forEach(processAction);
+    this.actionsDropdown.forEach(processAction);
+
+    // [...this.actionsInline, ...this.actionsDropdown].forEach(ac => {
+    //   e._actionVisible[ac.id] = checkAction(ac);
+    //   if (ac.action === 'url') e._actionUrls[ac.id] = this.compileTpl(ac.url, {$:e.data, $_:e, $prev$:e?.prev});
+    // });
 
     dataset.items?.forEach((item: any) => {
       const uniqueKey = `${item.root}.${item.code}`;
       e._isVisible[uniqueKey] = this.preCheck(e, item.pre, false);
 
-      const isBaseRoot = ['data', 'prev'].indexOf(item.root) > -1;
-      const fField = isBaseRoot 
-        ? this.form()[item.root]?.items[item.code] 
-        : this.form().data?.items[item.code];
-
+      const isBaseRoot = item.root === 'data' || item.root === 'prev';
+      const fField = isBaseRoot ? this.form()[item.root]?.items[item.code] : this.form().data?.items[item.code];
       const rootData = isBaseRoot ? e[item.root] : e.approval?.[item.root]?.data;
+
       e._computedValues[uniqueKey] = this.getVal(fField, e, rootData);
 
       if (item.type === 'list' && e[item.root]?.[item.code]) {
         e[item.root][item.code].forEach((ch: any) => {
-          ch._computedValues = {};
+          ch._computedValues = ch._computedValues || {};
           item.subs?.forEach((fq: any) => {
-            const chUniqueKey = `${item.root}.${fq.code}`;
-            const chField = this.form()[item.root]?.items[fq.code];
-            ch._computedValues[chUniqueKey] = this.getVal(chField, e, ch);
+            ch._computedValues[`${item.root}.${fq.code}`] = this.getVal(this.form()[item.root]?.items[fq.code], e, ch);
           });
         });
       }
@@ -549,22 +474,19 @@ export class ListComponent implements OnInit, OnDestroy {
 
   calculateAggregations() {
     const list = this.entryList();
-    if (!list || list.length === 0 || !this.hasAggColumn) return;
-
-    const uniqueMap = { ...this.aggColumnTotalField, ...this.aggColumnAvgField };
-    const mathFields = Object.values(uniqueMap);
-    if (mathFields.length === 0) return;
+    if (!list?.length || !this.hasAggColumn) return;
 
     this.aggColumnTotalValue = {};
     this.aggColumnAvgValue = {};
 
+    const mathFields = Object.values({ ...this.aggColumnTotalField, ...this.aggColumnAvgField });
+    if (mathFields.length === 0) return;
+
     list.forEach(e => {
       mathFields.forEach((element: any) => {
         const key = `${element.root}.${element.code}`;
-        const isBaseRoot = element.root === 'data' || element.root === 'prev';
-        const rootData = isBaseRoot ? e[element.root] : e.approval?.[element.root]?.data;
-        const value = rootData ? Number(rootData[element.code] || 0) : 0;
-        this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + value;
+        const rootData = (element.root === 'data' || element.root === 'prev') ? e[element.root] : e.approval?.[element.root]?.data;
+        this.aggColumnTotalValue[key] = (this.aggColumnTotalValue[key] || 0) + (Number(rootData?.[element.code]) || 0);
       });
     });
 
@@ -576,30 +498,22 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   insertTextAtCursor(text: string) {
-    this.insertText('{{' + text + '}}');
-  }
-
-  insertText(text: string) {
     if (window.getSelection) {
       const sel = window.getSelection();
       if (sel && sel.getRangeAt && sel.rangeCount) {
         const range = sel.getRangeAt(0);
         range.deleteContents();
-        range.insertNode(document.createTextNode(text));
+        range.insertNode(document.createTextNode(`{{${text}}}`));
       }
     }
   }
 
   blastList(data: any, ids?: number[]) {
-    const filtersAll = { ...this.filtersData(), ...this._param };
     const params: any = {
-      email: this.user().email,
-      searchText: this.searchText(),
-      filters: JSON.stringify(filtersAll)
+      email: this.user().email, searchText: this.searchText(), filters: JSON.stringify({ ...this.filtersData(), ...this._param })
     };
 
     if (this.dataset()?.x?.enableStatusFilter) params.status = JSON.stringify(this.convertDisplayToStatus(this.statusFilterForm));
-
     if (ids) params.ids = ids;
 
     this.entryService.blastByDataset(this.dataset().id, data, params)
@@ -611,7 +525,7 @@ export class ListComponent implements OnInit, OnDestroy {
             <tr><td>${this.lang() === 'ms' ? 'Dihantar' : 'Total Sent'}</td><td>: ${res.totalSent}</td></tr>
             <tr><td>${this.lang() === 'ms' ? 'Berjaya' : 'Success'}</td><td>: ${res.success ? 'Yes' : 'No'}</td></tr>
           </table>`;
-          this.toastService.show(this.lang() === 'ms' ? 'Blast berjaya' : 'Blast successful <br/>' + result, { classname: 'bg-success text-light' });
+          this.toastService.show(this.lang() === 'ms' ? 'Blast berjaya <br/>' + result : 'Blast successful <br/>' + result, { classname: 'bg-success text-light' });
         },
         error: err => {
           this.toastService.show(this.lang() === 'ms' ? 'Blast tidak berjaya' : 'Email blast failed: ' + err.error.message, { classname: 'bg-danger text-light' });
@@ -625,13 +539,11 @@ export class ListComponent implements OnInit, OnDestroy {
   blastEmail(tpl: any, data: any) {
     this.blastData.set(data);
     history.pushState(null, '', window.location.href);
-    this.modalService.open(tpl, { backdrop: 'static', size: 'lg' })
-      .result.then(res => this.blastList(res, undefined), () => {});
+    this.modalService.open(tpl, { backdrop: 'static', size: 'lg' }).result.then(res => this.blastList(res, undefined), () => {});
   }
 
   loadTemplate(template: any) {
     this.blastData.set(template);
-    this.cdr.detectChanges();
   }
 
   deleteEntry(id: number) {
@@ -663,10 +575,7 @@ export class ListComponent implements OnInit, OnDestroy {
     this.inPopType.set(type);
     this.inPopFacet.set(facet);
     this.inPopFormId.set(formId);
-    if (params) {
-      params.entryId = entryId;
-      this.inPopParams.set(params);
-    }
+    if (params) { params.entryId = entryId; this.inPopParams.set(params); }
 
     history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static', size: 'lg' })
@@ -677,24 +586,20 @@ export class ListComponent implements OnInit, OnDestroy {
     if (inpop) {
       this.inPop(content, entryId, formId, type, facet, params);
     } else {
-      const navigationExtras: NavigationExtras = {
-        queryParams: deepMerge({ entryId: entryId }, params)
-      };
-      this.router.navigate([this.preurl + url], navigationExtras);
+      this.router.navigate([this.preurl + url], { queryParams: deepMerge({ entryId: entryId }, params) });
       this.modalService.dismissAll();
     }
   }
 
-  deepMerge = deepMerge;
   actionUrl = signal<string>('');
   actionTitle = signal<string>('');
+  deepMerge = deepMerge;
 
   openUrl(content: any, url: string, title: string) {
     this.actionUrl.set(url);
     this.actionTitle.set(title);
     history.pushState(null, '', window.location.href);
-    this.modalService.open(content, { backdrop: 'static', size: 'lg', windowClass: 'browser-window' })
-      .result.then(() => {}, () => {});
+    this.modalService.open(content, { backdrop: 'static', size: 'lg', windowClass: 'browser-window' }).result.then(() => {}, () => {});
   }
 
   cancelEntry(id: number) {
@@ -716,19 +621,16 @@ export class ListComponent implements OnInit, OnDestroy {
 
   getLookupInFilter() {
     this.dataset()?.filters?.forEach((f: any) => {
-      const ds = this.form()[f.root]?.items[f.code]?.dataSource;
-      const dsInit = this.form()[f.root]?.items[f.code]?.dataSourceInit;
-      const type = this.form()[f.root]?.items[f.code]?.type;
-
-      if (ds) {
-        this.lookupKey[f.code] = { ds, type };
+      const fieldData = this.form()[f.root]?.items[f.code];
+      if (fieldData?.dataSource) {
+        this.lookupKey[f.code] = { ds: fieldData.dataSource, type: fieldData.type };
         let param = null;
         try {
-          param = new Function('$user$', 'return ' + dsInit)(this.user());
+          param = fieldData.dataSourceInit ? new Function('$user$', 'return ' + fieldData.dataSourceInit)(this.user()) : null;
         } catch (e) {
           this.logService.log(`{list-${f.code}-dataSourceInit}-${e}`);
         }
-        this._getLookup(f.code, dsInit ? param : null);
+        this._getLookup(f.code, param);
       }
     });
   }
@@ -737,12 +639,7 @@ export class ListComponent implements OnInit, OnDestroy {
     if (code) {
       this._getLookupObs(code, param, cb, err)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: res => {
-            this.lookup[code] = res;
-            this.cdr.detectChanges();
-          }
-        });
+        .subscribe({ next: res => { this.lookup[code] = res; this.cdr.detectChanges(); } });
     }
   };
 
@@ -758,27 +655,18 @@ export class ListComponent implements OnInit, OnDestroy {
         .pipe(tap({ next: cb, error: err }));
     } else {
       this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param)
-        .pipe(
-          tap({ next: cb, error: err }),
-          map((res: any) => res.content)
-        );
+        .pipe(tap({ next: cb, error: err }), map((res: any) => res.content));
     }
     return this.lookupDataObs[cacheId];
   }
 
   getVal(field: any, entry: any, data: any) {
-    let value = '';
-    if (field) {
-      value = data ? data[field.code] : null;
-      if (field.type === 'eval' && value == null && field.f) {
-        try {
-          value = this._eval(entry, data, field.f);
-        } catch (e) {
-          this.logService.log(`{list-${field.code}-f}-${e}`);
-        }
-      }
+    let value = field && data ? data[field.code] : null;
+    if (field?.type === 'eval' && value == null && field.f) {
+      try { value = this._eval(entry, data, field.f); } 
+      catch (e) { this.logService.log(`{list-${field.code}-f}-${e}`); }
     }
-    return value;
+    return value || '';
   }
 
   filtersData = signal<any>({});
@@ -788,38 +676,20 @@ export class ListComponent implements OnInit, OnDestroy {
     this.filtersData.set({ ...data });
     history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
-      .result.then(res => {
-        this.filtersData.set({ ...res });
-        this.getEntryList(1);
-      }, () => {});
+      .result.then(res => { this.filtersData.set({ ...res }); this.getEntryList(1); }, () => {});
   }
 
-  // filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object);
-  // filterSize = computed(() => Object.keys(this.filtersData()).length);
-
   filterIsEmpty = computed(() => {
-    const isDataEmpty = Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object;
-    return isDataEmpty && !this.hasActiveStatusFilter();
+    return Object.keys(this.filtersData()).length === 0 && !this.hasActiveStatusFilter();
   });
 
-  filterSize = computed(() => {
-    const dataSize = Object.keys(this.filtersData()).length;
-    // Add 1 to the badge count if any status filter is active
-    const statusSize = this.hasActiveStatusFilter() ? 1 : 0;
-    
-    return dataSize + statusSize;
-  });
-
+  filterSize = computed(() => Object.keys(this.filtersData()).length + (this.hasActiveStatusFilter() ? 1 : 0));
 
   getAsList = splitAsList;
 
   hasActiveStatusFilter(): boolean {
     if (!this.dataset()?.x?.enableStatusFilter || !this.statusFilterForm) return false;
-
-    // Simply check if any status inside any tier has been explicitly set to `false`
-    return Object.values(this.statusFilterForm).some((tier: any) => 
-      Object.values(tier).includes(false)
-    );
+    return Object.values(this.statusFilterForm).some((tier: any) => Object.values(tier).includes(false));
   }
 
   compileTpl(html: string, data?: any) {
@@ -827,35 +697,24 @@ export class ListComponent implements OnInit, OnDestroy {
     const obj = {
       $user$: this.user(),
       $conf$: this.appConfig,
-      $: {}, $_: {}, $prev$: {},
-      $base$: this.base,
-      $baseUrl$: this.baseUrl,
-      $baseApi$: this.baseApi,
+      $: {}, $_: {},$prev$: {},
+      $base$: this.base, 
+      $baseUrl$: this.baseUrl, 
+      $baseApi$: this.baseApi, 
       $this$: this._this,
       $param$: this._param,
       $token$: this.accessToken,
-      ...data
-    };
+       ...data
+    };      
+    
+    obj.$$_ = obj.$_?.approval || {};
+    obj.$$ = {};     
+    Object.keys(obj.$$_).forEach(k => {
+       obj.$$[k] = obj.$$_[k]?.data || {}; 
+    });
 
-    // AUTO-MAP: High performance extraction of approval data
-    if (obj.$_ && obj.$_.approval) {
-      obj.$$_ = obj.$_.approval;
-      obj.$$ = {};
-      
-      // A raw for-in loop is significantly faster than Object.keys().forEach()
-      for (const key in obj.$_.approval) {
-        obj.$$[key] = obj.$_.approval[key]?.data || {};
-      }
-    } else {
-      obj.$$_ = {};
-      obj.$$ = {};
-    }
-
-    try {
-      f = compileTpl(html, obj, this.scopeId());
-    } catch (e) {
-      this.logService.log(`{list-${this.dataset()?.title}-compiletpl}-${e}`);
-    }
+    try { f = compileTpl(html, obj, this.scopeId()); } 
+    catch (e) { this.logService.log(`{list}-${e}`); }
     return f;
   }
 
@@ -890,13 +749,10 @@ export class ListComponent implements OnInit, OnDestroy {
     const split = rootDotCode.split('.');
     const field = this.form()[split[0]]?.items?.[split[1]];
 
-    if (['select', 'radio'].includes(field?.type)) {
-      fieldPath += '.name';
-    } else if (['modelPicker'].includes(field?.type)) {
-      fieldPath += '.' + field?.bindLabel;
-    } else if (['date'].includes(field?.type)) {
-      fieldPath += `|date:${field.format || 'yyyy-MM-dd'}:'':${this.angularLocale()}`;
-    }
+    if (['select', 'radio'].includes(field?.type)) fieldPath += '.name';
+    else if (field?.type === 'modelPicker') fieldPath += '.' + field?.bindLabel;
+    else if (field?.type === 'date') fieldPath += `|date:${field.format || 'yyyy-MM-dd'}:'':${this.angularLocale()}`;
+    
     return fieldPath;
   }
 
@@ -907,11 +763,7 @@ export class ListComponent implements OnInit, OnDestroy {
   checkAllEntry(checked: boolean) {
     this.selectedEntries.update(current => {
       const newSelection = { ...current };
-      if (checked) {
-        this.entryList().forEach(e => (newSelection[e.id] = e));
-      } else {
-        this.entryList().forEach(e => delete newSelection[e.id]);
-      }
+      this.entryList().forEach(e => checked ? newSelection[e.id] = e : delete newSelection[e.id]);
       return newSelection;
     });
   }
@@ -919,16 +771,13 @@ export class ListComponent implements OnInit, OnDestroy {
   toggleSelect(i: any) {
     this.selectedEntries.update(current => {
       const newSelection = { ...current };
-      if (newSelection[i.id]) {
-        delete newSelection[i.id];
-      } else {
-        newSelection[i.id] = i;
-      }
+      newSelection[i.id] ? delete newSelection[i.id] : newSelection[i.id] = i;
       return newSelection;
     });
   }
 
   checkAllInput = signal<boolean>(false);
+  checkSelect = (i: any) => !!this.selectedEntries()[i.id];
 
   bulkRemoveEntries() {
     const selectedKeys = Object.keys(this.selectedEntries()).map(Number);
@@ -941,18 +790,16 @@ export class ListComponent implements OnInit, OnDestroy {
           next: () => {
             this.selectedEntries.set({});
             this.checkAllInput.set(false);
-
             const newPage = (this.numberOfElements() === selectedKeys.length && this.pageNumber() === this.entryPages()) ? this.pageNumber() - 1 : this.pageNumber();
             this.pageNumber.set(Math.max(1, newPage));
             this.getEntryList(this.pageNumber());
             this.toastService.show(isMs ? 'Entri berjaya dibuang' : 'Entries removed successfully', { classname: 'bg-success text-light' });
+          },
+          error: (err) =>{
+            this.toastService.show(isMs?'Entry tidak berjaya dibuang': 'Entries removal failed', {classname:'bg-danger text-light'})
           }
         });
     }
-  }
-
-  checkSelect(i: any) {
-    return !!this.selectedEntries()[i.id];
   }
 
   bulkEmail(content: any, data: any) {
@@ -973,39 +820,26 @@ export class ListComponent implements OnInit, OnDestroy {
     }
   }
 
-  bulkEvalRun(f: string) {
-    this._evalRun({}, f, true);
-  }
+  bulkEvalRun(f: string) { this._evalRun({}, f, true); }
 
   bulkCancelEntry() {
     const isMs = this.lang() === 'ms';
     if (!confirm(isMs ? 'Batalkan semua entri?' : 'Cancel selected entry submission?')) return;
 
-    const list: Observable<any>[] = [];
-    const entriesToCancel = Object.values(this.selectedEntries());
-
-    entriesToCancel.forEach((e: any) => {
-      if (e.currentStatus !== 'drafted') {
-        const cancelReq = this.entryService.cancel(e.id, this.user().email).pipe(
-          catchError(err => {
-            console.error(`Failed to cancel entry ${e.id}`, err);
-            return of(null);
-          })
-        );
-        list.push(cancelReq);
-      }
-    });
-
-    if (list.length === 0) {
+    const entriesToCancel = Object.values(this.selectedEntries()).filter((e: any) => e.currentStatus !== 'drafted');
+    
+    if (!entriesToCancel.length) {
       this.toastService.show(isMs ? 'Tiada entri untuk dibatalkan' : 'No entries to cancel.', { classname: 'bg-warning text-dark' });
       return;
     }
 
-    forkJoin(list)
+    const requests = entriesToCancel.map((e: any) => this.entryService.cancel(e.id, this.user().email).pipe(catchError(() => of(null))));
+
+    forkJoin(requests)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: results => {
-          const successCount = results.filter(res => res !== null).length;
+          const successCount = results.filter(r => r !== null).length;
           const failCount = results.length - successCount;
 
           if (successCount > 0) {
@@ -1021,6 +855,7 @@ export class ListComponent implements OnInit, OnDestroy {
               { classname: 'bg-danger text-light' }
             );
           }
+          
           this.selectedEntries.set({});
           this.getEntryList(this.pageNumber());
         },
@@ -1031,21 +866,26 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   private evalCache = new Map<string, Function>();
+  
   _evalRun = (entry: any, f: string, bulk: boolean) => {
     if (!f) return undefined;
     let fn = this.evalCache.get(f);
     if (!fn) {
-      // Added '$$_' and '$$' to the arguments
-      fn = new Function('$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$http$', '$post$', '$endpoint$', '$submit$', '$el$', '$form$', '$this$', '$loadjs$', '$digest$', '$param$', '$log$', '$toast$', '$update$', '$updateLookup$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$live$', '$token$', '$merge$', '$web$', '$bulk$', `return ${f}`);
+      fn = new Function(...this.EVAL_PARAMS, `return ${f}`);
       this.evalCache.set(f, fn);
     }
     
-    // Fast map approval data
     const $$_ = entry?.approval || {};
-    const $$: any = {};
-    for (const key in $$_) { $$[key] = $$_[key]?.data || {}; }
+    const $$: any = {};     Object.keys($$_).forEach(k => { $$[k] =$$_[k]?.data || {}; });
 
-    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, $$_, $$, this.selectedEntries(), this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, this.form() && this.form().items, this.form(), this._this, this.loadScript, this.$digest$, this._param, this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), this.accessToken, deepMerge, this.runService.web, bulk);
+    return fn(
+      this.runService.$app(), entry, entry?.data, entry?.prev, $$_,$$, this.selectedEntries(), 
+      this.user(), this.appConfig, this.httpGet, this.httpPost, this.endpointGet, this.submit, 
+      this.form()?.items, this.form(), this._this, this.loadScript, this.$digest$, this._param, 
+      this.log, this.$toast$, this.updateField, this.updateLookup, this.base, this.baseUrl, 
+      this.baseApi, this.lookup, dayjs, ServerDate, this.runService?.$live$(this.liveSubscription, this.$digest$), 
+      this.accessToken, deepMerge, this.runService.web, bulk
+    );
   };
 
   private preCache = new Map<string, Function>();
@@ -1053,52 +893,37 @@ export class ListComponent implements OnInit, OnDestroy {
     if (!f) return true;
     let fn = this.preCache.get(f);
     if (!fn) {
-      // Added '$$_' and '$$' to the arguments
-      fn = new Function('$app$', '$_', '$', '$prev$', '$$_', '$$', '$selected$', '$user$', '$conf$', '$this$', '$param$', '$log$', '$base$', '$baseUrl$', '$baseApi$', '$lookupList$', 'dayjs', 'ServerDate', '$token$', '$bulk$', `return ${f}`);
+      fn = new Function(...this.PRE_PARAMS, `return ${f}`);
       this.preCache.set(f, fn);
     }
 
-    // Fast map approval data
     const $$_ = entry?.approval || {};
-    const $$: any = {};
-    for (const key in $$_) { $$[key] = $$_[key]?.data || {}; }
+    const $$: any = {};     Object.keys($$_).forEach(k => { $$[k] =$$_[k]?.data || {}; });
 
-    return fn(this.runService.$app(), entry, entry?.data, entry?.prev, $$_, $$, this.selectedEntries(), this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk);
+    return fn(
+      this.runService.$app(), entry, entry?.data, entry?.prev, $$_,$$, this.selectedEntries(), 
+      this.user(), this.appConfig, this._this, this._param, this.log, this.base, this.baseUrl, 
+      this.baseApi, this.lookup, dayjs, ServerDate, this.accessToken, bulk
+    );
   };
 
   _eval = (data: any, entry: any, v: string) => this._evalRun(entry, v, false);
 
   preCheck(entry: any, f: string, bulk: boolean) {
-    let res = undefined;
-    try {
-      res = this._pre(entry, f, bulk);
-    } catch (e) {
-      this.logService.log(`{list}-${e}`);
-    }
-    return !f || res;
+    try { return !f || this._pre(entry, f, bulk); } 
+    catch (e) { this.logService.log(`{list}-${e}`); return true; }
   }
 
   hasVisibleActions = computed(() => {
     if (!this.dataset()?.showAction) return false;
-    const entries = this.entryList() || [];
-    const inline = this.actionsInline || [];
-    const dropdown = this.actionsDropdown || [];
-
-    for (const entry of entries) {
-      for (const ac of inline) {
-        if (entry._actionVisible?.[ac.id]) return true;
-      }
-      for (const ac of dropdown) {
-        if (entry._actionVisible?.[ac.id]) return true;
-      }
-    }
-    return false;
+    return (this.entryList() || []).some(entry => 
+      this.actionsInline.some(ac => entry._actionVisible?.[ac.id]) ||
+      this.actionsDropdown.some(ac => entry._actionVisible?.[ac.id])
+    );
   });
 
   isActionOfflineDisabled(actionType: string): boolean {
-    if (!this.offline()) return false;
-    const offlineRestricted = ['approve', 'screen', 'prev-screen', 'prev', 'extend', 'facet', 'prev-facet', 'prev-prev', 'url', 'function', 'retract', 'delete'];
-    return offlineRestricted.includes(actionType);
+    return this.offline() && ['approve', 'screen', 'prev-screen', 'prev', 'extend', 'facet', 'prev-facet', 'prev-prev', 'url', 'function', 'retract', 'delete'].includes(actionType);
   }
 
   executeRowAction(ac: any, i: any, inPopTpl: any, openUrlTpl: any) {
@@ -1108,62 +933,34 @@ export class ListComponent implements OnInit, OnDestroy {
     const fPrev = this.form()?.prev;
     const evalParams = this._eval(i.data, i, ac.params);
 
-    switch (ac.action) {
-      case 'view':
-        this.runAction('/form/' + fData?.id + '/' + ac.action, ac.inpop, inPopTpl, i.id, fData?.id, 'view', ac.action, evalParams);
-        break;
-      case 'view-single':
-        this.runAction('/form/' + ac.next + '/' + ac.action, ac.inpop, inPopTpl, i.id, ac.next, 'view', ac.action, evalParams);
-        break;
-      case 'prev-view':
-        this.runAction('/form/' + fPrev?.id + '/view', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'view', 'view', evalParams);
-        break;
-      case 'edit':
-        this.runAction('/form/' + fData?.id + '/edit', ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.action, evalParams);
-        break;
-      case 'edit-single':
-        this.runAction('/form/' + ac.next + '/edit-single', ac.inpop, inPopTpl, i.id, ac.next, 'form', ac.action, evalParams);
-        break;
-      case 'prev-edit':
-        this.runAction('/form/' + fPrev?.id + '/edit', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', 'edit', evalParams);
-        break;
-      case 'approve':
-        this.runAction('/form/' + fData?.id + '/view', ac.inpop, inPopTpl, i.id, fData?.id, 'approve', 'view', evalParams);
-        break;
-      case 'screen':
-        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.id, ac.next, 'screen', 'screen', evalParams);
-        break;
-      case 'prev-screen':
-        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'screen', 'screen', evalParams);
-        break;
-      case 'prev':
-        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'prev', evalParams);
-        break;
-      case 'extend':
-        this.runAction('/form/' + ac.next + '/edit', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'edit', evalParams);
-        break;
-      case 'facet':
-        this.runAction('/form/' + fData?.id + '/' + ac.next, ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.next, evalParams);
-        break;
-      case 'prev-facet':
-        this.runAction('/form/' + fPrev?.id + '/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', ac.next, evalParams);
-        break;
-      case 'prev-prev':
-        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'form', 'prev', evalParams);
-        break;
-      case 'url':
-        const url = this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev });
-        this.openUrl(openUrlTpl, url, ac.label);
-        break;
-      case 'function':
-        this._evalRun(i, ac.f, false);
-        break;
-      case 'retract':
-        if (i.currentStatus !== 'drafted') this.cancelEntry(i.id);
-        break;
-      case 'delete':
-        this.deleteEntry(i.id);
-        break;
+    const actionMap: Record<string, any> = {
+      'view': [fData?.id, 'view', ac.action, fData?.id],
+      'view-single': [ac.next, 'view', ac.action, ac.next],
+      'prev-view': [fPrev?.id, 'view', 'view', fPrev?.id, i.prev?.$id],
+      'edit': [fData?.id, 'form', ac.action, fData?.id],
+      'edit-single': [ac.next, 'form', ac.action, ac.next],
+      'prev-edit': [fPrev?.id, 'form', 'edit', fPrev?.id, i.prev?.$id],
+      'approve': [fData?.id, 'approve', 'view', fData?.id],
+      'screen': [ac.next, 'screen', 'screen', ac.next],
+      'prev-screen': [ac.next, 'screen', 'screen', ac.next, i.prev?.$id],
+      'prev': [ac.next, 'form', 'prev', ac.next],
+      'extend': [ac.next, 'form', 'edit', ac.next],
+      'facet': [fData?.id, 'form', ac.next, fData?.id],
+      'prev-facet': [fPrev?.id, 'form', ac.next, fPrev?.id, i.prev?.$id],
+      'prev-prev': [ac.next, 'form', 'prev', ac.next, i.prev?.$id]
+    };
+
+    if (actionMap[ac.action]) {
+      const [pathId, type, facet, formId, overrideEntryId] = actionMap[ac.action];
+      this.runAction(`/form/${pathId}/${facet}`, ac.inpop, inPopTpl, overrideEntryId || i.id, formId, type, facet, evalParams);
+    } else if (ac.action === 'url') {
+      this.openUrl(openUrlTpl, this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev }), ac.label);
+    } else if (ac.action === 'function') {
+      this._evalRun(i, ac.f, false);
+    } else if (ac.action === 'retract' && i.currentStatus !== 'drafted') {
+      this.cancelEntry(i.id);
+    } else if (ac.action === 'delete') {
+      this.deleteEntry(i.id);
     }
   }
 
@@ -1182,12 +979,9 @@ export class ListComponent implements OnInit, OnDestroy {
   $toast$ = (content: any, opt: any) => this.toastService.show(content, opt);
 
   updateField = (entryId: number, value: any, callback?: any, error?: any) => {
-    return lastValueFrom(
-      this.entryService.updateField(entryId, value, this.dataset()?.appId).pipe(
-        tap({ next: callback, error }),
-        tap(() => this.getEntryList(this.pageNumber()))
-      )
-    );
+    return lastValueFrom(this.entryService.updateField(entryId, value, this.dataset()?.appId).pipe(
+      tap({ next: callback, error }), tap(() => this.getEntryList(this.pageNumber()))
+    ));
   };
 
   httpGet = (url: string, callback?: any, error?: any) => lastValueFrom(this.runService.httpGet(url, callback, error));
@@ -1195,11 +989,7 @@ export class ListComponent implements OnInit, OnDestroy {
   endpointGet = (code: string, params: any, callback?: any, error?: any) => lastValueFrom(this.runService.endpointGet(code, this.dataset().appId, params, callback, error));
 
   updateLookup = (entryId: number, value: any, callback?: any, error?: any) => {
-    return lastValueFrom(
-      this.entryService.updateLookup(entryId, value, this.dataset()?.appId).pipe(
-        tap({ next: callback, error })
-      )
-    );
+    return lastValueFrom(this.entryService.updateLookup(entryId, value, this.dataset()?.appId).pipe(tap({ next: callback, error })));
   };
 
   submit = (entry: any, resubmit: boolean) => {
@@ -1208,11 +998,8 @@ export class ListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: res => {
           if (this.form().onSubmit) {
-            try {
-              this._evalRun(entry.data, this.form()['data'].onSubmit, false);
-            } catch (e) {
-              this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`);
-            }
+            try { this._evalRun(entry.data, this.form()['data'].onSubmit, false); } 
+            catch (e) { this.logService.log(`{form-${this.form().title}-onSubmit}-${e}`); }
           }
           entry = deepMerge(entry, res);
           this.toastService.show(this.lang() === 'ms' ? 'Entri telah dihantar' : 'Entry submitted successfully', { classname: 'bg-success text-light' });
@@ -1224,81 +1011,19 @@ export class ListComponent implements OnInit, OnDestroy {
   };
 
   inPopTitle = signal<string>('');
-  formLoaded(form: any) {
-    this.inPopTitle.set(form?.title || 'Form');
-  }
-
-  screenLoaded(screen: any) {
-    this.inPopTitle.set(screen?.title);
-  }
-
-  convertStatusToDisplay(status, form, root) {
-    var statusFilterForm: any = {}
-    // var editDatasetStatusFilterList = {};
-    // convert { "121":"submitted,approved"} to {"121":{submitted:true, approved:true}}
-    statusFilterForm[-1] = {};
-    var draftedFilter = (status && status[-1]) ? status[-1].split(",") : [];
-    draftedFilter.forEach(element => {
-      statusFilterForm[-1][element] = true;
-    });
-    form[root] && form[root].tiers.forEach(t => {
-      statusFilterForm[t.id] = {};
-      var splittedFilter = (status && status[t.id]) ? status[t.id].split(",") : [];
-      splittedFilter.forEach(element => {
-        // only apply action specified in the tier or resubmitted or if always approve is enabled for always_approve
-        if ((t.actions[element] || element == 'resubmitted') || (t.alwaysApprove && element == 'always_approve')) {
-          statusFilterForm[t.id][element] = true;
-        }
-      });
-    });
-    return statusFilterForm;
-  }
-
-  convertDisplayToStatus(statusFilterList) {
-    var statusFilter = {};
-    var draftedArrays = [];
-    for (var k in statusFilterList[-1]) {
-      if (statusFilterList[-1][k] === true) {
-        draftedArrays.push(k);
-      }
-    }
-    statusFilter[-1] = draftedArrays.join(",");
-    // for each tier
-    Object.keys(statusFilterList).forEach(k => {
-      var statusFilterArrays = [];
-      // for each {approved:true, submitted:true, etc}
-      for (var k2 in statusFilterList[k]) {
-        if (statusFilterList[k][k2] === true) {
-          statusFilterArrays.push(k2);
-        }
-      }
-      statusFilter[k] = statusFilterArrays.join(",");
-    });
-    return statusFilter;
-  }
+  formLoaded(form: any) { this.inPopTitle.set(form?.title || 'Form'); }
+  screenLoaded(screen: any) { this.inPopTitle.set(screen?.title); }
 
   fclose() {}
 
   ngOnDestroy() {
-    // 1. Clean up live subscriptions
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key]?.unsubscribe());
 
-    // 2. Remove scoped global window property safely
     if (this.registeredScopeId) {
       const key = '_this_' + this.registeredScopeId;
-      if (!Reflect.deleteProperty(window, key)) {
-        (window as any)[key] = undefined;
-      }
+      if (!Reflect.deleteProperty(window, key)) (window as any)[key] = undefined;
     }
 
-    // 3. Clear proxy target keys to release memory
-    if (this._this) {
-      Object.keys(this._this).forEach(key => delete this._this[key]);
-    }
-
-    // 3. Cleanup
-    // if (this.mediaQueryList) {
-    //   this.mediaQueryList.removeEventListener('change', this.mediaQueryListener);
-    // }
+    if (this._this) Object.keys(this._this).forEach(key => delete this._this[key]);
   }
 }
