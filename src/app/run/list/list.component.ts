@@ -936,6 +936,44 @@ export class ListComponent implements OnInit, OnDestroy {
     return this.offline() && ['approve', 'screen', 'prev-screen', 'prev', 'extend', 'facet', 'prev-facet', 'prev-prev', 'url', 'function', 'retract', 'delete'].includes(actionType);
   }
 
+  // executeRowAction(ac: any, i: any, inPopTpl: any, openUrlTpl: any) {
+  //   if (this.isActionOfflineDisabled(ac.action)) return;
+
+  //   const fData = this.form()?.data;
+  //   const fPrev = this.form()?.prev;
+  //   const evalParams = this._eval(i.data, i, ac.params);
+
+  //   const actionMap: Record<string, any> = {
+  //     'view': [fData?.id, 'view', ac.action, fData?.id],
+  //     'view-single': [ac.next, 'view', ac.action, ac.next],
+  //     'prev-view': [fPrev?.id, 'view', 'view', fPrev?.id, i.prev?.$id],
+  //     'edit': [fData?.id, 'form', ac.action, fData?.id],
+  //     'edit-single': [ac.next, 'form', ac.action, ac.next],
+  //     'prev-edit': [fPrev?.id, 'form', 'edit', fPrev?.id, i.prev?.$id],
+  //     'approve': [fData?.id, 'approve', 'view', fData?.id],
+  //     'screen': [ac.next, 'screen', 'screen', ac.next],
+  //     'prev-screen': [ac.next, 'screen', 'screen', ac.next, i.prev?.$id],
+  //     'prev': [ac.next, 'form', 'prev', ac.next],
+  //     'extend': [ac.next, 'form', 'edit', ac.next],
+  //     'facet': [fData?.id, 'form', ac.next, fData?.id],
+  //     'prev-facet': [fPrev?.id, 'form', ac.next, fPrev?.id, i.prev?.$id],
+  //     'prev-prev': [ac.next, 'form', 'prev', ac.next, i.prev?.$id]
+  //   };
+
+  //   if (actionMap[ac.action]) {
+  //     const [pathId, type, facet, formId, overrideEntryId] = actionMap[ac.action];
+  //     this.runAction(`/form/${pathId}/${facet}`, ac.inpop, inPopTpl, overrideEntryId || i.id, formId, type, facet, evalParams);
+  //   } else if (ac.action === 'url') {
+  //     this.openUrl(openUrlTpl, this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev }), ac.label);
+  //   } else if (ac.action === 'function') {
+  //     this._evalRun(i, ac.f, false);
+  //   } else if (ac.action === 'retract' && i.currentStatus !== 'drafted') {
+  //     this.cancelEntry(i.id);
+  //   } else if (ac.action === 'delete') {
+  //     this.deleteEntry(i.id);
+  //   }
+  // }
+  
   executeRowAction(ac: any, i: any, inPopTpl: any, openUrlTpl: any) {
     if (this.isActionOfflineDisabled(ac.action)) return;
 
@@ -943,34 +981,62 @@ export class ListComponent implements OnInit, OnDestroy {
     const fPrev = this.form()?.prev;
     const evalParams = this._eval(i.data, i, ac.params);
 
-    const actionMap: Record<string, any> = {
-      'view': [fData?.id, 'view', ac.action, fData?.id],
-      'view-single': [ac.next, 'view', ac.action, ac.next],
-      'prev-view': [fPrev?.id, 'view', 'view', fPrev?.id, i.prev?.$id],
-      'edit': [fData?.id, 'form', ac.action, fData?.id],
-      'edit-single': [ac.next, 'form', ac.action, ac.next],
-      'prev-edit': [fPrev?.id, 'form', 'edit', fPrev?.id, i.prev?.$id],
-      'approve': [fData?.id, 'approve', 'view', fData?.id],
-      'screen': [ac.next, 'screen', 'screen', ac.next],
-      'prev-screen': [ac.next, 'screen', 'screen', ac.next, i.prev?.$id],
-      'prev': [ac.next, 'form', 'prev', ac.next],
-      'extend': [ac.next, 'form', 'edit', ac.next],
-      'facet': [fData?.id, 'form', ac.next, fData?.id],
-      'prev-facet': [fPrev?.id, 'form', ac.next, fPrev?.id, i.prev?.$id],
-      'prev-prev': [ac.next, 'form', 'prev', ac.next, i.prev?.$id]
-    };
-
-    if (actionMap[ac.action]) {
-      const [pathId, type, facet, formId, overrideEntryId] = actionMap[ac.action];
-      this.runAction(`/form/${pathId}/${facet}`, ac.inpop, inPopTpl, overrideEntryId || i.id, formId, type, facet, evalParams);
-    } else if (ac.action === 'url') {
-      this.openUrl(openUrlTpl, this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev }), ac.label);
-    } else if (ac.action === 'function') {
-      this._evalRun(i, ac.f, false);
-    } else if (ac.action === 'retract' && i.currentStatus !== 'drafted') {
-      this.cancelEntry(i.id);
-    } else if (ac.action === 'delete') {
-      this.deleteEntry(i.id);
+    switch (ac.action) {
+      case 'view':
+        this.runAction('/form/' + fData?.id + '/' + ac.action, ac.inpop, inPopTpl, i.id, fData?.id, 'view', ac.action, evalParams);
+        break;
+      case 'view-single':
+        this.runAction('/form/' + ac.next + '/' + ac.action, ac.inpop, inPopTpl, i.id, ac.next, 'view', ac.action, evalParams);
+        break;
+      case 'prev-view':
+        this.runAction('/form/' + fPrev?.id + '/view', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'view', 'view', evalParams);
+        break;
+      case 'edit':
+        this.runAction('/form/' + fData?.id + '/edit', ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.action, evalParams);
+        break;
+      case 'edit-single':
+        this.runAction('/form/' + ac.next + '/edit-single', ac.inpop, inPopTpl, i.id, ac.next, 'form', ac.action, evalParams);
+        break;
+      case 'prev-edit':
+        this.runAction('/form/' + fPrev?.id + '/edit', ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', 'edit', evalParams);
+        break;
+      case 'approve':
+        this.runAction('/form/' + fData?.id + '/view', ac.inpop, inPopTpl, i.id, fData?.id, 'approve', 'view', evalParams);
+        break;
+      case 'screen':
+        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.id, ac.next, 'screen', 'screen', evalParams);
+        break;
+      case 'prev-screen':
+        this.runAction('/screen/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'screen', 'screen', evalParams);
+        break;
+      case 'prev':
+        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'prev', evalParams);
+        break;
+      case 'extend':
+        this.runAction('/form/' + ac.next + '/edit', ac.inpop, inPopTpl, i.id, ac.next, 'form', 'edit', evalParams);
+        break;
+      case 'facet':
+        this.runAction('/form/' + fData?.id + '/' + ac.next, ac.inpop, inPopTpl, i.id, fData?.id, 'form', ac.next, evalParams);
+        break;
+      case 'prev-facet':
+        this.runAction('/form/' + fPrev?.id + '/' + ac.next, ac.inpop, inPopTpl, i.prev?.$id, fPrev?.id, 'form', ac.next, evalParams);
+        break;
+      case 'prev-prev':
+        this.runAction('/form/' + ac.next + '/prev', ac.inpop, inPopTpl, i.prev?.$id, ac.next, 'form', 'prev', evalParams);
+        break;
+      case 'url':
+        const url = this.compileTpl(ac.url, { $: i.data, $_: i, $prev$: i?.prev });
+        this.openUrl(openUrlTpl, url, ac.label);
+        break;
+      case 'function':
+        this._evalRun(i, ac.f, false);
+        break;
+      case 'retract':
+        if (i.currentStatus !== 'drafted') this.cancelEntry(i.id);
+        break;
+      case 'delete':
+        this.deleteEntry(i.id);
+        break;
     }
   }
 
