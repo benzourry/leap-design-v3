@@ -143,6 +143,7 @@ export class StartComponent implements OnInit, OnDestroy {
   appUrl: string = '';
 
   isRouting = signal<boolean>(false);
+  private isInitialNavigation = true; // initial flag after hard refresh
 
   _this = createProxy({}, () => this.cdr.markForCheck());
 
@@ -202,13 +203,28 @@ export class StartComponent implements OnInit, OnDestroy {
         
         // --- View Transitions CSS Toggling ---
         if (event instanceof NavigationStart) {
-          document.body.classList.add('vt-safe-mode');
-          this.isRouting.set(true);
+          // document.body.classList.add('vt-safe-mode');
+          // this.isRouting.set(true);
+
+
+          // 1. Skip animation entirely on hard refresh!
+          if (this.isInitialNavigation) {
+            return; 
+          }
+
+          const currentPath = this.router.url.split('?')[0];
+          const targetPath = event.url.split('?')[0];
+
+          if (currentPath !== targetPath) {
+            document.body.classList.add('vt-safe-mode');
+            this.isRouting.set(true);
+          }
         } else if (
           event instanceof NavigationEnd || 
           event instanceof NavigationCancel || 
           event instanceof NavigationError
         ) {
+          this.isInitialNavigation = false;
           // Delay dropping the class until the CSS animation completes
           setTimeout(() => this.isRouting.set(false), 300); 
         }

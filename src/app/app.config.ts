@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
               transition.finished.finally(() => {
                 document.body.classList.remove('vt-safe-mode');
               });
-            }
+            }, skipInitialTransition: true
           })
         ), 
         provideHttpClient(withInterceptorsFromDi()), 

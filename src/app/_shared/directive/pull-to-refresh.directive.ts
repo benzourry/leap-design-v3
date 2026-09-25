@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, input, output } from '@angular/core';
+import { Directive, ElementRef, HostListener, input, output, inject } from '@angular/core';
 
 @Directive({
   selector: '[appPullToRefresh]',
@@ -6,29 +6,20 @@ import { Directive, ElementRef, HostListener, input, output } from '@angular/cor
 })
 export class PullToRefreshDirective {
   onRefresh = output<void>();
-  pullDisabled = input<boolean>(false);
+  pullDisabled = input(false);
+  threshold = input(100); 
+  holdTime = input(500); 
 
+  private el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private startY = -1;
   private isPulling = false;
   private timer: any;
 
-  constructor(private el: ElementRef<HTMLElement>) {}
-
-  // Walk up the DOM tree to check if ANY ancestor container is scrolled
-  private getScrollTop(node: HTMLElement | null): number {
-    let el = node;
-    while (el && el !== document.body && el !== document.documentElement) {
-      if (el.scrollTop > 0) return el.scrollTop;
-      el = el.parentElement;
-    }
-    return window.scrollY || document.documentElement.scrollTop || 0;
-  }
-
   @HostListener('touchstart', ['$event'])
   onTouchStart(e: TouchEvent) {
     if (this.pullDisabled()) return;
-    // Only capture touch if the user is at the absolute top (scrollTop <= 0)
-    this.startY = this.getScrollTop(e.target as HTMLElement) <= 0 ? e.touches[0].clientY : -1;
+    const top = this.getScrollTop(e.target as HTMLElement);
+    this.startY = top <= 0 ? e.touches[0].clientY : -1;
   }
 
   @HostListener('touchmove', ['$event'])
@@ -36,38 +27,45 @@ export class PullToRefreshDirective {
     if (this.pullDisabled() || this.startY < 0) return;
 
     const dist = e.touches[0].clientY - this.startY;
+    if (dist <= 0) return this.reset(false); // Swiped up -> abort
 
-    // Must be pulling DOWN (dist > 0) AND still at the top
-    if (dist > 0 && this.getScrollTop(e.target as HTMLElement) <= 0) {
-      this.isPulling = true;
-      if (e.cancelable) e.preventDefault();
+    this.isPulling = true;
+    if (e.cancelable) e.preventDefault();
 
-      const el = this.el.nativeElement;
-      el.style.transition = 'none';
-      el.style.transform = `translateY(${dist * 0.4}px)`;
+    this.el.style.transition = 'none';
+    this.el.style.transform = `translateY(${dist * 0.4}px)`;
 
-      if (dist > 100 && !this.timer) {
-        this.timer = setTimeout(() => {
-          if (navigator.vibrate) navigator.vibrate(40);
-          this.onRefresh.emit();
-          this.onTouchEnd();
-        }, 500);
-      } else if (dist <= 100) {
-        this.clearTimer();
-      }
+    if (dist > this.threshold()) {
+      this.timer ??= setTimeout(() => {
+        if (navigator.vibrate) navigator.vibrate(40);
+        this.onRefresh.emit();
+        this.reset(true);
+      }, this.holdTime());
     } else {
-      // Swiping UP or container is scrolled -> release immediately for native scrolling
-      this.onTouchEnd();
+      this.clearTimer();
     }
   }
 
   @HostListener('touchend')
   @HostListener('touchcancel')
   onTouchEnd() {
-    if (this.pullDisabled()) return;
-    this.startY = -1;
+    this.reset(true);
+  }
+
+  private reset(snapUI: boolean) {
     this.clearTimer();
-    if (this.isPulling) this.resetUI();
+    this.startY = -1;
+
+    if (snapUI && this.isPulling) {
+      this.isPulling = false;
+      this.el.style.transition = 'transform 0.3s ease-out';
+      this.el.style.transform = 'translateY(0)';
+      setTimeout(() => { 
+        if (!this.isPulling) this.el.style.transform = this.el.style.transition = ''; 
+      }, 300);
+    } else {
+      this.isPulling = false;
+    }
   }
 
   private clearTimer() {
@@ -75,14 +73,12 @@ export class PullToRefreshDirective {
     this.timer = null;
   }
 
-  private resetUI() {
-    this.isPulling = false;
-    const el = this.el.nativeElement;
-    el.style.transition = 'transform 0.3s ease-out';
-    el.style.transform = 'translateY(0)';
-
-    setTimeout(() => {
-      if (!this.isPulling) el.style.transition = el.style.transform = '';
-    }, 300);
+  // Ultra-light scroll check: just looks for any parent actually scrolled down
+  private getScrollTop(node: HTMLElement | null): number {
+    while (node && node !== document.body && node !== document.documentElement) {
+      if (node.scrollTop > 0) return node.scrollTop;
+      node = node.parentElement;
+    }
+    return window.scrollY || 0;
   }
 }
