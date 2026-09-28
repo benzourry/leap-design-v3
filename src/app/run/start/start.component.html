@@ -236,7 +236,7 @@
                   <!-- UX Optimization: Visual peek handle -->
                   <div class="bottom-nav-drag-handle mx-auto mt-2 mb-1"></div>
 
-                  <div class="bottom-nav-scroll d-flex overflow-x-auto pb-2" (scroll)="onBottomNavScroll($event)">
+                  <div #bottomNavScroll class="bottom-nav-scroll d-flex overflow-x-auto pb-2" (scroll)="onBottomNavScroll($event)">
                     
                     @for (group of bottomNavGroups(); track group.id) {
                       @if (preGroup()[group.id]) {
@@ -309,6 +309,7 @@
                     <div class="bottom-nav-indicators d-flex align-items-center gap-2">
                       @for (group of bottomNavGroups(); track group.id; let i = $index) {
                         <div class="dot" 
+                             (click)="bottomNavScroll.scrollTo({ left: i * bottomNavScroll.clientWidth, behavior: 'smooth' }); $event.stopPropagation()"
                              [class.active]="activeBottomNavIndex() === i" 
                              [style.background-color]="activeBottomNavIndex() === i ? app()?.theme : null">
                           <span class="group-title">{{ group.title }}</span>

@@ -12,21 +12,45 @@ export class AuthenticationInterceptor implements HttpInterceptor {
   
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     
-    // 1. Check if the request is destined for your backend API
     const isInternalApi = req.url.indexOf(base) > -1;
-
-    // 2. Only append the token if it's an internal API AND not explicitly cleared
+    
     if (isInternalApi && !req.headers.get("clear")) {
-      if (localStorage.getItem("auth")) {
-        var authStr = atobUTF(localStorage.getItem("auth"), null);
-        var parsedAuth = JSON.parse(authStr);
-        var header = parsedAuth.accessToken ?
-          `Bearer ${parsedAuth.accessToken}` :
-          `ApiKey ${parsedAuth.apiKey}`;
-          
+      let authHeader = null;
+
+      // 1. Check if the current browser tab is in the Run/Preview environment
+      const currentUrl = window.location.href;
+      const isRunEnvironment = currentUrl.includes('/run/') || currentUrl.includes('/embed/');
+      const debugAppId = localStorage.getItem("debugAppId");
+
+      // 2. If in Run Mode, attempt to use the Simulated User Token
+      if (isRunEnvironment && debugAppId) {
+        const debugAuthStr = localStorage.getItem("d_auth-" + debugAppId);
+        if (debugAuthStr) {
+          try {
+            const parsedAuth = JSON.parse(atobUTF(debugAuthStr, null));
+            authHeader = parsedAuth.accessToken ? `Bearer ${parsedAuth.accessToken}` : `ApiKey ${parsedAuth.apiKey}`;
+          } catch (e) {
+            console.error("Failed to parse debug auth", e);
+          }
+        }
+      }
+
+      // 3. Fallback to standard Creator Auth (if not in Run Mode, or if debug auth is missing)
+      if (!authHeader && localStorage.getItem("auth")) {
+        try {
+          const authStr = atobUTF(localStorage.getItem("auth"), null);
+          const parsedAuth = JSON.parse(authStr);
+          authHeader = parsedAuth.accessToken ? `Bearer ${parsedAuth.accessToken}` : `ApiKey ${parsedAuth.apiKey}`;
+        } catch (e) {
+          console.error("Failed to parse standard auth", e);
+        }
+      }
+
+      // 4. Apply whichever token won
+      if (authHeader) {
         req = req.clone({
           setHeaders: {
-            Authorization: header
+            Authorization: authHeader
           }
         });
       }
@@ -34,13 +58,19 @@ export class AuthenticationInterceptor implements HttpInterceptor {
     
     return next.handle(req).pipe(
       tap({
-        next: (event: HttpEvent<any>) => {
-          if (event instanceof HttpResponse) {
-          }
-        }, error: (err: any) => {
-          // 3. Only logout on 401 if it was an internal API request
+        next: (event: HttpEvent<any>) => {}, 
+        error: (err: any) => {
           if (err instanceof HttpErrorResponse && err.status === 401 && isInternalApi) {
-            this.userService.logout();
+            
+            // Protect the creator: Only trigger global logout if we are NOT in the run environment
+            const currentUrl = window.location.href;
+            if (!(currentUrl.includes('/run/') || currentUrl.includes('/embed/'))) {
+              this.userService.logout();
+            } else {
+              console.warn("Debug session expired or unauthorized. Please restart 'Run As'.");
+              // Optional: You could navigate them out of the run screen here
+            }
+
           }
         }
       }));

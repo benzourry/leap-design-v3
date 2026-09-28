@@ -750,15 +750,19 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
     history.pushState(null, null, window.location.href);
 
-    return this.modalService.open(content, { backdrop: 'static', size: 'lg' })
+    const modalRef = this.modalService.open(content, { backdrop: 'static', size: 'lg' })
       .result.then(res => {
         console.log("lde: inPop result", res);
         return res;
       }, err => {
         console.log("lde: inPop dismissed", err);
-        throw err;
+        // throw err;
       }).finally(() => {
       });
+
+      this.cdr.detectChanges(); // <--- ADD THIS
+
+      return modalRef;
   }
 
   runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
@@ -1140,6 +1144,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
         this.filtersData.set({ ...res });
         this.loadDatasetEntry(this.screen().dataset, 1);
       }, res => { });
+      
+    this.cdr.detectChanges(); // <--- ADD THIS
   }
 
   readonly optTpl = viewChild<TemplateRef<any>>('showOptTpl');
@@ -1151,12 +1157,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
       windowClass: '',
       container: '#screen-' + this.screen().id
     })
-      .result.then(res => {
-      }, res => {
-        if (this.screen().type == 'qr') {
-          this.scanner().ngOnInit();
-        }
-      });
+    .result.then(res => {
+    }, res => {
+      if (this.screen().type == 'qr') {
+        this.scanner().ngOnInit();
+      }
+    });
+
+    this.cdr.detectChanges(); // <--- ADD THIS
   }
 
   filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object)

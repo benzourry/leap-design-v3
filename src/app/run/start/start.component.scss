@@ -452,6 +452,7 @@ $transition-slow: 350ms ease-in-out;
   min-height: 20px;
   
   .dot {
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -29,8 +29,7 @@
     }
 
     /* Reset background images & animations on screens */
-    .screen-content,
-    #screen-9702 {
+    .screen-content{
         background: #ffffff !important;
         background-image: none !important;
     }

@@ -183,7 +183,6 @@ export class UserService {
 
     if (!localStorage.getItem("auth")) {
       this.router.navigate(['/login']);
-      // window.location.href = OAUTH.AUTH_URI + "/" + server + "?redirect_uri=" + OAUTH.CALLBACK;
       return of();
     } else {
       var keyType, keyValue;
@@ -199,12 +198,19 @@ export class UserService {
         .pipe(
           tap({
             next: (res) => {
+              // 1. Extract and save the new simulated token
+              if (res.accessToken) {
+                const debugAuth = { accessToken: res.accessToken };
+                window.localStorage.setItem("d_auth-" + appId, btoaUTF(JSON.stringify(debugAuth), null));
+                delete res.accessToken; // Remove it from the user object
+              }
+
+              // 2. Proceed with standard debug user setup
               window.localStorage.setItem("debugAppId", String(appId));
               window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res),null));
               this.user = of(res);
-              // window.localStorage.removeItem("userexp");
             }, error: () => {
-              // window.location.href = OAUTH.AUTH_URI + "/" + server + "?redirect_uri=" + OAUTH.CALLBACK;
+              // Error handling
             }
           }), first()
         );
