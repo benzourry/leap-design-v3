@@ -228,13 +228,19 @@ export class ListComponent implements OnInit, OnDestroy {
     effect(() => {
       const startTimestamp = this.runService.$startTimestamp();
       const param = this.param();
+      const datasetReady = !!this.dataset(); //readiness check
 
-      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
+      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters()) || datasetReady) {
         this._param = param;
         this._startTimestamp = startTimestamp;
 
         if (this._param?.['$prev$.$id']) this.prevId = this._param['$prev$.$id'];
-        untracked(() => this.getEntryList(this.pageNumber(), this.sort()));
+        untracked(() => {
+          // Only fetch the list if the dataset structure has actually resolved
+          if (this.dataset()?.id) {
+            this.getEntryList(this.pageNumber(), this.sort());
+          }
+        });
       }
     });
   }
@@ -243,6 +249,15 @@ export class ListComponent implements OnInit, OnDestroy {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
+
+    // 1. Eagerly initialize params to fix the cache race condition
+    const param = this.param();
+    if (param) {
+      this._param = param;
+      if (this._param?.['$prev$.$id']) {
+        this.prevId = this._param['$prev$.$id'];
+      }
+    }
   }
 
   convertStatusToDisplay(status: any, form: any, root: string) {
@@ -349,7 +364,7 @@ export class ListComponent implements OnInit, OnDestroy {
           res.form.tiers.forEach((t: any) => (this.tiersMap[t.id] = t));
 
           this.loading.set(false); 
-          this.getEntryList(1);
+          // this.getEntryList(1);
         },
         error: () => { 
           ListComponent.datasetCache.delete(id);

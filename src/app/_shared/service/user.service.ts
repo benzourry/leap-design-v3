@@ -122,48 +122,48 @@ export class UserService {
     }
   }
 
-  getUserProd(): Observable<any> {
-    const server = localStorage.getItem('server');
-    const user = localStorage.getItem('user');
-    // const userexp = localStorage.getItem('userexp');
+  // getUserProd(): Observable<any> {
+  //   const server = localStorage.getItem('server');
+  //   const user = localStorage.getItem('user');
+  //   // const userexp = localStorage.getItem('userexp');
     
-    if (user) {
-      const userStr = atobUTF(user,null);
-      // const accessToken = this.getToken();
-      this.user = of(JSON.parse(userStr));
-      return this.user;
-    } else {
-      if (!localStorage.getItem('auth')) {
-        this.router.navigate(['/login']); 
-        //  maybe need to redirect directly so it login process directly 
-        window.location.href = `${OAUTH.AUTH_URI}/${server}?redirect_uri=${OAUTH.CALLBACK}`;
-        return of();
-      } else {
-        var keyType, keyValue;
-        var auth = this.getAuth();
-        if (auth.accessToken){
-          keyType = "access_token";
-          keyValue = auth.accessToken;
-        }else{
-          keyType = "api_key";
-          keyValue = auth.apiKey;
-        }
-        return this.http.get<any>(`${OAUTH.USER_URI}?${keyType}=${keyValue}`).pipe(
-          tap({
-            next: (res) => {
-              window.localStorage.setItem('user', btoaUTF(JSON.stringify(res),null));
-              this.user = of(res);
-              // window.localStorage.removeItem('userexp');
-            },
-            error: () => {
-              window.location.href = `${OAUTH.AUTH_URI}/${server}?redirect_uri=${OAUTH.CALLBACK}`;
-            }
-          }),
-          first()
-        );
-      }
-    }
-  }
+  //   if (user) {
+  //     const userStr = atobUTF(user,null);
+  //     // const accessToken = this.getToken();
+  //     this.user = of(JSON.parse(userStr));
+  //     return this.user;
+  //   } else {
+  //     if (!localStorage.getItem('auth')) {
+  //       this.router.navigate(['/login']); 
+  //       //  maybe need to redirect directly so it login process directly 
+  //       window.location.href = `${OAUTH.AUTH_URI}/${server}?redirect_uri=${OAUTH.CALLBACK}`;
+  //       return of();
+  //     } else {
+  //       var keyType, keyValue;
+  //       var auth = this.getAuth();
+  //       if (auth.accessToken){
+  //         keyType = "access_token";
+  //         keyValue = auth.accessToken;
+  //       }else{
+  //         keyType = "api_key";
+  //         keyValue = auth.apiKey;
+  //       }
+  //       return this.http.get<any>(`${OAUTH.USER_URI}?${keyType}=${keyValue}`).pipe(
+  //         tap({
+  //           next: (res) => {
+  //             window.localStorage.setItem('user', btoaUTF(JSON.stringify(res),null));
+  //             this.user = of(res);
+  //             // window.localStorage.removeItem('userexp');
+  //           },
+  //           error: () => {
+  //             window.location.href = `${OAUTH.AUTH_URI}/${server}?redirect_uri=${OAUTH.CALLBACK}`;
+  //           }
+  //         }),
+  //         first()
+  //       );
+  //     }
+  //   }
+  // }
 
   /**
    * Ensure get fresh userinfo with user debug endpoint
@@ -178,6 +178,45 @@ export class UserService {
     return this.getUserDebug(userObj.email, debugAppId);
   }
 
+  // getUserDebug(email: string, appId: number): Observable<any> {
+  //   let server = localStorage.getItem('server');
+
+  //   if (!localStorage.getItem("auth")) {
+  //     this.router.navigate(['/login']);
+  //     return of();
+  //   } else {
+  //     var keyType, keyValue;
+  //     var auth = this.getAuth();
+  //     if (auth.accessToken){
+  //       keyType = "access_token";
+  //       keyValue = auth.accessToken;
+  //     }else{
+  //       keyType = "api_key";
+  //       keyValue = auth.apiKey;
+  //     }
+  //     return this.http.get<any>(`${OAUTH.USER_URI_DEBUG}?email=${email}&appId=${appId}&${keyType}=${keyValue}`)
+  //       .pipe(
+  //         tap({
+  //           next: (res) => {
+  //             // 1. Extract and save the new simulated token
+  //             if (res.accessToken) {
+  //               const debugAuth = { accessToken: res.accessToken };
+  //               window.localStorage.setItem("d_auth-" + appId, btoaUTF(JSON.stringify(debugAuth), null));
+  //               delete res.accessToken; // Remove it from the user object
+  //             }
+
+  //             // 2. Proceed with standard debug user setup
+  //             window.localStorage.setItem("debugAppId", String(appId));
+  //             window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res),null));
+  //             this.user = of(res);
+  //           }, error: () => {
+  //             // Error handling
+  //           }
+  //         }), first()
+  //       );
+  //   }
+  // }
+
   getUserDebug(email: string, appId: number): Observable<any> {
     let server = localStorage.getItem('server');
 
@@ -185,6 +224,12 @@ export class UserService {
       this.router.navigate(['/login']);
       return of();
     } else {
+      
+      // 1. Save these in localStorage so the Interceptor uses them 
+      // once the user navigates into the /run/ or /embed/ environment.
+      window.localStorage.setItem("debugAppId", String(appId));
+      window.localStorage.setItem("debugEmail", email);
+
       var keyType, keyValue;
       var auth = this.getAuth();
       if (auth.accessToken){
@@ -194,20 +239,21 @@ export class UserService {
         keyType = "api_key";
         keyValue = auth.apiKey;
       }
-      return this.http.get<any>(`${OAUTH.USER_URI_DEBUG}?email=${email}&appId=${appId}&${keyType}=${keyValue}`)
+
+      // 2. We must manually attach the impersonation headers for THIS specific request,
+      // because the user hasn't been routed to /run/ yet, so the interceptor won't do it.
+      const impersonationHeaders = {
+        'X-Impersonate-User': email,
+        'X-Impersonate-App': String(appId)
+      };
+
+      // 3. Notice we changed OAUTH.USER_URI_DEBUG back to the standard OAUTH.USER_URI (/user/me)
+      return this.http.get<any>(`${OAUTH.USER_URI}?appId=${appId}&${keyType}=${keyValue}`, { headers: impersonationHeaders })
         .pipe(
           tap({
             next: (res) => {
-              // 1. Extract and save the new simulated token
-              if (res.accessToken) {
-                const debugAuth = { accessToken: res.accessToken };
-                window.localStorage.setItem("d_auth-" + appId, btoaUTF(JSON.stringify(debugAuth), null));
-                delete res.accessToken; // Remove it from the user object
-              }
-
-              // 2. Proceed with standard debug user setup
-              window.localStorage.setItem("debugAppId", String(appId));
-              window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res),null));
+              // 4. Save the simulated user profile
+              window.localStorage.setItem("user-" + appId, btoaUTF(JSON.stringify(res), null));
               this.user = of(res);
             }, error: () => {
               // Error handling

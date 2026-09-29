@@ -180,6 +180,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
           }
           
           untracked(() => {
+            // 2. Rebuild navigation/popup objects in case the entryId changed dynamically
+            // !IMPORTANT!!!
+            // Previous issue when popup the same screen, only first got param.
+            if (this.screen()) {
+              this.goObj = this.buildGo(this._entryId, true);
+              this.goObjWParam = this.buildGo(this._entryId);
+              this.popObj = this.buildPop(this._entryId, true);
+            }
+
             if (this.screen()?.dataset) {
               this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
             }
@@ -197,6 +206,26 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.baseUrl = this.runService.$baseUrl();
     this.preurl = this.runService.$preurl();
     this.accessToken = this.userService.getToken();
+
+    // 1. Eagerly initialize inputs to prevent race conditions with cached observables
+    // !IMPORTANT!!!
+    // Previous issue when popup the same screen, only first got param.
+    this._entryId = this.entryId();
+    this._screenId = this.screenId();
+
+    const param = this.param();
+    if (param) {
+      this._param = param;
+      if (this._param['$prev$.$id']) {
+        this.prevId = this._param['$prev$.$id'];
+      }
+      if (this._param['$.$id']) {
+        this._entryId = this._param['$.$id'];
+      }
+      if (this._param['entryId']) {
+        this._entryId = this._param['entryId'];
+      }
+    }
   }
 
   reloadScreenConfig() {
