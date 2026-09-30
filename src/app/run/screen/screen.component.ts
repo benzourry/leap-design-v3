@@ -117,7 +117,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
   hideTitle = input<boolean>(false);
   param = input<any>();
   closed = output<any>();
-  changed = output<any>()
+  changed = output<any>();
+  screenLoaded = output<any>();
   accessToken: string = "";
   inPopTpl = viewChild<TemplateRef<any>>('inPopTpl')
 
@@ -361,6 +362,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
           this.screen.set(res);
           this.dataset.set({});
           this.entry.set({});
+          this.screenLoaded.emit(res);
           this.loading.set(false);
 
           this.goObj = this.buildGo(this._entryId, true);
@@ -1288,6 +1290,19 @@ export class ScreenComponent implements OnInit, OnDestroy {
         )
     }
     return this.lookupDataObs[cacheId];
+  }
+
+  formLoadedFn(form: any) { 
+    // this.inPopTitle.set(form?.title || 'Form'); 
+    this.cdr.detectChanges();
+  }
+  screenLoadedFn(screen: any) { 
+    // this.inPopTitle.set(screen?.title); 
+    this.cdr.detectChanges();
+  }
+  datasetLoadedFn(screen: any) { 
+    // this.inPopTitle.set(screen?.title); 
+    this.cdr.detectChanges();
   }
 
   linkify = linkify;

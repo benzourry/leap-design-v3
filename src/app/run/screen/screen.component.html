@@ -463,6 +463,7 @@
       @defer (prefetch on idle) {
         <app-form (saved)="onSavedInit(); c($event)" (submitted)="onSavedInit(); c($event)" [param]="inPopParams()"
           (closed)="d()" [formId]="inPopFormId()" [entryId]="inPopEntryId()" [asComp]="true"
+          (formLoaded)="formLoadedFn($event)"
           [action]="inPopFacet()"></app-form>
       } @loading {
         <div class="text-center m-5">
@@ -475,6 +476,7 @@
       @defer (prefetch on idle) {
         <app-view (approved)="loadDatasetEntry(dataset(), pageNumber(), sort()); c($event)" (closed)="d()"
           [formId]="inPopFormId()" [entryId]="inPopEntryId()" [param]="inPopParams()" [asComp]="true"
+          (formLoaded)="formLoadedFn($event)"
           [action]="inPopType()"></app-view>
       } @loading {
         <div class="text-center m-5">
@@ -486,6 +488,7 @@
     @if (['screen'].includes(inPopType())) {
       @defer (prefetch on idle) {
         <app-screen (closed)="d()" [screenId]="inPopFormId()" [param]="inPopParams()" [entryId]="inPopEntryId()"
+          (screenLoaded)="screenLoadedFn($event)"
           [asComp]="true"></app-screen>
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-round btn-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
@@ -500,7 +503,10 @@
     @if (['dataset'].includes(inPopType())) {
       @defer (prefetch on idle) {
         <div style="overflow: auto;">
-          <app-list [asComp]="false" (closed)="d()" [datasetId]="inPopFormId()" [param]="inPopParams()"></app-list>
+          <app-list [asComp]="false" (closed)="d()"
+           [datasetId]="inPopFormId()"
+           (datasetLoaded)="datasetLoadedFn($event)"
+           [param]="inPopParams()"></app-list>
         </div>
       } @loading {
         <div class="text-center m-5">

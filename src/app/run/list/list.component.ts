@@ -363,6 +363,7 @@ export class ListComponent implements OnInit, OnDestroy {
           this.tiersMap = {};
           res.form.tiers.forEach((t: any) => (this.tiersMap[t.id] = t));
 
+          this.datasetLoaded.emit(res);
           this.loading.set(false); 
           // this.getEntryList(1);
         },
@@ -1106,9 +1107,15 @@ export class ListComponent implements OnInit, OnDestroy {
       });
   };
 
-  inPopTitle = signal<string>('');
-  formLoaded(form: any) { this.inPopTitle.set(form?.title || 'Form'); }
-  screenLoaded(screen: any) { this.inPopTitle.set(screen?.title); }
+  // inPopTitle = signal<string>('');
+  formLoadedFn(form: any) { 
+    // this.inPopTitle.set(form?.title || 'Form'); 
+    this.cdr.detectChanges();
+  }
+  screenLoadedFn(screen: any) { 
+    // this.inPopTitle.set(screen?.title); 
+    this.cdr.detectChanges();
+  }
 
   fclose() {}
 

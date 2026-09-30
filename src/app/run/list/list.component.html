@@ -788,7 +788,7 @@
           (updated)="getEntryList(pageNumber(), sort())"
           [param]="inPopParams()"
           (closed)="d()" [formId]="inPopFormId()!" [entryId]="inPopEntryId()!"
-          [asComp]="true" [action]="inPopFacet()!" (formLoaded)="formLoaded($event)">
+          [asComp]="true" [action]="inPopFacet()!" (formLoaded)="formLoadedFn($event)">
         </app-form>
       } @loading {
         <div class="text-center m-5"><div class="spinner-grow text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
@@ -799,7 +799,7 @@
           [formId]="inPopFormId()!" [entryId]="inPopEntryId()!"
           [param]="inPopParams()"
           [asComp]="true" [action]="inPopType()!"
-          (formLoaded)="formLoaded($event)">
+          (formLoaded)="formLoadedFn($event)">
         </app-view>
       } @loading {
         <div class="text-center m-5"><div class="spinner-grow text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>
@@ -809,7 +809,7 @@
         <app-screen (closed)="d()" [screenId]="inPopFormId()!"
           [entryId]="inPopEntryId()!" [asComp]="true" 
           [param]="inPopParams()"
-          (screenLoaded)="screenLoaded($event)">
+          (screenLoaded)="screenLoadedFn($event)">
         </app-screen>
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-round btn-outline-secondary" (click)="d()">{{lang()=='ms'?'Tutup':'Close'}}</button>
