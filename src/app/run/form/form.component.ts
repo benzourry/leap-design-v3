@@ -200,6 +200,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
       $web$: this.runService.web,
       $q$: this.$q,
       $showNav$: this.openNav,
+      $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
     };
 
 
@@ -1236,12 +1237,12 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
 
     // console.log(`Field Change: ${field.code}, isInit: ${isInit}, isInitializing: ${this.isInitializing}`);
     // if (this.isInitializing || isInit) {
-    console.log('########Compare:'+field.code,data[field.code], $event,data[field.code] == $event)
-    if (data[field.code] == $event) {
-      return; 
-    }
+    // console.log('########Compare:'+field.code,data[field.code], $event,data[field.code] == $event)
+    // if (data[field.code] == $event) {
+    //   return; 
+    // }
 
-    console.log("########Still execute:"+field.code)
+    // console.log("########Still execute:"+field.code)
 
     if ($event !== undefined) {
       this.rcognaSubject.next({ code: field.code, value: $event });

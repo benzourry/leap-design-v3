@@ -171,6 +171,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                     @defer(prefetch on idle) {
                                       <app-list [asComp]="true" (changed)="dsChanged($event, f.code)"
                                         [datasetId]="field?.dataSource"
+                                        [hideTitle]="true"
                                         [param]="preCompFilter()[f.code]"></app-list>
                                     } @loading {
                                       <div class="text-center m-5">
@@ -182,6 +183,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                   } @else if (field?.type === 'screen') {
                                     @defer(prefetch on idle) {
                                       <app-screen [asComp]="true" [screenId]="field.dataSource"
+                                        [hideTitle]="true"
                                         [param]="preCompFilter()[f.code]"></app-screen>
                                     } @loading {
                                       <div class="text-center m-5">

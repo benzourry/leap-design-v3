@@ -58,7 +58,7 @@ export const OAUTH = {
 }
 
 export const myRxStompConfig: RxStompConfig = {
-    brokerURL: 'wss://io.ireka.my/ping/ws',
+    brokerURL: 'ws://10.28.114.194:8882/ws',
     heartbeatIncoming: 0, // Typical value 0 - disabled
     heartbeatOutgoing: 20000, // Typical value 20000 - every 20 seconds
     reconnectDelay: 200,

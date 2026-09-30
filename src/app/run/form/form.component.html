@@ -288,6 +288,7 @@
                                             @defer (prefetch on idle) {
                                               <app-list [asComp]="true" (changed)="dsChanged($event, f.code)"
                                                 [datasetId]="form().items[f.code].dataSource"
+                                                [hideTitle]="true"
                                                 [param]="preCompFilter()[f.code]"></app-list>
                                             } @loading {
                                               <div class="text-center m-5">
@@ -297,6 +298,7 @@
                                           } @else {
                                             @defer (prefetch on idle) {
                                               <app-screen [asComp]="true" [screenId]="form().items[f.code].dataSource"
+                                                [hideTitle]="true"
                                                 [param]="preCompFilter()[f.code]"></app-screen>
                                             } @loading {
                                               <div class="text-center m-5">

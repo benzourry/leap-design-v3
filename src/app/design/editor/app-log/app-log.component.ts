@@ -128,21 +128,22 @@ export class AppLogComponent implements OnInit, OnDestroy {
   // IMPROVEMENT: Refactored to use forkJoin. This runs all requests in parallel 
   // and only triggers Angular change detection ONCE when they all complete.
   loadComps(appId: number) {
+    let size = 9999;
     forkJoin({
-      lambdas: this.lambdaService.getLambdaList({ appId }),
-      endpoints: this.endpointService.getEndpointList({ appId }),
-      cognas: this.cognaService.getCognaList({ appId }),
-      forms: this.formService.getListBasic({ appId }),
+      lambdas: this.lambdaService.getLambdaList({ appId,size }),
+      endpoints: this.endpointService.getEndpointList({ appId,size }),
+      cognas: this.cognaService.getCognaList({ appId,size }),
+      forms: this.formService.getListBasic({ appId,size }),
       datasets: this.datasetService.getDatasetList(appId),
-      mailers: this.mailerService.getMailerList({ appId }),
-      wallets: this.kryptaService.getWalletList({ appId }),
-      lookups: this.lookupService.getLookupList({ appId })
+      mailers: this.mailerService.getMailerList({ appId,size }),
+      wallets: this.kryptaService.getWalletList({ appId,size }),
+      lookups: this.lookupService.getLookupList({ appId,size })
     }).subscribe((results: any) => { // <--- Add ': any' right here
       this.lambdaList = results.lambdas.content || [];
       this.endpointList = results.endpoints.content || [];
       this.cognaList = results.cognas.content || [];
       this.formList = results.forms.content || [];
-      this.datasetList = results.datasets.content || [];
+      this.datasetList = results.datasets || [];
       this.mailerList = results.mailers.content || [];
       this.kryptaList = results.wallets.content || [];
       this.lookupList = results.lookups.content || [];

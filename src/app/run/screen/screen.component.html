@@ -42,13 +42,14 @@
         @let showToolbar = screen()?.showAction && ['list','map','calendar'].includes(screen()?.type);
         @let showPrint = screen()?.canPrint && !['qr','chatbot'].includes(screen()?.type);
         
-        <div [class.px-3]="!asComp()" class="print-hide text-center">
-          <div class="toolbar title print-hide m-auto mb-2 flex-wrap align-items-stretch position-relative"
-            [class.d-inline-block]="!showToolbar"
-            [class.d-flex]="showToolbar"
+        <div [class.px-3]="!asComp()" class="print-hide">
+          <div class="toolbar title d-flex print-hide m-auto mb-2 flex-wrap align-items-stretch position-relative"
+
             [class.input-group-sm]="asComp()" 
-            [class.justify-content-center]="!screen()?.showAction"
             [class.limit-width]="!screen()?.wide">
+            <!-- [class.d-inline-block]="!showToolbar"
+            [class.d-flex]="showToolbar"
+            [class.justify-content-center]="!screen()?.showAction" -->
             
             @if (showToolbar) {
               <!-- ========================================== -->
@@ -57,7 +58,7 @@
 
               @if (dataset()?.x?.canAdd && preCheck({}, dataset()?.x?.addPre, false)) {
                 @if (!(form()?.data?.prev && !prevId)) {
-                  <button type="button" class="btn btn-primary bg-gradient rounded-2 flex-grow-1 flex-sm-grow-0"
+                  <button type="button" class="btn btn-primary bg-gradient rounded-2"
                     ngbTooltip="New Entry"
                     (click)="runAction('/form/'+form().data?.id+'/'+(form().prev?'prev':'add'), dataset()?.x?.inpopAdd, inPopTpl, prevId, form()?.data?.id, 'form', form().prev?'prev':'add', _param)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -132,8 +133,8 @@
                 </div>
               }
 
-              @if (numberOfElements() > 0) {
-                <div ngbDropdown class="d-none d-sm-inline-block ms-auto position-static" display="static">
+              @if (!asComp() && numberOfElements() > 0) {
+                <div ngbDropdown class="d-none d-sm-inline-block position-static" display="static">
                   <button type="button" class="btn h-100" title="Sort by" id="dropdownSort" ngbDropdownToggle>
                     <fa-icon [icon]="['fas','sort']" [fixedWidth]="true"></fa-icon>
                     <strong>{{sortFieldName()}}</strong>

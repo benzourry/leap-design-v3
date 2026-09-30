@@ -72,6 +72,7 @@ $transition-slow: 350ms ease-in-out;
   color: $text-light;
   background: $nav-bg;
   transition: background-color $transition-med;
+  view-transition-name: app-nav; /* <--- ADD THIS */
 }
 
 /* Dark Mode Navigation */
@@ -147,6 +148,7 @@ $transition-slow: 350ms ease-in-out;
   background: #000;
   opacity: 0;
   transition: opacity 350ms linear;
+  view-transition-name: app-overlay; /* <--- ADD THIS */
 
   @media screen and (min-width: 768px) {
     display: none;
