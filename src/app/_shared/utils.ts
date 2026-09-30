@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import { marked } from 'marked';
 import mermaid from 'mermaid';
 import { icon as faIcon, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ChangeDetectorRef } from '@angular/core';
 
 // const tplCache: Record<number, string> = {};
 const hashCode = (s: string): number =>
@@ -845,6 +847,34 @@ export function getModel(obj: any, path: string): any {
     value = value[key];
   }
   return value ?? '';
+}
+
+export function forceModalCd(modalRef: NgbModalRef, cdr: ChangeDetectorRef) {
+  cdr.detectChanges(); // Force the @placeholder to render immediately
+
+  modalRef.shown.subscribe(() => {
+    // Grab the top-most modal window in case multiple are stacked
+    const modals = document.querySelectorAll('ngb-modal-window');
+    const modalElement = modals[modals.length - 1]; 
+    
+    if (!modalElement) return;
+
+    const observer = new MutationObserver((mutations) => {
+      // Only react if actual HTML elements were injected by @defer
+      const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
+      
+      if (hasNewNodes) {
+        cdr.detectChanges();      // Paint the resolved component
+        observer.disconnect();    // KILL THE OBSERVER IMMEDIATELY
+      }
+    });
+
+    // Watch for the @defer block injecting the chunk
+    observer.observe(modalElement, { childList: true, subtree: true });
+
+    // Fallback cleanup if the user closes the modal while the chunk is still downloading
+    modalRef.result.finally(() => observer.disconnect());
+  });
 }
 
 // Deep setter for any object (immutable, works with signals)

@@ -30,7 +30,7 @@ import { NgbUnixTimestampTimeAdapter } from '../../_shared/service/time-adapter'
 import { SafePipe } from '../../_shared/pipe/safe.pipe';
 import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
-import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
+import { ServerDate, br2nl, btoaUTF, compileTpl, createProxy, deepEqual, deepMerge, forceModalCd, hashObject, loadScript, nl2br, splitAsList } from '../../_shared/utils';
 
 import { EntryService } from '../_service/entry.service';
 import { LookupService } from '../_service/lookup.service';
@@ -603,8 +603,12 @@ export class ListComponent implements OnInit, OnDestroy {
     if (params) { params.entryId = entryId; this.inPopParams.set(params); }
 
     history.pushState(null, '', window.location.href);
-    this.modalService.open(content, { backdrop: 'static', size: 'lg' })
-      .result.then(() => this.getEntryList(this.pageNumber(), this.sort()), () => {});
+    
+    const modalRef = this.modalService.open(content, { backdrop: 'static', size: 'lg' })
+
+    forceModalCd(modalRef, this.cdr);
+
+    modalRef.result.then(() => this.getEntryList(this.pageNumber(), this.sort()), () => {});
 
     this.cdr.detectChanges();
   }
@@ -703,8 +707,12 @@ export class ListComponent implements OnInit, OnDestroy {
   editFilter(content: any, data: any) {
     this.filtersData.set({ ...data });
     history.pushState(null, '', window.location.href);
-    this.modalService.open(content, { backdrop: 'static' })
-      .result.then(res => { this.filtersData.set({ ...res }); this.getEntryList(1); }, () => {});
+    const modalRef = this.modalService.open(content, { backdrop: 'static' });
+
+    forceModalCd(modalRef, this.cdr);
+    
+    modalRef.result.then(res => { this.filtersData.set({ ...res }); this.getEntryList(1); }, () => {});
+
     this.cdr.detectChanges();
   }
 
@@ -834,8 +842,12 @@ export class ListComponent implements OnInit, OnDestroy {
   bulkEmail(content: any, data: any) {
     this.blastData.set({ ...data, bulk: true });
     history.pushState(null, '', window.location.href);
-    this.modalService.open(content, { backdrop: 'static', size: 'lg' })
-      .result.then(res => this.blastList(res, Object.keys(this.selectedEntries()).map(Number)), () => {});
+    const modalRef = this.modalService.open(content, { backdrop: 'static', size: 'lg' });
+
+    forceModalCd(modalRef, this.cdr);
+
+    modalRef.result.then(res => this.blastList(res, Object.keys(this.selectedEntries()).map(Number)), () => {});
+
     this.cdr.detectChanges();
   }
 

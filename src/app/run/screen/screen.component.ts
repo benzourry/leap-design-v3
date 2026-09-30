@@ -23,7 +23,7 @@ import { NavigationExtras, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UtilityService } from '../../_shared/service/utility.service';
-import { compileTpl, deepMerge, splitAsList, loadScript, btoaUTF, hashObject, ServerDate, linkify, deepEqual, createProxy } from '../../_shared/utils';
+import { compileTpl, deepMerge, splitAsList, loadScript, btoaUTF, hashObject, ServerDate, linkify, deepEqual, createProxy, forceModalCd } from '../../_shared/utils';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { base, baseApi } from '../../_shared/constant.service';
@@ -770,10 +770,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.inPopFacet.set(facet);
     this.inPopFormId.set(action.next);
 
-    // 1. Resolve parameters without mutating
     const resolvedParams = action.params ? this._pre(this.entry(), action.params, false) : params;
 
-    // 2. ✅ Only set inPopParams if resolvedParams is NOT null and NOT undefined
     if (resolvedParams !== null && resolvedParams !== undefined) {
       const finalParams = { ...resolvedParams, entryId: entryId };
       this.inPopParams.set(finalParams);
@@ -781,19 +779,22 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
     history.pushState(null, null, window.location.href);
 
-    const modalRef = this.modalService.open(content, { backdrop: 'static', size: 'lg' })
-      .result.then(res => {
-        console.log("lde: inPop result", res);
-        return res;
-      }, err => {
-        console.log("lde: inPop dismissed", err);
-        // throw err;
-      }).finally(() => {
-      });
+    const modalInstance = this.modalService.open(content, { backdrop: 'static', size: 'lg' });
+    
+    forceModalCd(modalInstance, this.cdr);
 
-      this.cdr.detectChanges(); // <--- ADD THIS
+    const promiseChain = modalInstance.result.then(res => {
+      console.log("lde: inPop result", res);
+      return res;
+    }, err => {
+      console.log("lde: inPop dismissed", err);
+    }).finally(() => {
+    });
 
-      return modalRef;
+    this.cdr.detectChanges();
+
+    // 6. Return the Promise just like your old code did
+    return promiseChain;
   }
 
   runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
@@ -1170,11 +1171,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
   editFilter(content: any, data: any) {
     this.filtersData.set({ ...data });
     history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static' })
-      .result.then(res => {
-        this.filtersData.set({ ...res });
-        this.loadDatasetEntry(this.screen().dataset, 1);
-      }, res => { });
+    
+    const modalRef = this.modalService.open(content, { backdrop: 'static' });
+
+    forceModalCd(modalRef, this.cdr);
+    
+    modalRef.result.then(res => {
+      this.filtersData.set({ ...res });
+      this.loadDatasetEntry(this.screen().dataset, 1);
+    }, res => { });
       
     this.cdr.detectChanges(); // <--- ADD THIS
   }
@@ -1183,12 +1188,15 @@ export class ScreenComponent implements OnInit, OnDestroy {
   readonly viewport = viewChild<any>('screenviewport');
   showActionOptions() {
     history.pushState(null, null, window.location.href);
-    this.modalService.open(this.optTpl(), {
+    const modalRef = this.modalService.open(this.optTpl(), {
       modalDialogClass: 'modal-dialog-centered modal-no-footer',
       windowClass: '',
       container: '#screen-' + this.screen().id
-    })
-    .result.then(res => {
+    });
+
+    forceModalCd(modalRef, this.cdr);
+
+    modalRef.result.then(res => {
     }, res => {
       if (this.screen().type == 'qr') {
         this.scanner().ngOnInit();
