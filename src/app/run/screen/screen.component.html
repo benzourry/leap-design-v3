@@ -11,9 +11,9 @@
         $: entry()?.data,
         $prev$: entry()?.prev,
         $$_: entry()?.approval,
-        $maps$: mapList,
-        $go: goObjWParam,
-        $popup: popObj,
+        $maps$: mapList(),
+        $go: goObjWParam(),
+        $popup: popObj(),
         $param$: _param,
         $this$: _this,
         $user$: user(),
@@ -239,13 +239,13 @@
           
           @if (screen()?.data?.pretext) {
             <div id="screen-{{screen()?.id}}-pre" morphType="inner"
-              [morphHtml]="compileTpl(screen()?.data?.pretext, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
+              [morphHtml]="compileTpl(screen()?.data?.pretext, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList(),$go:goObjWParam(),$popup:popObj(),$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
             </div>
           }
           
           @if (screen()?.type=='static') {
             <div [ngClass]="screen()?.data?.parentclass" morphMode="inner"
-              [morphHtml]="compileTpl(screen()?.data?.content, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
+              [morphHtml]="compileTpl(screen()?.data?.content, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$go:goObjWParam(),$popup:popObj(),$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
             </div>
           } @else if (screen()?.type=='mailbox') {
             @defer (prefetch on idle) {
@@ -292,7 +292,7 @@
             @defer (prefetch on idle) {
               <app-ng-leaflet [screen]="screen()" [baseMapServerUri]="screen()?.data?.customMapServer"
                 [icon]="screen()?.data?.icon" [dropPinOn]="screen()?.data?.dropPinOn" [readOnly]="screen()?.data?.readOnly"
-                [timestamp]="timestamp()" [value]="mapList"></app-ng-leaflet>
+                [timestamp]="timestamp()" [value]="mapList()"></app-ng-leaflet>
             } @loading {
               <div class="text-center m-5">
                 <div class="spinner-grow text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
@@ -347,7 +347,7 @@
               </div>
             }
           } @else if (screen()?.type=='page') {
-            @if (!_entryId) {
+            @if (!activeEntryId()) {
               <div class="bg-body-tertiary mb-2 p-2 rounded">
                 <div class="input-group">
                   <span class="input-group-text">Entry ID</span>
@@ -359,14 +359,14 @@
               </div>
             } @else {
               <div [ngClass]="screen()?.data?.parentclass" morphMode="inner"
-                [morphHtml]="compileTpl(screen()?.data?.content, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
+                [morphHtml]="compileTpl(screen()?.data?.content, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$go:goObjWParam(),$popup:popObj(),$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
               </div>
             }
           }
 
           @if (screen()?.data?.posttext) {
             <div id="screen-{{screen()?.id}}-post" morphType="inner"
-              [morphHtml]="compileTpl(screen()?.data?.posttext, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList,$go:goObjWParam,$popup:popObj,$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
+              [morphHtml]="compileTpl(screen()?.data?.posttext, {$_:entry(),$:entry()?.data,$prev$:entry()?.prev,$$_:entry()?.approval,$maps$:mapList(),$go:goObjWParam(),$popup:popObj(),$param$:_param,$this$:_this,$user$:user(), $conf$:appConfig,$base$:base,$baseUrl$:baseUrl,$baseApi$:baseApi,$showNav$:openNav})|safe:'html'">
             </div>
           }
 
@@ -375,7 +375,7 @@
     } @else {
       @if (!loading() && !isAuthorized()) {
         <div class="detail text-body-secondary">
-          <h3>{{unAuthorizedMsg}}</h3>
+          <h3>{{unAuthorizedMsg()}}</h3>
         </div>
       }
     }
@@ -398,15 +398,15 @@
         </div>
         
         @for (action of actionLinks(); track $index) {
-          @if (action.inpop && popObj[action.action.id]) {
+          @if (action.inpop && popObj()[action.action.id]) {
             <!-- Trigger Popup directly -->
             <button type="button" class="btn btn-secondary m-1 rounded-pill border-1-5"
-              (click)="d(); popObj[action.action.id](action.param)">
+              (click)="d(); popObj()[action.action.id](action.param)">
               {{action.label}}
             </button>
           } @else {
             <!-- Fallback to standard anchor tag for absolute navigation -->
-            <a [href]="goObj[action.action.id] ? goObj[action.action.id] + (goObj[action.action.id].includes('?') ? '&' : '?') + 'entryId=' + action.param.entryId : action.url"
+            <a [href]="goObj()[action.action.id] ? goObj()[action.action.id] + (goObj()[action.action.id].includes('?') ? '&' : '?') + 'entryId=' + action.param.entryId : action.url"
               class="btn btn-secondary m-1 rounded-pill border-1-5" (click)="d()">
               {{action.label}}
             </a>

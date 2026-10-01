@@ -260,7 +260,7 @@ function get(fn: () => any, defaultVal: any, wrapFn?: (val: any) => any): any {
     const val = wrapFn ? wrapFn(fn()) : fn();
     return val == null ? defaultVal : val;
   } catch(err) {
-    console.error("Template Engine Error:", err); // ADD THIS LINE!
+    // console.error("Template Engine Error:",fn, err); // ADD THIS LINE!
     return defaultVal;
   }
 }

@@ -111,7 +111,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   screenId = input<number>();
   _screenId: number;
   entryId = input<number>();
-  _entryId: number; 
+  // _entryId: number; 
   _startTimestamp: number = 0;
   asComp = input<boolean>();
   hideTitle = input<boolean>(false);
@@ -121,6 +121,18 @@ export class ScreenComponent implements OnInit, OnDestroy {
   screenLoaded = output<any>();
   accessToken: string = "";
   inPopTpl = viewChild<TemplateRef<any>>('inPopTpl')
+
+  // Create a single source of truth for the incoming ID
+  resolvedEntryId = computed(() => 
+    this.entryId() ?? this.param()?.['entryId'] ?? this.param()?.['$.$id']
+  );
+
+  activeEntryId = signal<number | null>(null);
+  
+  // These now automatically rebuild whenever activeEntryId changes!
+  goObj = computed(() => this.buildGo(this.activeEntryId(), true));
+  goObjWParam = computed(() => this.buildGo(this.activeEntryId()));
+  popObj = computed(() => this.buildPop(this.activeEntryId(), true));
 
   prevSignalKey: string = '';
 
@@ -146,11 +158,11 @@ export class ScreenComponent implements OnInit, OnDestroy {
       .subscribe(online => this.offline.set(!online));
 
     effect(() => {
-
-      this._entryId = this.entryId();
+      this.activeEntryId.set(this.resolvedEntryId());
+      // this._entryId = this.resolvedEntryId();
       this._screenId = this.screenId();
 
-      const key = `${this._screenId}|${this._entryId}`;
+      const key = `${this._screenId}|${this.activeEntryId()}`;
 
       if (this._screenId && this.user() && this.prevSignalKey != key) {
         this.prevSignalKey = key;
@@ -162,6 +174,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       if (this.user()) {
         const startTimestamp = this.runService.$startTimestamp();
         const param = this.param()
+
         if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters())) {
           this._param = this.param();
           this._startTimestamp = startTimestamp;
@@ -171,27 +184,33 @@ export class ScreenComponent implements OnInit, OnDestroy {
               this.prevId = this._param['$prev$.$id'];
             }
 
-            if (this._param['$.$id']) {
-              this._entryId = this._param['$.$id'];
-            }
+            // if (this._param['$.$id']) {
+            //   this._entryId = this._param['$.$id'];
+            // }
 
-            if (this._param['entryId']) {
-              this._entryId = this._param['entryId'];
-            }
+            // if (this._param['entryId']) {
+            //   this._entryId = this._param['entryId'];
+            // }
           }
+
+          // this._entryId = this.resolvedEntryId();
+          this.activeEntryId.set(this.resolvedEntryId());
           
           untracked(() => {
             // 2. Rebuild navigation/popup objects in case the entryId changed dynamically
             // !IMPORTANT!!!
             // Previous issue when popup the same screen, only first got param.
-            if (this.screen()) {
-              this.goObj = this.buildGo(this._entryId, true);
-              this.goObjWParam = this.buildGo(this._entryId);
-              this.popObj = this.buildPop(this._entryId, true);
-            }
+            // if (this.screen()) {
+            //   this.goObj = this.buildGo(this._entryId, true);
+            //   this.goObjWParam = this.buildGo(this._entryId);
+            //   this.popObj = this.buildPop(this._entryId, true);
+            // }
 
             if (this.screen()?.dataset) {
               this.loadDatasetEntry(this.screen().dataset, this.pageNumber(), this.sort());
+            }else if (this.screen()?.type === 'page' && this.screen()?.form?.id) {
+              // console.log("entry reload>>", this._entryId)
+              this.loadFormEntry(this.screen().form.id);
             }
           })
         }
@@ -211,7 +230,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
     // 1. Eagerly initialize inputs to prevent race conditions with cached observables
     // !IMPORTANT!!!
     // Previous issue when popup the same screen, only first got param.
-    this._entryId = this.entryId();
+    // this._entryId = this.resolvedEntryId();
+    this.activeEntryId.set(this.resolvedEntryId() ?? null);
     this._screenId = this.screenId();
 
     const param = this.param();
@@ -220,12 +240,12 @@ export class ScreenComponent implements OnInit, OnDestroy {
       if (this._param['$prev$.$id']) {
         this.prevId = this._param['$prev$.$id'];
       }
-      if (this._param['$.$id']) {
-        this._entryId = this._param['$.$id'];
-      }
-      if (this._param['entryId']) {
-        this._entryId = this._param['entryId'];
-      }
+      // if (this._param['$.$id']) {
+      //   this._entryId = this._param['$.$id'];
+      // }
+      // if (this._param['entryId']) {
+      //   this._entryId = this._param['entryId'];
+      // }
     }
   }
 
@@ -365,9 +385,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
           this.screenLoaded.emit(res);
           this.loading.set(false);
 
-          this.goObj = this.buildGo(this._entryId, true);
-          this.goObjWParam = this.buildGo(this._entryId);
-          this.popObj = this.buildPop(this._entryId, true);
+          // this.goObj = this.buildGo(this._entryId, true);
+          // this.goObjWParam = this.buildGo(this._entryId);
+          // this.popObj = this.buildPop(this._entryId, true);
 
           if (this.registeredScopeId) {
             const popupKey = '_popup_' + this.registeredScopeId;
@@ -384,7 +404,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
           this.registeredScopeId = this.scopeId();
 
           Reflect.defineProperty(window, '_popup_' + this.scopeId(), {
-            get: () => this.popObj,
+            get: () => this.popObj(),
             configurable: true
           });
 
@@ -433,7 +453,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
       this.loadFormEntry(this.screen().form.id);
 
     } else if (this.screen().type == 'static') {
-      this.entry.set({ id: this._entryId, data: {} })
+      this.entry.set({ id: this.activeEntryId(), data: {} })
       // this execute tooo early. html not yet available. problem when get dom reference
 
       this.initScreen(this.screen().data.f);
@@ -542,8 +562,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       $live$: this.runService?.$live$(this.liveSubscription, this.$digest$),
       $merge$: deepMerge,
       $web$: this.runService.web,
-      $go: this.goObj,
-      $popup: this.popObj,
+      $go: this.goObj(),
+      $popup: this.popObj(),
       $q$: this.$q,
       $showNav$: this.openNav,
     };
@@ -614,9 +634,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.intervalList.push(intervalId);
   }
 
-  goObj: any = {};
-  goObjWParam: any = {};
-  popObj: any = {};
+  // goObj: any = {};
+  // goObjWParam: any = {};
+  // popObj: any = {};
   popObjWParam: any = {};
 
   buildGo(entryId: any, noParam?: boolean) {
@@ -784,10 +804,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
     forceModalCd(modalInstance, this.cdr);
 
     const promiseChain = modalInstance.result.then(res => {
-      console.log("lde: inPop result", res);
+      // console.log("lde: inPop result", res);
       return res;
     }, err => {
-      console.log("lde: inPop dismissed", err);
+      // console.log("lde: inPop dismissed", err);
     }).finally(() => {
     });
 
@@ -817,9 +837,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
   private activeEntryReq?: Subscription;
   loadFormEntry(fId: any) {
     if (this.activeEntryReq) this.activeEntryReq.unsubscribe();
-    if (this._entryId) {
+    // if (this._entryId) {
+    if (this.activeEntryId()) {
       this.loading.set(true);
-      this.activeEntryReq = this.entryService.getEntry(this._entryId, fId).pipe(
+      this.activeEntryReq = this.entryService.getEntry(this.activeEntryId(), fId).pipe(
         takeUntilDestroyed(this.destroyRef),
         switchMap(res => {
           this.entry.set(res);
@@ -843,7 +864,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
       this.activeEntryReq = this.entryService.getFirstEntryByParam(this.entryParams, fId).pipe(
         takeUntilDestroyed(this.destroyRef)
       ).subscribe(res => {
-        this._entryId = res.id;
+        // this._entryId = res.id;
+        this.activeEntryId.set(res.id);
         this.entry.set(res);
         this.initScreen(this.screen().data.f);
         this.loading.set(false);
@@ -853,44 +875,91 @@ export class ScreenComponent implements OnInit, OnDestroy {
     }
   }
 
-  unAuthorizedMsg: string = "";
-  isAuthorized = computed<boolean>(() => this.checkAuthorized(this.screen(), this.user(), this.entry()));
-  // userUnauthorized by default is false
-  checkAuthorized = (screen, user, entry) => {
-    if (!screen || !user) return true;
+  // 1. Create a single computed source of truth for authorization
+  authorization = computed(() => {
+    const screen = this.screen();
+    const user = this.user();
+    const entry = this.entry();
+    const lang = this.lang();
+    
+    let state = { isAuthorized: true, msg: "" };
 
-    if (screen?.data?.restrictAccess) {
-      let groupAuthorized = false;
-      let approverAuthorized = false;
-      let userAuthorized = false;
-      let condAuthorized = false;
+    if (!screen || !user || !screen?.data?.restrictAccess) return state;
 
-      let intercept = screen?.accessList?.filter((v: any) => Object.keys(user?.groups || {}).includes(v + ""));
-      if (intercept.length > 0) {
-        groupAuthorized = true;
-      } else {
-        this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
-      }
-      if (entry?.id) {
-        if (screen?.data?.accessByApprover) {
-          let authorizer = Object.values(entry.approver).join(",")
-          approverAuthorized = authorizer.includes(user?.email)
-        }
-        if (screen?.data?.accessByUser) {
-          userAuthorized = entry.email == user?.email
-        }
-        if (screen?.data?.accessByCond) {
-          condAuthorized = this.preCheck(screen?.data?.accessByCond, entry, false);
-        }
-        if (!(approverAuthorized || userAuthorized || condAuthorized)) {
-          this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
-        }
-      }
-      return groupAuthorized || approverAuthorized || userAuthorized || condAuthorized;
+    let groupAuthorized = false;
+    let approverAuthorized = false;
+    let userAuthorized = false;
+    let condAuthorized = false;
+
+    let intercept = screen?.accessList?.filter((v: any) => Object.keys(user?.groups || {}).includes(v + ""));
+    if (intercept?.length > 0) {
+      groupAuthorized = true;
     } else {
-      return true;
+      state.msg = lang == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
     }
-  }
+
+    if (entry?.id) {
+      if (screen?.data?.accessByApprover) {
+        let authorizer = Object.values(entry.approver || {}).join(",")
+        approverAuthorized = authorizer.includes(user?.email)
+      }
+      if (screen?.data?.accessByUser) {
+        userAuthorized = entry.email == user?.email
+      }
+      if (screen?.data?.accessByCond) {
+        condAuthorized = this.preCheck(screen?.data?.accessByCond, entry, false);
+      }
+      if (!(approverAuthorized || userAuthorized || condAuthorized)) {
+        state.msg = lang == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
+      }
+    }
+
+    state.isAuthorized = groupAuthorized || approverAuthorized || userAuthorized || condAuthorized;
+    return state;
+  });
+
+  // 2. Project them safely
+  isAuthorized = computed<boolean>(() => this.authorization().isAuthorized);
+  unAuthorizedMsg = computed<string>(() => this.authorization().msg);
+
+  // unAuthorizedMsg: string = "";
+  // isAuthorized = computed<boolean>(() => this.checkAuthorized(this.screen(), this.user(), this.entry()));
+  // // userUnauthorized by default is false
+  // checkAuthorized = (screen, user, entry) => {
+  //   if (!screen || !user) return true;
+
+  //   if (screen?.data?.restrictAccess) {
+  //     let groupAuthorized = false;
+  //     let approverAuthorized = false;
+  //     let userAuthorized = false;
+  //     let condAuthorized = false;
+
+  //     let intercept = screen?.accessList?.filter((v: any) => Object.keys(user?.groups || {}).includes(v + ""));
+  //     if (intercept.length > 0) {
+  //       groupAuthorized = true;
+  //     } else {
+  //       this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada skrin ini" : "You are not authorized to access this screen";
+  //     }
+  //     if (entry?.id) {
+  //       if (screen?.data?.accessByApprover) {
+  //         let authorizer = Object.values(entry.approver).join(",")
+  //         approverAuthorized = authorizer.includes(user?.email)
+  //       }
+  //       if (screen?.data?.accessByUser) {
+  //         userAuthorized = entry.email == user?.email
+  //       }
+  //       if (screen?.data?.accessByCond) {
+  //         condAuthorized = this.preCheck(screen?.data?.accessByCond, entry, false);
+  //       }
+  //       if (!(approverAuthorized || userAuthorized || condAuthorized)) {
+  //         this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
+  //       }
+  //     }
+  //     return groupAuthorized || approverAuthorized || userAuthorized || condAuthorized;
+  //   } else {
+  //     return true;
+  //   }
+  // }
 
   sortDir: any = {};
   sortField = signal<number>(null);
@@ -1008,7 +1077,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
               } catch (e) { }
 
               if (this.screen().type == 'map') {
-                this.processForMap();
+                // this.processForMap();
+                this.timestamp.set(Date.now());
               }
 
               this.loading.set(false);
@@ -1024,29 +1094,56 @@ export class ScreenComponent implements OnInit, OnDestroy {
   }
 
   timestamp = signal<number>(0);
-  mapList: any[];
-  processForMap() {
-    this.mapList = this.entryList()
-      .filter(e => e.data?.[this.screen().data?.coord] || (e.data?.[this.screen().data?.lat] && e.data?.[this.screen().data?.lng]))
+  // mapList: any[];
+  // processForMap() {
+  //   this.mapList = this.entryList()
+  //     .filter(e => e.data?.[this.screen().data?.coord] || (e.data?.[this.screen().data?.lat] && e.data?.[this.screen().data?.lng]))
+  //     .map(e => {
+  //       let longitude, latitude;
+  //       if (!this.screen()?.data?.coord) {
+  //         latitude = e.data[this.screen()?.data?.lat];
+  //         longitude = e.data[this.screen()?.data?.lng];
+  //       } else {
+  //         latitude = e.data[this.screen()?.data?.coord]?.latitude;
+  //         longitude = e.data[this.screen()?.data?.coord]?.longitude;
+  //       }
+  //       return {
+  //         id: e.id,
+  //         latitude: latitude,
+  //         longitude: longitude,
+  //         title: this.compileTpl(this.screen()?.data?.popupTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi }),
+  //         marker: this.compileTpl(this.screen()?.data?.icon, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
+  //       }
+  //     })
+  //   this.timestamp.set(Date.now());
+  // }
+
+  mapList = computed(() => {
+    const list = this.entryList();
+    const screenData = this.screen()?.data;
+    
+    if (!list?.length || !screenData) return [];
+
+    return list
+      .filter(e => e.data?.[screenData?.coord] || (e.data?.[screenData?.lat] && e.data?.[screenData?.lng]))
       .map(e => {
         let longitude, latitude;
-        if (!this.screen()?.data?.coord) {
-          latitude = e.data[this.screen()?.data?.lat];
-          longitude = e.data[this.screen()?.data?.lng];
+        if (!screenData?.coord) {
+          latitude = e.data[screenData?.lat];
+          longitude = e.data[screenData?.lng];
         } else {
-          latitude = e.data[this.screen()?.data?.coord]?.latitude;
-          longitude = e.data[this.screen()?.data?.coord]?.longitude;
+          latitude = e.data[screenData?.coord]?.latitude;
+          longitude = e.data[screenData?.coord]?.longitude;
         }
         return {
           id: e.id,
           latitude: latitude,
           longitude: longitude,
-          title: this.compileTpl(this.screen()?.data?.popupTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi }),
-          marker: this.compileTpl(this.screen()?.data?.icon, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
+          title: this.compileTpl(screenData?.popupTpl, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi }),
+          marker: this.compileTpl(screenData?.icon, { $: e.data, $prev$: e.prev, $_: e, $go: this.buildGo(e.id),$popup: this.buildPop(e.id), $param$: this._param, $this$: this._this, $user$: this.user(), $conf$: this.appConfig, $base$: base, $baseUrl$: this.baseUrl, $baseApi$: baseApi })
         }
-      })
-    this.timestamp.set(Date.now());
-  }
+      });
+  });
 
   calOptions: any;
 
@@ -1059,7 +1156,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         let actionLinks: any[] = [];
         
         actions.forEach((action: any) => {
-          let url = this.goObj[action.id]?.replace("#", "");
+          let url = this.goObj()[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", event?.id)) : {};
           param.entryId = event?.id;
           
@@ -1079,18 +1176,18 @@ export class ScreenComponent implements OnInit, OnDestroy {
           // If only 1 action, decide whether to open a popup or navigate based on inpop
           let link = actionLinks[0];
           
-          if (link.inpop && this.popObj[link.action.id]) {
-            // 1. Open via Popup using popObj
-            this.popObj[link.action.id](link.param);
-          } else if (this.goObj[link.action.id]) {
-            // 2. Navigate via goObj directly (bypassing router.navigate)
+          if (link.inpop && this.popObj()[link.action.id]) {
+            // 1. Open via Popup using popObj()
+            this.popObj()[link.action.id](link.param);
+          } else if (this.goObj()[link.action.id]) {
+            // 2. Navigate via goObj() directly (bypassing router.navigate)
             let queryParams = new URLSearchParams(link.param).toString();
-            let goUrl = this.goObj[link.action.id];
+            let goUrl = this.goObj()[link.action.id];
             
             // Append parameters securely handling whether a '?' already exists
             window.location.href = goUrl + (goUrl.includes('?') ? '&' : '?') + queryParams;
           } else {
-            // Fallback just in case goObj fails to generate
+            // Fallback just in case goObj() fails to generate
             this.router.navigate([link.url], { queryParams: link.param });
           }
         } else {
@@ -1106,7 +1203,8 @@ export class ScreenComponent implements OnInit, OnDestroy {
   randomHsl = () => `hsla(${Math.random() * 360}, 60%, 40%, 1)`;
 
   runEntry(entryId: any) {
-    this._entryId = entryId;
+    // this._entryId = entryId;
+    this.activeEntryId.set(entryId);
     this.loadFormEntry(this.screen()?.form?.id);
     this.router.navigate([this.preurl, 'screen', this.screen().id], { queryParams: { entryId: entryId } });
   }
@@ -1124,7 +1222,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         let actionLinks: any[] = [];
         
         actions.forEach((action: any) => {
-          let url = this.goObj[action.id]?.replace("#", "");
+          let url = this.goObj()[action.id]?.replace("#", "");
           let param = action.params ? JSON.parse(action.params.replace("$code$", code)) : {};
           
           if (action.nextType == 'function') {
@@ -1142,7 +1240,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
             this._qrEval(code, actionLinks[0].f);
             this.scanner().resume(); 
           } else {
-            // Safety check just in case goObj hasn't loaded properly
+            // Safety check just in case goObj() hasn't loaded properly
             if (actionLinks[0].url) {
               this.router.navigate([actionLinks[0].url], { queryParams: actionLinks[0]?.param });
             }
@@ -1171,7 +1269,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
   editFilter(content: any, data: any) {
     this.filtersData.set({ ...data });
     history.pushState(null, null, window.location.href);
-    
+
     const modalRef = this.modalService.open(content, { backdrop: 'static' });
 
     forceModalCd(modalRef, this.cdr);
@@ -1206,8 +1304,9 @@ export class ScreenComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges(); // <--- ADD THIS
   }
 
-  filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object)
-  filterSize = computed(() => Object.keys(this.filtersData()).length);
+  // filterIsEmpty = computed(() => Object.keys(this.filtersData()).length === 0 && this.filtersData().constructor === Object)
+  filterSize = computed(() => Object.keys(this.filtersData()||{}).length);
+  filterIsEmpty = computed(() => this.filterSize() === 0);
 
   getAsList = splitAsList;
   compileTpl(html: string, data: any) {
