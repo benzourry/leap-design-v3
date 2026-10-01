@@ -417,7 +417,7 @@
     } @else {
       @if (!isAuthorized()) {
         <div class="detail text-secondary">
-          <h3>{{unAuthorizedMsg}}</h3>
+          <h3>{{unAuthorizedMsg()}}</h3>
         </div>
       }
     }

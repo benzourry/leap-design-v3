@@ -683,70 +683,63 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
     }
   }
 
-  unAuthorizedMsg = computed<string>(() => {
+  // 1. Create a single computed source of truth for form authorization
+  authorization = computed(() => {
     const form = this.form();
     const user = this.user();
     const entry = this.entry();
-    const app = this.app?.();
+    const lang = this.app()?.x?.lang || 'en';
+    const action = this.action();
 
-    if (!form?.x?.restrictAccess) return '';
+    let state = { isAuthorized: true, msg: "" };
 
-    const groupAuthorized = !!form.accessList?.some(v => Object.keys(user.groups || {}).includes(v + ''));
-    if (!groupAuthorized && !entry?.id) {
-      return app?.x?.lang === 'ms'
-        ? 'Anda tidak mempunyai akses kepada borang ini'
-        : 'You are not authorized to access this form';
-    }
+    if (!form?.x?.restrictAccess) return state;
 
+    const userGroups = Object.keys(user?.groups || {});
+    const accessList = form.accessList || [];
+
+    const hasGroupAccess = accessList.some(v => userGroups.includes(v + ''));
+    const isAddNoGroup = ['add', 'prev'].includes(action) && accessList.length === 0;
+    const isSingleForm = !entry?.id && form.single;
+
+    let approverAuthorized = false;
+    let userAuthorized = false;
+    let condAuthorized = false;
+
+    // Check record-level access constraints
     if (entry?.id) {
-      let approverAuthorized = false;
-      let userAuthorized = false;
-      let condAuthorized = false;
-
       if (form.x?.accessByApprover) {
-        const authorizer = Object.values(entry.approver ?? {}).join(',');
-        approverAuthorized = authorizer.includes(user.email);
+        const authorizer = Object.values(entry.approver || {}).join(',');
+        approverAuthorized = authorizer.includes(user?.email);
       }
       if (form.x?.accessByUser) {
-        userAuthorized = entry.email === user.email;
+        userAuthorized = entry.email === user?.email;
       }
       if (form.x?.accessByCond) {
         condAuthorized = this.preCheckStr(form.x?.accessByCond, entry);
       }
-      if (!(approverAuthorized || userAuthorized || condAuthorized)) {
-        return app?.x?.lang === 'ms'
-          ? 'Anda tidak mempunyai akses kepada maklumat ini'
-          : 'You are not authorized to access this information';
+    }
+
+    const hasRecordAccess = approverAuthorized || userAuthorized || condAuthorized;
+
+    // Final authorization evaluation
+    state.isAuthorized = hasGroupAccess || hasRecordAccess || isAddNoGroup || isSingleForm;
+
+    // Apply the correct message ONLY if they are genuinely unauthorized
+    if (!state.isAuthorized) {
+      if (entry?.id) {
+        state.msg = lang === 'ms' ? 'Anda tidak mempunyai akses kepada maklumat ini' : 'You are not authorized to access this information';
+      } else {
+        state.msg = lang === 'ms' ? 'Anda tidak mempunyai akses kepada borang ini' : 'You are not authorized to access this form';
       }
     }
 
-    return '';
+    return state;
   });
 
-  isAuthorized = computed<boolean>(() => this.checkAuthorized(this.form(), this.user(), this.entry()));
-
-  checkAuthorized = (form, user, entry) => {
-    if (!form?.x?.restrictAccess) return true;
-
-    const userGroups = Object.keys(user.groups || {});
-    const accessList = form.accessList || [];
-
-    const hasGroupAccess = accessList.some(v => userGroups.includes(v + ''));
-
-    const isAddNoGroup = ['add', 'prev'].includes(this._action) && accessList.length === 0;
-    const isSingleForm = !entry?.id && form.single;
-
-    const isApprover = entry?.id && form.x?.accessByApprover &&
-      Object.values(entry.approver || {}).join(',').includes(user.email);
-
-    const isOwner = entry?.id && form.x?.accessByUser &&
-      entry.email === user.email;
-
-    const passesCondition = entry?.id && form.x?.accessByCond &&
-      this.preCheckStr(form.x.accessByCond, entry);
-
-    return hasGroupAccess || isApprover || isOwner || passesCondition || isAddNoGroup || isSingleForm;
-  };
+  // 2. Project them safely to the template
+  isAuthorized = computed<boolean>(() => this.authorization().isAuthorized);
+  unAuthorizedMsg = computed<string>(() => this.authorization().msg);
 
   getLookupIdList(id) {
     this.lookupService.getInForm(id, ['section', 'list'])

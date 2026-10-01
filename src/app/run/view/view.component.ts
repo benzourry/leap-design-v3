@@ -139,8 +139,8 @@ export class ViewComponent implements OnInit, OnDestroy {
         this.getLookupIdList(this.formId());
       }
 
-        this._entryId = this.entryId();
-        this._formId = this.formId();
+      this._entryId = this.entryId();
+      this._formId = this.formId();
 
       const key = `${this._formId}|${this._entryId}|${this.user()?.email}`;
 
@@ -332,7 +332,7 @@ export class ViewComponent implements OnInit, OnDestroy {
 
   loadScript = loadScript;
 
-private digestTimer: any;
+  private digestTimer: any;
 
   $digest$ = () => {
     // Clear any pending digests
@@ -732,48 +732,58 @@ private digestTimer: any;
     });
   }
   
-  isAuthorized = computed<boolean>(() => this.checkAuthorized(this.form(), this.user(), this.entry));
-  unAuthorizedMsg: string = ""
-  // userUnauthorized by default is false
-  checkAuthorized = (form, user, entry) => {
-    if (form.x?.restrictAccess){
-      let groupAuthorized = false;
-      let approverAuthorized = false;
-      let userAuthorized = false;
-      let condAuthorized = false;
-      let formSingle = false;
-      let msgList:any[] = [];
+  // 1. Create a single computed source of truth for VIEW authorization
+  authorization = computed(() => {
+    const form = this.form();
+    const user = this.user();
+    const entry = this.entry; // ViewComponent uses a Proxy, NOT a signal! No () needed.
+    const lang = this.app()?.x?.lang || 'en';
 
-      let intercept = form.accessList?.filter(v => Object.keys(user.groups||{}).includes(v + ""));
-      if (intercept.length > 0) {
-        // this.form().accessList?.length == 0 || 
-        // && !this.app?.id, removed this condition because it always has value. Previously from route :appId to force authorize when run in designer
-        groupAuthorized = true;
-      } else {
-        this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada borang ini" : "You are not authorized to access this form";
+    let state = { isAuthorized: true, msg: "" };
+
+    if (!form?.x?.restrictAccess) return state;
+
+    const userGroups = Object.keys(user?.groups || {});
+    const accessList = form.accessList || [];
+
+    const hasGroupAccess = accessList.some(v => userGroups.includes(v + ''));
+    const formSingle = !entry?.id && form.single; // ViewComponent fallback
+
+    let approverAuthorized = false;
+    let userAuthorized = false;
+    let condAuthorized = false;
+
+    if (entry?.id) {
+      if (form.x?.accessByApprover) {
+        const authorizer = Object.values(entry.approver || {}).join(',');
+        approverAuthorized = authorizer.includes(user?.email);
       }
-      if (entry?.id){
-        if (form.x?.accessByApprover){
-          let authorizer = Object.values(entry.approver).join(",")
-          approverAuthorized = authorizer.includes(user.email)
-        }
-        if (form.x?.accessByUser){
-          userAuthorized = entry.email == user.email
-        }
-        if (form.x?.accessByCond){
-          condAuthorized = this.preCheckStr(form.x?.accessByCond, entry.data);
-        }
-        if (!(approverAuthorized||userAuthorized||condAuthorized)){
-          this.unAuthorizedMsg = this.lang() == 'ms' ? "Anda tidak mempunyai akses kepada maklumat ini" : "You are not authorized to access this information";
-        }
-      } else {
-        formSingle = form.single;
+      if (form.x?.accessByUser) {
+        userAuthorized = entry.email === user?.email;
       }
-      return groupAuthorized || approverAuthorized || userAuthorized || condAuthorized || formSingle;
-    } else {
-      return true;
+      if (form.x?.accessByCond) {
+        // ViewComponent passes entry.data, unlike FormComponent which passes entry
+        condAuthorized = this.preCheckStr(form.x?.accessByCond, entry.data);
+      }
     }
-  }
+
+    const hasRecordAccess = approverAuthorized || userAuthorized || condAuthorized;
+
+    // ViewComponent does NOT check for 'add' actions
+    state.isAuthorized = hasGroupAccess || hasRecordAccess || formSingle;
+
+    if (!state.isAuthorized) {
+      state.msg = entry?.id 
+        ? (lang === 'ms' ? 'Anda tidak mempunyai akses kepada maklumat ini' : 'You are not authorized to access this information')
+        : (lang === 'ms' ? 'Anda tidak mempunyai akses kepada borang ini' : 'You are not authorized to access this form');
+    }
+
+    return state;
+  });
+
+  // 2. Project them safely
+  isAuthorized = computed<boolean>(() => this.authorization().isAuthorized);
+  unAuthorizedMsg = computed<string>(() => this.authorization().msg);
 
   getDataObs(id, form): Observable<any> {
 
