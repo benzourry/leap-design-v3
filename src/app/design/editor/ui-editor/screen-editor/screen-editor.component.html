@@ -177,7 +177,7 @@
                         <a class="small px-2" ngbNavLink>Content</a>
                         <ng-template ngbNavContent>
                           @if (curScreen.type=='page') {
-                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.form?.items|keyvalue; track $index) {
                                 @if (curScreen.form?.items[k.key].type!='static') {
                                   <button
@@ -216,7 +216,7 @@
                             </div>
                           }
                           @if (curScreen.type=='static') {
-                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @if (curScreen.actions) {
                                 @for (k of curScreen.actions; track k.id) {
                                   <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
@@ -229,7 +229,7 @@
                             </div>
                           }
                           @if (curScreen.type=='list') {
-                            <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
+                            <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                 @if (curScreen.dataset?.form?.items[k.key].type!='static') {
                                   <button
@@ -829,10 +829,10 @@
                       <li ngbNavItem>
                         <a class="small px-2" ngbNavLink>Pre</a>
                         <ng-template ngbNavContent>
-                          <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
+                          <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
-                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-info"
+                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
                                   (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorpre())">
                                   <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   {{k.label}}
@@ -860,10 +860,10 @@
                       <li ngbNavItem>
                         <a class="small px-2" ngbNavLink>Post</a>
                         <ng-template ngbNavContent>
-                          <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
+                          <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
-                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 btn-outline-info"
+                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
                                   (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorpost())">
                                   <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   {{k.label}}

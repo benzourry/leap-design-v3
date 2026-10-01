@@ -199,6 +199,23 @@ export class EndpointEditorComponent implements OnInit {
             }, res => { });
     }
 
+    // loadEndpoint(id) {
+    //     this.endpointId = id;
+    //     this.endpointService.getEndpoint(id)
+    //         .subscribe(endpoint => {
+    //             this.requestParams = {};
+    //             this.endpoint = endpoint;
+    //             let g = endpoint.url.match(/\{(.[^{]+)\}/ig);
+    //             this.params = [];
+    //             g?.forEach(element => {
+    //                 if (!element.includes('_secret')){
+    //                     this.params.push(element.replace(/([{}\s]+)/ig, ''));
+    //                 }
+    //             });
+    //             this.cdr.detectChanges();
+    //         })
+
+    // }
     params: string[];
     loadEndpoint(id) {
         this.endpointId = id;
@@ -206,16 +223,20 @@ export class EndpointEditorComponent implements OnInit {
             .subscribe(endpoint => {
                 this.requestParams = {};
                 this.endpoint = endpoint;
-                let g = endpoint.url.match(/\{(.[^{]+)\}/ig);
+                
+                // 1. Updated Regex to accurately capture both {param} and {{param}}
+                let g = endpoint.url.match(/\{\{?[^{}]+\}\}?/ig);
+                
                 this.params = [];
                 g?.forEach(element => {
-                    if (!element.includes('_secret')){
+                    // 2. Filter out elements that start with double braces
+                    if (!element.startsWith('{{') && !element.includes('_secret')) {
                         this.params.push(element.replace(/([{}\s]+)/ig, ''));
                     }
                 });
+                
                 this.cdr.detectChanges();
             })
-
     }
 
     requestParams: any = {}
@@ -251,6 +272,28 @@ export class EndpointEditorComponent implements OnInit {
         }else{
             run({});
         }
+    }
+
+    copySnippet() {
+        if (!this.endpoint) return;
+        
+        let snippet = `$endpoint$('${this.endpoint.code}', {\n`;
+        
+        // Add parameters if they exist
+        if (this.params && this.params.length > 0) {
+            this.params.forEach((p, index) => {
+                const isLast = index === this.params.length - 1;
+                snippet += `  ${p}: 'value'${isLast ? '' : ','}\n`;
+            });
+        }
+        
+        snippet += `}, data => {\n  // data handling\n}, error => {\n  // error handling\n});`;
+
+        navigator.clipboard.writeText(snippet).then(() => {
+            this.toastService.show('Snippet copied to clipboard', { classname: 'bg-success text-light' });
+        }).catch(() => {
+            this.toastService.show('Failed to copy snippet', { classname: 'bg-danger text-light' });
+        });
     }
 
     nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;

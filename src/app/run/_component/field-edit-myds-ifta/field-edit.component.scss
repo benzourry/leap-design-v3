@@ -387,7 +387,7 @@ angular-editor {
     /* Full-Bleed Image Preview */
     .image-preview-bleed {
       // margin: 0.5rem -0.825rem -1rem; 
-      margin: 0.5rem -0.825rem -0.625rem;
+      margin: 0.5rem -0.625rem -0.625rem;
       border-radius: 0 0 0.75rem 0.75rem; 
       overflow: hidden;
       position: relative;
@@ -467,6 +467,15 @@ angular-editor {
     .ngb-dp-header {
       background-color: transparent !important;
       padding-top: 0.5rem !important;
+    }
+
+    .ngb-dp-weekdays{
+      border-bottom: none !important;
+      background: transparent !important;
+      .ngb-dp-weekday{
+        font-style: normal !important;
+        font-weight: bold !important;
+      }
     }
 
     .ngb-dp-months {
