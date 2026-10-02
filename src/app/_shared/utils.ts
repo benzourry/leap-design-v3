@@ -545,36 +545,55 @@ export function deepEqual(a: any, b: any): boolean {
 //     ));
 // }
 // this caused failure when offline with service worker!!!!
-export function getServerDate() {
-  let rd: Date = new Date();
-  try{
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("HEAD", window.location.href.toString(), false);
-    xmlHttp.setRequestHeader("Content-Type", "text/html");
-    xmlHttp.setRequestHeader("Cache-Control", "no-cache");
-    xmlHttp.send("");
-    rd = new Date(xmlHttp.getResponseHeader("Date"));
-  }catch(e){}
-  return rd;
-}
 
-var serverTimeOffset;
-export function getServerTimeOffset() {
-  if (serverTimeOffset == null) {
-    var date = getServerDate();
-    serverTimeOffset = date.getTime() - Date.now();
-  }
-  return serverTimeOffset;
-}
 
-function getServerDateNow() {
-  return Date.now() + getServerTimeOffset();
-}
+// export function getServerDate() {
+//   let rd: Date = new Date();
+//   try{
+//     var xmlHttp = new XMLHttpRequest();
+//     xmlHttp.open("HEAD", window.location.href.toString(), false);
+//     xmlHttp.setRequestHeader("Content-Type", "text/html");
+//     xmlHttp.setRequestHeader("Cache-Control", "no-cache");
+//     xmlHttp.send("");
+//     rd = new Date(xmlHttp.getResponseHeader("Date"));
+//   }catch(e){}
+//   return rd;
+// }
 
-export var ServerDate = {
-  now: getServerDateNow,
-  offset: getServerTimeOffset()
-}
+// var serverTimeOffset;
+// export function getServerTimeOffset() {
+//   if (serverTimeOffset == null) {
+//     var date = getServerDate();
+//     serverTimeOffset = date.getTime() - Date.now();
+//   }
+//   return serverTimeOffset;
+// }
+
+// function getServerDateNow() {
+//   return Date.now() + getServerTimeOffset();
+// }
+
+// export var ServerDate = {
+//   now: getServerDateNow,
+//   offset: getServerTimeOffset()
+// }
+
+// Default to 0 (local device time) until the server responds
+let offset = 0;
+
+// Fire-and-forget background fetch immediately on load
+fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' })
+  .then(res => {
+    const serverDate = res.headers.get('Date');
+    if (serverDate) offset = new Date(serverDate).getTime() - Date.now();
+  })
+  .catch(() => {}); // Fails gracefully to local time (offset = 0) on network error
+
+export const ServerDate = {
+  now: () => Date.now() + offset,
+  get offset() { return offset; }
+};
+
 
 export function tblToExcel(title, html) {
   var uri = 'data:application/vnd.ms-excel;base64,';

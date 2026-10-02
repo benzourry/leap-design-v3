@@ -73,6 +73,10 @@
     td:first-child, th:first-child { padding-left: 1rem; }
   }
 
+  table.extra-data-tbl tr:not(.ds-group-header) {
+    td:first-child, th:first-child { padding-left: 0.5rem; }
+  }
+
   /* ADD THIS: Applies borders ONLY in desktop table mode */
   .table-desktop-bordered > :not(caption) > * > * {
     border-width: 1px 1px;

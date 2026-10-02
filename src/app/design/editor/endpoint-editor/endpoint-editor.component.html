@@ -137,7 +137,7 @@
               </div>
             }
             @if (!loading) {
-              <div class="card mt-2">
+              <div class="card rounded-3 mt-2">
                 <div class="card-body">
                   <span style="text-transform: uppercase;font-weight: bold;">{{endpoint.method}}</span>
                   {{endpoint.url}}
@@ -148,7 +148,7 @@
               </div>
             }
             @if (endpoint.auth) {
-              <div class="card mt-2">
+              <div class="card rounded-3 mt-2">
                 <div class="card-header">Authentication Info</div>
                 <div class="list-group list-group-flush">
                   @if (endpoint.authFlow=='client_credential') {
@@ -180,9 +180,9 @@
               </div>
             }
 
-            <div class="card mt-2">
+            <div class="card rounded-3 mt-2">
               <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                   <div class="small text-body-secondary">Snippet Sample</div> 
                   <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 border border-1-5" (click)="copySnippet()" title="Copy snippet">
                     <fa-icon [icon]="['fas', 'copy']" [fixedWidth]="true"></fa-icon> Copy

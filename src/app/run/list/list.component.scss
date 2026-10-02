@@ -28,8 +28,8 @@ table.tbl-child {
   > thead th { color: var(--bs-secondary-color); }
   > tbody tr:last-child { border-bottom: transparent; }
   tr {
-    td:first-child, th:first-child { padding-left: 0.5rem; }
-    td:last-child, th:last-child { padding-right: 0.5rem; }
+    td:first-child, th:first-child { padding-left: 0.5rem !important; }
+    td:last-child, th:last-child { padding-right: 0.5rem !important; }
   }
 }
 
@@ -73,7 +73,7 @@ table.tbl-child {
   > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; position: relative; }
 }
 
-.td-list { padding: 0; }
+.td-list { padding: 0; padding-bottom:0 !important; }
 
 @media print {
   .table-print {

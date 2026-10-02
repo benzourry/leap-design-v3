@@ -45,9 +45,9 @@ import { NgClass } from '@angular/common';
   .step .half{
       filter: grayscale(85%) brightness(1.4);
   }
-  .step .cur{
-      border: 2px solid var(--bs-primary, rgba(0, 123, 255, 1));
-  }
+//   .step .cur{
+//       border: 2px solid var(--bs-primary, rgba(0, 123, 255, 1));
+//   }
   .mini.wizardstep .step span{
       display: block;
       width: 20px;
@@ -55,7 +55,7 @@ import { NgClass } from '@angular/common';
       border-radius: 50%;
       line-height: 16px;
       text-align: center;
-      border: 2px solid var(--bs-secondary-color, #7d7d7d);
+      border: 1.5px solid var(--bs-secondary-color, #7d7d7d);
       background-color: var(--bs-secondary-color, #7d7d7d);
       color: var(--bs-white, white);
   }

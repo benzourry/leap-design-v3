@@ -143,7 +143,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                               [class.mt-0]="field?.subType === 'clearfix'"
                               [hidden]="field?.hidden || field?.x?.facet?.['view'] === 'hidden' || e.x?.facet?.['view'] === 'hidden'">
                               @if (field?.type !== 'btn' && field?.subType !== 'clearfix' && !field?.hideLabel) {
-                                <label class="form-label label-span">{{field?.label}}</label>
+                                <div class="form-label label-span">{{field?.label}}</div>
                               }
                               @if (!['dataset','screen'].includes(field.type)) {
                                 @if (field.type !== 'static') {
@@ -329,7 +329,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                           @if (field.type !== 'static') {
                                             <div class="form-group" [ngClass]="field?.altClass">
                                               @if (field?.subType !== 'clearfix' && !field?.hideLabel) {
-                                                <label class="label-span form-label">{{field?.label}}</label>
+                                                <div class="form-label label-span text-body-secondary">{{field?.label}}</div>
                                               }
                                               <p class="form-control-static mb-0">
                                                 <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()" [lang]="lang()"></field-view>
@@ -338,7 +338,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
                                           }
                                           @if (field.type === 'static') {
                                             @if (field?.subType !== 'clearfix' && !field?.hideLabel) {
-                                              <label class="label-span form-label">{{field?.label}}</label>
+                                              <div class="form-label label-span text-body-secondary">{{field?.label}}</div>
                                             }
                                             <field-view [timestamp]="timestamp()" [field]="field" [value]="child[f.code]" [scopeId]="scopeId()"  [lang]="lang()"
                                               [data]="buildCompileData(child)"></field-view>
@@ -371,7 +371,7 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
   `,
   styles: [
     `.form-group > label, .custom-checkbox > label { font-size: 14px; font-weight: 600; }`,
-    `.label-span { opacity: 0.7; font-size: 0.85em; margin-bottom: 0.3rem; font-weight:600; }`,
+    `.label-span { opacity: 0.7; font-size: 0.85em; margin-bottom: 0.3rem; font-weight:600; display:inline-block; }`,
     `
       /* Hide .section-group if its inner .row lacks any visible (non-hidden) children */
       .section-group:not(:has(.row > *:not([hidden]))) {

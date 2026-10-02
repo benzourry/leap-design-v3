@@ -653,6 +653,10 @@ ngb-pagination ul.pagination { justify-content: center; }
 // .nav-underline .nav-link{
 //   padding-bottom: 0.25rem;
 // }
+.nav-underline {
+  gap: 0 !important;
+  .nav-item { margin: 0 0.5rem;}
+}
 
 @media (max-width: 767.98px) {
   .tab-simple.tab-hscroll > .nav-wrap {

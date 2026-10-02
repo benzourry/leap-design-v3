@@ -7,6 +7,7 @@
 
 @let isRichLenErr = f.subType === 'richtext' && value && ((f.v?.minlength && rawTextLength < f.v.minlength) || (f.v?.maxlength && rawTextLength > f.v.maxlength));
 <!-- @let isSurface = !(['btn', 'static', 'checkbox', 'checkboxOption', 'radio', 'scaleTo5', 'scaleTo10', 'scale'].includes(f.type) || (f.type === 'simpleOption' && ['btn', 'radio'].includes(f.subType))); -->
+@let isMultiOrNoInput = ['radio', 'checkboxOption', 'scaleTo5', 'scaleTo10', 'scale', 'map', 'imagePreview', 'static', 'speech'].includes(f.type) || (f.type === 'simpleOption' && f.subType !== 'select') || f.subType === 'richtext';
 
 <ng-template #prefixTpl>
   @if (f.x?.prefixPost) {
@@ -36,10 +37,25 @@
       [class.is-disabled]="f.readOnly">    -->
     
     @if (f?.type !== 'btn' && f?.subType !== 'clearfix' && !f?.hideLabel) {
-      <label class="surface-label" for="{{uid}}">
+      <!-- <label class="surface-label" [attr.for]="isMultiOrNoInput ? null : uid">
         <span [innerHtml]="f.label"></span>
         @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
-      </label>
+      </label> -->
+
+
+      @if (isMultiOrNoInput) {
+        <!-- Render a div for groups so we avoid unlinked <label> errors -->
+        <div class="surface-label">
+          <span [innerHtml]="f.label"></span>
+          @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
+        </div>
+      } @else {
+        <!-- Render a real label for standard inputs -->
+        <label class="surface-label" [attr.for]="uid">
+          <span [innerHtml]="f.label"></span>
+          @if (f?.v?.required) { <span class="text-danger ms-1">*</span> }
+        </label>
+      }
     }
     
     <div class="surface-control-wrapper">
@@ -260,7 +276,7 @@
               @if (f.x?.prefix || f.x?.suffix) {
                 <div class="input-group">
                   @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
-                  <ng-select class="smyds flex-grow-1" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+                  <ng-select class="smyds flex-grow-1" [items]="processedLookupList()" #formField="ngModel" [labelForId]="uid"  [bindLabel]="f.bindLabel"
                     [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
                     [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
                     [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
@@ -275,7 +291,7 @@
                   @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
                 </div>
               } @else {
-                <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [id]="uid" [bindLabel]="f.bindLabel"
+                <ng-select class="smyds" [items]="processedLookupList()" #formField="ngModel" [labelForId]="uid" [bindLabel]="f.bindLabel"
                   [virtualScroll]="true" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid"
                   [required]="f.v?.required" (ngModelChange)="valueChanged($event)"
                   [groupBy]="f.x?.groupBy?selectGroupBy:null" [loading]="loading()"
@@ -312,7 +328,7 @@
                 <div class="input-group">
                   @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                   <ng-select [items]="processedLookupList()" class="smyds flex-grow-1" [class.is-invalid]="isInvalid" #formField="ngModel"
-                    [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+                    [labelForId]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
                     [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
                     [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
                     [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
@@ -339,7 +355,7 @@
                 </div>
               } @else {
                 <ng-select [items]="processedLookupList()" class="smyds" [class.is-invalid]="isInvalid" #formField="ngModel"
-                  [id]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
+                  [labelForId]="uid" bindLabel="name" [(ngModel)]="value" (focus)="selectFocused($event)" [name]="uid" 
                   [virtualScroll]="true" [required]="f.v?.required" [groupBy]="f.x?.groupBy?selectGroupBy:null"
                   [loading]="loading()" [multiple]="f.subType?.includes('multiple')" (change)="valueChanged($event)" 
                   [readonly]="f.readOnly" [addTag]="f.x?.addEntryEnabled?triggerAddAction:null"
@@ -464,7 +480,7 @@
             }
             @if (f.subType=='select') {
               @if(f.options){
-              <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [id]="uid" [(ngModel)]="value"
+              <ng-select [items]="simpleList()" #formField="ngModel" class="smyds" [labelForId]="uid" [(ngModel)]="value"
                 [loading]="loading()" [groupBy]="f.x?.groupBy?selectGroupBy:null" [virtualScroll]="true" 
                 (change)="valueChanged($event)" (focus)="selectFocused($event)" [name]="uid" [readonly]="f.readOnly" 
                 [required]="f.v?.required" [placeholder]="' '">

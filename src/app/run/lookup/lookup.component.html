@@ -186,7 +186,7 @@
                                     @for (o of entry.data|keyvalue; track $index) {
                                       <tr>
                                         <td class="col-1 bg-transparent text-wrap" style="font-weight:600">{{o.key}}</td>
-                                        <td class="bg-transparent text-break">
+                                        <td class="bg-transparent">
                                           @if (['longtext','text','options'].indexOf(mapDataFields()[o.key])>-1) {
                                             <span [innerHtml]="o.value"></span>
                                           }@else if (mapDataFields()[o.key]=='lookup') {
