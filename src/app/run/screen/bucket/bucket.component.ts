@@ -9,7 +9,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCarousel, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious, NgbSlide } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs';
 import { base, baseApi } from '../../../_shared/constant.service';
 import { ToastService } from '../../../_shared/service/toast-service';
@@ -23,7 +23,7 @@ import { lastValueFrom } from 'rxjs';
     selector: 'app-bucket',
     imports: [FormsModule, FaIconComponent, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, 
       NgbPaginationLast, NgbDropdown, NgStyle, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, 
-      DecimalPipe, DatePipe],
+      DecimalPipe, DatePipe, NgbCarousel, NgbSlide],
     templateUrl: './bucket.component.html',
     styleUrl: './bucket.component.scss'
 })

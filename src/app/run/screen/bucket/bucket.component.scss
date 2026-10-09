@@ -40,3 +40,112 @@ tr.row-vault * { background-color: var(--bs-tertiary-bg, #eee); color: var(--bs-
   table.ds-table tr:not(.ds-group-header) { td:first-child, th:first-child { padding-left: 1rem; } }
   .table-desktop-bordered > :not(caption) > * > * { border: 1px solid var(--bs-border-color); }
 }
+
+
+// --- Pinterest-style Tile Mode ---
+.tile-columns {
+  column-count: 1;
+  column-gap: 1rem;
+  overflow-x: visible !important; /* Override table-responsive to prevent clipping */
+
+  @media (min-width: 576px) { column-count: 2; }
+  @media (min-width: 768px) { column-count: 3; }
+  @media (min-width: 1200px) { column-count: 4; }
+
+  table.tblcard, table.ds-table {
+    display: block;
+    width: 100%;
+    border: none !important;
+    
+    > thead { display: none; }
+    > tbody { display: block; width: 100%; }
+
+    tr.ds-row {
+      display: block !important; /* Forces block layout, overriding mobile grid !important */
+      width: 100%;
+      margin-bottom: 1rem !important; /* Overrides mobile margin */
+      break-inside: avoid;
+      background-color: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color) !important; /* Overrides mobile transparent border */
+      border-radius: 0.75rem !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+      padding: 0 !important; /* Clears mobile row padding */
+      overflow: hidden;
+
+      td {
+        display: block !important; /* Forces block layout on cells */
+        padding: 0.75rem 1rem !important;
+        border: none !important;
+        text-align: left !important;
+        
+        &::before, &::after { display: none !important; }
+      }
+
+      td.photo-cell {
+        padding: 0 !important; /* Overrides mobile padding */
+        text-align: center;
+        background-color: var(--bs-tertiary-bg);
+
+        img {
+          width: 100%;
+          height: auto;
+          max-height: none;
+          border-radius: 0;
+          object-fit: cover;
+          display: block;
+        }
+
+        .text-body-secondary { padding: 3rem 1rem !important; }
+        
+        span.placeholder {
+          width: 100% !important;
+          height: 150px !important;
+          border-radius: 0 !important;
+        }
+      }
+
+      td.info-cell {
+        padding: 1rem 1rem 0 !important; /* Adjust padding for title */
+        .subtitle { margin-top: 0.5rem; }
+      }
+
+      td.ds-status {
+        padding: 0.5rem 1rem 1rem !important;
+        margin: 0 !important; /* Clears mobile status pill margin */
+        background-color: transparent !important;
+      }
+
+      td.ds-action { display: none !important; }
+
+      .tile-hide { display: none !important; }
+    }
+  }
+}
+
+// --- Carousel Mode ---
+.carousel-container {
+  .pic-wrapper {
+    width: 100%;
+    
+    img {
+      width: 100%;
+      height: auto; /* Adapts to natural image ratio */
+      object-fit: cover; /* Ensures width is fully filled */
+      display: block;
+    }
+  }
+
+  /* Reposition controls consistently from the top */
+  ::ng-deep .carousel-control-prev,
+  ::ng-deep .carousel-control-next {
+    align-items: flex-start !important; /* Overrides Bootstrap vertical centering */
+    padding-top: 30%; /* Or use a fixed px like 120px depending on preference */
+  }
+
+  ::ng-deep .carousel-control-prev-icon,
+  ::ng-deep .carousel-control-next-icon {
+    filter: drop-shadow(0px 0px 4px rgba(0,0,0,0.8));
+    width: 3rem;
+    height: 3rem;
+  }
+}

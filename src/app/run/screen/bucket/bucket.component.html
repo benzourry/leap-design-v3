@@ -96,123 +96,166 @@
         </div>
         
         <div class="position-relative">
-          <div class="table-responsive">
-            @if (bucketFileList()?.length > 0 || fileLoading()) {
-              <table class="table mb-0 tblcard ds-table table-desktop-bordered">
-                <thead class="ds-thead">
-                  <tr>
-                    <th style="width: 5%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
-                    <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
-                    <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
-                    @if (screen().data?.enableDelete){
-                    <th style="width: 5%">&nbsp;</th>
-                    }
-                  </tr>
-                </thead>
-                
-                @if (fileLoading() && (!bucketFileList() || bucketFileList()?.length === 0)) {
-                  <tbody class="ds-tbody placeholder-glow">
-                    @for (dummy of [1,2,3,4,5]; track dummy) {
-                      <tr class="ds-row bg-body-tertiary bg-opacity-10">
-                        <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
-                          <span class="placeholder rounded" style="width: 64px; height: 64px; display: inline-block;"></span>
-                        </td>
-                        <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
-                          <div class="placeholder rounded mb-1" [ngClass]="'col-' + (3 + ((dummy + $index) % 4))"></div>
-                          <div class="subtitle mt-1">
-                            <div class="placeholder rounded mt-1" [ngClass]="'col-' + (6 + ((dummy + $index) % 3))"></div><br>
-                            <div class="placeholder rounded mt-1 col-4"></div><br>
-                            <div class="placeholder rounded mt-1 col-3"></div><br>
-                            <div class="placeholder rounded mt-1 col-2"></div>
-                          </div>
-                        </td>
-                        <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
-                          <span class="placeholder col-8 rounded"></span>
-                        </td>
-                        @if (screen().data?.enableDelete){
-                          <td class="ds-action text-nowrap p-1">
-                            <span class="placeholder col-10 rounded mt-sm-1"></span>
-                          </td>
-                        }
-                      </tr>
-                    }
-                  </tbody>
-                } @else {
-                  <tbody class="ds-tbody">
-                    @for (bucketFile of bucketFileList(); track bucketFile.id) {
-                    <tr class="ds-row" [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
-                      <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
-                        @if (bucketFile.fileType.indexOf('image')>-1) {
-                        <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="64"
-                          onerror="this.src='assets/img/placeholder-128.png'" class="rounded w-100">
-                        } @else {
-                        <div class="text-body-secondary text-center p-2 text-center">
-                          {{lang()=='ms'?'Tiada Paparan':'No Preview'}}</div>
-                        }
-                      </td>
-                      
-                      <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
-                        <div class="fw-bold fs-6 mt-n1">{{bucketFile.fileName}}</div>
-                        <div class="subtitle mt-1">
-                          <div class="mb-1">
+
+          @if (screen().data?.bucketStyle == 'carousel') {
+            <div class="carousel-container bg-body-tertiary rounded-3 overflow-hidden border mt-2">
+              @if (bucketFileList()?.length > 0) {
+                <ngb-carousel>
+                  @for (bucketFile of bucketFileList(); track bucketFile.id) {
+                    @if (bucketFile.fileType.indexOf('image') > -1) {
+                      <ng-template ngbSlide>
+                        <div class="d-flex justify-content-center align-items-center pic-wrapper">
+                          <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" 
+                               class="d-block img-fluid" alt="{{bucketFile.fileName}}">
+                        </div>
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded-3 px-3 py-2 mx-auto mb-3" style="width: fit-content; max-width: 80%;">
+                          <h6 class="mb-1 text-truncate">
                             @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
-                            <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank">{{bucketFile.fileUrl}}</a>
+                              <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank" class="text-white">{{bucketFile.fileName}}</a>
                             }@else {
-                            {{bucketFile.fileUrl}}
+                              <span class="text-white">{{bucketFile.fileName}}</span>
                             }
-                          </div>
-                          <div><span class="text-secondary">{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}:</span> {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</div>
-                          <div><span class="text-secondary">{{lang()=='ms'?'Saiz Fail':'File size'}}:</span> {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
-                          <div><span class="text-secondary">{{lang()=='ms'?'Jenis Fail':'File type'}}:</span> <span class="text-uppercase"> {{bucketFile.fileType?.split('/').pop() || bucketFile.fileType}}</span></div>
-                          
-                          @if (bucketFile.itemLabel || bucketFile.entryId) {
-                            <div class="d-flex flex-wrap gap-2 mt-2 mb-1">
-                              @if (bucketFile.itemLabel) {
-                                <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','edit']" class="me-1 opacity-75"></fa-icon> {{lang()=='ms'?'Dari Input':'From input'}}: {{bucketFile.itemLabel}}</span>
-                              }
-                              @if (bucketFile.entryId) {
-                                <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','hashtag']" class="me-1 opacity-75"></fa-icon> For entry #{{bucketFile.entryId}}</span>
-                              }
-                            </div>
-                          }
-                          
-                          @if(['FOUND'].includes(bucketFile.sstatus)){
-                          <div class="fw-bold mt-2">
-                            <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                            {{bucketFile.smessage}}
-                            @if (bucketFile.sstatus=='FOUND'){
-                            <div class="mt-2">
-                              <button class="btn btn-outline-danger btn-sm rounded-3" (click)="quarantine(bucketFile.id)">Quarantine</button>
-                            </div>
-                            }
-                          </div>
-                          }@else {
-                          <div class="text-secondary mt-1">{{bucketFile.smessage}}</div>
-                          }
+                          </h6>
+                          <p class="mb-0 small text-white-50">{{bucketFile.email}} &bull; {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</p>
                         </div>
-                      </td>
-                      
-                      <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
-                        {{bucketFile.email}}
-                      </td>
-                      
+                      </ng-template>
+                    }
+                  }
+                </ngb-carousel>
+              } @else if (fileLoading()) {
+                <div class="d-flex justify-content-center align-items-center placeholder-glow pic-wrapper" style="min-height: 300px;">
+                  <span class="placeholder col-12 w-100 h-100"></span>
+                </div>
+              }
+            </div>
+          } @else {
+
+            <div class="table-responsive tile-columns" [class.tile-columns]="screen().data?.bucketStyle == 'tile'">
+              @if (bucketFileList()?.length > 0 || fileLoading()) {
+                <table class="table mb-0 tblcard ds-table table-desktop-bordered">
+                  <thead class="ds-thead">
+                    <tr>
+                      <th style="width: 5%">{{lang()=='ms'?'Paparan':'Preview'}}</th>
+                      <th class="w-10">{{lang()=='ms'?'Info Fail':'File Info'}}</th>
+                      <th style="width: 5%">{{lang()=='ms'?'Pemuatnaik':'Uploader'}}</th>
                       @if (screen().data?.enableDelete){
-                      <td class="ds-action text-nowrap p-1">
-                        <div class="d-flex w-100" style="gap: 0.275rem;">
-                          <button type="button" class="btn btn-outline-danger btn-sm rounded-3" [class.disabled]="offline()"
-                            (click)="removeBucketFile(removeBucketFileTpl,bucketFile)">
-                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                          </button>
-                        </div>
-                      </td>
+                      <th style="width: 5%">&nbsp;</th>
                       }
                     </tr>
-                    }
-                  </tbody>
-                }
-              </table>
-            }
-          </div>
+                  </thead>
+                  
+                  @if (fileLoading() && (!bucketFileList() || bucketFileList()?.length === 0)) {
+                    <tbody class="ds-tbody placeholder-glow">
+                      @for (dummy of [1,2,3,4,5]; track dummy) {
+                        <tr class="ds-row bg-body-tertiary bg-opacity-10">
+                          <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
+                            <span class="placeholder rounded" style="width: 64px; height: 64px; display: inline-block;"></span>
+                          </td>
+                          <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
+                            <div class="placeholder rounded mb-1" [ngClass]="'col-' + (3 + ((dummy + $index) % 4))"></div>
+                            <div class="subtitle mt-1">
+                              <div class="placeholder rounded mt-1" [ngClass]="'col-' + (6 + ((dummy + $index) % 3))"></div><br>
+                              <div class="placeholder rounded mt-1 col-4"></div><br>
+                              <div class="placeholder rounded mt-1 col-3"></div><br>
+                              <div class="placeholder rounded mt-1 col-2"></div>
+                            </div>
+                          </td>
+                          <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
+                            <span class="placeholder col-8 rounded"></span>
+                          </td>
+                          @if (screen().data?.enableDelete){
+                            <td class="ds-action text-nowrap p-1">
+                              <span class="placeholder col-10 rounded mt-sm-1"></span>
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  } @else {
+                    <tbody class="ds-tbody">
+                      @for (bucketFile of bucketFileList(); track bucketFile.id) {
+                      <tr class="ds-row" [class.row-danger]="bucketFile.sstatus=='FOUND'" [class.row-vault]="bucketFile.sstatus=='VAULT'">
+                        <td class="ds-item photo-cell" [attr.data-label]="lang()=='ms'?'Paparan':'Preview'">
+                          @if (bucketFile.fileType.indexOf('image')>-1) {
+                          <img loading="lazy" src="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" width="64"
+                            onerror="this.src='assets/img/placeholder-128.png'" class="rounded w-100">
+                          } @else {
+                          <div class="text-body-secondary text-center p-2 text-center">
+                            {{lang()=='ms'?'Tiada Paparan':'No Preview'}}</div>
+                          }
+                        </td>
+                        
+                        <td class="ds-item info-cell text-break" [attr.data-label]="lang()=='ms'?'Info Fail':'File Info'">
+                          <div class="fw-bold fs-6 mt-n1">
+                            @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
+                              <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank" class="text-decoration-none">{{bucketFile.fileName}}</a>
+                            }@else {
+                              {{bucketFile.fileName}}
+                            }
+                          </div>
+                          <!-- <div class="fw-bold fs-6 mt-n1">{{bucketFile.fileName}}</div> -->
+                          <div class="subtitle mt-1 tile-hide">
+                            <div class="mb-1">
+                              @if(!['FOUND','VAULT'].includes(bucketFile.sstatus)){
+                                <a href="{{getUrl('/entry/file/',bucketFile.fileUrl)}}" target="_blank">{{bucketFile.fileUrl}}</a>
+                              }@else {
+                                {{bucketFile.fileUrl}}
+                              }
+                            </div>
+                            <div><span class="text-secondary">{{lang()=='ms'?'Dimuatnaik pada':'Uploaded on'}}:</span> {{bucketFile.timestamp|date:'medium':'':angularLocale()}}</div>
+                            <div><span class="text-secondary">{{lang()=='ms'?'Saiz Fail':'File size'}}:</span> {{bucketFile.fileSize/(1024*1024)|number}} MiB</div>
+                            <div><span class="text-secondary">{{lang()=='ms'?'Jenis Fail':'File type'}}:</span> <span class="text-uppercase"> {{bucketFile.fileType?.split('/').pop() || bucketFile.fileType}}</span></div>
+                            
+                            @if (bucketFile.itemLabel || bucketFile.entryId) {
+                              <div class="d-flex flex-wrap gap-2 mt-2 mb-1">
+                                @if (bucketFile.itemLabel) {
+                                  <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','edit']" class="me-1 opacity-75"></fa-icon> {{lang()=='ms'?'Dari Input':'From input'}}: {{bucketFile.itemLabel}}</span>
+                                }
+                                @if (bucketFile.entryId) {
+                                  <span class="badge bg-body-tertiary text-secondary border fw-normal px-2 py-1"><fa-icon [icon]="['fas','hashtag']" class="me-1 opacity-75"></fa-icon> For entry #{{bucketFile.entryId}}</span>
+                                }
+                              </div>
+                            }
+                            
+                            @if(['FOUND'].includes(bucketFile.sstatus)){
+                            <div class="fw-bold mt-2">
+                              <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+                              {{bucketFile.smessage}}
+                              @if (bucketFile.sstatus=='FOUND'){
+                              <div class="mt-2">
+                                <button class="btn btn-outline-danger btn-sm rounded-3" (click)="quarantine(bucketFile.id)">Quarantine</button>
+                              </div>
+                              }
+                            </div>
+                            }@else {
+                            <div class="text-secondary mt-1">{{bucketFile.smessage}}</div>
+                            }
+                          </div>
+                        </td>
+                        
+                        <td class="ds-item ds-status status-cell" [attr.data-label]="lang()=='ms'?'Pemuatnaik':'Uploader'">
+                          {{bucketFile.email}}
+                        </td>
+                        
+                        @if (screen().data?.enableDelete){
+                        <td class="ds-action text-nowrap p-1">
+                          <div class="d-flex w-100" style="gap: 0.275rem;">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-3" [class.disabled]="offline()"
+                              (click)="removeBucketFile(removeBucketFileTpl,bucketFile)">
+                              <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                            </button>
+                          </div>
+                        </td>
+                        }
+                      </tr>
+                      }
+                    </tbody>
+                  }
+                </table>
+              }
+            </div>
+
+          }
         </div>
         
         @if (!fileLoading() && (bucketFileList()?.length) > 0) {

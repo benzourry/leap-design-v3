@@ -817,6 +817,34 @@
                                   name="enableDelete" id="enableDelete">
                                 <label class="form-check-label" for="enableDelete">Enable file delete</label>
                               </div>
+
+
+                              <div class="form-group mb-3 mt-1">
+                                <label class="form-label">Bucket Style</label>
+                                <div>
+                                  <div name="lang" class="text-body">
+                                    <input type="radio" class="btn-check" id="style-normal" name="bucket-style" value="normal" #type="ngModel"
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                    <label for="style-normal" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
+                                      Normal
+                                      <div><small>Default bucket style</small></div>
+                                    </label>
+                                    <input type="radio" class="btn-check" id="style-tile" name="bucket-style" value="tile" #type="ngModel"
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                    <label for="style-tile" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
+                                      Tile
+                                      <div><small>Tile view for bucket</small></div>
+                                    </label>
+                                    <input type="radio" class="btn-check" id="style-carousel" name="bucket-style" value="carousel" #type="ngModel"
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                    <label for="style-carousel" class="btn btn-outline-secondary border-1-5 me-2 mb-1 text-start">
+                                      Carousel
+                                      <div><small>Carousel view for bucket</small></div>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+
                             </div>
                           }
                           @if (['mailbox'].indexOf(curScreen.type)>-1) {
