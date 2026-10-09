@@ -642,7 +642,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
   buildGo(entryId: any, noParam?: boolean) {
     const obj: any = {};
     const basePath = `#${this.preurl}`;
-    const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
+    // const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
+
+    // Obfuscate the query string instead of using clear text
+    let queryStr = '';
+    if (!noParam) {
+      const encodedSpace = btoaUTF(JSON.stringify({ entryId: entryId || '' }), 'u');
+      queryStr = `?_=${encodedSpace}`;
+    }
 
     this.screen().actions?.forEach((ac: any) => {
       const next = ac.next;
@@ -817,17 +824,37 @@ export class ScreenComponent implements OnInit, OnDestroy {
     return promiseChain;
   }
 
+  // runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
+  //   if (inpop) {
+  //     this.inPop(content, entryId, { next: formId }, type, facet, params)
+  //   } else {
+  //     let navigationExtras: NavigationExtras = {
+  //       queryParams: deepMerge({ entryId: entryId }, params),
+  //     };
+  //     this.router.navigate([this.preurl + url], navigationExtras);
+  //     this.modalService.dismissAll();
+  //   }
+  // }
+
   runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
     if (inpop) {
-      this.inPop(content, entryId, { next: formId }, type, facet, params)
+      this.inPop(content, entryId, formId, type, facet, params);
     } else {
-      let navigationExtras: NavigationExtras = {
-        queryParams: deepMerge({ entryId: entryId }, params),
-      };
-      this.router.navigate([this.preurl + url], navigationExtras);
+      // 1. Merge all query parameters
+      const mergedParams = deepMerge({ entryId: entryId }, params);
+      
+      // 2. Encode to Base64 string
+      const encodedSpace = btoaUTF(JSON.stringify(mergedParams),'u');
+
+      // 3. Navigate with the encoded 'space' parameter instead of clear text
+      this.router.navigate([this.preurl + url], { 
+        queryParams: { _: encodedSpace } 
+      });
+      
       this.modalService.dismissAll();
     }
-  }
+  }  
+
 
   entry = signal<any>({});
   prevEntry = signal<any>({});

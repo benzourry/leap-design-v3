@@ -613,14 +613,33 @@ export class ListComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  // runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
+  //   if (inpop) {
+  //     this.inPop(content, entryId, formId, type, facet, params);
+  //   } else {
+  //     this.router.navigate([this.preurl + url], { queryParams: deepMerge({ entryId: entryId }, params) });
+  //     this.modalService.dismissAll();
+  //   }
+  // }
+
   runAction(url: string, inpop: boolean, content: any, entryId: any, formId: any, type: string, facet: string, params: any) {
     if (inpop) {
       this.inPop(content, entryId, formId, type, facet, params);
     } else {
-      this.router.navigate([this.preurl + url], { queryParams: deepMerge({ entryId: entryId }, params) });
+      // 1. Merge all query parameters
+      const mergedParams = deepMerge({ entryId: entryId }, params);
+      
+      // 2. Encode to Base64 string
+      const encodedSpace = btoaUTF(JSON.stringify(mergedParams),'u');
+
+      // 3. Navigate with the encoded 'space' parameter instead of clear text
+      this.router.navigate([this.preurl + url], { 
+        queryParams: { _: encodedSpace } 
+      });
+      
       this.modalService.dismissAll();
     }
-  }
+  }  
 
   actionUrl = signal<string>('');
   actionTitle = signal<string>('');
