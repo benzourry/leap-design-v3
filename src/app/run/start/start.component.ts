@@ -42,6 +42,8 @@ import { EntryService } from '../_service/entry.service';
 import { RunService } from '../_service/run.service';
 import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
 import { ThemeToggleComponent } from "../_component/theme-toggle.component";
+import { ListComponent } from '../list/list.component';
+import { ScreenComponent } from '../screen/screen.component';
 
 @Component({
   selector: 'app-start',
@@ -162,6 +164,11 @@ export class StartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    ListComponent.clearCache();
+    ScreenComponent.clearCache();
+    
+
     this.cookieConsentStatus.set(!!this.getCookie(this.cookieConsentName));
     window.localStorage.setItem('noframe', String(this.frameless()));
     this.accessToken = this.userService.getToken();

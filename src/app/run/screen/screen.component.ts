@@ -1414,6 +1414,10 @@ export class ScreenComponent implements OnInit, OnDestroy {
 
   linkify = linkify;
 
+  public static clearCache() {
+    this.screenCache.clear();
+  }
+
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key].unsubscribe());
     this.intervalList.forEach(i => clearInterval(i));

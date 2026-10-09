@@ -1140,6 +1140,10 @@ export class ListComponent implements OnInit, OnDestroy {
     }
   }
 
+  public static clearCache() {
+    this.datasetCache.clear();
+  }
+
   ngOnDestroy() {
     Object.keys(this.liveSubscription).forEach(key => this.liveSubscription[key]?.unsubscribe());
 
