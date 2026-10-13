@@ -261,6 +261,10 @@
                       (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
+                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
+                      (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id)">
+                      <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                    </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
                       (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
@@ -807,5 +811,21 @@
         Confirm Remove
       </button>
     </div>
+  </div>
+</ng-template>
+
+<!-- LAMBDA META TRAIL VIEWER MODAL -->
+<ng-template #viewLambdaMetaTrailTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Lambda Audit Log</h4>
+  </div>
+  <div class="modal-body p-0">
+    <app-meta-trail-viewer 
+      [scope]="currentMetaTrailScope" 
+      (onReverted)="onTrailReverted(c)">
+    </app-meta-trail-viewer>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

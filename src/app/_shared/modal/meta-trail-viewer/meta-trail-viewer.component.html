@@ -1,0 +1,107 @@
+<div class="bg-body-secondary p-2">
+  <div class="input-group" ngbDropdown>
+    <input type="search" autocapitalize="none" class="form-control" placeholder="Search trails..."
+      [(ngModel)]="metaTrailsSearchText" (keyup.enter)="loadMetaTrails(metaTrailsPageNumber)">
+    
+    <button type="button" class="btn btn-outline-secondary" id="dropdownMetaTrail" title="Filter" ngbDropdownToggle>
+      <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>
+    </button>
+    <div ngbDropdownMenu aria-labelledby="dropdownMetaTrail">
+      <div class="px-2">
+        <label class="small">Trails date range</label>
+        <div class="input-group">
+          <input class="form-control" type="text" name="metaTrailFrom" [(ngModel)]="metaTrailFrom"
+            placeholder="From" (ngModelChange)="loadMetaTrails(metaTrailsPageNumber)"
+            (click)="dMtrailfrom.toggle()" ngbDatepicker #dMtrailfrom="ngbDatepicker">
+          <input class="form-control" type="text" name="metaTrailTo" [(ngModel)]="metaTrailTo" placeholder="To"
+            (ngModelChange)="loadMetaTrails(metaTrailsPageNumber)" (click)="dMtrailto.toggle()"
+            ngbDatepicker #dMtrailto="ngbDatepicker">
+        </div>
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="px-2">
+        <label class="small">Page Size</label>
+        <div class="btn-group float-end">
+          @for (i of [15,25,50,100]; track i) {
+            <input class="btn-check" type="radio" [value]="i" id="mtpagesize-{{i}}"
+              name="mtpagesize-{{i}}" (click)="loadMetaTrails(1, i)"
+              [(ngModel)]="metaTrailsPageSize">
+            <label for="mtpagesize-{{i}}" class="btn btn-outline-secondary btn-sm">{{i}}</label>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-responsive">
+  @if(metaTrailsTotal > 0){
+    <table class="table table-striped table-sm table-flush">
+      <thead>
+        <tr>
+          <th class="col-2">Timestamp</th>
+          <th class="col-1">Action</th>
+          <th>Triggered By</th>
+          <th class="col-1 text-center">Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trail of metaTrails; track trail.id) {
+          <tr>
+            <td>{{trail.timestamp | date:'yy-MM-d HH:mm:ss'}}</td>
+            <td>
+              <span class="badge bg-secondary">{{trail.action | uppercase}}</span>
+            </td>
+            <td>{{trail.email}}</td>
+            <td class="text-center text-nowrap">
+              @if (trail.data) {
+                <button type="button" class="btn btn-sm btn-info btn-round me-1" title="View Snapshot"
+                  (click)="viewMetaTrailJson(viewMetaTrailDataTpl, trail.data)">
+                  <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <button type="button" class="btn btn-sm btn-warning btn-round" title="Revert to this state"
+                  (click)="revertMetaTrail(trail.id)">
+                  <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Revert
+                </button>
+              } @else {
+                <span class="text-muted small">N/A</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }@else {
+    <div class="details">
+      <p class="text-center text-muted p-3 mb-0"> No meta trails data available.</p>
+    </div>        
+  }
+</div>
+@if (metaTrailsTotal > metaTrailsPageSize) {
+  <div class="text-center d-flex justify-content-center pagination-rounded p-1 print-hide">
+    <ngb-pagination [collectionSize]="metaTrailsTotal" [pageSize]="metaTrailsPageSize" [(page)]="metaTrailsPageNumber"
+      [maxSize]="10" [rotate]="true" (pageChange)="loadMetaTrails(metaTrailsPageNumber)"
+      boundaryLinks="true" directionLinks="true">
+      <ng-template ngbPaginationFirst><fa-icon [icon]="['fas','angle-double-left']"></fa-icon></ng-template>
+      <ng-template ngbPaginationPrevious><fa-icon [icon]="['fas','chevron-left']"></fa-icon></ng-template>
+      <ng-template ngbPaginationNext><fa-icon [icon]="['fas','chevron-right']"></fa-icon></ng-template>
+      <ng-template ngbPaginationLast><fa-icon [icon]="['fas','angle-double-right']"></fa-icon></ng-template>
+    </ngb-pagination>
+  </div>
+}
+
+<!-- JSON SNAPSHOT VIEWER MODAL -->
+<ng-template #viewMetaTrailDataTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Meta Trail Snapshot</h4>
+  </div>
+  <div class="modal-body p-0 bg-body code-container" style="overflow: auto; max-height: 60vh;">
+    <pre class="my-0 p-3">{{selectedMetaTrailData | json}}</pre>
+  </div>  
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round btn-secondary" (click)="copyToClipboard(selectedMetaTrailData)">
+      <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Copy JSON
+    </button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+  </div>
+</ng-template>

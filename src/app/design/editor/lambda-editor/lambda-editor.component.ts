@@ -29,6 +29,7 @@ import { LookupService } from '../../../run/_service/lookup.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { SignaService } from '../../../service/signa.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -38,7 +39,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
       NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, 
       JsonViewerComponent,
-      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, DatePipe],
+      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, DatePipe, MetaTrailViewerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LambdaEditorComponent implements OnInit {
@@ -852,5 +853,21 @@ export class LambdaEditorComponent implements OnInit {
   ]
 
   dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+
+  // ==========================================
+  // META TRAILS LOGIC
+  // ==========================================
+  currentMetaTrailScope: string = "";
+
+  viewMetaTrails(content: any, scope: string) {
+    this.currentMetaTrailScope = scope;
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+  }
+
+  onTrailReverted(modalCloseFn: any) {
+    // Refresh the lambda data when a revert happens
+    this.loadLambda(this.lambda.id); 
+  }
 
 }

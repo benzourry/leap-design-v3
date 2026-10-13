@@ -65,6 +65,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { KryptaService } from '../../../../service/krypta.service';
 import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
+import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 // declare var LeaderLine: any;
 // import { combineLatest } from 'rxjs';
 
@@ -81,7 +82,8 @@ import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
         EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, SlicePipe,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
-        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe]
+        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe,
+    MetaTrailViewerComponent]
 })
 export class FormEditorComponent implements OnInit, AfterViewChecked {
 
@@ -2552,5 +2554,22 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     this.toastService.show("Invalid data format during paste", { classname: 'bg-danger text-light' });
                 }
             }, () => {});
+    }
+
+
+ // ==========================================
+    // META TRAILS LOGIC
+    // ==========================================
+    currentMetaTrailScope: string = "";
+
+    viewMetaTrails(content: any, scope: string) {
+        this.currentMetaTrailScope = scope;
+        history.pushState(null, '', window.location.href);
+        this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+    }
+
+    onTrailReverted(modalCloseFn: any) {
+        // Refresh the form data when a revert happens
+        this.getFormData(this.curForm.id); 
     }
 }

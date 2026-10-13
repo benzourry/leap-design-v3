@@ -951,6 +951,9 @@
                             <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon> Form's
                             Entry trails
                           </button>
+                          <button type="button" (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id)" ngbDropdownItem>
+                            <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Form's Meta trails
+                          </button>
                           <button type="button" title="Import from File" [class.disabled]="offline"
                             (click)="importExcel(importExcelTpl)" ngbDropdownItem>
                             <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import Entry
@@ -3261,6 +3264,16 @@
               </div>
             </ng-template>
           </li>
+
+          @if (editItemData?.id) {
+            <li class="nav-item d-flex align-items-center ms-2" style="margin-bottom: -1px;">
+              <button type="button" class="btn btn-sm px-2" 
+                title="View Item Trails"
+                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_item_' + editItemData.id)">
+                <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+              </button>
+            </li>
+          }
         </ul>
       </div>
       <div [ngbNavOutlet]="nav"></div>
@@ -4076,5 +4089,21 @@
       [disabled]="!parsedPasteData || (isSameForm && !pasteSuffix)">
       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Create Section
     </button>
+  </div>
+</ng-template>
+
+<!-- META TRAIL VIEWER MODAL -->
+<ng-template #viewFormMetaTrailTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Audit Log</h4>
+  </div>
+  <div class="modal-body p-0">
+    <app-meta-trail-viewer 
+      [scope]="currentMetaTrailScope" 
+      (onReverted)="onTrailReverted(c)">
+    </app-meta-trail-viewer>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

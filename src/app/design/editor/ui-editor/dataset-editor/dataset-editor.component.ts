@@ -28,6 +28,7 @@ import { EntryService } from '../../../../run/_service/entry.service';
 import { RunService } from '../../../../run/_service/run.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
+import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -38,7 +39,7 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
         FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
         NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem,
-        KeyValuePipe, IconSplitPipe]
+        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent]
 })
 export class DatasetEditorComponent implements OnInit {
 
@@ -732,5 +733,21 @@ export class DatasetEditorComponent implements OnInit {
         if (!actions || !Array.isArray(actions)) return false;
         return actions.some(a => a.type === 'dropdown');
     }
+
+  // ==========================================
+  // META TRAILS LOGIC
+  // ==========================================
+  currentMetaTrailScope: string = "";
+
+  viewMetaTrails(content: any, scope: string) {
+    this.currentMetaTrailScope = scope;
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+  }
+
+  onTrailReverted(modalCloseFn: any) {
+    // Refresh the dataset data when a revert happens
+    this.getDataset(this.curDataset.id); 
+  }
 
 }

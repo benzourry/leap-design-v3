@@ -20,6 +20,7 @@ import { NotiListComponent } from '../../../_shared/modal/noti-list/noti-list.co
 import { EditMailerComponent } from '../../../_shared/modal/edit-mailer/edit-mailer.component';
 import { EditDatasetComponent } from '../../../_shared/modal/edit-dataset/edit-dataset.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 
 @Component({
     selector: 'app-mailer-editor',
@@ -27,7 +28,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
         NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent, SlicePipe,
-        NotiListComponent],
+        NotiListComponent, MetaTrailViewerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MailerEditorComponent implements OnInit {
@@ -521,5 +522,21 @@ export class MailerEditorComponent implements OnInit {
 
     nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
     br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
+
+    // ==========================================
+  // META TRAILS LOGIC
+  // ==========================================
+  currentMetaTrailScope: string = "";
+
+  viewMetaTrails(content: any, scope: string) {
+    this.currentMetaTrailScope = scope;
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+  }
+
+  onTrailReverted(modalCloseFn: any) {
+    // Refresh the mailer data when a revert happens
+    this.loadMailer(this.mailer.id); 
+  }
 
 }

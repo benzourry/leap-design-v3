@@ -35,6 +35,7 @@ import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray, CdkD
 import { RunService } from '../../../../run/_service/run.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
+import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 // import { NgLeafletComponent } from '../../../../_shared/component/ng-leaflet/ng-leaflet.component';
 // import { combineLatest } from 'rxjs';
 
@@ -47,7 +48,7 @@ import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
         NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule, CdkDropListGroup,
         CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, FilterPipe,
-        NgbNavOutlet, EditScreenComponent, KeyValuePipe]
+        NgbNavOutlet, EditScreenComponent, KeyValuePipe, MetaTrailViewerComponent]
 })
 export class ScreenEditorComponent implements OnInit {
 
@@ -1091,6 +1092,22 @@ defaultMapStyle:string = `height: 600px;`
     this.palettes.push({ title: 'Manage All User', type: 'user', screenId: undefined, icon: 'fas:users-cog', appId: appId });
 
     this.cdr.detectChanges();
+  }
+
+  // ==========================================
+  // META TRAILS LOGIC
+  // ==========================================
+  currentMetaTrailScope: string = "";
+
+  viewMetaTrails(content: any, scope: string) {
+    this.currentMetaTrailScope = scope;
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+  }
+
+  onTrailReverted(modalCloseFn: any) {
+    // Refresh the screen data when a revert happens
+    this.getScreenData(this.curScreen.id); 
   }
 
 }
