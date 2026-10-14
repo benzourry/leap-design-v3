@@ -127,7 +127,19 @@ export class FieldEditComponent extends ElementBase<any> {
   // Computed Values
   compiledDataPrefix = computed(() => this.compileTpl(this.field()?.x?.prefix, this.data(), this.field()?.subType === 'htmlSave'));
   compiledDataSuffix = computed(() => this.compileTpl(this.field()?.x?.suffix, this.data(), this.field()?.subType === 'htmlSave'));
-  compiledDataPlaceholder = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
+  // compiledDataPlaceholder = computed(() => this.compileTpl(this.field()?.placeholder, this.data(), this.field()?.subType === 'htmlSave'));
+
+  compiledDataPlaceholder = computed(() => {
+    const f = this.field();
+    
+    // Bypass compileTpl for static HTML when inside the designer/form-editor (always = true)
+    if (this.always() && f?.type === 'static' && ['html', 'htmlSave'].includes(f?.subType)) {
+      return f?.placeholder || '';
+    }
+
+    return this.compileTpl(f?.placeholder, this.data(), f?.subType === 'htmlSave');
+  });
+
   compiledDataLabel = computed(() => this.compileTpl(this.field()?.label, this.data(), this.field()?.subType === 'htmlSave'));
   simpleList = computed(() => splitAsList(this.field()?.options));
 

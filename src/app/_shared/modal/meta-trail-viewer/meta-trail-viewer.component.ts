@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject, ChangeDetectorRef, DestroyRef, ChangeDetectionStrategy, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import { NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastService } from '../../service/toast-service';
@@ -14,7 +14,7 @@ import { JsonViewerComponent } from '../../component/json-viewer/json-viewer.com
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    FormsModule, DatePipe, JsonPipe, UpperCasePipe,
+    FormsModule, DatePipe, UpperCasePipe,
     NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule,
     FaIconComponent,
     JsonViewerComponent
@@ -103,6 +103,45 @@ export class MetaTrailViewerComponent implements OnInit {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
       this.toastService.show("JSON copied to clipboard", { classname: 'bg-success text-light' });
     });
+  }
+
+  getEntityName(trail: any): string {
+    if (!trail?.data) return 'N/A';
+
+    switch (trail.module) {
+      // Modules that use 'title'
+      case 'form':
+      case 'form_section':
+      case 'screen':
+      case 'dataset':
+        return trail.data.title || 'N/A';
+
+      // Modules that use 'name'
+      case 'lambda':
+      case 'emailTemplate':
+        return trail.data.name || 'N/A';
+
+      // Modules that use 'label'
+      case 'form_item':
+        return trail.data.label || 'N/A';
+
+      // Fallback for unknown modules
+      default:
+        return 'N/A';
+    }
+  }
+
+  formatEmail(email: string): string {
+    if (!email) return 'Unknown';
+    
+    const parts = email.split('@');
+    // If it's a valid email with an '@' symbol
+    if (parts.length === 2) {
+      return `${parts[0]}@${parts[1].charAt(0)}...`;
+    }
+    
+    // Fallback if the string doesn't contain an '@'
+    return email; 
   }
 
   hoveredTrailId: string | null = null;

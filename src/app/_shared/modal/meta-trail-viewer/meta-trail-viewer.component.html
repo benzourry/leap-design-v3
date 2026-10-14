@@ -39,27 +39,30 @@
     <table class="table table-striped table-sm table-flush position-relative">
       <thead>
         <tr>
-          <th class="col-3">Timestamp</th>
+          <th class="col-3 ps-2">Timestamp</th>
           <th class="col-3">Module</th>
           <th class="col-2">Action</th>
-          <th class="col-4">Triggered By</th>
+          <th style="width: 1%; white-space: nowrap;">By</th>
         </tr>
       </thead>
       <tbody>
         @for (trail of metaTrails; track trail.id) {
-          <tr style="transform: scale(1); min-height:2rem;" 
+          <tr style="transform: scale(1); height:2.5rem;" 
               (mouseenter)="hoveredTrailId = trail.id" 
               (mouseleave)="hoveredTrailId = null">
             
-            <td class="align-middle">{{trail.timestamp | date:'yy-MM-d'}}<br/><div class="fw-bold">{{trail.timestamp | date:'HH:mm:ss'}}</div></td>
+            <td class="align-middle ps-2">{{trail.timestamp | date:'yy-MM-dd'}} <span class="fw-bold">{{trail.timestamp | date:'HH:mm:ss'}}</span></td>
             <td class="align-middle">
-              <span class="badge border border-info text-info">{{(trail.module | uppercase) || 'N/A'}}</span>
+              <span class="small fw-bold">{{(trail.module | uppercase) || 'N/A'}}</span>
+              <div class="small">{{getEntityName(trail)}}</div>
             </td>
             <td class="align-middle">
               <span class="badge bg-secondary">{{trail.action | uppercase}}</span>
             </td>
             <td class="align-middle">
-              {{trail.email}}
+              <!-- {{trail.email}} -->
+              <!-- {{ trail.email?.split('@')[0]+'@...' || 'Unknown' }} -->
+                {{ formatEmail(trail.email) }}
               
               <!-- Angular-Driven Glassmorphism Overlay -->
               <div class="d-flex align-items-center justify-content-center gap-2" 
