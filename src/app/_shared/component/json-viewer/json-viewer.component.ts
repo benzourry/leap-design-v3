@@ -28,104 +28,90 @@ import { Component, Signal, WritableSignal, signal, input, ChangeDetectionStrate
             <div class="json-leaf">
               <span class="json-key">"{{ key }}"</span>:
 
-              <span class="json-value" [class.string]="isString(value)">
-                {{ isFormatted(path) ? '"' + formatValue(value) + '"': (isString(value) ? '"' + value + '"' : value)}}
-              </span>
+              <!-- ✅ NEW: Handle empty objects/arrays gracefully without arrows -->
+              @if (isEmpty(value)) {
+                <span class="json-bracket">{{ isArray(value) ? '[]' : '{}' }}</span>
+              } @else {
+                <span class="json-value" [class.string]="isString(value)">
+                  {{ isFormatted(path) ? '"' + formatValue(value) + '"': (isString(value) ? '"' + value + '"' : value)}}
+                </span>
 
-              @if (isFormatCandidate(value)){
-                <button class="format-toggle" (click)="toggleFormat(path)" title="Toggle format">
-                  🪄
-                </button>
+                @if (isFormatCandidate(value)){
+                  <button class="format-toggle" (click)="toggleFormat(path)" title="Toggle format">
+                    🪄
+                  </button>
+                }
               }
             </div>
           }
         }
       } @else {
-        <!-- ✅ ROOT PRIMITIVE FALLBACK: Mirrors leaf behavior for strings, numbers, and timestamps -->
         <div class="json-primitive">
-          <span class="json-value" [class.string]="isString(json())">
-            {{ isFormatted(basePath() || 'root') ? '"' + formatValue(json()) + '"': (isString(json()) ? '"' + json() + '"' : json())}}
-          </span>
+          <!-- ✅ NEW: Handle empty objects/arrays at the root level -->
+          @if (isEmpty(json())) {
+            <span class="json-bracket">{{ isArray(json()) ? '[]' : '{}' }}</span>
+          } @else {
+            <span class="json-value" [class.string]="isString(json())">
+              {{ isFormatted(basePath() || 'root') ? '"' + formatValue(json()) + '"': (isString(json()) ? '"' + json() + '"' : json())}}
+            </span>
 
-          @if (isFormatCandidate(json())){
-            <button class="format-toggle" (click)="toggleFormat(basePath() || 'root')" title="Toggle format">
-              🪄
-            </button>
+            @if (isFormatCandidate(json())){
+              <button class="format-toggle" (click)="toggleFormat(basePath() || 'root')" title="Toggle format">
+                🪄
+              </button>
+            }
           }
         </div>
       }
     </div>
   `,
   styles: [`
+    /* ... Keep all your previous styles exactly as they were ... */
     .json-root {
-      font-family: monospace;
+      --jv-key-color: brown;
+      --jv-value-color: navy;
+      --jv-string-color: green;
+      --jv-bracket-color: gray;
+      
+      --jv-btn-bg: #f0f0f0;
+      --jv-btn-border: #ccc;
+      --jv-btn-text: #333;
+      
+      --jv-toggle-color: #666;
+      --jv-toggle-hover-color: black;
+
+      font-family: var(--bs-font-monospace, monospace);
       font-size: 14px;
       line-height: 1.5;
+      color: var(--bs-body-color, inherit); 
     }
 
-    .controls {
-      margin-bottom: 0.5rem;
+    :host-context([data-bs-theme="dark"]) .json-root {
+      --jv-key-color: #d19a66;     
+      --jv-value-color: #56b6c2;   
+      --jv-string-color: #98c379;  
+      --jv-bracket-color: #abb2bf; 
+      
+      --jv-btn-bg: #2b3035;        
+      --jv-btn-border: #495057;    
+      --jv-btn-text: #f8f9fa;      
+      
+      --jv-toggle-color: #adb5bd;
+      --jv-toggle-hover-color: #fff;
     }
 
-    .json-button {
-      margin-right: 0.5rem;
-      padding: 2px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .json-key {
-      color: brown;
-    }
-
-    .json-value {
-      color: navy; 
-      white-space: pre-wrap; /* Essential for your IP disclosure paragraphs */
-      word-break: break-word; /* Prevents long txHashes from overflowing */
-    }
-
-    .json-value.string {
-      color: green;
-    }
-
-    .json-bracket {
-      color: gray;
-    }
-
-    .json-leaf,
-    .json-primitive {
-      margin-left: 1rem;
-    }
-
-    .toggle {
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .arrow {
-      display: inline-block;
-      width: 1rem;
-    }
-
-    .json-children {
-      margin-left: 1.5rem;
-    }
-    
-    .format-toggle {
-      margin-left: 4px;
-      font-size: 11px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      color: #666;
-    }
-    .format-toggle:hover,
-    .format-toggle:active {
-      color: black;
-    }
+    .controls { margin-bottom: 0.5rem; }
+    .json-button { margin-right: 0.5rem; padding: 2px 8px; font-size: 12px; cursor: pointer; background: var(--jv-btn-bg); border: 1px solid var(--jv-btn-border); color: var(--jv-btn-text); border-radius: 4px; }
+    .json-key { color: var(--jv-key-color); }
+    .json-value { color: var(--jv-value-color); white-space: pre-wrap; word-break: break-word; }
+    .json-value.string { color: var(--jv-string-color); }
+    .json-bracket { color: var(--jv-bracket-color); }
+    .json-leaf, .json-primitive { margin-left: 1rem; }
+    .toggle { cursor: pointer; user-select: none; }
+    .arrow { display: inline-block; width: 1rem; }
+    .json-children { margin-left: 1.5rem; }
+    .format-toggle { margin-left: 4px; font-size: 11px; cursor: pointer; background: none; border: none; color: var(--jv-toggle-color); }
+    .format-toggle:hover, .format-toggle:active { color: var(--jv-toggle-hover-color); }
   `]
 })
 export class JsonViewerComponent {
@@ -168,12 +154,17 @@ export class JsonViewerComponent {
   }
 
   getKeys(obj: any): string[] {
-    // Defensive check: only extract keys if it is truly an object or array
     return obj && typeof obj === 'object' ? Object.keys(obj) : [];
   }
 
+  // ✅ UPDATED: Only expandable if it actually has keys/children
   isExpandable(value: any): boolean {
-    return value !== null && typeof value === 'object';
+    return value !== null && typeof value === 'object' && Object.keys(value).length > 0;
+  }
+
+  // ✅ NEW: Helper to identify completely empty objects or arrays
+  isEmpty(value: any): boolean {
+    return value !== null && typeof value === 'object' && Object.keys(value).length === 0;
   }
 
   isArray(value: any): boolean {

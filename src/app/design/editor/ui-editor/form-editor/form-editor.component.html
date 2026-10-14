@@ -1467,6 +1467,16 @@
               </div>
             </ng-template>
           </li>
+
+          @if (editSectionData?.id) {
+            <li class="nav-item d-flex align-items-center ms-2" style="margin-bottom: -1px;">
+              <button type="button" class="btn btn-sm px-2" 
+                title="View Section Trails"
+                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_section_' + editSectionData.id)">
+                <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+              </button>
+            </li>
+          }
         </ul>
       </div>
       <div [ngbNavOutlet]="nav"></div>

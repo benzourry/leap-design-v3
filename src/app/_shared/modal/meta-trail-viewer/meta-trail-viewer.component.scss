@@ -1,0 +1,35 @@
+.trail-row {
+  /* Establish stacking context so absolute children map to the row, not the table/page */
+  transform: scale(1);
+}
+
+.action-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  
+  /* Glassmorphism Effect */
+  background: rgba(var(--bs-body-bg-rgb), 0.65); /* Uses Bootstrap's native CSS var for light/dark mode */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  
+  /* Hidden by default */
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Reveal glassmorphism on hover */
+
+.trail-row:hover .action-overlay {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}

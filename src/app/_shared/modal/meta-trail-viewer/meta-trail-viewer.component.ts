@@ -6,6 +6,7 @@ import { NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule, NgbModal }
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastService } from '../../service/toast-service';
 import { MetaTrailService } from '../../../service/metatrail.service';
+import { JsonViewerComponent } from '../../component/json-viewer/json-viewer.component';
 
 @Component({
   selector: 'app-meta-trail-viewer',
@@ -15,8 +16,9 @@ import { MetaTrailService } from '../../../service/metatrail.service';
   imports: [
     FormsModule, DatePipe, JsonPipe, UpperCasePipe,
     NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule,
-    FaIconComponent
-  ]
+    FaIconComponent,
+    JsonViewerComponent
+]
 })
 export class MetaTrailViewerComponent implements OnInit {
   @Input() scope!: string;
@@ -102,4 +104,6 @@ export class MetaTrailViewerComponent implements OnInit {
       this.toastService.show("JSON copied to clipboard", { classname: 'bg-success text-light' });
     });
   }
+
+  hoveredTrailId: string | null = null;
 }
