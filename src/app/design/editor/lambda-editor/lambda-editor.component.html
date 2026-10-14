@@ -28,7 +28,7 @@
     <div class="group-list">
       @if (itemLoading()) {
         <div class="p-3 text-center">
-          <div class="lds-ellipsis white">
+          <div class="lds-ellipsis">
             <div></div>
             <div></div>
             <div></div>
@@ -821,6 +821,7 @@
   </div>
   <div class="modal-body p-0">
     <app-meta-trail-viewer 
+      [canRevert]="true"
       [scope]="currentMetaTrailScope" 
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>

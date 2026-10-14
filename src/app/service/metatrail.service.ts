@@ -12,6 +12,10 @@ export class MetaTrailService {
     return this.http.get<any>(`${baseApi}/metatrail/${scope}`, { params });
   }
 
+  getMetaTrailsByAppId(appId: number, params: any) {
+    return this.http.get<any>(`${baseApi}/metatrail/app/${appId}`, { params });
+  }
+
   revertMetaTrail(id: string) {
     return this.http.post<any>(`${baseApi}/metatrail/${id}/revert`, {});
   }

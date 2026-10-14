@@ -1182,6 +1182,7 @@
   </div>
   <div class="modal-body p-0">
     <app-meta-trail-viewer 
+      [canRevert]="true"
       [scope]="currentMetaTrailScope" 
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>

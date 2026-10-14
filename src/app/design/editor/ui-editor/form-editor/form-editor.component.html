@@ -951,9 +951,6 @@
                             <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon> Form's
                             Entry trails
                           </button>
-                          <button type="button" (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id)" ngbDropdownItem>
-                            <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Form's Meta trails
-                          </button>
                           <button type="button" title="Import from File" [class.disabled]="offline"
                             (click)="importExcel(importExcelTpl)" ngbDropdownItem>
                             <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Import Entry
@@ -988,6 +985,13 @@
                       <button type="button" class="btn btn-sm border border-1-5 ms-1"
                         (click)="editForm(editFormTpl,curForm,false)">
                         <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <!-- <button type="button" (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id)" ngbDropdownItem>
+                        <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Form's Meta trails
+                      </button> -->
+                      <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
+                        (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id)">
+                        <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                       </button>
                       <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
                         routerLink="/run/{{app?.id}}/form/{{curForm.id}}/add">
@@ -4105,15 +4109,16 @@
 <!-- META TRAIL VIEWER MODAL -->
 <ng-template #viewFormMetaTrailTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h4 class="modal-title">Audit Log</h4>
+    <h4 class="modal-title">Form Audit Log</h4>
   </div>
   <div class="modal-body p-0">
     <app-meta-trail-viewer 
+      [canRevert]="true"
       [scope]="currentMetaTrailScope" 
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>
   </div>
-  <div class="modal-footer justify-content-between">
+  <div class="modal-footer justify-content-between border-top-0">
     <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

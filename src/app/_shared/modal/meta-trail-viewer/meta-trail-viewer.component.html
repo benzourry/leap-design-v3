@@ -36,7 +36,7 @@
 
 <div class="table-responsive">
   @if(metaTrailsTotal > 0){
-    <table class="table table-striped table-sm table-flush position-relative">
+    <table class="table table-striped table-sm table-flush position-relative mb-0">
       <thead>
         <tr>
           <th class="col-3 ps-2">Timestamp</th>
@@ -74,10 +74,12 @@
                     (click)="viewMetaTrailJson(viewMetaTrailDataTpl, trail.data)">
                     <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon> View Snapshot
                   </button>
-                  <button type="button" class="btn btn-sm btn-warning btn-round shadow" title="Revert to this state"
-                    (click)="revertMetaTrail(trail.id)">
-                    <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Revert
-                  </button>
+                  @if (canRevert) {
+                    <button type="button" class="btn btn-sm btn-warning btn-round shadow" title="Revert to this state"
+                        (click)="revertMetaTrail(trail.id)">
+                        <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Revert
+                    </button>
+                    }
                 } @else {
                   <span class="badge bg-body text-muted border shadow-sm px-3 py-2">No snapshot data available</span>
                 }

@@ -22,6 +22,8 @@ import { JsonViewerComponent } from '../../component/json-viewer/json-viewer.com
 })
 export class MetaTrailViewerComponent implements OnInit {
   @Input() scope!: string;
+  @Input() appId?: number;
+  @Input() canRevert?: boolean = false;
   @Output() onReverted = new EventEmitter<void>();
 
   private metaTrailService = inject(MetaTrailService);
@@ -40,7 +42,7 @@ export class MetaTrailViewerComponent implements OnInit {
   selectedMetaTrailData: any;
 
   ngOnInit() {
-    if (this.scope) {
+    if (this.scope || this.appId) {
       this.loadMetaTrails(1);
     }
   }
@@ -61,7 +63,12 @@ export class MetaTrailViewerComponent implements OnInit {
     if (this.metaTrailFrom) params.dateFrom = this.metaTrailFrom;
     if (this.metaTrailTo) params.dateTo = this.metaTrailTo;
 
-    this.metaTrailService.getMetaTrails(this.scope, params)
+    // 3. Dynamically choose the correct endpoint
+    const request$ = this.appId 
+      ? this.metaTrailService.getMetaTrailsByAppId(this.appId, params)
+      : this.metaTrailService.getMetaTrails(this.scope, params);
+
+    request$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {

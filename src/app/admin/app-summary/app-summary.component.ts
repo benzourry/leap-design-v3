@@ -11,11 +11,12 @@ import { base, baseApi, domainBase } from '../../_shared/constant.service';
 import { deepMerge, splitAsList } from '../../_shared/utils';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { MetaTrailViewerComponent } from '../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 
 @Component({
   selector: 'app-app-summary',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, NgStyle, NgxEchartsDirective, SlicePipe, FaIconComponent, RouterLink, FormsModule],
+  imports: [DecimalPipe, NgStyle, NgxEchartsDirective, SlicePipe, FaIconComponent, RouterLink, FormsModule, MetaTrailViewerComponent],
   templateUrl: './app-summary.component.html',
   providers:[provideEcharts()],
   styleUrl: './app-summary.component.scss'
@@ -203,5 +204,22 @@ export class AppSummaryComponent implements OnInit {
     return app[prop];
   }
   
+      // ==========================================
+    // META TRAILS LOGIC
+    // ==========================================
+    currentMetaTrailScope: string = "";
+    currentMetaTrailAppId: number;
+
+    viewMetaTrails(content: any, scope: string, appId?: number) {
+        this.currentMetaTrailScope = scope;
+        this.currentMetaTrailAppId = appId;
+        history.pushState(null, '', window.location.href);
+        this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+    }
+
+    onTrailReverted(modalCloseFn: any) {
+        // Refresh the lambda data when a revert happens
+        // this.loadApp(this.app.id); 
+    }
 
 }
