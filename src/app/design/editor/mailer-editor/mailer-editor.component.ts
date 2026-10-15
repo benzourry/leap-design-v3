@@ -527,9 +527,11 @@ export class MailerEditorComponent implements OnInit {
   // META TRAILS LOGIC
   // ==========================================
   currentMetaTrailScope: string = "";
+  currentObj: any = null;
 
-  viewMetaTrails(content: any, scope: string) {
+  viewMetaTrails(content: any, scope: string, currentObj: any) {
     this.currentMetaTrailScope = scope;
+    this.currentObj = currentObj;
     history.pushState(null, '', window.location.href);
     this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
   }

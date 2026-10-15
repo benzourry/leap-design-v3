@@ -53,7 +53,7 @@
                 App Log
             </a>
             <a class="btn btn-sm btn-outline-secondary mb-2 ms-1"
-             (click)="viewMetaTrails(viewAppMetaTrailTpl, null, app?.id)">
+             (click)="viewMetaTrails(viewAppMetaTrailTpl, null, app?.id, app)">
                 <fa-icon class="float-start" [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                 App's Meta trails
             </a>
@@ -446,6 +446,8 @@
   <div class="modal-body p-0">
     <app-meta-trail-viewer 
       [appId]="currentMetaTrailAppId" 
+      [currentScope]="currentMetaTrailScope"
+      [current]="currentObj"
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>
   </div>

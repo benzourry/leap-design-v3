@@ -209,10 +209,12 @@ export class AppSummaryComponent implements OnInit {
     // ==========================================
     currentMetaTrailScope: string = "";
     currentMetaTrailAppId: number;
+    currentObj: any = null;
 
-    viewMetaTrails(content: any, scope: string, appId?: number) {
+    viewMetaTrails(content: any, scope: string, appId?: number, currentObj?: any) {
         this.currentMetaTrailScope = scope;
         this.currentMetaTrailAppId = appId;
+        this.currentObj = currentObj;
         history.pushState(null, '', window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
     }

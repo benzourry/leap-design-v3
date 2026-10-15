@@ -990,7 +990,7 @@
                         <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Form's Meta trails
                       </button> -->
                       <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                        (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id)">
+                        (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id, cleanBackendForm)">
                         <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                       </button>
                       <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
@@ -1476,7 +1476,7 @@
             <li class="nav-item d-flex align-items-center ms-2" style="margin-bottom: -1px;">
               <button type="button" class="btn btn-sm px-2" 
                 title="View Section Trails"
-                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_section_' + editSectionData.id)">
+                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_section_' + editSectionData.id, editSectionData)">
                 <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
               </button>
             </li>
@@ -3283,7 +3283,7 @@
             <li class="nav-item d-flex align-items-center ms-2" style="margin-bottom: -1px;">
               <button type="button" class="btn btn-sm px-2" 
                 title="View Item Trails"
-                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_item_' + editItemData.id)">
+                (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id + '_item_' + editItemData.id, editItemData)">
                 <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
               </button>
             </li>
@@ -4115,6 +4115,8 @@
     <app-meta-trail-viewer 
       [canRevert]="true"
       [scope]="currentMetaTrailScope" 
+      [currentScope]="currentMetaTrailScope"
+      [current]="currentObj"
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>
   </div>

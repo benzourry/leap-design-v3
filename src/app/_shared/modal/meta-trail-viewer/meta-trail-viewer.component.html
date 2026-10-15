@@ -39,53 +39,79 @@
     <table class="table table-striped table-sm table-flush position-relative mb-0">
       <thead>
         <tr>
-          <th class="col-3 ps-2">Timestamp</th>
-          <th class="col-3">Module</th>
-          <th class="col-2">Action</th>
-          <th style="width: 1%; white-space: nowrap;">By</th>
+          <th style="width: 1%; white-space: nowrap;" class="ps-3 p-2">Timestamp</th>
+          <th class="p-2">Module</th>
+          <th style="width: 1%; white-space: nowrap;" class="p-2">Action</th>
+          <th style="width: 1%; white-space: nowrap;" class="pe-3 p-2">Triggered By</th>
         </tr>
       </thead>
       <tbody>
-        @for (trail of metaTrails; track trail.id) {
-          <tr style="transform: scale(1); height:2.5rem;" 
-              (mouseenter)="hoveredTrailId = trail.id" 
-              (mouseleave)="hoveredTrailId = null">
-            
-            <td class="align-middle ps-2">{{trail.timestamp | date:'yy-MM-dd'}} <span class="fw-bold">{{trail.timestamp | date:'HH:mm:ss'}}</span></td>
-            <td class="align-middle">
-              <span class="small fw-bold">{{(trail.module | uppercase) || 'N/A'}}</span>
-              <div class="small">{{getEntityName(trail)}}</div>
-            </td>
-            <td class="align-middle">
-              <span class="badge bg-secondary">{{trail.action | uppercase}}</span>
-            </td>
-            <td class="align-middle">
-              <!-- {{trail.email}} -->
-              <!-- {{ trail.email?.split('@')[0]+'@...' || 'Unknown' }} -->
-                {{ formatEmail(trail.email) }}
-              
-              <!-- Angular-Driven Glassmorphism Overlay -->
-              <div class="d-flex align-items-center justify-content-center gap-2" 
-                   [style.opacity]="hoveredTrailId === trail.id ? '1' : '0'"
-                   [style.pointer-events]="hoveredTrailId === trail.id ? 'auto' : 'none'"
-                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; transition: opacity 0.2s ease-in-out; background: rgba(var(--bs-body-bg-rgb, 33, 37, 41), 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-                @if (trail.data) {
-                  <button type="button" class="btn btn-sm btn-info btn-round shadow" title="View Snapshot"
-                    (click)="viewMetaTrailJson(viewMetaTrailDataTpl, trail.data)">
-                    <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon> View Snapshot
-                  </button>
-                  @if (canRevert) {
-                    <button type="button" class="btn btn-sm btn-warning btn-round shadow" title="Revert to this state"
-                        (click)="revertMetaTrail(trail.id)">
-                        <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Revert
-                    </button>
-                    }
-                } @else {
-                  <span class="badge bg-body text-muted border shadow-sm px-3 py-2">No snapshot data available</span>
-                }
-              </div>
+        <!-- Loop through the grouped data -->
+        @for (group of metaTrails | groupBy:'timestamp|date|yyyy-MM-dd'; track group.key) {
+          
+          <!-- Group Header Row showing the Date -->
+          <tr>
+            <td colspan="4" class="fw-bold py-2 px-3 bg-body-secondary text-body">
+              <fa-icon [icon]="['fas','calendar']" class="me-2 text-muted"></fa-icon> 
+              {{ group.key | date:'fullDate' }}
             </td>
           </tr>
+
+          <!-- Loop through the trails in this date group -->
+          @for (trail of group.value; track trail.id) {
+            <tr style="transform: scale(1); height:2.5rem;" 
+                (mouseenter)="hoveredTrailId = trail.id" 
+                (mouseleave)="hoveredTrailId = null">
+              
+              <!-- Only show time here now -->
+              <td class="align-middle ps-3">
+                <span class="fw-bold">{{trail.timestamp | date:'HH:mm:ss'}}</span>
+              </td>
+              
+              <td class="align-middle">
+                <span class="small fw-bold">{{(trail.module | uppercase) || 'N/A'}}</span>
+                <div class="small">{{getEntityName(trail)}}</div>
+              </td>
+              <td class="align-middle">
+                <span class="badge bg-secondary">{{trail.action | uppercase}}</span>
+              </td>
+              
+              <!-- REMOVED position-relative from this td -->
+              <td class="align-middle pe-3">
+                {{ trail.email }}
+                
+                <!-- Angular-Driven Glassmorphism Overlay -->
+                <div class="d-flex align-items-center justify-content-center gap-2" 
+                     [style.opacity]="hoveredTrailId === trail.id ? '1' : '0'"
+                     [style.pointer-events]="hoveredTrailId === trail.id ? 'auto' : 'none'"
+                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; transition: opacity 0.2s ease-in-out; background: rgba(var(--bs-body-bg-rgb, 33, 37, 41), 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+                  @if (trail.data) {
+
+                    @if (currentScope && currentScope === trail.scope) {
+                        <button type="button" class="btn btn-sm btn-primary btn-round shadow" title="Compare with current"
+                            (click)="viewDiff(diffModalTpl, trail.data)">
+                            <fa-icon [icon]="['fas','code-branch']" [fixedWidth]="true"></fa-icon> 
+                            Diff
+                        </button>
+                    }
+                    
+                    <button type="button" class="btn btn-sm btn-info btn-round shadow" title="View Snapshot"
+                      (click)="viewMetaTrailJson(viewMetaTrailDataTpl, trail.data, trail.scope)">
+                      <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon> View Snapshot
+                    </button>
+                    @if (canRevert) {
+                      <button type="button" class="btn btn-sm btn-warning btn-round shadow" title="Revert to this state"
+                          (click)="revertMetaTrail(trail.id)">
+                          <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Revert
+                      </button>
+                    }
+                  } @else {
+                    <span class="badge bg-body text-muted border shadow-sm px-3 py-2">No snapshot data available</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>
@@ -114,13 +140,71 @@
     <h4 class="modal-title">Meta Trail Snapshot</h4>
   </div>
   <div class="modal-body p-0 bg-body code-container" style="overflow: auto;">
-    <json-viewer [json]="selectedMetaTrailData" [expand]="1" [copy]="false" [sortKeys]="true" [showQuotes]="false"></json-viewer>
+    <json-viewer [json]="selectedMetaTrailData" [expand]="1" [copy]="false" [sortKeys]="true" 
+    [showQuotes]="false" [diffWith]="current" 
+    [diffMode]="currentScope === selectedMetaTrailScope"></json-viewer>
     <!-- <pre class="my-0 p-3">{{selectedMetaTrailData | json}}</pre> -->
   </div>  
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="copyToClipboard(selectedMetaTrailData)">
       <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Copy JSON
     </button>
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+<!-- DIFF VIEWER MODAL -->
+<ng-template #diffModalTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Changes since snapshot</h4>
+  </div>
+  <div class="modal-body p-0 bg-body code-container" style="overflow: auto; max-height: 70vh;">
+    <table class="table table-sm table-striped table-bordered m-0">
+      <thead class="position-sticky top-0 bg-body-tertiary shadow-sm" style="z-index: 1;">
+        <tr>
+          <th class="col-3 ps-3">Path / Key</th>
+          <th class="col-1 text-center">Change</th>
+          <th class="col-4">Snapshot Value (Old)</th>
+          <th class="col-4">Current Value (New)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(c of diffResults; track $index) {
+          <tr>
+            <td class="ps-3"><code class="text-body">{{c.path}}</code></td>
+            <td class="text-center align-middle">
+              @if(c.type == 'added'){ <span class="badge bg-success">Added</span> }
+              @if(c.type == 'removed'){ <span class="badge bg-danger">Removed</span> }
+              @if(c.type == 'changed'){ <span class="badge bg-warning text-dark">Changed</span> }
+            </td>
+            <td>
+              @if(c.oldValue !== undefined) {
+                <pre class="m-0 small text-danger">{{c.oldValue | json}}</pre>
+              } @else {
+                <span class="text-muted small fst-italic">null / undefined</span>
+              }
+            </td>
+            <td>
+              @if(c.newValue !== undefined) {
+                <pre class="m-0 small text-success">{{c.newValue | json}}</pre>
+              } @else {
+                <span class="text-muted small fst-italic">null / undefined</span>
+              }
+            </td>
+          </tr>
+        }
+        @if(diffResults.length === 0) {
+          <tr>
+            <td colspan="4" class="text-center text-muted p-4">
+              <fa-icon [icon]="['fas','check-circle']" class="text-success me-2"></fa-icon>
+              No changes detected between this snapshot and the current configuration.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>  
+  <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

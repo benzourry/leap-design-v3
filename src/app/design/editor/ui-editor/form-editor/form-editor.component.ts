@@ -655,6 +655,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     superForm: any = null; // form that is being extended
 
+    cleanBackendForm: any = null;
+
     getFormData(id) {
         delete this.superForm
         delete this.formError;
@@ -663,6 +665,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.formService.getForm(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
+
+                this.cleanBackendForm = JSON.parse(JSON.stringify(res));
+                
                 this.curForm = res;
                 this.buildGroupedItems(); // <--- ADD THIS HERE
                 this.cdr.detectChanges(); // <--- Add here
@@ -2561,9 +2566,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     // META TRAILS LOGIC
     // ==========================================
     currentMetaTrailScope: string = "";
+    currentObj: any = null;
 
-    viewMetaTrails(content: any, scope: string) {
+    viewMetaTrails(content: any, scope: string, currentObj: any) {
+        console.log("currentObj",currentObj);
         this.currentMetaTrailScope = scope;
+        this.currentObj = currentObj;
         history.pushState(null, '', window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
     }

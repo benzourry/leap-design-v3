@@ -262,7 +262,7 @@
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                      (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id)">
+                      (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id, lambda)">
                       <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
@@ -823,6 +823,8 @@
     <app-meta-trail-viewer 
       [canRevert]="true"
       [scope]="currentMetaTrailScope" 
+      [currentScope]="currentMetaTrailScope"
+      [current]="currentObj"
       (onReverted)="onTrailReverted(c)">
     </app-meta-trail-viewer>
   </div>

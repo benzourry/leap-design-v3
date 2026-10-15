@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject, ChangeDetectorRef, DestroyRef, ChangeDetectionStrategy, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { DatePipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, JsonPipe, UpperCasePipe } from '@angular/common';
 import { NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastService } from '../../service/toast-service';
 import { MetaTrailService } from '../../../service/metatrail.service';
 import { JsonViewerComponent } from '../../component/json-viewer/json-viewer.component';
+import { GroupByPipe } from '../../pipe/group-by.pipe';
 
 @Component({
   selector: 'app-meta-trail-viewer',
@@ -17,7 +18,7 @@ import { JsonViewerComponent } from '../../component/json-viewer/json-viewer.com
     FormsModule, DatePipe, UpperCasePipe,
     NgbPaginationModule, NgbDatepickerModule, NgbDropdownModule,
     FaIconComponent,
-    JsonViewerComponent
+    JsonViewerComponent, GroupByPipe, JsonPipe
 ]
 })
 export class MetaTrailViewerComponent implements OnInit {
@@ -25,6 +26,8 @@ export class MetaTrailViewerComponent implements OnInit {
   @Input() appId?: number;
   @Input() canRevert?: boolean = false;
   @Output() onReverted = new EventEmitter<void>();
+  @Input() current: any;
+  @Input() currentScope?: string;
 
   private metaTrailService = inject(MetaTrailService);
   private toastService = inject(ToastService);
@@ -40,6 +43,9 @@ export class MetaTrailViewerComponent implements OnInit {
   metaTrailFrom: any;
   metaTrailTo: any;
   selectedMetaTrailData: any;
+  selectedMetaTrailScope: string;
+
+  diffResults: any[] = [];
 
   ngOnInit() {
     if (this.scope || this.appId) {
@@ -82,11 +88,19 @@ export class MetaTrailViewerComponent implements OnInit {
       });
   }
 
-  viewMetaTrailJson(content: TemplateRef<any>, data: any) {
+  // viewMetaTrailJson(content: TemplateRef<any>, data: any) {
+  //   this.selectedMetaTrailData = data;
+  //   history.pushState(null, '', window.location.href);
+  //   this.modalService.open(content, { backdrop: 'static', size: 'lg', scrollable: true })
+  //     .result.then(() => {}, () => {});
+  // }
+
+  viewMetaTrailJson(content: any, data: any, scope: string) {
     this.selectedMetaTrailData = data;
-    history.pushState(null, '', window.location.href);
+    this.selectedMetaTrailScope = scope; // <-- Save the scope
+    
     this.modalService.open(content, { backdrop: 'static', size: 'lg', scrollable: true })
-      .result.then(() => {}, () => {});
+        .result.then(() => {}, () => {});
   }
 
   revertMetaTrail(trailId: string) {
@@ -152,4 +166,62 @@ export class MetaTrailViewerComponent implements OnInit {
   }
 
   hoveredTrailId: string | null = null;
+
+
+  viewDiff(content: TemplateRef<any>, snapshotData: any) {
+    this.diffResults = this.generateDiff(this.current, snapshotData);
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'xl', scrollable: true })
+      .result.then(() => {}, () => {});
+  }
+
+generateDiff(current: any, snapshot: any, path: string = ''): any[] {
+    let changes: any[] = [];
+    
+    const currIsObj = current !== null && typeof current === 'object';
+    const snapIsObj = snapshot !== null && typeof snapshot === 'object';
+
+    if (currIsObj && snapIsObj) {
+      const keys = new Set([...Object.keys(current || {}), ...Object.keys(snapshot || {})]);
+      
+      keys.forEach(key => {
+        // 1. Ignore computed fields (e.g., _f, _pre, _onSave)
+        if (key.startsWith('_')) return;
+        
+        // 2. Ignore the heavy 'app' object at the root level
+        if (path === '' && key === 'app') return;
+
+        const p = path ? `${path}.${key}` : key;
+        const cVal = current[key];
+        const sVal = snapshot[key];
+
+        // 3. Handle Stubbed References 
+        // (If snapshot only has {id: 123}, we only compare the IDs and ignore the rest of the live object's data)
+        const sIsStub = sVal && typeof sVal === 'object' && Object.keys(sVal).length === 1 && sVal.hasOwnProperty('id');
+        const cHasId = cVal && typeof cVal === 'object' && cVal.hasOwnProperty('id');
+        
+        if (sIsStub && cHasId) {
+          if (sVal.id !== cVal.id) {
+            changes.push({ path: p + '.id', type: 'changed', oldValue: sVal.id, newValue: cVal.id });
+          }
+          return; // Skip deeper comparison since the relationship IDs match
+        }
+
+        if (sVal === undefined && cVal !== undefined) {
+          changes.push({ path: p, type: 'added', oldValue: undefined, newValue: cVal });
+        } else if (cVal === undefined && sVal !== undefined) {
+          changes.push({ path: p, type: 'removed', oldValue: sVal, newValue: undefined });
+        } else if (typeof cVal === 'object' && typeof sVal === 'object' && cVal !== null && sVal !== null) {
+          // Recursively compare nested objects/arrays
+          changes = changes.concat(this.generateDiff(cVal, sVal, p));
+        } else if (cVal !== sVal) {
+          changes.push({ path: p, type: 'changed', oldValue: sVal, newValue: cVal });
+        }
+      });
+    } else if (current !== snapshot) {
+      changes.push({ path: path || 'root', type: 'changed', oldValue: snapshot, newValue: current });
+    }
+    
+    return changes;
+  }
 }
