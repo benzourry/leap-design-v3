@@ -1,13 +1,23 @@
 import { Component, WritableSignal, signal, input, computed, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'json-viewer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FaIconComponent],
   template: `
+    @if (diffMode() && !basePath()) {
+      <div class="p-2 px-3 bg-body-secondary text-body-secondary small mb-2">
+        Comparing Snapshot vs. Current 
+          <span class="text-muted">
+            (<span class="text-danger fw-bold text-decoration-line-through">Old</span>
+            <span class="text-success fw-bold ms-1">New</span>)
+          </span>
+      </div>
+    }
     <div class="json-root">
       @if (isExp(json()) || isExp(diffWith())) {
         @for (key of getKeys(); track key) {
@@ -22,7 +32,11 @@ import { DomSanitizer } from '@angular/platform-browser';
             <div class="json-node" [ngClass]="bgCls">
               <div class="toggle" (click)="toggle(path)">
                 @if (diffMode()) { <span class="diff-marker" [ngClass]="txtCls">{{ st === 'add' ? '+' : st === 'rem' ? '-' : (st === 'chg' ? '~' : '') }}</span> }
-                <span class="arrow">{{ expanded()[path] ? '⏷' : '⏵' }}</span>
+                <!-- <span class="arrow">{{ expanded()[path] ? '⏷' : '⏵' }}</span> -->
+                <!-- <span class="arrow ps-1" [style.font-size]="expanded()[path] ? '0.9em' : '0.7em'">{{ expanded()[path] ? '▼' : '▶' }}</span> -->
+                <span class="arrow" style="font-size:0.9em">
+                  <fa-icon [icon]="expanded()[path] ? ['fas', 'angle-down'] : ['fas', 'angle-right']" [fixedWidth]="true"></fa-icon>
+                </span>
                 <span class="json-key" [ngClass]="txtCls">"{{ key }}"</span>:
                 <span class="json-bracket">{{ isArr(diffMode() && st !== 'rem' ? nV : oV) ? '[...]' : '{...}' }}</span>
               </div>

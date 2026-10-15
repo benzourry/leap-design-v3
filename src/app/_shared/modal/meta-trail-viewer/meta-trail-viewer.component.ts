@@ -175,7 +175,7 @@ export class MetaTrailViewerComponent implements OnInit {
       .result.then(() => {}, () => {});
   }
 
-generateDiff(current: any, snapshot: any, path: string = ''): any[] {
+  generateDiff(current: any, snapshot: any, path: string = ''): any[] {
     let changes: any[] = [];
     
     const currIsObj = current !== null && typeof current === 'object';
