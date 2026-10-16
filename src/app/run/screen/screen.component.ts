@@ -642,14 +642,14 @@ export class ScreenComponent implements OnInit, OnDestroy {
   buildGo(entryId: any, noParam?: boolean) {
     const obj: any = {};
     const basePath = `#${this.preurl}`;
-    // const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
+    const queryStr = noParam ? '' : `?entryId=${entryId || ''}`;
 
     // Obfuscate the query string instead of using clear text
-    let queryStr = '';
-    if (!noParam) {
-      const encodedSpace = btoaUTF(JSON.stringify({ entryId: entryId || '' }), 'u');
-      queryStr = `?_=${encodedSpace}`;
-    }
+    // let queryStr = '';
+    // if (!noParam) {
+    //   const encodedSpace = btoaUTF(JSON.stringify({ entryId: entryId || '' }), 'u');
+    //   queryStr = `?_=${encodedSpace}`;
+    // }
 
     this.screen().actions?.forEach((ac: any) => {
       const next = ac.next;
