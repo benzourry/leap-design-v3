@@ -127,6 +127,10 @@
               (click)="editCogna(editCognaTpl,cogna,false)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
             </button>
+            <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
+              (click)="viewMetaTrails(viewCognaMetaTrailTpl, 'cogna_' + cogna.id, cogna)">
+              <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+            </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
               title="Re-initialize models" (click)="reinitCogna(cogna)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
@@ -2450,5 +2454,25 @@
   </div>
   <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+  </div>
+</ng-template>
+
+
+<!-- LAMBDA META TRAIL VIEWER MODAL -->
+<ng-template #viewCognaMetaTrailTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Cogna Audit Log</h4>
+  </div>
+  <div class="modal-body p-0">
+    <app-meta-trail-viewer 
+      [canRevert]="true"
+      [scope]="currentMetaTrailScope" 
+      [currentScope]="currentMetaTrailScope"
+      [current]="currentObj"
+      (onReverted)="onTrailReverted(c)">
+    </app-meta-trail-viewer>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
   </div>
 </ng-template>

@@ -30,6 +30,7 @@ import { marked} from 'marked';
 import mermaid from "mermaid";
 import { LambdaService } from '../../../service/lambda.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
+import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 
 mermaid.initialize({startOnLoad:false})
 // import { RunService } from '../../../service/run.service';
@@ -58,7 +59,7 @@ marked.use({
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
       NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, 
       NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,
-      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent]
+      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent, MetaTrailViewerComponent]
 })
 export class CognaEditorComponent implements OnInit {
 
@@ -1595,6 +1596,26 @@ export class CognaEditorComponent implements OnInit {
         this.getLambdaList(appId);
     }
   }
+
+  
+  // ==========================================
+  // META TRAILS LOGIC
+  // ==========================================
+  currentMetaTrailScope: string = "";
+  currentObj: any = {};
+
+  viewMetaTrails(content: any, scope: string, currentObj: any) {
+    this.currentMetaTrailScope = scope;
+    this.currentObj = currentObj;
+    history.pushState(null, '', window.location.href);
+    this.modalService.open(content, { backdrop: 'static', size: 'lg' }).result.then(() => {}, () => {});
+  }
+
+  onTrailReverted(modalCloseFn: any) {
+    // Refresh the lambda data when a revert happens
+    this.loadCogna(this.cogna.id); 
+  }
+
   
 
 }

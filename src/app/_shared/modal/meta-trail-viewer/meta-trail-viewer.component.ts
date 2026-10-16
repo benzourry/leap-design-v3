@@ -139,11 +139,14 @@ export class MetaTrailViewerComponent implements OnInit {
 
       // Modules that use 'name'
       case 'lambda':
+      case 'cogna':
       case 'emailTemplate':
         return trail.data.name || 'N/A';
 
       // Modules that use 'label'
       case 'form_item':
+      case 'screen_action':
+      case 'dataset_action':
         return trail.data.label || 'N/A';
 
       // Fallback for unknown modules

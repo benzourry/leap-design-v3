@@ -88,7 +88,7 @@
                                             height="22" style="margin-left:-4px; margin-top:-4px; " class="me-1">
                                                 {{splitted}}
                                             </div>
-                                            }
+                                        }
                                     }@else {
                                         {{ i.value }}
                                     } 
@@ -202,6 +202,58 @@
                             <strong>Info:</strong> No groups found.
                         </div>
                     }
+                </ng-template>
+            </li>
+            <!-- NEW TAB: Manager Actions -->
+            <li [ngbNavItem]="4">
+                <button ngbNavLink>Manager Actions</button>
+                <ng-template ngbNavContent>
+                    <div class="card mt-2">
+                      <div class="card-body text-start">
+                        <h5 class="card-title">Audit Trail Maintenance</h5>
+                        <p class="card-text text-muted mb-4">Trigger a baseline snapshot or clear existing records. You can optionally target a specific App ID or Scope.</p>
+                        
+                        <!-- Filter Inputs -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Target App ID (Optional)</label>
+                                <input type="number" class="form-control" placeholder="e.g. 1540" [ngModel]="metaTrailAppId()" (ngModelChange)="metaTrailAppId.set($event)">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Target Scope (Optional)</label>
+                                <input type="text" class="form-control" placeholder="e.g. form_123" [ngModel]="metaTrailScope()" (ngModelChange)="metaTrailScope.set($event)">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <!-- Initialize MetaTrail Button -->
+                            <button class="btn btn-primary" [disabled]="isInitializingMetaTrail() || isClearingMetaTrail()" (click)="initializeMetaTrail()">
+                            @if(isInitializingMetaTrail()){
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Initializing...
+                            }@else{
+                                <fa-icon [icon]="['fas', 'database']" class="me-2"></fa-icon> Initialize Baseline
+                            }
+                            </button>
+
+                            <!-- Clear MetaTrail Button -->
+                            <button class="btn btn-danger" [disabled]="isInitializingMetaTrail() || isClearingMetaTrail() || (!metaTrailAppId() && !metaTrailScope())" (click)="clearMetaTrails()">
+                            @if(isClearingMetaTrail()){
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Clearing...
+                            }@else{
+                                <fa-icon [icon]="['fas', 'trash']" class="me-2"></fa-icon> Clear Records
+                            }
+                            </button>
+                        </div>
+                        
+                        @if(!metaTrailAppId() && !metaTrailScope()) {
+                            <div class="form-text text-warning mt-2">
+                                <fa-icon [icon]="['fas','exclamation-triangle']" class="me-1"></fa-icon> Note: App ID or Scope is required to clear records.
+                            </div>
+                        }
+                      </div>
+                    </div>
                 </ng-template>
             </li>
         </ul>

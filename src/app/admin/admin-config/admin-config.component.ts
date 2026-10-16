@@ -37,6 +37,12 @@ export class AdminConfigComponent implements OnInit {
   appGroupsFilter = signal<string>("");
   
   user = signal<any>(null);
+  
+  // MetaTrail Signals
+  metaTrailAppId = signal<number | null>(null);
+  metaTrailScope = signal<string>("");
+  isInitializingMetaTrail = signal<boolean>(false);
+  isClearingMetaTrail = signal<boolean>(false);
 
   splitAsList = splitAsList;
 
@@ -154,6 +160,63 @@ export class AdminConfigComponent implements OnInit {
           this.toastService.show("App Group deleting failed", { classname: 'bg-danger text-light' });
         }
       })
+    }
+  }
+
+  initializeMetaTrail() {
+    let targetDesc = "the entire platform";
+    if (this.metaTrailAppId() || this.metaTrailScope()) {
+      targetDesc = `${this.metaTrailAppId() ? 'App ID: ' + this.metaTrailAppId() : ''} ${this.metaTrailScope() ? 'Scope: ' + this.metaTrailScope() : ''}`.trim();
+    }
+
+    if (confirm(`Are you sure you want to initialize the MetaTrail baseline for ${targetDesc}? This process will run in the background.`)) {
+      this.isInitializingMetaTrail.set(true);
+
+      // Using the PlatformService method instead of raw HttpClient
+      this.platformService.initMetaTrail(this.metaTrailAppId(), this.metaTrailScope()).subscribe({
+        next: (res) => {
+          this.isInitializingMetaTrail.set(false);
+          
+          if (res.success) {
+             this.toastService.show(res.message, {classname: 'bg-success text-light'});
+          } else {
+             this.toastService.show(res.message, {classname: 'bg-danger text-light'});
+          }
+        },
+        error: (err) => {
+          this.isInitializingMetaTrail.set(false);
+          this.toastService.show('Failed to trigger MetaTrail initialization. ' + err.message, {classname: 'bg-danger text-light'});
+        }
+      });
+    }
+  }
+
+  clearMetaTrails() {
+    if (!this.metaTrailAppId() && !this.metaTrailScope()) {
+      this.toastService.show('App ID or Scope is required to clear records.', {classname: 'bg-warning text-dark'});
+      return;
+    }
+
+    const targetDesc = `${this.metaTrailAppId() ? 'App ID: ' + this.metaTrailAppId() : ''} ${this.metaTrailScope() ? 'Scope: ' + this.metaTrailScope() : ''}`.trim();
+
+    if (confirm(`Are you absolutely sure you want to CLEAR the MetaTrail records for ${targetDesc}? This cannot be undone.`)) {
+      this.isClearingMetaTrail.set(true);
+      
+      // Using the PlatformService method instead of raw HttpClient
+      this.platformService.clearMetaTrail(this.metaTrailAppId(), this.metaTrailScope()).subscribe({
+        next: (res) => {
+          this.isClearingMetaTrail.set(false);
+          if (res.success) {
+             this.toastService.show(res.message, {classname: 'bg-success text-light'});
+          } else {
+             this.toastService.show(res.message, {classname: 'bg-danger text-light'});
+          }
+        },
+        error: (err) => {
+          this.isClearingMetaTrail.set(false);
+          this.toastService.show('Failed to clear MetaTrail records. ' + err.message, {classname: 'bg-danger text-light'});
+        }
+      });
     }
   }
 }

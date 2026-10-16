@@ -1138,8 +1138,17 @@
 
 <ng-template #editActionTpl let-c="close" let-d="dismiss">
   <div #editActionForm="ngForm" ngForm>
-    <div class="modal-header">
-      <h4 class="modal-title">Edit Action</h4>
+    <div class="modal-header justify-content-between">
+      <h4 class="modal-title">
+        Edit Action
+      </h4>
+      @if (editActionData?.id) {
+        <button type="button" class="btn btn-sm px-2 float-end" 
+          title="View Item Trails"
+          (click)="viewMetaTrails(viewScreenMetaTrailTpl, 'screen_' + curScreen.id + '_action_' + editActionData.id, editActionData)">
+          <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+        </button>
+      }
     </div>
     <div class="modal-body">
       <div class="form-group mb-3">
