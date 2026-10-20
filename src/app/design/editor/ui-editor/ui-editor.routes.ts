@@ -26,6 +26,8 @@ export const UI_EDITOR_ROUTES: Routes = [
         { path: 'restore', loadComponent: () => import('./restore-manager/restore-manager.component').then(mod => mod.RestoreManagerComponent) },
         // { path: 'restore', component: RestoreManagerComponent },
         { path: 'key', loadComponent: () => import('./key-manager/key-manager.component').then(mod => mod.KeyManagerComponent) },
+        
+        { path: 'signin', loadComponent: () => import('./custom-signin-manager/custom-signin-manager.component').then(mod => mod.CustomSigninManagerComponent) },
   
       ],
       canActivate: [CreatorGuardService]

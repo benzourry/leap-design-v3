@@ -1,17 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
+import { DatePipe, KeyValuePipe, NgClass } from '@angular/common';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../../_shared/service/toast-service';
-// import { UtilityService } from '../../../../_shared/service/utility.service';
 import { AppService } from '../../../../service/app.service';
 import { UserService } from '../../../../_shared/service/user.service';
 import { ScreenService } from '../../../../service/screen.service';
 import { FormService } from '../../../../service/form.service';
 import { NgForm, FormsModule } from '@angular/forms';
-// import { EntryService } from '../../../../service/entry.service';
 import { DatasetService } from '../../../../service/dataset.service';
-// import * as CodeMirror from 'codemirror';
 import { cleanText, compileTpl, splitAsList } from '../../../../_shared/utils';
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
@@ -22,22 +20,18 @@ import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor
 import { base, baseApi } from '../../../../_shared/constant.service';
 import { EditScreenComponent } from '../../../../_shared/modal/edit-screen/edit-screen.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
-import { KeyValuePipe } from '@angular/common';
 import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { CognaService } from '../../../../service/cogna.service';
 import { IconPickerComponent } from '../../../../_shared/component/icon-picker/icon-picker.component';
-// import { LookupService } from '../../../../service/lookup.service';
 import { BucketService } from '../../../../service/bucket.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray, CdkDropListGroup } from '@angular/cdk/drag-drop';
-import { RunService } from '../../../../run/_service/run.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
-// import { NgLeafletComponent } from '../../../../_shared/component/ng-leaflet/ng-leaflet.component';
-// import { combineLatest } from 'rxjs';
+import { MetaTrailService } from '../../../../service/metatrail.service';
 
 @Component({
     selector: 'app-screen-editor',
@@ -47,7 +41,7 @@ import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-v
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
         NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule, CdkDropListGroup,
-        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, FilterPipe,
+        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, FilterPipe, NgClass, DatePipe,
         NgbNavOutlet, EditScreenComponent, KeyValuePipe, MetaTrailViewerComponent]
 })
 export class ScreenEditorComponent implements OnInit {
@@ -65,25 +59,16 @@ export class ScreenEditorComponent implements OnInit {
   private lookupService = inject(LookupService);
   private route = inject(ActivatedRoute);
   private appService = inject(AppService);
-  // private runService = inject(RunService);
-  // private utilityService = inject(UtilityService); // Uncomment if needed
+  private metaTrailService = inject(MetaTrailService);
   private commService = inject(CommService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   constructor() { }
 
-  // @ViewChild('codeeditor') codeeditor;
-  // codeeditor = viewChild('codeeditor')
-  // // @ViewChild('codeeditorpre') codeeditorpre;
-  // codeeditorpre = viewChild('codeeditorpre');
-  // // @ViewChild('codeeditorpost') codeeditorpost;
-  // codeeditorpost = viewChild('codeeditorpost');
-
   readonly curScreenForm = viewChild<NgForm>('contentForm');
 
   curScreen: any;
-
   screenLoading: boolean;
 
   screenList: any[];
@@ -100,15 +85,12 @@ export class ScreenEditorComponent implements OnInit {
   baseUrl: string = '';
   $param$:any = {};
 
-
-
   label: string;
   next: number;
   nextType: string;
   offline: boolean;
 
   formList: any[];
-  // datasetList: any[];
   builtInVar: any[] = [{ var: 'imgPath', label: 'Image Path' }];
   calendarPlugins = [dayGridPlugin, timeGridPlugin];
 
@@ -165,35 +147,21 @@ export class ScreenEditorComponent implements OnInit {
       }
     ],
     uploadUrl: 'v1/image',
-    //upload: (file: File) => {  }
     uploadWithCredentials: false,
     sanitize: false,
     toolbarPosition: 'top',
-    toolbarHiddenButtons: [
-      // ['bold', 'italic'],
-      // ['fontSize']
-    ]
+    toolbarHiddenButtons: []
   };
   otherAppList:any[]=[];
 
-
-
   ngOnInit() {
-
     this.userService.getCreator().subscribe((user) => {
-
       this.user = user;
-
-      // combineLatest([this.route.parent.parent.parent.params, this.route.queryParams])
-      //   .subscribe(([params, queryParams]) => {
-      //     // this.extraAutoCompleteHtml = [];
-      //     // this.extraAutoCompleteJs = [];
-      //   })
 
       this.route.parent.parent.parent.params.subscribe(params => {
         const appId = params['appId'];
         if (appId) {
-          this.paletteAppId = +appId; // <-- Set default palette ID
+          this.paletteAppId = +appId; 
           let appParams = new HttpParams()
             .set("email", user.email);
 
@@ -208,7 +176,7 @@ export class ScreenEditorComponent implements OnInit {
               this.getBucketList(appId);
               this.getLookupList(appId);
               this.getAccessList(appId);
-              this.cdr.detectChanges(); // <--- Add here
+              this.cdr.detectChanges(); 
             });
         }
       })
@@ -230,18 +198,18 @@ export class ScreenEditorComponent implements OnInit {
     });
   }
 
-defaultBucketParam:string = `{
+  defaultBucketParam:string = `{
     searchText: '', 
     email: $user$.email, 
     fileType: 'image/jpeg', 
     itemId: 1, 
     entryId: 1
 }`  
-defaultCognaParam:string = `{
+  defaultCognaParam:string = `{
     longitude: 110.33, 
     latitude: 1.48
 }`  
-defaultMapStyle:string = `height: 600px;`
+  defaultMapStyle:string = `height: 600px;`
 
   codeeditor = viewChild<any>('codeeditor')
   codeeditorpopupcontent = viewChild<any>('codeeditorpopupcontent')
@@ -252,7 +220,6 @@ defaultMapStyle:string = `height: 600px;`
     if (this.showWysiwyg) {
       this.insertText(text);
     } else {
-      // console.log(cm);
       cm.insertText(text);
     }
   }
@@ -319,25 +286,15 @@ defaultMapStyle:string = `height: 600px;`
         var type = this.form.items[i.code].type;
         var bindLabel = this.form.items[i.code].bindLabel;
         var pipe = '';
-        // if (type == 'date') {
-        //   pipe = '|date';
-        // } else 
         if (['select', 'radio'].indexOf(type) > -1) {
           pipe = '.name';
         } else if (['modelPicker'].indexOf(type) > -1) {
           pipe = '.'+bindLabel;
         } 
-        // else if (type == 'qr') {
-        //   pipe = '|qr';
-        // } else if (type == 'file') {
-        //   pipe = '|src';
-        // }
         return '\ti.' + i.code + pipe + ';';
       })
       .join("\n");
   }
-
-  // getComponent = (id, list) => list && list.filter(l => l.id == id)[0];
 
   actionComps:any={}
   getActionComponents(id){
@@ -349,6 +306,8 @@ defaultMapStyle:string = `height: 600px;`
 
   editScreenData: any;
   editScreen(content, data, isNew) {
+    if (this.isTimeWarping) { this.toastService.show("Cannot edit screen while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+    
     this.editScreenData = data;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -359,7 +318,7 @@ defaultMapStyle:string = `height: 600px;`
             this.getScreenData(res.id);
             this.getActionComponents(res.id);
             this.toastService.show("Screen saved successfully", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges(); // <--- Add here if needed
+            this.cdr.detectChanges(); 
           });
       }, res => { });
   }
@@ -369,6 +328,8 @@ defaultMapStyle:string = `height: 600px;`
 
   removeScreenData: any;
   removeScreen(content, data) {
+    if (this.isTimeWarping) { this.toastService.show("Cannot remove screen while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     this.removeScreenData = data;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -377,7 +338,7 @@ defaultMapStyle:string = `height: 600px;`
           .subscribe(res => {
             this.getScreenList(this.app.id);
             delete this.curScreen;
-            this.cdr.detectChanges(); // <--- Add here if needed
+            this.cdr.detectChanges(); 
 
           }, (res) => {
           });
@@ -389,7 +350,7 @@ defaultMapStyle:string = `height: 600px;`
     this.groupService.getGroupList({ appId: appId, size: 999 })
       .subscribe(res => {
         this.accessList = res.content;
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
 
       });
   }
@@ -401,10 +362,9 @@ defaultMapStyle:string = `height: 600px;`
         .subscribe(res => {
             this.lookupList = res.content;
             this.buildPalette();
-            this.cdr.detectChanges(); // <--- Add here if needed
+            this.cdr.detectChanges(); 
         })
-
-}
+  }
 
   loadOtherAppList(type,appId) {
     this.getScreenList(appId);
@@ -414,16 +374,10 @@ defaultMapStyle:string = `height: 600px;`
     this.getDashboardList(appId);
     this.getBucketList(appId);
     this.getLookupList(appId);
-    // this.getAccessList(appId);
-    this.cdr.detectChanges(); // <--- Add here if needed
+    this.cdr.detectChanges(); 
   }
 
-
-
   getFormList(appId) {
-    // this.formPageNo = pageNumber;
-    // this.formLoading = true;
-
     let params = new HttpParams()
       .set("appId", appId)
 
@@ -431,77 +385,51 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         this.formList = res.content;
         this.buildPalette();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
 
       });
   }
 
   getBucketList(appId) {
-    // this.formPageNo = pageNumber;
-    // this.formLoading = true;
-
-    // let params = new HttpParams()
-    //   .set("appId", appId)
-
     this.bucketService.getBucketList({appId})
       .subscribe(res => {
         this.bucketList = res.content;
         this.buildPalette();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
       });
   }
 
 
   getCognaList(appId) {
-    // this.formPageNo = pageNumber;
-    // this.formLoading = true;
-
-    // let params = new HttpParams()
-    //   .set("appId", appId)
-
     this.cognaService.getCognaList({appId})
       .subscribe(res => {
         this.cognaList = res.content;
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
 
       });
   }
 
-
-  // curFormId: number;
-  // curForm: any;
   form: any = {};
   editScreenForm: any = {}
-  // sectionItems:any[] = [];
-  // prevForm: any
   loadForm(id, holder) {
-    // alert(id);
     this.formService.getForm(id)
       .subscribe(res => {
-        // this.sectionItems = this.getSectionItems(res,['list']);
         Object.assign(holder, res);
         this.populateAutoComplete();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
       });
   }
 
   bucket: any = {};
-  // editScreenBucket: any = {}
-  // sectionItems:any[] = [];
-  // prevForm: any
   loadBucket(id, holder) {
-    // alert(id);
     this.bucketService.getBucket(id)
       .subscribe(res => {
-        // this.sectionItems = this.getSectionItems(res,['list']);
         Object.assign(holder, res);
         this.populateAutoComplete();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
       });
   }
 
-
-  // curDataset: any;
   dataset: any = {};
   editScreenDataset: any = {}
   loadDataset(datasetId, holder) {
@@ -509,7 +437,7 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         this.loadForm(res.form.id, this.form);
         Object.assign(holder, res);
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
       })
   }
 
@@ -518,7 +446,7 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         this.datasetList = res;
         this.buildPalette();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
 
       })
   }
@@ -532,7 +460,7 @@ defaultMapStyle:string = `height: 600px;`
           this.extraAutoCompleteHtml.push({ label: `(dashboardId:${i.id}) ${i.title}`, apply: i.id + "", detail: i.title });
         })
         this.buildPalette();
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
 
       })
   }
@@ -542,18 +470,17 @@ defaultMapStyle:string = `height: 600px;`
       .subscribe(res => {
         if (res?.list){
           this.extraAutoCompleteJs.push(...res.list);
-          this.cdr.detectChanges(); // <--- Add here if needed
+          this.cdr.detectChanges(); 
         }
       })
     this.formService.moreAutocompleteHtml()
       .subscribe(res => {
         if (res?.list){
           this.extraAutoCompleteHtml.push(...res.list);
-          this.cdr.detectChanges(); // <--- Add here if needed
+          this.cdr.detectChanges(); 
         }
       })
   }
-
 
   extraAutoCompleteHtml: any[] = [];
   extraAutoCompleteJs: any[] = [];
@@ -602,13 +529,11 @@ defaultMapStyle:string = `height: 600px;`
       }
       if (this.form) {
         this.form?.sections?.forEach(section => {
-          // console.log(section)
           if (section.type == 'list') {
             this.extraAutoCompleteHtml.push({ label: '(child) $.' + section.code, type: "text", apply: this.getLoopCode(section), detail: '' + section.title })
             this.extraAutoCompleteJs.push({ label: '(child) $.' + section.code, type: "text", apply: this.getLoopCodeJs(section), detail: '' + section.title })
           }
         })
-        // console.log("extraAutoComplete",this.extraAutoComplete)        
       }
 
       this.screenList?.forEach(i => {
@@ -634,7 +559,7 @@ defaultMapStyle:string = `height: 600px;`
       })
 
       this.moreAutocomplete();
-      this.cdr.detectChanges(); // <--- Add here if needed
+      this.cdr.detectChanges(); 
 
     }
 
@@ -643,13 +568,12 @@ defaultMapStyle:string = `height: 600px;`
   }
 
   getScreenData(id) {
-    // this.extraAutoCompleteHtml = [];
-    // this.extraAutoCompleteJs = [];
+    if (this.isTimeWarping) this.exitTimeWarp(); 
     this.getActionComponents(id);
     this.screenService.getScreen(id)
       .subscribe(res => {
         this.curScreen = res;
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
         
         if (!res.data) {
           res.data = {};
@@ -666,7 +590,7 @@ defaultMapStyle:string = `height: 600px;`
         } else if (['static','combine'].indexOf(res.type)>-1) {
           this.form = {};
           this.dataset = {};
-          this.populateAutoComplete(); // since not call loadForm, has to be called manually
+          this.populateAutoComplete(); 
         }
       })
   }
@@ -679,11 +603,15 @@ defaultMapStyle:string = `height: 600px;`
         this.buildPalette();
         this.screenLoading = false;
         this.commService.emitChange({ key: 'screen', value: res.length });
-        this.cdr.detectChanges(); // <--- Add here if needed
+        this.cdr.detectChanges(); 
       })
   }
 
   saveScreen(screen, form: NgForm) {
+    if (this.isTimeWarping) { 
+      this.toastService.show("Cannot save screen while TimeWarp is active.", { classname: 'bg-warning text-dark' }); 
+      return; 
+    }
     this.screenService.saveScreen(this.app.id, screen)
       .subscribe(res => {
         this.getScreenData(screen.id);
@@ -694,11 +622,12 @@ defaultMapStyle:string = `height: 600px;`
 
   editActionData: any;
   editAction(content, data) {
+    if (this.isTimeWarping) { this.toastService.show("Cannot edit actions while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (!data.x) {
       data['x'] = {};
     }
     this.editActionData = data;
-    // console.log("appId",this.editActionData.appId)
     if (!this.editActionData.appId){      
       this.editActionData.appId = this.app.id;
     }
@@ -716,6 +645,8 @@ defaultMapStyle:string = `height: 600px;`
 
   removeActionData: any;
   removeAction(content, data) {
+    if (this.isTimeWarping) { this.toastService.show("Cannot remove actions while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     this.removeActionData = data;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -735,9 +666,7 @@ defaultMapStyle:string = `height: 600px;`
     if (list['actions'] == null) {
       list['actions'] = [];
     }
-    // console.log(action);
     list['actions'].push(action);
-    // action = {};
   }
 
   curPreviewPage: any = {};
@@ -749,7 +678,6 @@ defaultMapStyle:string = `height: 600px;`
           this.curPreviewPage = res.data;
           this.curPreviewPage.$id = res.id;
           this.curPreviewPage.$prev = res.prev;
-          // console.log(this.curPreviewPage);
         })
     } else if (type == 'list') {
       this.entryService.getListByDatasetData(this.curScreen.dataset.id, { email: this.user.email })
@@ -759,52 +687,7 @@ defaultMapStyle:string = `height: 600px;`
     } else if (type == 'calendar') {
       this.loadDatasetEvent(this.curScreen.dataset.id);
     }
-
-    // var template = 
-    // 'My skills:' + 
-    // '<%if(this.showSkills) {%>' +
-    //     '<%for(var index in this.skills) {%>' + 
-    //     '<a href="#"><%this.skills[index]%></a>' +
-    //     '<%}%>' +
-    // '<%} else {%>' +
-    //     '<p>none</p>' +
-    // '<%}%>';
-    // console.log(runTpl(template, {
-    //     skills: ["js", "html", "css"],
-    //     showSkills: true
-    // }));
   }
-
-  // buildGo(entryId) {
-  //   var obj: any = {}
-  //   // this.screen.actions.forEach(ac => {
-  //   //   if (ac.nextType == 'form') {
-  //   //     obj[ac.id] = `#${this.preurl}/form/${ac.next}/add`
-  //   //   }
-  //   //   if (ac.nextType == 'view') {
-  //   //     obj[ac.id] = `#${this.preurl}/form/${ac.next}/view?entryId=${entryId}`
-  //   //   }
-  //   //   if (ac.nextType == 'edit') {
-  //   //     obj[ac.id] = `#${this.preurl}/form/${ac.next}/edit?entryId=${entryId}`
-  //   //   }
-  //   //   if (ac.nextType == 'prev') {
-  //   //     obj[ac.id] = `#${this.preurl}/form/${ac.next}/prev?entryId=${entryId}`
-  //   //   }
-  //   //   if (ac.nextType == 'screen') {
-  //   //     obj[ac.id] = `#${this.preurl}/screen/${ac.next}?entryId=${entryId}`
-  //   //   }
-  //   //   if (ac.nextType == 'static') {
-  //   //     obj[ac.id] = `#${this.preurl}/screen/${ac.next}`
-  //   //   }
-  //   // })
-  //   return obj;
-  //   // var basic = {
-  //   //   view: `#${this.preurl}/form/${this.screen.dataset.form.id}/view/${entryId}`,
-  //   //   edit: `#${this.preurl}/form/${this.screen.dataset.form.id}/edit/${entryId}`,
-  //   //   screen: function(screenId){return `#${this.preurl}/screen/${screenId}?entryId=${entryId}`},
-  //   // }
-  //   // return basic;
-  // }
 
   entryEvent: any[] = [];
   loadDatasetEvent(dsId) {
@@ -828,14 +711,9 @@ defaultMapStyle:string = `height: 600px;`
   randomHsl = () => `hsla(${Math.random() * 360}, 60%, 40%, 1)`;
 
   compileTpl = compileTpl;
-
   cleanText = cleanText;
 
-  // runTpl = runTpl;
-
-
   onKeyDown($event): void {
-    // Detect platform
     if (navigator.platform.match('Mac')) {
       this.handleMacKeyEvents($event);
     }
@@ -845,43 +723,31 @@ defaultMapStyle:string = `height: 600px;`
   }
 
   handleMacKeyEvents($event) {
-    // MetaKey documentation
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey
     let charCode = String.fromCharCode($event.which).toLowerCase();
-    if ($event.metaKey && charCode === 's') {
-      // Action on Cmd + S
-      $event.preventDefault();
+    if ($event.metaKey && charCode === 's') {$event.preventDefault();
       this.saveScreen(this.curScreen, this.curScreenForm())
     }
   }
 
   handleWindowsKeyEvents($event) {
     let charCode = String.fromCharCode($event.which).toLowerCase();
-    if ($event.ctrlKey && charCode === 's') {
-      // Action on Ctrl + S
-      $event.preventDefault();
+    if ($event.ctrlKey && charCode === 's') {$event.preventDefault();
       this.saveScreen(this.curScreen, this.curScreenForm())
-      // alert("save");
     }
   }
 
   process(str) {
-
     var div = document.createElement('div');
-    div.innerHTML = str?.trim(); //.replace(/\n/g,"");
-
+    div.innerHTML = str?.trim(); 
     return this.format(div, 0).innerHTML.replace(/^\s*[\r\n]/gm, '');
   }
 
   format(node, level) {
-
     var indentBefore = new Array(level++ + 1).join('\t'),
       indentAfter = new Array(level - 1).join('\t'),
       textNode;
 
     for (var i = 0; i < node.children.length; i++) {
-      // console.log(node.children[i]);
-
       textNode = document.createTextNode('\n' + indentBefore);
       node.insertBefore(textNode, node.children[i]);
 
@@ -892,17 +758,17 @@ defaultMapStyle:string = `height: 600px;`
         node.appendChild(textNode);
       }
     }
-
     return node;
   }
 
   chatSuggestData:any;
   addChatSuggestion(tpl,data, isNew){
+    if (this.isTimeWarping) { this.toastService.show("Cannot edit suggestions while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (!this.curScreen?.data?.suggestion){
       this.curScreen.data.suggestion = [];
     } 
     this.chatSuggestData = data;
-    // console.log(this.chatSuggestData);
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
       .result.then(res => {
@@ -919,6 +785,8 @@ defaultMapStyle:string = `height: 600px;`
 
   addCombineCompData:any;
   addCombineComp(tpl,data, isNew){
+    if (this.isTimeWarping) { this.toastService.show("Cannot edit components while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (!this.curScreen?.data?.comps){
       this.curScreen.data.comps = [];
     } 
@@ -928,7 +796,6 @@ defaultMapStyle:string = `height: 600px;`
     }else{
       this.addCombineCompData.appId = this.app.id;
     }
-    // console.log(this.addCombineCompData);
     history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' })
       .result.then(res => {
@@ -944,6 +811,8 @@ defaultMapStyle:string = `height: 600px;`
   }
 
   removeCombineComp(index){
+    if (this.isTimeWarping) { this.toastService.show("Cannot remove components while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this component?")){
       this.curScreen.data.comps.splice(index, 1);
       this.screenService.saveScreen(this.app.id, this.curScreen)
@@ -954,9 +823,9 @@ defaultMapStyle:string = `height: 600px;`
     }
   }
 
-  // getIcon=(str)=>str?str.split(":"):['far','question-circle'];
-
   removeChatSuggestion(index){
+    if (this.isTimeWarping) { this.toastService.show("Cannot remove suggestions while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this chat suggestion?")){
       this.curScreen.data.suggestion.splice(index, 1);
       this.screenService.saveScreen(this.app.id, this.curScreen)
@@ -986,17 +855,9 @@ defaultMapStyle:string = `height: 600px;`
       return (array ? array : []).filter(r => item.indexOf(r) == -1);
   }
 
-  // dropSubs(event: CdkDragDrop<number[]>, parent) {
-  //   moveItemInArray(parent, event.previousIndex, event.currentIndex);
-  //   parent = parent
-  //       .map((val, $index) => {
-  //           val.sortOrder = $index;
-  //           return val;
-  //       });
-  //   this.saveScreen(this.curScreen, this.curScreenForm());
-  // }
-    dropSubs(event: CdkDragDrop<any[]>, targetProperty: string) {
-    // Ensure the array exists
+  dropSubs(event: CdkDragDrop<any[]>, targetProperty: string) {
+    if (this.isTimeWarping) { this.toastService.show("Cannot reorder items while TimeWarp is active.", { classname: 'bg-warning text-dark' }); return; }
+
     if (!this.curScreen.data[targetProperty]) {
       this.curScreen.data[targetProperty] = [];
     }
@@ -1004,17 +865,14 @@ defaultMapStyle:string = `height: 600px;`
     let targetArray = this.curScreen.data[targetProperty];
 
     if (event.previousContainer.id === "palette-pane") {
-      // Cloned from palette
       const clone = Object.assign({}, event.previousContainer.data[event.previousIndex]);
       targetArray.splice(event.currentIndex, 0, clone);
     } else {
-      // Reordered within the same list
       if (event.previousContainer === event.container) {
         moveItemInArray(targetArray, event.previousIndex, event.currentIndex);
       }
     }
 
-    // Update sort order
     this.curScreen.data[targetProperty] = targetArray.map((val, $index) => {
         val.sortOrder = $index;
         return val;
@@ -1050,19 +908,15 @@ defaultMapStyle:string = `height: 600px;`
     chatbot: 'fas:robot'
   };
 
-  // Triggered from HTML: (change)="loadPaletteList(paletteAppId)"
   loadPaletteList(appId: number) {
-    // You already have a function that loads all lists for a specific app!
     this.loadOtherAppList('', appId); 
   }
 
-  // --- REUSABLE PALETTE BUILDER ---
   buildPalette() {
     this.palettes = [];
     const appId = this.paletteAppId || this.app?.id;
 
     this.formList?.forEach(f => {
-      // Changed 'form' to 'add' to match the combined-screen viewer
       this.palettes.push({ title: f.title, type: 'add', screenId: f.id, icon: 'fas:plus-square', appId: appId });
       if (f.single) {
         this.palettes.push({ title: 'Edit ' + f.title, type: 'edit-single', screenId: f.id, icon: 'fas:edit', appId: appId });
@@ -1108,8 +962,135 @@ defaultMapStyle:string = `height: 600px;`
   }
 
   onTrailReverted(modalCloseFn: any) {
-    // Refresh the screen data when a revert happens
     this.getScreenData(this.curScreen.id); 
+  }
+
+// ==========================================
+  // TIMEWARP LOGIC
+  // ==========================================
+  timeWarpTrails: any[] = [];
+  liveScreenSnapshot: any = null;
+  timeWarpIndex: number = 0;
+  isTimeWarping: boolean = false;
+
+  private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+  toggleTimeWarp() {
+    if (this.isTimeWarping) {
+      this.exitTimeWarp();
+    } else {
+      this.startTimeWarp();
+    }
+  }
+
+  startTimeWarp() {
+    this.metaTrailService.getMetaTrails(`screen_${this.curScreen.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+      next: (res) => {
+        // Safely match backend MODULE types
+        const trails = res.content?.filter((t: any) => ['screen', 'screen_action'].includes(t.module?.toLowerCase())) || [];
+        if (!trails.length) {
+          this.toastService.show("No MetaTrail history available for this screen.", { classname: 'bg-warning text-dark' });
+          return;
+        }
+
+        this.liveScreenSnapshot = this.clone(this.curScreen);
+        
+        // Append current state to the timeline
+        this.timeWarpTrails = [...trails, {
+          timestamp: new Date().toISOString(),
+          action: 'CURRENT',
+          email: this.user?.email || 'You',
+          module: 'screen',
+          data: this.clone(this.liveScreenSnapshot)
+        }];
+
+        this.isTimeWarping = true;
+        this.timeWarpIndex = this.timeWarpTrails.length - 1;
+        this.applyTimeWarp(this.timeWarpIndex);
+      },
+      error: () => this.toastService.show("Failed to load MetaTrails for TimeWarp.", { classname: 'bg-danger text-light' })
+    });
+  }
+
+  applyTimeWarp(index: number) {
+    if (!this.timeWarpTrails[index]) return;
+
+    // 1. Locate nearest full screen base snapshot
+    let baseIdx = index;
+    while (baseIdx >= 0 && this.timeWarpTrails[baseIdx].module?.toLowerCase() !== 'screen') baseIdx--;
+    if (baseIdx < 0) return;
+
+    // 2. Restore base screen properties safely
+    this.applyScreenSnapshot(this.timeWarpTrails[baseIdx].data);
+
+    // 3. Roll forward action deltas up to the selected slider index
+    for (let i = baseIdx + 1; i <= index; i++) {
+      const { action, data, moduleId } = this.timeWarpTrails[i];
+      const module = this.timeWarpTrails[i].module?.toLowerCase();
+      const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+
+      if (module === 'screen_action' && data) {
+        const sId = data.id || moduleId;
+        const idx = this.curScreen.actions.findIndex((s: any) => (s.id || s.code) === (sId || data.code));
+        
+        if (isRemoved) {
+          if (idx > -1) this.curScreen.actions.splice(idx, 1);
+        } else {
+          const snap = this.clone(data);
+          if (idx > -1) Object.assign(this.curScreen.actions[idx], snap);
+          else this.curScreen.actions.push(snap);
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  exitTimeWarp() {
+    if (this.liveScreenSnapshot) {
+      this.applyScreenSnapshot(this.liveScreenSnapshot);
+    }
+    this.isTimeWarping = false;
+    this.liveScreenSnapshot = null;
+    this.cdr.detectChanges();
+  }
+
+  restoreTimeWarpVersion() {
+    const selectedTrail = this.timeWarpTrails[this.timeWarpIndex];
+
+    // Prevent reverting if the slider is on the unsaved "CURRENT" live state
+    if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+      this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+      this.exitTimeWarp();
+      return;
+    }
+
+    if (confirm("Are you sure you want to revert the screen to this historical version?")) {
+      this.isTimeWarping = false; 
+      
+      this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+        next: () => {
+          this.toastService.show("Historical version restored successfully.", { classname: 'bg-success text-light' });
+          this.liveScreenSnapshot = null;
+          this.getScreenData(this.curScreen.id); 
+        },
+        error: () => {
+          this.isTimeWarping = true;
+          this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+        }
+      });
+    }
+  }
+
+  // Helper to safely map snapshots to curScreen without destroying references
+  private applyScreenSnapshot(snapshot: any) {
+    const copy = this.clone(snapshot);
+    ['title', 'description', 'type'].forEach(k => {
+      if (copy[k] !== undefined) this.curScreen[k] = copy[k];
+    });
+
+    this.curScreen.data = copy.data || {};
+    this.curScreen.actions = copy.actions || [];
   }
 
 }

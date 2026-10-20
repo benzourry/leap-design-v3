@@ -5,13 +5,11 @@ import { CognaService } from '../../../service/cogna.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbAccordionModule, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe, JsonPipe, KeyValuePipe, PlatformLocation } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
-// import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { DatasetService } from '../../../service/dataset.service';
 import { FormService } from '../../../service/form.service';
 import { base, baseApi, domainBase, OAUTH } from '../../../_shared/constant.service';
-// import { LookupService } from '../../../service/lookup.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { lastValueFrom, map } from 'rxjs';
 import { BucketService } from '../../../service/bucket.service';
@@ -22,7 +20,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
-// import { RunService } from '../../../service/run.service';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
@@ -31,9 +28,9 @@ import mermaid from "mermaid";
 import { LambdaService } from '../../../service/lambda.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
+import { MetaTrailService } from '../../../service/metatrail.service';
 
 mermaid.initialize({startOnLoad:false})
-// import { RunService } from '../../../service/run.service';
 
 marked.use({
   extensions: [{
@@ -71,9 +68,6 @@ export class CognaEditorComponent implements OnInit {
   cognaList: any;
   cognaEntryTotal: any;
   cognaEntryList: any;
-  // sharedList: any;
-  // sharedTotal: any;
-  // sharedLoading: any;
   totalItems: any;
   cogna: any;
   itemLoading: boolean;
@@ -83,18 +77,11 @@ export class CognaEditorComponent implements OnInit {
 
   defaultSysMsg = "STRICTLY do not answer questions which are not related and just say \"Sorry, I don't have the answer\"";
 
-  // modelPathList = [
-  //   { name: 'ggml-gpt4all-j-v1.3-groovy.bin', path: 'ggml-gpt4all-j-v1.3-groovy.bin', model: 'GPT4All' },
-  //   { name: 'llama-cpp', path: 'llama-cpp.bin', model: 'LlamaCpp' },
-  // ]
-
   embedModelTypeList = [
     { name: 'AllMiniLM', code: 'minilm' },
     { name: 'Multilingual E5SmallV2', code: 'e5small' },
-    // { name: 'E5LargeV2', code: 'e5large' },
     { name: 'OpenAI', code: 'openai' },
     { name: 'HuggingFace', code: 'huggingface' },
-    // { name: 'VertexAi', code: 'vertex-ai' },
     { name: 'Gemini', code: 'gemini' },
     { name: 'LocalAI', code: 'localai' },
     { name: 'Ollama', code: 'ollama' },
@@ -104,8 +91,6 @@ export class CognaEditorComponent implements OnInit {
     'openai': { name: 'OpenAI', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'deepseek': { name: 'DeepSeek', logo: 'https://www.deepseek.com/_next/image?url=https%3A%2F%2Fcdn.deepseek.com%2Flogo.png&w=1920&q=75' },
     'huggingface': { name: 'HuggingFace', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
-    // 'vertex-ai': { name: 'Vertex AI', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
-    // 'vertex-ai-gemini': { name: 'Vertex AI Gemini', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'gemini': { name: 'Gemini', logo: 'https://www.gstatic.com/devrel-devsite/prod/va726f77ce19c264bc8ae4520f2ee26cc9641a80eead40c2c8c599dc34ccb25d1/googledevai/images/gemini-api-logo.svg' },
     'localai': { name: 'LocalAI', logo: 'https://github.com/go-skynet/LocalAI/assets/2420543/0966aa2a-166e-4f99-a3e5-6c915fc997dd' },
     'ollama': { name: 'Ollama', logo: 'https://ollama.com/public/ollama.png' },
@@ -115,16 +100,12 @@ export class CognaEditorComponent implements OnInit {
     { name: 'Text Embedding ADA 002', code: 'text-embedding-ada-002', type: 'openai' },
     { name: 'Text Embedding 3 Small', code: 'text-embedding-3-small', type: 'openai' },
     { name: 'Text Embedding 3 Large', code: 'text-embedding-3-large', type: 'openai' },
-    // { name: 'Text Embedding Gecko 001', code: 'textembedding-gecko@001', type: 'vertex-ai' },
     { name: 'All MiniLM L6 v2', code: 'sentence-transformers/all-MiniLM-L6-v2', type: 'huggingface' },
     { name: 'BGE SMall EN v1.5', code: 'BAAI/bge-small-en-v1.5', type: 'huggingface' },
     { name: 'All MPnet Base v2', code: 'sentence-transformers/all-mpnet-base-v2', type: 'huggingface' },
     { name: 'IntFloat E5 Large v2', code: 'intfloat/e5-large-v2', type: 'huggingface' },
     { name: 'Nomic Embed Text', code: 'nomic-embed-text', type: 'ollama' },
     { name: 'Gemini Embedding 001', code: 'gemini-embedding-001', type: 'gemini' },
-    // { name: 'Nomic Embed Text', code: 'nomic-embed-text', type: 'ollama' },
-    // { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface' },
-    // { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface' },
   ]
 
   // txtgen, txtcls, txtext, imggen
@@ -133,7 +114,6 @@ export class CognaEditorComponent implements OnInit {
     { name: 'Gemini', code: 'gemini', use: ['txtgen','txtcls','txtext','imggen'] },
     { name: 'DeepSeek', code: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'HuggingFace', code: 'huggingface', use: ['txtgen','txtcls','txtext'] },
-    // { name: 'VertexAi Gemini', code: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'LocalAI', code: 'localai', use: ['txtgen','txtcls','txtext'] },
     { name: 'Ollama', code: 'ollama', use: ['txtgen','txtcls','txtext'] },
     { name: 'Zhipu AI', code: 'zhipuai', use: ['txtgen','txtcls','txtext'] },
@@ -153,35 +133,24 @@ export class CognaEditorComponent implements OnInit {
     { name: 'GPT-5.4 MINI', code: 'gpt-5.4-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
     { name: 'GPT-5.4 NANO', code: 'gpt-5.4-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
 
-
-
-    // { name: 'Gemini 1.0 Pro', code: 'gemini-1.0-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    // { name: 'Gemini 1.5 Pro', code: 'gemini-1.5-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    // { name: 'Gemini 1.5 Flash', code: 'gemini-1.5-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'Gemini 2.5 Pro', code: 'gemini-2.5-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'Gemini 2.5 Flash', code: 'gemini-2.5-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'Gemini 2.5 Flash-Lite', code: 'gemini-2.5-flash-lite', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'Gemini 2.0 Flash', code: 'gemini-2.0-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'Gemini 2.0 Flash-Lite', code: 'gemini-2.0-flash-lite', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
 
-    // { name: 'R1', code: 'r1', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Reasoner', code: 'deepseek-reasoner', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'DALL.E 2', code: 'dall-e-2', type: 'openai', use: ['imggen'] },
     { name: 'DALL.E 3', code: 'dall-e-3', type: 'openai', use: ['imggen'] },
     { name: 'GPT Image 1', code: 'gpt-image-1', type: 'openai', use: ['imggen'] },
     { name: 'GPT Image 2', code: 'gpt-image-2', type: 'openai', use: ['imggen'] },
-    // { name: 'ResNet101v1', code: 'resnet101v1', type: 'onnx', use: ['imgcls'] },
-    // { name: 'YOLOv8', code: 'yolov8n', type: 'onnx', use: ['imgcls'] },
     { name: 'YOLOv10s', code: 'yolov10s.onnx', type: 'onnx', use: ['imgcls'] },
     { name: 'ResNet50v2', code: 'resnet50-v2-7.onnx', type: 'onnx', use: ['imgcls'] },
-    // { name: 'MobileNetv2-1.0', code: 'mobilenetv2-10.onnx', type: 'onnx', use: ['imgcls'] },
     { name: 'MobileNetv2-1.2', code: 'mobilenetv2-12.onnx', type: 'onnx', use: ['imgcls'] },
     { name: 'Imagen', code: 'imagen-4.0-generate-001', type: 'gemini', use: ['imggen'] },
-    // { name: 'CF-WAI-Stable Diffusion', code: 'stable-diffusion-xl', type: 'vertex-ai-gemini', use: ['imggen'] },
     { name: 'COGVIEW-3', code: 'cogview-3', type: 'zhipuai', use: ['imggen'] },
 
-    // { name: 'Gemini Pro', code: 'gemini-pro', type: 'vertex-ai-gemini', use: ['txtgen','txtcls','txtext'] },
     { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
     { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
 
@@ -215,15 +184,12 @@ export class CognaEditorComponent implements OnInit {
 
   allowedVectorStoreType = OAUTH.COGNA_VECTOR_DB;
 
-  // @ViewChild('codeeditorinit') codeeditorinit: NgCmComponent;
-
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private cognaService = inject(CognaService);
   private datasetService = inject(DatasetService)
   private lambdaService = inject(LambdaService)
   private bucketService= inject(BucketService)
-  // private dashboardService = inject(DashboardService)
   private lookupService = inject(LookupService)
   private formService = inject(FormService)
   private modalService = inject(NgbModal)
@@ -231,10 +197,10 @@ export class CognaEditorComponent implements OnInit {
   private router = inject(Router)
   private appService = inject(AppService)
   private toastService = inject(ToastService)
-  // private endpointService = inject(EndpointService)
   private runService = inject(RunService)
   private utilityService = inject(UtilityService)
   private cdr = inject(ChangeDetectorRef);
+  private metaTrailService = inject(MetaTrailService);
 
   constructor() {
         this.location.onPopState(() => {
@@ -258,35 +224,7 @@ export class CognaEditorComponent implements OnInit {
 
         this.rand = Math.random();
 
-        // this.route.url.pipe(
-        //   withLatestFrom(this.route.parent.params, this.route.queryParams)
-        // ).subscribe(([url, params, queryParams]) => {
-
-        //   this.appId = params['appId'];
-        //   if (this.appId) {
-        //     let params = {
-        //       email: user.email
-        //     }
-        //     this.appService.getApp(this.appId, params)
-        //       .subscribe(res => {
-        //         this.app = res;
-
-        //       });
-        //   }
-
-        //   const id = queryParams['id'];
-        //   if (id) {
-        //     this.loadCogna(id);
-        //   }
-
-        //   this.loadCognaList(1);
-        //   this.loadBindingSrcs();
-
-
-        // })
-
         this.route.parent.params
-          // NOTE: I do not use switchMap here, but subscribe directly
           .subscribe((params: Params) => {
             this.appId = params['appId'];
             this.cdr.detectChanges();
@@ -315,7 +253,6 @@ export class CognaEditorComponent implements OnInit {
             this.loadSecretList();
 
             this.loadCognaList(1);
-            // this.loadSharedList(1);
             this.loadBindingSrcs();
 
         });
@@ -354,12 +291,6 @@ export class CognaEditorComponent implements OnInit {
   pageNumber: number = 1;
   entryPageNumber: number = 1;
 
-  //   popShare(id) {
-  //     let url = this.app.appPath ? this.app.appPath + '.' + domainBase : domainBase + "/#/run/" + id;
-  //     prompt('App URL (Press Ctrl+C to copy)', url);
-  // }
-
-  // this.loadCognaList = loadCognaList;
   loadCognaList(pageNumber) {
     this.pageNumber = pageNumber;
     this.itemLoading = true;
@@ -406,15 +337,11 @@ export class CognaEditorComponent implements OnInit {
   loadFormatter(formId){
     if (!formId){
       this.editCognaData.data.extractSchema = "";
-      // this.editCognaData.data.extractFmt = "";
-      // this.editCognaData.data.extractJson = "";
     }
     
     this.cognaService.getFormatter(formId, this.editCognaData?.type=='txtext')
     .subscribe(res=>{
       this.editCognaData.data.extractSchema = res.schema;
-      // this.editCognaData.data.extractFmt = res.fmt;
-      // this.editCognaData.data.extractJson = res.json;
       this.extractJsonObj = JSON.parse(res.schema);
       this.cdr.detectChanges();
     })
@@ -432,37 +359,19 @@ export class CognaEditorComponent implements OnInit {
   setImgClsModels(){
     this.editCognaData.inferModelType = 'onnx';
     this.editCognaData.inferModelName = 'resnet50-v2-7.onnx';
-    // this.editCognaData.data.imgclsCat = ;
     this.editCognaData.data.imgclsMinScore = 8.00;
     this.editCognaData.data.imgclsLimit = 3;
-    // this.editCognaData.data.imgQuality = 'standard';
-    // this.editCognaData.data.imgStyle = 'vivid';
   }
 
   removeFile(index){
     this.fileList.splice(index,1);
   }
 
-  // loadSharedList(pageNumber) {
-  //   this.pageNumber = pageNumber;
-  //   this.sharedLoading = true;
-
-  //   let params = {
-  //     searchText: this.searchText,
-  //     page: pageNumber - 1,
-  //     size: this.itemsPerPage
-  //   }
-  //   this.cognaService.getSharedCognaList(params)
-  //     .subscribe(res => {
-  //       this.sharedList = res.content;
-  //       this.sharedTotal = res.page?.totalElements;
-  //       this.sharedLoading = false;
-  //     }, res => this.sharedLoading = false)
-  // }
-
   editCode: boolean;
   editCognaData: any;
   editCogna(content, cogna, isNew) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     cogna.content = this.br2nl(cogna.content);
     this.editCognaData = cogna;
     this.editCognaData.email = cogna.email || this.user.email;
@@ -486,6 +395,8 @@ export class CognaEditorComponent implements OnInit {
 
   editSrcData: any;
   editCognaSrc(content, cognaSrc, isNew) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.editSrcData = cognaSrc;
 
     if (!this.editSrcData.appId) this.editSrcData.appId = this.app.id;
@@ -500,20 +411,13 @@ export class CognaEditorComponent implements OnInit {
       this.dataset = null;      
     }
 
-    // this.editCognaData.email = cogna.email || this.user.email;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
-        // data.content = this.nl2br(data.content);
         if (data.src) {
           data.name = data.src.title || data.src.name;
           data.srcId = data.src.id;
         }
-        // if (data.type=='dataset'){
-        //   data.name = data.src.title;
-        //   data.srcId = data.src.id;
-        // }
-
         this.cognaService.saveSrc(this.cognaId, data)
           .subscribe(res => {
             this.loadCognaList(this.pageNumber);
@@ -527,12 +431,12 @@ export class CognaEditorComponent implements OnInit {
       }, res => { })
   }
 
-  // toSnakeCase = toSnakeCase
-
   isParamEdit = () => Object.values(this.paramEdit).includes(true);
   paramEdit:any={}
   editToolData: any;
   editCognaTool(content, cognaTool, isNew) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.editToolData = cognaTool;
 
     if (!this.editToolData.appId) this.editToolData.appId = this.app.id;
@@ -570,16 +474,13 @@ export class CognaEditorComponent implements OnInit {
   removeToolParam(index){
     if (confirm("Are you sure you want to remove this parameter?")){
       this.editToolData.params.splice(index, 1);
-      // this.screenService.saveScreen(this.app.id, this.curScreen)
-      //     .subscribe(res => {
-      //       this.getScreenData(res.id);
-      //       this.toastService.show("Screen saved successfully", { classname: 'bg-success text-light' });
-      //     });
     }
   }
 
   editMcpData: any;
   editCognaMcp(content, cognaMcp, isNew) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.editMcpData = cognaMcp;
 
     if (!this.editMcpData.appId) this.editMcpData.appId = this.app.id;
@@ -602,6 +503,8 @@ export class CognaEditorComponent implements OnInit {
 
   editSubData: any;
   editCognaSub(content, cognaSub, isNew) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.editSubData = cognaSub;
 
     if (!this.editSubData.appId) this.editSubData.appId = this.app.id;
@@ -649,7 +552,6 @@ export class CognaEditorComponent implements OnInit {
   loadBucket(bId){
     this.bucketService.getBucket(bId)
     .subscribe(res=>{
-      // this.bucket = res;
       this.editSrcData.name = res.name;
     })
   }
@@ -661,6 +563,8 @@ export class CognaEditorComponent implements OnInit {
   extraAutoCompleteHtml: any[] = [];
 
   removeCognaSrc(cognaSrc) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this source?\n Note: Removing source would not remove the knowledge from embedding")) {
       this.cognaService.removeSrc(cognaSrc.id)
         .subscribe({
@@ -678,6 +582,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   removeCognaTool(cognaTool) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this tool?")) {
       this.cognaService.removeTool(cognaTool.id)
         .subscribe({
@@ -695,6 +601,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   removeCognaMcp(cognaMcp) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this MCP server?")) {
       this.cognaService.removeMcp(cognaMcp.id)
         .subscribe({
@@ -711,6 +619,8 @@ export class CognaEditorComponent implements OnInit {
     }
   }
   removeCognaSub(cognaSub) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to remove this Sub Agent?")) {
       this.cognaService.removeSub(cognaSub.id)
         .subscribe({
@@ -730,6 +640,8 @@ export class CognaEditorComponent implements OnInit {
 
   removeCognaData: any;
   removeCogna(content, cogna) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.removeCognaData = cogna;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -753,6 +665,8 @@ export class CognaEditorComponent implements OnInit {
   domainBase = domainBase;
 
   clearMemory(cogna) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.cognaService.clearMemoryById(cogna.id)
       .subscribe({
         next: res => {
@@ -770,6 +684,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   clearUserMemory(cogna) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.runService.clearCognaMemoryByIdAndEmail(cogna.id, this.user.email)
       .subscribe({
         next: res => {
@@ -793,6 +709,8 @@ export class CognaEditorComponent implements OnInit {
   }
   clearDbLoading: boolean = false;
   clearDb(cogna) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     if (confirm("Are you sure you want to clear this database?\n Note: The cleared data is not recoverable.")) {
       this.clearDbLoading = true;
       this.cognaService.clearDb(cogna.id)
@@ -820,6 +738,10 @@ export class CognaEditorComponent implements OnInit {
   lookupEntries:any[]=[];
   
   loadCogna(id) {
+    if (this.isTimeWarpingCogna) {
+      this.exitTimeWarpCogna();
+    }
+
     this.cognaId = id;
 
     this.fileList = [];
@@ -838,10 +760,6 @@ export class CognaEditorComponent implements OnInit {
         } else {
           this.chatResponseList = [];
         }
-
-        // if (this.cogna.type=='txtcls' && this.cogna.data.txtclsLookupId){
-
-        // }
 
         if (this.cogna.type=='imgcls' && this.cogna.data?.imgclsCat){
           let list = this.cogna.data?.imgclsCat.split("\n");
@@ -881,6 +799,8 @@ export class CognaEditorComponent implements OnInit {
 
   ingestSrcLoading = signal<any>({});
   ingestSrc(cognaSrc) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.ingestSrcLoading.set({...this.ingestSrcLoading(), [cognaSrc.id]: true});
     this.cognaService.ingestSrc(cognaSrc.id, {})
       .subscribe({
@@ -903,34 +823,30 @@ export class CognaEditorComponent implements OnInit {
 
   clearDbSrcLoading = signal<any>({});
   clearDbSrc(cognaSrc) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.clearDbSrcLoading[cognaSrc.id] = true;
     this.cognaService.clearDbBySrcId(cognaSrc.id)
       .subscribe({
         next: res => {
           this.loadCogna(this.cogna.id);
-          // this.ingestRes.set({...this.ingestRes(), [cognaSrc.id]: res});
           this.toastService.show("Source successfully cleared from DB", { classname: 'bg-success text-light' });
-          // this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents successfully ingested<br/>Doc counts: " + res.docCount});
-          // this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'true'});
           this.clearDbSrcLoading.set({...this.clearDbSrcLoading(), [cognaSrc.id]: false});
         },
         error: err => {
           this.toastService.show("Source DB clear failure: " + err.error.message, { classname: 'bg-danger text-light' });
-          // this.ingestMessage.set({...this.ingestMessage(), [this.cogna.id]: "Documents ingestion failure: " + err.error.message});
-          // this.ingestSuccess.set({...this.ingestSuccess(), [this.cogna.id]: 'false'});
           this.clearDbSrcLoading.set({...this.clearDbSrcLoading(), [cognaSrc.id]: false});
         }
       })
   }
 
   ingestRes = signal<any>({});
-  // ingestSuccess: string;
   ingestSuccess = signal<any>({});
-  // ingestMessage: string;
   ingestMessage = signal<any>({});
-  // ingestLoading: boolean = false;
   ingestLoading = signal<any>({});
   ingest(cogna) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.ingestLoading.set({...this.ingestLoading(), [cogna.id]: true});
     this.cognaService.ingest(cogna.id, {})
       .subscribe({
@@ -974,6 +890,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   saveCogna(data) {
+    if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.cognaService.save(data.email, this.appId, data)
       .subscribe(res => {
         this.loadCognaList(this.pageNumber);
@@ -1035,7 +953,6 @@ export class CognaEditorComponent implements OnInit {
 
   chatHistoryList:any[]=[];
   chatHistorySearchText: string = "";
-  // trails: any[] = [];
   chatHistoryTotal: number = 0;
   chatHistoryPageSize: number = 25;
   chatHistoryPageNumber: number = 1;
@@ -1050,12 +967,6 @@ export class CognaEditorComponent implements OnInit {
         searchText: this.chatHistorySearchText,
         sort: ['timestamp,desc']
     }
-    // if (this.trailFrom) {
-    //     params['dateFrom'] = this.trailFrom;
-    // }
-    // if (this.trailTo) {
-    //     params['dateTo'] = this.trailTo;
-    // }
 
     this.cognaService.history(cognaId,params)
     .subscribe({
@@ -1100,7 +1011,6 @@ export class CognaEditorComponent implements OnInit {
               sessionStorage.setItem("cogna-"+cogna.id,JSON.stringify(this.chatResponseList));
               this.scrollBottom();        
 
-              // perlu pake tok utk pastikan element dh wujud dlm html sebelum run mermaid
               setTimeout(()=>{
                 mermaid.run({querySelector:'.mermaid'})
                 this.cdr.detectChanges();
@@ -1132,7 +1042,6 @@ export class CognaEditorComponent implements OnInit {
             this.chatResponseList.push({type:'response', text:marked.parse(res?.result??''), timestamp:Date.now()})
             sessionStorage.setItem("cogna-"+cogna.id,JSON.stringify(this.chatResponseList));
             this.scrollBottom();        
-            // this.toastService.show("Prompt success", { classname: 'bg-success text-light' });
             this.fileList=[];
             this.cdr.detectChanges();
           },
@@ -1265,16 +1174,12 @@ export class CognaEditorComponent implements OnInit {
     this.bindingSrcs = [];
     this.getDatasetList(this.appId);
     this.getBucketList(this.appId);
-    // this.getLookupList();
-    // this.otherBinds();
-    // this.getFormList();
   }
 
   datasetList: any[];
   bucketList: any[];
   lambdaList: any[];
   otherCognaList: any[];
-  // formList: any[];
   getDatasetList(appId) {
     this.datasetService.getDatasetList(appId)
       .subscribe(res => {
@@ -1340,7 +1245,6 @@ export class CognaEditorComponent implements OnInit {
   keyList = (obj: any) => obj && Object.keys(obj).join(", ");
 
   onKeyDown($event): void {
-    // Detect platform
     if (navigator.platform.match('Mac')) {
       this.handleMacKeyEvents($event);
     }
@@ -1350,11 +1254,8 @@ export class CognaEditorComponent implements OnInit {
   }
 
   handleMacKeyEvents($event) {
-    // MetaKey documentation
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey
     let charCode = String.fromCharCode($event.which).toLowerCase();
     if ($event.metaKey && charCode === 's') {
-      // Action on Cmd + S
       $event.preventDefault();
       this.saveCogna(this.cogna)
     }
@@ -1363,22 +1264,18 @@ export class CognaEditorComponent implements OnInit {
   handleWindowsKeyEvents($event) {
     let charCode = String.fromCharCode($event.which).toLowerCase();
     if ($event.ctrlKey && charCode === 's') {
-      // Action on Ctrl + S
       $event.preventDefault();
       this.saveCogna(this.cogna)
     }
   }
 
-  nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
-  br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
+  nl2br = nl2br; 
+  br2nl = br2nl; 
 
-  toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
-  toSnakeCase = toSnakeCase; //(string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-  toHyphen = toHyphen; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
+  toSpaceCase = toSpaceCase; 
+  toSnakeCase = toSnakeCase; 
+  toHyphen = toHyphen; 
 
-  /*isResponse=(text)=>{
-    return text.includes("Here is some information that might be useful for answering:");
-  }*/
   linkify=linkify;
   imagify=imagify;
   targetBlank=targetBlank;
@@ -1391,7 +1288,6 @@ export class CognaEditorComponent implements OnInit {
   uploadPromptLoading = false;
   uploadPromptImage($event){
     if($event.target.files && $event.target.files.length){
-      // console.log($event);
       var file = $event.target.files[0];
       this.uploadPromptMimeType = file.type;
       resizeImage({
@@ -1399,24 +1295,6 @@ export class CognaEditorComponent implements OnInit {
         maxSize: 640
       }).then((resizedImage:Blob) => {
         this.uploadPromptImageBase64 = URL.createObjectURL(resizedImage)
-        // alert(file.name)
-        // this.entryService.uploadAttachment(resizedImage, f.id, f.x?.bucket, this.form.appId, file.name)
-        //   .subscribe({
-        //     next: res => {
-        //       if (res.type === HttpEventType.UploadProgress) {
-        //         progressSize += res.loaded;
-        //         this.uploadProgress[f.code + (index ?? '')] = Math.round(100 * progressSize / totalSize);
-        //       } else if (res instanceof HttpResponse) {
-        //         list.push(res.body.fileUrl);
-        //         data[f.code] = list;
-        //         this.filesMap[res.body.fileUrl] = res.body;
-        //         this.fieldChange(fileList, data, f, evalEntryData);
-        //         this.entryFiles.push(res.body.fileUrl);
-        //       }
-        //     }, error: err => {
-        //       console.error(err);
-        //     }
-        //   })
       }).catch((err) => {
         console.error(err);
       });      
@@ -1437,19 +1315,12 @@ export class CognaEditorComponent implements OnInit {
         var file = $event.target.files[i];
         totalSize = totalSize + file.size;
       }
-      // var totalSize = $event.target.files.reduce((total, i) => total + i.size, 0);
       var progressSize = 0;
-
-      // optimize image file here (ie: resize, compress)
-      // files = compressImage(files, 300, 300)
-      // const resizedImage = await resizeImage(config)
-      // if (f.subType == 'imagemulti') {
 
       var list = [];
       for (var i = 0; i < $event.target.files.length; i++) {
         let file = $event.target.files[i];
         let fileType = file.type;
-        // console.log("fileType",file.type)
         if (file.type.includes("image")){
           resizeImage({
             file: file,
@@ -1513,22 +1384,11 @@ export class CognaEditorComponent implements OnInit {
         var file = $event.target.files[i];
         totalSize = totalSize + file.size;
       }
-      // // var totalSize = $event.target.files.reduce((total, i) => total + i.size, 0);
       var progressSize = 0;
 
-      // optimize image file here (ie: resize, compress)
-      // files = compressImage(files, 300, 300)
-      // const resizedImage = await resizeImage(config)
-      // if (f.subType == 'imagemulti') {
-
-      // console.log($event);
       var list = [];
       for (var i = 0; i < $event.target.files.length; i++) {
         let file = $event.target.files[i];
-        // resizeImage({
-        //   file: file,
-        //   maxSize: 640
-        // }).then(resizedImage => {
           this.runService.uploadCognaFile(file, this.cogna.id, file.name)
             .subscribe({
               next: res => {
@@ -1548,9 +1408,6 @@ export class CognaEditorComponent implements OnInit {
                 this.cdr.detectChanges();
               }
             })
-        // }).catch(function (err) {
-        //   console.error(err);
-        // });
       }
     }
   }
@@ -1612,10 +1469,140 @@ export class CognaEditorComponent implements OnInit {
   }
 
   onTrailReverted(modalCloseFn: any) {
-    // Refresh the lambda data when a revert happens
     this.loadCogna(this.cogna.id); 
   }
 
-  
+  // ==========================================
+  // TIMEWARP LOGIC (COGNA LEVEL)
+  // ==========================================
+  timeWarpCognaTrails: any[] = [];
+  liveCognaSnapshot: any = null;
+  timeWarpCognaIndex: number = 0;
+  isTimeWarpingCogna: boolean = false;
 
+  private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+  toggleTimeWarpCogna() {
+      this.isTimeWarpingCogna ? this.exitTimeWarpCogna() : this.startTimeWarpCogna();
+  }
+
+  startTimeWarpCogna() {
+      this.metaTrailService.getMetaTrails(`cogna_${this.cogna.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+          next: (res) => {
+              const trails = res.content?.filter((t: any) => ['cogna', 'cogna_source', 'cogna_tool', 'cogna_mcp', 'cogna_sub'].includes(t.module?.toLowerCase())) || [];
+              if (!trails.length) {
+                  this.toastService.show("No Cogna-level MetaTrail history available.", { classname: 'bg-warning text-dark' });
+                  return;
+              }
+
+              this.liveCognaSnapshot = this.clone(this.cogna);
+              this.timeWarpCognaTrails = [...trails, {
+                  timestamp: new Date().toISOString(),
+                  action: 'CURRENT',
+                  email: this.user?.email || 'You',
+                  module: 'cogna',
+                  data: this.clone(this.liveCognaSnapshot)
+              }];
+
+              this.isTimeWarpingCogna = true;
+              this.timeWarpCognaIndex = this.timeWarpCognaTrails.length - 1;
+              this.applyTimeWarpCogna(this.timeWarpCognaIndex);
+              this.cdr.detectChanges();
+          },
+          error: () => this.toastService.show("Failed to load MetaTrails for TimeWarp.", { classname: 'bg-danger text-light' })
+      });
+  }
+
+  applyTimeWarpCogna(index: number) {
+      if (!this.timeWarpCognaTrails[index]) return;
+
+      let baseIdx = index;
+      while (baseIdx >= 0 && this.timeWarpCognaTrails[baseIdx].module?.toLowerCase() !== 'cogna') baseIdx--;
+      if (baseIdx < 0) return;
+
+      this.applyCognaSnapshot(this.timeWarpCognaTrails[baseIdx].data);
+
+      for (let i = baseIdx + 1; i <= index; i++) {
+          const { action, data, moduleId } = this.timeWarpCognaTrails[i];
+          const module = this.timeWarpCognaTrails[i].module?.toLowerCase();
+          const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+
+          // Handle array-based properties based on the module
+          const targetArrayProp = this.getArrayPropertyForModule(module);
+          if (targetArrayProp && data) {
+              const sId = data.id || moduleId;
+              const idx = this.cogna[targetArrayProp].findIndex((s: any) => (s.id || s.code) === (sId || data.code));
+              
+              if (isRemoved) {
+                  if (idx > -1) this.cogna[targetArrayProp].splice(idx, 1);
+              } else {
+                  const snap = this.clone(data);
+                  if (idx > -1) Object.assign(this.cogna[targetArrayProp][idx], snap);
+                  else this.cogna[targetArrayProp].push(snap);
+              }
+          }
+      }
+
+      this.cdr.detectChanges();
+  }
+
+  private getArrayPropertyForModule(module: string): string | null {
+      switch (module) {
+          case 'cogna_source': return 'sources';
+          case 'cogna_tool': return 'tools';
+          case 'cogna_mcp': return 'mcps';
+          case 'cogna_sub': return 'subs';
+          default: return null;
+      }
+  }
+
+  exitTimeWarpCogna() {
+      if (this.liveCognaSnapshot) {
+          this.applyCognaSnapshot(this.liveCognaSnapshot);
+      }
+      this.isTimeWarpingCogna = false;
+      this.liveCognaSnapshot = null;
+      this.cdr.detectChanges();
+  }
+
+  restoreTimeWarpCognaVersion() {
+      const selectedTrail = this.timeWarpCognaTrails[this.timeWarpCognaIndex];
+
+      if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+          this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+          this.exitTimeWarpCogna();
+          return;
+      }
+
+      if (confirm("Are you sure you want to revert the cogna to this historical version?")) {
+          this.isTimeWarpingCogna = false; 
+          
+          this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+              next: () => {
+                  this.toastService.show("Historical cogna version restored successfully.", { classname: 'bg-success text-light' });
+                  this.liveCognaSnapshot = null;
+                  this.loadCogna(this.cogna.id); 
+              },
+              error: () => {
+                  this.isTimeWarpingCogna = true;
+                  this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+              }
+          });
+      }
+  }
+
+  private applyCognaSnapshot(snapshot: any) {
+      const copy = this.clone(snapshot);
+      
+      // Update root properties
+      ['title', 'description', 'code', 'email', 'type', 'inferModelType', 'inferModelName', 'embedModelType', 'embedModelName', 'embedSize', 'embedMinScore', 'embedMaxResult', 'streamSupport', 'systemMessage', 'data', 'sources'].forEach(k => {
+          if (copy[k] !== undefined) this.cogna[k] = copy[k];
+      });
+
+      // Ensure array properties exist
+      this.cogna.sources = copy.sources || [];
+      this.cogna.tools = copy.tools || [];
+      this.cogna.mcps = copy.mcps || [];
+      this.cogna.subs = copy.subs || [];
+  }
 }

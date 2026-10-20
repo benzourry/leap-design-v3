@@ -33,6 +33,7 @@ export class IconPickerComponent {
     { key: "fas:angle-down", value: ["fas", "angle-down"], category: "Navigation & Arrows" },
     { key: "fas:angle-left", value: ["fas", "angle-left"], category: "Navigation & Arrows" },
     { key: "fas:angle-right", value: ["fas", "angle-right"], category: "Navigation & Arrows" },
+    { key: "fas:fast-backward", value: ["fas", "fast-backward"], category: "Navigation & Arrows" },
     { key: "fas:angle-double-left", value: ["fas", "angle-double-left"], category: "Navigation & Arrows" },
     { key: "fas:angle-double-right", value: ["fas", "angle-double-right"], category: "Navigation & Arrows" },
 
@@ -52,6 +53,7 @@ export class IconPickerComponent {
     { key: "fas:circle-notch", value: ["fas", "circle-notch"], category: "Status & Alerts" },
     { key: "fas:ban", value: ["fas", "ban"], category: "Status & Alerts" },
     { key: "fas:shield-alt", value: ["fas", "shield-alt"], category: "Status & Alerts" },
+    { key: "fas:shield", value: ["fas", "shield"], category: "Status & Alerts" },
     { key: "fas:lock", value: ["fas", "lock"], category: "Status & Alerts" },
     { key: "fas:unlock", value: ["fas", "unlock"], category: "Status & Alerts" },
 

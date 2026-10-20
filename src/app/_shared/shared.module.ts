@@ -44,7 +44,9 @@ import {
     faLaptopFile,
     faVideo,
     faUserGraduate,
-    faUserTie
+    faUserTie,
+    faShield,
+    faFastBackward
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- REGULAR (OUTLINE) ICONS ---
@@ -137,7 +139,10 @@ export class SharedModule {
             farStar, faThumbsUp, faUser, faCamera, faPaste,
 
             // --- BRAND ICONS ---
-            faFacebookF, faGithub, faGoogle, faInstagram, faLinkedin, faMicrosoft, faTwitter, faUncharted, faWpforms, faWhatsapp, faYoutube
+            faFacebookF, faGithub, faGoogle, faInstagram, faLinkedin, faMicrosoft, faTwitter, faUncharted, faWpforms, faWhatsapp, faYoutube,
+
+            // Add more icons as needed
+            faShield, faFastBackward,
         ];
 
         // library.addIconPacks(fas);

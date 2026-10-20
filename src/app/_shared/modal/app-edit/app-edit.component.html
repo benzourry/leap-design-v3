@@ -135,7 +135,7 @@
                             name="useSarawakid">
                           <label class="form-check-label" for="useSarawakid">
                             <fa-icon [icon]="['far','circle-user']" [fixedWidth]="true" size="2x"></fa-icon>
-                            <div class="small">SarawakID</div>
+                            <div class="small text-break">SarawakID</div>
                           </label>
                         </div>
                       </div>
@@ -147,7 +147,7 @@
                             name="useSsone">
                           <label class="form-check-label" for="useSsone">
                             <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                            <div class="small">ssOne</div>
+                            <div class="small text-break">ssOne</div>
                           </label>
                         </div>
                       </div>
@@ -159,106 +159,129 @@
                             name="useIcatsid">
                           <label class="form-check-label" for="useIcatsid">
                             <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                            <div class="small">i-CATS Identity</div>
+                            <div class="small text-break">i-CATS Identity</div>
                           </label>
                         </div>
                       </div>
                     }
                     @if (checkLogin('unimasid')) {
-                      <div class="col-4 mb-3">
-                        <div class="form-check text-center">
+                      <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                        <div class="form-check">
                           <input type="checkbox" class="form-check-input" id="useUnimasid" [(ngModel)]="_data.useUnimasid"
                             name="useUnimasid">
                           <label class="form-check-label" for="useUnimasid">
                             <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                            <div class="small">UNIMAS ID</div>
+                            <div class="small text-break">UNIMAS ID</div>
                           </label>
                         </div>
                       </div>
                     }
                     @if (checkLogin('unimas')) {
-                      <div class="col-4 mb-3">
-                        <div class="form-check text-center">
+                      <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                        <div class="form-check">
                           <input type="checkbox" class="form-check-input" id="useUnimas" [(ngModel)]="_data.useUnimas"
                             name="useUnimas">
                           <label class="form-check-label" for="useUnimas">
                             <fa-icon [icon]="['fas','university']" [fixedWidth]="true" size="2x"></fa-icon>
-                            <div class="small">UNIMAS Identity (legacy)</div>
+                            <div class="small text-break">UNIMAS (legacy)</div>
                           </label>
                         </div>
                       </div>
                     }
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useGoogle" [(ngModel)]="_data.useGoogle"
                           name="useGoogle">
                         <label class="form-check-label" for="useGoogle">
                           <fa-icon [icon]="['fab','google']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Google Account</div>
+                          <div class="small text-break">Google Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useAzuread" [(ngModel)]="_data.useAzuread"
                           name="useAzuread">
                         <label class="form-check-label" for="useAzuread">
                           <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Microsoft Account</div>
+                          <div class="small text-break">Microsoft Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useFacebook" [(ngModel)]="_data.useFacebook"
                           name="useFacebook">
                         <label class="form-check-label" for="useFacebook">
                           <fa-icon [icon]="['fab','facebook-f']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Facebook Account</div>
+                          <div class="small text-break">Facebook Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useTwitter" [(ngModel)]="_data.useTwitter"
                           name="useTwitter">
                         <label class="form-check-label" for="useTwitter">
                           <fa-icon [icon]="['fab','twitter']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Twitter Account</div>
+                          <div class="small text-break">Twitter Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useGithub" [(ngModel)]="_data.useGithub"
                           name="useGithub">
                         <label class="form-check-label" for="useGithub">
                           <fa-icon [icon]="['fab','github']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Github Account</div>
+                          <div class="small text-break">Github Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useLinkedin" [(ngModel)]="_data.useLinkedin"
                           name="useLinkedin">
                         <label class="form-check-label" for="useLinkedin">
                           <fa-icon [icon]="['fab','linkedin']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">LinkedIn Account</div>
+                          <div class="small text-break">LinkedIn Account</div>
                         </label>
                       </div>
                     </div>
-                    <div class="col-4 mb-3">
-                      <div class="form-check text-center">
+                    <div class="col-4 mb-3 text-center border-0 bg-transparent">
+                      <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="useEmail" [(ngModel)]="_data.useEmail"
                           name="useEmail">
                         <label class="form-check-label" for="useEmail">
                           <fa-icon [icon]="['far','envelope']" [fixedWidth]="true" size="2x"></fa-icon>
-                          <div class="small">Use Email (Signup)</div>
+                          <div class="small text-break">Use Email (Signup)</div>
                         </label>
                       </div>
                     </div>
                   </div>
+
+                  <!-- Dynamically Registered Providers -->
+                  @if (customProviders().length > 0) {
+                    <div class="border-top pt-3 mt-2">
+                      <label class="form-label small text-uppercase text-body-secondary fw-bold mb-2 d-block">Custom Sign-in Providers</label>
+                      <div class="row">
+                        @for (p of customProviders(); track p.id) {
+                          <div class="col-4 mb-3 text-center">
+                            <div class="form-check">
+                              <input type="checkbox" class="form-check-input" [id]="'p_' + p.registrationId"
+                                [ngModel]="hasCustomProvider(p.registrationId)"
+                                (ngModelChange)="toggleCustomProvider(p.registrationId, $event)"
+                                [name]="'use_' + p.registrationId">
+                              <label class="form-check-label" [for]="'p_' + p.registrationId">
+                                <fa-icon [icon]="['fas','id-card']" [fixedWidth]="true" size="2x" class="text-body-secondary"></fa-icon>
+                                <div class="small text-break text-truncate px-1" [title]="p.clientName">{{ p.clientName }}</div>
+                              </label>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
                 <div class="form-group mb-3">
                   <label class="form-label">Use local user from other app</label>

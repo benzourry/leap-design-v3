@@ -40,6 +40,8 @@ export class AppEditComponent implements OnInit {
   otherAppList = signal<any[]>([]);
   checkLogin = (login: string) => OAUTH.SIGNIN_OPT.includes(login);
 
+  customProviders = signal<any[]>([]);
+
   themes: any[] = [
     { name: "BarBlue", color: "#0747a6" },
     { name: "Dark", color: "#212529" },
@@ -80,8 +82,14 @@ export class AppEditComponent implements OnInit {
       this._data.x = {};
     }
 
+    // Default ensure standard string arrays initialization 
+    if (!this._data.enabledAuthProviders) {
+      this._data.enabledAuthProviders = [];
+    }
+
     this.loadPages();
     this.loadScreen();
+    this.loadCustomProviders();
     
     this.appService.getAppMyList({
       email: this.user().email,
@@ -120,6 +128,34 @@ export class AppEditComponent implements OnInit {
       .subscribe(res => {
         this.screens.set(res);
       });
+  }
+
+  loadCustomProviders() {
+    if (!this._data.id) return;
+    this.appService.getCustomProviders(this._data.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
+        this.customProviders.set(res);
+        this.cdr.markForCheck();
+      });
+  }
+
+  hasCustomProvider(regId: string): boolean {
+    return this._data.enabledAuthProviders?.includes(regId) || false;
+  }
+
+  toggleCustomProvider(regId: string, checked: boolean) {
+    if (!this._data.enabledAuthProviders) {
+      this._data.enabledAuthProviders = [];
+    }
+
+    if (checked) {
+      if (!this._data.enabledAuthProviders.includes(regId)) {
+        this._data.enabledAuthProviders.push(regId);
+      }
+    } else {
+      this._data.enabledAuthProviders = this._data.enabledAuthProviders.filter((id: string) => id !== regId);
+    }
   }
 
   uploadLogo($event: any) {

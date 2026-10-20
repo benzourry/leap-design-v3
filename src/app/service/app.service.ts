@@ -197,6 +197,22 @@ export class AppService {
     return this.http.post<any>(`${this.baseApi}/app/delete-api-key/${apiKeyId}`, {});
   }
 
+  // ==========================================
+  // CUSTOM OAUTH2 PROVIDER MANAGEMENT
+  // ==========================================
+  
+  getCustomProviders(appId: number) {
+    return this.http.get<any[]>(`${this.baseApi}/app/${appId}/custom-providers`);
+  }
+
+  saveCustomProvider(appId: number, provider: any) {
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/custom-provider`, provider);
+  }
+
+  removeCustomProvider(providerId: number) {
+    return this.http.post<any>(`${this.baseApi}/app/delete-custom-provider/${providerId}`, {});
+  }
+
 
   searchInApp = new Map();
 

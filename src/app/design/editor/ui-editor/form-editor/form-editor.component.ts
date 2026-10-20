@@ -20,9 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbDateAdapter, NgbTimeAdapter, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, NgbInputDatepicker, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-// import { LookupService } from '../../../../service/lookup.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-// import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
 import { KeyValue, PlatformLocation, NgClass, NgStyle, DatePipe, KeyValuePipe, JsonPipe, SlicePipe } from '@angular/common';
@@ -49,8 +47,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { IconPickerComponent } from '../../../../_shared/component/icon-picker/icon-picker.component';
 import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.component';
 import { EditFormComponent } from '../../../../_shared/modal/edit-form/edit-form.component';
-// import { FieldEditComponent } from '../../../../_shared/component/field-edit/field-edit.component';
-// import { FieldViewComponent } from '../../../../_shared/component/field-view.component';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { CognaService } from '../../../../service/cogna.service';
@@ -66,8 +62,8 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { KryptaService } from '../../../../service/krypta.service';
 import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
-// declare var LeaderLine: any;
-// import { combineLatest } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { MetaTrailService } from '../../../../service/metatrail.service';
 
 @Component({
     selector: 'app-form-editor',
@@ -99,7 +95,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     screenList: any;
     curForm: any;
     formError: any;
-    // prevForm: any;
     curFormId: any;
     formSearchText: string = "";
     data: any;
@@ -150,12 +145,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     typeList: any[] = [
         { name: "Text", value: "text" },
         { name: "Number", value: "number" },
-        // { name: "Slider", value: "slider" },
         { name: "Date Picker", value: "date" },
-        // { name: "Long Text", value: "textarea" },
         { name: "Dropdown", value: "select" },
         { name: "Radio Option", value: "radio" },
-        // { name: "Toggle Button", value: "radioBtn" },
         { name: "Checkbox", value: "checkbox" },
         { name: "Checkbox Option", value: "checkboxOption" },
         { name: "Simple Option", value: "simpleOption" },
@@ -174,8 +166,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         { name: "Screen", value: "screen" },
         { name: "Map Picker", value: "map" },
         { name: "Speech To Text", value: "speech" },
-        // { name: "Tab Set", value: "tabset",type:['db','rest'] },
-        // { name: "Panel", value: "panel",type:['db','rest'] }
     ];
     subType: any = {
         text: [
@@ -191,11 +181,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             { name: 'Model Picker (Single)', code: 'single' },
             { name: 'Model Picker (Multiple)', code: 'multiple' }
         ],
-        // lookup: [
-        //     { name: 'Toggle Button', code: 'btn' },
-        //     { name: 'Select Dropdown', code: 'select' },
-        //     { name: 'Radio Option', code: 'radio' }
-        // ],
         radio: [
             { name: 'Toggle Button', code: 'btn' },
             { name: 'Radio Option', code: 'radio' }
@@ -299,22 +284,16 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         })
     }
 
-    formLoading: boolean; // loading formList
+    formLoading: boolean; 
     curFormColumns: any[];
 
     offline: boolean = false;
-
     editCode: boolean = false;
-
     editSectionCode: boolean = false;
-
     previewFacet: string = "edit";
-
     app: any;
 
-    // @ViewChild('editFormTpl') editFormTpl;
     editFormTpl = viewChild('editFormTpl');
-
 
     // Core services
     private formService = inject(FormService);
@@ -330,7 +309,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     private modalService = inject(NgbModal);
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
-    private destroyRef = inject(DestroyRef); // <-- Used for subscription cleanup
+    private destroyRef = inject(DestroyRef);
 
     // Business services
     private userService = inject(UserService);
@@ -345,15 +324,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     private datasetService = inject(DatasetService);
     private screenService = inject(ScreenService);
     private commService = inject(CommService);
+    // private http = inject(HttpClient);
+    private metaTrailService = inject(MetaTrailService);
 
-    // scopeId = computed<string>(() => {     
 
-    //     return `form_${this.form()}_design`;
-    // });
-
-    constructor() {
-
-    }
+    constructor() {}
 
     ngAfterViewChecked() {
         requestAnimationFrame(() => {
@@ -392,7 +367,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 }
             });
 
-        // Listen to query parameters for specific form loading
         this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((queryParams: Params) => {
             const id = queryParams['id'];
             if (id) {
@@ -400,8 +374,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }
         });
 
-
-        // Flat the heavily nested initialization using switchMap
         this.userService.getCreator()
             .pipe(
                 takeUntilDestroyed(this.destroyRef),
@@ -409,7 +381,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     this.user = user;
                     this.cdr.detectChanges();
 
-                    // Initialize parallel flows that depend on user
                     this.appService.getAppMyList({
                         email: this.user.email,
                         size: 999,
@@ -446,20 +417,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             });
 
         if (window.matchMedia("(max-width: 768px)").matches) {
-            // The viewport is less than 576px wide
             this.showPalette = false;
         }
     }
 
     canEditForm(): boolean {
-        if (!this.curForm || !this.curForm.email) return true; // allow if blank/null/undefined
-        if (this.curForm.email.trim() === '') return true; // allow if empty string
+        if (!this.curForm || !this.curForm.email) return true; 
+        if (this.curForm.email.trim() === '') return true; 
 
-        // Split by comma, trim spaces, and check if user's email exists in the array
         const allowedEmails = this.curForm.email.split(',').map((e: string) => e.trim());
         return allowedEmails.includes(this.user?.email);
     }
-
 
     bucketList: any[] = [];
     getBucketList() {
@@ -469,7 +437,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.bucketList = res.content;
             });
     }
-
 
     cognaList: any[] = [];
     getCognaList() {
@@ -486,7 +453,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.walletList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
@@ -498,11 +465,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.accessList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
                 this.accessList.forEach(i => {
                     this.accessMap[i.id] = i;
-                    // this.extraAutoCompleteJs.push({ label: `(groupId:${i.id}) ${i.name}`, apply: i.id + "", detail: i.name });
-                    // this.extraAutoCompleteHtml.push({ label: `(groupId:${i.id}) " ${i.name}`, apply: i.id + "", detail: i.name });
                 })
             });
     }
@@ -514,7 +479,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.endpointList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -524,9 +489,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.lookupList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
-
     }
 
     getMailerList() {
@@ -535,9 +499,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.mailerList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
-
     }
 
     getDatasetList(appId) {
@@ -545,7 +508,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.datasetList = res;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -554,7 +517,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.screenList = res;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -581,7 +544,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.dataset = res;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -613,7 +576,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 if (res?.list) {
                     this.extraAutoCompleteJs.push(...res.list);
                 }
-                this.cdr.detectChanges(); // <--- Add here        
+                this.cdr.detectChanges();       
             })
         this.formService.moreAutocompleteHtml()
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -621,7 +584,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 if (res?.list) {
                     this.extraAutoCompleteHtml.push(...res.list);
                 }
-                this.cdr.detectChanges(); // <--- Add here        
+                this.cdr.detectChanges();       
             })
     }
 
@@ -643,21 +606,23 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.formTotal = res.page?.totalElements;
                 this.formLoading = false;
                 this.commService.emitChange({ key: 'form', value: this.formTotal });
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             }, res => {
                 this.formLoading = false;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
-
     getHiddenList = (list) => list.filter(i => i.hidden == true);
 
-    superForm: any = null; // form that is being extended
-
+    superForm: any = null; 
     cleanBackendForm: any = null;
 
     getFormData(id) {
+        if (this.isTimeWarpingForm) {
+            this.exitTimeWarpForm();
+        }
+
         delete this.superForm
         delete this.formError;
         this.superItems = [];
@@ -669,11 +634,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.cleanBackendForm = JSON.parse(JSON.stringify(res));
                 
                 this.curForm = res;
-                this.buildGroupedItems(); // <--- ADD THIS HERE
-                this.cdr.detectChanges(); // <--- Add here
-                // this.curForm.sections
-                //     .map(s => s.parentObj = this.getTab(s.parent))
-                //     .sort((a, b) => a.parentObj?.sortOrder - b.parentObj?.sortOrder);
+                this.buildGroupedItems(); 
+                this.cdr.detectChanges(); 
 
                 this.curForm.sections.forEach(s => s.parentObj = this.getTab(s.parent));
                 this.curForm.sections.sort((a, b) => {
@@ -691,11 +653,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.populateAutoComplete();
                 this.populateCodeList();
-                // this.drawTierLines();
                 if (res.tiers?.length > 0) {
-                    // Highlight first line
                     this.highlightSubmit();
-                    // this.highlightLine({id:-1}, {id:-1, color:'rgb(0, 123, 255)', action:'goTier', nextTier:res.tiers[0].id});// {
                 }
                 if (res?.x?.extended) {
                     this.formService.getForm(res?.x?.extended)
@@ -715,14 +674,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.loadTrails(this.curForm.id, 1);
                 this.cdr.detectChanges();
-                // }
             }, err => {
                 this.formError = err.error;
             })
     }
 
     highlightSubmit() {
-        this.highlightLine({ id: -1 }, { id: -1, color: 'rgb(0, 123, 255)', action: 'goTier', nextTier: this.curForm.tiers[0].id });// {
+        this.highlightLine({ id: -1 }, { id: -1, color: 'rgb(0, 123, 255)', action: 'goTier', nextTier: this.curForm.tiers[0].id });
     }
 
     compareByIdFn(a, b): boolean {
@@ -733,8 +691,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     lookupIds = [];
     lookupKey = {};
-    lookupMap = {}; // map of field-code:lookup
-    lookup = {}; // lookup entry list
+    lookupMap = {}; 
+    lookup = {}; 
     mod = {};
 
     private lookupMapCache: { [dataSource: string]: Observable<any> } = {};
@@ -749,12 +707,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         ds: key.dataSource,
                         type: key.type
                     };
-                    // if (!this.lookup[key.code]) {
+                    
                     this.getLookup(key.code, key.dataSourceInit ? this.parseJson(key.dataSourceInit) : null);
-                    // }
-
+                    
                     if (key.type != 'modelPicker') {
-                        // Use cache to avoid duplicate requests
                         if (!this.lookupMapCache[key.dataSource]) {
                             this.lookupMapCache[key.dataSource] = this.lookupService.getLookup(key.dataSource).pipe(shareReplay(1));
                         }
@@ -770,7 +726,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
 
                 });
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
@@ -797,7 +753,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 .subscribe({
                     next: res => {
                         this.lookup[code] = res;
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }, error: err => {
                     }
                 })
@@ -807,16 +763,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     lookupDataObs: any = {};
 
     _getLookupObs(code, param, cb?, err?): Observable<any> {
-
         var cacheId = 'key_' + btoaUTF(this.lookupKey[code].ds + hashObject(param ?? {}), null);
-        // masalah nya loading ialah async... so, mun simultaneous load, cache blom diset
-        // bleh consider cache observable instead of result.
-        // tp bila pake observable.. request dipolah on subscribe();
-        // settle with shareReplay(1)
         if (this.lookupDataObs[cacheId]) {
             return this.lookupDataObs[cacheId]
         }
-        // start loading
         if (this.lookupKey[code].type == 'modelPicker') {
             param = Object.assign(param || {}, { email: this.user.email });
             this.lookupDataObs[cacheId] = this.entryService.getListByDatasetData(this.lookupKey[code].ds, param ? param : null)
@@ -824,7 +774,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     tap({ next: cb, error: err }), first(), shareReplay(1)
                 )
         } else {
-            // param = Object.assign(param || {}, { sort: 'id,asc' });
             param = Object.assign(param || {}, {});
             this.lookupDataObs[cacheId] = this.lookupService.getByKey(this.lookupKey[code].ds, param ? param : null)
                 .pipe(
@@ -837,6 +786,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editFormData: any;
     editForm(content, data, isNew) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (!isNew) {
             this.formService.getForm(data.id)
                 .pipe(takeUntilDestroyed(this.destroyRef))
@@ -852,6 +806,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(form => {
+                if (this.isTimeWarpingForm) this.exitTimeWarpForm();
+                
                 if (!form.x.extended) {
                     delete form.x.extended;
                 }
@@ -868,13 +824,18 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.toastService.show("Form saving failed:" + err.message, { classname: 'bg-danger text-light' });
                         }
                     })
-                this.cdr.detectChanges(); // <--- Add here
-            }, res => { });
-
-
+                this.cdr.detectChanges(); 
+            }, res => { 
+                if (this.isTimeWarpingForm) this.exitTimeWarpForm();
+            });
     }
 
     cloneForm(content) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(cloneFormData => {
@@ -893,6 +854,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     unlinkPrevForm(formId) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (confirm('Are you sure you want to unlink previous form')) {
             this.formService.unlinkPrevForm(formId)
                 .pipe(takeUntilDestroyed(this.destroyRef))
@@ -907,6 +873,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     removeFormData: any;
     removeForm(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.removeFormData = data;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -917,7 +888,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.getFormList(1);
                         delete this.curForm;
                         this.toastService.show("Form removed successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }, res => {
                         this.toastService.show("Form removal failed", { classname: 'bg-danger text-light' });
                     });
@@ -933,7 +904,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     selectedTierForEf: any;
     tierListForEf: any[] = [];
     editItemFromPalette: boolean = false;
+
     editItem(content, section, data, sortOrder, fromPalette: boolean = false) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (!data.v) {
             data['v'] = {};
         }
@@ -951,7 +928,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
         this.editItemSection = section;
 
-        // --- NEW: Populate Tier list if section is an approval form ---
         this.selectedTierForEf = null;
         this.tierListForEf = [];
         if (section && section.type === 'approval') {
@@ -959,25 +935,21 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 .filter(t => t.section && t.section.id === section.id)
                 .map(t => ({ id: t.id, label: t.name }));
 
-            // Auto-select the first tier if available
             if (this.tierListForEf.length > 0) {
                 this.selectedTierForEf = this.tierListForEf[0].id;
             }
         }
-        // -------------------------------------------------------------
 
         this.loadOtherAppList(this.editItemData.type, this.editItemData.x.appId);
 
-        // this.editItemData.appId = this.app.id;
         if (this.editItemData.type == 'modelPicker' && this.editItemData.dataSource) {
             this.loadDataset(this.editItemData.dataSource);
         } else {
             this.dataset = null;
         }
         this.editItemFromPalette = fromPalette;
-        // var items = {sizeList:this.sizeList, typeList:this.typeList, lookupList: this.lookupList , toSnakeCase: toSnakeCase};
+        
         history.pushState(null, null, window.location.href);
-        // this.editItemLabelField.nativeElement.focus();
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
                 var fieldList = [];
@@ -1002,13 +974,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 this.getLookupIdList(this.curForm.id);
                                 this.saveItemOrder(section);
                                 this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
-                                this.cdr.detectChanges(); // <--- Add here
+                                this.cdr.detectChanges(); 
                             }, error: (e) => {
                                 this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
                             }
                         })
                 })
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
 
             }, res => { });
     }
@@ -1028,12 +1000,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
             let actionsObj: any[] = Object.values(t.actions);
             if (t.alwaysApprove) {
-                actionsObj = [{ id: -2323, color: "rgb(0, 123, 255)", action: 'nextTier' }]; // -2323 is just a random id that will never exist in db to represent alwaysApprove action
+                actionsObj = [{ id: -2323, color: "rgb(0, 123, 255)", action: 'nextTier' }]; 
             }
 
             actionsObj.forEach((ta, indexta) => {
                 let addToLines = false;
-                // let ta = t.actions[tak];
                 let tElem;
                 let toComplete: boolean;
                 if (ta.action == 'nextTier') {
@@ -1073,13 +1044,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                     if (tTop >= taTop) {
                         line.style.height = (tTop - taTop + 8) + "px";
-                        if (toComplete) { // if to complete, adjust a lil bit to meet the line
+                        if (toComplete) { 
                             line.style.height = (tTop - taTop + 22) + "px";
                         }
                     } else {
-                        line.style.height = (taTop - tTop - 8 + 3) + "px"; // +4 utk border width
-                        var diff = taTop - (50 + (indexta * 10)); // relative different between top-by-parent vs top-by-client
-                        line.style.top = (tTop - diff + 6) + "px"; // get tTo
+                        line.style.height = (taTop - tTop - 8 + 3) + "px"; 
+                        var diff = taTop - (50 + (indexta * 10)); 
+                        line.style.top = (tTop - diff + 6) + "px"; 
                     }
                     line.style.opacity = ".5";
                     if (addToLines) {
@@ -1094,14 +1065,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     selectColor(number) {
-        const hue = number * 137.508; // use golden angle approximation
+        const hue = number * 137.508; 
         return `hsla(${hue},50%,75%)`;
     }
     selectedLine: number = -1;
     selectedLineTier: number = -1;
     selectedTier: number = -1;
     selectedColor: string = "rgb(0, 123, 255)";
-    // selectedTierAction: number = -1;
+    
     highlightLine(tier, tierAction) {
         this.selectedLine = tierAction.id;
         this.selectedTier = tier.id;
@@ -1112,7 +1083,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             if (this.curForm.tiers[tier.sortOrder + 1]) {
                 this.selectedLineTier = this.curForm.tiers[tier.sortOrder + 1]?.id;
             } else if (tier.sortOrder == this.curForm?.tiers?.length - 1) {
-                // this.selectedLine = ;
                 this.selectedLineTier = 999;
             } else {
                 this.selectedLineTier = -1;
@@ -1140,6 +1110,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editTierData: any;
     editTier(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.editTierData = data;
         if (!this.editTierData.x) {
             this.editTierData.x = {};
@@ -1176,7 +1151,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     })
                 this.cdr.detectChanges();
             }, dismiss => {
-                /// ????
                 if (this.editTierData.orgMapParamStr) {
                     this.editTierData.orgMapParam = JSON.parse(this.editTierData.orgMapParamStr);
                 }
@@ -1186,7 +1160,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editTierActionData: any;
     editTierAction(content, tier, data) {
-        // alert(JSON.stringify(tier));
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.editTierActionData = data;
         this.editTierActionData.tierOrder = tier.sortOrder;
         history.pushState(null, null, window.location.href);
@@ -1199,7 +1177,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             this.getFormData(this.curForm.id);
                             this.reorderAllTier();
                             this.toastService.show("Tier action saved successfully", { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         }, error: (error) => {
                             this.toastService.show("Tier action saving failed", { classname: 'bg-danger text-light' });
                         }
@@ -1238,7 +1216,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             sortOrder: 2
         }
     }
+
     removeTierAction(ta) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (confirm('Are you sure you want to remove this action:' + ta.label)) {
             this.formService.removeTierAction(ta.id)
                 .pipe(takeUntilDestroyed(this.destroyRef))
@@ -1256,6 +1240,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     removeTierData: any;
     removeTier(content, tier) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.removeTierData = tier;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1269,7 +1258,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 .subscribe(res => {
                                     this.curForm = res;
                                     this.reorderAllTier();
-                                    this.cdr.detectChanges(); // <--- Add here
+                                    this.cdr.detectChanges(); 
                                 }, err => {
                                     this.formError = err.error;
                                 })
@@ -1283,16 +1272,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    // // ISSUE REORDER
-    // reorderTier(index, op) {
-    //     if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${this.curForm.tiers[index].name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
-    //         this.reorder(this.curForm.tiers, index, op);
-    //         this.saveTierOrder();
-    //     }
-    // }
     reorderTier(tier: any, op: number) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${tier.name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
-            // let index = this.curForm.tiers.indexOf(tier);
             let index = this.curForm.tiers.findIndex((t: any) => t.id === tier.id);
 
             if (index > -1 && index + op >= 0 && index + op < this.curForm.tiers.length) {
@@ -1301,7 +1287,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }
         }
     }
-    /** recalculate tierorder and save to database */
+    
     reorderAllTier() {
         var list = this.curForm.tiers
             .map((val, index) => {
@@ -1329,12 +1315,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     reorderTierAction(tier: any, actionRef: any, op: number) {
-        // Extract and sort actions safely to match the HTML pipe
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         var orderList = Object.values(tier.actions)
             .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
 
-        // Safely find the true index of the action
-        // let index = orderList.indexOf(actionRef);
         let index = orderList.findIndex((a: any) => a.id === actionRef.id);
 
         if (index > -1 && index + op >= 0 && index + op < orderList.length) {
@@ -1348,22 +1336,25 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             return { id: val.id, sortOrder: val.sortOrder };
         });
 
-        // Use the tier's ID directly from the object
         return this.formService.saveTierActionOrder(tier.id, list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
-                // Update the tier's actions directly
                 tier.actions = res;
                 this.cdr.detectChanges();
             });
     }
-    // Order by descending property key
+    
     sortOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
         return a.value.sortOrder - b.value.sortOrder;
     }
 
     removeItemData: any;
     removeItem(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.removeItemData = data;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1384,6 +1375,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     removeItemSource(formId, id) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.formService.removeItemSource(formId, id)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
@@ -1396,13 +1392,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             })
     }
 
-    // // ISSUE REORDER
-    // reorderItem(section, index, op) {
-    //     this.reorder(section.items, index, op);
-    //     this.saveItemOrder(section);
-    // }
     reorderItem(section: any, itemRef: any, op: number) {
-        // let index = section.items.indexOf(itemRef);
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         let index = section.items.findIndex((i: any) => (i.id && i.id === itemRef.id) || (i.code && i.code === itemRef.code));
 
         if (index > -1 && index + op >= 0 && index + op < section.items.length) {
@@ -1411,7 +1406,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     }
     getTab = (id) => {
-        // TAMBAHAN UNTUK FEATURE HEAD & BOTTOM SECTION UNTUK TABBED NAV
         if (id == "-1") {
             return { id: -1, sortOrder: -1, title: "(HEAD)" }
         } else if (id == "-999") {
@@ -1430,16 +1424,19 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         return this.formService.saveItemOrder(list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
                 return res;
             });
     }
 
-    // @ViewChild("editItemTpl") editItemTpl: TemplateRef<any>;
     editItemTpl = viewChild<TemplateRef<any>>('editItemTpl');
-    // @ViewChild("editItemLabel") editItemLabelField: ElementRef<any>;
 
     dropItem(event: CdkDragDrop<any[]>, parent) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (event.previousContainer.id == "palette-pane") {
             var item = event.previousContainer.data[event.previousIndex].item;
             if (['html', 'clearfix'].indexOf(item.subType) > -1) {
@@ -1481,7 +1478,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 this.formService.moveItem(this.curForm.id, event.container.data[event.currentIndex].id, parent.id, event.currentIndex)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe(res => {
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     });
 
             }
@@ -1493,12 +1490,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
                 this.curForm.tabs = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
     editSectionData: any;
     editSection(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (!data.x) {
             data['x'] = { facet: {} };
         }
@@ -1506,7 +1508,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             data.x.facet = {};
         }
         this.editSectionData = data;
-        // var items = {sizeList: this.sizeList, toSnakeCase: toSnakeCase};
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(section => {
@@ -1515,7 +1516,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .subscribe(res => {
                         this.getFormData(this.curForm.id)
                         this.toastService.show("Section saved successfully", { classname: 'bg-success text-light' });
-                        // this.getSectionList(1)
                     }, error => {
                         this.toastService.show("Section saving failed", { classname: 'bg-danger text-light' });
                     });
@@ -1571,13 +1571,18 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     collapsibleItemGroup: any = {};
     viewItems(content) {
-        this.buildGroupedItems(); // <--- ADD THIS HERE
+        this.buildGroupedItems(); 
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(res => { }, err => { });
     }
 
     backendEfSave(item, section, force, tierId?) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         let sectionCode = '';
         if (section?.type == 'list') {
             sectionCode = section.code;
@@ -1589,7 +1594,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     this.backendEf(item, sectionCode, force, tierId);
                 }, error: (e) => {
                     this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
                 }
             })
 
@@ -1600,6 +1605,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     efResult: any = {};
     efLoading: any = {};
     backendEf(item, sectionCode, force, tierId?) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.efLoading[item.code] = true;
         this.cdr.detectChanges();
         this.formService.backendEf(this.curForm.id, item.code, sectionCode, force == true, tierId)
@@ -1614,7 +1624,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.toastService.show("Backend EF evaluated successfully " + result + " ", { classname: 'bg-success text-light' });
                 this.efLoading[item.code] = false;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -1623,11 +1633,14 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     apfResult: any = {};
     apfLoading: any = {};
     backendApf(tier, force) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
 
         if (tier.orgMapParamStr) {
             tier.orgMapParam = JSON.parse(tier.orgMapParamStr);
         }
-
 
         this.formService.saveTier(this.curForm.id, tier)
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -1635,7 +1648,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 next: (res) => {
                     this.getFormData(this.curForm.id);
                     this.toastService.show("Tier saved successfully", { classname: 'bg-success text-light' });
-
 
                     this.apfLoading[tier.id] = true;
                     this.formService.backendApf(this.curForm.id, tier.id, force == true)
@@ -1650,18 +1662,23 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                             this.toastService.show("Approver updated successfully " + result + " ", { classname: 'bg-success text-light' });
                             this.apfLoading[tier.id] = false;
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         })
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
 
                 }, error: (error) => {
                     this.toastService.show("Tier saving failed", { classname: 'bg-danger text-light' });
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
                 }
             })
     }
 
     reconApprover() {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (prompt("Are you sure you want to update the approver for all tiers in this form?\n Type 'update-all-tier' and press OK to proceed") == 'update-all-tier') {
             this.efLoading["all"] = true;
             this.formService.reconApprover(this.curForm.id)
@@ -1670,12 +1687,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     next: (res) => {
                         this.efLoading["all"] = false;
                         this.toastService.show("Tier approver reconstructed successfully ", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     },
                     error: (error) => {
                         this.efLoading["all"] = false;
                         this.toastService.show("Tier approver reconstruction failed", { classname: 'bg-danger text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }
                 })
         }
@@ -1683,6 +1700,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     removeSectionData: any;
     removeSection(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.removeSectionData = data;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1701,22 +1723,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, res => { });
     }
 
-    // // ISSUE REORDER
     reorderSection(list, index, op) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (index > -1 && index + op >= 0 && index + op < list.length) {
             this.reorder(list, index, op);
             this.saveSectionOrder(this.curForm)
         }
     }
-    // reorderSection(section: any, op: number) {
-    //   let list = this.curForm.sections;
-    //   let index = list.indexOf(section);
-
-    //   if (index > -1 && index + op >= 0 && index + op < list.length) {
-    //       this.reorder(list, index, op);
-    //       this.saveSectionOrder(this.curForm);
-    //   }
-    // }    
 
     saveSectionOrder(form) {
         var list = form.sections
@@ -1733,6 +1750,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     editTabData: any;
     editTab(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (!data.x) {
             data['x'] = { facet: {} };
         }
@@ -1756,6 +1778,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     removeTabData: any;
     removeTab(content, data) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.removeTabData = data;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1784,13 +1811,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     };
 
-    // // ISSUE REORDER
-    // reorderTab(index, op) {
-    //     this.reorder(this.curForm.tabs, index, op);
-    //     this.saveTabOrder();
-    // }
     reorderTab(tab: any, op: number) {
-        // let index = this.curForm.tabs.indexOf(tab);
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         let index = this.curForm.tabs.findIndex((t: any) => t.id === tab.id);
 
         if (index > -1 && index + op >= 0 && index + op < this.curForm.tabs.length) {
@@ -1818,7 +1844,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
         items.forEach((i, $index) => {
             i.sortOrder = $index;
-        }); // ensure current sortorder using index, to prevent jumping ordering
+        }); 
 
         var temp = items[index + op];
         var tempSortOrder = items[index + op].sortOrder;
@@ -1827,11 +1853,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
         items[index].sortOrder = tempSortOrder;
         items[index] = temp;
-        // this.swapPositions(items,index,index+op);
+        
         setTimeout(() => {
             items[index + op].altClass = 'swapEnd';
             items[index].altClass = 'swapEnd';
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }, 500);
     }
 
@@ -1842,7 +1868,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
         this.resetAutoComplete();
 
-        // $ search using label, while $prev$ use detail
         Object.keys(this.curForm?.items).forEach(key => {
             var value = this.curForm?.items[key];
             if (this.curForm?.items[key].type != 'static') {
@@ -1947,10 +1972,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     swapPositions = (array, a, b) => [array[a], array[b]] = [array[b], array[a]];
 
-    toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
-
-    toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-
+    toSpaceCase = toSpaceCase; 
+    toSnakeCase = toSnakeCase; 
     cleanText = cleanText;
 
     removeIndex(parent, list, code) {
@@ -1968,9 +1991,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.modelPickerData = obj;
     }
 
-
     importExcelData: any;
     importExcel(content) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.importExcelData = null;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -1982,6 +2009,11 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     moveFormToAppData: any = {};
     formRelatedComps: any = {};
     moveFormToApp(content) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.formService.getRelatedComps(this.curFormId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(res => {
@@ -1998,25 +2030,20 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 this.commService.emitChange({ key: 'dataset', value: 0 });
                                 this.commService.emitChange({ key: 'screen', value: 0 });
                                 this.toastService.show("Form moved successfully", { classname: 'bg-success text-light' });
-                                this.cdr.detectChanges(); // <--- Add here
+                                this.cdr.detectChanges(); 
                             });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
 
                     }, res => { })
-
-
             });
     }
 
     formJsonSchema: any;
     viewJsonSchema(content) {
-        // this.importExcelData = null;
         this.cognaService.getFormatter(this.curFormId)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: res => {
-
-
                     let schema = {
                         "$schema": "https://json-schema.org/draft/2020-12/schema",
                         "$id": this.baseApi + '/cogna/get-formatter/' + this.curFormId,
@@ -2042,7 +2069,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
 
                     this.formJsonSchema = schema;
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
 
                     history.pushState(null, null, window.location.href);
                     this.modalService.open(content, { backdrop: 'static' })
@@ -2074,7 +2101,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                         this.getFormData(this.curFormId);
                         this.commService.emitChange({ key: 'form', value: "import" });
                         this.toastService.show("Data " + format + " successfully imported", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
 
                     }, error: (error) => {
                         this.importExcelData = {
@@ -2082,14 +2109,18 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             message: error.message
                         }
                         this.importLoading = false;
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }
                 })
         }
-
     }
 
     clearEntry() {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         if (prompt("Are you sure you want to permanently delete entries of this form?\n Type 'delete' and press OK to proceed") == 'delete') {
             if (confirm("Are you sure? This action is not reversible. The entries will be permanently removed.")) {
                 this.formService.clearData(this.curFormId)
@@ -2097,7 +2128,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .subscribe({
                         next: res => {
                             this.toastService.show("Entry removed: " + res.rows + ", Attachment removed: " + res.files, { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         }, error: err => {
                             this.toastService.show("Entry removal failed", { classname: 'bg-danger text-light' });
                         }
@@ -2105,8 +2136,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }
         }
     }
-
-    // getIcon = (str) => str ? str.split(":") : ['far', 'file'];
 
     notEmptyObject = (obj: any) => obj && Object.keys(obj).length > 0;
 
@@ -2135,11 +2164,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             .pipe(takeUntilDestroyed(this.destroyRef))
                             .subscribe(res => {
                                 this.toastService.show("Dataset successfully saved");
-                                this.cdr.detectChanges(); // <--- Add here
+                                this.cdr.detectChanges(); 
                             })
                     }, res => { })
-                this.cdr.detectChanges(); // <--- Add here
-
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -2171,7 +2199,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             .subscribe(trail => {
                 this.trails = trail.content;
                 this.trailsTotal = trail.page?.totalElements;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
     viewEntryTrails(content) {
@@ -2210,7 +2238,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
                 })
         }
-
     }
 
     trailStatusMap = {
@@ -2245,7 +2272,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     exportTrailToExcel() {
-        // tblToExcel(chart.title,document.querySelector("#chart_" + chart.id).outerHTML)
         tblToExcel("form-" + this.curForm.title, document.querySelector("#form_trail_" + this.curForm.id).outerHTML)
     }
 
@@ -2266,13 +2292,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
-                            // this.loadLookupList(this.pageNumber);
                             this.getLookupList(this.app.id);
                             item.dataSource = res.id;
                             this.lookupMap[res.id] = res;
                             this.editItemData.dataSource = res.id;
                             this.toastService.show("Lookup successfully saved", { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         }, error: (err) => {
                             this.toastService.show("Lookup saving failed", { classname: 'bg-danger text-light' });
                         }
@@ -2298,7 +2323,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             .pipe(takeUntilDestroyed(this.destroyRef))
                             .subscribe({
                                 next: (res) => {
-                                    // everytime an entry is saved, we need to clear the cache observable to force reload
                                     let param = field.dataSourceInit ? this.parseJson(field.dataSourceInit) : null;
                                     var cacheId = 'key_' + btoaUTF(this.lookupKey[field.code].ds + hashObject(param ?? {}), null);
                                     delete this.lookupDataObs[cacheId];
@@ -2310,7 +2334,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 }
                             })
                     }, res => { })
-
             })
     }
 
@@ -2333,7 +2356,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             obj[prop] = res.id;
                         }
                         this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }, res => {
                         this.toastService.show("Group removal failed", { classname: 'bg-danger text-light' });
                     });
@@ -2356,7 +2379,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                             obj[prop] = [];
                         }
                         obj[prop] = obj[prop].concat(res.id);
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }, res => {
                         this.toastService.show("Template saving failed", { classname: 'bg-danger text-light' });
                     });
@@ -2364,13 +2387,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     groupedItems: { sectionTitle: string, sectionCode: string, sectionType: string, tiers?: any[], items: any[], isOrphan?: boolean }[] = [];
-    selectedTierView: any = {}; // Tracks selected tier in viewItems modal
+    selectedTierView: any = {}; 
 
     buildGroupedItems() {
         this.groupedItems = [];
         const seenCodes = new Set<string>();
 
-        // 1. Group fields by their sections
         if (this.curForm && this.curForm.sections) {
             this.curForm.sections.forEach(section => {
                 const sectionItems = [];
@@ -2383,14 +2405,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     });
                 }
 
-                // --- Extract tiers if this is an approval section ---
                 let tiers = [];
                 if (section.type === 'approval') {
                     tiers = this.curForm.tiers
                         .filter(t => t.section && t.section.id === section.id)
                         .map(t => ({ id: t.id, label: t.name }));
 
-                    // Pre-select the first available tier for these fields
                     if (tiers.length > 0) {
                         sectionItems.forEach(f => {
                             if (!this.selectedTierView[f.code]) {
@@ -2410,7 +2430,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             });
         }
 
-        // 2. Find Orphaned fields
         const orphanedItems = [];
         if (this.curForm && this.curForm.items) {
             Object.keys(this.curForm.items).forEach(code => {
@@ -2437,24 +2456,24 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     viewSectionJson(content: any, section: any) {
         let sectionClone = JSON.parse(JSON.stringify(section));
-        delete sectionClone.id; // Strip section ID
+        delete sectionClone.id; 
         
         let itemsClone: any = {};
 
         if (sectionClone.items && Array.isArray(sectionClone.items)) {
             sectionClone.items.forEach(ref => {
-                delete ref.id; // Strip section.items.id
+                delete ref.id; 
                 
                 if (this.curForm.items && this.curForm.items[ref.code]) {
                     let itemObj = JSON.parse(JSON.stringify(this.curForm.items[ref.code]));
-                    delete itemObj.id; // Strip item ID
+                    delete itemObj.id; 
                     itemsClone[ref.code] = itemObj;
                 }
             });
         }
 
         this.viewSectionJsonData = {
-            sourceFormId: this.curForm.id, // Track origin to prevent collisions later
+            sourceFormId: this.curForm.id, 
             items: itemsClone,
             section: sectionClone
         };
@@ -2477,7 +2496,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     onPasteJsonChange(val: string) {
         try {
             this.parsedPasteData = JSON.parse(val);
-            // Check if the pasted JSON originated from this exact form
             this.isSameForm = this.parsedPasteData.sourceFormId === this.curForm.id;
         } catch(e) {
             this.parsedPasteData = null;
@@ -2485,11 +2503,12 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         }
     }
 
-// Don't forget to import these if you haven't already:
-// import { of, forkJoin } from 'rxjs';
-// import { switchMap, catchError } from 'rxjs/operators';
-
     pasteSection(content: any) {
+        if (this.isTimeWarpingForm) { 
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
+            return; 
+        }
+
         this.pastedSectionJson = '';
         this.pasteSuffix = '';
         this.parsedPasteData = null;
@@ -2505,7 +2524,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     let section = parsed.section || parsed;
                     let items = parsed.items || {};
 
-                    // Apply suffix dynamically if provided
                     if (this.pasteSuffix) {
                         if (section.code) section.code += this.pasteSuffix;
                         const newItems: any = {};
@@ -2518,21 +2536,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
 
                     section.sortOrder = this.curForm.sections?.length || 0;
-                    section.items = []; // Clear items for backend
+                    section.items = []; 
 
-                    // 1. Save the Section
                     this.formService.saveSection(this.curForm.id, section).pipe(
                         takeUntilDestroyed(this.destroyRef),
                         switchMap((savedSection:any) => {
                             const itemKeys = Object.keys(items);
                             
-                            // If no items, return an empty observable to trigger the next step
                             if (itemKeys.length === 0) return of(null);
 
-                            // 2. Map items to an array of HTTP request observables
                             const saveItemRequests = itemKeys.map((k, index) => 
                                 this.formService.saveItem(this.curForm.id, savedSection.id, items[k], index).pipe(
-                                    // Catch individual item errors so forkJoin doesn't abort entirely
                                     catchError(() => {
                                         this.toastService.show(`Failed to save item: ${k}`, { classname: 'bg-danger text-light' });
                                         return of(null); 
@@ -2540,12 +2554,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                 )
                             );
 
-                            // Wait for all item requests to complete concurrently
                             return forkJoin(saveItemRequests);
                         })
                     ).subscribe({
                         next: () => {
-                            // 3. This runs exactly once, after the section AND all items are finished
                             this.getFormData(this.curForm.id);
                             this.getLookupIdList(this.curForm.id);
                             this.toastService.show("Section pasted successfully", { classname: 'bg-success text-light' });
@@ -2561,7 +2573,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
             }, () => {});
     }
 
-
  // ==========================================
     // META TRAILS LOGIC
     // ==========================================
@@ -2569,7 +2580,6 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     currentObj: any = null;
 
     viewMetaTrails(content: any, scope: string, currentObj: any) {
-        console.log("currentObj",currentObj);
         this.currentMetaTrailScope = scope;
         this.currentObj = currentObj;
         history.pushState(null, '', window.location.href);
@@ -2577,7 +2587,159 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     onTrailReverted(modalCloseFn: any) {
-        // Refresh the form data when a revert happens
         this.getFormData(this.curForm.id); 
+    }
+
+    // ==========================================
+    // TIMEWARP LOGIC
+    // ==========================================
+    timeWarpFormTrails: any[] = [];
+    liveFormSnapshot: any = null;
+    timeWarpFormIndex: number = 0;
+    isTimeWarpingForm: boolean = false;
+
+    private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+    toggleTimeWarpForm() {
+        this.isTimeWarpingForm ? this.exitTimeWarpForm() : this.startTimeWarpForm();
+    }
+
+    startTimeWarpForm() {
+        this.metaTrailService.getMetaTrails(`form_${this.curForm.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+            next: (res) => {
+                const trails = res.content?.filter((t: any) => ['form', 'form_item', 'form_section'].includes(t.module?.toLowerCase())) || [];
+                if (!trails.length) {
+                    this.toastService.show("No Form-level MetaTrail history available.", { classname: 'bg-warning text-dark' });
+                    return;
+                }
+
+                this.liveFormSnapshot = this.clone(this.curForm);
+                this.timeWarpFormTrails = [...trails, {
+                    timestamp: new Date().toISOString(),
+                    action: 'CURRENT',
+                    email: this.user?.email || 'You',
+                    module: 'form',
+                    data: this.clone(this.liveFormSnapshot)
+                }];
+
+                this.isTimeWarpingForm = true;
+                this.timeWarpFormIndex = this.timeWarpFormTrails.length - 1;
+                this.applyTimeWarpForm(this.timeWarpFormIndex);
+            },
+            error: () => this.toastService.show("Failed to load MetaTrails for TimeWarp.", { classname: 'bg-danger text-light' })
+        });
+    }
+
+    applyTimeWarpForm(index: number) {
+        if (!this.timeWarpFormTrails[index]) return;
+
+        let baseIdx = index;
+        while (baseIdx >= 0 && this.timeWarpFormTrails[baseIdx].module?.toLowerCase() !== 'form') baseIdx--;
+        if (baseIdx < 0) return;
+
+        this.applyFormSnapshot(this.timeWarpFormTrails[baseIdx].data);
+
+        for (let i = baseIdx + 1; i <= index; i++) {
+            const { action, data, moduleId } = this.timeWarpFormTrails[i];
+            const module = this.timeWarpFormTrails[i].module?.toLowerCase();
+            const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+
+            if (module === 'form_item' && data?.code) {
+                isRemoved ? delete this.curForm.items[data.code] : this.curForm.items[data.code] = this.clone(data);
+            } else if (module === 'form_section' && data) {
+                const sId = data.id || moduleId;
+                const secIdx = this.curForm.sections.findIndex((s: any) => (s.id || s.code) === (sId || data.code));
+
+                if (isRemoved) {
+                    if (secIdx > -1) this.curForm.sections.splice(secIdx, 1);
+                } else {
+                    const snap = this.clone(data);
+                    if (secIdx > -1) {
+                        snap.items = snap.items?.length ? snap.items : (this.curForm.sections[secIdx].items || []);
+                        this.curForm.sections[secIdx] = snap;
+                    } else {
+                        snap.items ||= [];
+                        this.curForm.sections.push(snap);
+                    }
+                }
+            }
+        }
+
+        // Map orphaned items to sections
+        const assignedCodes = new Set<string>();
+        this.curForm.sections.forEach((sec: any) => sec.items?.forEach((ref: any) => assignedCodes.add(ref.code)));
+
+        Object.keys(this.curForm.items).forEach(code => {
+            if (!assignedCodes.has(code)) {
+                let targetSec = this.curForm.sections.find((s: any) => 
+                    (this.liveFormSnapshot.sections || []).find((ls: any) => ls.id === s.id)?.items?.some((r: any) => r.code === code)
+                ) || this.curForm.sections[0];
+
+                if (targetSec) {
+                    targetSec.items ||= [];
+                    const liveRef = this.liveFormSnapshot.sections?.flatMap((s:any)=>s.items).find((r:any)=>r.code===code);
+                    targetSec.items.push(liveRef ? this.clone(liveRef) : { code, sortOrder: targetSec.items.length });
+                }
+            }
+        });
+
+        this.finalizeFormView();
+    }
+
+    exitTimeWarpForm() {
+        if (this.liveFormSnapshot) {
+            this.applyFormSnapshot(this.liveFormSnapshot);
+            this.finalizeFormView();
+        }
+        this.isTimeWarpingForm = false;
+        this.liveFormSnapshot = null;
+        this.cdr.detectChanges();
+    }
+
+    restoreTimeWarpFormVersion() {
+        const selectedTrail = this.timeWarpFormTrails[this.timeWarpFormIndex];
+
+        if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+            this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+            this.exitTimeWarpForm();
+            return;
+        }
+
+        if (confirm("Are you sure you want to revert the form to this historical version?")) {
+            this.isTimeWarpingForm = false; 
+            
+            this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+                next: () => {
+                    this.toastService.show("Historical form version restored successfully.", { classname: 'bg-success text-light' });
+                    this.liveFormSnapshot = null;
+                    this.getFormData(this.curForm.id); 
+                },
+                error: () => {
+                    this.isTimeWarpingForm = true;
+                    this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+                }
+            });
+        }
+    }
+
+    private applyFormSnapshot(snapshot: any) {
+        const copy = this.clone(snapshot);
+        ['title', 'description', 'email', 'publicEp', 'nav', 'type', 'align', 'admin', 'x', 'items', 'sections', 'tiers']
+            .forEach(k => this.curForm[k] = copy[k]);
+
+        this.curForm.items ||= {};
+        this.curForm.sections ||= [];
+        this.curForm.tiers ||= [];
+        this.curForm.sections.forEach((s: any) => s.items ||= []);
+    }
+
+    private finalizeFormView() {
+        this.curForm.sections.forEach((s: any) => s.parentObj = this.getTab(s.parent));
+        this.curForm.sections.sort((a: any, b: any) => 
+            ((a.parentObj?.sortOrder ?? 0) - (b.parentObj?.sortOrder ?? 0)) || ((a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+        );
+        this.curForm.sections.forEach((sec: any) => sec.items?.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)));
+        this.buildGroupedItems();
+        this.cdr.detectChanges();
     }
 }

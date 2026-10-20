@@ -5,14 +5,12 @@ import { LambdaService } from '../../../service/lambda.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, JsonPipe, DatePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
-// import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { DatasetService } from '../../../service/dataset.service';
 import { DashboardService } from '../../../service/dashboard.service';
 import { FormService } from '../../../service/form.service';
 import { base, baseApi, domainBase } from '../../../_shared/constant.service';
-// import { LookupService } from '../../../service/lookup.service';
 import { EndpointService } from '../../../service/endpoint.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs';
@@ -30,6 +28,7 @@ import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json
 import { SignaService } from '../../../service/signa.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
+import { MetaTrailService } from '../../../service/metatrail.service';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -48,14 +47,7 @@ export class LambdaEditorComponent implements OnInit {
   app: any;
 
   lambdaTotal = signal<number>(0);
-  // loading: boolean;
   lambdaList = signal<any[]>([]);
-  // lambdaEntryTotal = signal<number>(0);
-  // lambdaEntryList = signal<any[]>([]);
-  // sharedList: any;
-  // sharedTotal: any;
-  // sharedLoading: any;
-  // totalItems: any;
   lambda: any;
   itemLoading = signal<boolean>(false);
   appId: number;
@@ -69,7 +61,6 @@ export class LambdaEditorComponent implements OnInit {
   private datasetService = inject(DatasetService)
   private dashboardService = inject(DashboardService)
   private lookupService = inject(LookupService)
-  // private formService = inject(FormService)
   private modalService = inject(NgbModal)
   private location = inject(PlatformLocation)
   private router = inject(Router)
@@ -78,7 +69,8 @@ export class LambdaEditorComponent implements OnInit {
   private toastService = inject(ToastService)
   private endpointService = inject(EndpointService)
   private utilityService = inject(UtilityService)
-  private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
+  private metaTrailService = inject(MetaTrailService)
+  private destroyRef = inject(DestroyRef); 
   cdr = inject(ChangeDetectorRef);
 
   constructor() {
@@ -93,60 +85,7 @@ export class LambdaEditorComponent implements OnInit {
 
   isCodeTaken = (code) => this.lambdaService.isCodeTaken(code);
 
-  // ngOnInit() {
-  //   this.userService.getCreator()
-  //     .subscribe((user) => {
-  //       this.user = user;
-  //       this.cdr.detectChanges();
-
-  //       this.route.parent.params
-  //         // NOTE: I do not use switchMap here, but subscribe directly
-  //         .subscribe((params: Params) => {
-  //           this.appId = params['appId'];
-
-
-  //           if (this.appId) {
-  //             let params = {
-  //               email: user.email
-  //             }
-  //             this.appService.getApp(this.appId, params)
-  //               .subscribe(res => {
-  //                 this.app = res;
-  //                 this.cdr.detectChanges();
-  //               });
-  //           }
-
-  //           this.loadLambdaList(1);
-  //           // this.loadSharedList(1);
-  //           this.loadBindingSrcs();
-  //           this.loadSignaList();
-  //           this.loadSecretList();
-
-  //         });
-
-  //       this.route.queryParams
-  //         .subscribe((params: Params) => {
-  //           const id = params['id'];
-  //           if (id) {
-  //             this.loadLambda(id);
-  //             this.showSecret = false;
-  //           }
-  //         })
-
-  //       this.route.queryParams
-  //         .subscribe((params: Params) => {
-  //           const key = params['key'];
-  //           if (key) {
-  //             this.showSecret = true;
-  //           }
-  //         })
-  //     });
-  // }
-
   ngOnInit() {
-    // 1. Create a SHARED User Stream
-    // shareReplay(1) ensures we only make ONE Http Request, 
-    // but any subsequent subscribers instantly get the cached user.
     const user$ = this.userService.getCreator().pipe(
       takeUntilDestroyed(this.destroyRef),
       tap((user) => {
@@ -156,8 +95,6 @@ export class LambdaEditorComponent implements OnInit {
       shareReplay(1)
     );
 
-    // 2. Parent Params Stream (Independent)
-    // Waits for the user, then listens to Parent route changes
     user$.pipe(
       switchMap(() => this.route.parent.params),
       takeUntilDestroyed(this.destroyRef)
@@ -182,8 +119,6 @@ export class LambdaEditorComponent implements OnInit {
       }
     });
 
-    // 3. Query Params Stream (Independent)
-    // Waits for the user, then listens to Query route changes
     user$.pipe(
       switchMap(() => this.route.queryParams),
       takeUntilDestroyed(this.destroyRef)
@@ -195,7 +130,7 @@ export class LambdaEditorComponent implements OnInit {
         this.loadLambda(id);
       } else if (key) {
         this.showSecret = true;
-        this.lambdaId = ''; // Clear lambdaId so the highlight moves
+        this.lambdaId = '';
         this.cdr.markForCheck();
       }
     });
@@ -209,17 +144,10 @@ export class LambdaEditorComponent implements OnInit {
 
   pageNumber = signal<number>(1);
 
-  //   popShare(id) {
-  //     let url = this.app.appPath ? this.app.appPath + '.' + domainBase : domainBase + "/#/run/" + id;
-  //     prompt('App URL (Press Ctrl+C to copy)', url);
-  // }
-
-  // 1. Add new signals for separated lists
   editableLambdas = signal<any[]>([]);
   restrictedLambdas = signal<any[]>([]);
   showRestrictedLambdas: boolean = false;
 
-  // 2. Add permission checker
   canEditLambda(item: any): boolean {
     if (!item || !item.email) return true;
     if (item.email.trim() === '') return true;
@@ -230,7 +158,6 @@ export class LambdaEditorComponent implements OnInit {
     return allowedEmails.includes(userEmail);
   }
 
-  // 3. Update the load method to distribute the arrays
   loadLambdaList(pageNumber) {
     this.pageNumber.set(pageNumber);
     this.itemLoading.set(true);
@@ -248,7 +175,7 @@ export class LambdaEditorComponent implements OnInit {
         const rLambdas = [];
 
         res.content.forEach((a: any) => {
-          if (a?.id) { // Shield against empty objects
+          if (a?.id) { 
             if (this.canEditLambda(a)) {
               eLambdas.push(a);
             } else {
@@ -259,7 +186,7 @@ export class LambdaEditorComponent implements OnInit {
 
         this.editableLambdas.set(eLambdas);
         this.restrictedLambdas.set(rLambdas);
-        this.lambdaList.set(res.content); // Kept in case you use it elsewhere
+        this.lambdaList.set(res.content); 
         
         this.lambdaTotal.set(res.page?.totalElements);
         this.itemLoading.set(false);
@@ -269,24 +196,6 @@ export class LambdaEditorComponent implements OnInit {
         this.cdr.detectChanges();
       });
   }
-
-  // loadLambdaList(pageNumber) {
-  //   this.pageNumber.set(pageNumber);
-  //   this.itemLoading.set(true);
-
-  //   let params = {
-  //     searchText: this.searchText,
-  //     appId: this.appId,
-  //     page: pageNumber - 1,
-  //     size: this.itemsPerPage
-  //   }
-  //   this.lambdaService.getLambdaList(params)
-  //     .subscribe(res => {
-  //       this.lambdaList.set(res.content);
-  //       this.lambdaTotal.set(res.page?.totalElements);
-  //       this.itemLoading.set(false);
-  //     }, res => this.itemLoading.set(false))
-  // }
 
   signaList: any[] = [];
   loadSignaList() {
@@ -313,6 +222,8 @@ export class LambdaEditorComponent implements OnInit {
 
   removeSecretData:any;
   deleteSecret(content, secret){
+    if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+    
     this.removeSecretData = secret;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content)
@@ -335,7 +246,8 @@ export class LambdaEditorComponent implements OnInit {
   editCode: boolean;
   editLambdaData: any;
   editLambda(content, lambda, isNew) {
-    // console.log(lambda);
+    if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     lambda.content = this.br2nl(lambda.content);
     this.editLambdaData = lambda;
     this.editLambdaData.email = lambda.email || this.user.email;
@@ -358,15 +270,15 @@ export class LambdaEditorComponent implements OnInit {
   editSecretCode: boolean;
   editSecretData: any;
   editSecret(content, secret, isNew) {
+    if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.editSecretData = secret;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
       .result.then(data => {
-        // data.content = this.nl2br(data.content);
         this.lambdaService.saveSecret(this.appId, data)
           .subscribe(res => {
             this.loadSecretList();
-            // this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Secret successfully saved", { classname: 'bg-success text-light' });
           }, err => {
             this.toastService.show("Secret saving failed", { classname: 'bg-danger text-light' });
@@ -376,6 +288,8 @@ export class LambdaEditorComponent implements OnInit {
 
   removeLambdaData: any;
   removeLambda(content, lambda) {
+    if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.removeLambdaData = lambda;
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
@@ -392,14 +306,12 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   initialCode: string = "";
-
-  // params: string[];
   domainBase = domainBase;
 
-  // url: string = "";
   loadLambda(id) {
+    if (this.isTimeWarping) this.exitTimeWarp();
+
     this.lambdaId = id;
-    // console.log(id);
     this.lambdaService.getLambda(id)
       .subscribe(lambda => {
         this.showSecret = false;
@@ -409,17 +321,13 @@ export class LambdaEditorComponent implements OnInit {
         this.populateAutoComplete();
         this.moreAutocomplete();
         this.cdr.detectChanges();
-        // this.url = 'https://' +
-        //   (this.app.appPath ? `${this.app.appPath}.${domainBase}/#/web/${lambda.code}` : `${domainBase}/#/run/${id}/web/${lambda.code}`);
       }, error => {
-        // console.log(error);
       })
 
   }
 
   extraAutoComplete: any[] = [];
   populateAutoComplete() {
-    // this.extraAutoComplete = [];
     this.lambda.binds.forEach(b => {
       if (b.type == 'lookup') {
         this.extraAutoComplete.push({ label: "lookup_" + b.srcId, type: "enum", apply: `lookup_${b.srcId}.content.forEach(le=>{\n\tle.getCode();\n\t#{//more codes}\n})`, detail: b.name },)
@@ -429,7 +337,7 @@ export class LambdaEditorComponent implements OnInit {
       }
       if (b.type == '_mail') {
         this.extraAutoComplete.push({ label: "_mail.send", type: "function", apply: "_mail.send({\n\tto:'${to-email}',\n\tsubject:'${subject}',\n\tcontent:'${content}'\n}, _this);", detail: "Send email" },)
-        this.extraAutoComplete.push({ label: "_mail.sendWithTemplate", type: "function", apply: "_mail.sendWithTemplate(${template-id}, ${entry}, _this);", detail: "Send email with template" },)
+        this.extraAutoComplete.push({ label: "_mail.sendWithTemplate", type: "function", apply: "_mail.sendWithTemplate(${template-id},${entry}, _this);", detail: "Send email with template" },)
       }
       if (b.type == '_endpoint') {
         this.endpointService.getEndpointList({ appId: this.appId })
@@ -502,7 +410,6 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_util.btoa", type: "function", apply: "_util.btoa('${text-to-encode}')", detail: "Encode text to Base64" },
           { label: "_util.atob", type: "function", apply: "_util.atob('${text-to-decode}')", detail: "Decode Base64 to text" },
           { label: "_util.hash", type: "function", apply: "_util.hash('${text-to-encode}','#{SHA-256}')", detail: "Hash text using the specified encoder" },
-          // { label: "_token.getAccessToken", type: "text", apply: "_token.getAccessToken('${token-endpoint}','${client-id}','${client-secret}')", detail: "Get access token using the specified info" },
         )
       }
       if (b.type == '_io') {
@@ -599,6 +506,8 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   saveLambda(data) {
+    if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
+
     this.lambdaService.save(data.email, this.appId, data)
       .subscribe(res => {
         this.loadLambdaList(this.pageNumber());
@@ -623,7 +532,7 @@ export class LambdaEditorComponent implements OnInit {
     const matches = [...array, ...arrayParam];
   
     for (const match of matches) {
-      if (!match || !match[1]) continue; // skip if malformed
+      if (!match || !match[1]) continue; 
   
       const paramName = match[1].trim();
       
@@ -639,6 +548,7 @@ export class LambdaEditorComponent implements OnInit {
 
   lambdaPromptTpl = viewChild('lambdaPromptTpl');
   runLambda(lambda) {
+    if (this.isTimeWarping) return;
 
     const run = (data) =>{
       this.resultLoading.update(rl=>({...rl,[lambda.id]:true}));
@@ -660,14 +570,11 @@ export class LambdaEditorComponent implements OnInit {
         this.showPrompt(lambda.data.f);
 
         if (this.lambdaPromptsKeys.length > 0) {
-
-          // IF THERE ARE PROMPTS
           this.modalService.open(this.lambdaPromptTpl(), { backdrop: 'static' })
           .result.then(data => {
             run(data);
           }, res=>{});
         }else{
-          // IF NO PROMPTS
           run({});
         }
       });
@@ -678,15 +585,16 @@ export class LambdaEditorComponent implements OnInit {
     return this.lambda?.code ? base + '/~/' + this.lambda.code + '/pdf?access_token='+accessToken : baseApi + '/lambda/' + this.lambda?.id + '/pdf?access_token='+accessToken
   }
 
-  // streamRes:any;
   streamLambda(lambda) {
+    if (this.isTimeWarping) return;
+
     this.resultLoading.update(rl =>({...rl, [lambda.id]:false}));
     this.lambdaService.save(this.user.email, this.appId, lambda)
       .subscribe(res => {
         this.showPrompt(lambda.data.f);
         this.lambdaService.streamLambda(lambda.id, this.request)
           .pipe(
-            map(res => {    
+            map(res => {  
               if (res['type'] == 4) {
                 this.runRes.update(rr =>({...rr, [lambda.id]:{ print: res['body'], success: true, out: {} }}));
               } else {
@@ -712,7 +620,6 @@ export class LambdaEditorComponent implements OnInit {
     this.getDashboardList();
     this.getLookupList();
     this.otherBinds();
-    // this.getFormList();
   }
 
   datasetList: any[];
@@ -786,7 +693,6 @@ export class LambdaEditorComponent implements OnInit {
   keyList = (obj: any) => obj && Object.keys(obj).join(", ");
 
   onKeyDown($event): void {
-    // Detect platform
     if (navigator.platform.match('Mac')) {
       this.handleMacKeyEvents($event);
     }
@@ -796,11 +702,8 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   handleMacKeyEvents($event) {
-    // MetaKey documentation
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey
     let charCode = String.fromCharCode($event.which).toLowerCase();
     if ($event.metaKey && charCode === 's') {
-      // Action on Cmd + S
       $event.preventDefault();
       this.saveLambda(this.lambda)
     }
@@ -809,21 +712,20 @@ export class LambdaEditorComponent implements OnInit {
   handleWindowsKeyEvents($event) {
     let charCode = String.fromCharCode($event.which).toLowerCase();
     if ($event.ctrlKey && charCode === 's') {
-      // Action on Ctrl + S
       $event.preventDefault();
       this.saveLambda(this.lambda)
     }
   }
 
-  nl2br = nl2br;// (text) => text ? text.replace(/\n/g, "<br/>") : text;
+  nl2br = nl2br;
 
-  br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
+  br2nl = br2nl;
 
-  toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
+  toSpaceCase = toSpaceCase; 
 
-  toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
+  toSnakeCase = toSnakeCase;
 
-  toHyphen = toHyphen; //(string) => string ? this.toSpaceCase(string).replace(/\s/g, '-').toLowerCase() : '';
+  toHyphen = toHyphen;
 
   itemExist = (f) => this.lambdaList().filter(e => e.code == f.code).length > 0 && !f.id;
 
@@ -868,8 +770,99 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   onTrailReverted(modalCloseFn: any) {
-    // Refresh the lambda data when a revert happens
     this.loadLambda(this.lambda.id); 
   }
 
+  // ==========================================
+  // TIMEWARP LOGIC (LAMBDA LEVEL)
+  // ==========================================
+  timeWarpTrails: any[] = [];
+  liveLambdaSnapshot: any = null;
+  timeWarpIndex: number = 0;
+  isTimeWarping: boolean = false;
+
+  private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+  toggleTimeWarp() {
+    this.isTimeWarping ? this.exitTimeWarp() : this.startTimeWarp();
+  }
+
+  startTimeWarp() {
+    this.metaTrailService.getMetaTrails(`lambda_${this.lambda.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+      next: (res) => {
+        const trails = res.content?.filter((t: any) => ['lambda'].includes(t.module?.toLowerCase())) || [];
+        if (!trails.length) {
+          this.toastService.show("No MetaTrail history available for this lambda.", { classname: 'bg-warning text-dark' });
+          return;
+        }
+
+        this.liveLambdaSnapshot = this.clone(this.lambda);
+        this.timeWarpTrails = [...trails, {
+          timestamp: new Date().toISOString(),
+          action: 'CURRENT',
+          email: this.user?.email || 'You',
+          module: 'lambda',
+          data: this.clone(this.liveLambdaSnapshot)
+        }];
+
+        this.isTimeWarping = true;
+        this.timeWarpIndex = this.timeWarpTrails.length - 1;
+        this.applyTimeWarp(this.timeWarpIndex);
+      },
+      error: () => this.toastService.show("Failed to load MetaTrails for TimeWarp.", { classname: 'bg-danger text-light' })
+    });
+  }
+
+  applyTimeWarp(index: number) {
+    if (!this.timeWarpTrails[index]) return;
+
+    let baseIdx = index;
+    while (baseIdx >= 0 && this.timeWarpTrails[baseIdx].module?.toLowerCase() !== 'lambda') baseIdx--;
+    if (baseIdx < 0) return;
+
+    this.applyLambdaSnapshot(this.timeWarpTrails[baseIdx].data);
+  }
+
+  exitTimeWarp() {
+    if (this.liveLambdaSnapshot) {
+      this.applyLambdaSnapshot(this.liveLambdaSnapshot);
+    }
+    this.isTimeWarping = false;
+    this.liveLambdaSnapshot = null;
+    this.cdr.detectChanges();
+  }
+
+  restoreTimeWarpVersion() {
+    const selectedTrail = this.timeWarpTrails[this.timeWarpIndex];
+
+    if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+      this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+      this.exitTimeWarp();
+      return;
+    }
+
+    if (confirm("Are you sure you want to revert the lambda to this historical version?")) {
+      this.isTimeWarping = false; 
+      
+      this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+        next: () => {
+          this.toastService.show("Historical lambda version restored successfully.", { classname: 'bg-success text-light' });
+          this.liveLambdaSnapshot = null;
+          this.loadLambda(this.lambda.id); 
+        },
+        error: () => {
+          this.isTimeWarping = true;
+          this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+        }
+      });
+    }
+  }
+
+  private applyLambdaSnapshot(snapshot: any) {
+    const copy = this.clone(snapshot);
+    ['name', 'description', 'lang', 'code', 'data', 'binds', 'email', 'publicAccess', 'scheduled', 'freq', 'dayOfWeek', 'dayOfMonth', 'monthOfYear', 'clock', 'signa'].forEach(k => {
+      if (copy[k] !== undefined) this.lambda[k] = copy[k];
+    });
+    this.cdr.detectChanges();
+  }
 }

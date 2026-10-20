@@ -1,16 +1,13 @@
 import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
-// import { LookupService } from '../../../../service/lookup.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { AppService } from '../../../../service/app.service';
-// import { EntryService } from '../../../../service/entry.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe, JsonPipe } from '@angular/common';
-// import { HttpParams } from '@angular/common/http';
+import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe, JsonPipe, DatePipe } from '@angular/common';
 import { DatasetService } from '../../../../service/dataset.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { GroupService } from '../../../../service/group.service';
@@ -29,6 +26,8 @@ import { RunService } from '../../../../run/_service/run.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
+import { HttpClient } from '@angular/common/http';
+import { MetaTrailService } from '../../../../service/metatrail.service';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -39,7 +38,7 @@ import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-v
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
         FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
         NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem,
-        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent]
+        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe]
 })
 export class DatasetEditorComponent implements OnInit {
 
@@ -60,6 +59,8 @@ export class DatasetEditorComponent implements OnInit {
     private runService = inject(RunService);
     private location = inject(PlatformLocation);
     private cdr = inject(ChangeDetectorRef);
+    // private http = inject(HttpClient);
+    private metaTrailService = inject(MetaTrailService);
     
     constructor() {
         this.location.onPopState(() => {
@@ -74,16 +75,8 @@ export class DatasetEditorComponent implements OnInit {
                 this.getDatasetList(1);
             }
         });
-
-        // effect(() => {
-        //     let data = commService.changeEmitted();
-        //     if (data?.value == 'import') {
-        //         this.getDatasetList(1);
-        //     }
-        // })
     }
 
-    // curModel: any;
     user: any;
     app: any;
     curDataset: any;
@@ -107,15 +100,10 @@ export class DatasetEditorComponent implements OnInit {
     isArray = Array.isArray;
 
     ngOnInit() {
-
         this.userService.getCreator().subscribe((user) => {
-
             this.user = user;
-
             this.route.parent.parent.parent.params
-                // NOTE: I do not use switchMap here, but subscribe directly
                 .subscribe((params: Params) => {
-
                     const appId = params['appId'];
                     this.appId = params['appId'];
                     if (appId) {
@@ -129,16 +117,13 @@ export class DatasetEditorComponent implements OnInit {
                                 this.getLookupList();
                                 this.getAccessList();
                                 this.getScreenList(appId);
-                                this.cdr.detectChanges(); // <--- Add here
+                                this.cdr.detectChanges(); 
                             });
                     }
-
-
                 });
 
             this.route.queryParams
                 .subscribe((params: Params) => {
-
                     const id = params['id'];
                     if (id) {
                         this.getDataset(id);
@@ -156,14 +141,16 @@ export class DatasetEditorComponent implements OnInit {
         });
     }
 
-    // newForm: any = {}
-
     compareByIdFn(a, b): boolean {
         return (a && a.id) === (b && b.id);
     }
     
     qFilter:any;
     getDataset(datasetId) {
+        if (this.isTimeWarpingDataset) {
+            this.exitTimeWarpDataset();
+        }
+
         this.dsError = null;
         this.curDatasetId = datasetId;
         this.datasetLoading = true;
@@ -177,20 +164,18 @@ export class DatasetEditorComponent implements OnInit {
                 this.datasetLoading = false;
                 if (this.curDataset.form) {
                     this.loadForm(this.curDataset.form.id, this.form, res);
-                    // this.getLookupIdList(this.curDataset.form.id);
-                    // this.loadData = false;
                 }
                 if (this.curDataset?.x?.qFilter){
                     this.qFilter = JSON.parse(this.curDataset?.x?.qFilter);
                 }else{
                     delete this.qFilter;
                 }
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             },
             error: (err) => {
                 this.datasetLoading = false;
                 this.dsError = err.error;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             }
         })
     }
@@ -201,7 +186,7 @@ export class DatasetEditorComponent implements OnInit {
             .subscribe(res => {
                 this.datasetList = res;
                 this.commService.emitChange({ key: 'dataset', value: res.length });
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
     }
 
@@ -210,8 +195,7 @@ export class DatasetEditorComponent implements OnInit {
         this.screenService.getScreenList(appId)
             .subscribe(res => {
                 this.screenList = res;
-                // this.commService.emitChange({key:'screen',value:res.length});
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
@@ -223,7 +207,7 @@ export class DatasetEditorComponent implements OnInit {
         this.lookupService.getLookupList(params)
             .subscribe(res => {
                 this.lookupList = res.content;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })
 
     }
@@ -249,10 +233,10 @@ export class DatasetEditorComponent implements OnInit {
 
                 }
                 this.formLoading = false;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             }, err => {
                 this.formLoading = false;
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
 
 
@@ -305,7 +289,7 @@ export class DatasetEditorComponent implements OnInit {
             this.extraAutoCompleteJs.push({ c: 1, type: 'text', label: `(formId:${i.id}) ${i.title}`, apply: "" + i.id + "", detail: i.title });
             this.extraAutoCompleteJs.push({ c: 2, type: 'function', label: `(http-form:${i.id}) ${i.title}`, apply: `$http$(\"${baseApi}/entry/by-params?formId=${i.id}&key=\"+value, res=>{\n\t$this$.entry_${i.id} = res;\n\t#{//more codes}\n})`, detail: i.title });
         });
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     getLoopCodeJs = (section) => "$." + section.code + ".forEach(i=>{\n" + this.getItemsJs(section) + "\n\t${//More codes}\n})";
@@ -331,16 +315,21 @@ export class DatasetEditorComponent implements OnInit {
                 this.accessList = res.content;
                 this.accessListMap={};
                 this.accessList.forEach(a=>this.accessListMap[a.id]=a);
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
     clearEntry() {
+        if (this.isTimeWarpingDataset) {
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' });
+            return;
+        }
+
         if (prompt("Are you sure you want to permanently delete entries of this dataset?\n Type 'clear-dataset-entries' and press OK to proceed") == 'clear-dataset-entries') {
             this.datasetService.clearData(this.curDatasetId, this.user.email)
                 .subscribe(res => {
                     this.toastService.show("Entry removed: " + res.rows, { classname: 'bg-success text-light' });
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
                 })
         }
     }
@@ -355,11 +344,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Label saved successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     },
                     error: (err) => {
                         this.toastService.show("Label saving failed", { classname: 'bg-danger text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }
                 })
         }
@@ -372,21 +361,17 @@ export class DatasetEditorComponent implements OnInit {
         } else {
             field.label = newLabel;
             this.saveDataset();
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }
     }
 
 
     getFormList(appId) {
-        // let params = { appId: appId }
-        // new HttpParams()
-        //     .set("appId", this.app.id)
-
         this.formService.getListBasic({appId})
             .subscribe(res => {
                 this.formList = res.content;
                 this.initSubForm();
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
@@ -405,6 +390,10 @@ export class DatasetEditorComponent implements OnInit {
 
     sectionItems: any = {};
     editDataset(content, data, isNew, form) {
+        if (this.isTimeWarpingDataset) {
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' });
+            return;
+        }
 
         this.editDatasetData = data;
         this.editDatasetData.appId = this.app.id;
@@ -417,17 +406,19 @@ export class DatasetEditorComponent implements OnInit {
                     .subscribe((res) => {
                         this.getDatasetList(this.app.id);
                         this.getDataset(res.id);
-                        // this.getFormData(this.curForm.id);
                         this.toastService.show("Dataset saved successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     });
             }, res => { });
-        // })
-
     }
 
     removeDatasetData: any;
     removeDataset(content, data) {
+        if (this.isTimeWarpingDataset) {
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' });
+            return;
+        }
+
         this.removeDatasetData = data;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
@@ -438,36 +429,32 @@ export class DatasetEditorComponent implements OnInit {
                             this.getDatasetList(this.app.id);
                             delete this.curDataset;
                             this.toastService.show("Dataset removed successfully", { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         },
                         error: (err) => {
                             this.toastService.show("Dataset removal failed", { classname: 'bg-danger text-light' });
-                            this.cdr.detectChanges(); // <--- Add here
+                            this.cdr.detectChanges(); 
                         }
                     })
             }, res => { });
     }
+    
     removeDsItem(ds) {
         if (confirm("Remove column \"" + ds.label + "\"?")) {
             this.datasetService.removeDatasetItem(ds.id, null)
                 .subscribe(data => {
                     this.getDataset(this.curDataset.id);
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
                 })
         }
     }
 
     exceptCurForm = (form) => this.formList.filter(f => form['data'] && f.id != form['data'].id);
 
-    // reorderDs(ds, index, op) {
-    //     this.reorder(ds.items, index, op);
-    //     this.saveDsOrder(ds);
-    // }
-
     dropField(event: CdkDragDrop<number[]>, parent) {
         moveItemInArray(parent.items, event.previousIndex, event.currentIndex);
         this.saveDsOrder(parent);
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     curAction:number;
@@ -480,7 +467,7 @@ export class DatasetEditorComponent implements OnInit {
                 return val;
             });
         this.saveDataset();
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     dropFilter(event: CdkDragDrop<number[]>, parent) {
@@ -491,7 +478,7 @@ export class DatasetEditorComponent implements OnInit {
                 return val;
             });
         this.saveDataset();
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     dropSubs(event: CdkDragDrop<number[]>, parent) {
@@ -502,7 +489,7 @@ export class DatasetEditorComponent implements OnInit {
                 return val;
             });
         this.saveDataset();
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     removeSub(sub,field, $index){
@@ -512,11 +499,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Sub field removal successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     },
                     error: (err) => {
                         this.toastService.show("Sub field removal failed", { classname: 'bg-danger text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }
                 })
         }
@@ -544,9 +531,9 @@ export class DatasetEditorComponent implements OnInit {
         return (array ? array : []).filter(r => item.indexOf(r) == -1);
     }
 
-    toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
+    toSpaceCase = toSpaceCase; 
 
-    toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
+    toSnakeCase = toSnakeCase; 
 
 
     addIndex(list, att) {
@@ -565,13 +552,13 @@ export class DatasetEditorComponent implements OnInit {
     removeFilter($index) {
         this.curDataset.filters.splice($index, 1);
         this.saveDataset();
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     removePreset(key) {
         delete this.curDataset.presetFilters[key];
         this.saveDataset();
-        this.cdr.detectChanges(); // <--- Add here
+        this.cdr.detectChanges(); 
     }
 
     resyncDataset(dsId){
@@ -579,7 +566,7 @@ export class DatasetEditorComponent implements OnInit {
             this.runService.resyncDataset(this.curDatasetId)
             .subscribe(res=>{
                 this.toastService.show("Dataset successfully resynchronized", { classname: 'bg-success text-light' });
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             })            
         }
     }
@@ -592,7 +579,7 @@ export class DatasetEditorComponent implements OnInit {
                     this.getDataset(this.curDatasetId);
                 }
                 this.toastService.show("Dataset saved successfully", { classname: 'bg-success text-light' });
-                this.cdr.detectChanges(); // <--- Add here
+                this.cdr.detectChanges(); 
             });
     }
 
@@ -601,7 +588,6 @@ export class DatasetEditorComponent implements OnInit {
         this.modelPickerData = obj;
     }
 
-    // getAsList = (str) => str && str.split(',').map(i => i.trim());
 
     isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;
 
@@ -627,7 +613,7 @@ export class DatasetEditorComponent implements OnInit {
         if (value) {
             this.curDataset.presetFilters[c.key] = value;
             this.saveDataset();
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }
     }
 
@@ -639,7 +625,7 @@ export class DatasetEditorComponent implements OnInit {
                 delete this.curDataset.presetFilters[c.key]
             }
             this.saveDataset();
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }
 
     }
@@ -653,7 +639,7 @@ export class DatasetEditorComponent implements OnInit {
                 this.curDataset.inpop = arr.join(",")
             }
             this.saveDataset();
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }
     }
     removeNextAction(f) {
@@ -665,7 +651,7 @@ export class DatasetEditorComponent implements OnInit {
                 this.curDataset.inpop = arr.join(",")
             }
             this.saveDataset();
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges(); 
         }
     }
 
@@ -678,9 +664,13 @@ export class DatasetEditorComponent implements OnInit {
 
     editItemData: any;
     editItem(content, data) {
+        if (this.isTimeWarpingDataset) {
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' });
+            return;
+        }
+
         if (!data.x) data.x={};
         this.editItemData = data;
-        // this.editActionData.appId = this.app.id;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then((data) => {
@@ -689,11 +679,11 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe({
                     next: (res) => {
                         this.toastService.show("Dataset item saved successfully", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     },
                     error: (err) => {
                         this.toastService.show("Dataset item saving failed", { classname: 'bg-danger text-light' });
-                        this.cdr.detectChanges(); // <--- Add here
+                        this.cdr.detectChanges(); 
                     }
                 })
 
@@ -702,6 +692,11 @@ export class DatasetEditorComponent implements OnInit {
 
     editActionData: any;
     editAction(content, data) {
+        if (this.isTimeWarpingDataset) {
+            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' });
+            return;
+        }
+
         if (!data.x) data.x={};
         this.editActionData = data;
         this.editActionData.appId = this.app.id;
@@ -722,7 +717,7 @@ export class DatasetEditorComponent implements OnInit {
                 .subscribe(res => {
                     this.getDataset(this.curDataset.id);
                     this.toastService.show("Dataset action removed successfully", { classname: 'bg-success text-light' });
-                    this.cdr.detectChanges(); // <--- Add here
+                    this.cdr.detectChanges(); 
                 });
         }
     }
@@ -748,8 +743,154 @@ export class DatasetEditorComponent implements OnInit {
   }
 
   onTrailReverted(modalCloseFn: any) {
-    // Refresh the dataset data when a revert happens
     this.getDataset(this.curDataset.id); 
   }
 
+ // ==========================================
+    // TIMEWARP LOGIC (DATASET LEVEL)
+    // ==========================================
+    timeWarpDatasetTrails: any[] = [];
+    liveDatasetSnapshot: any = null;
+    timeWarpDatasetIndex: number = 0;
+    isTimeWarpingDataset: boolean = false;
+
+    private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
+
+    toggleTimeWarpDataset() {
+        this.isTimeWarpingDataset ? this.exitTimeWarpDataset() : this.startTimeWarpDataset();
+    }
+
+    startTimeWarpDataset() {
+        this.metaTrailService.getMetaTrails(`dataset_${this.curDataset.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+            next: (res) => {
+                // Use toLowerCase() to safely match backend MODULE types (e.g. DATASET_ITEM)
+                const trails = res.content?.filter((t: any) => ['dataset', 'dataset_item', 'dataset_action'].includes(t.module?.toLowerCase())) || [];
+                if (!trails.length) {
+                    this.toastService.show("No Dataset-level MetaTrail history available.", { classname: 'bg-warning text-dark' });
+                    return;
+                }
+
+                this.liveDatasetSnapshot = this.clone(this.curDataset);
+                this.timeWarpDatasetTrails = [...trails, {
+                    timestamp: new Date().toISOString(),
+                    action: 'CURRENT',
+                    email: this.user?.email || 'You',
+                    module: 'dataset',
+                    data: this.clone(this.liveDatasetSnapshot)
+                }];
+
+                this.isTimeWarpingDataset = true;
+                this.timeWarpDatasetIndex = this.timeWarpDatasetTrails.length - 1;
+                this.applyTimeWarpDataset(this.timeWarpDatasetIndex);
+            },
+            error: () => this.toastService.show("Failed to load MetaTrails for TimeWarp.", { classname: 'bg-danger text-light' })
+        });
+    }
+
+    applyTimeWarpDataset(index: number) {
+        if (!this.timeWarpDatasetTrails[index]) return;
+
+        // 1. Locate nearest full dataset base snapshot
+        let baseIdx = index;
+        while (baseIdx >= 0 && this.timeWarpDatasetTrails[baseIdx].module?.toLowerCase() !== 'dataset') baseIdx--;
+        if (baseIdx < 0) return;
+
+        // 2. Restore base dataset properties
+        this.applyDatasetSnapshot(this.timeWarpDatasetTrails[baseIdx].data);
+
+        // 3. Roll forward item and action deltas up to the selected slider index
+        for (let i = baseIdx + 1; i <= index; i++) {
+            const { action, data, moduleId } = this.timeWarpDatasetTrails[i];
+            const module = this.timeWarpDatasetTrails[i].module?.toLowerCase();
+            const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+
+            if (module === 'dataset_item' && data) {
+                const sId = data.id || moduleId;
+                const idx = this.curDataset.items.findIndex((s: any) => (s.id || s.code) === (sId || data.code));
+                if (isRemoved) {
+                    if (idx > -1) this.curDataset.items.splice(idx, 1);
+                } else {
+                    const snap = this.clone(data);
+                    if (idx > -1) Object.assign(this.curDataset.items[idx], snap);
+                    else this.curDataset.items.push(snap);
+                }
+            } else if (module === 'dataset_action' && data) {
+                const sId = data.id || moduleId;
+                const idx = this.curDataset.actions.findIndex((s: any) => (s.id || s.code) === (sId || data.code));
+                if (isRemoved) {
+                    if (idx > -1) this.curDataset.actions.splice(idx, 1);
+                } else {
+                    const snap = this.clone(data);
+                    if (idx > -1) Object.assign(this.curDataset.actions[idx], snap);
+                    else this.curDataset.actions.push(snap);
+                }
+            }
+        }
+
+        this.finalizeDatasetView();
+    }
+
+    exitTimeWarpDataset() {
+        if (this.liveDatasetSnapshot) {
+            this.applyDatasetSnapshot(this.liveDatasetSnapshot);
+            this.finalizeDatasetView();
+        }
+        this.isTimeWarpingDataset = false;
+        this.liveDatasetSnapshot = null;
+        this.cdr.detectChanges();
+    }
+
+    restoreTimeWarpDatasetVersion() {
+        const selectedTrail = this.timeWarpDatasetTrails[this.timeWarpDatasetIndex];
+
+        // Prevent reverting if the slider is on the unsaved "CURRENT" live state
+        if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+            this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+            this.exitTimeWarpDataset();
+            return;
+        }
+
+        if (confirm("Are you sure you want to revert the dataset to this historical version?")) {
+            this.isTimeWarpingDataset = false; 
+            
+            this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+                next: () => {
+                    this.toastService.show("Historical dataset version restored successfully.", { classname: 'bg-success text-light' });
+                    this.liveDatasetSnapshot = null;
+                    this.getDataset(this.curDataset.id); 
+                },
+                error: () => {
+                    this.isTimeWarpingDataset = true;
+                    this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+                }
+            });
+        }
+    }
+
+    private applyDatasetSnapshot(snapshot: any) {
+        const copy = this.clone(snapshot);
+        ['title', 'description', 'type', 'defSortField', 'defSortDir', 'showIndex', 'showAction', 'showStatus', 'canEdit', 'canView', 'canDelete', 'canRetract', 'canBlast', 'blastTo', 'exportXls', 'exportCsv', 'exportPdf', 'publicEp', 'x', 'items', 'actions', 'filters', 'presetFilters', 'accessList', 'statusFilter', 'prevStatusFilter', 'screen', 'next']
+            .forEach(k => {
+                if (copy[k] !== undefined) this.curDataset[k] = copy[k];
+            });
+
+        this.curDataset.items ||= [];
+        this.curDataset.actions ||= [];
+        this.curDataset.filters ||= [];
+        this.curDataset.presetFilters ||= {};
+    }
+
+    private finalizeDatasetView() {
+        this.curDataset.items.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        this.curDataset.actions.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        this.curDataset.filters.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        
+        if (this.curDataset?.x?.qFilter){
+            try { this.qFilter = JSON.parse(this.curDataset.x.qFilter); } catch(e) { this.qFilter = null; }
+        } else {
+            delete this.qFilter;
+        }
+
+        this.cdr.detectChanges();
+    }
 }

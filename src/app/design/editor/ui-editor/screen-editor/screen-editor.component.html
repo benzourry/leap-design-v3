@@ -86,7 +86,7 @@
                   }
                 </div>
                 <div>
-                  <button type="button" class="btn btn-sm border border-1-5 ms-1"
+                  <button type="button" class="btn btn-sm border border-1-5 ms-1" [disabled]="isTimeWarping"
                     (click)="editScreen(editScreenTpl,curScreen, false)">
                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                   </button>
@@ -94,7 +94,14 @@
                     (click)="viewMetaTrails(viewScreenMetaTrailTpl, 'screen_' + curScreen.id, curScreen)">
                     <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                   </button>
-                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1"
+                  <!-- TimeWarp Toggle Button -->
+                  <button type="button" class="btn btn-sm border border-1-5 ms-1" 
+                    [ngClass]="isTimeWarping ? 'btn-warning' : 'btn-outline-warning'" 
+                    title="TimeWarp (Real-time Version Slider)"
+                    (click)="toggleTimeWarp()">
+                    <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1" [disabled]="isTimeWarping"
                     (click)="removeScreen(removeScreenTpl,curScreen)">
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                   </button>
@@ -127,8 +134,45 @@
             Dataset associated with this screen has no form. It might has been removed.
           </div>
 
+          <!-- TimeWarp Interface Block -->
+          @if (isTimeWarping) {
+            <div class="card bg-warning bg-opacity-10 border-1-5 border-warning mb-3 shadow-sm">
+              <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="card-title text-warning-emphasis m-0 fw-bold">
+                    <fa-icon [icon]="['far', 'clock']" class="me-1"></fa-icon> TimeWarp Active
+                  </h6>
+                  <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
+                    <button class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This</button>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center">
+                  <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
+                  <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
+                        [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
+                  <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+                </div>
+
+                @let trail = timeWarpTrails[timeWarpIndex];
+
+                <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
+                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
+                    <span class="input-group-text bg-body text-body small">{{ trail?.timestamp | date:'medium' }}</span>
+                    <span class="input-group-text bg-body text-body small">{{ trail?.email }}</span>
+                  </div>
+                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
+                    <span class="input-group-text bg-secondary text-white small">{{ trail?.action }}</span>
+                    <span class="input-group-text bg-primary text-white small">{{ trail?.module }}</span>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+          }
+
           @if (['list','calendar','map'].indexOf(curScreen.type)>-1 && dataset.id){
-            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
             <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Dataset: <strong>{{dataset.title}}</strong>
@@ -141,7 +185,6 @@
             </div>
           }
           @if (['bucket'].indexOf(curScreen.type)>-1 && bucket.id){
-            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
             <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Bucket: <strong>{{bucket?.name}}</strong>
@@ -154,7 +197,6 @@
             </div>
           }
           @if (curScreen.type=='page' && form.id){
-            <!-- <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap"> -->
             <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
               <div class="flex-grow-1 p-2 text-truncate">
                 Form: <strong>{{form.title}}</strong>
@@ -185,7 +227,7 @@
                               @for (k of curScreen.form?.items|keyvalue; track $index) {
                                 @if (curScreen.form?.items[k.key].type!='static') {
                                   <button
-                                    class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
+                                    class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary" [disabled]="isTimeWarping"
                                   (click)="insertTextAtCursor(getItemText('$',k.value),codeeditor())">{{k.value.label}}</button>
                                 }
                               }
@@ -193,14 +235,14 @@
                                 @for (k of curScreen.form?.prev?.items|keyvalue; track $index) {
                                   @if (curScreen.form?.prev?.items[k.key].type!='static') {
                                     <button
-                                      class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
+                                      class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary" [disabled]="isTimeWarping"
                                     (click)="insertTextAtCursor(getItemText('$prev$',k.value),codeeditor())">{{k.value.label}}</button>
                                   }
                                 }
                               }
                               @if (curScreen.actions) {
                                 @for (k of curScreen.actions; track k.id) {
-                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                     (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditor())">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                     {{k.label}}
@@ -209,7 +251,7 @@
                               }
                               @for (section of form.sections; track section.id) {
                                 @if (section.type=='list') {
-                                  <button
+                                  <button [disabled]="isTimeWarping"
                                     class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                     (click)="insertTextAtCursor(getLoopCode(section),codeeditor())">
                                     <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
@@ -223,7 +265,7 @@
                             <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @if (curScreen.actions) {
                                 @for (k of curScreen.actions; track k.id) {
-                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                     (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditor())">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                     {{k.label}}
@@ -236,7 +278,7 @@
                             <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                 @if (curScreen.dataset?.form?.items[k.key].type!='static') {
-                                  <button
+                                  <button [disabled]="isTimeWarping"
                                     class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                   (click)="insertTextAtCursor(getItemText('$',k.value),codeeditor())">{{k.value.label}}</button>
                                 }
@@ -244,7 +286,7 @@
                               @if (curScreen.dataset?.form?.prev) {
                                 @for (k of curScreen.dataset?.form?.prev?.items|keyvalue; track $index) {
                                   @if (curScreen.dataset?.form?.prev?.items[k.key].type!='static') {
-                                    <button
+                                    <button [disabled]="isTimeWarping"
                                       class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                     (click)="insertTextAtCursor(getItemText('$prev$',k.value),codeeditor())">{{k.value.label}}</button>
                                   }
@@ -252,7 +294,7 @@
                               }
                               @if (curScreen.actions) {
                                 @for (k of curScreen.actions; track k.id) {
-                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                  <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                     (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditor())">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                     {{k.label}}
@@ -261,7 +303,7 @@
                               }
                               @for (section of form.sections; track section.id) {
                                 @if (section.type=='list') {
-                                  <button
+                                  <button [disabled]="isTimeWarping"
                                     class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                     (click)="insertTextAtCursor(getLoopCode(section),codeeditor())">
                                     <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
@@ -294,7 +336,7 @@
                                   <span class="input-group-text">
                                     Container class
                                   </span>
-                                  <input class="form-control" type="text" name="parentClass"
+                                  <input class="form-control" type="text" name="parentClass" [disabled]="isTimeWarping"
                                     placeholder="ie: row"
                                     [(ngModel)]="curScreen.data.parentclass">
                                 </div>
@@ -308,7 +350,7 @@
                                 <div class="col-sm-4">
                                   <div class="form-group mb-3">
                                     <label class="form-label">Title</label>
-                                    <select class="form-select" name="title"
+                                    <select class="form-select" name="title" [disabled]="isTimeWarping"
                                       [(ngModel)]="curScreen.data.title"
                                       required>
                                       <option value="" disabled>Select title field...</option>
@@ -324,7 +366,7 @@
                                 <div class="col-sm-4">
                                   <div class="form-group mb-3">
                                     <label class="form-label">Start Date</label>
-                                    <select class="form-select" name="start"
+                                    <select class="form-select" name="start" [disabled]="isTimeWarping"
                                       [(ngModel)]="curScreen.data.start"
                                       required>
                                       <option value="" disabled>Select start date field...
@@ -341,7 +383,7 @@
                                 <div class="col-sm-4">
                                   <div class="form-group mb-3">
                                     <label class="form-label">End Date</label>
-                                    <select class="form-select" name="end"
+                                    <select class="form-select" name="end" [disabled]="isTimeWarping"
                                       [(ngModel)]="curScreen.data.end"
                                       required>
                                       <option [ngValue]="null">* Not specified</option>
@@ -360,7 +402,7 @@
                                   <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                     @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                       @if (curScreen.dataset?.form?.items[k.key].type!='static') {
-                                        <button
+                                        <button [disabled]="isTimeWarping"
                                           class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                         (click)="insertTextAtCursor(getItemText('$',k.value),codeeditorcalendartitle)">{{k.value.label}}</button>
                                       }
@@ -368,7 +410,7 @@
                                     @if (curScreen.dataset?.form?.prev) {
                                       @for (k of curScreen.dataset?.form?.prev?.items|keyvalue; track $index) {
                                         @if (curScreen.dataset?.form?.prev?.items[k.key].type!='static') {
-                                          <button
+                                          <button [disabled]="isTimeWarping"
                                             class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                           (click)="insertTextAtCursor(getItemText('$prev$',k.value),codeeditorcalendartitle)">{{k.value.label}}</button>
                                         }
@@ -376,7 +418,7 @@
                                     }
                                     @if (curScreen.actions) {
                                       @for (k of curScreen.actions; track k.id) {
-                                        <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                        <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                           (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorcalendartitle)">
                                           <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                           {{k.label}}
@@ -385,7 +427,7 @@
                                     }
                                     @for (section of form.sections; track section.id) {
                                       @if (section.type=='list') {
-                                        <button
+                                        <button [disabled]="isTimeWarping"
                                           class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                           (click)="insertTextAtCursor(getLoopCode(section),codeeditorcalendartitle)">
                                           <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
@@ -406,7 +448,7 @@
                                 <div class="col-sm-4">
                                   <div class="form-group mb-3">
                                     <label class="form-label">Default Calendar View</label>
-                                    <select class="form-select" name="defaultView"
+                                    <select class="form-select" name="defaultView" [disabled]="isTimeWarping"
                                       [(ngModel)]="curScreen.data.defaultView"
                                       required>
                                       <option value="dayGridMonth" selected>
@@ -431,7 +473,7 @@
                                 <div class="col-sm-4">
                                   <div class="form-group mb-3">
                                     <label class="form-label">Coordinate/Location Field *</label>
-                                    <select class="form-select" name="coord"
+                                    <select class="form-select" name="coord" [disabled]="isTimeWarping"
                                       [(ngModel)]="curScreen.data.coord"
                                       required>
                                       <option [ngValue]="undefined">Use longitude/latitude field...</option>
@@ -445,14 +487,14 @@
                                       }
                                     </select>
                                   </div>
-                                </div>                                
+                                </div>                               
                               </div>
                               @if (curScreen.data?.coord==undefined){
                                 <div class="row">
                                   <div class="col-sm-4">
                                     <div class="form-group mb-3">
                                       <label class="form-label">Latitude *</label>
-                                      <select class="form-select" name="lat"
+                                      <select class="form-select" name="lat" [disabled]="isTimeWarping"
                                         [(ngModel)]="curScreen.data.lat"
                                         required>
                                         <option value="" disabled>Select latitude field...
@@ -469,7 +511,7 @@
                                   <div class="col-sm-4">
                                     <div class="form-group mb-3">
                                       <label class="form-label">Longitude *</label>
-                                      <select class="form-select" name="lng"
+                                      <select class="form-select" name="lng" [disabled]="isTimeWarping"
                                         [(ngModel)]="curScreen.data.lng"
                                         required>
                                         <option [ngValue]="null">* Not specified</option>
@@ -491,7 +533,7 @@
                                 <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                   @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                     @if (curScreen.dataset?.form?.items[k.key].type!='static') {
-                                      <button
+                                      <button [disabled]="isTimeWarping"
                                         class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                       (click)="insertTextAtCursor(getItemText('$',k.value),codeeditorpopupcontent)">{{k.value.label}}</button>
                                     }
@@ -499,7 +541,7 @@
                                   @if (curScreen.dataset?.form?.prev) {
                                     @for (k of curScreen.dataset?.form?.prev?.items|keyvalue; track $index) {
                                       @if (curScreen.dataset?.form?.prev?.items[k.key].type!='static') {
-                                        <button
+                                        <button [disabled]="isTimeWarping"
                                           class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                         (click)="insertTextAtCursor(getItemText('$prev$',k.value),codeeditorpopupcontent)">{{k.value.label}}</button>
                                       }
@@ -507,7 +549,7 @@
                                   }
                                   @if (curScreen.actions) {
                                     @for (k of curScreen.actions; track k.id) {
-                                      <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                      <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                         (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorpopupcontent)">
                                         <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                         {{k.label}}
@@ -516,7 +558,7 @@
                                   }
                                   @for (section of form.sections; track section.id) {
                                     @if (section.type=='list') {
-                                      <button
+                                      <button [disabled]="isTimeWarping"
                                         class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-secondary"
                                         (click)="insertTextAtCursor(getLoopCode(section),codeeditorpopupcontent)">
                                         <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
@@ -556,24 +598,24 @@
                                 </app-cm>
                               </div>
                               <div class="form-check form-switch mt-1">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.readOnly"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.readOnly" [disabled]="isTimeWarping"
                                   name="readOnly" id="readOnly">
                                 <label class="form-check-label" for="readOnly">Read-only map</label>
                               </div>
                               <div class="form-check form-switch mt-1">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.fullscreen"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.fullscreen" [disabled]="isTimeWarping"
                                   name="fullscreen" id="fullscreen">
                                 <label class="form-check-label" for="fullscreen">Full-screen map</label>
                               </div>
                               <div class="form-group mt-2">
                                 <label class="form-label">Custom Map Server</label>
-                                <input type="text" class="form-control" [(ngModel)]="curScreen.data.customMapServer"
+                                <input type="text" class="form-control" [(ngModel)]="curScreen.data.customMapServer" [disabled]="isTimeWarping"
                                   placeholder="Leave blank to use default (OpenStreetMap)"
                                   name="customMapServer">
                               </div>
                               <div class="form-group mt-2" [class.disabled]="curScreen.data?.readOnly">
                                 <label class="form-label">Drop pin on (event)</label>
-                                <select class="form-select" name="dropPinOn"
+                                <select class="form-select" name="dropPinOn" [disabled]="isTimeWarping"
                                   [(ngModel)]="curScreen.data.dropPinOn">
                                   <option [ngValue]="undefined">Use default (dblclick)</option>
                                   @for (b of ['contextmenu','click','dblclick','mousedown','mouseup']; track $index) {
@@ -584,7 +626,7 @@
                               </div>
                             </div>
                           }
-                          @if (['chatbot'].indexOf(curScreen.type)>-1){                    
+                          @if (['chatbot'].indexOf(curScreen.type)>-1){                   
                   
                             <div class="p-3">
                               <div class="mb-3">Using <strong>{{curScreen.cogna?.name}} 
@@ -594,24 +636,24 @@
                               <h5>Chatbot configuration</h5>
                               <div class="form-group mb-3">
                                 <label class="form-label">Initial greeting *</label>
-                                <textarea class="form-control" 
+                                <textarea class="form-control" [disabled]="isTimeWarping"
                                   [(ngModel)]="curScreen.data.greeting" rows="4"
                                   name="greeting" id="greeting" required></textarea>
                               </div>
                               <div class="form-group mb-3">
                                 <label class="form-label">Notice</label>
-                                <textarea class="form-control" 
+                                <textarea class="form-control" [disabled]="isTimeWarping"
                                   [(ngModel)]="curScreen.data.notice" rows="4"
                                   name="notice" id="notice"></textarea>
                               </div>
                               <div class="form-group mb-3">
                                 <label class="form-label">Logo URL</label>
-                                <input type="text" class="form-control" [(ngModel)]="curScreen.data.logo"
+                                <input type="text" class="form-control" [(ngModel)]="curScreen.data.logo" [disabled]="isTimeWarping"
                                   name="logo">
                               </div>
                               <div class="form-group mb-3">
                                 <label class="form-label">Suggested prompt</label>
-                                <div class="list-group" cdkDropList
+                                <div class="list-group" cdkDropList [cdkDropListDisabled]="isTimeWarping"
                                   cdkDropListOrientation="vertical"
                                   (cdkDropListDropped)="dropSubs($event, 'suggestion')">
                                   @for (item of curScreen.data?.suggestion; track $index) {
@@ -624,15 +666,15 @@
                                       </span>
                                       <div class="element-edit nowrap"
                                         style="position:absolute;top:2px;right:2px; padding:2px">
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle>
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle [disabled]="isTimeWarping">
                                           <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true">
                                           </fa-icon>
                                         </button>
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1"
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" [disabled]="isTimeWarping"
                                           (click)="addChatSuggestion(addChatSuggestionTpl,item)">
                                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                         </button>
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary"
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary" [disabled]="isTimeWarping"
                                           (click)="removeChatSuggestion($index)">
                                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                         </button>
@@ -640,7 +682,7 @@
                                     </div>
                                   }
                                   <div class="list-group-item">
-                                    <a class="pointer d-block text-decoration-none" (click)="addChatSuggestion(addChatSuggestionTpl,{}, true)">
+                                    <a class="pointer d-block text-decoration-none" (click)="!isTimeWarping && addChatSuggestion(addChatSuggestionTpl,{}, true)">
                                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                       Add prompt suggestion
                                     </a>
@@ -649,7 +691,7 @@
                               </div>  
                               
                               <div class="form-check mb-3 form-switch">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.speechInput"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.speechInput" [disabled]="isTimeWarping"
                                   name="speechInput" id="speechInput">
                                 <label class="form-check-label" for="speechInput">Enable speech input</label>
                               </div>
@@ -666,7 +708,7 @@
                               </div>
                             </div>
                           }
-                          @if (['combine'].indexOf(curScreen.type)>-1){                    
+                          @if (['combine'].indexOf(curScreen.type)>-1){                   
                   
                             <div class="p-3">
                               <h5>Combined Page configuration</h5>
@@ -676,21 +718,21 @@
                                 <div>
                                   <div class="">
                                     <input class="btn-check" type="radio" value="tabs" id="nav-tabs"
-                                      name="nav-tabs" [(ngModel)]="curScreen.data.nav" required>
+                                      name="nav-tabs" [(ngModel)]="curScreen.data.nav" [disabled]="isTimeWarping" required>
                                     <label for="nav-tabs" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Tabbed</label>
                                     <input class="btn-check" type="radio" value="pills" id="nav-pills"
-                                      name="nav-pills" [(ngModel)]="curScreen.data.nav"
+                                      name="nav-pills" [(ngModel)]="curScreen.data.nav" [disabled]="isTimeWarping"
                                       required>
                                     <label for="nav-pills" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Pills</label>
                                     <input class="btn-check" type="radio" value="underline" id="nav-underline"
-                                      name="nav-underline" [(ngModel)]="curScreen.data.nav"
+                                      name="nav-underline" [(ngModel)]="curScreen.data.nav" [disabled]="isTimeWarping"
                                       required>
                                     <label for="nav-underline" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Underline</label>
                                     <input class="btn-check" type="radio" value="accordions" id="nav-acc"
-                                      name="nav-acc" [(ngModel)]="curScreen.data.nav" required>
+                                      name="nav-acc" [(ngModel)]="curScreen.data.nav" [disabled]="isTimeWarping" required>
                                     <label for="nav-acc" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
                                     Accordion</label>
                                   </div>
@@ -698,7 +740,7 @@
                               </div>
 
                               <div class="form-check form-switch mt-1">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.showIndex"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.showIndex" [disabled]="isTimeWarping"
                                   name="showIndex" id="showIndex">
                                 <label class="form-check-label" for="showIndex">Show Index Number</label>
                               </div>
@@ -706,7 +748,7 @@
                               <div class="form-group mt-3">
                                 <label class="form-label">Components</label>
                                 <div class="list-group border border-secondary border-1-5" style="border-style:dashed !important;" cdkDropList
-                                [cdkDropListData]="curScreen.data?.comps"
+                                [cdkDropListData]="curScreen.data?.comps" [cdkDropListDisabled]="isTimeWarping"
                                 cdkDropListOrientation="vertical"
                                 (cdkDropListDropped)="dropSubs($event, 'comps')">
                                 
@@ -720,15 +762,15 @@
                                       </span>
                                       <div class="element-edit nowrap"
                                         style="position:absolute;top:2px;right:2px; padding:2px">
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle>
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle [disabled]="isTimeWarping">
                                           <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true">
                                           </fa-icon>
                                         </button>
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1"
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" [disabled]="isTimeWarping"
                                           (click)="addCombineComp(addCombineCompTpl,item)">
                                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                         </button>
-                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary"
+                                        <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary" [disabled]="isTimeWarping"
                                           (click)="removeCombineComp($index)">
                                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                         </button>
@@ -740,7 +782,7 @@
                                   
                                 </div>
                                 <!-- <div class="list-group-item"> -->
-                                    <button class="btn btn-primary mt-3" (click)="addCombineComp(addCombineCompTpl,{}, true)">
+                                    <button class="btn btn-primary mt-3" [disabled]="isTimeWarping" (click)="addCombineComp(addCombineCompTpl,{}, true)">
                                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                       Add component
                                     </button>
@@ -749,7 +791,7 @@
                               
                               <div class="form-group mt-3">
                                 <label class="form-label">Show count badge from</label>
-                                <select class="form-select" name="title"
+                                <select class="form-select" name="title" [disabled]="isTimeWarping"
                                   [(ngModel)]="curScreen.data.badgeFrom">
                                   <option [ngValue]="undefined">Do not show count badge</option>
                                   @for (item of curScreen.data?.comps; track $index) {
@@ -765,7 +807,7 @@
 
                             </div>
                           }
-                          @if (['bucket'].indexOf(curScreen.type)>-1){                    
+                          @if (['bucket'].indexOf(curScreen.type)>-1){                   
                   
                             <div class="p-3">
                               <div class="mb-3">Using <strong>{{curScreen.bucket?.name}} 
@@ -779,19 +821,19 @@
                                 <div>
                                   <div name="lang" class="text-body">
                                     <input type="radio" class="btn-check" id="type-user" name="type-user" value="user" #type="ngModel"
-                                      [(ngModel)]="curScreen.data.bucketType" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketType" [required]="true" [disabled]="isTimeWarping">
                                     <label for="type-user" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       User Bucket
                                       <div><small>Files by users</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="type-all" name="type-all" value="all" #type="ngModel"
-                                      [(ngModel)]="curScreen.data.bucketType" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketType" [required]="true" [disabled]="isTimeWarping">
                                     <label for="type-all" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       All Files
                                       <div><small>All files in bucket</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="type-custom" name="type-custom" value="custom" #type="ngModel" 
-                                      [(ngModel)]="curScreen.data.bucketType" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketType" [required]="true" [disabled]="isTimeWarping">
                                     <label for="type-custom" class="btn btn-outline-secondary border-1-5 me-2 mb-1 text-start">
                                       Custom
                                       <div><small>Custom filters</small></div>
@@ -812,12 +854,12 @@
                                 </div>
                               }
                               <div class="form-check form-switch mt-1">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.enableUpload"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.enableUpload" [disabled]="isTimeWarping"
                                   name="enableUpload" id="enableUpload">
                                 <label class="form-check-label" for="enableUpload">Enable file upload</label>
                               </div>
                               <div class="form-check form-switch mt-1">
-                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.enableDelete"
+                                <input type="checkbox" class="form-check-input" [(ngModel)]="curScreen.data.enableDelete" [disabled]="isTimeWarping"
                                   name="enableDelete" id="enableDelete">
                                 <label class="form-check-label" for="enableDelete">Enable file delete</label>
                               </div>
@@ -828,19 +870,19 @@
                                 <div>
                                   <div name="lang" class="text-body">
                                     <input type="radio" class="btn-check" id="style-normal" name="bucket-style" value="normal" #type="ngModel"
-                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true" [disabled]="isTimeWarping">
                                     <label for="style-normal" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       Normal
                                       <div><small>Default bucket style</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="style-tile" name="bucket-style" value="tile" #type="ngModel"
-                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true" [disabled]="isTimeWarping">
                                     <label for="style-tile" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start">
                                       Tile
                                       <div><small>Tile view for bucket</small></div>
                                     </label>
                                     <input type="radio" class="btn-check" id="style-carousel" name="bucket-style" value="carousel" #type="ngModel"
-                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true">
+                                      [(ngModel)]="curScreen.data.bucketStyle" [required]="true" [disabled]="isTimeWarping">
                                     <label for="style-carousel" class="btn btn-outline-secondary border-1-5 me-2 mb-1 text-start">
                                       Carousel
                                       <div><small>Carousel view for bucket</small></div>
@@ -864,7 +906,7 @@
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
-                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                   (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorpre())">
                                   <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   {{k.label}}
@@ -895,7 +937,7 @@
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
-                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info"
+                                <button type="button" class="btn btn-sm small mb-1 me-1 p-1 py-0 btn-outline-info" [disabled]="isTimeWarping"
                                   (click)="insertTextAtCursor('\{\{$go[\''+k.id+'\']\}\}',codeeditorpost())">
                                   <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   {{k.label}}
@@ -948,7 +990,7 @@
                 </div>
               </div>
             </form>
-            <button type="button" class="my-2 btn btn-primary btn-round" [disabled]="contentForm.pristine"
+            <button type="button" class="my-2 btn btn-primary btn-round" [disabled]="contentForm.pristine || isTimeWarping"
               (click)="saveScreen(curScreen, contentForm)">
               <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
               Save Content
@@ -1056,11 +1098,11 @@
                     }
                   </td>
                   <td class="text-nowrap">
-                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1"
+                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" [disabled]="isTimeWarping"
                       (click)="editAction(editActionTpl,ac)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary"
+                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary" [disabled]="isTimeWarping"
                       (click)="removeAction(removeActionTpl,ac)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
@@ -1070,7 +1112,7 @@
             </tbody>
             </table>
           }
-          <button type="button" class="btn btn-round btn-secondary" (click)="editAction(editActionTpl,{})">Add Action</button>
+          <button type="button" class="btn btn-round btn-secondary" [disabled]="isTimeWarping" (click)="editAction(editActionTpl,{})">Add Action</button>
         </div>
       </div>
     } @else {
@@ -1120,7 +1162,7 @@
           </div>
         </div>
 
-        <div id="palette-pane" class="card-body p-1" cdkDropList [cdkDropListData]="(palettes|filter:paletteFilter)">
+        <div id="palette-pane" class="card-body p-1" cdkDropList [cdkDropListDisabled]="isTimeWarping" [cdkDropListData]="(palettes|filter:paletteFilter)">
           @for (item of palettes|filter:paletteFilter; track $index) {
             <button type="button" class="btn btn-sm btn-outline-secondary text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;" title="{{item.title}}" cdkDrag>
               <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
@@ -1463,7 +1505,7 @@
                     <input type="radio" class="form-check-input" id="type-user" name="type"
                       [(ngModel)]="addCombineCompData.type" value="user" required>
                     <label for="type-user" class="form-check-label">User Group</label>
-                  </div>      
+                  </div>   
                 </div>
               </div>
 

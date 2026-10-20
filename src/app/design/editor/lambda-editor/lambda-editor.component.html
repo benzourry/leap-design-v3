@@ -94,7 +94,7 @@
 
           <!-- 3. ACTIONS -->
           <a class="pointer element mt-2" (click)="editLambda(editLambdaTpl,{data:{}}, true)"
-            [class.disabled]="offline">
+            [class.disabled]="offline || isTimeWarping">
             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
             Create Lambda
           </a>
@@ -147,10 +147,10 @@
             <p class="text-center text-body-secondary">Secret can be used to store confidential value and can be accessed inside Lambda using <code>_secret</code></p>
             @for (secret of secretList; track $index) {
               <div class="p-3 bg-body-tertiary border rounded mb-1">
-                <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="deleteSecret(removeSecretTpl, secret, false)">
+                <button type="button" class="btn btn-round btn-sm btn-danger float-end" [disabled]="isTimeWarping" (click)="deleteSecret(removeSecretTpl, secret, false)">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-round btn-sm btn-secondary float-end me-2"  (click)="editSecret(editSecretTpl, secret, false)">
+                <button type="button" class="btn btn-round btn-sm btn-secondary float-end me-2" [disabled]="isTimeWarping" (click)="editSecret(editSecretTpl, secret, false)">
                   <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
                 </button>
                   {{secret.key}} 
@@ -163,7 +163,7 @@
               </div>
             }
             <div class="text-center">
-              <button type="button" class="btn btn-round btn-primary mt-1" (click)="editSecret(editSecretTpl, {enabled:1}, true)">
+              <button type="button" class="btn btn-round btn-primary mt-1" [disabled]="isTimeWarping" (click)="editSecret(editSecretTpl, {enabled:1}, true)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
               Create New Secret</button>
             </div>
@@ -219,6 +219,7 @@
                             value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}"
                             readonly>
                         </div>
+                        <div class="dropdown-divider"></div>
                         <div class="px-2">
                           <label class="small text-body-secondary">Lambda Print Output (PDF)</label>
                           <input name="printUrl"
@@ -258,23 +259,30 @@
                       </div>
                     </div>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
-                      (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline">
+                      (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline || isTimeWarping">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
                       (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id, lambda)">
                       <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                     </button>
+                    <!-- TimeWarp Toggle Button -->
+                    <button type="button" class="btn btn-sm border border-1-5 ms-1" 
+                      [ngClass]="isTimeWarping ? 'btn-warning' : 'btn-outline-warning'" 
+                      title="TimeWarp (Real-time Version Slider)"
+                      (click)="toggleTimeWarp()">
+                      <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+                    </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-                      (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline">
+                      (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline || isTimeWarping">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn btn-sm border border-1-5 btn-outline-primary ms-1"
-                      [disabled]="contentForm.pristine" (click)="saveLambda(lambda)">
+                      [disabled]="contentForm.pristine || isTimeWarping" (click)="saveLambda(lambda)">
                       <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <div ngbDropdown>
-                      <button type="button" class="btn btn-sm border border-1-5 btn-outline-success ms-1" ngbDropdownToggle>
+                      <button type="button" class="btn btn-sm border border-1-5 btn-outline-success ms-1" ngbDropdownToggle [disabled]="isTimeWarping">
                         <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                       </button>
                       <div ngbDropdownMenu aria-labelledby="lambdaRun" style="min-width:340px">
@@ -300,6 +308,52 @@
                 </div>
               }
             </div>
+
+            <!-- TimeWarp Interface Block -->
+            @if (isTimeWarping) {
+              <div class="card bg-warning bg-opacity-10 border-warning mt-3 mb-3 shadow-sm limit-width">
+                <div class="card-body p-2">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="card-title text-warning-emphasis m-0 fw-bold">
+                      <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
+                    </h6>
+                    <div>
+                      <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
+                      <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This Version</button>
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex align-items-center">
+                    <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
+                    <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
+                           [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
+                    <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+                  </div>
+                  
+                  @let trail = timeWarpTrails[timeWarpIndex];
+                  <div class="d-flex flex-wrap justify-content-between gap-2 mt-3 small">
+                    <!-- Left: Date & Email -->
+                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
+                      <span class="input-group-text bg-body text-body border-secondary border-opacity-25">
+                        <fa-icon [icon]="['far', 'calendar-alt']" class="me-2 text-body-secondary"></fa-icon>
+                        <strong>{{ trail?.timestamp | date:'medium' }}</strong>
+                      </span>
+                      <span class="input-group-text bg-info text-dark border-secondary border-opacity-25">
+                        <fa-icon [icon]="['far', 'user']" class="me-2 opacity-75"></fa-icon>
+                        {{ trail?.email }}
+                      </span>
+                    </div>
+
+                    <!-- Right: Action & Module -->
+                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
+                      <span class="input-group-text bg-secondary text-white border-secondary border-opacity-25">{{ trail?.action }}</span>
+                      <span class="input-group-text bg-primary text-white border-secondary border-opacity-25">{{ trail?.module }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
             @if (loading) {
               <div class="p-4 text-center">
                 <div class="lds-ellipsis">
@@ -353,7 +407,7 @@
                   label="Lambda Function" placeholder="Write your lambda function here..."
                   [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
                   [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
-                  [readOnly]="lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
+                  [readOnly]="isTimeWarping || lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
                 </app-cm>
               </div>
             </form>
@@ -386,7 +440,7 @@
                         </div>
                       }
                       @if (consoleType=='html') {
-                        <div class="px-2 py-1 bg-body-tertiary text-body border-top" [innerHtml]="runRes()[lambda.id].print">
+                        <div class="px-2 py-1 bg-body-tertiary text-body border-top" [innerHtml]="runRes()[lambda.id].print | safe:'html'">
                         </div>
                       }
                       @if (consoleType=='pdf') {
@@ -713,7 +767,7 @@
       <input type="text" class="form-control" [(ngModel)]="editSecretData.key" #key="ngModel"
         (ngModelChange)="editSecretData.id||editSecretData.key=toSnakeCase(editSecretData.key)" name="key"
         required>
-        @if (name?.invalid) {
+        @if (key?.invalid) {
           <small class="form-text text-warning">
             @if (key?.errors?.required) {
               <span class="help-block">Key is required</span>

@@ -19,7 +19,7 @@
       <div class="m-3 p-3 bg-danger text-white rounded">
         <h5>Failed to load dataset with id <strong>{{curDatasetId}}</strong></h5>
         <p>Message: {{dsError.message}}</p>
-        <button type="button" class="btn btn-outline-light btn-round"
+        <button type="button" class="btn btn-outline-light btn-round" [disabled]="isTimeWarpingDataset"
           (click)="removeDataset(removeDatasetTpl,{id:curDatasetId, title:'n/a', description:'n/a'})">Remove
         Dataset</button>
       </div>
@@ -52,19 +52,19 @@
                   </span>
                 }
               </div>
-              <div>
+              <div class="text-nowrap">
                 <a type="button" class="btn btn-sm border border-1-5 ms-1"
                  title="Download Entry JSON" [class.disabled]="offline"
                   href="{{base}}/report/export-data/{{curDataset.id}}/json" target="_blank">
                     <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
                 </a>
                 <button type="button" class="btn btn-sm border border-1-5 ms-1"
-                 title="Resync Dataset" [class.disabled]="offline"
+                 title="Resync Dataset" [class.disabled]="offline || isTimeWarpingDataset"
                   (click)="resyncDataset(curDataset?.id)">
                     <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
                 </button>
                 <button type="button" class="btn btn-sm border border-1-5 ms-1"
-                title="Edit dataset"
+                title="Edit dataset" [disabled]="isTimeWarpingDataset"
                   (click)="editDataset(editDatasetTpl,curDataset, false, form)">
                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                 </button>
@@ -73,8 +73,15 @@
                   (click)="viewMetaTrails(viewDatasetMetaTrailTpl, 'dataset_' + curDataset.id, curDataset)">
                   <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
                 </button>
+                <!-- TimeWarp Toggle Button -->
+                <button type="button" class="btn btn-sm border border-1-5 ms-1" 
+                  [ngClass]="isTimeWarpingDataset ? 'btn-warning' : 'btn-outline-warning'" 
+                  title="TimeWarp (Real-time Version Slider)"
+                  (click)="toggleTimeWarpDataset()">
+                  <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+                </button>
                 <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-                title="Remove dataset"
+                title="Remove dataset" [disabled]="isTimeWarpingDataset"
                   (click)="removeDataset(removeDatasetTpl,curDataset)">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                 </button>
@@ -88,6 +95,45 @@
             </div>
           </div>
         </div>
+
+        <!-- TimeWarp Interface Block -->
+        @if (isTimeWarpingDataset) {
+         <div class="card bg-warning bg-opacity-10 border-warning mb-3 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-title text-warning-emphasis m-0 fw-bold">
+                <fa-icon [icon]="['far', 'clock']" class="me-1"></fa-icon> TimeWarp Active
+              </h6>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarpDataset()">Cancel</button>
+                <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpDatasetVersion()">Restore This</button>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center">
+              <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
+              <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpDatasetTrails.length - 1" 
+                    [(ngModel)]="timeWarpDatasetIndex" (ngModelChange)="applyTimeWarpDataset($event)">
+              <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+            </div>
+            
+            @let trail = timeWarpDatasetTrails[timeWarpDatasetIndex];
+
+            <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
+              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
+                <span class="input-group-text bg-body text-body small">{{ trail?.timestamp | date:'medium' }}</span>
+                <span class="input-group-text bg-body text-body small">{{ trail?.email }}</span>
+              </div>
+
+              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
+                <span class="input-group-text bg-secondary text-white small">{{ trail?.action }}</span>
+                <span class="input-group-text bg-primary text-white small">{{ trail?.module }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
         @if (datasetLoading || formLoading) {
           Loading...
         }@else{
@@ -114,13 +160,13 @@
                   <h6>Displayed Columns</h6>
                   <div style="position:relative">
                     <div cdkDropList cdkDropListOrientation="horizontal"
-                      class="my-2 column-list touch-overflow scroll--h"
+                      class="my-2 column-list touch-overflow scroll--h" [cdkDropListDisabled]="isTimeWarpingDataset"
                       (cdkDropListDropped)="dropField($event, curDataset)">
                       @for (field of curDataset.items; track $index) {
                         <div class="column-box d-flex flex-column"
-                            cdkDrag>
+                            cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
                           <div class="element flex-grow-1 p-2" style="min-width:120px;min-height:50px"
-                            (dblclick)="editColumnText(field,field)">
+                            (dblclick)="!isTimeWarpingDataset && editColumnText(field,field)">
                             <div class="element-item" style="user-select:none;">
                               <div style="font-size: 12px;">
                                 {{cleanText(form[field.root]?.title)}}
@@ -153,12 +199,12 @@
                                   </fa-icon>
                                 </div>
                                 <div style="position:absolute; bottom:5px; right:3px;">
-                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
                                     (click)="editItem(editItemTpl,field)">
                                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                                     </fa-icon>
                                   </button>
-                                  <button type="button" class="btn btn-info btn-round btn-sm"
+                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
                                     (click)="removeDsItem(field)">
                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                   </button>
@@ -167,20 +213,20 @@
                             </div>
                           </div>
                           @if(field.subs && field.subs?.length>0){
-                            <div class="flex-grow-1 d-flex flex-row border-top" style="border-top-color: var(--bs-border-color, #ccc) !important;" cdkDropList
+                            <div class="flex-grow-1 d-flex flex-row border-top" style="border-top-color: var(--bs-border-color, #ccc) !important;" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
                             cdkDropListOrientation="horizontal"
                             (cdkDropListDropped)="dropSubs($event, field.subs)">                            
                               @for(cf of field.subs; track $index){
-                                <div class="f-subs-item" cdkDrag>
+                                <div class="f-subs-item" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
                                   <div class="p-2 pb-0 text-truncate" style="max-width:120px">{{cf.label}}</div>
                                   <div class="p-2 btn-group">
                                     <div class="btn btn-sm btn-outline-secondary cursor-move" cdkDragHandle>
                                       <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-secondary" (click)="editColumnText(cf, field)">
+                                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="isTimeWarpingDataset" (click)="editColumnText(cf, field)">
                                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-danger" (click)="removeSub(cf, field, $index)">
+                                    <button type="button" class="btn btn-sm btn-danger" [disabled]="isTimeWarpingDataset" (click)="removeSub(cf, field, $index)">
                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   </div>
@@ -195,18 +241,14 @@
 
 
                   @if (curDataset.x?.tblcard){
-                    <!-- ADD THIS: Card Layout Preview Section (Using Native list-component SCSS) -->
+                    <!-- Card Layout Preview Section -->
                     <div class="mt-4 mb-3">
-                      <!-- Clickable Header for Collapse/Expand -->
                       <div class="d-flex align-items-center" 
                           style="cursor: pointer;" 
                           (click)="showCardPreview = !showCardPreview">
                         <h6 class="m-0 user-select-none">
                           <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-secondary me-1"></fa-icon>Card Layout Preview
                         </h6>
-
-                        <!-- ADDED: Checkbox right before the caret if expanded -->
-
                         <button type="button" class="btn btn-sm btn-link ms-3 text-secondary p-0 text-decoration-none">
                           <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true"></fa-icon>
                         </button>
@@ -215,50 +257,34 @@
                       @if (showCardPreview) {
                         @if (showCardPreview) {
                           <div class="form-check m-0 ms-4 mb-2">
-                            <input class="form-check-input" type="checkbox" id="enableCardEdit" [(ngModel)]="enableCardPreviewEdit">
+                            <input class="form-check-input" type="checkbox" id="enableCardEdit" [(ngModel)]="enableCardPreviewEdit" [disabled]="isTimeWarpingDataset">
                             <label class="form-check-label small user-select-none text-secondary" for="enableCardEdit">Enable Card Edit</label>
                           </div>
                         }
-                        <!-- Utilizing your existing .forceCard and .tblcard CSS! -->
                         <div class="forceCard position-relative mt-2">
                           <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
                             <table class="table tblcard w-100 m-0">
                               <tbody class="ds-tbody">
-                                <!-- ADDED cdkDropList and the existing dropField method -->
-                                <tr class="ds-row" cdkDropList (cdkDropListDropped)="dropField($event, curDataset)">
+                                <tr class="ds-row" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit" (cdkDropListDropped)="dropField($event, curDataset)">
                                   
-                                  <!-- Native Checkbox -->
                                   @if (curDataset.x?.bulkAction) {
                                     <td class="ds-check">
                                       <input type="checkbox" disabled class="form-check-input pointer-events-none">
                                     </td>
                                   }
                                   
-                                  <!-- Native Index -->
                                   @if (curDataset.showIndex) {
                                     <td data-label="#" class="ds-index">1</td>
                                   }
                                   
-                                  <!-- Native Items Loop -->
                                   @for (item of curDataset.items; track item.id; let isLast = $last) {
                                     @let fType = form[item.root]?.items[item.code]?.type;
                                     
-                                    <!-- ADDED cdkDrag here, updated title tooltip -->
-                                    <!-- <td class="ds-item code-{{item.code}} preview-edit-item" 
-                                        cdkDrag
-                                        title="Click to edit, or drag to reorder"
-                                        (click)="editItem(editItemTpl, item)"
-                                        [class.last-ds-item]="isLast"
-                                        [class.td-list]="item.type === 'list'"
-                                        [ngClass]="item.x?.cardStyle"
-                                        [attr.data-label]="item.label" [attr.code]="item.code"> -->
-
                                     <td class="ds-item code-{{item.code}} preview-edit-item" 
-                                        cdkDrag 
-                                        [cdkDragDisabled]="!enableCardPreviewEdit"
-                                        [class.is-editable]="enableCardPreviewEdit"
-                                        [title]="enableCardPreviewEdit ? 'Click to edit, or drag to reorder' : ''"
-                                        (click)="enableCardPreviewEdit && editItem(editItemTpl, item)"
+                                        cdkDrag [cdkDragDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit"
+                                        [class.is-editable]="enableCardPreviewEdit && !isTimeWarpingDataset"
+                                        [title]="enableCardPreviewEdit && !isTimeWarpingDataset ? 'Click to edit, or drag to reorder' : ''"
+                                        (click)="enableCardPreviewEdit && !isTimeWarpingDataset && editItem(editItemTpl, item)"
                                         [class.last-ds-item]="isLast"
                                         [class.td-list]="item.type === 'list'"
                                         [ngClass]="item.x?.cardStyle"
@@ -266,7 +292,6 @@
                                       
                                       @if (item.type === 'list') {
                                         
-                                        <!-- Mock Child Table for 'list' type -->
                                         @if (item.subs && item.subs.length > 0) {
                                           <table class="table tbl-child m-0 table-flush small">
                                             <thead>
@@ -277,13 +302,11 @@
                                               </tr>
                                             </thead>
                                             <tbody>
-                                              <!-- Mock Row 1 -->
                                               <tr>
                                                 @for (fq of item.subs; track fq.code) {
                                                   <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 1</td>
                                                 }
                                               </tr>
-                                              <!-- Mock Row 2 -->
                                               <tr>
                                                 @for (fq of item.subs; track fq.code) {
                                                   <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 2</td>
@@ -322,7 +345,6 @@
                                     </td>
                                   }
 
-                                  <!-- Native Status -->
                                   @if (curDataset.showStatus) {
                                     <td class="text-center ds-status pt-2 pb-2">
                                       <div class="d-flex justify-content-center align-items-center gap-1 mt-1 mb-1">
@@ -334,7 +356,6 @@
                                     </td>
                                   }
 
-                                  <!-- Native Actions -->
                                   @if (curDataset.showAction && curDataset.actions?.length > 0) {
                                     <td class="p-1 ds-action">
                                       <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
@@ -351,7 +372,6 @@
                                           }
                                         }
 
-                                        <!-- Using the fast and robust TS helper -->
                                         @if (hasDropdown(curDataset.actions)) {
                                           <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
                                             <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50 bg-body shadow-sm" ngbDropdownToggle>
@@ -380,7 +400,6 @@
                         </div>
                       }
                     </div>
-                    <!-- END Card Layout Preview -->
                   }@else {
                     <div class="mt-4 mb-3 text-warning"><fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="me-1"></fa-icon>Card on smaller screen not enabled. 
                       <div class="small ms-4">To enable, Edit Dataset > Options > Enable 'Turn row to card on smaller screen'</div>
@@ -439,12 +458,12 @@
                 </div>
               }
               <div class="p-2 border border-1-5 rounded mb-3">
-                <div class="row width-auto align-items-center g-2" cdkDropList
+                <div class="row width-auto align-items-center g-2" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
                   cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
                   @for (a of curDataset.actions; track $index) {
                     <div class="col-auto pe-0 position-relative cursor-move"
-                      cdkDrag [cdkDragDisabled]="curAction!=a.id"
+                      cdkDrag [cdkDragDisabled]="curAction!=a.id || isTimeWarpingDataset"
                       (click)="curAction=a.id">
                       <div class="input-group input-group-sm border border-1-5 rounded"
                         [class.border-primary]="curAction==a.id">
@@ -464,11 +483,11 @@
                             PRE</div>
                           }
                         </span>
-                        <button type="button" class="btn" (click)="editAction(editActionTpl,a)">
+                        <button type="button" class="btn" [disabled]="isTimeWarpingDataset" (click)="editAction(editActionTpl,a)">
                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn" (click)="deleteAction(a)">
+                        <button type="button" class="btn" [disabled]="isTimeWarpingDataset" (click)="deleteAction(a)">
                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
@@ -477,7 +496,7 @@
                   }
                 </div>
                 <div class="mt-2">
-                  <button type="button" class="btn btn-secondary btn-sm"
+                  <button type="button" class="btn btn-secondary btn-sm" [disabled]="isTimeWarpingDataset"
                     (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file', style:'btn-secondary'})">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
                     </fa-icon>
@@ -488,10 +507,10 @@
                 <div class="mb-3">
                   <h6>Allowed Filters</h6>
                   <div style="position:relative">
-                    <div cdkDropList cdkDropListOrientation="vertical"
+                    <div cdkDropList cdkDropListOrientation="vertical" [cdkDropListDisabled]="isTimeWarpingDataset"
                       (cdkDropListDropped)="dropFilter($event, curDataset.filters)">
                       @for (field of curDataset.filters; track field.id) {
-                        <div class="element p-2 mb-1 bg-body-tertiary text-body border rounded small position-relative" (dblclick)="editFilterText(field)" cdkDrag>
+                        <div class="element p-2 mb-1 bg-body-tertiary text-body border rounded small position-relative" (dblclick)="!isTimeWarpingDataset && editFilterText(field)" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
                           <div class="element-item" style="user-select:none;">
                             <div style="font-size: 12px;" class="text-body-secondary">
                               {{cleanText(form[field.root]?.title)}}
@@ -506,12 +525,12 @@
                                 </fa-icon>
                               </div>
                               <div style="position:absolute; bottom:5px; right:3px;">
-                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
                                   (click)="editFilterText(field)">
                                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                                   </fa-icon>
                                 </button>
-                                <button type="button" class="btn btn-info btn-round btn-sm"
+                                <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
                                   (click)="removeFilter($index)">
                                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                 </button>
@@ -590,10 +609,10 @@
                       <div>
                         <div class="input-group mb-1">
                           <span class="input-group-text" style="cursor:pointer"
-                          (click)="editPresetKey(c)">{{c.key}}</span>
+                          (click)="!isTimeWarpingDataset && editPresetKey(c)">{{c.key}}</span>
                           <span class="input-group-text" style="cursor:pointer"
-                          (click)="editPresetValue(c)">{{c.value}}</span>
-                          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="removePreset(c.key)">
+                          (click)="!isTimeWarpingDataset && editPresetValue(c)">{{c.value}}</span>
+                          <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="isTimeWarpingDataset" (click)="removePreset(c.key)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                           </button>
                         </div>
@@ -781,7 +800,7 @@
                 }
               </div>
               <div class="bg-danger text-white mb-3 p-3 rounded">
-                <button type="button" class="btn btn-round btn-light btn-sm float-end" (click)="clearEntry()">Clear all
+                <button type="button" class="btn btn-round btn-light btn-sm float-end" [disabled]="isTimeWarpingDataset" (click)="clearEntry()">Clear all
                 entry</button>
                 Clear entries for the dataset
               </div>

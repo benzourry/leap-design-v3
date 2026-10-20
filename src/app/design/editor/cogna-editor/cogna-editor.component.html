@@ -50,7 +50,7 @@
         }
         <a class="pointer element"
           (click)="editCogna(editCognaTpl,{type:'txtgen', embedModelType:'e5small', embedModelName:'', embedModelApiKey:'', chunkLength:100, chunkOverlap:10, embedMaxResult:5, inferModelType:'openai', inferModelName:'gpt-5.4-mini', inferModelApiKey:'demo', temperature:0.0, maxChatMemory:5, vectorStoreType:'inmemory', systemMessage:defaultSysMsg, data:{}}, true)"
-          [class.disabled]="offline">
+          [class.disabled]="offline || isTimeWarpingCogna">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
           Create Cogna
         </a>
@@ -124,27 +124,34 @@
               </div>
             </div>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
-              (click)="editCogna(editCognaTpl,cogna,false)" [class.disabled]="offline">
+              (click)="editCogna(editCognaTpl,cogna,false)" [disabled]="offline || isTimeWarpingCogna">
               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
             </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
               (click)="viewMetaTrails(viewCognaMetaTrailTpl, 'cogna_' + cogna.id, cogna)">
               <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
             </button>
+            <!-- TimeWarp Toggle Button -->
+            <button type="button" class="btn btn-sm border border-1-5 ms-1"
+              [ngClass]="isTimeWarpingCogna ? 'btn-warning' : 'btn-outline-warning'"
+              title="TimeWarp (Real-time Version Slider)"
+              (click)="toggleTimeWarpCogna()"> 
+              <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+            </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
-              title="Re-initialize models" (click)="reinitCogna(cogna)" [class.disabled]="offline">
+              title="Re-initialize models" (click)="reinitCogna(cogna)" [disabled]="offline || isTimeWarpingCogna">
               <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
             </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Search vector DB"
-              (click)="openSearchDb(searchDbTpl, cogna)" [class.disabled]="offline">
+              (click)="openSearchDb(searchDbTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
               <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
             </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Chat history"
-              (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [class.disabled]="offline">
+              (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
               <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
             </button>
             <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-              (click)="removeCogna(removeCognaTpl,cogna)" [class.disabled]="offline">
+              (click)="removeCogna(removeCognaTpl,cogna)" [disabled]="offline || isTimeWarpingCogna">
               <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
             </button>
             } @else {
@@ -155,6 +162,46 @@
           </div>
           }
         </div>
+
+        <!-- TimeWarp Interface Block -->
+        @if (isTimeWarpingCogna) {
+        <div class="card bg-warning bg-opacity-10 border-warning my-2 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-title text-warning-emphasis m-0 fw-bold">
+                <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
+              </h6>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarpCogna()">Cancel</button>
+                <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpCognaVersion()">Restore This</button>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center">
+              <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
+              <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpCognaTrails.length - 1" 
+                     [(ngModel)]="timeWarpCognaIndex" (ngModelChange)="applyTimeWarpCogna($event)">
+              <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+            </div>
+            
+            @let trail = timeWarpCognaTrails[timeWarpCognaIndex];
+            <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
+              <!-- Left: Date & Email -->
+              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
+                <span class="input-group-text bg-body text-body">{{ trail?.timestamp | date:'medium' }}</span>
+                <span class="input-group-text bg-info text-dark">{{ trail?.email }}</span>
+              </div>
+
+              <!-- Right: Action & Module -->
+              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
+                <span class="input-group-text bg-secondary text-white">{{ trail?.action }}</span>
+                <span class="input-group-text bg-primary text-white">{{ trail?.module }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
         @if (loading) {
         <div class="p-4 text-center">
           <div class="lds-ellipsis">
@@ -334,7 +381,7 @@
               <div class="card-header p-2">
                 @if (cogna.sources?.length>0){
                 <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
-                  title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading()[cogna.id]">
+                  title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading()[cogna.id] || isTimeWarpingCogna">
                   @if (ingestLoading()[cogna.id]) {
                   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                   }@else {
@@ -356,14 +403,14 @@
                       <fa-icon [icon]="['fas','download']" [fixedWidth]="true">
                       </fa-icon>
                     </a>
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Source"
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Source" [disabled]="isTimeWarpingCogna"
                       (click)="editCognaSrc(editCognaSrcTpl, b, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                       </fa-icon>
                     </button>
                     }
                     <button type="button" class="btn btn-round btn-sm btn-info" title="Ingest Source"
-                      (click)="ingestSrc(b)" [class.disabled]="ingestSrcLoading()[b.id]">
+                      (click)="ingestSrc(b)" [class.disabled]="ingestSrcLoading()[b.id] || isTimeWarpingCogna">
                       @if (ingestSrcLoading()[b.id]) {
                       <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                       }@else {
@@ -371,14 +418,14 @@
                       }
                     </button>
                     <button type="button" class="btn btn-round btn-sm btn-danger" title="Clear DB Source"
-                      (click)="clearDbSrc(b)" [class.disabled]="clearDbSrcLoading()[b.id]">
+                      (click)="clearDbSrc(b)" [class.disabled]="clearDbSrcLoading()[b.id] || isTimeWarpingCogna">
                       @if (clearDbSrcLoading()[b.id]) {
                       <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                       }@else {
                       <fa-icon [icon]="['fas','remove']" [fixedWidth]="true"></fa-icon>
                       }
                     </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Source"
+                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Source" [disabled]="isTimeWarpingCogna"
                       (click)="removeCognaSrc(b)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                       </fa-icon>
@@ -407,7 +454,7 @@
                 <div class="text-body-secondary p-3 text-center fs-4"> No sources specified</div>
                 }
                 <div class="list-group-item p-2">
-                  <a class="pointer" (click)="editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
+                  <a class="pointer" [class.disabled]="isTimeWarpingCogna" (click)="!isTimeWarpingCogna && editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add Source
                   </a>
@@ -429,12 +476,12 @@
                 @for (b of cogna.tools; track b.id) {
                 <div class="list-group-item p-2 element">
                   <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Tool"
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Tool" [disabled]="isTimeWarpingCogna"
                       (click)="editCognaTool(editCognaToolTpl, b, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                       </fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Tool"
+                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Tool" [disabled]="isTimeWarpingCogna"
                       (click)="removeCognaTool(b)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                       </fa-icon>
@@ -447,8 +494,8 @@
                 <div class="text-body-secondary p-3 text-center fs-4"> No tool specified</div>
                 }
                 <div class="list-group-item p-2">
-                  <a class="pointer"
-                    (click)="editCognaTool(editCognaToolTpl,{appId:app.id, enabled: true, params:[]},false)">
+                  <a class="pointer" [class.disabled]="isTimeWarpingCogna"
+                    (click)="!isTimeWarpingCogna && editCognaTool(editCognaToolTpl,{appId:app.id, enabled: true, params:[]},false)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add Tool
                   </a>
@@ -465,12 +512,12 @@
                 @for (b of cogna.mcps; track b.id) {
                 <div class="list-group-item p-2 element">
                   <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Server"
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Server" [disabled]="isTimeWarpingCogna"
                       (click)="editCognaMcp(editCognaMcpTpl, b, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                       </fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Server"
+                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Server" [disabled]="isTimeWarpingCogna"
                       (click)="removeCognaMcp(b)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                       </fa-icon>
@@ -483,8 +530,8 @@
                 <div class="text-body-secondary p-3 text-center fs-4"> No MCP server specified</div>
                 }
                 <div class="list-group-item p-2">
-                  <a class="pointer"
-                    (click)="editCognaMcp(editCognaMcpTpl,{appId:app.id, enabled: true, timeout:60},false)">
+                  <a class="pointer" [class.disabled]="isTimeWarpingCogna"
+                    (click)="!isTimeWarpingCogna && editCognaMcp(editCognaMcpTpl,{appId:app.id, enabled: true, timeout:60},false)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add MCP server
                   </a>
@@ -495,7 +542,7 @@
             <div class="card border border-1-5 mb-2">
               <div class="card-header p-2">
                 <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
-                  title="Clear vector collection" (click)="clearDb(cogna)" [class.disabled]="clearDbLoading">
+                  title="Clear vector collection" (click)="clearDb(cogna)" [class.disabled]="clearDbLoading || isTimeWarpingCogna">
                   @if (clearDbLoading) {
                   <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                   }@else {
@@ -530,12 +577,12 @@
                 @for (b of cogna.subs; track b.id) {
                 <div class="list-group-item p-2 element">
                   <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Sub"
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Sub" [disabled]="isTimeWarpingCogna"
                       (click)="editCognaSub(editCognaSubTpl, b, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                       </fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Sub"
+                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Sub" [disabled]="isTimeWarpingCogna"
                       (click)="removeCognaSub(b)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                       </fa-icon>
@@ -548,7 +595,7 @@
                 <div class="text-body-secondary p-3 text-center fs-4"> No sub specified</div>
                 }
                 <div class="list-group-item p-2">
-                  <a class="pointer" (click)="editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
+                  <a class="pointer" [class.disabled]="isTimeWarpingCogna" (click)="!isTimeWarpingCogna && editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add Sub
                   </a>
@@ -566,7 +613,7 @@
                 </div>
                 <div ngbDropdown class="ms-auto d-inline-block">
                   <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-auto"
-                    title="Clear chat memory" ngbDropdownToggle>
+                    title="Clear chat memory" [disabled]="isTimeWarpingCogna" ngbDropdownToggle>
                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Memory
                   </button>
                   <div ngbDropdownMenu style="min-width:340px">
