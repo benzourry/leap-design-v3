@@ -83,8 +83,8 @@ export class AppEditComponent implements OnInit {
     }
 
     // Default ensure standard string arrays initialization 
-    if (!this._data.enabledAuthProviders) {
-      this._data.enabledAuthProviders = [];
+    if (!this._data.enabledSignin) {
+      this._data.enabledSignin = [];
     }
 
     this.loadPages();
@@ -141,20 +141,20 @@ export class AppEditComponent implements OnInit {
   }
 
   hasCustomProvider(regId: string): boolean {
-    return this._data.enabledAuthProviders?.includes(regId) || false;
+    return this._data.enabledSignin?.includes(regId) || false;
   }
 
   toggleCustomProvider(regId: string, checked: boolean) {
-    if (!this._data.enabledAuthProviders) {
-      this._data.enabledAuthProviders = [];
+    if (!this._data.enabledSignin) {
+      this._data.enabledSignin = [];
     }
 
     if (checked) {
-      if (!this._data.enabledAuthProviders.includes(regId)) {
-        this._data.enabledAuthProviders.push(regId);
+      if (!this._data.enabledSignin.includes(regId)) {
+        this._data.enabledSignin.push(regId);
       }
     } else {
-      this._data.enabledAuthProviders = this._data.enabledAuthProviders.filter((id: string) => id !== regId);
+      this._data.enabledSignin = this._data.enabledSignin.filter((id: string) => id !== regId);
     }
   }
 
