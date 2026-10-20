@@ -3,7 +3,7 @@ import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { CognaService } from '../../../service/cogna.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbAccordionModule, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { DatePipe, JsonPipe, KeyValuePipe, PlatformLocation } from '@angular/common';
+import { DatePipe, JsonPipe, KeyValuePipe, NgClass, PlatformLocation } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
@@ -54,7 +54,7 @@ marked.use({
     templateUrl: './cogna-editor.component.html',
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
-      NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, 
+      NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgClass,
       NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,
       NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent, MetaTrailViewerComponent]
 })
