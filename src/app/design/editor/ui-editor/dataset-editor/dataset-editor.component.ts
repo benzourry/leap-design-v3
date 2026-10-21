@@ -840,32 +840,32 @@ export class DatasetEditorComponent implements OnInit {
         this.cdr.detectChanges();
     }
 
-    restoreTimeWarpDatasetVersion() {
-        const selectedTrail = this.timeWarpDatasetTrails[this.timeWarpDatasetIndex];
+    // restoreTimeWarpDatasetVersion() {
+    //     const selectedTrail = this.timeWarpDatasetTrails[this.timeWarpDatasetIndex];
 
-        // Prevent reverting if the slider is on the unsaved "CURRENT" live state
-        if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
-            this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
-            this.exitTimeWarpDataset();
-            return;
-        }
+    //     // Prevent reverting if the slider is on the unsaved "CURRENT" live state
+    //     if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+    //         this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+    //         this.exitTimeWarpDataset();
+    //         return;
+    //     }
 
-        if (confirm("Are you sure you want to revert the dataset to this historical version?")) {
-            this.isTimeWarpingDataset = false; 
+    //     if (confirm("Are you sure you want to revert the dataset to this historical version?")) {
+    //         this.isTimeWarpingDataset = false; 
             
-            this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
-                next: () => {
-                    this.toastService.show("Historical dataset version restored successfully.", { classname: 'bg-success text-light' });
-                    this.liveDatasetSnapshot = null;
-                    this.getDataset(this.curDataset.id); 
-                },
-                error: () => {
-                    this.isTimeWarpingDataset = true;
-                    this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
-                }
-            });
-        }
-    }
+    //         this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+    //             next: () => {
+    //                 this.toastService.show("Historical dataset version restored successfully.", { classname: 'bg-success text-light' });
+    //                 this.liveDatasetSnapshot = null;
+    //                 this.getDataset(this.curDataset.id); 
+    //             },
+    //             error: () => {
+    //                 this.isTimeWarpingDataset = true;
+    //                 this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+    //             }
+    //         });
+    //     }
+    // }
 
     private applyDatasetSnapshot(snapshot: any) {
         const copy = this.clone(snapshot);

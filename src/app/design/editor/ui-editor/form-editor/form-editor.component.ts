@@ -2696,31 +2696,31 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         this.cdr.detectChanges();
     }
 
-    restoreTimeWarpFormVersion() {
-        const selectedTrail = this.timeWarpFormTrails[this.timeWarpFormIndex];
+    // restoreTimeWarpFormVersion() {
+    //     const selectedTrail = this.timeWarpFormTrails[this.timeWarpFormIndex];
 
-        if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
-            this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
-            this.exitTimeWarpForm();
-            return;
-        }
+    //     if (!selectedTrail?.id || selectedTrail.action === 'CURRENT') {
+    //         this.toastService.show("You are already on the current version.", { classname: 'bg-info text-dark' });
+    //         this.exitTimeWarpForm();
+    //         return;
+    //     }
 
-        if (confirm("Are you sure you want to revert the form to this historical version?")) {
-            this.isTimeWarpingForm = false; 
+    //     if (confirm("Are you sure you want to revert the form to this historical version?")) {
+    //         this.isTimeWarpingForm = false; 
             
-            this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
-                next: () => {
-                    this.toastService.show("Historical form version restored successfully.", { classname: 'bg-success text-light' });
-                    this.liveFormSnapshot = null;
-                    this.getFormData(this.curForm.id); 
-                },
-                error: () => {
-                    this.isTimeWarpingForm = true;
-                    this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
-                }
-            });
-        }
-    }
+    //         this.metaTrailService.revertMetaTrail(selectedTrail.id).subscribe({
+    //             next: () => {
+    //                 this.toastService.show("Historical form version restored successfully.", { classname: 'bg-success text-light' });
+    //                 this.liveFormSnapshot = null;
+    //                 this.getFormData(this.curForm.id); 
+    //             },
+    //             error: () => {
+    //                 this.isTimeWarpingForm = true;
+    //                 this.toastService.show("Failed to restore version.", { classname: 'bg-danger text-light' });
+    //             }
+    //         });
+    //     }
+    // }
 
     private applyFormSnapshot(snapshot: any) {
         const copy = this.clone(snapshot);

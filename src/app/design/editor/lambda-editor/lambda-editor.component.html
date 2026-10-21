@@ -331,23 +331,21 @@
                   </div>
                   
                   @let trail = timeWarpTrails[timeWarpIndex];
-                  <div class="d-flex flex-wrap justify-content-between gap-2 mt-3 small">
+                  <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
                     <!-- Left: Date & Email -->
                     <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
-                      <span class="input-group-text bg-body text-body border-secondary border-opacity-25">
-                        <fa-icon [icon]="['far', 'calendar-alt']" class="me-2 text-body-secondary"></fa-icon>
-                        <strong>{{ trail?.timestamp | date:'medium' }}</strong>
+                      <span class="input-group-text bg-body text-body smaller">
+                        {{ trail?.timestamp | date:'medium' }}
                       </span>
-                      <span class="input-group-text bg-info text-dark border-secondary border-opacity-25">
-                        <fa-icon [icon]="['far', 'user']" class="me-2 opacity-75"></fa-icon>
+                      <span class="input-group-text bg-body text-body smaller">
                         {{ trail?.email }}
                       </span>
                     </div>
 
                     <!-- Right: Action & Module -->
-                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
-                      <span class="input-group-text bg-secondary text-white border-secondary border-opacity-25">{{ trail?.action }}</span>
-                      <span class="input-group-text bg-primary text-white border-secondary border-opacity-25">{{ trail?.module }}</span>
+                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase">
+                      <span class="input-group-text bg-secondary text-white smaller">{{ trail?.action }}</span>
+                      <span class="input-group-text bg-primary text-white smaller">{{ trail?.module }}</span>
                     </div>
                   </div>
                 </div>
