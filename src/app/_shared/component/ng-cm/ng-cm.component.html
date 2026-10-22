@@ -13,10 +13,18 @@
       <button type="button" class="btn btn-outline-secondary btn-xs" title="Undo" (click)="undo()">
         <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>
       </button>
-      
-      <button type="button" class="btn btn-outline-secondary btn-xs" title="Search" (click)="openSearch()">
+
+      <button type="button" 
+              class="btn btn-outline-secondary btn-xs" 
+              [class.active]="isSearchOpen()"
+              title="Toggle Search" 
+              (click)="toggleSearch()">
         <fa-icon [icon]="['fas', 'search']" [fixedWidth]="true"></fa-icon>
       </button>
+      
+      <!-- <button type="button" class="btn btn-outline-secondary btn-xs" title="Search" (click)="openSearch()">
+        <fa-icon [icon]="['fas', 'search']" [fixedWidth]="true"></fa-icon>
+      </button> -->
       
       <button type="button" class="btn btn-outline-secondary btn-xs" title="Unfold All" (click)="unfoldAll()">
         <fa-icon [icon]="['far', 'plus-square']" [fixedWidth]="true"></fa-icon> Unfold

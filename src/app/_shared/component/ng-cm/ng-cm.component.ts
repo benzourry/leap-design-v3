@@ -22,7 +22,7 @@ import {
   foldable
 } from '@codemirror/language';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
-import { highlightSelectionMatches, searchKeymap, openSearchPanel } from '@codemirror/search';
+import { highlightSelectionMatches, searchKeymap, openSearchPanel, search, closeSearchPanel } from '@codemirror/search';
 import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
 import { ElementBase } from '../../../run/_component/element-base';
 import { ThemeService } from '../../service/theme.service';
@@ -287,6 +287,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     crosshairCursor(),
     highlightActiveLine(),
     highlightSelectionMatches(),
+    search({ top: true }),
     keymap.of([
       ...closeBracketsKeymap,
       ...defaultKeymap,
@@ -297,6 +298,8 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       ...this.extraKeyMap
     ])
   ];
+
+  isSearchOpen = signal<boolean>(false);
 
   constructor(
     @Optional() @Inject(NG_VALIDATORS) validators: Array<any>,
@@ -364,6 +367,13 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
       EditorView.updateListener.of(update => {
         if (update.docChanged) {
           this.valueChanged(update.state.doc.toString());
+        }
+
+        if (this.editor) {
+          const searchPanelExists = !!this.editor.dom.querySelector('.cm-search');
+          if (this.isSearchOpen() !== searchPanelExists) {
+            this.isSearchOpen.set(searchPanelExists);
+          }
         }
       }),
       keymap.of([indentWithTab]),
@@ -757,6 +767,15 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
         window.history.back();
       } else {
         this.isFullscreen.set(false);
+      }
+    }
+  }
+
+  toggleSearch() {
+    if (this.editor) {
+      const closed = closeSearchPanel(this.editor);
+      if (!closed) {
+        openSearchPanel(this.editor);
       }
     }
   }

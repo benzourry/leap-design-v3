@@ -9,6 +9,18 @@
   width: 100%;
 }
 
+::ng-deep .cm-panels {
+  width: 100% !important;
+  // box-sizing: border-box;
+}
+
+::ng-deep .cm-search {
+  width: 100%;
+  // box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap; /* Allows search options to wrap on smaller screens */
+}
+
 ::ng-deep .cm-editor .cm-content {
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 0.85em;
@@ -185,8 +197,8 @@
   background: var(--bs-body-bg) !important;
   color: var(--bs-body-color) !important;
   border-bottom: 1px solid var(--bs-border-color) !important;
-  padding: 8px !important;
-  gap: 6px;
+  padding: 4px !important;
+  // gap: 6px;
 
   /* Shared styling for search inputs and standard buttons */
   input, button {
@@ -208,8 +220,8 @@
 
   /* Big, touch-friendly Close [x] button */
   button[name="close"] {
-    width: 44px;
-    height: 44px;
+    width: 28px;
+    height: 28px;
     border: none;
     border-radius: 50%;
     font-size: 1.5rem;
@@ -289,4 +301,72 @@
   .cm-selectionBackground, .cm-content ::selection {
     background-color: rgba(var(--bs-primary-rgb), 0.25) !important;
   }
+}
+
+
+
+::ng-deep .cm-search {
+  width: 100% !important; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 10px;
+
+  button, label {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px;
+    border: 1px solid transparent; border-radius: 4px; cursor: pointer; color: var(--bs-body-color); background: var(--bs-tertiary-bg); padding: 0 8px; margin: 0; transition: .2s;
+    &:hover { background: var(--bs-secondary-bg); }
+  }
+  
+  label { background: transparent; }
+  label input { display: none; }
+  label:has(input:checked) { background: rgba(var(--bs-primary-rgb),.15); color: var(--bs-primary); border-color: var(--bs-primary); }
+
+  /* Target all buttons and labels to turn them into icons with tooltips */
+  button[name="prev"], button[name="next"], button[name="select"], 
+  button[name="replace"], button[name="replaceAll"], button[name="close"], 
+  label:has([name="case"]), label:has([name="word"]), label:has([name="re"]) {
+    font-size: 0 !important; color: transparent !important; padding: 0; width: 28px; position: relative !important;
+    
+    /* Center the Icons */
+    &::after { 
+      color: var(--bs-body-color); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); 
+      font-size: 14px; font-family: var(--bs-font-monospace, monospace); font-weight: bold; 
+    }
+
+    /* Floating Tooltip */
+    &::before {
+      position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); z-index: 100;
+      padding: 4px 8px; background: rgba(0,0,0,0.85); color: #fff; border-radius: 4px; margin-bottom: 6px;
+      font-size: 11px; font-family: var(--bs-font-sans-serif, sans-serif); white-space: nowrap; letter-spacing: 0.5px;
+      pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    }
+    &:hover::before { opacity: 1; } /* Show tooltip on hover */
+  }
+  
+  label:has(input:checked)::after { color: var(--bs-primary); }
+
+  /* Map Icons & Tooltip Text */
+  button[name="close"] { margin-left: auto; &::after { content: "✖"; font-size: 12px; font-weight: normal; } &:hover::before { content: "Close"; } }
+  button[name="prev"] { &::after { content: "↑"; font-size: 16px; } &:hover::before { content: "Previous Match"; } }
+  button[name="next"] { &::after { content: "↓"; font-size: 16px; } &:hover::before { content: "Next Match"; } }
+  button[name="select"] { &::after { content: "≡"; font-size: 16px; } &:hover::before { content: "Select All Matches"; } }
+  button[name="replace"] { &::after { content: "→"; font-size: 16px; } &:hover::before { content: "Replace"; } }
+  button[name="replaceAll"] { &::after { content: "⇉"; font-size: 16px; } &:hover::before { content: "Replace All"; } }
+  label:has([name="case"]) { &::after { content: "Aa"; } &:hover::before { content: "Match Case"; } }
+  label:has([name="word"]) { &::after { content: "\\b"; } &:hover::before { content: "Match Whole Word"; } }
+  label:has([name="re"]) { &::after { content: ".*"; } &:hover::before { content: "Use Regular Expression"; } }
+
+  button[name="close"] { 
+    margin-left: auto !important; /* Pushes it to the far right of the flex container */
+    &::after { content: "✖"; font-size: 12px; font-weight: normal; } 
+    &:hover::before { content: "Close"; } 
+  }
+  
+  input[type="text"] {
+    border: 1px solid var(--bs-border-color); border-radius: 4px; padding: 4px 8px; background: var(--bs-body-bg); color: var(--bs-body-color); outline: none;
+    &:focus { border-color: var(--bs-primary); }
+  }
+
+  br{display:none}
+}
+
+::ng-deep .cm-panel.cm-search input{
+  margin: 0 !important;
 }
