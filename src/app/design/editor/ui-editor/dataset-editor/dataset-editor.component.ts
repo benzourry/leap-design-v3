@@ -802,7 +802,7 @@ export class DatasetEditorComponent implements OnInit {
         for (let i = baseIdx + 1; i <= index; i++) {
             const { action, data, moduleId } = this.timeWarpDatasetTrails[i];
             const module = this.timeWarpDatasetTrails[i].module?.toLowerCase();
-            const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+            const isRemoved = 'delete'==action?.toLowerCase();
 
             if (module === 'dataset_item' && data) {
                 const sId = data.id || moduleId;

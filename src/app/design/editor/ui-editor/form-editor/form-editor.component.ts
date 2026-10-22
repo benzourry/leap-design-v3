@@ -2642,7 +2642,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         for (let i = baseIdx + 1; i <= index; i++) {
             const { action, data, moduleId } = this.timeWarpFormTrails[i];
             const module = this.timeWarpFormTrails[i].module?.toLowerCase();
-            const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+            const isRemoved = 'delete'==action?.toLowerCase();
 
             if (module === 'form_item' && data?.code) {
                 isRemoved ? delete this.curForm.items[data.code] : this.curForm.items[data.code] = this.clone(data);

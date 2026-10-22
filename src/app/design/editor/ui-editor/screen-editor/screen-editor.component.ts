@@ -1027,7 +1027,7 @@ export class ScreenEditorComponent implements OnInit {
     for (let i = baseIdx + 1; i <= index; i++) {
       const { action, data, moduleId } = this.timeWarpTrails[i];
       const module = this.timeWarpTrails[i].module?.toLowerCase();
-      const isRemoved = ['removed', 'deleted'].includes(action?.toLowerCase());
+      const isRemoved = 'delete'==action?.toLowerCase();
 
       if (module === 'screen_action' && data) {
         const sId = data.id || moduleId;

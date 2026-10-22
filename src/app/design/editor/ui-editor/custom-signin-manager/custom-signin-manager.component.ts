@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { IconPickerComponent } from '../../../../_shared/component/icon-picker/icon-picker.component';
+import { base } from '../../../../_shared/constant.service';
 
 @Component({
     selector: 'app-custom-signin-manager',
@@ -117,8 +118,7 @@ export class CustomSigninManagerComponent implements OnInit {
 
   getRedirectUri(registrationId: string): string {
     if (!registrationId) return '';
-    const baseUrl = window.location.origin; 
-    return `${baseUrl}/login/oauth2/code/${registrationId}`;
+    return `${base}/login/oauth2/code/${registrationId}`;
   }
 
   copyToClipboard(text: string) {
