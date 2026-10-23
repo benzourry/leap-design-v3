@@ -2605,9 +2605,10 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     }
 
     startTimeWarpForm() {
-        this.metaTrailService.getMetaTrails(`form_${this.curForm.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+        this.metaTrailService.getMetaTrails(`form_${this.curForm.id}`, { sort: 'timestamp,desc', size: 99 }).subscribe({
             next: (res) => {
-                const trails = res.content?.filter((t: any) => ['form', 'form_item', 'form_section'].includes(t.module?.toLowerCase())) || [];
+                const recentTrails = (res.content || []).reverse();
+                const trails = recentTrails?.filter((t: any) => ['form', 'form_item', 'form_section'].includes(t.module?.toLowerCase())) || [];
                 if (!trails.length) {
                     this.toastService.show("No Form-level MetaTrail history available.", { classname: 'bg-warning text-dark' });
                     return;

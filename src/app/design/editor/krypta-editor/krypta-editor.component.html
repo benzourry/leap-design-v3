@@ -21,9 +21,13 @@
   <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
       <h5 class="mb-3">Krypta Manager</h5>
-      <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadWalletList(1)"
+      <input type="search" class="start" placeholder="Filter list" 
         autocapitalize="none"
-        [(ngModel)]="searchText">
+        [(ngModel)]="searchText"
+        (keyup.enter)="loadWalletList(1)"
+        (ngModelChange)="searchText === '' ? loadWalletList(1) : null"
+        
+        >
     </div>
     <div class="group-list">
       @if (itemLoading()) {

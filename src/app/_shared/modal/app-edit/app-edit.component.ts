@@ -1,7 +1,7 @@
 import { Component, OnInit, input, model, ChangeDetectorRef, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppService } from '../../../service/app.service';
-import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
+import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { baseApi, domainBase, OAUTH } from '../../constant.service';
 import { ScreenService } from '../../../service/screen.service';
 import { of } from 'rxjs';
@@ -13,12 +13,15 @@ import { NgStyle } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlatformService } from '../../../service/platform.service';
 import { ChangeDetectionStrategy } from '@angular/core';
+import { EditCustomProviderComponent } from '../edit-custom-provider/edit-custom-provider.component';
 
 @Component({
   selector: 'app-app-edit',
   templateUrl: './app-edit.component.html',
   styleUrls: ['./app-edit.component.scss'],
-  imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet],
+  imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, 
+    NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet,
+    EditCustomProviderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppEditComponent implements OnInit {
@@ -28,6 +31,7 @@ export class AppEditComponent implements OnInit {
   private platformService = inject(PlatformService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
+  private modalService = inject(NgbModal); // <-- Inject NgbModal
 
   data = model<any>();
   _data: any = {};
@@ -41,6 +45,7 @@ export class AppEditComponent implements OnInit {
   checkLogin = (login: string) => OAUTH.SIGNIN_OPT.includes(login);
 
   customProviders = signal<any[]>([]);
+  editProviderData: any = {}; // <-- Hold data for the new provider
 
   themes: any[] = [
     { name: "BarBlue", color: "#0747a6" },
@@ -178,6 +183,38 @@ export class AppEditComponent implements OnInit {
           this.cdr.markForCheck();
         });
     }
+  }
+
+  addCustomProvider(content: any) {
+    this.editProviderData = {}; // Reset payload for a new provider
+    
+    this.modalService.open(content, { size: 'lg', backdrop: 'static' })
+      .result.then(res => {
+        // Save the new provider via API
+        this.appService.saveCustomProvider(this._data.id, res)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (savedProvider: any) => {
+              // Fallback to res.registrationId if backend doesn't return the entire object
+              const regId = savedProvider?.registrationId || res.registrationId;
+              
+              // Refresh the list to show the new option
+              this.loadCustomProviders();
+              
+              // Automatically check the box by pushing it to enabledSignin
+              if (!this._data.enabledSignin) {
+                this._data.enabledSignin = [];
+              }
+              if (regId && !this._data.enabledSignin.includes(regId)) {
+                this._data.enabledSignin.push(regId);
+              }
+              
+              this.cdr.markForCheck();
+            }
+          });
+      }, () => {
+        // Modal dismissed
+      });
   }
 
   handleImageError(event: Event) {

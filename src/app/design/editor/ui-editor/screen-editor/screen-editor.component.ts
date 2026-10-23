@@ -984,10 +984,11 @@ export class ScreenEditorComponent implements OnInit {
   }
 
   startTimeWarp() {
-    this.metaTrailService.getMetaTrails(`screen_${this.curScreen.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+    this.metaTrailService.getMetaTrails(`screen_${this.curScreen.id}`, { sort: 'timestamp,desc', size: 99 }).subscribe({
       next: (res) => {
+        const recentTrails = (res.content || []).reverse();
         // Safely match backend MODULE types
-        const trails = res.content?.filter((t: any) => ['screen', 'screen_action'].includes(t.module?.toLowerCase())) || [];
+        const trails = recentTrails?.filter((t: any) => ['screen', 'screen_action'].includes(t.module?.toLowerCase())) || [];
         if (!trails.length) {
           this.toastService.show("No MetaTrail history available for this screen.", { classname: 'bg-warning text-dark' });
           return;

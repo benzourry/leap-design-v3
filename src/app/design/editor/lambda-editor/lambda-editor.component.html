@@ -405,7 +405,7 @@
                   label="Lambda Function" placeholder="Write your lambda function here..."
                   [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
                   [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
-                  [readOnly]="isTimeWarping || lambda.email.indexOf(user.email)==-1" (keydown)="onKeyDown($event)">
+                  [readOnly]="isTimeWarping || lambda.email.indexOf(user.email)==-1">
                 </app-cm>
               </div>
             </form>

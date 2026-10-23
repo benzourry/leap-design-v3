@@ -51,7 +51,7 @@
                   
                   @for (item of group.items | filter:searchText; track item.id || $index) {
                     @let naviDataItem = naviData()[item.type + '-' + item.screenId];
-                    @let isPermittedType = naviDataItem || ['external', 'internal', 'user','lambda', 'start'].includes(item.type);
+                    @let isPermittedType = naviDataItem || ['external', 'internal', 'user','lambda','profile', 'start'].includes(item.type);
                     
                     @if (isPermittedType && preItem()[item.id]) {
                       

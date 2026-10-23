@@ -1,0 +1,123 @@
+<div #editProviderForm="ngForm" ngForm>
+  <div class="modal-header border-0">
+    <h4 class="modal-title">{{_provider.id ? 'Edit' : 'Add'}} Custom Provider</h4>
+  </div>
+  
+  <div class="tab-simple fix-gutter" justify="center">
+    <div class="nav-wrap">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+        
+        <!-- BASIC INFO TAB -->
+        <li ngbNavItem>
+          <a ngbNavLink>Basic Info</a>
+          <ng-template ngbNavContent>
+            <div class="single-pane p-3">
+              <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">Provider Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="clientName" [(ngModel)]="_provider.clientName" required placeholder="e.g. My Company Okta">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">Registration ID</label>
+                  <input type="text" class="form-control" name="registrationId" [(ngModel)]="_provider.registrationId" [disabled]="_provider.id" placeholder="Leave blank to auto-generate">
+                  <div class="form-text">Unique ID (e.g. custom-okta). Cannot be changed later.</div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">Client ID <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control font-monospace" name="clientId" [(ngModel)]="_provider.clientId" required>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">Client Secret <span class="text-danger">*</span>
+                    <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon>
+                  </label>
+                  <input type="text" class="form-control font-monospace" name="clientSecret" [(ngModel)]="_provider.clientSecret" list="clientSecretList" autocomplete="off" required>
+                  <datalist id="clientSecretList">
+                    @for(secret of secretList; track $index) {
+                      @let secretKey = '{{_secret.'+secret.key+'}}';
+                      <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+                    }
+                  </datalist>
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label fw-bold">Scopes</label>
+                <input type="text" class="form-control font-monospace" name="scopes" [(ngModel)]="_provider.scopes" placeholder="openid,profile,email">
+                <div class="form-text">Comma-separated. Defaults to openid,profile,email if blank.</div>
+              </div>
+
+              <h6 class="mt-4 mb-3 border-bottom pb-2">OIDC Endpoints</h6>
+
+              <div class="form-group mb-3">
+                <label class="form-label fw-bold">Authorization URI <span class="text-danger">*</span></label>
+                <input type="url" class="form-control font-monospace" name="authorizationUri" [(ngModel)]="_provider.authorizationUri" required placeholder="https://...">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label fw-bold">Token URI <span class="text-danger">*</span></label>
+                <input type="url" class="form-control font-monospace" name="tokenUri" [(ngModel)]="_provider.tokenUri" required placeholder="https://...">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label fw-bold">User Info URI <span class="text-danger">*</span></label>
+                <input type="url" class="form-control font-monospace" name="userInfoUri" [(ngModel)]="_provider.userInfoUri" required placeholder="https://...">
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">JWK Set URI</label>
+                  <input type="url" class="form-control font-monospace" name="jwkSetUri" [(ngModel)]="_provider.jwkSetUri" placeholder="https://...">
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="form-label fw-bold">Username Attribute <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control font-monospace" name="userNameAttributeName" [(ngModel)]="_provider.userNameAttributeName" required placeholder="e.g. sub or email">
+                </div>
+              </div>
+
+              @if (_provider.id || _provider.registrationId) {
+                <div class="alert alert-info mt-4 mb-0 border-0">
+                  <h6 class="alert-heading fw-bold mb-2">
+                    <fa-icon [icon]="['fas','info-circle']" class="me-1"></fa-icon> Identity Provider Configuration
+                  </h6>
+                  <p class="mb-2 small">When setting up this application in your Identity Provider (e.g., Okta, Keycloak), you must whitelist the following <strong>Callback / Valid Redirect URI</strong>:</p>
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control font-monospace text-muted" readonly [value]="getRedirectUri(_provider.registrationId)" #redirectUriInput>
+                    <button class="btn btn-primary" type="button" (click)="copyToClipboard(redirectUriInput.value)">
+                      <fa-icon [icon]="['fas','copy']"></fa-icon> Copy
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
+
+        <!-- ICON TAB -->
+        <li ngbNavItem>
+          <a ngbNavLink>Icon 
+            @if (_provider.icon) {
+              <fa-icon [icon]="_provider.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+            }
+          </a>
+          <ng-template ngbNavContent>
+            <div class="single-pane p-3">
+              <app-icon-picker [(model)]="_provider.icon" [showNone]="true"></app-icon-picker>
+            </div>
+          </ng-template>
+        </li>
+
+      </ul>
+    </div>
+    <div [ngbNavOutlet]="nav"></div>
+  </div>
+
+  <div class="modal-footer justify-content-between border-0">
+    <button type="button" class="btn btn-round btn-secondary" (click)="dismiss()()">Cancel</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="editProviderForm.invalid" (click)="done(_provider)">
+      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon> Save Provider
+    </button>
+  </div>
+</div>

@@ -344,9 +344,7 @@ export class NaviComponent implements OnInit {
 
   dropItem(event: CdkDragDrop<any[]>, parent) {
     if (event.previousContainer.id == "palette-pane") {
-
       const clone = Object.assign({}, event.previousContainer.data[event.previousIndex]);
-
       event.container.data.splice(event.currentIndex, 0, clone);
 
       this.appService.addNaviItem(parent.id, clone)
@@ -355,15 +353,15 @@ export class NaviComponent implements OnInit {
             this.getNaviData(this.appId);
             this.getNavisAll(this.appId);
             this.toastService.show("Item saved successfully", { classname: 'bg-success text-light' });
-            this.cdr.detectChanges(); // <--- Add here
+            this.cdr.detectChanges();
           }, error: (err) => {
             this.toastService.show("Item saving failed", { classname: 'bg-danger text-light' });
-
           }
         })
 
     } else {
-      if (event.previousContainer === event.container) {
+      // CHANGED: Compare array reference instead of container reference
+      if (event.previousContainer.data === event.container.data) {
         moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
         this.saveItemOrder(parent);
       } else {
@@ -378,7 +376,6 @@ export class NaviComponent implements OnInit {
           });
       }
     }
-    // this.saveNavi();
   }
 
   // getIcon = (str) => str ? str.split(":") : ['far', 'file'];

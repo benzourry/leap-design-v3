@@ -1,7 +1,9 @@
 <div class="bg-body-secondary p-2">
   <div class="input-group" ngbDropdown>
     <input type="search" autocapitalize="none" class="form-control" placeholder="Search trails..."
-      [(ngModel)]="metaTrailsSearchText" (keyup.enter)="loadMetaTrails(metaTrailsPageNumber)">
+      [(ngModel)]="metaTrailsSearchText"      
+      (keyup.enter)="loadMetaTrails(1)"
+      (ngModelChange)="metaTrailsSearchText === '' ? loadMetaTrails(1) : null">
     
     <button type="button" class="btn btn-outline-secondary" id="dropdownMetaTrail" title="Filter" ngbDropdownToggle>
       <fa-icon [icon]="['fas','filter']" [fixedWidth]="true"></fa-icon>

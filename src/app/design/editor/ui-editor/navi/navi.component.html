@@ -177,13 +177,19 @@
                   <div class="s-icon-heading fw-bold mb-2">
                     {{group.title}}
                   </div>
-                  <div class="s-icon-wrap">
+                  
+                  <!-- ADDED cdkDropList DIRECTIVES AND min-height HERE -->
+                  <div class="s-icon-wrap" 
+                       cdkDropList cdkDropListOrientation="mixed" 
+                       [cdkDropListData]="group.items" 
+                       (cdkDropListDropped)="dropItem($event, group)"
+                       style="min-height: 75px; min-width: 100%;">
+                    
                     @for (item of group.items; track $index) {
                       @let naviDataItem = naviData[item.type+'-'+item.screenId];
                       @if (!naviDataItem?.access||naviDataItem?.access.users.indexOf(viewAs||'*')>-1) {
                         @if (!naviDataItem && ['external','internal','user','start','profile','lambda'].indexOf(item.type)==-1) {
-                          <div class="s-icon text-danger disabled"
-                            >
+                          <div class="s-icon text-danger disabled" cdkDrag> <!-- ADDED cdkDrag -->
                             <fa-icon [icon]="['fas','exclamation-triangle']" size="3x"
                               [fixedWidth]="true">
                             </fa-icon>
@@ -193,7 +199,7 @@
                         @if (naviDataItem || ['external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
                           @if (item.type=='form') {
                             <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive">
+                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
@@ -216,7 +222,7 @@
                           }
                           @if (item.type=='form-single') {
                             <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive">
+                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
@@ -240,7 +246,7 @@
                           }
                           @if (item.type=='view-single') {
                             <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive">
+                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
                               <fa-icon [icon]="item.icon|iconSplit" size="3x"
                                 [fixedWidth]="true">
                               </fa-icon>
@@ -263,18 +269,17 @@
                             </a>
                           }
                           @if (['dataset','dashboard','lookup','screen','external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
-                            <ng-container>
-                              <a class="s-icon text-body">
-                                <fa-icon [icon]="item.icon|iconSplit" size="3x"
-                                [fixedWidth]="true"></fa-icon>
-                                <div class="title">{{item.title}}</div>
-                                @if(!item.x?.hideDesc){
-                                  <div class="sub text-body-secondary">
-                                    {{naviDataItem?.description}}
-                                  </div>
-                                }
-                              </a>
-                            </ng-container>
+                            <!-- Replaced ng-container with standard anchor to bind cdkDrag cleanly -->
+                            <a class="s-icon text-body" cdkDrag>
+                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
+                              [fixedWidth]="true"></fa-icon>
+                              <div class="title">{{item.title}}</div>
+                              @if(!item.x?.hideDesc){
+                                <div class="sub text-body-secondary">
+                                  {{naviDataItem?.description}}
+                                </div>
+                              }
+                            </a>
                           }
                         }
                       }

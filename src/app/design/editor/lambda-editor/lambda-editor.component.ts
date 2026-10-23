@@ -321,6 +321,12 @@ export class LambdaEditorComponent implements OnInit {
         this.populateAutoComplete();
         this.moreAutocomplete();
         this.cdr.detectChanges();
+
+        setTimeout(() => {
+          if (this.contentForm && this.contentForm()) {
+            this.contentForm()?.form.markAsPristine();
+          }
+        }, 0);
       }, error => {
       })
 
@@ -505,6 +511,8 @@ export class LambdaEditorComponent implements OnInit {
       .subscribe(res => this.toastService.show("Print Stream Cache evicted: " + this.lambda.code));
   }
 
+  readonly contentForm = viewChild<import('@angular/forms').NgForm>('contentForm');
+
   saveLambda(data) {
     if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
 
@@ -512,6 +520,9 @@ export class LambdaEditorComponent implements OnInit {
       .subscribe(res => {
         this.loadLambdaList(this.pageNumber());
         this.loadLambda(res.id);
+
+        this.contentForm()?.form.markAsPristine();
+
         this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
       }, err => {
         this.toastService.show("Lambda saving failed: " + err.error.message, { classname: 'bg-danger text-light' });
@@ -788,9 +799,10 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   startTimeWarp() {
-    this.metaTrailService.getMetaTrails(`lambda_${this.lambda.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+    this.metaTrailService.getMetaTrails(`lambda_${this.lambda.id}`, { sort: 'timestamp,desc', size: 99 }).subscribe({
       next: (res) => {
-        const trails = res.content?.filter((t: any) => ['lambda'].includes(t.module?.toLowerCase())) || [];
+        const recentTrails = (res.content || []).reverse();
+        const trails = recentTrails?.filter((t: any) => ['lambda'].includes(t.module?.toLowerCase())) || [];
         if (!trails.length) {
           this.toastService.show("No MetaTrail history available for this lambda.", { classname: 'bg-warning text-dark' });
           return;

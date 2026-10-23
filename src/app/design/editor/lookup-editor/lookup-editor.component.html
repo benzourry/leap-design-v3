@@ -21,8 +21,12 @@
   <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
       <h5 class="mb-3">Lookup Manager</h5>
-      <input type="search" autocapitalize="none" class="start" placeholder="Filter list" (keyup.enter)="loadLookupList(1)"
-        [(ngModel)]="searchText">
+      <input type="search" autocapitalize="none" class="start" placeholder="Filter list" 
+        [(ngModel)]="searchText"        
+        (keyup.enter)="loadLookupList(1)"
+        (ngModelChange)="searchText === '' ? loadLookupList(1) : null"
+        
+        >
     </div>
     <div class="group-list">
       @if (itemLoading) {

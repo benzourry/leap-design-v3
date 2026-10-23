@@ -126,7 +126,7 @@
                   }
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Sign in with</label>
+                  <label class="form-label">Sign-in with</label>
                   <div class="row">
                     @if (checkLogin('sarawakid')) {
                       <div class="col-4 mb-3 text-center">
@@ -261,7 +261,41 @@
                   </div>
 
                   <!-- Dynamically Registered Providers -->
-                  @if (customProviders().length > 0) {
+
+                  @if (_data.id) {
+                    <div class="border-top pt-2 mt-1">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label mb-0">Custom Sign-in Providers</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addCustomProvider(editProviderTpl)">
+                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Provider
+                        </button>
+                      </div>
+                      
+                      @if (customProviders().length > 0) {
+                        <div class="row">
+                          @for (p of customProviders(); track p.id) {
+                            <div class="col-4 mb-3 text-center">
+                              <div class="form-check">
+                                <input type="checkbox" class="form-check-input" [id]="'p_' + p.registrationId"
+                                  [ngModel]="hasCustomProvider(p.registrationId)"
+                                  (ngModelChange)="toggleCustomProvider(p.registrationId, $event)"
+                                  [name]="'use_' + p.registrationId">
+                                <label class="form-check-label" [for]="'p_' + p.registrationId">
+                                  <fa-icon [icon]="['fas','id-card']" [fixedWidth]="true" size="2x" class="text-body-secondary"></fa-icon>
+                                  <div class="small text-break text-truncate px-1" [title]="p.clientName">{{ p.clientName }}</div>
+                                </label>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-muted small text-center mb-3">No custom providers configured yet.</p>
+                      }
+                    </div>
+                  }
+
+
+                  <!-- @if (customProviders().length > 0) {
                     <div class="border-top pt-3 mt-2">
                       <label class="form-label small text-uppercase text-body-secondary fw-bold mb-2 d-block">Custom Sign-in Providers</label>
                       <div class="row">
@@ -281,7 +315,7 @@
                         }
                       </div>
                     </div>
-                  }
+                  } -->
                 </div>
                 <div class="form-group mb-3">
                   <label class="form-label">Use local user from other app</label>
@@ -485,3 +519,20 @@
     </button>
   </div>
 </div>
+
+<ng-template #editProviderTpl let-c="close" let-d="dismiss">
+  @defer(prefetch on idle) {
+    <app-edit-custom-provider 
+      [appId]="_data.id" 
+      [provider]="editProviderData" 
+      [dismiss]="d" 
+      [close]="c">
+    </app-edit-custom-provider>
+  } @loading {
+    <div class="text-center m-5 p-5">
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+</ng-template>

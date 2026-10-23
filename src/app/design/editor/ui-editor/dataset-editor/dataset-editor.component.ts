@@ -761,10 +761,12 @@ export class DatasetEditorComponent implements OnInit {
     }
 
     startTimeWarpDataset() {
-        this.metaTrailService.getMetaTrails(`dataset_${this.curDataset.id}`, { sort: 'timestamp,asc', size: 500 }).subscribe({
+        this.metaTrailService.getMetaTrails(`dataset_${this.curDataset.id}`, { sort: 'timestamp,desc', size: 99 }).subscribe({
             next: (res) => {
+
+                const recentTrails = (res.content || []).reverse();
                 // Use toLowerCase() to safely match backend MODULE types (e.g. DATASET_ITEM)
-                const trails = res.content?.filter((t: any) => ['dataset', 'dataset_item', 'dataset_action'].includes(t.module?.toLowerCase())) || [];
+                const trails = recentTrails?.filter((t: any) => ['dataset', 'dataset_item', 'dataset_action'].includes(t.module?.toLowerCase())) || [];
                 if (!trails.length) {
                     this.toastService.show("No Dataset-level MetaTrail history available.", { classname: 'bg-warning text-dark' });
                     return;

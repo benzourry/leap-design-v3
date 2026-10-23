@@ -294,7 +294,7 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
 
               @if (isOverflowing() || isReadMore()) {
                 <div class="position-absolute bottom-0 start-0 print-hide" style="z-index: 10;">
-                  <button type="button" class="btn btn-xs btn-light shadow-sm small p-1 m-3" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
+                  <button type="button" class="btn btn-xs btn-light shadow-sm small p-1 m-2" style="font-size:0.8rem; border-radius: 50rem; padding: 0.4rem 0.6rem !important;" (click)="isReadMore.set(!isReadMore())">
                     <fa-icon [icon]="['fas','image']" class="me-1"></fa-icon> 
                     {{ 
                       lang() === 'ms' 
@@ -374,8 +374,8 @@ import { MorphHtmlDirective } from '../../_shared/directive/morph-html.directive
       width: 100%;
     }
     .single-img {
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
+      // aspect-ratio: 16 / 9;
+      // object-fit: cover;
       object-position: center;
       width: 100%;
     }

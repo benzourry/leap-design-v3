@@ -377,7 +377,14 @@ import { IconSplitPipe } from '../../_shared/pipe/icon-split.pipe';
       .section-group:not(:has(.row > *:not([hidden]))) {
           display: none !important;
       }
+    `,
     `
+      .table tbody tr:last-child td,
+      .table tbody tr:last-child th {
+          border-bottom: 0 !important;
+      }
+    `,
+    `.list-group.list-child::after{display:none}`
   ],
   imports: [
     NgbAccordionDirective, NgbAccordionItem, NgbAccordionHeader, NgbAccordionToggle, NgbAccordionButton,

@@ -21,10 +21,11 @@
   <div class="sidebar bg-body-tertiary border-end" sidebar #sidebar>
     <div class="p-3">
       <h5 class="mb-3">Endpoint Manager</h5>
-      <input type="search" class="start" placeholder="Filter list" (keyup.enter)="loadEndpointList(1)"
-        (search)="loadEndpointList(1)"
+      <input type="search" class="start" placeholder="Filter list" 
         autocapitalize="none"
-        [(ngModel)]="searchText">
+        [(ngModel)]="searchText" 
+        (keyup.enter)="loadEndpointList(1)"
+        (ngModelChange)="searchText === '' ? loadEndpointList(1) : null">
     </div>
     <div class="group-list">
       @if (itemLoading) {

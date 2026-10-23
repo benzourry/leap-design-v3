@@ -22,7 +22,10 @@
     <div class="p-3">
       <h5 class="mb-3">Role Manager</h5>
       <input type="search" class="start" autocapitalize="none" placeholder="Filter list"
-        (keyup.enter)="loadGroupList(1)" [(ngModel)]="searchText">
+        [(ngModel)]="searchText"
+        (keyup.enter)="loadGroupList(1)"
+        (ngModelChange)="searchText === '' ? loadGroupList(1) : null"
+        >
       </div>
       @if (app?.x?.userFromApp) {
         <div class="p-2 bg-danger text-white small rounded">
