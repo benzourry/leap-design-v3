@@ -45,7 +45,7 @@ export class DesignHomeComponent implements OnInit {
 
   user = signal<any>(null);
   searchText = signal<string>('');
-  pageSize = signal<number>(24);
+  pageSize = signal<number>(999);
   pageNumber = signal<number>(1);
 
   appStatusFilter = signal<string>('all');
@@ -57,25 +57,31 @@ export class DesignHomeComponent implements OnInit {
   newFolder = signal<any>({ name: '' });
   savingFolder = signal<boolean>(false);
 
+  // Optimized groupedItemList: Filters data BEFORE returning to prevent DOM flickering
   groupedItemList = computed(() => {
     const apps = this.itemList();
     const flds = this.folders();
-    let groups: { key: string; value: any[]; id: number | 'ungrouped' | null }[] = [];
+    const filter = this.folderFilter();
+    let groups: { key: string; value: any[]; id: number | 'ungrouped' }[] = [];
     let assignedAppIds = new Set<number>();
 
-    // Put apps into their respective folder buckets
     flds.forEach(f => {
       const folderApps = apps.filter(a => f.apps?.some((fa: any) => fa.id === a.id));
-      if (folderApps.length > 0 || this.folderFilter() === f.id) {
-        groups.push({ key: f.name, value: folderApps, id: f.id });
-        folderApps.forEach(a => assignedAppIds.add(a.id));
+      folderApps.forEach(a => assignedAppIds.add(a.id));
+      
+      // Only emit the group if we are in "All Apps" view OR if it exactly matches the selected tab
+      if (filter === null || filter === f.id) {
+        if (folderApps.length > 0 || filter === f.id) {
+          groups.push({ key: f.name, value: folderApps, id: f.id });
+        }
       }
     });
 
-    // Bucket for ungrouped apps
-    const ungrouped = apps.filter(a => !assignedAppIds.has(a.id));
-    if (ungrouped.length > 0 || this.folderFilter() === 'ungrouped') {
-      groups.push({ key: 'Ungrouped', value: ungrouped, id: 'ungrouped' });
+    const ungroupedApps = apps.filter(a => !assignedAppIds.has(a.id));
+    if (filter === null || filter === 'ungrouped') {
+      if (ungroupedApps.length > 0 || filter === 'ungrouped') {
+        groups.push({ key: 'Ungrouped', value: ungroupedApps, id: 'ungrouped' });
+      }
     }
 
     return groups;
@@ -87,23 +93,10 @@ export class DesignHomeComponent implements OnInit {
   removeItemData = signal<any>(null);
 
   baseApi: string = baseApi;
-  themes: any[] = [
-    { name: "BarBlue", color: "#0747a6" },
-    { name: "Dark", color: "#212529" },
-    { name: "Blue", color: "#0069d9" },
-    { name: "Blue", color: "#2196F3" },
-    { name: "Teal", color: "#009688" },
-    { name: "Purple", color: "#673AB7" },
-    { name: "Orange", color: "#F44336" },
-    { name: "Orange", color: "#FF5722" },
-    { name: "Indigo", color: "#3F51B5" },
-  ]
 
   constructor() {
     this.location.onPopState(() => {
-      if (document.querySelector('.cm-fullscreen-mode')) {
-        return;
-      }
+      if (document.querySelector('.cm-fullscreen-mode')) { return; }
       this.modalService.dismissAll('')
     });
   }
@@ -311,9 +304,7 @@ export class DesignHomeComponent implements OnInit {
     this.removeItemData.set(data);
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' }).result.then(
-      () => {
-        // Modal closed
-      },
+      () => { },
       () => { }
     );
   }

@@ -249,6 +249,8 @@ export class IconPickerComponent {
     { key: "fas:book", value: ["fas", "book"], category: "Objects & Misc" },
     { key: "fas:lightbulb", value: ["fas", "lightbulb"], category: "Objects & Misc" },
     { key: "fas:couch", value: ["fas", "couch"], category: "Objects & Misc" },
+    { key: "fas:cube", value: ["fas", "cube"], category: "Objects & Misc" },
+    { key: "fas:box-open", value: ["fas", "box-open"], category: "Objects & Misc" },
 
     // --- BRANDS ---
     { key: "fab:google", value: ["fab", "google"], category: "Brands" },
