@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { DesignHomeComponent } from './design-home/design-home.component';
+import { DesignHomeComponent } from './design-home-new/design-home.component';
 import { EditorComponent } from './editor/editor.component';
 
 export const DESIGN_ROUTES: Routes = [

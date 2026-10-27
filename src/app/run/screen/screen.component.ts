@@ -791,36 +791,36 @@ export class ScreenComponent implements OnInit, OnDestroy {
   inPopFormId = signal<number>(null);
   inPopParams = signal<any>({});
   // tpl, entryId, formId, 'form','prev'
-  inPop(content, entryId, action, type, facet, params) {
+  inPop(content: any, entryId: any, action: any, type: string, facet: string, params: any) {
     this.inPopEntryId.set(entryId);
     this.inPopType.set(type);
     this.inPopFacet.set(facet);
-    this.inPopFormId.set(action.next);
+    
+    // FIX: Fallback to using 'action' directly if it doesn't have a '.next' property (i.e., it's a direct formId)
+    this.inPopFormId.set(action?.next !== undefined ? action.next : action);
 
-    const resolvedParams = action.params ? this._pre(this.entry(), action.params, false) : params;
+    // FIX: Safely check for action.params
+    const resolvedParams = action?.params ? this._pre(this.entry(), action.params, false) : params;
 
     if (resolvedParams !== null && resolvedParams !== undefined) {
       const finalParams = { ...resolvedParams, entryId: entryId };
       this.inPopParams.set(finalParams);
     }
 
-    history.pushState(null, null, window.location.href);
+    history.pushState(null, '', window.location.href);
 
     const modalInstance = this.modalService.open(content, { backdrop: 'static', size: 'lg' });
     
     forceModalCd(modalInstance, this.cdr);
 
     const promiseChain = modalInstance.result.then(res => {
-      // console.log("lde: inPop result", res);
       return res;
     }, err => {
-      // console.log("lde: inPop dismissed", err);
     }).finally(() => {
     });
 
     this.cdr.detectChanges();
 
-    // 6. Return the Promise just like your old code did
     return promiseChain;
   }
 

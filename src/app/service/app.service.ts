@@ -213,6 +213,28 @@ export class AppService {
     return this.http.post<any>(`${this.baseApi}/app/delete-custom-provider/${providerId}`, {});
   }
 
+  // --- Folder Endpoints ---
+  getAppFolders(keyword?: string) {
+    const params = keyword ? { keyword } : {};
+    return this.http.get<any[]>(`${baseApi}/platform/appfolder`, { params });
+  }
+
+  saveAppFolder(folder: any) {
+    return this.http.post<any>(`${baseApi}/platform/appfolder`, folder);
+  }
+
+  removeAppFolder(folderId: number) {
+    return this.http.post<any>(`${baseApi}/platform/appfolder/${folderId}/remove`, {});
+  }
+
+  addAppToFolder(folderId: number, appId: number) {
+    return this.http.post<any>(`${baseApi}/platform/appfolder/${folderId}/app/${appId}`, {});
+  }
+
+  removeAppFromFolder(folderId: number, appId: number) {
+    return this.http.post<any>(`${baseApi}/platform/appfolder/${folderId}/app/${appId}/remove`, {});
+  }
+
 
   searchInApp = new Map();
 

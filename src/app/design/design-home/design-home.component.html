@@ -18,11 +18,12 @@
   </div>
 </div>
 
-<div class="wrapper pt-3 bg-plain">
+<div class="wrapper pt-3 bg-plain text-body">
   <div class="limit-width repo centered">
     <div class="repo-tool text-center">
       <div class="tool-container" style="max-width:480px;margin:auto">
-        <input type="search" class="rounded" placeholder="Filter list" [(ngModel)]="searchText"
+        <!-- Added bg-body text-body to adapt to dark mode natively -->
+        <input type="search" class="rounded bg-body text-body border border-secondary-subtle px-3 py-1" placeholder="Filter list" [(ngModel)]="searchText"
           (keyup.enter)="getItemList(1)" autocapitalize="none">
       </div>
     </div>
@@ -51,13 +52,14 @@
 
         @if (!tplLoading()) {
           @if (tplTotal() === 0) {
-            <div class="p-2 text-secondary text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
+            <div class="p-2 text-body-secondary text-center d-flex" style="align-items:center;max-width: 160px;flex:1 0 130px;margin:6px;">
               No other template available
             </div>
           } @else {
             @for (item of tplList(); track item.id) {
-              <div class="tile" style="text-overflow: ellipsis; height:100px" [class.disabled]="offline()" (click)="editItem(appEditTpl, item, false)">
-                <div class="notch" [style.background-color]="'darkgray'" style="width:20px; color:white; text-align: center; border-radius:0;top:0; bottom:0; height:unset;">
+              <div class="tile border border-secondary-subtle" style="text-overflow: ellipsis; height:100px" [class.disabled]="offline()" (click)="editItem(appEditTpl, item, false)">
+                <!-- Replaced hardcoded darkgray with bg-secondary for dark mode support -->
+                <div class="notch bg-secondary text-white" style="width:20px; text-align: center; border-radius:0;top:0; bottom:0; height:unset;">
                   <fa-icon [icon]="['fas','plus']"></fa-icon>
                   <div class="vertical-text" style="font-weight:bold;font-size:12px;position:absolute; bottom:-10px;">
                     TEMPLATE
@@ -66,8 +68,8 @@
                 <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
                 <div class="tile-mid" style="padding:10px;padding-left:30px;">
                   <div class="tile-content">
-                    <h6 class="list-group-item-heading">{{ item.title }}</h6>
-                    <p class="desc">{{ item.description }}</p>
+                    <h6 class="list-group-item-heading text-body">{{ item.title }}</h6>
+                    <p class="desc text-body-secondary">{{ item.description }}</p>
                   </div>
                   <div class="tile-action">
                     <div class="p-1">
@@ -133,70 +135,81 @@
         <div class="ms-auto btn-group-xs small group-by-toggle">
           <input class="btn-check" type="radio" value="all" id="dsgb-ungroup"
             name="dsgb-ungroup" [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
-          <label for="dsgb-ungroup" class="btn ms-2">All</label>
+          <label for="dsgb-ungroup" class="btn text-body ms-2">All</label>
           <input class="btn-check" type="radio" value="true" id="dsgb-form"
             name="dsgb-form" [checked]="appStatusFilter() === 'true'" (change)="appStatusFilter.set('true'); getItemList(1)">
-          <label for="dsgb-form" class="btn">Live</label>
+          <label for="dsgb-form" class="btn text-body">Live</label>
           <input class="btn-check" type="radio" value="false" id="dsgb-type"
             name="dsgb-type" [checked]="appStatusFilter() === 'false'" (change)="appStatusFilter.set('false'); getItemList(1)">
-          <label for="dsgb-type" class="btn">Dev</label>
+          <label for="dsgb-type" class="btn text-body">Dev</label>
         </div>
       </div>
         
       @if (!itemLoading()) {
         @if (itemTotal() === 0) {
-          <div class="p-4 text-secondary text-center">
+          <div class="p-4 text-body-secondary text-center">
             <h1>:(</h1>
             <h4>No application available</h4>
           </div>
         } @else {
           <div class="px-2">
-            <div class="py-1 small m-a limit-width">
+            <div class="py-1 small m-a limit-width d-flex align-items-center flex-wrap">
               <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2"
-                [class.bg-info-subtle]="groupFilter() === null" 
-                [class.text-primary]="groupFilter() === null" 
-                [class.border-primary]="groupFilter() === null" 
-                (click)="groupFilter.set(null)">
+                [class.bg-info-subtle]="folderFilter() === null" 
+                [class.text-primary]="folderFilter() === null" 
+                [class.border-primary]="folderFilter() === null" 
+                (click)="folderFilter.set(null)">
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon> All
               </button>
-              @for (gf of groupedItemList(); track gf.key) {
+
+              @for (f of folders(); track f.id) {
                 <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
-                  [class.bg-info-subtle]="groupFilter() === gf.key" 
-                  [class.text-primary]="groupFilter() === gf.key" 
-                  [class.border-primary]="groupFilter() === gf.key" 
-                  (click)="groupFilter.set(gf.key)">
-                  @if (gf?.key === 'undefined') {
-                    <span class="text-secondary fst-italic"> Ungrouped</span>
-                  } @else {
-                    {{ gf?.key }}
-                  }
+                  [class.bg-info-subtle]="folderFilter() === f.id" 
+                  [class.text-primary]="folderFilter() === f.id" 
+                  [class.border-primary]="folderFilter() === f.id" 
+                  (click)="folderFilter.set(f.id)">
+                  {{ f.name }}
                 </button>
               }
+              
+              <button class="btn border btn-outline-secondary btn-sm rounded-3-5 me-1 mb-1 py-1 px-2" 
+                [class.bg-info-subtle]="folderFilter() === 'ungrouped'" 
+                [class.text-primary]="folderFilter() === 'ungrouped'" 
+                [class.border-primary]="folderFilter() === 'ungrouped'" 
+                (click)="folderFilter.set('ungrouped')">
+                <span class="text-body-secondary fst-italic"> Ungrouped</span>
+              </button>
+
+              <div class="ms-auto border-start border-secondary-subtle ps-3 ms-2 mb-1">
+                <button class="btn btn-primary btn-sm rounded-3-5 py-1 px-2" (click)="openManageFolders(manageFoldersTpl)">
+                  <fa-icon [icon]="['fas','folder-plus']"></fa-icon> Manage Folders
+                </button>
+              </div>
             </div>
           </div>
         
           <div class="d-flex flex-wrap flex-row align-content-center">
-            @for (dsKv of groupedItemList(); track dsKv.key) {
-              @if (!groupFilter() || groupFilter() === dsKv.key) {
+            @for (dsKv of groupedItemList(); track dsKv.id) {
+              @if (!folderFilter() || folderFilter() === dsKv.id) {
                 <div style="flex-grow: 1;">
-                  <div class="p-2 rounded-2 text-center bg-body-secondary mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
-                    @if (dsKv.key !== 'undefined') {
+                  <div class="p-2 rounded-2 text-center bg-body-secondary text-body mt-2 mx-2 pointer" (click)="toggleGroupVisibility(dsKv.key)">
+                    @if (dsKv.id !== 'ungrouped') {
                       <span>{{ dsKv.key }}</span>
                     } @else {
-                      <span class="fst-italic text-secondary">Ungrouped</span>
+                      <span class="fst-italic text-body-secondary">Ungrouped</span>
                     }
                   </div>
         
                   @if (!hideGroupItems()[dsKv.key]) {
                     <div class="tile-wrap tile-center">
                       @for (item of dsKv.value; track item.id) {
-                        <div class="tile" style="text-overflow: ellipsis">
+                        <div class="tile border border-secondary-subtle bg-body" style="text-overflow: ellipsis">
                           <div class="notch" [style.background-color]="item.theme"></div>
                           <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
                           <div class="tile-mid">
                             <div class="tile-content">
-                              <h6 class="list-group-item-heading">{{ item.title }}</h6>
-                              <p class="desc">{{ item.description }}</p>
+                              <h6 class="list-group-item-heading text-body">{{ item.title }}</h6>
+                              <p class="desc text-body-secondary">{{ item.description }}</p>
                             </div>
                             <div class="tile-action">
                               <div class="p-1">
@@ -207,6 +220,11 @@
                                   <button type="button" class="btn btn-outline-secondary btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
                                     <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
                                   </button>
+                                  
+                                  <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Organize Folders" (click)="openOrganizeApp(organizeAppTpl, item)">
+                                    <fa-icon [icon]="['fas','folder']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+
                                   <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
                                     <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
                                   </button>
@@ -256,8 +274,8 @@
 </div>
 
 <ng-template #removeItemTpl let-c="close" let-d="dismiss">
-  <div>
-    <div class="modal-header border-0">
+  <div class="bg-body text-body rounded">
+    <div class="modal-header border-0 border-secondary-subtle">
       <h5 class="modal-title">Remove App</h5>
     </div>
     <div class="modal-body">
@@ -268,13 +286,13 @@
         <div class="form-group row">
           <label class="col-form-label col-md-3">App Title</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" [value]="removeItemData()?.title">
+            <input type="text" readonly class="form-control-plaintext text-body" [value]="removeItemData()?.title">
           </div>
         </div>
         <div class="form-group row">
           <label class="col-form-label col-md-3">Description</label>
           <div class="col-md-6">
-            <input type="text" readonly class="form-control-plaintext" [value]="removeItemData()?.description">
+            <input type="text" readonly class="form-control-plaintext text-body" [value]="removeItemData()?.description">
           </div>
         </div>
         @if(removing()){
@@ -282,8 +300,8 @@
         }
       </div>
     </div>
-    <div class="modal-footer border-0 justify-content-between">
-      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <div class="modal-footer border-0 justify-content-between border-secondary-subtle">
+      <button type="button" class="btn btn-outline-secondary btn-round" (click)="d()">Close</button>
       <button type="button" class="btn btn-round btn-primary" [class.disabled]="removing()" [disabled]="removing()" (click)="realRemoveItem(c,removeItemData())">
         <i class="icon-minus-sign-alt"></i> Remove App
       </button>
@@ -305,12 +323,82 @@
 </ng-template>
 
 <ng-template #loadingSpinner>
-  <div class="text-secondary text-center d-flex" style="width: 160px;margin: 8px;">
+  <div class="text-body-secondary text-center d-flex" style="width: 160px;margin: 8px;">
     <div class="lds-ellipsis">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+      <div class="bg-body-secondary"></div>
+      <div class="bg-body-secondary"></div>
+      <div class="bg-body-secondary"></div>
+      <div class="bg-body-secondary"></div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #manageFoldersTpl let-d="dismiss" let-c="close">
+  <!-- Wrapper to ensure modal content matches dark/light mode -->
+  <div class="bg-body text-body rounded">
+    <div class="modal-header border-bottom border-secondary-subtle">
+      <h5 class="modal-title">Manage Folders</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button>
+    </div>
+    <div class="modal-body p-0">
+      <!-- Changed bg-light to bg-body-tertiary for dark mode compatibility -->
+      <div class="p-3 bg-body-tertiary border-bottom border-secondary-subtle">
+        <label class="form-label small text-body-secondary mb-1">Create New Folder</label>
+        <div class="d-flex">
+          <input type="text" class="form-control bg-body text-body border-secondary-subtle me-2" placeholder="Folder Name" [(ngModel)]="newFolder().name" (keyup.enter)="createFolder()">
+          <button class="btn btn-primary" (click)="createFolder()" [disabled]="savingFolder() || !newFolder().name">
+            <fa-icon [icon]="['fas','plus']"></fa-icon>
+          </button>
+        </div>
+      </div>
+      
+      <div class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">
+        @for(folder of folders(); track folder.id) {
+          <div class="list-group-item bg-body text-body border-secondary-subtle d-flex justify-content-between align-items-center">
+            <div>
+              <fa-icon [icon]="['fas','folder']" class="text-body-secondary me-2"></fa-icon>
+              <strong>{{ folder.name }}</strong>
+              <div class="small text-body-secondary">{{ folder.apps?.length || 0 }} apps</div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger btn-round" (click)="deleteFolder(folder.id)" title="Delete Folder">
+              <fa-icon [icon]="['fas','trash']"></fa-icon>
+            </button>
+          </div>
+        } @empty {
+          <div class="p-4 text-center text-body-secondary">
+            No folders created yet.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #organizeAppTpl let-d="dismiss" let-c="close">
+  <div class="bg-body text-body rounded">
+    <div class="modal-header border-bottom border-secondary-subtle">
+      <h5 class="modal-title">Organize: {{ activeApp()?.title }}</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-body-secondary small mb-3">Select the folders where this app should appear.</p>
+      
+      <div class="list-group">
+        @for(folder of folders(); track folder.id) {
+          <label class="list-group-item bg-body text-body border-secondary-subtle d-flex align-items-center pointer">
+            <input class="form-check-input me-3 mt-0" type="checkbox" 
+              [checked]="isAppInFolder(folder, activeApp()?.id)"
+              (change)="toggleAppFolder(folder, activeApp()?.id, $event)">
+            <fa-icon [icon]="['fas','folder']" class="text-body-secondary me-2"></fa-icon>
+            {{ folder.name }}
+          </label>
+        } @empty {
+          <div class="text-center p-3 text-body-secondary">
+            You haven't created any folders yet.<br/>
+            <button class="btn btn-sm btn-outline-primary mt-2" (click)="d(); openManageFolders(manageFoldersTpl)">Create a Folder</button>
+          </div>
+        }
+      </div>
     </div>
   </div>
 </ng-template>

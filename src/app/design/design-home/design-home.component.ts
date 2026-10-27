@@ -16,7 +16,6 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 import { ToastService } from '../../_shared/service/toast-service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { GroupByPipe } from '../../_shared/pipe/group-by.pipe';
 
 @Component({
   selector: 'app-design-home',
@@ -35,13 +34,12 @@ export class DesignHomeComponent implements OnInit {
   private location = inject(PlatformLocation);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
-  private destroyRef = inject(DestroyRef); // Inject for proper cleanup
+  private destroyRef = inject(DestroyRef);
 
   bgClassName: string = domainBase.replace(/\./g, '-');
   offline = signal<boolean>(false);
 
   itemList = signal<any[]>([]);
-  groupedItemList = computed(() => new GroupByPipe().transform(this.itemList(), 'group.name'));
   itemTotal = signal<number>(0);
   itemLoading = signal<boolean>(false);
 
@@ -56,9 +54,40 @@ export class DesignHomeComponent implements OnInit {
   pageSize = signal<number>(24);
   pageNumber = signal<number>(1);
 
-
   appStatusFilter = signal<string>('all');
-  groupFilter = signal<string | null>(null);
+  
+  // FOLDER FEATURE SIGNALS
+  folders = signal<any[]>([]);
+  folderFilter = signal<number | 'ungrouped' | null>(null);
+  activeApp = signal<any>(null);
+  newFolder = signal<any>({ name: '' });
+  savingFolder = signal<boolean>(false);
+
+  groupedItemList = computed(() => {
+    const apps = this.itemList();
+    const flds = this.folders();
+    let groups: { key: string; value: any[]; id: number | 'ungrouped' | null }[] = [];
+    let assignedAppIds = new Set<number>();
+
+    // Put apps into their respective folder buckets
+    flds.forEach(f => {
+      // Check if the app ID exists in this folder's apps array
+      const folderApps = apps.filter(a => f.apps?.some((fa: any) => fa.id === a.id));
+      if (folderApps.length > 0 || this.folderFilter() === f.id) {
+        groups.push({ key: f.name, value: folderApps, id: f.id });
+        folderApps.forEach(a => assignedAppIds.add(a.id));
+      }
+    });
+
+    // Bucket for ungrouped apps
+    const ungrouped = apps.filter(a => !assignedAppIds.has(a.id));
+    if (ungrouped.length > 0 || this.folderFilter() === 'ungrouped') {
+      groups.push({ key: 'Ungrouped', value: ungrouped, id: 'ungrouped' });
+    }
+
+    return groups;
+  });
+
   hideGroupItems = signal<Record<string, boolean>>({});
   removing = signal<boolean>(false);
   editItemData = signal<any>(null);
@@ -78,12 +107,12 @@ export class DesignHomeComponent implements OnInit {
   ]
 
   constructor() {
-        this.location.onPopState(() => {
-            if (document.querySelector('.cm-fullscreen-mode')) {
-                return;
-            }
-            this.modalService.dismissAll('')
-        });
+    this.location.onPopState(() => {
+      if (document.querySelector('.cm-fullscreen-mode')) {
+        return;
+      }
+      this.modalService.dismissAll('')
+    });
   }
 
   ngOnInit() {
@@ -95,12 +124,82 @@ export class DesignHomeComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
         this.user.set(user);
+        this.loadFolders();
         this.getItemList(1);
         this.getTplList(1);
       });
   }
 
   file: any;
+
+  // --- FOLDER LOGIC START ---
+  loadFolders() {
+    this.appService.getAppFolders()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (folders) => this.folders.set(folders || []),
+        error: () => this.toastService.show('Failed to load folders', { classname: 'bg-danger text-light' })
+      });
+  }
+
+  openManageFolders(tpl: any) {
+    this.newFolder.set({ name: '' });
+    this.modalService.open(tpl, { backdrop: 'static', centered: true });
+  }
+
+  createFolder() {
+    if (!this.newFolder().name) return;
+    this.savingFolder.set(true);
+    this.appService.saveAppFolder(this.newFolder())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.show('Folder created', { classname: 'bg-success text-light' });
+          this.newFolder.set({ name: '' });
+          this.savingFolder.set(false);
+          this.loadFolders();
+        },
+        error: () => {
+          this.savingFolder.set(false);
+          this.toastService.show('Failed to create folder', { classname: 'bg-danger text-light' });
+        }
+      });
+  }
+
+  deleteFolder(folderId: number) {
+    if (!confirm('Are you sure you want to delete this folder? Your apps will remain safe.')) return;
+    this.appService.removeAppFolder(folderId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.show('Folder deleted', { classname: 'bg-success text-light' });
+          if(this.folderFilter() === folderId) this.folderFilter.set(null);
+          this.loadFolders();
+        }
+      });
+  }
+
+  openOrganizeApp(tpl: any, app: any) {
+    this.activeApp.set(app);
+    this.modalService.open(tpl, { backdrop: 'static', centered: true });
+  }
+
+  isAppInFolder(folder: any, appId: number): boolean {
+    return folder.apps?.some((a: any) => a.id === appId) || false;
+  }
+
+  toggleAppFolder(folder: any, appId: number, event: any) {
+    const isChecked = event.target.checked;
+    const action$ = isChecked
+      ? this.appService.addAppToFolder(folder.id, appId)
+      : this.appService.removeAppFromFolder(folder.id, appId);
+
+    action$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.loadFolders(), 
+      error: () => this.toastService.show('Update failed', { classname: 'bg-danger text-light' })
+    });
+  }
+  // --- FOLDER LOGIC END ---
 
   getTplList(pageNumber: number): void {
     this.tplLoading.set(true);
@@ -139,7 +238,7 @@ export class DesignHomeComponent implements OnInit {
       page: pageNumber - 1,
       searchText: this.searchText(),
       email: this.user()?.email,
-      sort: ['group.name,desc', 'id,desc'],
+      sort: ['id,desc'], // Removed group.name sorting since folders handle grouping now
     };
 
     if (this.appStatusFilter() !== 'all') {
@@ -210,7 +309,6 @@ export class DesignHomeComponent implements OnInit {
           app.status = 'local';
           delete app.appPath;
 
-          // Perform logic BEFORE setting signal to preserve reactivity rules
           if (!this.user()?.email.includes('@unimas.my')) {
             app.useUnimas = false;
           }
@@ -280,5 +378,4 @@ export class DesignHomeComponent implements OnInit {
       this.toastService.show('Invalid removal confirmation key', { classname: 'bg-danger text-light' });
     }
   }
-
 }
