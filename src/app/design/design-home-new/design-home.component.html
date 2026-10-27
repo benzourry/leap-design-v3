@@ -34,26 +34,30 @@
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> <span class="d-none d-sm-inline ms-1 me-2">Create</span>
         </button>
 
-        <!-- Search Box (Rounded Pill with Icon inside) -->
-        <div class="position-relative shadow-sm flex-grow-1" style="min-width: 0;">
-          <fa-icon [icon]="['fas','search']" class="position-absolute text-body-secondary" style="left: 14px; top: 50%; transform: translateY(-50%); z-index: 4;"></fa-icon>
-          <input type="search" autocapitalize="none"
-            class="form-control h-100 rounded-pill border-secondary-subtle bg-body text-body w-100" 
-            style="padding-left: 36px; min-width: 0;"
-            placeholder="Filter list" [(ngModel)]="searchText"
-            (keyup.enter)="getItemList(1)">
-        </div>
+        <input type="search" autocapitalize="none" id="search_design_home"
+          class="search-icon bg-body rounded-2 border border-1-5 flex-grow-1 normal" style="min-width: 0;"
+          placeholder="Filter list" [(ngModel)]="searchText"
+          (keyup.enter)="getItemList(1)">
 
         <!-- Status Filters -->
-        <div class="btn-group shadow-sm" role="group">
+        <div class="btn-group align-items-center" role="group">
           <input class="btn-check" type="radio" value="all" id="dsgb-all" name="dsgb-status" [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
-          <label for="dsgb-all" class="btn btn-outline-secondary bg-body d-flex align-items-center m-0 px-2">All</label>
+          <label for="dsgb-all" class="btn border-0 d-flex align-items-center m-0 px-2" 
+            [class.text-primary]="appStatusFilter() === 'all'" [class.fw-bold]="appStatusFilter() === 'all'" [class.text-body-secondary]="appStatusFilter() !== 'all'">
+            All
+          </label>
 
           <input class="btn-check" type="radio" value="true" id="dsgb-live" name="dsgb-status" [checked]="appStatusFilter() === 'true'" (change)="appStatusFilter.set('true'); getItemList(1)">
-          <label for="dsgb-live" class="btn btn-outline-secondary bg-body d-flex align-items-center m-0 px-2">Live</label>
+          <label for="dsgb-live" class="btn border-0 d-flex align-items-center m-0 px-2" 
+            [class.text-primary]="appStatusFilter() === 'true'" [class.fw-bold]="appStatusFilter() === 'true'" [class.text-body-secondary]="appStatusFilter() !== 'true'">
+            Live
+          </label>
 
           <input class="btn-check" type="radio" value="false" id="dsgb-dev" name="dsgb-status" [checked]="appStatusFilter() === 'false'" (change)="appStatusFilter.set('false'); getItemList(1)">
-          <label for="dsgb-dev" class="btn btn-outline-secondary bg-body d-flex align-items-center m-0 px-2">Dev</label>
+          <label for="dsgb-dev" class="btn border-0 d-flex align-items-center m-0 px-2" 
+            [class.text-primary]="appStatusFilter() === 'false'" [class.fw-bold]="appStatusFilter() === 'false'" [class.text-body-secondary]="appStatusFilter() !== 'false'">
+            Dev
+          </label>
         </div>
       </div>
         
