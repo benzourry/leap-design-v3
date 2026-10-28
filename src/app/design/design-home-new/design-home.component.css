@@ -20,3 +20,27 @@
 .repo-item {
   margin-top: 15px;
 }
+
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply the animation to the app tiles */
+.tile {
+  animation: fadeSlideUp 0.3s ease-out both;
+}
+
+/* Stagger the animation slightly for the first few items */
+.tile:nth-child(1) { animation-delay: 0.05s; }
+.tile:nth-child(2) { animation-delay: 0.1s; }
+.tile:nth-child(3) { animation-delay: 0.15s; }
+.tile:nth-child(4) { animation-delay: 0.2s; }
+.tile:nth-child(n+5) { animation-delay: 0.25s; }

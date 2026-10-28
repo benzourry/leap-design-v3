@@ -127,6 +127,7 @@ export class DesignHomeComponent implements OnInit {
 
   openManageFolders(tpl: any) {
     this.newFolder.set({ name: '' });
+    history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static', centered: true });
   }
 
@@ -164,6 +165,7 @@ export class DesignHomeComponent implements OnInit {
 
   openOrganizeApp(tpl: any, app: any) {
     this.activeApp.set(app);
+    history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static', centered: true });
   }
 

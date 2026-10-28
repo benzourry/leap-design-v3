@@ -3,11 +3,13 @@
    ========================================================================== */
 .tile-wrap {
   display: flex;
-  padding: 6px;
+  // padding: 6px;
   flex-wrap: wrap;
+  gap:8px;
 
   &.tile-center {
-    justify-content: center;
+    // justify-content: center;
+    justify-content: start;
   }
 
   .active {
@@ -24,7 +26,7 @@
   flex: 1 0 130px;
   overflow: hidden;
   position: relative;
-  margin: 8px;
+  // margin: 8px;
   height: 200px;
   max-width: 180px;
   min-width: 160px;

@@ -1,4 +1,4 @@
-<div class="position-sticky sticky-top bg-reka" [class]="bgClassName">
+<div class="fixed-top bg-reka" [class]="bgClassName">
   <div style="max-width:780px" class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
       <img src="assets/icons/logo-w.svg" alt="Logo" title="Logo" width="38">
@@ -18,7 +18,7 @@
   </div>
 </div>
 
-<div class="wrapper pt-3 bg-plain text-body">
+<div class="wrapper pt-3 mt-5 bg-plain text-body">
   <div class="limit-width centered">
     
     <div class="repo-item mt-2 flex-grow-1">
@@ -28,9 +28,9 @@
       </div>
 
       <!-- EXACT User Toolbar Restored -->
-      <div class="toolbar title d-flex mb-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1 rounded-pill m-3">
+      <div class="toolbar title d-flex mb-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1 m-3">
         <!-- + Create Button (Rounded Pill) -->
-        <button type="button" class="btn btn-primary bg-gradient rounded-pill shadow-sm px-2" [class.disabled]="offline()" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
+        <button type="button" class="btn btn-primary bg-gradient shadow-sm px-2" [class.disabled]="offline()" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> <span class="d-none d-sm-inline ms-1 me-2">Create</span>
         </button>
 
@@ -63,8 +63,8 @@
         
       @if (!itemLoading()) {
         <!-- Nav-Pills Folders Row -->
-        <div class="tab-simple tab-hscroll">
-          <div class="nav-wrap pb-2">
+        <!-- <div class="tab-simple tab-hscroll">
+          <div class="nav-wrap pb-3">
             <ul class="nav nav-pills px-3 justify-content-start m-auto limit-width">
               <li class="nav-item">
                 <a class="nav-link pointer text-nowrap" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
@@ -93,9 +93,120 @@
               </li>
             </ul>
           </div>
+        </div> -->
+
+
+        <!-- NEW UI -->
+        <div class="row px-3 g-3">
+          <div class="col-sm-3">
+            <div class="list-group overflow-hidden position-sticky" style="border-radius: 0.65rem; top: 80px; z-index: 10;">
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
+                <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
+                <span class="text-wrap">All</span>
+                <!-- App Count for All -->
+                <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.05rem;">{{ itemTotal() }}</span>
+              </a>
+              
+              @for (f of folders(); track f.id) {
+                <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
+                  <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
+                  <span class="text-wrap">{{ f.name }}</span>
+                  <!-- App Count for Custom Folders -->
+                  <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.15rem;">{{ f.apps?.length || 0 }}</span>
+                </a>
+              }
+              
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
+                <div style="width: 1.25em;" class="flex-shrink-0"></div> <!-- Spacer to match icon width -->
+                <span class="fst-italic text-wrap">Ungrouped</span>
+              </a>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary rounded-3 w-100 btn-sm mt-2 small" title="Manage Folders" (click)="openManageFolders(manageFoldersTpl)">
+              <fa-icon [icon]="['fas','folder-plus']"></fa-icon> Manage Folder
+            </button>
+
+          </div>
+          <div class="col-sm-9">
+
+            @if (itemTotal() === 0 || groupedItemList().length === 0 || (groupedItemList().length === 1 && groupedItemList()[0].value.length === 0)) {
+              <div class="p-5 text-body-secondary text-center w-100 mt-4">
+                <fa-icon [icon]="['fas','box-open']" size="3x" class="opacity-50"></fa-icon>
+                <h4 class="mt-3">No applications available</h4>
+                <p>Select a different folder or create a new app.</p>
+              </div>
+            } @else {
+              <div class="d-flex flex-wrap flex-row align-content-start w-100">
+                @for (dsKv of groupedItemList(); track dsKv.id) {
+                  <div class="w-100">
+                    <button class="w-100 border-0 p-2 px-0 text-start d-flex flex-row align-items-center bg-transparent text-body acc-btn" (click)="toggleGroupVisibility(dsKv.key)">
+                      <div>
+                        @if (dsKv.id !== 'ungrouped') {
+                          <span class="fs-6">{{ dsKv.key }}</span>
+                        } @else {
+                          <span class="fst-italic text-body-secondary fs-6">Ungrouped</span>
+                        }
+                      </div>
+                      <span class="ms-auto badge rounded-pill bg-body-secondary text-secondary fw-normal text-center" style="line-height:1rem;min-width: 2rem;">
+                        {{ dsKv.value.length }}
+                      </span>
+                      <fa-icon class="ms-2" [icon]="!hideGroupItems()[dsKv.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                    </button>
+          
+                    @if (!hideGroupItems()[dsKv.key]) {
+                      <div class="tile-wrap tile-center mb-2">
+                        @for (item of dsKv.value; track item.id) {
+                          <div class="tile border border-secondary-subtle bg-body" style="text-overflow: ellipsis">
+                            <div class="notch" [style.background-color]="item.theme"></div>
+                            <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
+                            <div class="tile-mid">
+                              <div class="tile-content">
+                                <h6 class="list-group-item-heading text-body">{{ item.title }}</h6>
+                                <p class="desc text-body-secondary">{{ item.description }}</p>
+                              </div>
+                              <div class="tile-action">
+                                <div class="p-1">
+                                  <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()" routerLink="/design/{{ item.id }}">
+                                    <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
+                                  </button>
+                                  <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
+                                      <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Organize Folders" (click)="openOrganizeApp(organizeAppTpl, item)">
+                                      <fa-icon [icon]="['fas','folder']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
+                                      <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" title="Remove App" (click)="removeItem(removeItemTpl, item)">
+                                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            @if (item.live) {
+                              <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+
+          </div>
         </div>
 
-        @if (itemTotal() === 0 || groupedItemList().length === 0 || (groupedItemList().length === 1 && groupedItemList()[0].value.length === 0)) {
+        <!-- END NEW UI -->
+
+        <!-- @if (itemTotal() === 0 || groupedItemList().length === 0 || (groupedItemList().length === 1 && groupedItemList()[0].value.length === 0)) {
           <div class="p-5 text-body-secondary text-center w-100 mt-4">
             <fa-icon [icon]="['fas','box-open']" size="3x" class="opacity-50"></fa-icon>
             <h4 class="mt-3">No applications available</h4>
@@ -105,13 +216,19 @@
           <div class="d-flex flex-wrap flex-row align-content-start w-100">
             @for (dsKv of groupedItemList(); track dsKv.id) {
               <div class="w-100">
-                <div class="p-2 rounded-2 text-center bg-body-secondary text-body mt-2 mx-3 pointer" (click)="toggleGroupVisibility(dsKv.key)">
-                  @if (dsKv.id !== 'ungrouped') {
-                    <span>{{ dsKv.key }}</span>
-                  } @else {
-                    <span class="fst-italic text-body-secondary">Ungrouped</span>
-                  }
-                </div>
+                <button class="w-100 border-0 p-2 px-3 text-start d-flex flex-row align-items-center bg-transparent text-body acc-btn mt-2" (click)="toggleGroupVisibility(dsKv.key)">
+                  <div>
+                    @if (dsKv.id !== 'ungrouped') {
+                      <span class="fs-6">{{ dsKv.key }}</span>
+                    } @else {
+                      <span class="fst-italic text-body-secondary fs-6">Ungrouped</span>
+                    }
+                  </div>
+                  <span class="ms-auto badge rounded-pill bg-body-secondary text-secondary fw-normal text-center" style="line-height:1rem;min-width: 2rem;">
+                    {{ dsKv.value.length }}
+                  </span>
+                  <fa-icon class="ms-2" [icon]="!hideGroupItems()[dsKv.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                </button>
       
                 @if (!hideGroupItems()[dsKv.key]) {
                   <div class="tile-wrap tile-center">
@@ -158,7 +275,9 @@
               </div>
             }
           </div>
-        }
+        } -->
+
+
       } @else {
         <ng-container *ngTemplateOutlet="loadingSpinner"></ng-container>
       }
@@ -246,7 +365,7 @@
   <div class="bg-body text-body rounded">
     <div class="modal-header border-bottom border-secondary-subtle">
       <h5 class="modal-title">Manage Folders</h5>
-      <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button>
+      <!-- <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button> -->
     </div>
     <div class="modal-body p-0">
       <div class="p-3 bg-body-tertiary border-bottom border-secondary-subtle">
@@ -278,6 +397,10 @@
         }
       </div>
     </div>
+    <div class="modal-footer border-0 justify-content-between border-secondary-subtle">
+      <button type="button" class="btn btn-outline-secondary btn-round" (click)="d()">Close</button>
+    </div>
+
   </div>
 </ng-template>
 
@@ -285,7 +408,7 @@
   <div class="bg-body text-body rounded">
     <div class="modal-header border-bottom border-secondary-subtle">
       <h5 class="modal-title">Organize: {{ activeApp()?.title }}</h5>
-      <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button>
+      <!-- <button type="button" class="btn-close" aria-label="Close" (click)="d()"></button> -->
     </div>
     <div class="modal-body">
       <p class="text-body-secondary small mb-3">Select the folders where this app should appear.</p>
@@ -307,5 +430,9 @@
         }
       </div>
     </div>
+    <div class="modal-footer border-0 justify-content-between border-secondary-subtle">
+      <button type="button" class="btn btn-outline-secondary btn-round" (click)="d()">Close</button>
+    </div>
+
   </div>
 </ng-template>
