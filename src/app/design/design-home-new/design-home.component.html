@@ -28,7 +28,7 @@
       </div>
 
       <!-- EXACT User Toolbar Restored -->
-      <div class="toolbar title d-flex mb-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1 m-3">
+      <div class="toolbar title d-flex mb-0 mb-sm-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1 m-3">
         <!-- + Create Button (Rounded Pill) -->
         <button type="button" class="btn btn-primary bg-gradient shadow-sm px-2" [class.disabled]="offline()" (click)="editItem(appEditTpl,{useGoogle:true,layout:'sidemenu',status:'local',x:{}},true)">
           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> <span class="d-none d-sm-inline ms-1 me-2">Create</span>
@@ -42,19 +42,19 @@
         <!-- Status Filters -->
         <div class="btn-group align-items-center" role="group">
           <input class="btn-check" type="radio" value="all" id="dsgb-all" name="dsgb-status" [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
-          <label for="dsgb-all" class="btn border-0 d-flex align-items-center m-0 px-2" 
+          <label for="dsgb-all" class="btn border-0 d-flex align-items-center m-0 px-1" 
             [class.text-primary]="appStatusFilter() === 'all'" [class.fw-bold]="appStatusFilter() === 'all'" [class.text-body-secondary]="appStatusFilter() !== 'all'">
             All
           </label>
 
           <input class="btn-check" type="radio" value="true" id="dsgb-live" name="dsgb-status" [checked]="appStatusFilter() === 'true'" (change)="appStatusFilter.set('true'); getItemList(1)">
-          <label for="dsgb-live" class="btn border-0 d-flex align-items-center m-0 px-2" 
+          <label for="dsgb-live" class="btn border-0 d-flex align-items-center m-0 px-1" 
             [class.text-primary]="appStatusFilter() === 'true'" [class.fw-bold]="appStatusFilter() === 'true'" [class.text-body-secondary]="appStatusFilter() !== 'true'">
             Live
           </label>
 
           <input class="btn-check" type="radio" value="false" id="dsgb-dev" name="dsgb-status" [checked]="appStatusFilter() === 'false'" (change)="appStatusFilter.set('false'); getItemList(1)">
-          <label for="dsgb-dev" class="btn border-0 d-flex align-items-center m-0 px-2" 
+          <label for="dsgb-dev" class="btn border-0 d-flex align-items-center m-0 px-1" 
             [class.text-primary]="appStatusFilter() === 'false'" [class.fw-bold]="appStatusFilter() === 'false'" [class.text-body-secondary]="appStatusFilter() !== 'false'">
             Dev
           </label>
@@ -97,13 +97,12 @@
 
 
         <!-- NEW UI -->
-        <div class="row px-3 g-3">
-          <div class="col-sm-3">
-            <div class="list-group overflow-hidden position-sticky" style="border-radius: 0.65rem; top: 80px; z-index: 10;">
+        <!-- <div class="row px-3 g-3">
+          <div class="col-sm-3 position-sticky" style=" top: 80px; z-index: 10;">
+            <div class="list-group overflow-hidden" style="border-radius: 0.65rem;">
               <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
                 <span class="text-wrap">All</span>
-                <!-- App Count for All -->
                 <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.05rem;">{{ itemTotal() }}</span>
               </a>
               
@@ -111,13 +110,12 @@
                 <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
                   <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
                   <span class="text-wrap">{{ f.name }}</span>
-                  <!-- App Count for Custom Folders -->
                   <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.15rem;">{{ f.apps?.length || 0 }}</span>
                 </a>
               }
               
               <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
-                <div style="width: 1.25em;" class="flex-shrink-0"></div> <!-- Spacer to match icon width -->
+                <div style="width: 1.25em;" class="flex-shrink-0"></div>
                 <span class="fst-italic text-wrap">Ungrouped</span>
               </a>
             </div>
@@ -202,9 +200,160 @@
 
 
           </div>
-        </div>
+        </div> -->
 
         <!-- END NEW UI -->
+
+
+        <!-- RESPONSIVE UI -->
+        <!-- 1. MOBILE ONLY: Horizontal Nav Pills with Fixed Action Button -->
+        <div class="d-flex d-sm-none align-items-center gap-1 w-100 position-sticky py-3 bg-body-tertiary" style="top:56px; z-index: 3">
+          <div class="flex-grow-1 overflow-x-auto">
+            <div class="tab-hscroll">
+              <div class="nav-wrap px-3 border-bottom-0">
+                <ul class="nav nav-pills flex-nowrap">
+                  <li class="nav-item me-1">
+                    <a class="nav-link pointer text-nowrap small d-flex align-items-center gap-2 px-2" style="border-radius: 0.65rem;" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
+                      <fa-icon [icon]="['fas','layer-group']"></fa-icon> All
+                      <span class="badge rounded-pill bg-body-tertiary text-body-secondary fw-normal">{{ itemTotal() }}</span>
+                    </a>
+                  </li>
+                  
+                  @for (f of folders(); track f.id) {
+                    <li class="nav-item me-1">
+                      <a class="nav-link pointer text-nowrap small d-flex align-items-center gap-2 px-2" style="border-radius: 0.65rem;" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
+                        <fa-icon [icon]="['fas','folder']"></fa-icon> {{ f.name }}
+                        <span class="badge rounded-pill bg-body-tertiary text-body-secondary fw-normal">{{ f.apps?.length || 0 }}</span>
+                      </a>
+                    </li>
+                  }
+                  
+                  <li class="nav-item">
+                    <a class="nav-link pointer text-nowrap small px-2"  style="border-radius: 0.65rem;" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
+                      <span class="fst-italic">Ungrouped</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="flex-shrink-0 ps-2 pe-3">
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-3 p-1 border-1-5" title="Manage Folders" (click)="openManageFolders(manageFoldersTpl)">
+              <fa-icon [icon]="['fas','folder-plus']" size="lg"></fa-icon>
+            </button>
+          </div>
+        </div>
+        <!-- END MOBILE ONLY -->
+
+        <div class="row px-2 g-3 mx-0">
+          <!-- 2. DESKTOP ONLY: Sticky Sidebar -->
+          <div class="col-sm-3 d-none d-sm-block align-self-start position-sticky" style="top: 74px; z-index: 10;">
+            <div class="list-group overflow-hidden" style="border-radius: 0.65rem;">
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
+                <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
+                <span class="text-wrap">All</span>
+                <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.05rem;">{{ itemTotal() }}</span>
+              </a>
+              
+              @for (f of folders(); track f.id) {
+                <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
+                  <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
+                  <span class="text-wrap">{{ f.name }}</span>
+                  <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.15rem;">{{ f.apps?.length || 0 }}</span>
+                </a>
+              }
+              
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
+                <div style="width: 1.25em;" class="flex-shrink-0"></div>
+                <span class="fst-italic text-wrap">Ungrouped</span>
+              </a>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary rounded-3 w-100 btn-sm mt-2 small" style="border-radius: 0.65rem;" title="Manage Folders" (click)="openManageFolders(manageFoldersTpl)">
+              <fa-icon [icon]="['fas','folder-plus']"></fa-icon> Manage Folder
+            </button>
+          </div>
+          <!-- END DESKTOP ONLY -->
+
+          <!-- 3. MAIN CONTENT (Expands to 100% on Mobile) -->
+          <div class="col-12 col-sm-9">
+
+            @if (itemTotal() === 0 || groupedItemList().length === 0 || (groupedItemList().length === 1 && groupedItemList()[0].value.length === 0)) {
+              <div class="p-5 text-body-secondary text-center w-100 mt-4">
+                <fa-icon [icon]="['fas','box-open']" size="3x" class="opacity-50"></fa-icon>
+                <h4 class="mt-3">No applications available</h4>
+                <p>Select a different folder or create a new app.</p>
+              </div>
+            } @else {
+              <div class="d-flex flex-wrap flex-row align-content-start w-100">
+                @for (dsKv of groupedItemList(); track dsKv.id) {
+                  <div class="w-100">
+                    <button class="w-100 border-0 p-2 px-0 text-start d-flex flex-row align-items-center bg-transparent text-body acc-btn" (click)="toggleGroupVisibility(dsKv.key)">
+                      <div>
+                        @if (dsKv.id !== 'ungrouped') {
+                          <span class="fs-6">{{ dsKv.key }}</span>
+                        } @else {
+                          <span class="fst-italic text-body-secondary fs-6">Ungrouped</span>
+                        }
+                      </div>
+                      <span class="ms-auto badge rounded-pill bg-body-secondary text-secondary fw-normal text-center" style="line-height:1rem;min-width: 2rem;">
+                        {{ dsKv.value.length }}
+                      </span>
+                      <fa-icon class="ms-2" [icon]="!hideGroupItems()[dsKv.key] ? ['fas','angle-up'] : ['fas','angle-down']" [fixedWidth]="true"></fa-icon>
+                    </button>
+          
+                    @if (!hideGroupItems()[dsKv.key]) {
+                      <div class="tile-wrap tile-center mb-2">
+                        @for (item of dsKv.value; track item.id) {
+                          <div class="tile border border-secondary-subtle bg-body" style="text-overflow: ellipsis">
+                            <div class="notch" [style.background-color]="item.theme"></div>
+                            <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
+                            <div class="tile-mid">
+                              <div class="tile-content">
+                                <h6 class="list-group-item-heading text-body">{{ item.title }}</h6>
+                                <p class="desc text-body-secondary">{{ item.description }}</p>
+                              </div>
+                              <div class="tile-action">
+                                <div class="p-1">
+                                  <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()" routerLink="/design/{{ item.id }}">
+                                    <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
+                                  </button>
+                                  <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" [class.disabled]="offline()" title="Copy App" (click)="cloneItem(appEditTpl, item, true)">
+                                      <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Organize Folders" (click)="openOrganizeApp(organizeAppTpl, item)">
+                                      <fa-icon [icon]="['fas','folder']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-secondary btn-round me-1" title="Edit Properties" (click)="editItem(appEditTpl, item, false)">
+                                      <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-round" [class.disabled]="offline()" title="Remove App" (click)="removeItem(removeItemTpl, item)">
+                                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            @if (item.live) {
+                              <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+        <!-- END RESPONSIVE UI -->
+
+
+
 
         <!-- @if (itemTotal() === 0 || groupedItemList().length === 0 || (groupedItemList().length === 1 && groupedItemList()[0].value.length === 0)) {
           <div class="p-5 text-body-secondary text-center w-100 mt-4">
@@ -381,6 +530,18 @@
       <div class="list-group list-group-flush">
         @for(folder of folders(); track folder.id) {
           <div class="list-group-item bg-body text-body border-secondary-subtle d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-start gap-2 pe-2 flex-grow-1">
+              <fa-icon [icon]="['fas','folder']" class="text-body-secondary flex-shrink-0" style="margin-top: 0.15rem;"></fa-icon>
+              <div>
+                <strong class="d-block text-wrap lh-sm">{{ folder.name }}</strong>
+                <div class="small text-body-secondary mt-1">{{ folder.apps?.length || 0 }} apps</div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger btn-round flex-shrink-0" (click)="deleteFolder(folder.id)" title="Delete Folder">
+              <fa-icon [icon]="['fas','trash']"></fa-icon>
+            </button>
+          </div>
+          <!-- <div class="list-group-item bg-body text-body border-secondary-subtle d-flex justify-content-between align-items-center">
             <div>
               <fa-icon [icon]="['fas','folder']" class="text-body-secondary me-2"></fa-icon>
               <strong>{{ folder.name }}</strong>
@@ -389,7 +550,7 @@
             <button class="btn btn-sm btn-outline-danger btn-round" (click)="deleteFolder(folder.id)" title="Delete Folder">
               <fa-icon [icon]="['fas','trash']"></fa-icon>
             </button>
-          </div>
+          </div> -->
         } @empty {
           <div class="p-4 text-center text-body-secondary">
             No folders created yet.
@@ -413,10 +574,10 @@
     <div class="modal-body">
       <p class="text-body-secondary small mb-3">Select the folders where this app should appear.</p>
       
-      <div class="list-group">
+      <div class="list-group list-group-flush">
         @for(folder of folders(); track folder.id) {
-          <label class="list-group-item bg-body text-body border-secondary-subtle d-flex align-items-center pointer">
-            <input class="form-check-input me-3 mt-0" type="checkbox" 
+          <label class="list-group-item bg-body text-body border-secondary-subtle d-flex align-items-start pointer px-0">
+            <input class="form-check-input me-3 mt-1" type="checkbox" 
               [checked]="isAppInFolder(folder, activeApp()?.id)"
               (change)="toggleAppFolder(folder, activeApp()?.id, $event)">
             <fa-icon [icon]="['fas','folder']" class="text-body-secondary me-2"></fa-icon>

@@ -659,7 +659,7 @@ ngb-pagination ul.pagination { justify-content: center; }
 }
 
 @media (max-width: 767.98px) {
-  .tab-simple.tab-hscroll > .nav-wrap {
+  .tab-hscroll > .nav-wrap {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
