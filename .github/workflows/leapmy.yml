@@ -39,7 +39,7 @@ jobs:
         with:
           host: ${{ secrets.SFTP_HOST_LEAP }}
           username: ${{ secrets.SFTP_USER_LEAP }}
-          password: ${{ secrets.SFTP_PASS_LEAP }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
           script: |
             sudo rm -rf /var/www/vhosts/leap.my/httpdocs/design/*
 
@@ -48,7 +48,7 @@ jobs:
         with:
           host: ${{ secrets.SFTP_HOST_LEAP }}
           username: ${{ secrets.SFTP_USER_LEAP }}
-          password: ${{ secrets.SFTP_PASS_LEAP }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
           source: dist/design/browser/*
           target: /var/www/vhosts/leap.my/httpdocs/design/
           strip_components: 3
