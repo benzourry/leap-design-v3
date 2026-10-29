@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_LEAP }}
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
           script: |
-            sudo rm -rf /var/www/vhosts/leap.my/httpdocs/design/*
+            sudo rm -rf /var/www/html/design/*
 
       - name: Upload to LEAP server via SFTP
         uses: appleboy/scp-action@master
@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.SFTP_USER_LEAP }}
           key: ${{ secrets.SFTP_PRIVATE_KEY }}
           source: dist/design/browser/*
-          target: /var/www/vhosts/leap.my/httpdocs/design/
+          target: /var/www/html/design/
           strip_components: 3
 
       # - name: Set file permissions
