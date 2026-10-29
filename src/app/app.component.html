@@ -1,4 +1,4 @@
-@if (updateAvailable()) {
+<!-- @if (updateAvailable()) {
   <div class="print-hide" style="background:red;padding:1em; color: white; font-size: .9em" (click)="reload()">
     Update available! Click this message to update ({{this.updateInfo().current?.hash}} &rsaquo; {{this.updateInfo().available?.hash}})
   </div>
@@ -7,7 +7,20 @@
   <div class="print-hide" style="background:red;padding:1em; color: white; font-size: .9em">
     You are currently offline. Data might be outdated and some of the feature will be disabled.
   </div>
-}
+} -->
+
+<div class="fixed-bottom w-100" style="z-index: 1050;">
+  @if (updateAvailable()) {
+    <div class="print-hide text-center shadow-lg pointer" style="background:red;padding:1em; color: white; font-size: .9em; cursor: pointer;" (click)="reload()">
+      Update available! Click this message to update ({{this.updateInfo().current?.hash}} &rsaquo; {{this.updateInfo().available?.hash}})
+    </div>
+  }
+  @if (offline()) {
+    <div class="print-hide text-center shadow-lg" style="background:red;padding:1em; color: white; font-size: .9em">
+      You are currently offline. Data might be outdated and some of the feature will be disabled.
+    </div>
+  }
+</div>
 <router-outlet></router-outlet>
 @defer(prefetch on idle){
   <app-toasts aria-live="polite" aria-atomic="true"></app-toasts>
