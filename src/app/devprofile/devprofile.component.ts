@@ -32,13 +32,14 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { PageTitleComponent } from '../run/_component/page-title.component';
 import { RunService } from '../run/_service/run.service';
 import { domainBase } from '../_shared/constant.service';
+import { ThemeToggleComponent } from '../run/_component/theme-toggle.component';
 
 @Component({
     selector: 'app-devprofile',
     templateUrl: './devprofile.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./devprofile.component.css'],
-    imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, PageTitleComponent, FormsModule, DatePipe]
+    imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, PageTitleComponent, FormsModule, DatePipe, ThemeToggleComponent]
 })
 export class DevProfileComponent implements OnInit {
 

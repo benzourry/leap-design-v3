@@ -1,4 +1,4 @@
-<div [class.cm-fullscreen-mode]="isFullscreen()">
+<div [class.cm-fullscreen-mode]="isFullscreen()" [style.view-transition-name]="activeTransitionName()">
 
   <!-- Show label only when in fullscreen -->
   @if (isFullscreen() && label()) {

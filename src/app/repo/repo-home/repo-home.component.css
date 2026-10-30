@@ -7,10 +7,10 @@
     position: relative;
     bottom: 2em; left:.3em
 }
-.repo-title{
-    padding: 5px 10px;
-    font-size: 1.1em;
-    color: #333;
+.repo-title {
+  padding: 0 1rem;
+  font-size: 1.1em;
+  color: var(--bs-body-color);
 }
 .repo-item{
     margin-top: 15px;

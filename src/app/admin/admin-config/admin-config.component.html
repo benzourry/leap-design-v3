@@ -25,12 +25,12 @@
       </div>
       <div class="home-top-r pe-2">
         <div class="d-flex">
-          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
-          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
           @if (user()?.manager){
-          <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
           }
-          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+          <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
             <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
           </a>
         </div>

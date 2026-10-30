@@ -57,6 +57,8 @@ export class DesignHomeComponent implements OnInit {
   newFolder = signal<any>({ name: '' });
   savingFolder = signal<boolean>(false);
 
+  clickedAppId = signal<string | null>(null);
+
   // Optimized groupedItemList: Filters data BEFORE returning to prevent DOM flickering
   groupedItemList = computed(() => {
     const apps = this.itemList();

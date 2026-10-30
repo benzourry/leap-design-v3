@@ -273,7 +273,7 @@
                   </div>
                   <div class="input-group input-group-sm mb-2">
                     <label class="input-group-text" for="saveLbl">Custom save button label</label>
-                    <input class="form-control" name="saveLbl" type="text" placeholder="ie: Check-in"
+                    <input class="form-control" id="saveLbl" name="saveLbl" type="text" placeholder="ie: Check-in"
                       [(ngModel)]="_editFormData.x.saveLbl">
                   </div>
                 </div>
@@ -587,7 +587,7 @@
                 <label class="form-label" for="addMailer">New Entry Mailer</label>
                 <div class="d-flex">
                   <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
-                    placeholder="No mailer" [(ngModel)]="_editFormData.addMailer" name="addMailer">
+                    placeholder="No mailer" [(ngModel)]="_editFormData.addMailer" labelForId="addMailer" name="addMailer">
                   </ng-select>
                   <button type="button" class="btn btn-secondary btn-sm ms-1"
                     (click)="editMailer(editMailerTpl,{enabled:1},_editFormData,'addMailer')">New&nbsp;Mailer</button>
@@ -597,7 +597,7 @@
                 <label class="form-label" for="updateMailer">Entry Update Mailer</label>
                 <div class="d-flex">
                   <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
-                    placeholder="No mailer" [(ngModel)]="_editFormData.updateMailer" name="updateMailer">
+                    placeholder="No mailer" [(ngModel)]="_editFormData.updateMailer" labelForId="updateMailer" name="updateMailer">
                   </ng-select>
                   <button type="button" class="btn btn-secondary btn-sm ms-1"
                     (click)="editMailer(editMailerTpl,{enabled:1},_editFormData,'updateMailer')">New&nbsp;Mailer</button>
@@ -609,7 +609,7 @@
                 <label class="form-label" for="retractMailer">Retract Mailer</label>
                 <div class="d-flex">
                   <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
-                    placeholder="No mailer" [(ngModel)]="_editFormData.retractMailer" name="retractMailer">
+                    placeholder="No mailer" [(ngModel)]="_editFormData.retractMailer" labelForId="retractMailer" name="retractMailer">
                   </ng-select>
                   <button type="button" class="btn btn-secondary btn-sm ms-1"
                     (click)="editMailer(editMailerTpl,{enabled:1},_editFormData,'retractMailer')">New&nbsp;Mailer</button>
@@ -620,7 +620,7 @@
                 <label class="form-label" for="deleteMailer">Delete Mailer</label>
                 <div class="d-flex">
                   <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
-                    placeholder="No mailer" [(ngModel)]="_editFormData.deleteMailer" name="deleteMailer">
+                    placeholder="No mailer" [(ngModel)]="_editFormData.deleteMailer" labelForId="deleteMailer" name="deleteMailer">
                   </ng-select>
                   <button type="button" class="btn btn-secondary btn-sm ms-1"
                     (click)="editMailer(editMailerTpl,{enabled:1},_editFormData,'deleteMailer')">New&nbsp;Mailer</button>

@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener, signal } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener, signal, ChangeDetectorRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
@@ -234,6 +234,10 @@ const errorTrackerPlugin = ViewPlugin.fromClass(class {
   standalone: true,
 })
 export class NgCmComponent extends ElementBase<any> implements AfterViewInit, OnDestroy {
+
+  // uniqueTransitionName = `cm-editor-${Math.random().toString(36).substring(2, 9)}`;
+  activeTransitionName = signal<string | null>(null);
+  isTransitioning = signal<boolean>(false);
   
   model = viewChild(NgModel);
 
@@ -264,6 +268,8 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
   themeCompartment = new Compartment();
 
   private themeService = inject(ThemeService, { optional: true });
+
+  private cdr = inject(ChangeDetectorRef);
   
   plusSquare: string = '<svg role="img" aria-hidden="true" focusable="false" data-prefix="far" data-icon="plus-square" class="svg-inline--fa fa-plus-square fa-w-14 fa-fw fa-2x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M352 240v32c0 6.6-5.4 12-12 12h-88v88c0 6.6-5.4 12-12 12h-32c-6.6 0-12-5.4-12-12v-88h-88c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h88v-88c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v88h88c6.6 0 12 5.4 12 12zm96-160v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z"></path></svg>';
   minusSquare: string = '<svg role="img" aria-hidden="true" focusable="false" data-prefix="far" data-icon="minus-square" class="svg-inline--fa fa-minus-square fa-w-14 fa-fw fa-2x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M108 284c-6.6 0-12-5.4-12-12v-32c0-6.6 5.4-12 12-12h232c6.6 0 12 5.4 12 12v32c0 6.6-5.4 12-12 12H108zM448 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h352c26.5 0 48 21.5 48 48zm-48 346V86c0-3.3-2.7-6-6-6H54c-3.3 0-6 2.7-6 6v340c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z"></path></svg>';
@@ -752,25 +758,6 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     // Parser checks can go here if needed
   }
 
-
-  toggleFullscreen(): void {
-    if (!this.isFullscreen()) {
-      this.isFullscreen.set(true);
-      
-      // Explicitly pass window.location.href to perfectly preserve your /#/ hash.
-      // Because the URL doesn't change, the Angular Router will ignore the subsequent back button event.
-      window.history.pushState({ cmFullscreen: true }, '', window.location.href);
-      
-    } else {
-      // If closing via the button, trigger the browser back action.
-      if (window.history.state?.cmFullscreen) {
-        window.history.back();
-      } else {
-        this.isFullscreen.set(false);
-      }
-    }
-  }
-
   toggleSearch() {
     if (this.editor) {
       const closed = closeSearchPanel(this.editor);
@@ -780,20 +767,109 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     }
   }
 
-  @HostListener('window:popstate')
-  onPopState(): void {
-    // Intercepts the back button. Angular Router also sees this event, 
-    // but ignores it because the hash URL hasn't changed.
+  
+  // toggleFullscreen(): void {
+  //   if (!this.isFullscreen()) {
+  //     this.isFullscreen.set(true);
+      
+  //     // Explicitly pass window.location.href to perfectly preserve your /#/ hash.
+  //     // Because the URL doesn't change, the Angular Router will ignore the subsequent back button event.
+  //     window.history.pushState({ cmFullscreen: true }, '', window.location.href);
+      
+  //   } else {
+  //     // If closing via the button, trigger the browser back action.
+  //     if (window.history.state?.cmFullscreen) {
+  //       window.history.back();
+  //     } else {
+  //       this.isFullscreen.set(false);
+  //     }
+  //   }
+  // }
+
+  // @HostListener('window:popstate')
+  // onPopState(): void {
+  //   // Intercepts the back button. Angular Router also sees this event, 
+  //   // but ignores it because the hash URL hasn't changed.
+  //   if (this.isFullscreen()) {
+  //     this.isFullscreen.set(false);
+  //   }
+  // }
+
+  // ngOnDestroy(): void {
+  //       // Clean up the history state if the component unmounts while open
+  //   if (this.isFullscreen() && window.history.state?.cmFullscreen) {
+  //     window.history.back();
+  //   }
+  //   this.editor?.destroy();
+  // }
+
+  private triggerTransition(action: () => void) {
+    if (!document.startViewTransition) {
+      action();
+      return;
+    }
+
+    this.activeTransitionName.set('active-cm-fullscreen');
+
+    // Enable the transition name right before the browser takes the snapshot
+    this.isTransitioning.set(true);
+    this.cdr.detectChanges(); 
+
+    const transition = document.startViewTransition(() => {
+      action();
+      this.cdr.detectChanges();
+    });
+
+    // Clean up the transition name when the animation finishes
+    transition.finished.finally(() => {
+      this.activeTransitionName.set(null);
+      this.isTransitioning.set(false);
+      this.cdr.detectChanges();
+    });
+  }
+
+  // 1. Create a capturing listener to intercept the back button
+private popStateListener = (event: PopStateEvent) => {
     if (this.isFullscreen()) {
-      this.isFullscreen.set(false);
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+      
+      this.triggerTransition(() => {
+        this.isFullscreen.set(false);
+        window.removeEventListener('popstate', this.popStateListener, { capture: true });
+      });
+    }
+  };
+
+  toggleFullscreen(): void {
+    if (!this.isFullscreen()) {
+      this.triggerTransition(() => {
+        this.isFullscreen.set(true);
+        window.addEventListener('popstate', this.popStateListener, { capture: true });
+        window.history.pushState({ cmFullscreen: true }, '', window.location.href);
+      });
+    } else {
+      if (window.history.state?.cmFullscreen) {
+        // Triggering back() asynchronously fires popStateListener, which handles the transition
+        window.history.back(); 
+      } else {
+        this.triggerTransition(() => {
+          this.isFullscreen.set(false);
+          window.removeEventListener('popstate', this.popStateListener, { capture: true });
+        });
+      }
     }
   }
 
+
   ngOnDestroy(): void {
-        // Clean up the history state if the component unmounts while open
+    // Clean up the history state if the component unmounts while open
     if (this.isFullscreen() && window.history.state?.cmFullscreen) {
       window.history.back();
     }
+    // Clean up our manual event listener
+    window.removeEventListener('popstate', this.popStateListener, { capture: true });
     this.editor?.destroy();
   }
+
 }

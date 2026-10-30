@@ -95,8 +95,9 @@
   width: 38px;
 }
 
-.static-html {
+::ng-deep .static-html .surface-control-wrapper {
   outline: dashed 2px var(--bs-border-color);
+  outline-offset: 8px;
   min-height: 3em;
 }
 

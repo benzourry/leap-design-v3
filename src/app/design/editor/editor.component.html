@@ -1,3 +1,4 @@
+<div style="view-transition-name: active-app-morph; display: flex; flex-direction: column; min-height: 100vh; background: var(--bs-body-bg);">
 <div class="d-flex flex-row bg-body position-relative shadow-sm" style="height:48px; z-index:1">
   @if (loading()){
     <div class="header-colors"></div>
@@ -108,6 +109,8 @@
     <div class="p-3 text-center text-secondary"><h4>No app found with ID: {{appId}}</h4></div>
   }
 }
+
+</div>
 
 <ng-template #appEditTpl let-d="dismiss" let-c="close">
   @defer(prefetch on idle){

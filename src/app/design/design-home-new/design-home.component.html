@@ -1,16 +1,16 @@
 <div class="fixed-top bg-reka" [class]="bgClassName">
-  <div style="max-width:780px" class="limit-width centered d-flex justify-content-between">
+  <div class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
       <img src="assets/icons/logo-w.svg" alt="Logo" title="Logo" width="38">
     </div>
     <div class="home-top-r pe-2">
       <div class="d-flex">
-        <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
-        <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+        <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+        <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
         @if (user()?.manager){
-          <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
         }
-        <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+        <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
           <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
         </a>
       </div>
@@ -249,21 +249,21 @@
           <!-- 2. DESKTOP ONLY: Sticky Sidebar -->
           <div class="col-sm-3 d-none d-sm-block align-self-start position-sticky" style="top: 74px; z-index: 10;">
             <div class="list-group overflow-hidden" style="border-radius: 0.65rem;">
-              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-2 small" [class.active]="folderFilter() === null" (click)="folderFilter.set(null)">
                 <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
                 <span class="text-wrap">All</span>
                 <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.05rem;">{{ itemTotal() }}</span>
               </a>
               
               @for (f of folders(); track f.id) {
-                <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
+                <a class="list-group-item pointer d-flex align-items-start gap-2 p-2 small" [class.active]="folderFilter() === f.id" (click)="folderFilter.set(f.id)">
                   <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="flex-shrink-0"></fa-icon>
                   <span class="text-wrap">{{ f.name }}</span>
                   <span class="ms-auto badge rounded-pill bg-body-tertiary text-body-secondary fw-normal" style="margin-top: 0.15rem;">{{ f.apps?.length || 0 }}</span>
                 </a>
               }
               
-              <a class="list-group-item pointer d-flex align-items-start gap-2 p-3 py-2 pe-2 small" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
+              <a class="list-group-item pointer d-flex align-items-start gap-2 p-2 small" [class.active]="folderFilter() === 'ungrouped'" (click)="folderFilter.set('ungrouped')">
                 <div style="width: 1.25em;" class="flex-shrink-0"></div>
                 <span class="fst-italic text-wrap">Ungrouped</span>
               </a>
@@ -305,7 +305,8 @@
                     @if (!hideGroupItems()[dsKv.key]) {
                       <div class="tile-wrap tile-center mb-2">
                         @for (item of dsKv.value; track item.id) {
-                          <div class="tile border border-secondary-subtle bg-body" style="text-overflow: ellipsis">
+                          <div class="tile border border-secondary-subtle bg-body" style="text-overflow: ellipsis" 
+                            [style.view-transition-name]="clickedAppId() === item.id ? 'active-app-morph' : null">
                             <div class="notch" [style.background-color]="item.theme"></div>
                             <div class="tile-image" [style.background-image]="item.logo ? 'url(' + baseApi + '/app/logo/' + item.logo + ')' : ''"></div>
                             <div class="tile-mid">
@@ -315,7 +316,9 @@
                               </div>
                               <div class="tile-action">
                                 <div class="p-1">
-                                  <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()" routerLink="/design/{{ item.id }}">
+                                  <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()"
+                                   routerLink="/design/{{ item.id }}"
+                                   (click)="clickedAppId.set(item.id)">
                                     <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
                                   </button>
                                   <div class="d-flex justify-content-between">

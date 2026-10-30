@@ -107,7 +107,7 @@ a {
 
 .limit-width {
   max-width: 780px;
-  &.repo { max-width: 720px; width: fit-content !important; }
+  // &.repo { max-width: 720px; width: fit-content !important; }
   &.centered { margin-left: auto; margin-right: auto; }
 }
 
@@ -803,4 +803,25 @@ ngb-pagination ul.pagination { justify-content: center; }
 
 .smaller{
   font-size: 0.8rem;
+}
+
+:root {
+  --click-x: 50%;
+  --click-y: 50%;
+}
+
+/* 1. Override the starting state of the modal */
+.modal.fade .modal-dialog {
+  transform-origin: var(--click-x) var(--click-y) !important;
+  transform: scale(0.1) !important;
+  opacity: 0;
+  
+  transition: transform 0.3s cubic-bezier(0.2, 0.85, 0.3, 1.15), 
+              opacity 0.25s ease-out !important;
+}
+
+/* 2. Override the active state of the modal */
+.modal.show .modal-dialog {
+  transform: none !important;
+  opacity: 1;
 }

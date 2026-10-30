@@ -242,6 +242,13 @@ export class EditorComponent implements OnInit {
         // Check if Ctrl (or Cmd on Mac) and '/' are pressed
         if ((event.ctrlKey || event.metaKey) && event.key === '/') {
             // Prevent default behavior to avoid interfering with browser shortcuts
+
+            const target = event.target as HTMLElement;
+
+            if (target && target.closest('.cm-editor')) {
+                return; // Bail out! Let CodeMirror handle its own shortcut.
+            }
+
             event.preventDefault(); 
             this.focusSearch();
         }

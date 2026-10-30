@@ -370,3 +370,13 @@
 ::ng-deep .cm-panel.cm-search input{
   margin: 0 !important;
 }
+
+// :host > div {
+//   view-transition-name: cm-editor-transition;
+// }
+
+// /* Optional: customize the duration/easing of the morph */
+// ::view-transition-group(cm-editor-transition) {
+//   animation-duration: 0.4s;
+//   animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+// }

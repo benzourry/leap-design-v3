@@ -1,36 +1,45 @@
 <div class="bg-reka" [ngClass]="bgClassName" >
-  <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
+  <div class="limit-width centered d-flex justify-content-between">
     <div class="home-top-l p-2">
       <img src="assets/icons/logo-w.svg" width="38">
       </div>
       <div class="home-top-r pe-2">
         <div class="d-flex">
-          <a class="top-link p-3" routerLink="/design" routerLinkActive="active">MY APP</a>
-          <a class="top-link p-3" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
           @if (user()?.manager){
-            <a class="top-link p-3" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+            <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
           }
-          <a class="top-link p-3" routerLink="/devprofile" routerLinkActive="active">
+          <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
             <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
           </a>
       </div>
     </div>
   </div>
 </div>
-<div class="wrapper pt-3 bg-plain text-body">
-  <div class="limit-width repo centered">
-    <div class="repo-tool text-center">
-      <div class="tool-container" style="max-width:480px;margin:auto">
+<div class="wrapper pt-2 bg-plain text-body">
+  <div class="limit-width centered">
+    <div class="repo-item mt-2">
+      
+      <div class="repo-title mb-3">
+        <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Repository Collection
+      </div>
+
+      <div class="toolbar title d-flex mb-0 mb-sm-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1 m-3">
+       
+        <input type="search" autocapitalize="none" id="search_design_home"
+          class="search-icon bg-body rounded-2 border border-1-5 flex-grow-1 normal" style="min-width: 0;"
+          placeholder="Filter list"  [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+          (keyup.enter)="getItemList(1)">
+
+      </div>
+      <!-- <div class="tool-container" style="max-width:480px;margin:auto">
         <input type="search" class="rounded" autocapitalize="none" placeholder="Filter list" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
           (keyup.enter)="getItemList(1)">
-          <!-- <button type="button" class="btn btn-round btn-secondary ms-1" name="btnActivateSpeechSearchMovie"
-          id="btnActivateSpeechSearchMovie" (click)="activateSpeechSearchMovie()" [disabled]="!showSearchButton">
-          <fa-icon [icon]="['fas','microphone']" [fixedWidth]="true"></fa-icon>
-        </button> -->
-      </div>
+      </div> -->
     </div>
-    <div class="repo-item">
-      <div class="repo-title text-body">
+    <div class="repo-item m-3">
+      <div class="repo-title text-body mb-3 px-0">
         <fa-icon [icon]="['far','thumbs-up']" [fixedWidth]="true"></fa-icon> Top Pick
       </div>
       @if (itemLoading()) {
@@ -94,8 +103,8 @@
         </div>
       }
     </div>
-    <div class="repo-item">
-      <div class="repo-title text-body">
+    <div class="repo-item m-3">
+      <div class="repo-title text-body mb-3 px-0">
         <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> Published App
       </div>
       @if (itemLoading()) {
