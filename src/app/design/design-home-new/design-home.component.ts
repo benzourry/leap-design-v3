@@ -1,8 +1,3 @@
-// Copyright (C) 2018 Razif Baital
-// 
-// This file is part of LEAP.
-// ... (Standard License Header)
-
 import { Component, signal, computed, ChangeDetectionStrategy, inject, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../_shared/service/user.service';
@@ -16,6 +11,8 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 import { ToastService } from '../../_shared/service/toast-service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { FilterPipe } from '../../_shared/pipe/filter.pipe';
 
 @Component({
   selector: 'app-design-home',
@@ -23,7 +20,8 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
   templateUrl: './design-home.component.html',
   styleUrls: ['../../../assets/css/tile.scss', './design-home.component.css'],
   imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbPagination,
-    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent, NgTemplateOutlet]
+    NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, AppEditComponent, NgTemplateOutlet, 
+    CdkDropList, CdkDrag, CdkDragHandle, FilterPipe]
 })
 export class DesignHomeComponent implements OnInit {
 
@@ -54,27 +52,30 @@ export class DesignHomeComponent implements OnInit {
   folders = signal<any[]>([]);
   folderFilter = signal<number | 'ungrouped' | null>(null);
   activeApp = signal<any>(null);
-  newFolder = signal<any>({ name: '' });
   savingFolder = signal<boolean>(false);
 
   clickedAppId = signal<string | null>(null);
+
+  folderSearchText = signal<string>('');
+  editFolderData = signal<any>({});
+  
+  presetColors = ['#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4'];
 
   // Optimized groupedItemList: Filters data BEFORE returning to prevent DOM flickering
   groupedItemList = computed(() => {
     const apps = this.itemList();
     const flds = this.folders();
     const filter = this.folderFilter();
-    let groups: { key: string; value: any[]; id: number | 'ungrouped' }[] = [];
+    let groups: { key: string; value: any[]; id: number | 'ungrouped', color?: string }[] = [];
     let assignedAppIds = new Set<number>();
 
     flds.forEach(f => {
       const folderApps = apps.filter(a => f.apps?.some((fa: any) => fa.id === a.id));
       folderApps.forEach(a => assignedAppIds.add(a.id));
       
-      // Only emit the group if we are in "All Apps" view OR if it exactly matches the selected tab
       if (filter === null || filter === f.id) {
         if (folderApps.length > 0 || filter === f.id) {
-          groups.push({ key: f.name, value: folderApps, id: f.id });
+          groups.push({ key: f.name, value: folderApps, id: f.id, color: f.x?.color });
         }
       }
     });
@@ -99,7 +100,7 @@ export class DesignHomeComponent implements OnInit {
   constructor() {
     this.location.onPopState(() => {
       if (document.querySelector('.cm-fullscreen-mode')) { return; }
-      this.modalService.dismissAll('')
+      this.modalService.dismissAll();
     });
   }
 
@@ -117,7 +118,6 @@ export class DesignHomeComponent implements OnInit {
       });
   }
 
-  // --- FOLDER LOGIC START ---
   loadFolders() {
     this.appService.getAppFolders()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -128,26 +128,36 @@ export class DesignHomeComponent implements OnInit {
   }
 
   openManageFolders(tpl: any) {
-    this.newFolder.set({ name: '' });
     history.pushState(null, null, window.location.href);
-    this.modalService.open(tpl, { backdrop: 'static', centered: true });
+    this.modalService.open(tpl, { backdrop: 'static' });
   }
 
-  createFolder() {
-    if (!this.newFolder().name) return;
+  editFolder(tpl: any, folder: any) {
+    const folderData = { ...folder, x: folder.x ? { ...folder.x } : {} };
+    this.editFolderData.set(folderData);
+    
+    this.modalService.open(tpl, { backdrop: 'static' }).result.then(
+      (result) => {
+        this.saveFolder(result);
+      }
+    ).catch(() => {});
+  }
+
+  saveFolder(folderData: any) {
+    if (!folderData.name) return;
+    
     this.savingFolder.set(true);
-    this.appService.saveAppFolder(this.newFolder())
+    this.appService.saveAppFolder(folderData)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.toastService.show('Folder created', { classname: 'bg-success text-light' });
-          this.newFolder.set({ name: '' });
+          this.toastService.show(folderData.id ? 'Folder updated' : 'Folder created', { classname: 'bg-success text-light' });
           this.savingFolder.set(false);
           this.loadFolders();
         },
         error: () => {
           this.savingFolder.set(false);
-          this.toastService.show('Failed to create folder', { classname: 'bg-danger text-light' });
+          this.toastService.show('Failed to save folder', { classname: 'bg-danger text-light' });
         }
       });
   }
@@ -168,7 +178,7 @@ export class DesignHomeComponent implements OnInit {
   openOrganizeApp(tpl: any, app: any) {
     this.activeApp.set(app);
     history.pushState(null, null, window.location.href);
-    this.modalService.open(tpl, { backdrop: 'static', centered: true });
+    this.modalService.open(tpl, { backdrop: 'static' });
   }
 
   isAppInFolder(folder: any, appId: number): boolean {
@@ -186,7 +196,6 @@ export class DesignHomeComponent implements OnInit {
       error: () => this.toastService.show('Update failed', { classname: 'bg-danger text-light' })
     });
   }
-  // --- FOLDER LOGIC END ---
 
   toggleGroupVisibility(key: string): void {
     const currentState = this.hideGroupItems();
@@ -258,9 +267,8 @@ export class DesignHomeComponent implements OnInit {
               });
             },
           });
-      },
-      () => { }
-    );
+      }
+    ).catch(() => {});
   }
 
   cloneItem(tpl: any, data: any, isNew: boolean): void {
@@ -294,9 +302,8 @@ export class DesignHomeComponent implements OnInit {
                     this.toastService.show('App cloned failure', { classname: 'bg-danger text-light' });
                   },
                 });
-            },
-            () => { }
-          );
+            }
+          ).catch(() => {});
         },
         error: () => {
           this.toastService.show('App cloned failed', { classname: 'bg-danger text-light' });
@@ -307,10 +314,7 @@ export class DesignHomeComponent implements OnInit {
   removeItem(content: any, data: any): void {
     this.removeItemData.set(data);
     history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static' }).result.then(
-      () => { },
-      () => { }
-    );
+    this.modalService.open(content, { backdrop: 'static' }).result.catch(() => {});
   }
 
   realRemoveItem(callback: () => void, data: any): void {
@@ -337,5 +341,31 @@ export class DesignHomeComponent implements OnInit {
     } else {
       this.toastService.show('Invalid removal confirmation key', { classname: 'bg-danger text-light' });
     }
+  }
+
+  onFolderDrop(event: CdkDragDrop<any[]>) {
+    if (event.previousIndex === event.currentIndex) return;
+
+    const updatedFolders = [...this.folders()];
+    moveItemInArray(updatedFolders, event.previousIndex, event.currentIndex);
+
+    updatedFolders.forEach((folder, index) => {
+      folder.sortOrder = index;
+    });
+
+    this.folders.set(updatedFolders);
+
+    const payload = updatedFolders.map(f => ({ id: f.id, sortOrder: f.sortOrder }));
+    
+    this.appService.reorderAppFolders(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+        },
+        error: () => {
+          this.toastService.show('Failed to save folder order', { classname: 'bg-danger text-light' });
+          this.loadFolders(); 
+        }
+      });
   }
 }

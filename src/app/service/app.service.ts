@@ -235,6 +235,11 @@ export class AppService {
     return this.http.post<any>(`${baseApi}/platform/appfolder/${folderId}/app/${appId}/remove`, {});
   }
 
+  // Inside your AppService (app.service.ts)
+  reorderAppFolders(folders: any[]) {
+      return this.http.post(`${baseApi}/platform/appfolder/reorder`, folders);
+  }
+
 
   searchInApp = new Map();
 

@@ -21,7 +21,6 @@
   margin-top: 15px;
 }
 
-
 @keyframes fadeSlideUp {
   0% {
     opacity: 0;
@@ -33,14 +32,32 @@
   }
 }
 
-/* Apply the animation to the app tiles */
 .tile {
   animation: fadeSlideUp 0.3s ease-out both;
 }
 
-/* Stagger the animation slightly for the first few items */
 .tile:nth-child(1) { animation-delay: 0.05s; }
 .tile:nth-child(2) { animation-delay: 0.1s; }
 .tile:nth-child(3) { animation-delay: 0.15s; }
 .tile:nth-child(4) { animation-delay: 0.2s; }
 .tile:nth-child(n+5) { animation-delay: 0.25s; }
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.2);
+  background-color: var(--bs-body-bg);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+  border: 2px dashed var(--bs-secondary);
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.list-group.cdk-drop-list-dragging .list-group-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
