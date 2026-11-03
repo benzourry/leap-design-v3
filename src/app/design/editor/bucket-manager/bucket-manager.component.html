@@ -400,6 +400,14 @@
             <div><small>Microsoft Graph</small></div>
           </label>
 
+          <input type="radio" class="btn-check" id="typeS3" name="type" value="s3" #type="ngModel"
+            [(ngModel)]="editBucketData.type" [required]="true" [disabled]="editBucketData.id">
+          <label for="typeS3" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start px-3 py-2"
+                [class.btn-outline-primary]="editBucketData.type=='s3'" [class.disabled]="editBucketData.id">
+            Amazon S3
+            <div><small>AWS / MinIO / R2</small></div>
+          </label>
+
         </div>
       </div>
       @if (type?.invalid) {
@@ -493,6 +501,51 @@
           </small>
         </div>
 
+      </div>
+    }
+
+    @if (editBucketData.type === 's3') {
+      <div class="p-3 mb-3 bg-body-tertiary border rounded">
+        <h6 class="mb-3">Amazon S3 Configuration</h6>
+        
+        <div class="row">
+          <div class="col-sm-6 form-group mb-3">
+            <label class="form-label">S3 Bucket Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="editBucketData.x.bucketName" name="s3BucketName" 
+                  placeholder="my-app-files" required>
+          </div>
+          <div class="col-sm-6 form-group mb-3">
+            <label class="form-label">Region *</label>
+            <input type="text" class="form-control" [(ngModel)]="editBucketData.x.region" name="s3Region" 
+                  placeholder="ap-southeast-1" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label">Custom Endpoint URL <small class="text-body-secondary">(Optional)</small></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.endpoint" name="s3Endpoint" 
+                placeholder="https://<account-id>.r2.cloudflarestorage.com or MinIO host">
+          <small class="form-text text-body-secondary">Leave blank for standard AWS S3.</small>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label">Folder / Key Prefix <small class="text-body-secondary">(Optional)</small></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.prefix" name="s3Prefix" 
+                placeholder="uploads/app1">
+        </div>
+
+        <div class="row">
+          <div class="col-sm-6 form-group mb-3">
+            <label class="form-label">Access Key ID *</label>
+            <input type="text" class="form-control" [(ngModel)]="editBucketData.x.accessKey" name="s3AccessKey" 
+                  placeholder="AKIA..." required>
+          </div>
+          <div class="col-sm-6 form-group mb-3">
+            <label class="form-label">Secret Access Key * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+            <input type="text" class="form-control" [(ngModel)]="editBucketData.x.secretKey" name="s3SecretKey" 
+                  placeholder="wJalrXUtn..." list="bucketSecretList" autocomplete="off" required>
+          </div>
+        </div>
       </div>
     }
     <!-- END STORAGE TYPE CONFIGURATION -->
