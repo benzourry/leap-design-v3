@@ -67,7 +67,7 @@
                 <ng-template ngbPaginationNext>
                   <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                 </ng-template>
-                <ng-template ngbPaginationLast>             
+                <ng-template ngbPaginationLast>              
                   <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                 </ng-template>
               </ngb-pagination>
@@ -106,7 +106,13 @@
         <div class="mb-3">
           <small class="ms-3 text-body-secondary">Mailer History</small>
           <a class="pointer element link-item" (click)="openHistory(notiListTpl, null)">
-            View Mail History
+            <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon> View Mail History
+          </a>
+        </div>
+        <div class="mb-3 border-top pt-3">
+          <small class="ms-3 text-body-secondary">SMTP Configuration</small>
+          <a class="pointer element link-item" (click)="openSmtpConfig(smtpConfigTpl)">
+            <fa-icon [icon]="['fas','server']" [fixedWidth]="true"></fa-icon> Custom SMTP Config
           </a>
         </div>
       }
@@ -151,10 +157,12 @@
                 @if (mailer) {
                   <div class="d-flex flex-row">
                     <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary"
+                      title="View History"
                       (click)="openHistory(notiListTpl, mailer.id)">
                       <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary ms-1"
+                      title="Edit Mailer"
                       (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
@@ -196,7 +204,7 @@
                       IF: {{ mailer.pre.length > 40 ? (mailer.pre | slice:0:40) + '...' : mailer.pre }}
                     </span>
                   </div>
-                }
+                  }
                   <div class="form-group mb-3">
                     <label>Recipient</label>
                     <div>
@@ -264,6 +272,8 @@
     </div>
   </div>
 </div>
+
+<!-- Existing Modals Below -->
 <ng-template #removeMailerTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -289,6 +299,7 @@
     </div>
   </div>
 </ng-template>
+
 <ng-template #removeSchedTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
@@ -310,6 +321,7 @@
   </div>
 </div>
 </ng-template>
+
 <ng-template #editMailerTpl let-c="close" let-d="dismiss">
     @defer(prefetch on idle){
       <app-edit-mailer [editMailerData]="editMailerData" [formList]="formList" [dismiss]="d" [close]="c"></app-edit-mailer>
@@ -321,6 +333,79 @@
       </div>
     }
 </ng-template>
+
+<!-- Custom SMTP Configuration Modal (App Level) -->
+<ng-template #smtpConfigTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">App SMTP Configuration</h4>
+  </div>
+  <div class="modal-body fix-gutter" #smtpForm="ngForm" ngForm>
+    <div class="alert alert-info small">
+      Specify a custom SMTP server for this App. If disabled or left blank, the system default SMTP will be used.
+    </div>
+    <div class="form-check form-switch mb-3 mt-1 border-bottom pb-3">
+      <input type="checkbox" class="form-check-input" [(ngModel)]="smtpConfigData.enabled" name="smtpEnabled" id="smtpEnabled">
+      <label class="form-check-label" for="smtpEnabled"><strong>Enable Custom SMTP</strong></label>
+    </div>
+
+    <div [class.opacity-50]="!smtpConfigData.enabled" [style.pointer-events]="smtpConfigData.enabled ? 'auto' : 'none'">
+      <div class="form-group mb-3">
+        <label class="form-label">SMTP Host</label>
+        <input type="text" class="form-control" [(ngModel)]="smtpConfigData.host" name="smtpHost" placeholder="e.g. smtp.gmail.com" [required]="smtpConfigData.enabled">
+      </div>
+      <div class="row">
+        <div class="col-sm-6 form-group mb-3">
+          <label class="form-label">SMTP Port</label>
+          <input type="number" class="form-control" [(ngModel)]="smtpConfigData.port" name="smtpPort" placeholder="e.g. 587" [required]="smtpConfigData.enabled">
+        </div>
+        <div class="col-sm-6 form-group mb-3">
+          <label class="form-label">Sender Email (From)</label>
+          <input type="email" class="form-control" [(ngModel)]="smtpConfigData.senderEmail" name="smtpSenderEmail" placeholder="e.g. no-reply@domain.com">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 form-group mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" [(ngModel)]="smtpConfigData.username" name="smtpUsername" placeholder="e.g. user@domain.com" autocomplete="off">
+        </div>
+        <div class="col-sm-6 form-group mb-3">
+          <label class="form-label">Password <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+          <input type="text" class="form-control" [(ngModel)]="smtpConfigData.password" name="smtpPassword" placeholder="SMTP Password (or secret)" list="smtpPasswordSecretList" autocomplete="off">
+          <datalist id="smtpPasswordSecretList">
+            @for(secret of secretList; track $index) {
+              @let secretKey = '{{_secret.'+secret.key+'}}';
+              <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+            }
+          </datalist>
+        </div>
+      </div>
+      <div class="form-check form-switch mb-2 mt-2">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="smtpConfigData.auth" name="smtpAuth" id="smtpAuth">
+        <label class="form-check-label" for="smtpAuth">Requires Authentication (SMTP Auth)</label>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="smtpConfigData.startTls" name="smtpStartTls" id="smtpStartTls">
+        <label class="form-check-label" for="smtpStartTls">Enable STARTTLS</label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    @if (smtpConfigData.id) {
+      <button type="button" class="btn btn-round btn-outline-danger" (click)="deleteSmtpConfig(smtpConfigData.id, d)">
+        <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Delete Config
+      </button>
+    } @else {
+      <div></div> <!-- Spacer for flexbox if no delete button -->
+    }
+    <div>
+      <button type="button" class="btn btn-round btn-secondary me-2" (click)="d()">Cancel</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="smtpForm.invalid" (click)="c(smtpConfigData)">
+        <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon> Save SMTP Config
+      </button>
+    </div>
+  </div>
+</ng-template>
+
 <ng-template #editSchedTpl let-c="close" let-d="dismiss">
   <div class="modal-header">
     <h4 class="modal-title">Add Scheduler</h4>

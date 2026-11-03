@@ -213,6 +213,22 @@ export class AppService {
     return this.http.post<any>(`${this.baseApi}/app/delete-custom-provider/${providerId}`, {});
   }
 
+  // ==========================================
+  // CUSTOM SMTP CONFIGURATION MANAGEMENT
+  // ==========================================
+
+  getSmtpConfig(appId: number) {
+    return this.http.get<any>(`${this.baseApi}/app/${appId}/smtp-config`);
+  }
+
+  saveSmtpConfig(appId: number, config: any) {
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/smtp-config`, config);
+  }
+
+  removeSmtpConfig(configId: number) {
+    return this.http.post<any>(`${this.baseApi}/app/delete-smtp-config/${configId}`, {});
+  }
+
   // --- Folder Endpoints ---
   getAppFolders(keyword?: string) {
     const params = keyword ? { keyword } : {};

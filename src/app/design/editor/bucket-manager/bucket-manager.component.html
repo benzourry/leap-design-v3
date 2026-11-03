@@ -69,7 +69,7 @@
                 <ng-template ngbPaginationNext>
                   <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                 </ng-template>
-                <ng-template ngbPaginationLast>             
+                <ng-template ngbPaginationLast>              
                   <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                 </ng-template>
               </ngb-pagination>
@@ -140,6 +140,7 @@
                           Bucket Statistics
                         </button>
                         <button type="button" title="Reorganize bucket" ngbDropdownItem [class.disabled]="offline"
+                          [class.disabled]="bucket.type!='local'"
                           (click)="reorganize(bucket.id)">
                           <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Reorganize
                           Bucket files
@@ -289,7 +290,7 @@
                     [pageSize]="pageSize" [(page)]="pageNumber" [maxSize]="10"
                     (pageChange)="getFileList(pageNumber,params)" boundaryLinks="false" directionLinks="false">
                     <ng-template ngbPaginationFirst>
-                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
+                      <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>              
                     </ng-template>
                     <ng-template ngbPaginationPrevious>
                       <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
@@ -297,7 +298,7 @@
                     <ng-template ngbPaginationNext>
                       <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
                     </ng-template>
-                    <ng-template ngbPaginationLast>             
+                    <ng-template ngbPaginationLast>              
                       <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
                     </ng-template>
                   </ngb-pagination>
@@ -368,6 +369,134 @@
       <input type="text" class="form-control" [(ngModel)]="editBucketData.description" 
         #desc="ngModel" name="desc">
     </div>
+
+    <!-- STORAGE TYPE CONFIGURATION -->
+    <div class="form-group mb-3">
+      <label class="form-label">Storage Provider *</label>
+      <div>
+        <div name="storageType" class="text-body d-flex flex-wrap" [class.disabled]="editBucketData.id">
+          
+          <input type="radio" class="btn-check" id="typeLocal" name="type" value="local" #type="ngModel"
+            [(ngModel)]="editBucketData.type" [required]="true">
+          <label for="typeLocal" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start px-3 py-2"
+                 [class.btn-outline-primary]="editBucketData.type=='local'">
+            Local Storage
+            <div><small>Server Disk</small></div>
+          </label>
+
+          <input type="radio" class="btn-check" id="typeGDrive" name="type" value="gdrive" #type="ngModel"
+            [(ngModel)]="editBucketData.type" [required]="true">
+          <label for="typeGDrive" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start px-3 py-2"
+                 [class.btn-outline-primary]="editBucketData.type=='gdrive'">
+            Google Drive
+            <div><small>OAuth 2.0</small></div>
+          </label>
+
+          <input type="radio" class="btn-check" id="typeOneDrive" name="type" value="onedrive" #type="ngModel"
+            [(ngModel)]="editBucketData.type" [required]="true">
+          <label for="typeOneDrive" class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start px-3 py-2"
+                 [class.btn-outline-primary]="editBucketData.type=='onedrive'">
+            OneDrive
+            <div><small>Microsoft Graph</small></div>
+          </label>
+
+        </div>
+      </div>
+      @if (type?.invalid) {
+        <small class="form-text text-warning">
+          @if (type?.errors?.required) {
+            <span class="help-block">Storage Provider is required</span>
+          }
+        </small>
+      }
+    </div>
+
+    @if (editBucketData.type === 'gdrive') {
+      <div class="p-3 mb-3 bg-body-tertiary border rounded">
+        <h6 class="mb-3">Google Drive OAuth Configuration</h6>
+        <div class="form-group mb-3">
+          <label class="form-label">Folder ID <small class="text-body-secondary">(Optional)</small></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.folderId" name="gdriveFolderId" placeholder="e.g. 1A2B3C4D5E6F7G8H9I0J">
+          <small class="form-text text-body-secondary">Leave blank to upload to the root of your Drive.</small>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Client ID *</label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.clientId" name="gdriveClientId" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.clientSecret" name="gdriveClientSecret" list="bucketSecretList" autocomplete="off" required>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label">Authorization</label>
+          <div class="d-flex align-items-center">
+            @if (editBucketData.x.refreshToken) {
+              <div class="text-success fw-bold me-3">
+                <fa-icon [icon]="['fas', 'check-circle']"></fa-icon> Connected
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="editBucketData.x.refreshToken = null">Disconnect</button>
+            } @else {
+              <div class="text-danger fw-bold me-3">
+                <fa-icon [icon]="['fas', 'times-circle']"></fa-icon> Disconnected
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" (click)="connectGoogleDrive(editBucketData)" 
+                      [disabled]="!editBucketData.x.clientId || !editBucketData.x.clientSecret">
+                <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon> {{ editBucketData.id ? 'Connect' : 'Save & Connect' }}
+              </button>
+            }
+          </div>
+          <small class="d-block mt-2 text-body-secondary">
+            <strong>Required Redirect URI for Google Cloud Console:</strong><br>
+            <code class="user-select-all">{{getRedirectUri()}}</code>
+          </small>
+        </div>
+      </div>
+    }
+
+    @if (editBucketData.type === 'onedrive') {
+      <div class="p-3 mb-3 bg-body-tertiary border rounded">
+        <h6 class="mb-3">OneDrive OAuth Configuration</h6>
+        <div class="form-group mb-3">
+          <label class="form-label">Folder ID <small class="text-body-secondary">(Optional)</small></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.folderId" name="onedriveFolderId" placeholder="e.g. 1A2B3C4D5E6F7G8H9I0J">
+          <small class="form-text text-body-secondary">Leave blank to upload to the root of your OneDrive.</small>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Client ID *</label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.clientId" name="onedriveClientId" required>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+          <input type="text" class="form-control" [(ngModel)]="editBucketData.x.clientSecret" name="onedriveClientSecret" list="bucketSecretList" autocomplete="off" required>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label">Authorization</label>
+          <div class="d-flex align-items-center">
+            @if (editBucketData.x.refreshToken) {
+              <div class="text-success fw-bold me-3">
+                <fa-icon [icon]="['fas', 'check-circle']"></fa-icon> Connected
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="editBucketData.x.refreshToken = null">Disconnect</button>
+            } @else {
+              <div class="text-danger fw-bold me-3">
+                <fa-icon [icon]="['fas', 'times-circle']"></fa-icon> Disconnected
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" (click)="connectOneDrive(editBucketData)" 
+                      [disabled]="!editBucketData.x.clientId || !editBucketData.x.clientSecret">
+                <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon> {{ editBucketData.id ? 'Connect' : 'Save & Connect' }}
+              </button>
+            }
+          </div>
+          <small class="d-block mt-2 text-body-secondary">
+            <strong>Required Redirect URI for Azure Portal:</strong><br>
+            <code class="user-select-all">{{getOnedriveRedirectUri()}}</code>
+          </small>
+        </div>
+
+      </div>
+    }
+    <!-- END STORAGE TYPE CONFIGURATION -->
+
     @if (!serverInfo.avEnabled){
       <p class="text-danger">Anti-virus not enabled</p>
     }
@@ -496,6 +625,13 @@
         </div>
       }
     </div>
+    <!-- Add Datalist here -->
+    <datalist id="bucketSecretList">
+      @for(secret of secretList; track $index) {
+        @let secretKey = '{{_secret.'+secret.key+'}}';
+        <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+      }
+    </datalist>
   </div>
 
 

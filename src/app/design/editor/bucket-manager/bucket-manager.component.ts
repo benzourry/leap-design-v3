@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { BucketService } from '../../../service/bucket.service';
@@ -13,6 +13,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { RunService } from '../../../run/_service/run.service';
+import { LambdaService } from '../../../service/lambda.service';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -49,7 +50,10 @@ export class BucketManagerComponent implements OnInit {
   private appService = inject(AppService);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
+  private lambdaService = inject(LambdaService);
   private cdr = inject(ChangeDetectorRef);
+
+  secretList: any[] = [];
 
   constructor() {
     this.location.onPopState(() => {
@@ -84,6 +88,8 @@ export class BucketManagerComponent implements OnInit {
                   this.app = res;
                   this.cdr.detectChanges();
                 });
+                
+              this.loadSecretList();
             }
 
             this.loadBucketList(1);
@@ -101,6 +107,14 @@ export class BucketManagerComponent implements OnInit {
 
         this.bucketServerInfo();
       });
+  }
+
+  loadSecretList() {
+    this.lambdaService.getSecretList(this.appId)
+    .subscribe(res => {
+        this.secretList = res;
+        this.cdr.detectChanges();
+    })
   }
 
   user: any;
@@ -148,6 +162,9 @@ export class BucketManagerComponent implements OnInit {
   editBucketData: any;
   editBucket(content, group, isNew) {
     this.editBucketData = group;
+    if (!this.editBucketData.type) {
+      this.editBucketData.type = 'local';
+    }
     if (!this.editBucketData.x) {
       this.editBucketData.x = {}
     }
@@ -342,12 +359,6 @@ export class BucketManagerComponent implements OnInit {
             this.cdr.detectChanges();
           }
         })
-      // .subscribe(res => {
-      // }, error => {
-      //   this.importLoading = false;
-      //   this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
-      // });
-
     }
 
   }
@@ -489,5 +500,75 @@ export class BucketManagerComponent implements OnInit {
 
   dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
+  // --- ADD THESE METHODS ANYWHERE INSIDE THE CLASS ---
+
+  getGdriveRedirectUri(): string {
+    let redirectUri = this.baseApi + '/bucket/oauth/gdrive-callback';
+    if (!redirectUri.startsWith('http')) {
+      redirectUri = window.location.origin + redirectUri;
+    }
+    return redirectUri;
+  }
+
+  connectGoogleDrive(bucketData: any) {
+    if (!bucketData.x.clientId || !bucketData.x.clientSecret) return;
+
+    this.bucketService.save(this.appId, bucketData).subscribe((res) => {
+      // Update UI state so it knows it is no longer a 'new' bucket
+      if (!bucketData.id) bucketData.id = res.id;
+      this.editBucketData.id = res.id;
+
+      const redirectUri = encodeURIComponent(this.getGdriveRedirectUri());
+      const clientId = encodeURIComponent(bucketData.x.clientId);
+      const state = encodeURIComponent(res.id); // Use the guaranteed DB ID
+
+      const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=https://www.googleapis.com/auth/drive.file&access_type=offline&prompt=consent&state=${state}`;
+
+      window.open(url, 'GoogleAuth', 'width=500,height=600,left=200,top=200');
+      this.cdr.detectChanges();
+    });
+  }
+
+  getOnedriveRedirectUri(): string {
+    let redirectUri = this.baseApi + '/bucket/oauth/onedrive-callback';
+    if (!redirectUri.startsWith('http')) {
+      redirectUri = window.location.origin + redirectUri;
+    }
+    return redirectUri;
+  }
+
+  connectOneDrive(bucketData: any) {
+    if (!bucketData.x.clientId || !bucketData.x.clientSecret) return;
+
+    this.bucketService.save(this.appId, bucketData).subscribe((res) => {
+      // Update UI state so it knows it is no longer a 'new' bucket
+      if (!bucketData.id) bucketData.id = res.id;
+      this.editBucketData.id = res.id;
+
+      const redirectUri = encodeURIComponent(this.getOnedriveRedirectUri());
+      const clientId = encodeURIComponent(bucketData.x.clientId);
+      const state = encodeURIComponent(res.id); // Use the guaranteed DB ID
+      const scope = encodeURIComponent('offline_access Files.ReadWrite');
+
+      const url = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}&state=${state}`;
+
+      window.open(url, 'OneDriveAuth', 'width=500,height=600,left=200,top=200');
+      this.cdr.detectChanges();
+    });
+  }
+
+  @HostListener('window:message', ['$event'])
+  onMessage(event: MessageEvent) {
+    if (event.data === 'gdrive_connected' || event.data === 'onedrive_connected') {
+      this.toastService.show("Cloud Storage connected successfully!", { classname: 'bg-success text-light' });
+      
+      if (this.editBucketData && this.editBucketData.id) {
+        this.bucketService.getBucket(this.editBucketData.id).subscribe(res => {
+          this.editBucketData = res;
+          this.cdr.detectChanges();
+        });
+      }
+    }
+  }
 
 }

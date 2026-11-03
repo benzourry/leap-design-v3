@@ -5,7 +5,6 @@ import { MailerService } from '../../../service/mailer.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, SlicePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
-// import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { FormService } from '../../../service/form.service';
@@ -21,6 +20,8 @@ import { EditMailerComponent } from '../../../_shared/modal/edit-mailer/edit-mai
 import { EditDatasetComponent } from '../../../_shared/modal/edit-dataset/edit-dataset.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
+import { baseApi } from '../../../_shared/constant.service';
+import { LambdaService } from '../../../service/lambda.service';
 
 @Component({
     selector: 'app-mailer-editor',
@@ -45,11 +46,13 @@ export class MailerEditorComponent implements OnInit {
     private datasetService = inject(DatasetService);
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
-    private cdr = inject(ChangeDetectorRef);    
-    private destroyRef = inject(DestroyRef); // Inject for subscription cleanup
+    private cdr = inject(ChangeDetectorRef);  
+    private destroyRef = inject(DestroyRef);
+    private lambdaService = inject(LambdaService);
 
     offline = false;
     app: any;
+    baseApi = baseApi;
 
     mailerTotal: any;
     loading: boolean;
@@ -73,7 +76,7 @@ export class MailerEditorComponent implements OnInit {
     }
 
     ngOnInit() {
-        // 1. Fetch User (Independent Subscription)
+        // 1. Fetch User
         this.userService.getCreator()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((user) => {
@@ -81,14 +84,13 @@ export class MailerEditorComponent implements OnInit {
                 this.cdr.markForCheck();
             });
 
-        // 2. Listen to Parent Route (Independent Subscription)
+        // 2. Listen to Parent Route
         this.route.parent.params
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
                 this.appId = params['appId'];
 
                 if (this.appId) {
-                    // Safe fallback if user loads slightly after the route
                     let appParams = { email: this.user?.email }; 
                     
                     this.appService.getApp(this.appId, appParams)
@@ -99,6 +101,7 @@ export class MailerEditorComponent implements OnInit {
                         });
                         
                     this.getFormList(this.appId);
+                    this.loadSecretList();
                 }
 
                 this.loadMailerList(1);
@@ -107,12 +110,11 @@ export class MailerEditorComponent implements OnInit {
                 this.getDatasetList();
             });
 
-        // 3. Listen to Query Params (Independent Subscription)
+        // 3. Listen to Query Params
         this.route.queryParams
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
                 const id = params['id'];
-                // Only load if the ID exists and is different from the currently loaded one
                 if (id && id !== this.mailerId) { 
                     this.loadMailer(id);
                 }
@@ -132,7 +134,6 @@ export class MailerEditorComponent implements OnInit {
     pageNumber: number = 1;
     entryPageNumber: number = 1;
 
-    // this.loadMailerList = loadMailerList;
     loadMailerList(pageNumber) {
         this.pageNumber = pageNumber;
         this.itemLoading = true;
@@ -156,9 +157,7 @@ export class MailerEditorComponent implements OnInit {
             })
     }
 
-    // this.loadMailerList = loadMailerList;
     loadAllMailerList() {
-
         let params = {
             appId: this.appId,
             page: 0,
@@ -172,16 +171,23 @@ export class MailerEditorComponent implements OnInit {
             }, res => { })
     }
 
+    secretList: any[] = [];
+    
+    loadSecretList() {
+        this.lambdaService.getSecretList(this.appId)
+            .subscribe(res => {
+                this.secretList = res;
+                this.cdr.detectChanges();
+            });
+    }
+
     editMailerData: any;
     editMailer(content, mailer, isNew) {
-        // console.log(mailer);
-        // mailer.content = this.br2nl(mailer.content);
         if (!mailer.content) mailer.content = '';
         this.editMailerData = mailer;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
             .result.then(data => {
-                // data.content = this.nl2br(data.content);
                 this.mailerService.save(this.user.email, this.appId, data)
                     .pipe(takeUntilDestroyed(this.destroyRef))  
                     .subscribe(res => {
@@ -201,11 +207,58 @@ export class MailerEditorComponent implements OnInit {
         this.mailerService.getMailer(mailerId)
         .subscribe(mailer => {
             this.editMailer(content, mailer, false)
-            // this.mailer = mailer;
-            // this.viewType = 'mailer';
             this.cdr.detectChanges();
         })
     }
+
+    // ========== APP SMTP CONFIGURATION ==========
+    smtpConfigData: any = {};
+    openSmtpConfig(content: any) {
+        // Fetch the existing SMTP config for this App from backend via AppService
+        this.appService.getSmtpConfig(this.appId).subscribe({
+            next: (res: any) => {
+                // Initialize default values if no config exists yet
+                this.smtpConfigData = res || { 
+                    appId: this.appId, 
+                    auth: true, 
+                    startTls: true, 
+                    port: 587, 
+                    enabled: true 
+                };
+
+                history.pushState(null, '', window.location.href);
+                this.modalService.open(content, { backdrop: 'static' }).result.then((data) => {
+                    // Save to backend via AppService
+                    this.appService.saveSmtpConfig(this.appId, data).subscribe({
+                        next: () => {
+                            this.toastService.show("App SMTP configuration successfully saved", { classname: 'bg-success text-light' });
+                        },
+                        error: () => {
+                            this.toastService.show("Failed to save App SMTP configuration", { classname: 'bg-danger text-light' });
+                        }
+                    });
+                }, () => {});
+            },
+            error: () => {
+                this.toastService.show("Failed to load SMTP config", { classname: 'bg-danger text-light' });
+            }
+        });
+    }
+
+    deleteSmtpConfig(configId: number, dismissCallback: any) {
+        if (confirm('Are you sure you want to permanently delete this SMTP configuration and revert to the system default?')) {
+            this.appService.removeSmtpConfig(configId).subscribe({
+                next: () => {
+                    this.toastService.show("App SMTP configuration removed", { classname: 'bg-success text-light' });
+                    dismissCallback(); // Close modal on success
+                },
+                error: () => {
+                    this.toastService.show("Failed to delete App SMTP configuration", { classname: 'bg-danger text-light' });
+                }
+            });
+        }
+    }
+    // ==========================================
 
     removeMailerData: any;
     removeMailer(content, mailer) {
@@ -229,9 +282,6 @@ export class MailerEditorComponent implements OnInit {
     viewType;
     loadMailer(id) {
         this.mailerId = id;
-        
-        // Mark for check IMMEDIATELY so the sidebar item highlights instantly 
-        // before the HTTP request even finishes.
         this.cdr.markForCheck(); 
 
         this.mailerService.getMailer(id)
@@ -240,7 +290,7 @@ export class MailerEditorComponent implements OnInit {
                 next: mailer => {
                     this.mailer = mailer;
                     this.viewType = 'mailer';
-                    this.cdr.markForCheck(); // Safely triggers UI update for OnPush
+                    this.cdr.markForCheck();
                 },
                 error: err => {
                     console.error("Failed to load mailer", err);
@@ -251,7 +301,6 @@ export class MailerEditorComponent implements OnInit {
 
     schedId: number;
     sched: any;
-
 
     schedLoading: boolean;
     schedList;
@@ -266,7 +315,6 @@ export class MailerEditorComponent implements OnInit {
         this.schedService.getSchedList(params)
             .subscribe(res => {
                 this.schedList = res;
-                // this.maiTotal = res.page?.totalElements;
                 this.schedLoading = false;
                 this.cdr.detectChanges();
             }, res => {
@@ -302,7 +350,6 @@ export class MailerEditorComponent implements OnInit {
 
     dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
-    // schedId:number;
     loadSched(id) {
         this.schedId = id;
         this.mailerService.getMailer(id)
@@ -321,13 +368,10 @@ export class MailerEditorComponent implements OnInit {
 
     editSchedData: any;
     editSched(content, sched, isNew) {
-        // console.log(mailer);
-        // mailer.content = this.br2nl(mailer.content);
         this.editSchedData = sched;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(data => {
-                // data.content = this.nl2br(data.content);
                 this.schedService.save(this.user.email, this.appId, data)
                     .subscribe(res => {
                         this.loadSchedList(this.pageNumber);
@@ -341,12 +385,8 @@ export class MailerEditorComponent implements OnInit {
             }, res => { })
     }
 
-    
     tplId:number=null;
     openHistory(content, mailId) {
-        // console.log(mailer);
-        // mailer.content = this.br2nl(mailer.content);
-        // this.editSchedData = sched;
         this.tplId = mailId;
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static', size: 'lg' })
@@ -373,20 +413,9 @@ export class MailerEditorComponent implements OnInit {
             }, res => { });
     }
 
-
     insertTextAtCursor(text, cm) {
         cm.insertText("{{" + text + "}}");
-        // const editor = cm.codeMirror;
-        // const doc = editor.getDoc();
-        // var cursor = doc.getCursor(); // gets the line number in the cursor position
-        // // var line = doc.getLine(cursor.line); // get the line contents
-        // // var pos = {
-        // //   line: cursor.line
-        // // };
-        // doc.replaceRange("{{" + text + "}}", cursor);
-        // }
     }
-
 
     editDatasetData: any;
     editDataset(content, datasetId) {
@@ -406,26 +435,9 @@ export class MailerEditorComponent implements OnInit {
             })
     }
 
-    // hint: any = null;
-    // editHolderForm: any = {}
-    // loadForm(id, holder) {
-    //     this.formService.getForm(id)
-    //         .subscribe(res => {
-
-    //             holder['data'] = res;
-    //             holder['prev'] = res.prev;
-
-    //             this.populateAutoComplete();
-
-    //         });
-    // }
-
     formList: any[];
     getFormList(appId) {
         let params = { appId: appId }
-        // new HttpParams()
-        //     .set("appId", this.app.id)
-
         this.formService.getListBasic(params)
             .subscribe(res => {
                 this.formList = res.content;
@@ -442,90 +454,9 @@ export class MailerEditorComponent implements OnInit {
             })
     }
 
-    // extraAutoCompleteHtml: any[] = [];
-    // populateAutoComplete() {
+    nl2br = nl2br; 
+    br2nl = br2nl; 
 
-    //     this.extraAutoCompleteHtml = [];
-    //     if (this.editHolderForm?.data?.items) {
-    //         Object.keys(this.editHolderForm?.data?.items).forEach(key => {
-    //             var value = this.editHolderForm?.data?.items[key];
-    //             if (value.type != 'static') {
-    //                 if (['select', 'radio'].indexOf(value?.type) > -1){
-    //                     this.extraAutoCompleteHtml.push({ detail: `{{$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, type: "text", apply: `{{$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, label: value.label })
-    //                 }else if (['date'].indexOf(value?.type) > -1){
-    //                     this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key};format="date:dd/MM/yyyy HH:mm"}}`, label: value.label })
-    //                 }else if (['file'].indexOf(value?.type) > -1){
-    //                     this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key};format="src"}}`, label: value.label })
-    //                 }else{
-    //                     this.extraAutoCompleteHtml.push({ detail: `{{$.${key}}}`, type: "text", apply: `{{$.${key}}}`, label: value.label })
-    //                 }
-                    
-    //                 //   this.extraAutoCompleteJs.push({ detail: `$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}`, type: "text", apply: `$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}`, label: value.label })
-    //             }
-    //         });
-    //         if (this.editHolderForm?.prev) {
-    //             Object.keys(this.editHolderForm?.prev?.items).forEach(key => {
-    //                 var value = this.editHolderForm?.prev?.items[key];
-    //                 if (this.editHolderForm?.prev?.items[key].type != 'static') {
-    //                     if (['select', 'radio'].indexOf(value?.type) > -1){
-    //                         this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, type: "text", apply: `{{$prev$.${key}${(['select', 'radio'].indexOf(value?.type) > -1 ? '.name' : '')}}}`, label: value.label })
-    //                     }else if (['date'].indexOf(value?.type) > -1){
-    //                         this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key};format="date:dd/MM/yyyy HH:mm"}}`, label: value.label })
-    //                     }else if (['file'].indexOf(value?.type) > -1){
-    //                         this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key};format="src"}}`, label: value.label })
-    //                     }else{
-    //                         this.extraAutoCompleteHtml.push({ detail: `{{$prev$.${key}}}`, type: "text", apply: `{{$prev$.${key}}}`, label: value.label })
-    //                     }                    }
-    //             });
-    //         }
-
-    //         if (this.editHolderForm?.data) {
-    //             this.editHolderForm?.data?.sections?.forEach(section => {
-    //                 // console.log(section)
-    //                 if (section.type == 'list') {
-    //                     this.extraAutoCompleteHtml.push({ label: '(child) $.' + section.code, type: "text", apply: this.getLoopCode(section), detail: '' + section.title })
-    //                 }
-    //             })
-    //         }
-    //     }
-
-    //     this.extraAutoCompleteHtml.push({ label: 'If-condition', type: "text", apply: "{{if ($.#{condition})}}\n\t<!--show if true-->\n{{else}}\n\t<!--show if false-->\n{{endif}}", detail: 'Conditional text' })
-    //     this.extraAutoCompleteHtml.push({ label: '$$_.status', type: "text", apply: "$$_.status", detail: 'Approval status' });
-    //     this.extraAutoCompleteHtml.push({ label: '$$_.remark', type: "text", apply: "$$_.remark", detail: 'Approval remark' });
-    //     this.extraAutoCompleteHtml.push({ label: '$viewUri$', type: "text", apply: "{{$viewUri$}}", detail: 'URL to view entry' });
-    //     this.extraAutoCompleteHtml.push({ label: '$editUri$', type: "text", apply: "{{$editUri$}}", detail: 'URL to edit entry' });
-    //     this.extraAutoCompleteHtml.push({ label: '$uiUri$', type: "text", apply: "{{$uiUri$}}", detail: 'Base URL for UI/frontend up to .../#' });
-
-
-    // }
-
-    // getLoopCode = (section) => "{{$." + section.code + ":{i|" + "\n\t" + this.getItems(section) + "\n}}}"
-    // getItems(section) {
-    //     return section.items
-    //         .filter(i => this.editHolderForm.data?.items[i.code].type != 'static')
-    //         .map(i => {
-    //             var type = this.editHolderForm.data?.items[i.code].type;
-    //             var pipe = ''
-    //             if (type == 'date') {
-    //                 pipe = ';format="date:dd/MM/yyyy HH:mm"';
-    //             } else if (['select', 'radio'].indexOf(type) > -1) {
-    //                 pipe = '.name';
-    //             } else if (type == 'qr') {
-    //                 pipe = ';format="qr"';
-    //             } else if (type == 'file') {
-    //                 pipe = ';format="src"';
-    //             }
-    //             return '\t{{i.' + i.code + pipe + '}}';
-    //         })
-    //         .join("<br/>\n");
-    // }
-
-    nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
-    br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
-
-    // ==========================================
-  // META TRAILS LOGIC
-  // ==========================================
   currentMetaTrailScope: string = "";
   currentObj: any = null;
 
@@ -537,7 +468,6 @@ export class MailerEditorComponent implements OnInit {
   }
 
   onTrailReverted(modalCloseFn: any) {
-    // Refresh the mailer data when a revert happens
     this.loadMailer(this.mailer.id); 
   }
 
