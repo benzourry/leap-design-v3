@@ -161,6 +161,10 @@ export class BucketManagerComponent implements OnInit {
 
   editBucketData: any;
   editBucket(content, group, isNew) {
+    
+    this.s3TestResult = null;
+    this.s3Testing = false;
+
     this.editBucketData = group;
     if (!this.editBucketData.type) {
       this.editBucketData.type = 'local';
@@ -554,6 +558,36 @@ export class BucketManagerComponent implements OnInit {
 
       window.open(url, 'OneDriveAuth', 'width=500,height=600,left=200,top=200');
       this.cdr.detectChanges();
+    });
+  }
+
+  // Inside BucketManagerComponent class properties:
+  s3Testing: boolean = false;
+  s3TestResult: { success: boolean; message: string } | null = null;
+
+  // Add this method:
+  testS3Connection(bucketData: any) {
+    this.s3Testing = true;
+    this.s3TestResult = null;
+    this.cdr.detectChanges();
+
+    // Ensure appId is assigned so {{_secret}} placeholders can resolve
+    const payload = { ...bucketData, appId: this.appId };
+
+    this.bucketService.testS3Connection(payload).subscribe({
+      next: (res: any) => {
+        this.s3Testing = false;
+        this.s3TestResult = res;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.s3Testing = false;
+        this.s3TestResult = {
+          success: false,
+          message: err.error?.message || err.message || 'Connection test failed.'
+        };
+        this.cdr.detectChanges();
+      }
     });
   }
 

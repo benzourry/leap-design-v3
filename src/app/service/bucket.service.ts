@@ -34,6 +34,10 @@ export class BucketService {
   save(appId: number, data: any): any {
     return this.http.post(`${this.baseApi}/bucket?appId=${appId}`, data)
   }
+
+  testS3Connection(bucket: any){
+    return this.http.post(`${baseApi}/bucket/test-s3`, bucket);
+  }
   
   getBucketList(params:any){
     return this.http.get<any>(`${this.baseApi}/bucket`,{ params: params })
