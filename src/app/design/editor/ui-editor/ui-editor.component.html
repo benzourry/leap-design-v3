@@ -100,7 +100,9 @@
                         <div class="ms-auto btn-group-xs small group-by-toggle">
                           <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
                             name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
-                          <label for="dsgb-ungroup" class="btn px-1">None</label>
+                          <label for="dsgb-ungroup" class="btn px-1">
+                            <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
+                          </label>
                           <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
                             name="dsgb-form" [(ngModel)]="datasetGroupBy">
                           <label for="dsgb-form" class="btn px-1">Form</label>
@@ -239,7 +241,9 @@
                           <div class="ms-auto btn-group-xs small group-by-toggle">
                             <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
                               name="scgb-ungroup" [(ngModel)]="screenGroupBy">
-                            <label for="scgb-ungroup" class="btn px-1">None</label>
+                            <label for="scgb-ungroup" class="btn px-1">
+                              <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
+                            </label>
                             <input class="btn-check" type="radio" value="type" id="scgb-type"
                               name="scgb-type" [(ngModel)]="screenGroupBy">
                             <label for="scgb-type" class="btn px-1">Type</label>

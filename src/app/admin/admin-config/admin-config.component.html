@@ -19,8 +19,8 @@
   }
 </style>
 <div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
-    <div style="max-width:720px" class="limit-width centered d-flex justify-content-between">
-      <div class="home-top-l p-2">
+    <div class="limit-width centered d-flex justify-content-between">
+      <div class="home-top-l p-2 ps-3">
         <img src="assets/icons/logo-w.svg" width="38">
       </div>
       <div class="home-top-r pe-2">
@@ -328,7 +328,7 @@
             </div>
         </div>
         <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round" (click)="d()">Close</button>
             <button type="button" class="btn btn-round btn-primary" [disabled]="editPropsForm.invalid"
                 (click)="c(editPropsData)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
@@ -392,7 +392,7 @@
             </div>
         </div>
         <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-round btn-secondary" (click)="d()">Close</button>
+            <button type="button" class="btn btn-round" (click)="d()">Close</button>
             <button type="button" class="btn btn-round btn-primary" [disabled]="editAppGroupForm.invalid"
                 (click)="c(editAppGroupData)">
                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>

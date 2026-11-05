@@ -1,6 +1,6 @@
 <div class="fixed-top bg-reka" [class]="bgClassName">
   <div class="limit-width centered d-flex justify-content-between">
-    <div class="home-top-l p-2">
+    <div class="home-top-l p-2 ps-3">
       <img src="assets/icons/logo-w.svg" alt="Logo" title="Logo" width="38">
     </div>
     <div class="home-top-r pe-2">
@@ -190,7 +190,7 @@
                               <div class="tile-action">
                                 <div class="p-1">
                                   <button type="button" class="btn btn-primary btn-round mb-2 stack" [class.disabled]="offline()"
-                                   routerLink="/design/{{ item.id }}"
+                                   routerLink="/design/{{item.id}}"
                                    (click)="clickedAppId.set(item.id)">
                                     <fa-icon class="icon" [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon> Edit App
                                   </button>

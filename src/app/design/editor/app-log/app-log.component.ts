@@ -22,6 +22,7 @@ import { Subscription, switchMap, timer, forkJoin, exhaustMap, catchError, of } 
 import { MailerService } from '../../../service/mailer.service';
 import { KryptaService } from '../../../service/krypta.service';
 import { LookupService } from '../../../run/_service/lookup.service';
+import { RxStompService } from '../../../_shared/service/rx-stomp.service';
 
 @Component({
   selector: 'app-app-log',
@@ -54,6 +55,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
   private cdr = inject(ChangeDetectorRef);
+  private rxStompService = inject(RxStompService);
 
   user: any;
   appId: number;
@@ -93,36 +95,35 @@ export class AppLogComponent implements OnInit, OnDestroy {
   kryptaList: any[] = [];
   lookupList: any[] = [];
 
-  isPolling: boolean = true;
-  private pollingSub?: Subscription;
+  isPolling: boolean = true; 
+  private liveSub?: Subscription;
 
   ngOnInit(): void {
-    this.userService.getCreator()
-      .subscribe((user) => {
-        this.user = user;
-        // IMPROVEMENT: markForCheck is generally preferred over detectChanges inside async callbacks
-        this.cdr.markForCheck(); 
+    this.userService.getCreator().subscribe((user) => {
+      this.user = user;
+      this.cdr.markForCheck(); 
 
-        this.route.parent.params
-          .subscribe((params: Params) => {
-            this.appId = params['appId'];
+      this.route.parent.params.subscribe((params: Params) => {
+        this.appId = params['appId'];
+        this.cdr.markForCheck();
+
+        if (this.appId) {
+          this.loadComps(this.appId);
+
+          let appParams = { email: user.email };
+          this.appService.getApp(this.appId, appParams).subscribe(res => {
+            this.app = res;
             this.cdr.markForCheck();
-
-            if (this.appId) {
-              this.loadComps(this.appId);
-
-              let appParams = { email: user.email };
-
-              this.appService.getApp(this.appId, appParams)
-                .subscribe(res => {
-                  this.app = res;
-                  this.cdr.markForCheck();
-                });
-
-              this.startPolling();
-            }
           });
+
+          // 1. Load historical logs via HTTP
+          this.loadLogs();
+          
+          // 2. Start WebSocket listener
+          this.startPolling();
+        }
       });
+    });
   }
 
   // IMPROVEMENT: Refactored to use forkJoin. This runs all requests in parallel 
@@ -216,72 +217,53 @@ loadLogs() {
   //   });
   // }
 
-startPolling() {
+  startPolling() {
     this.stopPolling();
     this.isPolling = true;
 
-    this.pollingSub = timer(0, 3000).pipe(
-      exhaustMap(() => {
-        const pollParams = { ...this.params };
-
-        if (this.logList && this.logList.length > 0) {
-          const newestLog = this.logList[0]; 
-          pollParams.dateFrom = newestLog.timestamp + 1; 
-        }
-
-        const cleanParams = Object.fromEntries(
-          Object.entries(pollParams).filter(([_, value]) => value !== undefined)
-        );
-
-        return this.appService.getLogs(this.appId, cleanParams).pipe(
-          catchError(err => {
-            console.error('Failed to fetch new logs during poll:', err);
-            return of(null);
-          })
-        );
-      })
-    ).subscribe(res => {
-      if (res && res.content && res.content.length > 0) {
-        
-        // 1. Check if this is the very first time we are loading logs
-        const isFirstLoad = this.logList.length === 0;
-
-        // 2. Map the incoming logs. ONLY apply isNew: true if it is NOT the first load
-        const newLogs = res.content.map((log: any) => ({ 
-          ...log, 
-          isNew: !isFirstLoad 
-        }));
-
-        // 3. IMPORTANT: Strip the 'isNew' flag from existing logs so they don't re-animate 
-        // when Angular shifts the table down.
-        const oldLogs = this.logList.map(log => ({ ...log, isNew: false }));
-
-        // 4. Prepend the new logs to the old logs
-        this.logList = [...newLogs, ...oldLogs];
-
-        if (this.logList.length > 2000) {
-          this.logList = this.logList.slice(0, 2000);
-        }
-
-        this.cdr.markForCheck();
+    // Use your existing RxStompService to watch the backend channel
+    this.liveSub = this.rxStompService.watch(`/topic/logs/${this.appId}`).subscribe((message: any) => {
+      if (message.body) {
+        const newLog = JSON.parse(message.body);
+        this.handleIncomingLog(newLog);
       }
     });
   }
 
+  handleIncomingLog(newLog: any) {
+    // 1. Client-side filter: Ignore logs that don't match the current UI filters
+    if (this.params.module && newLog.module !== this.params.module) return;
+    if (this.params.moduleId && newLog.moduleId != String(this.params.moduleId)) return;
+    if (this.params.searchText && !newLog.data?.toLowerCase().includes(this.params.searchText.toLowerCase())) return;
+
+    // 2. Mark as new for CSS animation
+    newLog.isNew = true;
+
+    // 3. Strip 'isNew' from old logs
+    const oldLogs = this.logList.map(log => ({ ...log, isNew: false }));
+    
+    // 4. Prepend and cap at 2000
+    this.logList = [newLog, ...oldLogs];
+    if (this.logList.length > 2000) {
+      this.logList = this.logList.slice(0, 2000);
+    }
+
+    // 5. Trigger UI update
+    this.cdr.markForCheck();
+  }
+
   stopPolling() {
     this.isPolling = false; 
-    if (this.pollingSub) {
-      this.pollingSub.unsubscribe();
+    if (this.liveSub) {
+      this.liveSub.unsubscribe(); // Unsubscribe cleanly closes the listener
     }
   }
 
   togglePolling() {
-    // FIX: Changed logic so it actually toggles. 
-    // Previously: if (isPolling) startPolling() -> Which makes no sense.
     if (this.isPolling) {
-      this.startPolling();
-    } else {
       this.stopPolling();
+    } else {
+      this.startPolling();
     }
   }
 
