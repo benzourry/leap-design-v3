@@ -141,6 +141,7 @@ export class ListComponent implements OnInit, OnDestroy {
   _param: any = {};
   _startTimestamp: number = 0;
   prevId!: number;
+  _lastDataset?: any; // Add this line
 
   app = computed(() => this.runService.$app());
   lang = computed(() => this.app().x?.lang || 'en');
@@ -225,19 +226,29 @@ export class ListComponent implements OnInit, OnDestroy {
         if (id) untracked(() => this.getDataset(id));
     });
 
-    effect(() => {
+
+  effect(() => {
       const startTimestamp = this.runService.$startTimestamp();
       const param = this.param();
-      const datasetReady = !!this.dataset(); //readiness check
+      const ds = this.dataset();
+      const datasetReady = !!ds; 
 
-      if (!deepEqual(this._param, param) || (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters()) || datasetReady) {
+      const paramChanged = !deepEqual(this._param, param);
+      const timeChanged = (this._startTimestamp !== startTimestamp && this.hasConfPresetFilters());
+      
+      const datasetChanged = datasetReady && this._lastDataset !== ds;
+
+      if (paramChanged || timeChanged || datasetChanged) {
         this._param = param;
         this._startTimestamp = startTimestamp;
+        
+        // Changed: Store the object reference
+        if (datasetReady) this._lastDataset = ds;
 
         if (this._param?.['$prev$.$id']) this.prevId = this._param['$prev$.$id'];
+        
         untracked(() => {
-          // Only fetch the list if the dataset structure has actually resolved
-          if (this.dataset()?.id) {
+          if (ds?.id) {
             this.getEntryList(this.pageNumber(), this.sort());
           }
         });
