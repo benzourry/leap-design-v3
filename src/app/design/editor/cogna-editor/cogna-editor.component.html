@@ -1243,7 +1243,7 @@
               <div class="col-6">
                 <div class="form-group mb-3">
                   <label class="form-label" for="binds">Model Name *</label>
-                  @if(editCognaData.data.overrideEmbed){
+                  @if(editCognaData.data.overrideEmbed || (embedModelNameList|filter:editCognaData.embedModelType).length==0){
                   <input type="text" class="form-control" [(ngModel)]="editCognaData.embedModelName"
                     #embedModelName="ngModel" name="embedModelName" required>
                   }@else{
@@ -1283,7 +1283,7 @@
                 </div>
               </div>
             </div>
-            } @else if (['localai','ollama'].includes(editCognaData.embedModelType)){
+            } @else if (['localai','ollama','openai'].includes(editCognaData.embedModelType)){
             <div class="row">
               <div class="col-6">
                 <div class="form-group mb-3">
@@ -1363,14 +1363,13 @@
               <div class="col-6">
                 <div class="form-group mb-3">
                   <label class="form-label" for="binds">Model Name *</label>
-                  @if(editCognaData.data.overrideInfer){
+                  @if(editCognaData.data.overrideInfer  || (inferModelNameList|filter:editCognaData.inferModelType).length==0){
                   <input type="text" class="form-control" [(ngModel)]="editCognaData.inferModelName"
                     #inferModelName="ngModel" name="inferModelName" required>
                   }@else{
                   <select class="form-select" name="inferModelName" [(ngModel)]="editCognaData.inferModelName"
                     #inferModelName="ngModel" required>
-                    @for (item of (inferModelNameList|filter:editCognaData.inferModelType)|filter:editCognaData.type;
-                    track $index) {
+                    @for (item of (inferModelNameList|filter:editCognaData.inferModelType)|filter:editCognaData.type;track $index) {
                     <option [value]="item.code">{{item.name}}
                     </option>
                     }

@@ -81,6 +81,7 @@ export class CognaEditorComponent implements OnInit {
     { name: 'AllMiniLM', code: 'minilm' },
     { name: 'Multilingual E5SmallV2', code: 'e5small' },
     { name: 'OpenAI', code: 'openai' },
+    { name: 'Requesty', code: 'requesty' },
     { name: 'HuggingFace', code: 'huggingface' },
     { name: 'Gemini', code: 'gemini' },
     { name: 'LocalAI', code: 'localai' },
@@ -111,6 +112,7 @@ export class CognaEditorComponent implements OnInit {
   // txtgen, txtcls, txtext, imggen
   inferModelTypeList = [
     { name: 'OpenAI', code: 'openai', use: ['txtgen','txtcls','txtext','imggen'] },
+    { name: 'Requesty', code: 'requesty', use: ['txtgen','txtcls','txtext','imggen'] },
     { name: 'Gemini', code: 'gemini', use: ['txtgen','txtcls','txtext','imggen'] },
     { name: 'DeepSeek', code: 'deepseek', use: ['txtgen','txtcls','txtext'] },
     { name: 'HuggingFace', code: 'huggingface', use: ['txtgen','txtcls','txtext'] },

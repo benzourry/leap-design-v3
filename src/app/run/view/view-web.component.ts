@@ -55,26 +55,14 @@ export class ViewWebComponent implements OnInit  {
 
   constructor() { }
 
-  // ngOnInit() {
-
-  //   this.route.url.pipe(
-  //     withLatestFrom(this.route.params, this.route.queryParams)
-  //   ).subscribe(([, params, queryParams]) => {
-  //     this.formId.set(params['formId']);
-  //     this.action.set(params['action']);
-  //     this.param.set(queryParams);
-  //     this.navIndex.set(queryParams['navIndex'] ?? 0);
-  //     // this.tab = queryParams['tab'] ?? 0; dh da navIndex dlm FormComponent yg extract dari params
-  //     this.entryId.set(queryParams['entryId']);
-  //   })
-  // }
-
   ngOnInit() {
     this.route.url.pipe(
       withLatestFrom(this.route.params, this.route.queryParams)
     ).subscribe(([, params, queryParams]) => {
       this.formId.set(params['formId']);
-      this.action.set(params['action']);
+      if (params['action']){
+        this.action.set(params['action']);
+      }
       
       let finalParams = { ...queryParams };
 
