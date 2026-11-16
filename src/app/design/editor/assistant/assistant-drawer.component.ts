@@ -6,6 +6,7 @@ import { AppService } from '../../../service/app.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantService } from './assistant.service';
 import { AssistantContextService } from './assistant-context.service';
+import { ASSISTANT_MAX_PROMPT_CHARS } from './assistant-api.contract';
 import { AssistantExecutorService } from './assistant-executor.service';
 import { AssistantPlanCardComponent } from './assistant-plan-card.component';
 import {
@@ -43,6 +44,7 @@ export class AssistantDrawerComponent {
   changed = output<AssistantChanged>();
 
   readonly prompt = signal('');
+  readonly maxPromptChars = ASSISTANT_MAX_PROMPT_CHARS;
   readonly history = signal<AssistantChatMessage[]>([]);
   readonly loading = signal(false);
   readonly prose = signal('');
@@ -59,7 +61,13 @@ export class AssistantDrawerComponent {
   readonly actions = computed(() => this.plan()?.actions ?? []);
   readonly warnings = computed(() => this.plan()?.warnings ?? []);
   readonly results = computed<AssistantActionResult[]>(() => this.result()?.results ?? []);
-  readonly canSend = computed(() => this.prompt().trim().length > 2 && !this.loading() && !this.applying());
+  readonly canSend = computed(() => {
+    const length = this.prompt().trim().length;
+    return length > 2
+      && length <= ASSISTANT_MAX_PROMPT_CHARS
+      && !this.loading()
+      && !this.applying();
+  });
   readonly canApply = computed(() => this.included().length > 0 && !this.applying() && !this.result());
 
   readonly failedCount = computed(() => this.result()?.failed ?? 0);

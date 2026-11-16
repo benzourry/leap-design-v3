@@ -28,5 +28,8 @@ export const ASSISTANT_API = {
 /** Hard limit so a runaway plan cannot be applied in one go. */
 export const ASSISTANT_MAX_ACTIONS = 60;
 
+/** Matches `leap.assistant.max-message-chars` on the server, which rejects longer prompts. */
+export const ASSISTANT_MAX_PROMPT_CHARS = 4000;
+
 /** Above this the drawer warns the creator before sending a prompt. */
 export const ASSISTANT_CONTEXT_WARN_ENTITIES = 400;
