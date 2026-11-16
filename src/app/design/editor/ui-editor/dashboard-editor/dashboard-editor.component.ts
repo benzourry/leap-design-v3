@@ -25,6 +25,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { DatasetService } from '../../../../service/dataset.service';
+import { CHART_AGG_LIST, CHART_HEIGHT_LIST, CHART_TYPE_LIST, DASHBOARD_SIZE_LIST } from '../../assistant/assistant-knowledge';
 
 @Component({
   selector: 'app-dashboard-editor',
@@ -78,46 +79,13 @@ export class DashboardEditorComponent implements OnInit {
   offline: boolean;
   baseApi = baseApi;
 
-  chartTypeList = [
-    { code: 'pie', name: 'Pie', parent: 'chart', icon: ['fas', 'chart-pie'], noseries: true },
-    { code: 'doughnut', name: 'Doughnut', parent: 'chart', icon: ['far', 'circle'], noseries: true },
-    { code: 'rose', name: 'Nightingale Rose', parent: 'chart', icon: ['fas', 'chart-pie'], noseries: true },
-    { code: 'bar', name: 'Vertical Bar', parent: 'chart', icon: ['fas', 'chart-bar'], transform: "rotate-90 flip-v" },
-    { code: 'line', name: 'Vertical Line', parent: 'chart', icon: ['fas', 'chart-line'], transform: "rotate-90 flip-v" },
-    { code: 'hbar', name: 'Horizontal Bar', parent: 'chart', icon: ['fas', 'chart-bar'] },
-    { code: 'hline', name: 'Horizontal Line', parent: 'chart', icon: ['fas', 'chart-line'] },
-    { code: 'area', name: 'Area', parent: 'chart', icon: ['fas', 'chart-area'] },
-    { code: 'radar', name: 'Radar', parent: 'chart', icon: ['fas', 'circle-nodes'] },
-    { code: 'gauge', name: 'Gauge', parent: 'chart', icon: ['fas', 'tachometer-alt'], noseries: true }
-  ]
+  chartTypeList = CHART_TYPE_LIST;
 
-  aggType = [
-    { code: 'sum', name: "Sum" },
-    { code: 'count', name: "Count" },
-    { code: 'avg', name: "Average" },
-    { code: 'max', name: "Max" },
-    { code: 'min', name: "Min" },
-    { code: 'stddev', name: "Standard Deviation" },
-    { code: 'variance', name: "Variance" },
-    { code: 'median', name: "Median" },
-  ]
+  aggType = CHART_AGG_LIST;
 
-  sizeList: any[] = [
-    { name: "100%", value: "col-sm-12" },
-    { name: "67%", value: "col-sm-8" },
-    { name: "58%", value: "col-sm-7" },
-    { name: "50%", value: "col-sm-6" },
-    { name: "42%", value: "col-sm-5" },
-    { name: "33%", value: "col-sm-4" }
-  ]
+  sizeList: any[] = DASHBOARD_SIZE_LIST;
 
-  heightList: any[] = [
-    { name: "Normal", value: 450 },
-    { name: "High", value: 650 },
-    { name: "Double (2x)", value: 900 },
-    { name: "Triple (3x)", value: 1350 },
-    { name: "Quadruple (4x)", value: 1800 }
-  ]
+  heightList: any[] = CHART_HEIGHT_LIST;
 
   publicEp: any = {}
   editDrillFields: any = {}

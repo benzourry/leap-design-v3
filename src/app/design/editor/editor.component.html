@@ -36,6 +36,12 @@
       
       <div class="p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
+          @if (assistantStatus.available()) {
+            <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="assistantOpen.set(true)"
+              title="App assistant" aria-label="Open app assistant">
+              <fa-icon [icon]="['fas','robot']" [fixedWidth]="true"></fa-icon>
+            </button>
+          }
           <a type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
             <fa-icon [icon]="['fas','chart-bar']" [fixedWidth]="true"></fa-icon>
           </a>
@@ -108,6 +114,11 @@
   @if (!loading()) {
     <div class="p-3 text-center text-secondary"><h4>No app found with ID: {{appId}}</h4></div>
   }
+}
+
+@if (assistantStatus.available() && app()?.id && authorized()) {
+  <app-assistant-drawer [(open)]="assistantOpen" [appId]="app().id" [app]="app()" [email]="user()?.email"
+    (changed)="onAssistantChanged($event)"></app-assistant-drawer>
 }
 
 </div>

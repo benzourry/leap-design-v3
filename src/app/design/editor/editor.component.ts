@@ -23,6 +23,9 @@ import { LoadingService } from '../../_shared/service/loading.service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ThemeToggleComponent } from '../../run/_component/theme-toggle.component';
+import { AssistantDrawerComponent } from './assistant/assistant-drawer.component';
+import { AssistantStatusService } from './assistant/assistant-status.service';
+import { AssistantChanged } from './assistant/assistant.types';
 
 @Component({
     selector: 'app-editor',
@@ -36,7 +39,7 @@ import { ThemeToggleComponent } from '../../run/_component/theme-toggle.componen
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, FormsModule, NgbTypeahead,
-        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent]
+        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantDrawerComponent]
 })
 export class EditorComponent implements OnInit {
 
@@ -51,6 +54,9 @@ export class EditorComponent implements OnInit {
     offline = signal<boolean>(false);
     copyRequestList = signal<any[]>([]);
     editAppData = signal<any>(null);
+
+    readonly assistantStatus = inject(AssistantStatusService);
+    assistantOpen = signal<boolean>(false);
 
     private modalService = inject(NgbModal);
     private userService = inject(UserService);
@@ -145,6 +151,7 @@ export class EditorComponent implements OnInit {
                             this.authorized.set(res.email.includes(user.email) || res.group?.manager?.includes(user.email));
                             this.titleService.setTitle("Design - " + res.title);
                             this.getCopyRequestList();
+                            if (this.authorized()) this.assistantStatus.check();
                         })
                     );
                 }
@@ -155,6 +162,13 @@ export class EditorComponent implements OnInit {
 
     handleImageError(event: Event) {
         (event.target as HTMLImageElement).src = 'assets/icons/logo.svg';
+    }
+
+    onAssistantChanged(change: AssistantChanged) {
+        const total = change.forms + change.datasets + change.dashboards + change.screens;
+        if (total > 0) {
+            this.toastService.show('Assistant applied ' + total + ' change(s)', { classname: 'bg-success text-light' });
+        }
     }
 
     popShare(id: any) {

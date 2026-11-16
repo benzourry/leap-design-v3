@@ -58,6 +58,7 @@ import { FieldEditComponent } from '../../../../run/_component/field-edit-myds-i
 import { FieldViewComponent } from '../../../../run/_component/field-view.component';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
+import { FIELD_SUB_TYPE_MAP, FIELD_TYPE_LIST, HEIGHT_LIST, SIZE_FIX_LIST, SIZE_LIST } from '../../assistant/assistant-knowledge';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { KryptaService } from '../../../../service/krypta.service';
 import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
@@ -110,125 +111,17 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     base = base;
     filterField: string = "";
 
-    sizeList: any[] = [
-        { name: "100%", value: "col-sm-12" },
-        { name: "75%", value: "col-sm-9" },
-        { name: "67%", value: "col-sm-8" },
-        { name: "58%", value: "col-sm-7" },
-        { name: "50%", value: "col-sm-6" },
-        { name: "42%", value: "col-sm-5" },
-        { name: "33%", value: "col-sm-4" },
-        { name: "25%", value: "col-sm-3" }
-    ]
-    sizeFixList: any[] = [
-        { name: "100%", value: "col-12" },
-        { name: "75%", value: "col-9" },
-        { name: "67%", value: "col-8" },
-        { name: "58%", value: "col-7" },
-        { name: "50%", value: "col-6" },
-        { name: "42%", value: "col-5" },
-        { name: "33%", value: "col-4" },
-        { name: "25%", value: "col-3" }
-    ]
-    heightList: any[] = [
-        { name: "1w x 1h", value: "100" },
-        { name: "2w x 1h", value: "50" },
-        { name: "1w x 2h", value: "200" },
-        { name: "3w x 1h", value: "33" },
-        { name: "1h x 3w", value: "300" }
-    ]
+    sizeList: any[] = SIZE_LIST;
+    sizeFixList: any[] = SIZE_FIX_LIST;
+    heightList: any[] = HEIGHT_LIST;
 
     facetList: any[];
     facetMode = ['edit', 'view', 'disabled', 'hidden', 'none'];
     facetTabMode = ['disabled', 'hidden', 'none'];
 
-    typeList: any[] = [
-        { name: "Text", value: "text" },
-        { name: "Number", value: "number" },
-        { name: "Date Picker", value: "date" },
-        { name: "Dropdown", value: "select" },
-        { name: "Radio Option", value: "radio" },
-        { name: "Checkbox", value: "checkbox" },
-        { name: "Checkbox Option", value: "checkboxOption" },
-        { name: "Simple Option", value: "simpleOption" },
-        { name: "Scale 1-5", value: "scaleTo5" },
-        { name: "Scale 1-10", value: "scaleTo10" },
-        { name: "Scale", value: "scale" },
-        { name: "File Upload", value: "file" },
-        { name: "Image Preview", value: "imagePreview" },
-        { name: "Evaluated Field", value: "eval" },
-        { name: "Static Element", value: "static" },
-        { name: "QR Scanner", value: "qr" },
-        { name: "Model Picker", value: "modelPicker" },
-        { name: "Color Picker", value: "color" },
-        { name: "Button", value: "btn" },
-        { name: "Dataset", value: "dataset" },
-        { name: "Screen", value: "screen" },
-        { name: "Map Picker", value: "map" },
-        { name: "Speech To Text", value: "speech" },
-    ];
-    subType: any = {
-        text: [
-            { name: 'Simple Text', code: 'input' },
-            { name: 'Long text', code: 'textarea' },
-            { name: 'Rich text', code: 'richtext' }
-        ],
-        select: [
-            { name: 'Dropdown (Single)', code: 'single' },
-            { name: 'Dropdown (Multiple)', code: 'multiple' }
-        ],
-        modelPicker: [
-            { name: 'Model Picker (Single)', code: 'single' },
-            { name: 'Model Picker (Multiple)', code: 'multiple' }
-        ],
-        radio: [
-            { name: 'Toggle Button', code: 'btn' },
-            { name: 'Radio Option', code: 'radio' }
-        ],
-        checkboxOption: [
-            { name: 'Checkbox Button', code: 'btn' },
-            { name: 'Checkbox Option', code: 'checkbox' }
-        ],
-        checkbox:[            
-            { name: 'Checkbox (Normal)', code: 'check' },
-            { name: 'Checkbox (Switch)', code: 'switch' }
-        ],
-        number: [
-            { name: 'Number Input', code: 'number' },
-            { name: 'Range Slider', code: 'range' }
-        ],
-        file: [
-            { name: 'Image File (Single)', code: 'image' },
-            { name: 'Image File (Multiple)', code: 'imagemulti' },
-            { name: 'Other File (Single)', code: 'other' },
-            { name: 'Other File (Multiple)', code: 'othermulti' }
-        ],
-        simpleOption: [
-            { name: 'Simple Toggle Button', code: 'btn' },
-            { name: 'Simple Radio', code: 'radio' },
-            { name: 'Simple Dropdown', code: 'select' }
-        ],
-        date: [
-            { name: 'Date Picker', code: 'date' },
-            { name: 'Date Time Picker', code: 'datetime' },
-            { name: 'Date (inline)', code: 'date-inline' },
-            { name: 'Date Time (inline)', code: 'datetime-inline' },
-            { name: 'Time Picker', code: 'time' }
-        ],
-        eval: [
-            { name: 'Evaluated Text', code: 'text' },
-            { name: 'Evaluated QR Code', code: 'qr' }
-        ],
-        static: [
-            { name: 'HTML Text', code: 'html' },
-            { name: 'HTML Text (keep value)', code: 'htmlSave' },
-            { name: 'Clearfix', code: 'clearfix' }
-        ],
-        map: [
-            { name: 'Map (Single)', code: 'single' },
-            { name: 'Map (Multiple)', code: 'multiple' }
-        ]
-    }
+    typeList: any[] = FIELD_TYPE_LIST;
+
+    subType: any = FIELD_SUB_TYPE_MAP;
 
     newForm: any = {
         nav: 'simple', type: 'db', sections: [{ sortOrder: 0, size: 'col-sm-12', type: 'section', title: 'Section 1', code: 'section1' }], canEdit: true, canRetract: true, canSave: true, canSubmit: true, validateSave: true,

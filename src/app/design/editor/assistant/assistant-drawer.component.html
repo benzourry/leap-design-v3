@@ -1,0 +1,102 @@
+@if (open()) {
+  <div class="assistant-backdrop" (click)="close()"></div>
+  <aside class="assistant-drawer" role="dialog" aria-label="App assistant">
+    <header class="assistant-header">
+      <div class="d-flex align-items-center gap-2">
+        <fa-icon [icon]="['fas', 'robot']" size="lg"></fa-icon>
+        <div>
+          <div class="fw-bold">App assistant</div>
+          <div class="small text-body-secondary">Describe what to build. Nothing changes until you apply.</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-sm btn-round" (click)="close()" aria-label="Close assistant">
+        <fa-icon [icon]="['fas', 'times']" [fixedWidth]="true"></fa-icon>
+      </button>
+    </header>
+
+    <div class="assistant-body" aria-live="polite">
+      @for (msg of history(); track $index) {
+        <div class="assistant-msg" [class.assistant-msg-user]="msg.role === 'user'">{{ msg.content }}</div>
+      }
+
+      @if (loading()) {
+        <div class="assistant-msg assistant-msg-pending">
+          <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
+          <span class="ms-1">Thinking…</span>
+          @if (prose()) {
+            <div class="mt-2 assistant-prose">{{ prose() }}</div>
+          }
+        </div>
+      }
+
+      @if (plan(); as currentPlan) {
+        <div class="assistant-plan">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">{{ actions().length }} proposed step(s)</span>
+            @if (result()) {
+              <span class="badge bg-success-subtle text-success-emphasis">{{ doneCount() }} applied</span>
+            }
+          </div>
+
+          <app-assistant-plan-card
+            [actions]="actions()"
+            [included]="included()"
+            [results]="results()"
+            [busy]="applying() || result() !== null"
+            (toggle)="toggle($event)" />
+
+          @for (warning of warnings(); track $index) {
+            <div class="small text-warning-emphasis mb-1">{{ warning }}</div>
+          }
+
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            @if (!result()) {
+              <button type="button" class="btn btn-primary btn-sm" [disabled]="!canApply()" (click)="apply()">
+                @if (applying()) {
+                  <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
+                }
+                Apply {{ included().length }} step(s)
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="discard()">
+                Discard
+              </button>
+            } @else {
+              @if (restorePointId() && !undone()) {
+                <button type="button" class="btn btn-outline-danger btn-sm" [disabled]="applying()" (click)="undo()">
+                  <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>
+                  Undo all changes
+                </button>
+              }
+              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="reset()">
+                Start over
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <footer class="assistant-footer">
+      @if (error()) {
+        <div class="alert alert-danger py-1 px-2 small mb-2" role="alert">{{ error() }}</div>
+      }
+      <textarea class="form-control" rows="3" [value]="prompt()" [disabled]="applying()"
+        (input)="onInput($event)" (keydown)="onKeydown($event)"
+        placeholder="e.g. Create a leave request form with employee name, leave type, start and end date, attached document, and a child section for approvals"></textarea>
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <span class="small text-body-secondary">Ctrl+Enter to send</span>
+        <div class="d-flex gap-2">
+          @if (history().length) {
+            <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="loading() || applying()" (click)="reset()">
+              Clear
+            </button>
+          }
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="!canSend()" (click)="send()">
+            <fa-icon [icon]="['fas', 'paper-plane']" [fixedWidth]="true"></fa-icon>
+            Send
+          </button>
+        </div>
+      </div>
+    </footer>
+  </aside>
+}
