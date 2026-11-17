@@ -1,12 +1,12 @@
-@if (open()) {
-  <div class="assistant-backdrop" (click)="close()"></div>
-  <aside class="assistant-drawer" role="dialog" aria-label="App assistant">
+<div class="assistant-backdrop" [class.is-visible]="open()" aria-hidden="true" (click)="close()"></div>
+<aside class="assistant-drawer" [class.is-open]="open()" role="dialog" aria-label="App assistant"
+  aria-modal="true" [attr.aria-hidden]="!open()" [attr.inert]="open() ? null : ''">
     <header class="assistant-header">
       <div class="d-flex align-items-center gap-2">
         <fa-icon [icon]="['fas', 'bolt']" size="lg"></fa-icon>
         <div>
           <div class="fw-bold">App assistant</div>
-          <div class="small text-body-secondary">Describe what to build. Nothing changes until you apply.</div>
+          <div class="smaller text-body-secondary">Describe what to build. Nothing changes until you apply.</div>
         </div>
       </div>
       <button type="button" class="btn btn-sm btn-round" (click)="close()" aria-label="Close assistant">
@@ -27,39 +27,16 @@
         }
       </div>
 
-      @if (settingsOpen()) {
-        <section class="assistant-plan mb-3" aria-label="Assistant API settings">
-          <div class="fw-semibold mb-2">Assistant API settings</div>
-          <label class="form-label small mb-1" for="assistant-api-base-url">API base URL</label>
-          <input id="assistant-api-base-url" class="form-control mb-2" type="url"
-            [value]="settingsDraft().apiBaseUrl" (input)="onSettingsInput('apiBaseUrl', $event)"
-            placeholder="https://api.openai.com/v1" autocomplete="url">
-          <label class="form-label small mb-1" for="assistant-model">Model</label>
-          <input id="assistant-model" class="form-control mb-2" type="text"
-            [value]="settingsDraft().model" (input)="onSettingsInput('model', $event)"
-            placeholder="e.g. gpt-4o-mini" autocomplete="off">
-          <label class="form-label small mb-1" for="assistant-api-key">API key</label>
-          <input id="assistant-api-key" class="form-control mb-2" type="password"
-            [value]="settingsDraft().apiKey" (input)="onSettingsInput('apiKey', $event)"
-            [placeholder]="settings() ? 'Saved key — leave blank to keep it' : 'Enter your API key'"
-            autocomplete="new-password">
-          <div class="small text-body-secondary mb-2">
-            Use an OpenAI-compatible base URL, usually ending in <code>/v1</code>. Settings are stored in this browser for your creator account.
-          </div>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary btn-sm" (click)="saveSettings()">Save settings</button>
-            @if (settings()) {
-              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleSettings()">Cancel</button>
-            }
-          </div>
-        </section>
-      } @else {
-        <div class="d-flex justify-content-end mb-2">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleSettings()">
-            Assistant settings
-          </button>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="small text-body-secondary">
+          @if (settings(); as selectedAssistant) {
+            Using <strong>{{ selectedAssistant.name }}</strong> ({{ selectedAssistant.model }})
+          } @else {
+            No assistant selected
+          }
         </div>
-      }
+        <a class="btn btn-outline-secondary btn-sm" routerLink="/devprofile">Manage assistants</a>
+      </div>
 
       @for (msg of history(); track $index) {
         <div class="assistant-msg" [class.assistant-msg-user]="msg.role === 'user'">{{ msg.content }}</div>
@@ -123,32 +100,37 @@
       }
     </div>
 
-    <footer class="assistant-footer">
+    <footer class="assistant-footer p-0">
       @if (error()) {
-        <div class="alert alert-danger py-1 px-2 small mb-2" role="alert">{{ error() }}</div>
+        <div class="alert alert-danger py-2 px-3 small m-0 rounded-0" role="alert">{{ error() }}</div>
       }
-      <textarea class="form-control" rows="3" [value]="prompt()" [disabled]="applying()"
-        [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
-        placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
-      <div class="d-flex justify-content-between align-items-center mt-2">
-        <span class="small text-body-secondary">
-          Ctrl+Enter to send
-          @if (prompt().length > maxPromptChars * 0.9) {
-            &middot; {{ prompt().length }}/{{ maxPromptChars }}
-          }
-        </span>
-        <div class="d-flex gap-2">
-          @if (history().length) {
-            <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="loading() || applying()" (click)="reset()">
-              Clear
+      
+      <!-- Unified Chat Input Container -->
+      <div class="bg-body border-top">
+        <textarea class="form-control border-0 rounded-0 shadow-none bg-transparent px-3 pt-3" rows="3" style="resize: none;"
+          [value]="prompt()" [disabled]="applying()"
+          [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
+          placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
+        
+        <div class="d-flex justify-content-between align-items-center p-3 pt-0">
+          <span class="smaller text-body-secondary">
+            Ctrl+Enter to send
+            @if (prompt().length > maxPromptChars * 0.9) {
+              &middot; <span [class.text-danger]="prompt().length >= maxPromptChars">{{ prompt().length }}/{{ maxPromptChars }}</span>
+            }
+          </span>
+          <div class="d-flex gap-2">
+            @if (history().length) {
+              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="loading() || applying()" (click)="reset()">
+                Clear
+              </button>
+            }
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" [disabled]="!canSend()" (click)="send()">
+              <fa-icon [icon]="['fas', 'paper-plane']" [fixedWidth]="true"></fa-icon>
+              Send
             </button>
-          }
-          <button type="button" class="btn btn-primary btn-sm" [disabled]="!canSend()" (click)="send()">
-            <fa-icon [icon]="['fas', 'paper-plane']" [fixedWidth]="true"></fa-icon>
-            Send
-          </button>
+          </div>
         </div>
       </div>
     </footer>
-  </aside>
-}
+</aside> 

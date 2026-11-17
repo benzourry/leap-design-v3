@@ -572,7 +572,7 @@ export interface AssistantContext {
 
 export interface AssistantPlanRequest {
   prompt: string;
-  settings: import('./assistant-settings.service').AssistantSettings;
+  assistantId: number;
   history: AssistantChatMessage[];
   context: AssistantContext;
 }

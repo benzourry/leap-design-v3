@@ -33,6 +33,7 @@ import { PageTitleComponent } from '../run/_component/page-title.component';
 import { RunService } from '../run/_service/run.service';
 import { domainBase } from '../_shared/constant.service';
 import { ThemeToggleComponent } from '../run/_component/theme-toggle.component';
+import { AssistantProfile, AssistantProfileDraft, AssistantSettingsService } from '../design/editor/assistant/assistant-settings.service';
 
 @Component({
     selector: 'app-devprofile',
@@ -65,6 +66,7 @@ export class DevProfileComponent implements OnInit {
     private pushService = inject(PushService);
     private modalService = inject(NgbModal);
     private toastService = inject(ToastService);
+    private assistantSettingsService = inject(AssistantSettingsService);
     private route = inject(ActivatedRoute);
     private cdr = inject(ChangeDetectorRef);
 
@@ -82,6 +84,7 @@ export class DevProfileComponent implements OnInit {
       .subscribe(user => {
         this.user = user;
         this.cdr.detectChanges();
+        this.loadAssistants();
 
         this.route.url.pipe(
           withLatestFrom(this.route.parent.params, this.route.params)
@@ -218,5 +221,127 @@ export class DevProfileComponent implements OnInit {
   }
 
   cleanText = (str) => str.replace(/<\/?[^>]+(>|$)/g, " ");
+
+  assistants: AssistantProfile[] = [];
+  editingAssistantId: number | null = null;
+  assistantDraft: AssistantProfileDraft = this.emptyAssistantDraft();
+  readonly assistantBaseUrlSuggestions = [
+    { name: 'OpenAI', url: 'https://api.openai.com/v1' },
+    { name: 'OpenRouter', url: 'https://openrouter.ai/api/v1' },
+    { name: 'Requesty', url: 'https://router.requesty.ai/v1' },
+    { name: 'DeepSeek', url: 'https://api.deepseek.com/v1' },
+    { name: 'Groq', url: 'https://api.groq.com/openai/v1' },
+    { name: 'Together AI', url: 'https://api.together.xyz/v1' },
+    { name: 'Mistral', url: 'https://api.mistral.ai/v1' },
+    { name: 'Google Gemini (OpenAI-compatible)', url: 'https://generativelanguage.googleapis.com/v1beta/openai/' },
+  ];
+
+  private emptyAssistantDraft(): AssistantProfileDraft {
+    return {
+      name: '',
+      apiBaseUrl: '',
+      model: '',
+      apiKey: '',
+      additionalInstructions: '',
+      maxActions: 60,
+    };
+  }
+
+  loadAssistants() {
+    this.assistantSettingsService.list(this.user.email).subscribe({
+      next: (assistants) => {
+        this.assistants = assistants;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.toastService.show(this.assistantError(err, 'Assistant profiles could not be loaded.'), {
+          classname: 'bg-danger text-light',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  addAssistant(tpl: any) {
+    this.editingAssistantId = null;
+    this.assistantDraft = this.emptyAssistantDraft();
+    this.modalService.open(tpl, { backdrop: 'static' }).result.then(
+      (draft) => this.saveAssistant(draft),
+      () => {}
+    );
+  }
+
+  editAssistant(tpl: any, assistant: AssistantProfile) {
+    this.editingAssistantId = assistant.id;
+    this.assistantDraft = {
+      name: assistant.name,
+      apiBaseUrl: assistant.apiBaseUrl,
+      model: assistant.model,
+      apiKey: '',
+      additionalInstructions: assistant.additionalInstructions,
+      maxActions: assistant.maxActions,
+    };
+    this.modalService.open(tpl, { backdrop: 'static' }).result.then(
+      (draft) => this.saveAssistant(draft),
+      () => {}
+    );
+  }
+
+  saveAssistant(draft: AssistantProfileDraft) {
+    const request = this.editingAssistantId === null
+      ? this.assistantSettingsService.create(draft)
+      : this.assistantSettingsService.update(this.editingAssistantId, draft);
+    request.subscribe({
+      next: () => {
+        this.loadAssistants();
+        this.toastService.show('Assistant saved.', { classname: 'bg-success text-light' });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.toastService.show(this.assistantError(err, 'Assistant could not be saved.'), {
+          classname: 'bg-danger text-light',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  selectAssistant(assistant: AssistantProfile) {
+    this.assistantSettingsService.select(assistant.id).subscribe({
+      next: () => this.loadAssistants(),
+      error: (err) => {
+        this.toastService.show(this.assistantError(err, 'Assistant selection could not be saved.'), {
+          classname: 'bg-danger text-light',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  deleteAssistant(assistant: AssistantProfile) {
+    if (!confirm(`Delete the assistant "${assistant.name}"?`)) return;
+    this.assistantSettingsService.delete(assistant.id).subscribe({
+      next: () => {
+        this.loadAssistants();
+        this.toastService.show('Assistant deleted.', { classname: 'bg-success text-light' });
+      },
+      error: (err) => {
+        this.toastService.show(this.assistantError(err, 'Assistant could not be deleted.'), {
+          classname: 'bg-danger text-light',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private assistantError(err: unknown, fallback: string): string {
+    if (err instanceof Error) return err.message;
+    if (typeof err !== 'object' || err === null || !('error' in err)) return fallback;
+    const detail = err.error;
+    if (typeof detail === 'string') return detail;
+    if (typeof detail === 'object' && detail !== null && 'message' in detail
+      && typeof detail.message === 'string') return detail.message;
+    return fallback;
+  }
 
 }

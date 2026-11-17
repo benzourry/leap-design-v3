@@ -1,76 +1,96 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, switchMap, tap } from 'rxjs';
+import { ASSISTANT_API } from './assistant-api.contract';
 
-export interface AssistantSettings {
+export interface AssistantProfile {
+  id: number;
+  name: string;
+  apiBaseUrl: string;
+  model: string;
+  additionalInstructions: string;
+  maxActions: number;
+  selected: boolean;
+  apiKeyConfigured: boolean;
+}
+
+export interface AssistantProfileDraft {
+  name: string;
   apiBaseUrl: string;
   model: string;
   apiKey: string;
+  additionalInstructions: string;
+  maxActions: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AssistantSettingsService {
-  private readonly storagePrefix = 'leap-assistant-settings:';
+  private readonly http = inject(HttpClient);
 
-  load(email: string): AssistantSettings | null {
-    if (!email.trim()) return null;
-    const raw = localStorage.getItem(this.storageKey(email));
+  list(email: string): Observable<AssistantProfile[]> {
+    return this.http.get<AssistantProfile[]>(ASSISTANT_API.profiles()).pipe(
+      switchMap((profiles) => {
+        const legacyKey = this.legacyStorageKey(email);
+        const legacy = profiles.length ? null : this.loadLegacy(legacyKey);
+        if (!legacy) return of(profiles);
+
+        return this.create(legacy).pipe(
+          tap(() => localStorage.removeItem(legacyKey)),
+          switchMap(() => this.http.get<AssistantProfile[]>(ASSISTANT_API.profiles())),
+        );
+      }),
+    );
+  }
+
+  create(profile: AssistantProfileDraft): Observable<AssistantProfile> {
+    return this.http.post<AssistantProfile>(ASSISTANT_API.profiles(), profile);
+  }
+
+  update(id: number, profile: AssistantProfileDraft): Observable<AssistantProfile> {
+    return this.http.put<AssistantProfile>(ASSISTANT_API.profile(id), profile);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(ASSISTANT_API.profile(id));
+  }
+
+  select(id: number): Observable<AssistantProfile> {
+    return this.http.put<AssistantProfile>(ASSISTANT_API.selectProfile(id), {});
+  }
+
+  private loadLegacy(storageKey: string): AssistantProfileDraft | null {
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return null;
 
-    let settings: unknown;
+    let value: unknown;
     try {
-      settings = JSON.parse(raw);
+      value = JSON.parse(raw);
     } catch {
-      throw new Error('Saved assistant settings could not be read. Please configure them again.');
+      throw new Error('Your previous assistant settings could not be read. Reconfigure them in your developer profile.');
     }
 
-    if (!isAssistantSettings(settings)) {
-      throw new Error('Saved assistant settings are incomplete. Please configure them again.');
+    if (!value || typeof value !== 'object') return null;
+    const settings = value as Record<string, unknown>;
+    if (typeof settings['apiBaseUrl'] !== 'string'
+      || typeof settings['model'] !== 'string'
+      || typeof settings['apiKey'] !== 'string'
+      || !settings['apiBaseUrl'].trim()
+      || !settings['model'].trim()
+      || !settings['apiKey'].trim()) {
+      throw new Error('Your previous assistant settings are incomplete. Reconfigure them in your developer profile.');
     }
-    return settings;
+
+    return {
+      name: 'Migrated assistant',
+      apiBaseUrl: settings['apiBaseUrl'],
+      model: settings['model'],
+      apiKey: settings['apiKey'],
+      additionalInstructions: '',
+      maxActions: 60,
+    };
   }
 
-  save(email: string, settings: AssistantSettings): void {
-    const apiBaseUrl = settings.apiBaseUrl.trim().replace(/\/+$/, '');
-    const model = settings.model.trim();
-    let savedSettings: AssistantSettings | null = null;
-    try {
-      savedSettings = this.load(email);
-    } catch (e) {
-      if (!settings.apiKey.trim()) {
-        throw new Error('Enter your API key again to replace the saved settings.');
-      }
-    }
-    const apiKey = settings.apiKey.trim() || savedSettings?.apiKey || '';
-
-    if (!email.trim() || !apiBaseUrl || !model || !apiKey) {
-      throw new Error('Enter the API base URL, model, and API key.');
-    }
-
-    let url: URL;
-    try {
-      url = new URL(apiBaseUrl);
-    } catch {
-      throw new Error('Enter a valid API base URL.');
-    }
-    if ((url.protocol !== 'https:' && url.protocol !== 'http:') || !url.host
-      || url.username || url.password || url.search || url.hash) {
-      throw new Error('The API base URL must use HTTP or HTTPS.');
-    }
-
-    localStorage.setItem(this.storageKey(email), JSON.stringify({ apiBaseUrl, model, apiKey }));
+  private legacyStorageKey(email: string): string {
+    return `leap-assistant-settings:${email.trim().toLowerCase()}`;
   }
-
-  private storageKey(email: string): string {
-    return `${this.storagePrefix}${email.trim().toLowerCase()}`;
-  }
-}
-
-function isAssistantSettings(value: unknown): value is AssistantSettings {
-  if (!value || typeof value !== 'object') return false;
-  const settings = value as Record<string, unknown>;
-  return typeof settings['apiBaseUrl'] === 'string'
-    && typeof settings['model'] === 'string'
-    && typeof settings['apiKey'] === 'string'
-    && !!settings['apiBaseUrl'].trim()
-    && !!settings['model'].trim()
-    && !!settings['apiKey'].trim();
 }

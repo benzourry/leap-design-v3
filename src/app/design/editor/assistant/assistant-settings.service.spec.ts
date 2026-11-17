@@ -1,48 +1,71 @@
-import { AssistantSettingsService } from './assistant-settings.service';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ASSISTANT_API } from './assistant-api.contract';
+import { AssistantProfile, AssistantSettingsService } from './assistant-settings.service';
 
 describe('AssistantSettingsService', () => {
   let service: AssistantSettingsService;
+  let http: HttpTestingController;
 
   beforeEach(() => {
-    localStorage.clear();
-    service = new AssistantSettingsService();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(AssistantSettingsService);
+    http = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => localStorage.clear());
+  afterEach(() => http.verify());
 
-  it('keeps assistant settings separate for each creator', () => {
-    service.save('creator@example.com', {
-      apiBaseUrl: 'https://one.example/v1',
-      model: 'model-one',
-      apiKey: 'key-one',
-    });
-    service.save('other@example.com', {
-      apiBaseUrl: 'https://two.example/v1',
-      model: 'model-two',
-      apiKey: 'key-two',
-    });
+  it('loads profiles without returning their API keys', () => {
+    const profiles: AssistantProfile[] = [{
+      id: 8,
+      name: 'OpenAI',
+      apiBaseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4o-mini',
+      additionalInstructions: '',
+      maxActions: 20,
+      selected: true,
+      apiKeyConfigured: true,
+    }];
 
-    expect(service.load('creator@example.com')?.model).toBe('model-one');
-    expect(service.load('other@example.com')?.model).toBe('model-two');
+    let response: AssistantProfile[] | undefined;
+    service.list('creator@example.com').subscribe((value) => response = value);
+    const request = http.expectOne(ASSISTANT_API.profiles());
+    expect(request.request.method).toBe('GET');
+    request.flush(profiles);
+
+    expect(response).toEqual(profiles);
+    expect(JSON.stringify(response)).not.toContain('"apiKey":');
   });
 
-  it('retains the saved API key when the creator updates other settings', () => {
-    service.save('creator@example.com', {
-      apiBaseUrl: 'https://provider.example/v1',
-      model: 'old-model',
-      apiKey: 'saved-key',
-    });
+  it('moves a legacy browser setting to the database once a profile is requested', () => {
+    localStorage.setItem('leap-assistant-settings:creator@example.com', JSON.stringify({
+      apiBaseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4o-mini',
+      apiKey: 'legacy-key',
+    }));
 
-    service.save('creator@example.com', {
-      apiBaseUrl: 'https://provider.example/v1',
-      model: 'new-model',
-      apiKey: '',
+    service.list('creator@example.com').subscribe();
+    const listRequest = http.expectOne(ASSISTANT_API.profiles());
+    listRequest.flush([]);
+    const createRequest = http.expectOne(ASSISTANT_API.profiles());
+    expect(createRequest.request.method).toBe('POST');
+    expect(createRequest.request.body.apiKey).toBe('legacy-key');
+    createRequest.flush({
+      id: 3,
+      name: 'Migrated assistant',
+      apiBaseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4o-mini',
+      additionalInstructions: '',
+      maxActions: 60,
+      selected: true,
+      apiKeyConfigured: true,
     });
+    const refreshRequest = http.expectOne(ASSISTANT_API.profiles());
+    refreshRequest.flush([]);
 
-    expect(service.load('creator@example.com')).toEqual({
-      apiBaseUrl: 'https://provider.example/v1',
-      model: 'new-model',
-      apiKey: 'saved-key',
-    });
+    expect(localStorage.getItem('leap-assistant-settings:creator@example.com')).toBeNull();
   });
 });

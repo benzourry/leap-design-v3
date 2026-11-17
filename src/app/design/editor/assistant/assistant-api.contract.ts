@@ -1,11 +1,13 @@
 import { baseApi } from '../../../_shared/constant.service';
 
 /**
- * Contract for the standalone assistant endpoints. Provider configuration is supplied per creator
- * in each request; the backend does not depend on a deployment-wide Cogna entry.
+ * Contract for the standalone assistant endpoints and creator-owned provider profiles.
  */
 export const ASSISTANT_API = {
   health: () => `${baseApi}/assistant/health`,
+  profiles: () => `${baseApi}/assistant/profiles`,
+  profile: (id: number) => `${baseApi}/assistant/profiles/${id}`,
+  selectProfile: (id: number) => `${baseApi}/assistant/profiles/${id}/select`,
   plan: (appId: number) => `${baseApi}/assistant/${appId}/plan`,
   planStream: (appId: number) => `${baseApi}/assistant/${appId}/plan-stream`,
 };

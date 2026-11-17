@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, model, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantService } from './assistant.service';
 import { AssistantContextService } from './assistant-context.service';
 import { ASSISTANT_MAX_PROMPT_CHARS } from './assistant-api.contract';
-import { AssistantSettings, AssistantSettingsService } from './assistant-settings.service';
+import { AssistantProfile, AssistantSettingsService } from './assistant-settings.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 import { AssistantPlanCardComponent } from './assistant-plan-card.component';
 import { buildAssistantHistoryWindow } from './assistant-history';
@@ -25,9 +26,9 @@ import {
 @Component({
   selector: 'app-assistant-drawer',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './assistant-drawer.component.html',
+  templateUrl: './assistant-drawer.component.html', 
   styleUrl: './assistant-drawer.component.scss',
-  imports: [FaIconComponent, AssistantPlanCardComponent],
+  imports: [FaIconComponent, AssistantPlanCardComponent, RouterLink],
 })
 export class AssistantDrawerComponent implements OnInit {
   private assistant = inject(AssistantService);
@@ -48,9 +49,7 @@ export class AssistantDrawerComponent implements OnInit {
   changed = output<AssistantChanged>();
 
   readonly prompt = signal('');
-  readonly settings = signal<AssistantSettings | null>(null);
-  readonly settingsDraft = signal<AssistantSettings>({ apiBaseUrl: '', model: '', apiKey: '' });
-  readonly settingsOpen = signal(false);
+  readonly settings = signal<AssistantProfile | null>(null);
   readonly maxPromptChars = ASSISTANT_MAX_PROMPT_CHARS;
   readonly history = signal<AssistantChatMessage[]>([]);
   readonly omittedHistoryMessages = signal(0);
@@ -81,41 +80,17 @@ export class AssistantDrawerComponent implements OnInit {
   readonly doneCount = computed(() => this.results().filter((r) => r.status === 'done').length);
 
   ngOnInit() {
-    try {
-      const saved = this.settingsService.load(this.email());
-      this.settings.set(saved);
-      this.settingsDraft.set(saved
-        ? { ...saved, apiKey: '' }
-        : { apiBaseUrl: '', model: '', apiKey: '' });
-      this.settingsOpen.set(!saved);
-    } catch (e) {
-      this.settingsOpen.set(true);
-      this.error.set(e instanceof Error ? e.message : 'Saved assistant settings could not be loaded.');
-    }
-  }
-
-  onSettingsInput(field: keyof AssistantSettings, event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.settingsDraft.update((draft) => ({ ...draft, [field]: value }));
-  }
-
-  saveSettings() {
-    try {
-      this.settingsService.save(this.email(), this.settingsDraft());
-      const saved = this.settingsService.load(this.email());
-      if (!saved) throw new Error('Assistant settings were not saved.');
-      this.settings.set(saved);
-      this.settingsDraft.set({ ...saved, apiKey: '' });
-      this.settingsOpen.set(false);
-      this.error.set('');
-    } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Assistant settings could not be saved.');
-    }
-  }
-
-  toggleSettings() {
-    this.error.set('');
-    this.settingsOpen.update((open) => !open);
+    this.settingsService.list(this.email())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (profiles) => {
+          this.settings.set(profiles.find((profile) => profile.selected) ?? null);
+          if (!this.settings()) this.error.set('Add and select an assistant in your developer profile first.');
+        },
+        error: (e) => this.error.set(e instanceof Error
+          ? e.message
+          : 'Assistant profiles could not be loaded. Try again later.'),
+      });
   }
 
   onInput(event: Event) {
@@ -135,8 +110,7 @@ export class AssistantDrawerComponent implements OnInit {
     const app = this.app() ?? { id: this.appId() };
     const settings = this.settings();
     if (!settings) {
-      this.settingsOpen.set(true);
-      this.error.set('Configure the assistant API before sending a request.');
+      this.error.set('Add and select an assistant in your developer profile before sending a request.');
       return;
     }
 
@@ -163,7 +137,12 @@ export class AssistantDrawerComponent implements OnInit {
       .subscribe({
         next: (context) => {
           this.assistant
-            .planStream(this.appId(), { prompt: question, settings, history: historyWindow.messages, context })
+            .planStream(this.appId(), {
+              prompt: question,
+              assistantId: settings.id,
+              history: historyWindow.messages,
+              context,
+            })
             .pipe(
               takeUntilDestroyed(this.destroyRef),
               finalize(() => this.loading.set(false))
