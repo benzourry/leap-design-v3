@@ -93,8 +93,8 @@ export class ScanComponent implements OnInit, OnDestroy {
             const imageCapture = new ImageCapture(this.track)
             const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
               // todo: check if camera has a torch
-              const cap = this.track.getCapabilities();
-              this.torchSupport.set(cap.torch);
+              const cap = this.track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+              this.torchSupport.set(cap.torch === true);
               // console.log(cap);
               // this.track = track;
             });
@@ -156,7 +156,7 @@ export class ScanComponent implements OnInit, OnDestroy {
   isTorch = signal<boolean>(false);
   switchTorch(value) {
     this.track.applyConstraints({
-      advanced: [{ torch: value }]
+      advanced: [{ torch: value } as MediaTrackConstraintSet & { torch: boolean }]
     });
   }
 

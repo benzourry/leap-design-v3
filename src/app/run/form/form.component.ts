@@ -1948,7 +1948,7 @@ export class FormComponent implements OnInit, OnDestroy, ComponentCanDeactivate 
           this.filterItems();
           this.imgclsLoading.update(curr => ({ ...curr, [field.code + (indexChild ?? '')]: false }));
           if (field?.v?.imgcls) {
-            var imgclsres = Object.values(res).map((i: any[]) => i.map(j => j.desc).join(",")).join(",");
+            var imgclsres = Object.values(res).map(predictions => predictions.map(prediction => prediction.desc).join(",")).join(",");
             this.imgclsVal[field.code + (indexChild ?? '')] = (imgclsres ?? '').includes(field?.v?.imgcls) ? true : false;
           }
         },

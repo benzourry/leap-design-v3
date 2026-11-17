@@ -48,6 +48,9 @@
               }
             ],
             "styles": [
+              "node_modules/@fullcalendar/angular/skeleton.css",
+              "node_modules/@fullcalendar/angular/themes/classic/theme.css",
+              "node_modules/@fullcalendar/angular/themes/classic/palette.css",
               "node_modules/@ng-select/ng-select/themes/default.theme.css",
               "src/styles.scss"
             ],

@@ -423,6 +423,19 @@ ngb-pagination ul.pagination { justify-content: center; }
 }
 .fc-button-group { margin-left: 0.2em !important; }
 
+[data-bs-theme="dark"],
+.dark-mode {
+  --fc-classic-background: var(--bs-body-bg, #2b2f34);
+  --fc-classic-faint: rgba(255, 255, 255, 0.04);
+  --fc-classic-muted: rgba(255, 255, 255, 0.08);
+  --fc-classic-strong: rgba(255, 255, 255, 0.14);
+  --fc-classic-foreground: var(--bs-body-color, #f8f9fa);
+  --fc-classic-faint-foreground: #adb5bd;
+  --fc-classic-muted-foreground: #ced4da;
+  --fc-classic-border: var(--bs-border-color, #495057);
+  --fc-classic-strong-border: #6c757d;
+}
+
 .ngb-tp-input-container {
   button { line-height: 0.6em; padding: 0 0.75rem; }
   input { border: none; padding: 0.1rem; line-height: 1; height: 1.5em; }

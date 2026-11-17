@@ -24,8 +24,9 @@ import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { compileTpl, deepMerge, splitAsList, loadScript, btoaUTF, hashObject, ServerDate, linkify, deepEqual, createProxy, forceModalCd } from '../../_shared/utils';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
+import classicTheme from '@fullcalendar/angular/themes/classic';
+import dayGridPlugin from '@fullcalendar/angular/daygrid';
+import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import { base, baseApi } from '../../_shared/constant.service';
 import { LogService } from '../../_shared/service/log.service';
 import { first, map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -281,7 +282,7 @@ export class ScreenComponent implements OnInit, OnDestroy {
         list: 'list'
       },
       height: 640,
-      plugins: [dayGridPlugin, timeGridPlugin],
+      plugins: [classicTheme, dayGridPlugin, timeGridPlugin],
       events: (info: any, success: any, failure: any) => {
         var ds = this.screen().dataset;
 

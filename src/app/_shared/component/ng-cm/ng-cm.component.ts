@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, HostListener, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, forwardRef, Optional, Inject, input, output, viewChild, OnDestroy, effect, Provider, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NG_VALIDATORS, NG_ASYNC_VALIDATORS, NgModel } from '@angular/forms';
 import { copyLineDown, indentWithTab, undo } from '@codemirror/commands';
 import { html } from '@codemirror/lang-html';
@@ -828,8 +828,7 @@ export class NgCmComponent extends ElementBase<any> implements AfterViewInit, On
     });
   }
 
-  // 1. Create a capturing listener to intercept the back button
-private popStateListener = (event: PopStateEvent) => {
+  private popStateListener = (event: PopStateEvent) => {
     if (this.isFullscreen()) {
       event.stopImmediatePropagation();
       event.stopPropagation();
@@ -837,15 +836,34 @@ private popStateListener = (event: PopStateEvent) => {
       this.triggerTransition(() => {
         this.isFullscreen.set(false);
         window.removeEventListener('popstate', this.popStateListener, { capture: true });
+        this.removeFullscreenKeydownListener();
       });
     }
   };
+
+  private fullscreenKeydownListener = (event: KeyboardEvent) => {
+    if (this.isFullscreen() && event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      this.toggleFullscreen();
+    }
+  };
+
+  private addFullscreenKeydownListener(): void {
+    window.addEventListener('keydown', this.fullscreenKeydownListener, { capture: true });
+  }
+
+  private removeFullscreenKeydownListener(): void {
+    window.removeEventListener('keydown', this.fullscreenKeydownListener, { capture: true });
+  }
 
   toggleFullscreen(): void {
     if (!this.isFullscreen()) {
       this.triggerTransition(() => {
         this.isFullscreen.set(true);
         window.addEventListener('popstate', this.popStateListener, { capture: true });
+        this.addFullscreenKeydownListener();
         window.history.pushState({ cmFullscreen: true }, '', window.location.href);
       });
     } else {
@@ -856,6 +874,7 @@ private popStateListener = (event: PopStateEvent) => {
         this.triggerTransition(() => {
           this.isFullscreen.set(false);
           window.removeEventListener('popstate', this.popStateListener, { capture: true });
+          this.removeFullscreenKeydownListener();
         });
       }
     }
@@ -869,6 +888,7 @@ private popStateListener = (event: PopStateEvent) => {
     }
     // Clean up our manual event listener
     window.removeEventListener('popstate', this.popStateListener, { capture: true });
+    this.removeFullscreenKeydownListener();
     this.editor?.destroy();
   }
 

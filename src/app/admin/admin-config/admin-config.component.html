@@ -90,7 +90,15 @@
                                             </div>
                                         }
                                     }@else {
-                                        {{ i.value }}
+                                        <div class="props-value-text"
+                                            [class.collapsed]="!isPropValueExpanded(i)">{{ i.value }}</div>
+                                        @if (hasMoreThanTenLines(i.value)) {
+                                        <button type="button" class="btn btn-link btn-sm px-0"
+                                            [attr.aria-expanded]="isPropValueExpanded(i)"
+                                            (click)="togglePropValue(i)">
+                                            {{isPropValueExpanded(i) ? 'Show less' : 'Show more'}}
+                                        </button>
+                                        }
                                     } 
                                 </td>
                                 <td class="action">
@@ -134,7 +142,17 @@
                             @for(i of appProps() | filter: appPropsFilter(); track $index){
                             <tr class="ds-row" [class.props-disabled]="!i.enabled">
                                 <td data-label="Key" class="ds-item">{{ i.key }}</td>
-                                <td data-label="Value" class="ds-item">{{ i.value }}</td>
+                                <td data-label="Value" class="ds-item">
+                                    <div class="props-value-text"
+                                        [class.collapsed]="!isPropValueExpanded(i)">{{ i.value }}</div>
+                                    @if (hasMoreThanTenLines(i.value)) {
+                                    <button type="button" class="btn btn-link btn-sm px-0"
+                                        [attr.aria-expanded]="isPropValueExpanded(i)"
+                                        (click)="togglePropValue(i)">
+                                        {{isPropValueExpanded(i) ? 'Show less' : 'Show more'}}
+                                    </button>
+                                    }
+                                </td>
                                 <td style="width:1%; white-space: nowrap;">
                                     <button (click)="editProps(editPropsTpl,i)"
                                         class="btn btn-sm  me-1 btn-primary">Edit</button>
@@ -307,8 +325,8 @@
                 </div>
                 <div class="form-group mb-3">
                     <label class="form-label">Value *</label>
-                    <textarea class="form-control" name="value" #propsValue="ngModel" [(ngModel)]="editPropsData.value"
-                        required></textarea>
+                    <app-cm name="value" #propsValue="ngModel" [(ngModel)]="editPropsData.value"
+                        required [skipCheck]="true"></app-cm>
                     @if (propsValue?.invalid) {
                     <small class="form-text text-warning">
                         @if (propsValue.errors?.required) {

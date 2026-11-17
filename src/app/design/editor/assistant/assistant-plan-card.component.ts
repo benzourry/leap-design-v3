@@ -80,23 +80,41 @@ export class AssistantPlanCardComponent {
 const TITLES: Record<string, { icon: string; verb: string }> = {
   create_form: { icon: 'plus-square', verb: 'Create form' },
   create_tab: { icon: 'folder-plus', verb: 'Create tab' },
+  update_tab: { icon: 'pen', verb: 'Change tab' },
+  remove_tab: { icon: 'trash', verb: 'Remove tab' },
+  assign_section_to_tab: { icon: 'folder-open', verb: 'Move section to tab' },
+  update_form: { icon: 'pen', verb: 'Change form' },
   add_section: { icon: 'layer-group', verb: 'Add section' },
+  update_section: { icon: 'pen', verb: 'Change section' },
   add_section_item: { icon: 'plus', verb: 'Add field' },
   update_item: { icon: 'pen', verb: 'Change field' },
   remove_item: { icon: 'trash', verb: 'Delete field' },
   remove_section: { icon: 'trash', verb: 'Delete section' },
+  create_tier: { icon: 'layer-group', verb: 'Add process tier' },
+  update_tier: { icon: 'pen', verb: 'Change process tier' },
+  remove_tier: { icon: 'trash', verb: 'Remove process tier' },
   create_dataset: { icon: 'list', verb: 'Create dataset' },
+  add_dataset_item: { icon: 'plus', verb: 'Add dataset item' },
+  update_dataset_item: { icon: 'pen', verb: 'Change dataset item' },
+  remove_dataset_item: { icon: 'trash', verb: 'Remove dataset item' },
   create_dashboard: { icon: 'tachometer-alt', verb: 'Create dashboard' },
   add_chart: { icon: 'chart-bar', verb: 'Add chart' },
   create_screen: { icon: 'file', verb: 'Create screen' },
+  add_screen_action: { icon: 'bolt', verb: 'Add screen action' },
   update_screen: { icon: 'pen', verb: 'Change screen' },
   remove_screen: { icon: 'trash', verb: 'Delete screen' },
+  create_navi_group: { icon: 'folder-plus', verb: 'Add navigation group' },
+  update_navi_group: { icon: 'pen', verb: 'Change navigation group' },
+  remove_navi_group: { icon: 'trash', verb: 'Remove navigation group' },
+  add_navi_item: { icon: 'plus', verb: 'Add navigation item' },
+  update_navi_item: { icon: 'pen', verb: 'Change navigation item' },
+  remove_navi_item: { icon: 'trash', verb: 'Remove navigation item' },
 };
 
 function describe(action: AssistantAction): Omit<ActionView, 'id' | 'status' | 'error'> {
   const meta = TITLES[action.kind] ?? { icon: 'circle', verb: action.kind };
   const payload: any = (action as any).payload ?? {};
-  const subject: string = action.title ?? payload.title ?? payload.label ?? '';
+  const subject: string = action.title ?? payload.title ?? payload.label ?? payload.name ?? payload.patch?.title ?? payload.patch?.name ?? '';
   const title = subject ? `${meta.verb}: ${subject}` : meta.verb;
 
   const details: string[] = [];

@@ -148,7 +148,7 @@ Then, open [http://localhost:4200](http://localhost:4200) in your browser.
 
 To generate an optimized production build, use:
 ```sh
-ng build --prod
+ng build
 ```
 
 ## Contribution

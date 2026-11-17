@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, AfterViewChecked, viewChild, inject, ChangeDetectionStrategy, DestroyRef, computed } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, viewChild, inject, ChangeDetectionStrategy, DestroyRef, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -82,7 +82,7 @@ import { MetaTrailService } from '../../../../service/metatrail.service';
         KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe,
     MetaTrailViewerComponent]
 })
-export class FormEditorComponent implements OnInit, AfterViewChecked {
+export class FormEditorComponent implements OnInit {
 
     itemSearch: string = "";
     formTotal: number = 0;
@@ -223,8 +223,13 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
     constructor() {}
 
-    ngAfterViewChecked() {
-        requestAnimationFrame(() => {
+    private tierLinesFrame: number | null = null;
+
+    scheduleTierLineRedraw() {
+        if (this.tierLinesFrame !== null) return;
+
+        this.tierLinesFrame = requestAnimationFrame(() => {
+            this.tierLinesFrame = null;
             this.drawTierLines();
         });
     }
@@ -233,6 +238,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     ngOnInit() {
 
         this.destroyRef.onDestroy(() => {
+            if (this.tierLinesFrame !== null) {
+                cancelAnimationFrame(this.tierLinesFrame);
+            }
             if (this.curFormId) {
                 delete (window as any)['_this_form_' + this.curFormId + '_design'];
             }
@@ -257,6 +265,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                 }
                 if (data.value == 'form-add') {
                     this.editForm(this.editFormTpl(), {}, true);
+                }
+                if (data.key === 'form-detail' && Number(data.value) === Number(this.curFormId)) {
+                    this.getFormData(this.curFormId);
                 }
             });
 
@@ -567,6 +578,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
 
                 this.loadTrails(this.curForm.id, 1);
                 this.cdr.detectChanges();
+                this.scheduleTierLineRedraw();
             }, err => {
                 this.formError = err.error;
             })
@@ -887,8 +899,9 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
     drawTierLines() {
         this.lines = [];
         this.tierMap = {};
+        this.hasLineToComplete = false;
         var allTaIndex = 0;
-        this.curForm?.tiers.forEach((t, indext) => {
+        this.curForm?.tiers?.forEach((t, indext) => {
             this.tierMap[t.id] = t;
 
             let actionsObj: any[] = Object.values(t.actions);
@@ -953,8 +966,8 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                     }
                 }
             });
-            this.cdr.detectChanges();
         })
+        this.cdr.detectChanges();
     }
 
     selectColor(number) {
@@ -1032,6 +1045,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                     this.curForm = res;
                                     this.reorderAllTier();
                                     this.cdr.detectChanges();
+                                    this.scheduleTierLineRedraw();
                                 }, err => {
                                     this.formError = err.error;
                                 })
@@ -1152,6 +1166,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
                                     this.curForm = res;
                                     this.reorderAllTier();
                                     this.cdr.detectChanges(); 
+                                    this.scheduleTierLineRedraw();
                                 }, err => {
                                     this.formError = err.error;
                                 })
@@ -1201,7 +1216,7 @@ export class FormEditorComponent implements OnInit, AfterViewChecked {
         return this.formService.saveTierOrder(list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
-                this.drawTierLines();
+                this.scheduleTierLineRedraw();
                 this.cdr.detectChanges();
                 return res;
             });

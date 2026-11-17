@@ -8,6 +8,18 @@ td.action {
   white-space: nowrap;
 }
 
+.props-value-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.props-value-text.collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 10;
+  overflow: hidden;
+}
+
 table.tbl-child * {
   text-align: left;
   font-size: 0.8rem;

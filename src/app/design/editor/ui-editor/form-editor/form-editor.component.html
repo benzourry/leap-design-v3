@@ -1,5 +1,5 @@
 <div class="fix-gutter d-flex flex-row h-100" cdkDropListGroup>
-  <div style="flex:auto; overflow: auto;" (window:resize)="drawTierLines()">
+  <div style="flex:auto; overflow: auto;" (window:resize)="scheduleTierLineRedraw()">
     <div class="limit-width">
       @if (!curForm && !formError) {
         <div class="m-a col-sm-12" style="color:#aaa;">

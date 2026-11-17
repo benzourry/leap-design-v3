@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../_shared/service/user.service';
-import { ActivatedRoute, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AppService } from '../../service/app.service';
 import { PlatformLocation, NgClass } from '@angular/common';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
@@ -16,7 +16,7 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 import { ToastService } from '../../_shared/service/toast-service';
 import { Title } from '@angular/platform-browser';
 import { baseApi, domainBase } from '../../_shared/constant.service';
-import { debounceTime, distinctUntilChanged, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
 import Fuse from 'fuse.js';
 import { atobUTF } from '../../_shared/utils';
 import { LoadingService } from '../../_shared/service/loading.service';
@@ -57,6 +57,9 @@ export class EditorComponent implements OnInit {
 
     readonly assistantStatus = inject(AssistantStatusService);
     assistantOpen = signal<boolean>(false);
+    activeFormId = signal<number | null>(null);
+    activeDatasetId = signal<number | null>(null);
+    activeScreenId = signal<number | null>(null);
 
     private modalService = inject(NgbModal);
     private userService = inject(UserService);
@@ -80,6 +83,27 @@ export class EditorComponent implements OnInit {
         this.utilityService.testOnline$()
             .pipe(takeUntilDestroyed())
             .subscribe(online => this.offline.set(!online));
+
+        this.route.queryParams
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.updateActiveEntityIds());
+
+        this.router.events
+            .pipe(
+                filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+                takeUntilDestroyed(this.destroyRef)
+            )
+            .subscribe(() => this.updateActiveEntityIds());
+        this.updateActiveEntityIds();
+    }
+
+    private updateActiveEntityIds() {
+        const path = this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '');
+        const entityId = Number(this.route.snapshot.queryParamMap.get('id'));
+        const validId = Number.isInteger(entityId) && entityId > 0 ? entityId : null;
+        this.activeFormId.set(path.endsWith('/ui/form') ? validId : null);
+        this.activeDatasetId.set(path.endsWith('/ui/dataset') ? validId : null);
+        this.activeScreenId.set(path.endsWith('/ui/screen') ? validId : null);
     }
 
     public model: any;

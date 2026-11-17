@@ -21,6 +21,15 @@ import {
   AddChartAction,
   AddSectionAction,
   AddSectionItemAction,
+  AddDatasetItemAction,
+  AddNaviItemAction,
+  AddScreenActionAction,
+  UpdateSectionAction,
+  UpdateDatasetItemAction,
+  UpdateNaviItemAction,
+  UpdateNaviGroupAction,
+  UpdateTabAction,
+  UpdateTierAction,
   AssistantAction,
   AssistantActionResult,
   AssistantApplyOptions,
@@ -31,10 +40,19 @@ import {
   CreateFormAction,
   CreateScreenAction,
   CreateTabAction,
+  CreateTierAction,
+  CreateNaviGroupAction,
+  UpdateFormAction,
+  AssignSectionToTabAction,
   EntityRef,
+  RemoveDatasetItemAction,
+  RemoveNaviGroupAction,
+  RemoveNaviItemAction,
   RemoveItemAction,
   RemoveScreenAction,
   RemoveSectionAction,
+  RemoveTabAction,
+  RemoveTierAction,
   UpdateItemAction,
   UpdateScreenAction,
 } from './assistant.types';
@@ -60,7 +78,7 @@ export class AssistantExecutorService {
 
   async apply(appId: number, actions: AssistantAction[], options: AssistantApplyOptions): Promise<AssistantApplyResult> {
     const results: AssistantActionResult[] = [];
-    const changed: AssistantChanged = { forms: 0, datasets: 0, dashboards: 0, screens: 0 };
+    const changed: AssistantChanged = { forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0 };
     const refs = new Map<string, ResolvedRef>();
 
     const runnable = actions.filter((action) => this.isRunnable(action, options));
@@ -71,19 +89,13 @@ export class AssistantExecutorService {
     }
     if (!runnable.length) return { results, failed: 0 };
 
-    let restorePointId: number | undefined;
-    try {
-      restorePointId = await this.createRestorePoint(appId, options.email);
-    } catch {
-      throw new Error('Could not create a restore point, so nothing was changed. Check your connection and try again.');
-    }
-
     const forms = new Map<number, any>();
+    const itemLists = new Map<number, any[]>();
 
     for (const action of runnable) {
       const base = { actionId: action.id, kind: action.kind };
       try {
-        const entityId = await this.runAction(appId, action, refs, forms, changed, options);
+        const entityId = await this.runAction(appId, action, refs, forms, itemLists, changed, options);
         results.push({ ...base, status: 'done', entityId });
       } catch (e) {
         results.push({ ...base, status: 'failed', error: e instanceof Error ? e.message : String(e) });
@@ -91,7 +103,7 @@ export class AssistantExecutorService {
     }
 
     results.sort((a, b) => actions.findIndex((x) => x.id === a.actionId) - actions.findIndex((x) => x.id === b.actionId));
-    return { results, restorePointId, failed: results.filter((r) => r.status === 'failed').length };
+    return { results, failed: results.filter((r) => r.status === 'failed').length };
   }
 
   // ==========================
@@ -103,6 +115,7 @@ export class AssistantExecutorService {
     action: AssistantAction,
     refs: Map<string, ResolvedRef>,
     forms: Map<number, any>,
+    itemLists: Map<number, any[]>,
     changed: AssistantChanged,
     options: AssistantApplyOptions
   ): Promise<number | undefined> {
@@ -111,28 +124,64 @@ export class AssistantExecutorService {
         return this.createForm(appId, action, refs, changed);
       case 'create_tab':
         return this.createTab(action, refs, forms);
+      case 'update_tab':
+        return this.updateTab(action, refs, forms);
+      case 'remove_tab':
+        return this.removeTab(action, refs, forms);
+      case 'assign_section_to_tab':
+        return this.assignSectionToTab(action, refs, forms);
+      case 'update_form':
+        return this.updateForm(appId, action, refs, changed);
       case 'add_section':
         return this.addSection(action, refs, forms);
+      case 'update_section':
+        return this.updateSection(action, refs, forms);
       case 'add_section_item':
-        return this.addSectionItem(action, refs, forms);
+        return this.addSectionItem(action, refs, forms, itemLists);
       case 'update_item':
-        return this.updateItem(action, refs, forms);
+        return this.updateItem(action, refs, itemLists, forms);
       case 'remove_item':
-        return this.removeItem(action, refs);
+        return this.removeItem(action, refs, itemLists);
       case 'remove_section':
-        return this.removeSection(action, refs);
+        return this.removeSection(action, refs, itemLists);
+      case 'create_tier':
+        return this.createTier(action, refs, forms, changed);
+      case 'update_tier':
+        return this.updateTier(action, refs, forms, changed);
+      case 'remove_tier':
+        return this.removeTier(action, refs, forms, changed);
       case 'create_dataset':
         return this.createDataset(appId, action, refs, forms, changed);
+      case 'add_dataset_item':
+        return this.addDatasetItem(action, refs, changed);
+      case 'update_dataset_item':
+        return this.updateDatasetItem(action, refs, changed);
+      case 'remove_dataset_item':
+        return this.removeDatasetItem(action, refs, changed);
       case 'create_dashboard':
         return this.createDashboard(appId, action, refs, changed);
       case 'add_chart':
         return this.addChart(action, refs, forms, changed);
       case 'create_screen':
         return this.createScreen(appId, action, refs, changed, options);
+      case 'add_screen_action':
+        return this.addScreenAction(appId, action, refs, changed);
       case 'update_screen':
         return this.updateScreen(appId, action, refs, changed);
       case 'remove_screen':
         return this.removeScreen(action, refs, changed);
+      case 'create_navi_group':
+        return this.createNaviGroup(appId, action, refs, changed);
+      case 'update_navi_group':
+        return this.updateNaviGroup(appId, action, refs, changed);
+      case 'remove_navi_group':
+        return this.removeNaviGroup(appId, action, refs, changed);
+      case 'add_navi_item':
+        return this.addNaviItem(appId, action, refs, changed);
+      case 'update_navi_item':
+        return this.updateNaviItem(appId, action, refs, changed);
+      case 'remove_navi_item':
+        return this.removeNaviItem(appId, action, refs, changed);
       default:
         throw new Error('Unsupported step.');
     }
@@ -163,6 +212,74 @@ export class AssistantExecutorService {
     return id;
   }
 
+  private async updateTab(action: UpdateTabAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const tabId = this.resolveId(action.payload.tabRef, refs);
+    const form = await this.snapshot(formId, forms);
+    const existing = (form?.tabs ?? []).find((tab: any) => Number(tab.id) === tabId);
+    if (!existing) throw new Error(`Tab ${tabId} was not found in form ${formId}. Refresh the form and try again.`);
+
+    const patch = action.payload.patch;
+    const tab = { ...existing, ...patch, x: { ...(existing.x ?? {}), ...(patch.x ?? {}) } };
+    await firstValueFrom(this.formService.saveTab(formId, tab));
+    forms.delete(formId);
+    return tabId;
+  }
+
+  private async removeTab(action: RemoveTabAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const tabId = this.resolveId(action.payload.tabRef, refs);
+    const form = await this.snapshot(formId, forms);
+    if (!(form?.tabs ?? []).some((tab: any) => Number(tab.id) === tabId)) {
+      throw new Error(`Tab ${tabId} was not found in form ${formId}. Refresh the form and try again.`);
+    }
+    await firstValueFrom(this.formService.removeTab(tabId));
+    forms.delete(formId);
+    return tabId;
+  }
+
+  private async assignSectionToTab(
+    action: AssignSectionToTabAction,
+    refs: Map<string, ResolvedRef>,
+    forms: Map<number, any>
+  ) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const sectionId = this.resolveId(action.payload.sectionRef, refs);
+    const tabId = this.resolveId(action.payload.tabRef, refs);
+    const form = await this.snapshot(formId, forms);
+    const section = (form?.sections ?? []).find((entry: any) => Number(entry.id) === sectionId);
+    if (!section) throw new Error(`Section ${sectionId} was not found in form ${formId}. Refresh the form and try again.`);
+    if (!(form?.tabs ?? []).some((tab: any) => Number(tab.id) === tabId)) {
+      throw new Error(`Tab ${tabId} was not found in form ${formId}. Refresh the form and try again.`);
+    }
+
+    await firstValueFrom(this.formService.saveSection(formId, { ...section, parent: String(tabId) }));
+    forms.delete(formId);
+    return sectionId;
+  }
+
+  private async updateForm(
+    appId: number,
+    action: UpdateFormAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const existing: any = await firstValueFrom(this.formService.getForm(formId));
+    if (!existing) throw new Error(`Form ${formId} was not found. Refresh the form and try again.`);
+
+    const { onInit, ...patch } = action.payload.patch;
+    const form = {
+      ...existing,
+      ...patch,
+      ...(onInit !== undefined ? { f: onInit } : {}),
+      x: { ...(existing.x ?? {}), ...(patch.x ?? {}) },
+    };
+    await firstValueFrom(this.formService.saveForm(appId, form));
+    changed.forms++;
+    return formId;
+  }
+
   private async addSection(action: AddSectionAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
     const formId = this.resolveId(action.payload.formRef, refs);
     const form = await this.snapshot(formId, forms);
@@ -177,7 +294,33 @@ export class AssistantExecutorService {
     return id;
   }
 
-  private async addSectionItem(action: AddSectionItemAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+  private async updateSection(action: UpdateSectionAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const sectionId = this.resolveId(action.payload.sectionRef, refs);
+    const form = await this.snapshot(formId, forms);
+    const existing = (form?.sections ?? []).find((section: any) => Number(section.id) === sectionId);
+    if (!existing) throw new Error(`Section ${sectionId} was not found in form ${formId}. Refresh the form and try again.`);
+
+    const patch = action.payload.patch ?? {};
+    const resolvedPatch = 'parent' in patch
+      ? { ...patch, parent: this.resolveId(patch.parent, refs) }
+      : patch;
+    const section = {
+      ...existing,
+      ...resolvedPatch,
+      x: { ...(existing.x ?? {}), ...(resolvedPatch.x ?? {}) },
+    };
+    await firstValueFrom(this.formService.saveSection(formId, section));
+    forms.delete(formId);
+    return sectionId;
+  }
+
+  private async addSectionItem(
+    action: AddSectionItemAction,
+    refs: Map<string, ResolvedRef>,
+    forms: Map<number, any>,
+    itemLists: Map<number, any[]>
+  ) {
     const formId = this.resolveId(action.payload.formRef, refs);
     const sectionId = this.resolveId(action.payload.sectionRef, refs);
     const form = await this.snapshot(formId, forms);
@@ -198,47 +341,142 @@ export class AssistantExecutorService {
     });
 
     const item = await firstValueFrom(this.formService.saveItem(formId, sectionId, payload, sortOrder));
+    itemLists.delete(formId);
     const id = requireId(item, 'field');
     refs.set(action.id, { id, formId, sectionId });
     forms.delete(formId);
     return id;
   }
 
-  private async updateItem(action: UpdateItemAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+  private async updateItem(
+    action: UpdateItemAction,
+    refs: Map<string, ResolvedRef>,
+    itemLists: Map<number, any[]>,
+    forms: Map<number, any>
+  ) {
     const formId = this.resolveId(action.payload.formRef, refs);
     const itemId = this.resolveId(action.payload.itemRef, refs);
-    const form = await this.snapshot(formId, forms);
-    const existing = (form?.sections ?? [])
-      .flatMap((s: any) => s.items ?? [])
-      .find((i: any) => Number(i.id) === itemId);
-    if (!existing) throw new Error('The field to update is no longer in this form.');
+    const cachedItems = itemLists.get(formId);
+    let items: any[];
+    if (cachedItems !== undefined) {
+      items = cachedItems;
+    } else {
+      const response: any = await firstValueFrom(this.formService.getItemList(formId, { size: 9999, page: 0 }));
+      items = Array.isArray(response) ? response : (response?.content ?? []);
+      itemLists.set(formId, items);
+    }
+    const existing = items.find((item) => Number(item?.id) === itemId);
+    if (!existing) throw new Error(`Field ${itemId} was not found in form ${formId}. Refresh the form and try again.`);
 
     const patch = action.payload.patch ?? {};
     const item = {
       ...existing,
       ...('label' in patch ? { label: patch.label } : {}),
       ...('size' in patch ? { size: patch.size } : {}),
+      ...('readOnly' in patch ? { readOnly: patch.readOnly } : {}),
       ...('hideLabel' in patch ? { hideLabel: patch.hideLabel } : {}),
       ...('hidden' in patch ? { hidden: patch.hidden } : {}),
+      ...('placeholder' in patch ? { placeholder: patch.placeholder } : {}),
+      ...('options' in patch ? { options: patch.options } : {}),
       x: { ...(existing.x ?? {}), ...(patch.x ?? {}) },
       v: { ...(existing.v ?? {}), ...(patch.required !== undefined ? { required: patch.required } : {}), ...(patch.v ?? {}) },
     };
     await firstValueFrom(this.formService.saveItemOnly(formId, item));
+    itemLists.set(formId, items.map((entry) => Number(entry?.id) === itemId ? item : entry));
     forms.delete(formId);
     return itemId;
   }
 
-  private async removeItem(action: RemoveItemAction, refs: Map<string, ResolvedRef>) {
+  private async removeItem(
+    action: RemoveItemAction,
+    refs: Map<string, ResolvedRef>,
+    itemLists: Map<number, any[]>
+  ) {
     const formId = this.resolveId(action.payload.formRef, refs);
     const itemId = this.resolveId(action.payload.itemRef, refs);
     await firstValueFrom(this.formService.removeItem(formId, itemId));
+    itemLists.delete(formId);
     return itemId;
   }
 
-  private async removeSection(action: RemoveSectionAction, refs: Map<string, ResolvedRef>) {
+  private async removeSection(
+    action: RemoveSectionAction,
+    refs: Map<string, ResolvedRef>,
+    itemLists: Map<number, any[]>
+  ) {
+    const formId = this.resolveId(action.payload.formRef, refs);
     const sectionId = this.resolveId(action.payload.sectionRef, refs);
     await firstValueFrom(this.formService.removeSection(sectionId));
+    itemLists.delete(formId);
     return sectionId;
+  }
+
+  private async createTier(
+    action: CreateTierAction,
+    refs: Map<string, ResolvedRef>,
+    forms: Map<number, any>,
+    changed: AssistantChanged
+  ) {
+    const { formRef, sectionRef, approverGroupRef, ...payload } = action.payload;
+    const formId = this.resolveId(formRef, refs);
+    const form = await this.snapshot(formId, forms);
+    const tier = {
+      ...payload,
+      sortOrder: form?.tiers?.length ?? 0,
+      ...(sectionRef ? { section: { id: this.resolveId(sectionRef, refs) } } : {}),
+      ...(approverGroupRef ? { approverGroup: this.resolveId(approverGroupRef, refs) } : {}),
+      x: { ...(payload.x ?? {}) },
+    };
+    const saved = await firstValueFrom(this.formService.saveTier(formId, tier));
+    const tierId = requireId(saved, 'process tier');
+    refs.set(action.id, { id: tierId, formId });
+    forms.delete(formId);
+    changed.forms++;
+    return tierId;
+  }
+
+  private async updateTier(
+    action: UpdateTierAction,
+    refs: Map<string, ResolvedRef>,
+    forms: Map<number, any>,
+    changed: AssistantChanged
+  ) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const tierId = this.resolveId(action.payload.tierRef, refs);
+    const form = await this.snapshot(formId, forms);
+    const existing = (form?.tiers ?? []).find((tier: any) => Number(tier.id) === tierId);
+    if (!existing) throw new Error(`Process tier ${tierId} was not found in form ${formId}. Refresh the form and try again.`);
+
+    const { sectionRef, approverGroupRef, ...patch } = action.payload.patch;
+    const tier = {
+      ...existing,
+      ...patch,
+      ...(sectionRef !== undefined ? { section: { id: this.resolveId(sectionRef, refs) } } : {}),
+      ...(approverGroupRef !== undefined ? { approverGroup: this.resolveId(approverGroupRef, refs) } : {}),
+      x: { ...(existing.x ?? {}), ...(patch.x ?? {}) },
+    };
+    await firstValueFrom(this.formService.saveTier(formId, tier));
+    forms.delete(formId);
+    changed.forms++;
+    return tierId;
+  }
+
+  private async removeTier(
+    action: RemoveTierAction,
+    refs: Map<string, ResolvedRef>,
+    forms: Map<number, any>,
+    changed: AssistantChanged
+  ) {
+    const formId = this.resolveId(action.payload.formRef, refs);
+    const tierId = this.resolveId(action.payload.tierRef, refs);
+    const form = await this.snapshot(formId, forms);
+    if (!(form?.tiers ?? []).some((tier: any) => Number(tier.id) === tierId)) {
+      throw new Error(`Process tier ${tierId} was not found in form ${formId}. Refresh the form and try again.`);
+    }
+    await firstValueFrom(this.formService.removeTier(tierId));
+    forms.delete(formId);
+    changed.forms++;
+    return tierId;
   }
 
   private async createDataset(
@@ -258,6 +496,68 @@ export class AssistantExecutorService {
     refs.set(action.id, { id });
     changed.datasets++;
     return id;
+  }
+
+  private async addDatasetItem(
+    action: AddDatasetItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const { datasetRef, ...payload } = action.payload;
+    const datasetId = this.resolveId(datasetRef, refs);
+    const dataset: any = await firstValueFrom(this.datasetService.getDataset(datasetId));
+    if (!dataset) throw new Error(`Dataset ${datasetId} was not found. Refresh the dataset and try again.`);
+
+    const items = Array.isArray(dataset.items) ? dataset.items : [];
+    const code = this.uniqueDatasetItemCode(
+      payload.code ?? suggestCode(payload.label, 'column'),
+      items
+    );
+    const item = {
+      ...payload,
+      code,
+      sortOrder: payload.sortOrder ?? items.length,
+      x: { ...(payload.x ?? {}) },
+    };
+    const saved = await firstValueFrom(this.datasetService.updateDatasetItem(datasetId, item));
+    const itemId = requireId(saved, 'dataset item');
+    refs.set(action.id, { id: itemId });
+    changed.datasets++;
+    return itemId;
+  }
+
+  private async updateDatasetItem(
+    action: UpdateDatasetItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const datasetId = this.resolveId(action.payload.datasetRef, refs);
+    const itemId = this.resolveId(action.payload.itemRef, refs);
+    const dataset: any = await firstValueFrom(this.datasetService.getDataset(datasetId));
+    const existing = (dataset?.items ?? []).find((item: any) => Number(item.id) === itemId);
+    if (!existing) throw new Error(`Dataset item ${itemId} was not found in dataset ${datasetId}. Refresh the dataset and try again.`);
+
+    const patch = action.payload.patch;
+    const item = { ...existing, ...patch, x: { ...(existing.x ?? {}), ...(patch.x ?? {}) } };
+    await firstValueFrom(this.datasetService.updateDatasetItem(datasetId, item));
+    changed.datasets++;
+    return itemId;
+  }
+
+  private async removeDatasetItem(
+    action: RemoveDatasetItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const datasetId = this.resolveId(action.payload.datasetRef, refs);
+    const itemId = this.resolveId(action.payload.itemRef, refs);
+    const dataset: any = await firstValueFrom(this.datasetService.getDataset(datasetId));
+    if (!(dataset?.items ?? []).some((item: any) => Number(item.id) === itemId)) {
+      throw new Error(`Dataset item ${itemId} was not found in dataset ${datasetId}. Refresh the dataset and try again.`);
+    }
+    await firstValueFrom(this.datasetService.removeDatasetItem(itemId, ''));
+    changed.datasets++;
+    return itemId;
   }
 
   private async createDashboard(appId: number, action: CreateDashboardAction, refs: Map<string, ResolvedRef>, changed: AssistantChanged) {
@@ -302,7 +602,18 @@ export class AssistantExecutorService {
     changed: AssistantChanged,
     options: AssistantApplyOptions
   ) {
-    assertValidTemplate(action.payload.content);
+    if (action.payload.type === 'combine') {
+      if (!action.payload.comps?.length) {
+        throw new Error('A combined screen needs at least one component.');
+      }
+    } else {
+      assertValidTemplate(action.payload.content ?? '');
+    }
+    const comps = action.payload.comps?.map(({ targetRef, ...component }) => ({
+      ...component,
+      appId,
+      ...(targetRef !== undefined ? { screenId: this.resolveId(targetRef, refs) } : {}),
+    }));
     const res = await firstValueFrom(
       this.screenService.saveScreen(
         appId,
@@ -311,14 +622,43 @@ export class AssistantExecutorService {
           description: action.payload.description,
           type: action.payload.type,
           content: action.payload.content,
+          f: action.payload.f,
           wide: action.payload.wide,
           formId: action.payload.formRef ? this.resolveId(action.payload.formRef, refs) : undefined,
           datasetId: action.payload.datasetRef ? this.resolveId(action.payload.datasetRef, refs) : undefined,
           email: options.email,
+          data: comps === undefined ? undefined : { comps },
         })
       )
     );
     const id = requireId(res, 'screen');
+    refs.set(action.id, { id });
+    changed.screens++;
+    return id;
+  }
+
+  private async addScreenAction(
+    appId: number,
+    action: AddScreenActionAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const { screenRef, targetRef, ...payload } = action.payload;
+    const screenId = this.resolveId(screenRef, refs);
+    const screen: any = await firstValueFrom(this.screenService.getScreen(screenId));
+    if (!screen) throw new Error(`Screen ${screenId} was not found. Refresh the screen list and try again.`);
+    const screenAppId = screen.appId ?? screen.app?.id;
+    if (screenAppId !== undefined && Number(screenAppId) !== appId) {
+      throw new Error(`Screen ${screenId} does not belong to this app.`);
+    }
+    const screenAction = {
+      ...payload,
+      appId: payload.nextType === 'function' ? payload.appId : (payload.appId ?? appId),
+      ...(targetRef !== undefined ? { next: this.resolveId(targetRef, refs) } : {}),
+      x: { ...(payload.x ?? {}) },
+    };
+    const saved = await firstValueFrom(this.screenService.saveAction(screenId, screenAction));
+    const id = requireId(saved, 'screen action');
     refs.set(action.id, { id });
     changed.screens++;
     return id;
@@ -343,6 +683,7 @@ export class AssistantExecutorService {
       data: {
         ...(existing.data ?? {}),
         ...(action.payload.content !== undefined ? { content: action.payload.content } : {}),
+        ...(action.payload.f !== undefined ? { f: action.payload.f } : {}),
       },
     };
     await firstValueFrom(this.screenService.saveScreen(appId, merged));
@@ -356,6 +697,137 @@ export class AssistantExecutorService {
     await firstValueFrom(this.screenService.removeScreen(screenId));
     changed.screens++;
     return screenId;
+  }
+
+  private async createNaviGroup(
+    appId: number,
+    action: CreateNaviGroupAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const groups = await this.getNavigation(appId);
+    const saved = await firstValueFrom(this.appService.addNaviGroup(appId, {
+      ...action.payload,
+      sortOrder: action.payload.sortOrder ?? groups.length,
+      x: { type: 'menu', ...(action.payload.x ?? {}) },
+    }));
+    const id = requireId(saved, 'navigation group');
+    refs.set(action.id, { id });
+    changed.navigation++;
+    return id;
+  }
+
+  private async updateNaviGroup(
+    appId: number,
+    action: UpdateNaviGroupAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const groupId = this.resolveId(action.payload.groupRef, refs);
+    const groups = await this.getNavigation(appId);
+    const existing = groups.find((group: any) => Number(group.id) === groupId);
+    if (!existing) throw new Error(`Navigation group ${groupId} was not found. Refresh navigation and try again.`);
+    const patch = action.payload.patch;
+    const group = { ...existing, ...patch, x: { ...(existing.x ?? {}), ...(patch.x ?? {}) } };
+    await firstValueFrom(this.appService.addNaviGroup(appId, group));
+    changed.navigation++;
+    return groupId;
+  }
+
+  private async removeNaviGroup(
+    appId: number,
+    action: RemoveNaviGroupAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const groupId = this.resolveId(action.payload.groupRef, refs);
+    if (!(await this.getNavigation(appId)).some((group: any) => Number(group.id) === groupId)) {
+      throw new Error(`Navigation group ${groupId} was not found. Refresh navigation and try again.`);
+    }
+    await firstValueFrom(this.appService.removeNaviGroup(groupId));
+    changed.navigation++;
+    return groupId;
+  }
+
+  private async addNaviItem(
+    appId: number,
+    action: AddNaviItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const { groupRef, targetRef, ...payload } = action.payload;
+    const groupId = this.resolveId(groupRef, refs);
+    const groups = await this.getNavigation(appId);
+    const group = groups.find((entry: any) => Number(entry.id) === groupId);
+    if (!group) throw new Error(`Navigation group ${groupId} was not found. Refresh navigation and try again.`);
+    const item = {
+      ...payload,
+      appId: payload.appId ?? appId,
+      sortOrder: group.items?.length ?? 0,
+      ...(targetRef !== undefined ? { screenId: this.resolveId(targetRef, refs) } : {}),
+      x: { ...(payload.x ?? {}) },
+    };
+    const saved = await firstValueFrom(this.appService.addNaviItem(groupId, item));
+    const id = requireId(saved, 'navigation item');
+    refs.set(action.id, { id });
+    changed.navigation++;
+    return id;
+  }
+
+  private async updateNaviItem(
+    appId: number,
+    action: UpdateNaviItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const itemId = this.resolveId(action.payload.itemRef, refs);
+    const groups = await this.getNavigation(appId);
+    const existingGroup = groups.find((group: any) =>
+      (group.items ?? []).some((item: any) => Number(item.id) === itemId)
+    );
+    const existing = existingGroup?.items?.find((item: any) => Number(item.id) === itemId);
+    if (!existing || !existingGroup) {
+      throw new Error(`Navigation item ${itemId} was not found. Refresh navigation and try again.`);
+    }
+
+    const groupId = action.payload.groupRef
+      ? this.resolveId(action.payload.groupRef, refs)
+      : Number(existingGroup.id);
+    if (!groups.some((group: any) => Number(group.id) === groupId)) {
+      throw new Error(`Navigation group ${groupId} was not found. Refresh navigation and try again.`);
+    }
+
+    const { targetRef, ...patch } = action.payload.patch;
+    const item = {
+      ...existing,
+      ...patch,
+      ...(targetRef !== undefined ? { screenId: this.resolveId(targetRef, refs) } : {}),
+      x: { ...(existing.x ?? {}), ...(patch.x ?? {}) },
+    };
+    await firstValueFrom(this.appService.addNaviItem(groupId, item));
+    changed.navigation++;
+    return itemId;
+  }
+
+  private async removeNaviItem(
+    appId: number,
+    action: RemoveNaviItemAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const itemId = this.resolveId(action.payload.itemRef, refs);
+    const groups = await this.getNavigation(appId);
+    if (!groups.some((group: any) => (group.items ?? []).some((item: any) => Number(item.id) === itemId))) {
+      throw new Error(`Navigation item ${itemId} was not found. Refresh navigation and try again.`);
+    }
+    await firstValueFrom(this.appService.removeNaviItem(itemId));
+    changed.navigation++;
+    return itemId;
+  }
+
+  private async getNavigation(appId: number): Promise<any[]> {
+    const response = await firstValueFrom(this.appService.getNavisAll(appId));
+    return Array.isArray(response) ? response : (response?.content ?? []);
   }
 
   // ==========================
@@ -402,16 +874,14 @@ export class AssistantExecutorService {
     return `${code}_${n}`;
   }
 
-  private async createRestorePoint(appId: number, email: string): Promise<number | undefined> {
-    const res: any = await firstValueFrom(
-      this.appService.createRestorePoint(
-        appId,
-        { name: `Before assistant changes ${new Date().toLocaleString()}`, includeApp: true, includeUsers: false, includeEntry: false },
-        email
-      )
-    );
-    return res?.id;
+  private uniqueDatasetItemCode(code: string, items: any[]): string {
+    const taken = new Set(items.map((item) => String(item.code)));
+    if (!taken.has(code)) return code;
+    let n = 2;
+    while (taken.has(`${code}_${n}`)) n++;
+    return `${code}_${n}`;
   }
+
 }
 
 function requireId(res: any, label: string): number {
@@ -420,11 +890,11 @@ function requireId(res: any, label: string): number {
   return Number(id);
 }
 
-/** Screens are executable templates, so compile before saving instead of shipping a broken page. */
+/** Compile screens before saving, without rendering or executing template code. */
 function assertValidTemplate(content: string) {
   if (!content || !content.trim()) throw new Error('The generated screen template is empty.');
   try {
-    compileTpl(content, {}, 'assistant-validate');
+    compileTpl(content, null, 'assistant_validate');
   } catch (e) {
     throw new Error(`The generated screen template is not valid: ${e instanceof Error ? e.message : String(e)}`);
   }

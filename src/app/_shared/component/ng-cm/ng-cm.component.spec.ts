@@ -22,4 +22,15 @@ describe('NgCmComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('uses Escape to exit fullscreen without allowing the modal to dismiss', () => {
+    component.isFullscreen.set(true);
+    const toggleFullscreen = spyOn(component, 'toggleFullscreen');
+    const event = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+
+    component['fullscreenKeydownListener'](event);
+
+    expect(event.defaultPrevented).toBeTrue();
+    expect(toggleFullscreen).toHaveBeenCalled();
+  });
 });

@@ -10,10 +10,11 @@ import { FilterPipe } from '../../_shared/pipe/filter.pipe';
 import { ToastService } from '../../_shared/service/toast-service';
 import { UserService } from '../../_shared/service/user.service';
 import { splitAsList } from '../../_shared/utils';
+import { NgCmComponent } from '../../_shared/component/ng-cm/ng-cm.component';
 
 @Component({
   selector: 'app-admin-config',
-  imports: [RouterLink, RouterLinkActive, NgClass, FaIconComponent, FormsModule, NgbNavModule, FilterPipe],
+  imports: [RouterLink, RouterLinkActive, NgClass, FaIconComponent, FormsModule, NgbNavModule, FilterPipe, NgCmComponent],
   templateUrl: './admin-config.component.html',
   styleUrl: './admin-config.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -48,6 +49,29 @@ export class AdminConfigComponent implements OnInit {
 
   editPropsData: any = {};
   editAppGroupData: any = {};
+  expandedPropRows = signal<Set<string>>(new Set());
+
+  hasMoreThanTenLines(value: unknown): boolean {
+    return String(value ?? '').split(/\r\n|\r|\n/).length > 10;
+  }
+
+  isPropValueExpanded(item: any): boolean {
+    return this.expandedPropRows().has(this.propRowKey(item));
+  }
+
+  togglePropValue(item: any): void {
+    const key = this.propRowKey(item);
+    this.expandedPropRows.update(rows => {
+      const updatedRows = new Set(rows);
+      if (updatedRows.has(key)) updatedRows.delete(key);
+      else updatedRows.add(key);
+      return updatedRows;
+    });
+  }
+
+  private propRowKey(item: any): string {
+    return `${item.group ?? ''}:${item.id ?? item.key ?? ''}`;
+  }
 
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);

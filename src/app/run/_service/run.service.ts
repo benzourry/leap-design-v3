@@ -331,8 +331,8 @@ export class RunService {
     return this.http.post(`${this.baseApi}/cogna/${cognaId}/extract`,{text: text, docList: docList, fromCogna: fromCogna, email:email});
   }
 
-  cognaImgCls(cognaId: number, docList: string[], fromCogna: boolean, email: string): any {
-    return this.http.post(`${this.baseApi}/cogna/${cognaId}/imgcls`,{docList: docList, fromCogna: fromCogna, email:email});
+  cognaImgCls(cognaId: number, docList: string[], fromCogna: boolean, email: string): Observable<Record<string, { desc: string; score: number }[]>> {
+    return this.http.post<Record<string, { desc: string; score: number }[]>>(`${this.baseApi}/cogna/${cognaId}/imgcls`, { docList: docList, fromCogna: fromCogna, email: email });
   }
 
   cognaPrompt(cognaId: number, prompt: string, fileList: string[], param:any, fromCogna: boolean, email: string): any {

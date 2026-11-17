@@ -13,7 +13,7 @@ import { base, baseApi, domainBase, OAUTH } from '../../../_shared/constant.serv
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { lastValueFrom, map } from 'rxjs';
 import { BucketService } from '../../../service/bucket.service';
-import { br2nl, compileTpl, imagify, linkify, loadScript, nl2br, resizeImage, splitAsList, targetBlank, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
+import { br2nl, compileTpl, getMermaidTheme, imagify, linkify, loadScript, nl2br, resizeImage, splitAsList, targetBlank, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { UniqueAppPathDirective } from '../../../_shared/app-path-validator';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -31,6 +31,11 @@ import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-view
 import { MetaTrailService } from '../../../service/metatrail.service';
 
 mermaid.initialize({startOnLoad:false})
+
+function runMermaidDiagrams() {
+  mermaid.initialize({ startOnLoad: false, theme: getMermaidTheme() });
+  return mermaid.run({ querySelector: '.mermaid' });
+}
 
 marked.use({
   extensions: [{
@@ -771,7 +776,7 @@ export class CognaEditorComponent implements OnInit {
         }
 
         setTimeout(()=>{
-          mermaid.run({querySelector:'.mermaid'})
+          runMermaidDiagrams()
           this.cdr.detectChanges();
         })  
       }, error => {
@@ -1014,7 +1019,7 @@ export class CognaEditorComponent implements OnInit {
               this.scrollBottom();        
 
               setTimeout(()=>{
-                mermaid.run({querySelector:'.mermaid'})
+                runMermaidDiagrams()
                 this.cdr.detectChanges();
               })  
             } else {

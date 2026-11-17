@@ -3,7 +3,7 @@
   <aside class="assistant-drawer" role="dialog" aria-label="App assistant">
     <header class="assistant-header">
       <div class="d-flex align-items-center gap-2">
-        <fa-icon [icon]="['fas', 'robot']" size="lg"></fa-icon>
+        <fa-icon [icon]="['fas', 'bolt']" size="lg"></fa-icon>
         <div>
           <div class="fw-bold">App assistant</div>
           <div class="small text-body-secondary">Describe what to build. Nothing changes until you apply.</div>
@@ -15,8 +15,61 @@
     </header>
 
     <div class="assistant-body" aria-live="polite">
+      <div class="small text-body-secondary mb-3">
+        @if (currentFormId()) {
+          The assistant will use the form currently open in the editor.
+        } @else if (currentDatasetId()) {
+          The assistant will use the dataset currently open in the editor.
+        } @else if (currentScreenId()) {
+          The assistant will use the screen currently open in the editor.
+        } @else {
+          The assistant will use the current app context.
+        }
+      </div>
+
+      @if (settingsOpen()) {
+        <section class="assistant-plan mb-3" aria-label="Assistant API settings">
+          <div class="fw-semibold mb-2">Assistant API settings</div>
+          <label class="form-label small mb-1" for="assistant-api-base-url">API base URL</label>
+          <input id="assistant-api-base-url" class="form-control mb-2" type="url"
+            [value]="settingsDraft().apiBaseUrl" (input)="onSettingsInput('apiBaseUrl', $event)"
+            placeholder="https://api.openai.com/v1" autocomplete="url">
+          <label class="form-label small mb-1" for="assistant-model">Model</label>
+          <input id="assistant-model" class="form-control mb-2" type="text"
+            [value]="settingsDraft().model" (input)="onSettingsInput('model', $event)"
+            placeholder="e.g. gpt-4o-mini" autocomplete="off">
+          <label class="form-label small mb-1" for="assistant-api-key">API key</label>
+          <input id="assistant-api-key" class="form-control mb-2" type="password"
+            [value]="settingsDraft().apiKey" (input)="onSettingsInput('apiKey', $event)"
+            [placeholder]="settings() ? 'Saved key — leave blank to keep it' : 'Enter your API key'"
+            autocomplete="new-password">
+          <div class="small text-body-secondary mb-2">
+            Use an OpenAI-compatible base URL, usually ending in <code>/v1</code>. Settings are stored in this browser for your creator account.
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-primary btn-sm" (click)="saveSettings()">Save settings</button>
+            @if (settings()) {
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleSettings()">Cancel</button>
+            }
+          </div>
+        </section>
+      } @else {
+        <div class="d-flex justify-content-end mb-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleSettings()">
+            Assistant settings
+          </button>
+        </div>
+      }
+
       @for (msg of history(); track $index) {
         <div class="assistant-msg" [class.assistant-msg-user]="msg.role === 'user'">{{ msg.content }}</div>
+      }
+
+      @if (omittedHistoryMessages() || truncatedHistoryMessages()) {
+        <div class="small text-body-secondary mb-2" role="note">
+          Earlier messages remain visible above. The latest request omitted {{ omittedHistoryMessages() }} older message(s)
+          and shortened {{ truncatedHistoryMessages() }} long message(s).
+        </div>
       }
 
       @if (loading()) {
@@ -61,12 +114,6 @@
                 Discard
               </button>
             } @else {
-              @if (restorePointId() && !undone()) {
-                <button type="button" class="btn btn-outline-danger btn-sm" [disabled]="applying()" (click)="undo()">
-                  <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>
-                  Undo all changes
-                </button>
-              }
               <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="reset()">
                 Start over
               </button>
@@ -82,7 +129,7 @@
       }
       <textarea class="form-control" rows="3" [value]="prompt()" [disabled]="applying()"
         [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
-        placeholder="e.g. Create a leave request form with employee name, leave type, start and end date, attached document, and a child section for approvals"></textarea>
+        placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
       <div class="d-flex justify-content-between align-items-center mt-2">
         <span class="small text-body-secondary">
           Ctrl+Enter to send

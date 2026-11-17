@@ -5,6 +5,7 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": false,
+    "strictFunctionTypes": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "noImplicitReturns": true,

@@ -21,17 +21,35 @@ export type AssistantStreamEvent =
 const KNOWN_KINDS: AssistantActionKind[] = [
   'create_form',
   'create_tab',
+  'update_tab',
+  'remove_tab',
+  'assign_section_to_tab',
+  'update_form',
   'add_section',
+  'update_section',
   'add_section_item',
   'update_item',
   'remove_item',
   'remove_section',
+  'create_tier',
+  'update_tier',
+  'remove_tier',
   'create_dataset',
+  'add_dataset_item',
+  'update_dataset_item',
+  'remove_dataset_item',
   'create_dashboard',
   'add_chart',
   'create_screen',
+  'add_screen_action',
   'update_screen',
   'remove_screen',
+  'create_navi_group',
+  'update_navi_group',
+  'remove_navi_group',
+  'add_navi_item',
+  'update_navi_item',
+  'remove_navi_item',
 ];
 
 /**
@@ -66,7 +84,7 @@ export class AssistantService {
       reportProgress: true,
     });
 
-    return this.http.request(req).pipe(
+    return this.http.request<string>(req).pipe(
       filter((event: HttpEvent<string>) => event.type !== HttpEventType.Sent),
       map((event): AssistantStreamEvent | null => {
         if (event.type === HttpEventType.DownloadProgress || event.type === HttpEventType.UploadProgress) {

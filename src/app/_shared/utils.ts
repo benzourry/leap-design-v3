@@ -2,7 +2,6 @@ import { formatNumber } from '@angular/common';
 import { baseApi, domainBase, domainRegex } from './constant.service';
 import dayjs from 'dayjs';
 import { marked } from 'marked';
-import mermaid from 'mermaid';
 import { icon as faIcon, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ChangeDetectorRef } from '@angular/core';
@@ -11,18 +10,26 @@ import { ChangeDetectorRef } from '@angular/core';
 const hashCode = (s: string): number =>
   s?.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
 
+export function getMermaidTheme(): 'dark' | 'default' {
+  return document.documentElement.getAttribute('data-bs-theme') === 'dark' ||
+    document.querySelector('.dark-mode') !== null
+    ? 'dark'
+    : 'default';
+}
+
 const svgCache: Record<string, string> = {};
 marked.use({
   extensions: [{
     name: 'code',
     renderer: ({ lang, text }) => {
       if (lang === 'mermaid') {
-        const id = `mermaid_${Math.abs(hashCode(text))}`;
+        const theme = getMermaidTheme();
+        const id = `mermaid_${theme}_${Math.abs(hashCode(text))}`;
         if (!svgCache[id]) {
           svgCache[id] = `<div class="spinner-grow text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                           </div>`;
-          createMermaidSvg(id, text).then(svg => {
+          createMermaidSvg(id, text, theme).then(svg => {
             const elem = document.getElementById(id);
             if (elem) elem.innerHTML = svg;
             svgCache[id] = svg;
@@ -160,12 +167,22 @@ export function compileTpl(templateText: string, data: any, scopeId: string): st
 }
 
 function r$markdown(match: string, p1: string): string {
-  return marked.parse(p1).toString().trim()
+  const commonIndent = p1.split(/\r?\n/).reduce((indent, line) => {
+    if (!line.trim()) return indent;
+    return Math.min(indent, line.match(/^[\t ]*/)?.[0].length ?? 0);
+  }, Infinity);
+  const markdown = commonIndent > 0 && Number.isFinite(commonIndent)
+    ? p1.replace(new RegExp(`^[\\t ]{${commonIndent}}`, 'gm'), '')
+    : p1;
+
+  return marked.parse(markdown).toString().trim()
          .replace('<table>', '<table class="table table-bordered m-0">')
          .replace('<blockquote>', '<blockquote class="blockquote">');
 }
 
-async function createMermaidSvg(id: string, text: string): Promise<string> {
+async function createMermaidSvg(id: string, text: string, theme: 'dark' | 'default'): Promise<string> {
+  const { default: mermaid } = await import('mermaid');
+  mermaid.initialize({ startOnLoad: false, theme });
   if (await mermaid.parse(text, { suppressErrors: true })) {
     const elem = document.createElement("div");
     document.body.appendChild(elem);
@@ -420,7 +437,7 @@ interface IResizeImageOptions {
 export const resizeImage = (settings: IResizeImageOptions) => {
   return resizeImageBlob(settings);
 }
-export const resizeImageBlob = (settings: IResizeImageOptions) => {
+export const resizeImageBlob = (settings: IResizeImageOptions): Promise<Blob> => {
   if (!settings.maxSize) {
     return Promise.resolve(settings.file);
   }
@@ -465,7 +482,7 @@ export const resizeImageBlob = (settings: IResizeImageOptions) => {
     return dataURItoBlob(dataUrl);
   };
 
-  return new Promise((ok, no) => {
+  return new Promise<Blob>((ok, no) => {
     if (!file.type.match(/image.*/)) {
       no(new Error("Not an image"));
       return;

@@ -71,6 +71,10 @@ export class DatasetEditorComponent implements OnInit {
         });
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
         this.commService.changeEmitted$.subscribe(data => {
+            if (data.key === 'assistant-dataset' && this.app?.id) {
+                this.getDatasetList(this.app.id);
+                if (this.curDatasetId) this.getDataset(this.curDatasetId);
+            }
             if (data.value == 'import') {
                 this.getDatasetList(1);
             }

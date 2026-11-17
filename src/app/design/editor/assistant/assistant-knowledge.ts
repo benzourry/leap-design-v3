@@ -170,6 +170,20 @@ export const SCREEN_TYPE_LIST = [
   { name: 'Static Page', value: 'static', description: 'Custom page built from scratch (no form)' },
   { name: 'Entry Page', value: 'page', description: 'Custom entry form page; requires a form' },
   { name: 'Entry List', value: 'list', description: 'Custom list page; requires a dataset' },
+  { name: 'Map', value: 'map', description: 'Map screen' },
+  { name: 'Combined Screen', value: 'combine', description: 'Page composed from existing app components' },
+];
+
+export const PROCESS_TIER_TYPES = ['HOD', 'PERSON', 'GROUP'];
+
+export const SCREEN_ACTION_TYPES = [
+  'edit', 'edit-single', 'prev', 'view', 'view-single', 'screen', 'form', 'facet',
+  'static', 'dataset', 'dashboard', 'lookup', 'user', 'function',
+];
+
+export const NAVI_ITEM_TYPES = [
+  'form', 'form-single', 'view-single', 'dataset', 'dashboard', 'screen', 'lookup',
+  'external', 'internal', 'lambda', 'user',
 ];
 
 export const CHART_TYPE_LIST = [
@@ -207,7 +221,7 @@ export const DATASET_TYPE_LIST = [
  * Sent verbatim to the LLM; keep it short and factual.
  */
 export const SCREEN_DSL_CHEATSHEET = `
-SCREEN TEMPLATE (HTML + inline JS expressions, compiled at runtime)
+REKA SCREEN TEMPLATE
 
 Data variables available in expressions:
   $this$        component scope object; assign state here, e.g. $this$.rows = res.content
@@ -225,13 +239,28 @@ Directives (attributes on any element):
   x-for="$=\"<for header>\""       loop, close with </x-for>
   x-foreach="$=\"row of $.rows\""  loop over an array, close with </x-foreach>
 
-Interpolation and scripts:
+Template expressions:
   {{ <expression> }}      value interpolation
-  [# <statements> #]      multi-statement script block
   <x-markdown>...</x-markdown>   renders markdown
 
-HTTP helper:
-  $http$("<url>", res => { ... }, err => { ... })
+Mermaid chart:
+  Put Mermaid in a fenced code block inside <x-markdown>. The renderer handles Mermaid;
+  do not add a <script> tag, call mermaid.initialize(), or use a raw .mermaid div.
+  <x-markdown>
+  ~~~mermaid
+  graph TD
+    A --> B
+    A --> C
+  ~~~
+  </x-markdown>
+
+JavaScript:
+  Screen content is an HTML/Reka template, not a JavaScript file. NEVER put <script> tags
+  or raw JavaScript statements in content. If screen initialization JavaScript is needed,
+  put it in the action's f field, which is stored at screen.data.f (Screen Init Function).
+  For update_screen, omit f unless changing the init function; omitted fields preserve existing data.
+  Use supported Reka expressions and event bindings (for example onclick="$popup['edit']()")
+  only for template interactions. Do not use them to embed initialization code.
 
 Example list screen:
   <div class="p-3">
@@ -244,13 +273,11 @@ Example list screen:
     </x-foreach>
   </div>
 
-Load data on first paint with a script block:
-  [# $http$("/api/entry/list?datasetId=1&email="+$user$.email, res=>{ $this$.rows = res.content }) #]
-
 Rules:
   - Use Bootstrap 5 utility classes only; the app theme is Bootstrap based.
   - Never use Angular syntax (no *ngIf / *ngFor / [(ngModel)]).
   - Every x-if / x-for / x-foreach must be closed with its matching end tag.
+  - Keep braces balanced in expressions and never place JavaScript or <script> tags in content.
 `.trim();
 
 /**
@@ -354,7 +381,7 @@ export function buildItemPayload(input: {
   readOnly?: boolean;
   hideLabel?: boolean;
   hidden?: boolean;
-  options?: { label: string; value: string }[];
+  options?: string[];
   datasetId?: number | string;
   x?: Record<string, unknown>;
   v?: Record<string, unknown>;
@@ -370,7 +397,7 @@ export function buildItemPayload(input: {
     hideLabel: input.hideLabel,
     hidden: input.hidden,
     datasetId: input.datasetId,
-    options: input.options?.length ? input.options : undefined,
+    options: input.options?.length ? input.options.join(',') : undefined,
     x: { ...(input.x ?? {}) },
     // `required` is evaluated at runtime from v.required (see run/form)
     v: {
@@ -464,6 +491,8 @@ export function buildScreenPayload(input: {
   type?: string;
   /** Screen template (DSL). Stored at data.content, see screen-editor.component.html. */
   content?: string;
+  /** Screen init JavaScript. Stored at data.f. */
+  f?: string;
   formId?: number;
   datasetId?: number;
   wide?: boolean;
@@ -485,6 +514,7 @@ export function buildScreenPayload(input: {
     data: {
       ...(input.data ?? {}),
       ...(input.content !== undefined ? { content: input.content } : {}),
+      ...(input.f !== undefined ? { f: input.f } : {}),
     },
   });
 }
@@ -494,6 +524,7 @@ export function buildScreenPayload(input: {
  */
 export function assistantKnowledge() {
   return {
+    editorSelection: 'When selectedFormId, selectedDatasetId, or selectedScreenId is set, prefer that entity for requests about the currently open editor. The selected screen data is in entities.screens[].data. update_screen can replace content and/or f; preserve existing content and f by omitting fields that should not change.',
     fieldTypes: FIELD_TYPE_LIST.map((t) => ({
       type: t.value,
       name: t.name,
@@ -505,6 +536,9 @@ export function assistantKnowledge() {
     chartAggs: CHART_AGG_LIST.map((a) => a.code),
     datasetTypes: DATASET_TYPE_LIST.map((d) => d.value),
     screenTypes: SCREEN_TYPE_LIST.map((t) => t.value),
+    processTierTypes: PROCESS_TIER_TYPES,
+    screenActionTypes: SCREEN_ACTION_TYPES,
+    navigationItemTypes: NAVI_ITEM_TYPES,
     screenDsl: SCREEN_DSL_CHEATSHEET,
   };
 }

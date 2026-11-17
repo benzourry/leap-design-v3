@@ -70,6 +70,10 @@ export class NaviComponent implements OnInit {
     });
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
     this.commService.changeEmitted$.subscribe(data => {
+      if (data.key === 'assistant-navi') {
+        this.getNavisAll(this.appId);
+        this.getNaviData(this.appId);
+      }
       if (data.value == 'import') {
         this.getNavisAll(this.appId);
         this.getNaviData(this.appId);

@@ -13,8 +13,8 @@ import { DatasetService } from '../../../../service/dataset.service';
 import { cleanText, compileTpl, splitAsList } from '../../../../_shared/utils';
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
+import dayGridPlugin from '@fullcalendar/angular/daygrid';
+import timeGridPlugin from '@fullcalendar/angular/timegrid';
 import { DashboardService } from '../../../../service/dashboard.service';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
 import { base, baseApi } from '../../../../_shared/constant.service';
@@ -64,7 +64,14 @@ export class ScreenEditorComponent implements OnInit {
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
-  constructor() { }
+  constructor() {
+    this.commService.changeEmitted$.subscribe(data => {
+      if (data.key === 'assistant-screen' && this.app?.id) {
+        this.getScreenList(this.app.id);
+        if (this.curScreen?.id) this.getScreenData(this.curScreen.id);
+      }
+    });
+  }
 
   readonly curScreenForm = viewChild<NgForm>('contentForm');
 

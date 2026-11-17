@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import EditScreenComponent from './edit-screen.component';
+import { EditScreenComponent } from './edit-screen.component';
 
 describe('EditScreenComponent', () => {
   let component: EditScreenComponent;
