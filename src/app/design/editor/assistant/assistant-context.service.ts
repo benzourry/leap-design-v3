@@ -14,6 +14,9 @@ import {
   AssistantFormSummary,
   AssistantScreenSummary,
   AssistantContextEntities,
+  AssistantPromptEntityOption,
+  AssistantPromptEntity,
+  AssistantPromptEntityType,
 } from './assistant.types';
 
 /** Forms that get their sections and fields described. Bounds the prompt size on large apps. */
@@ -45,9 +48,90 @@ export class AssistantContextService {
       .pipe(map((response: any) => asList(response).map(summarizeForm)));
   }
 
+  listPromptEntityOptions(
+    appId: number,
+    type: AssistantPromptEntityType
+  ): Observable<AssistantPromptEntityOption[]> {
+    let entities$: Observable<any>;
+    switch (type) {
+      case 'form':
+        entities$ = this.formService.getListBasic({
+          appId,
+          size: 9999,
+          page: 0,
+          sort: ['sortOrder,asc', 'id,asc'],
+        });
+        break;
+      case 'dataset':
+        entities$ = this.datasetService.getDatasetList(appId);
+        break;
+      case 'dashboard':
+        entities$ = this.dashboardService.getDashboardList(appId);
+        break;
+      case 'screen':
+        entities$ = this.screenService.getScreenList(appId);
+        break;
+      case 'navigation':
+        entities$ = this.appService.getNavisAll(appId);
+        break;
+    }
+
+    return entities$.pipe(
+      map((response) => asList(response)
+        .filter((entity) => entity?.id !== undefined && entity?.id !== null)
+        .map((entity) => ({
+          id: Number(entity.id),
+          label: String(entity.title ?? entity.name ?? entity.code ?? `#${entity.id}`),
+        }))
+        .filter((entity) => Number.isFinite(entity.id)))
+    );
+  }
+
+  getPromptEntity(
+    appId: number,
+    type: AssistantPromptEntityType,
+    id: number
+  ): Observable<unknown> {
+    switch (type) {
+      case 'form':
+        return forkJoin({
+          form: this.formService.getForm(id),
+          sections: this.formService.getSectionList(id, 0),
+          items: this.formService.getItemList(id, { size: 9999, page: 0 }),
+          tabs: this.formService.getTabList(id, 0),
+        }).pipe(map(({ form, sections, items, tabs }) => {
+          if (typeof form !== 'object' || form === null || Array.isArray(form)) {
+            throw new Error(`Form ${id} could not be loaded.`);
+          }
+          return {
+            ...form,
+            sections: asList(sections),
+            items: asList(items),
+            tabs: asList(tabs),
+          };
+        }));
+      case 'dataset':
+        return this.datasetService.getDataset(id);
+      case 'dashboard':
+        return this.dashboardService.getDashboard(id);
+      case 'screen':
+        return this.screenService.getScreen(id);
+      case 'navigation':
+        return this.appService.getNavisAll(appId).pipe(
+          map((response) => {
+            const entity = asList(response).find((candidate) => Number(candidate?.id) === id);
+            if (!entity) throw new Error(`Navigation group ${id} is no longer available.`);
+            return entity;
+          })
+        );
+    }
+  }
+
   build(
     app: { id: number; title?: string; description?: string },
-    selection: { formId?: number; datasetId?: number; screenId?: number } = {}
+    selection: { formId?: number; datasetId?: number; screenId?: number; includedFormIds?: number[] } = {},
+    requestText = '',
+    includedEntities: AssistantPromptEntity[] = []
   ): Observable<AssistantContext> {
     const appId = app.id;
 
@@ -67,6 +151,12 @@ export class AssistantContextService {
         if (selection.formId !== undefined && !selectedForm) {
           throw new Error('The selected form is no longer available. Choose it again and retry.');
         }
+        const requestedForm = findMentionedForm(requestText, forms);
+        const includedForms = forms.filter((form) => selection.includedFormIds?.includes(form.id));
+        const formsToDescribe = [selectedForm, requestedForm, ...includedForms]
+          .filter((form, index, list): form is AssistantFormSummary =>
+            form !== undefined && list.findIndex((candidate) => candidate?.id === form.id) === index
+          );
 
         const screenList = asList(screens);
         const selectedScreen = selection.screenId === undefined
@@ -76,13 +166,15 @@ export class AssistantContextService {
           throw new Error('The selected screen is no longer available. Choose it again and retry.');
         }
 
-        const formList$ = selectedForm
-          ? this.describeForm(selectedForm.id, selectedForm.title).pipe(
-              map((detail) => {
+        const formList$ = formsToDescribe.length
+          ? forkJoin(formsToDescribe.map((form) => this.describeForm(form.id, form.title))).pipe(
+              map((details) => {
                 const summaries = forms.slice(0, DETAILED_FORM_LIMIT);
-                const index = summaries.findIndex((form) => form.id === detail.id);
-                if (index >= 0) summaries[index] = detail;
-                else summaries.push(detail);
+                for (const detail of details) {
+                  const index = summaries.findIndex((form) => form.id === detail.id);
+                  if (index >= 0) summaries[index] = detail;
+                  else summaries.push(detail);
+                }
                 return summaries;
               })
             )
@@ -142,7 +234,7 @@ export class AssistantContextService {
               groups: toSummaries(groups),
               navigation: summarizeNavigation(navigation),
             };
-            return {
+            const context: AssistantContext = {
               app: { id: appId, title: clampText(app.title), description: clampText(app.description) },
               entities,
               knowledge: assistantKnowledge(),
@@ -150,6 +242,7 @@ export class AssistantContextService {
               selectedDatasetId: selection.datasetId,
               selectedScreenId: selection.screenId,
             };
+            return attachIncludedEntities(context, includedEntities);
           }));
       })
     );
@@ -168,6 +261,61 @@ export class AssistantContextService {
 
 function asList(response: any): any[] {
   return Array.isArray(response) ? response : (response?.content ?? []);
+}
+
+function findMentionedForm(requestText: string, forms: AssistantFormSummary[]): AssistantFormSummary | undefined {
+  const formId = requestText.match(/\b(?:form|borang)\s*(?:id\s*)?(?:#\s*)?(\d+)\b/i)?.[1];
+  return formId === undefined ? undefined : forms.find((form) => form.id === Number(formId));
+}
+
+function attachIncludedEntities(
+  context: AssistantContext,
+  includedEntities: AssistantPromptEntity[]
+): AssistantContext {
+  if (!includedEntities.length) return context;
+
+  const entities = {
+    ...context.entities,
+    forms: [...context.entities.forms],
+    datasets: [...context.entities.datasets],
+    dashboards: [...context.entities.dashboards],
+    screens: [...context.entities.screens],
+    navigation: [...context.entities.navigation],
+  };
+  for (const entity of includedEntities) {
+    switch (entity.type) {
+      case 'form':
+        entities.forms = attachFullData(entities.forms, entity);
+        break;
+      case 'dataset':
+        entities.datasets = attachFullData(entities.datasets, entity);
+        break;
+      case 'dashboard':
+        entities.dashboards = attachFullData(entities.dashboards, entity);
+        break;
+      case 'screen':
+        entities.screens = attachFullData(entities.screens, entity);
+        break;
+      case 'navigation':
+        entities.navigation = attachFullData(entities.navigation, entity);
+        break;
+    }
+  }
+  return { ...context, entities };
+}
+
+function attachFullData<T extends { id: number; fullData?: unknown }>(
+  entities: T[],
+  included: AssistantPromptEntity
+): T[] {
+  const index = entities.findIndex((entity) => entity.id === included.id);
+  if (index < 0) {
+    throw new Error(`The included ${included.type} "${included.label}" is no longer available.`);
+  }
+  return [
+    { ...entities[index], fullData: included.data },
+    ...entities.filter((_, entityIndex) => entityIndex !== index),
+  ];
 }
 
 function isScreenDetail(screen: unknown, id: number): boolean {

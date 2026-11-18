@@ -469,6 +469,7 @@ export interface AssistantChatMessage {
 export interface AssistantFormSummary {
   id: number;
   title: string;
+  fullData?: unknown;
   code?: string;
   onInit?: string;
   onSave?: string;
@@ -519,6 +520,7 @@ export interface AssistantFormSummary {
 
 export interface AssistantEntitySummary {
   id: number;
+  fullData?: unknown;
   title?: string;
   name?: string;
   code?: string;
@@ -540,6 +542,7 @@ export interface AssistantScreenSummary extends AssistantEntitySummary {
 
 export interface AssistantNaviGroupSummary {
   id: number;
+  fullData?: unknown;
   title?: string;
   items: {
     id: number;
@@ -582,6 +585,20 @@ export interface AssistantAttachment {
   name: string;
   mimeType: string;
   dataBase64: string;
+}
+
+export type AssistantPromptEntityType = 'form' | 'dataset' | 'dashboard' | 'screen' | 'navigation';
+
+export interface AssistantPromptEntityOption {
+  id: number;
+  label: string;
+}
+
+export interface AssistantPromptEntity {
+  type: AssistantPromptEntityType;
+  id: number;
+  label: string;
+  data: unknown;
 }
 
 export interface AssistantHealth {

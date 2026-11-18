@@ -57,6 +57,8 @@ export class EditorComponent implements OnInit {
 
     readonly assistantStatus = inject(AssistantStatusService);
     assistantOpen = signal<boolean>(false);
+    private assistantHistoryEntry = false;
+    private ignoreAssistantHistoryPop = false;
     activeFormId = signal<number | null>(null);
     activeDatasetId = signal<number | null>(null);
     activeScreenId = signal<number | null>(null);
@@ -75,6 +77,15 @@ export class EditorComponent implements OnInit {
 
     constructor() {
         this.location.onPopState(() => {
+            if (this.ignoreAssistantHistoryPop) {
+                this.ignoreAssistantHistoryPop = false;
+                return;
+            }
+            if (this.assistantOpen()) {
+                this.assistantOpen.set(false);
+                this.assistantHistoryEntry = false;
+                return;
+            }
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
             }
@@ -192,6 +203,27 @@ export class EditorComponent implements OnInit {
         const total = change.forms + change.datasets + change.dashboards + change.screens;
         if (total > 0) {
             this.toastService.show('Assistant applied ' + total + ' change(s)', { classname: 'bg-success text-light' });
+        }
+    }
+
+    openAssistant() {
+        if (this.assistantOpen()) return;
+        history.pushState(null, '', window.location.href);
+        this.assistantHistoryEntry = true;
+        this.assistantOpen.set(true);
+    }
+
+    onAssistantOpenChange(open: boolean) {
+        if (open) {
+            this.openAssistant();
+            return;
+        }
+        if (!this.assistantOpen()) return;
+        this.assistantOpen.set(false);
+        if (this.assistantHistoryEntry) {
+            this.assistantHistoryEntry = false;
+            this.ignoreAssistantHistoryPop = true;
+            history.back();
         }
     }
 

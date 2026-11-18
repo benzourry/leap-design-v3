@@ -13,6 +13,8 @@ describe('AssistantContextService', () => {
   let forms: jasmine.SpyObj<FormService>;
   let datasets: jasmine.SpyObj<DatasetService>;
   let screens: jasmine.SpyObj<ScreenService>;
+  let dashboards: jasmine.SpyObj<DashboardService>;
+  let app: jasmine.SpyObj<AppService>;
 
   beforeEach(() => {
     forms = jasmine.createSpyObj<FormService>('FormService', [
@@ -55,6 +57,12 @@ describe('AssistantContextService', () => {
       type: 'all',
       items: [{ id: 81, code: 'request_code', label: 'Request code', type: 'text', sortOrder: 0 }],
     }));
+    dashboards = jasmine.createSpyObj<DashboardService>('DashboardService', [
+      'getDashboardList',
+      'getDashboard',
+    ]);
+    dashboards.getDashboardList.and.returnValue(of([{ id: 9, title: 'Overview' }]));
+    dashboards.getDashboard.and.returnValue(of({ id: 9, title: 'Overview', charts: [{ id: 91 }] }));
     screens = jasmine.createSpyObj<ScreenService>('ScreenService', ['getScreenList', 'getScreen']);
     screens.getScreenList.and.returnValue(of([{ id: 88, title: 'Review', type: 'static' }]));
     screens.getScreen.and.callFake((id: number) => of({
@@ -63,7 +71,7 @@ describe('AssistantContextService', () => {
       type: 'static',
       data: { content: '<h1>Review request</h1>', f: '$this$.initialized = true;' },
     }));
-    const app = jasmine.createSpyObj<AppService>('AppService', ['getNavisAll']);
+    app = jasmine.createSpyObj<AppService>('AppService', ['getNavisAll']);
     app.getNavisAll.and.returnValue(of([{
       id: 91,
       title: 'Main',
@@ -77,7 +85,7 @@ describe('AssistantContextService', () => {
         AssistantContextService,
         { provide: FormService, useValue: forms },
         { provide: DatasetService, useValue: datasets },
-        { provide: DashboardService, useValue: { getDashboardList: () => of([]) } },
+        { provide: DashboardService, useValue: dashboards },
         { provide: ScreenService, useValue: screens },
         { provide: LookupService, useValue: { getFullLookupList: () => of({ content: [{ id: 11, name: 'Countries' }] }) } },
         { provide: AppService, useValue: app },
@@ -121,6 +129,97 @@ describe('AssistantContextService', () => {
     }));
     expect(context.entities.groups[0]).toEqual(jasmine.objectContaining({ id: 70, name: 'Approvers' }));
     expect(context.entities.lookups[0]).toEqual(jasmine.objectContaining({ id: 11, name: 'Countries' }));
+  });
+
+  it('includes fields for a form explicitly referenced by ID in the request', async () => {
+    forms.getListBasic.and.returnValue(of({ content: [
+      { id: 7, title: 'Leave request', code: 'leave' },
+      { id: 6698, title: 'Equipment request', code: 'equipment' },
+    ] }));
+    forms.getSectionList.and.callFake((formId: number) => of([{
+      id: formId + 1,
+      title: 'Details',
+      items: [{ code: 'asset' }],
+    }]));
+    forms.getItemList.and.callFake((formId: number) => of([{
+      id: formId + 2,
+      label: 'Asset',
+      code: 'asset',
+      type: 'text',
+    }]));
+
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build(
+        { id: 1 },
+        {},
+        'Create a dataset from form 6698 and include all items'
+      )
+    );
+
+    expect(forms.getItemList).toHaveBeenCalledWith(6698, { size: 9999, page: 0 });
+    expect(context.entities.forms.find((form) => form.id === 6698)?.sections?.[0].items?.[0]).toEqual(
+      jasmine.objectContaining({ id: 6700, label: 'Asset', code: 'asset' })
+    );
+  });
+
+  it('places included full entities in their regular context collections', async () => {
+    const fullForm = { id: 7, title: 'Leave request', code: 'leave', metadata: { source: 'editor' } };
+    const fullDataset = {
+      id: 8,
+      title: 'Requests',
+      code: 'requests',
+      items: [{ id: 81, code: 'request_code', label: 'Request code' }],
+    };
+
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build(
+        { id: 1 },
+        { includedFormIds: [7] },
+        '',
+        [
+          { type: 'form', id: 7, label: 'Leave request', data: fullForm },
+          { type: 'dataset', id: 8, label: 'Requests', data: fullDataset },
+        ]
+      )
+    );
+
+    const form = context.entities.forms.find((entity) => entity.id === 7);
+    expect(form?.sections?.[0].items?.[0].code).toBe('reason');
+    expect(form?.fullData).toEqual(fullForm);
+    expect(context.entities.datasets[0].fullData).toEqual(fullDataset);
+  });
+
+  it('lists component options and loads full selected entity data', async () => {
+    forms.getItemList.and.returnValue(of([
+      { id: 21, code: 'reason', label: 'Reason' },
+      { id: 22, code: 'amount', label: 'Amount' },
+    ]));
+    const contextService = TestBed.inject(AssistantContextService);
+
+    const [formOptions, datasetOptions, dashboardOptions, screenOptions, navigationOptions] = await Promise.all([
+      firstValueFrom(contextService.listPromptEntityOptions(1, 'form')),
+      firstValueFrom(contextService.listPromptEntityOptions(1, 'dataset')),
+      firstValueFrom(contextService.listPromptEntityOptions(1, 'dashboard')),
+      firstValueFrom(contextService.listPromptEntityOptions(1, 'screen')),
+      firstValueFrom(contextService.listPromptEntityOptions(1, 'navigation')),
+    ]);
+    const form = await firstValueFrom(contextService.getPromptEntity(1, 'form', 7));
+    const dashboard = await firstValueFrom(contextService.getPromptEntity(1, 'dashboard', 9));
+
+    expect(formOptions).toEqual([{ id: 7, label: 'Leave request' }]);
+    expect(datasetOptions).toEqual([{ id: 8, label: 'Requests' }]);
+    expect(dashboardOptions).toEqual([{ id: 9, label: 'Overview' }]);
+    expect(screenOptions).toEqual([{ id: 88, label: 'Review' }]);
+    expect(navigationOptions).toEqual([{ id: 91, label: 'Main' }]);
+    expect(form).toEqual(jasmine.objectContaining({
+      items: [
+        { id: 21, code: 'reason', label: 'Reason' },
+        { id: 22, code: 'amount', label: 'Amount' },
+      ],
+      sections: jasmine.any(Array),
+      tabs: jasmine.any(Array),
+    }));
+    expect(dashboard).toEqual({ id: 9, title: 'Overview', charts: [{ id: 91 }] });
   });
 
   it('prioritizes the open dataset when limiting detail requests', async () => {

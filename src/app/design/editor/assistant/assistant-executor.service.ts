@@ -447,6 +447,35 @@ export class AssistantExecutorService {
       ...(sectionRef ? { section: { id: this.resolveId(sectionRef, refs) } } : {}),
       ...(approverGroupRef ? { approverGroup: this.resolveId(approverGroupRef, refs) } : {}),
       x: { ...(payload.x ?? {}) },
+      actions:{
+          approved: {
+              action: 'nextTier',
+              label: 'Approved',
+              code: 'approved',
+              color: '#28a745',
+              icon: 'check',
+              userEdit: false,
+              sortOrder: 0
+          },
+          rejected: {
+              action: 'curTier',
+              label: 'Rejected',
+              code: 'rejected',
+              color: '#dc3545',
+              icon: 'times',
+              userEdit: false,
+              sortOrder: 1
+          },
+          returned: {
+              action: 'curTier',
+              label: 'Returned',
+              code: 'returned',
+              color: '#007bff',
+              icon: 'reply',
+              userEdit: true,
+              sortOrder: 2
+          }
+      }
     };
     const saved = await firstValueFrom(this.formService.saveTier(formId, tier));
     const tierId = requireId(saved, 'process tier');
@@ -500,6 +529,8 @@ export class AssistantExecutorService {
     return tierId;
   }
 
+  defaultDataset = { items: [], filters: [], next: {}, screen: {}, presetFilters: {}, showAction: true, actions:[{label:'View', action:'view',type:'dropdown',inpop:true,icon:'fas:file',style:'btn-secondary'},{label:'Edit', action:'edit',type:'dropdown',inpop:true,icon:'fas:pencil-alt',style:'btn-secondary'},{label:'Delete', action:'delete',type:'dropdown',inpop:true,icon:'fas:trash',style:'btn-secondary'}], x: {tblcard:true, showSummary: true}, wide: true };
+
   private async createDataset(
     appId: number,
     action: CreateDatasetAction,
@@ -511,7 +542,7 @@ export class AssistantExecutorService {
     // the dataset dialog stores the whole form object (see edit-dataset.component.ts)
     const form = formId ? await this.snapshot(formId, forms) : undefined;
     const res = await firstValueFrom(
-      this.datasetService.saveDataset(appId, buildDatasetPayload({ ...action.payload, form: form?.data ?? form, formId }))
+      this.datasetService.saveDataset(appId, {...this.defaultDataset, ...buildDatasetPayload({ ...action.payload, form: form?.data ?? form, formId })})
     );
     const id = requireId(res, 'dataset');
     refs.set(action.id, { id });

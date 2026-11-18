@@ -1,8 +1,9 @@
+import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, model, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantService } from './assistant.service';
 import { AssistantContextService } from './assistant-context.service';
@@ -27,6 +28,9 @@ import {
   AssistantAttachment,
   AssistantChanged,
   AssistantChatMessage,
+  AssistantPromptEntity,
+  AssistantPromptEntityOption,
+  AssistantPromptEntityType,
   AssistantPlanResponse,
 } from './assistant.types';
 import { compileTpl } from '../../../_shared/utils';
@@ -40,7 +44,7 @@ import { compileTpl } from '../../../_shared/utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './assistant-drawer.component.html', 
   styleUrl: './assistant-drawer.component.scss',
-  imports: [FaIconComponent, AssistantPlanCardComponent, RouterLink],
+  imports: [FaIconComponent, AssistantPlanCardComponent, RouterLink, TitleCasePipe],
 })
 export class AssistantDrawerComponent implements OnInit {
   private assistant = inject(AssistantService);
@@ -62,6 +66,19 @@ export class AssistantDrawerComponent implements OnInit {
 
   readonly prompt = signal('');
   readonly attachments = signal<File[]>([]);
+  readonly entityTypes: { type: AssistantPromptEntityType; label: string }[] = [
+    { type: 'form', label: 'Form' },
+    { type: 'dataset', label: 'Dataset' },
+    { type: 'dashboard', label: 'Dashboard' },
+    { type: 'screen', label: 'Screen' },
+    { type: 'navigation', label: 'Navigation' },
+  ];
+  readonly entityPickerOpen = signal(false);
+  readonly entityPickerType = signal<AssistantPromptEntityType | null>(null);
+  readonly entityPickerOptions = signal<AssistantPromptEntityOption[]>([]);
+  readonly entityPickerLoading = signal(false);
+  readonly entityPickerError = signal('');
+  readonly includedEntities = signal<AssistantPromptEntity[]>([]);
   readonly maxAttachments = ASSISTANT_MAX_ATTACHMENTS;
   readonly settings = signal<AssistantProfile | null>(null);
   readonly maxPromptChars = ASSISTANT_MAX_PROMPT_CHARS;
@@ -102,6 +119,7 @@ export class AssistantDrawerComponent implements OnInit {
       && length <= ASSISTANT_MAX_PROMPT_CHARS
       && this.settings() !== null
       && !this.loading()
+      && !this.entityPickerLoading()
       && !this.applying();
   });
   readonly canApply = computed(() => {
@@ -138,6 +156,69 @@ export class AssistantDrawerComponent implements OnInit {
 
   openFilePicker(input: HTMLInputElement) {
     input.click();
+  }
+
+  toggleEntityPicker() {
+    this.entityPickerOpen.update((open) => !open);
+    this.entityPickerType.set(null);
+    this.entityPickerOptions.set([]);
+    this.entityPickerError.set('');
+  }
+
+  selectEntityType(type: AssistantPromptEntityType) {
+    this.entityPickerType.set(type);
+    this.entityPickerOptions.set([]);
+    this.entityPickerError.set('');
+    this.entityPickerLoading.set(true);
+    this.contextService.listPromptEntityOptions(this.appId(), type)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.entityPickerLoading.set(false))
+      )
+      .subscribe({
+        next: (options) => this.entityPickerOptions.set(options),
+        error: (e) => this.entityPickerError.set(
+          e instanceof Error ? e.message : `Could not load ${type} components.`
+        ),
+      });
+  }
+
+  async includeEntity(option: AssistantPromptEntityOption) {
+    const type = this.entityPickerType();
+    if (!type || this.entityPickerLoading()) return;
+    this.entityPickerLoading.set(true);
+    this.entityPickerError.set('');
+    try {
+      const data = await firstValueFrom(this.contextService.getPromptEntity(this.appId(), type, option.id));
+      const entity: AssistantPromptEntity = { type, id: option.id, label: option.label, data };
+      if (!this.includedEntities().some((included) => included.type === type && included.id === option.id)) {
+        this.includedEntities.update((included) => [...included, entity]);
+      }
+      this.entityPickerOpen.set(false);
+      this.entityPickerType.set(null);
+      this.entityPickerOptions.set([]);
+    } catch (e) {
+      this.entityPickerError.set(e instanceof Error ? e.message : `Could not load ${option.label}.`);
+    } finally {
+      this.entityPickerLoading.set(false);
+    }
+  }
+
+  removeIncludedEntity(type: AssistantPromptEntityType, id: number) {
+    this.includedEntities.update((entities) =>
+      entities.filter((entity) => entity.type !== type || entity.id !== id)
+    );
+  }
+
+  isEntityIncluded(type: AssistantPromptEntityType, id: number): boolean {
+    return this.includedEntities().some((entity) => entity.type === type && entity.id === id);
+  }
+
+  backToEntityTypes() {
+    if (this.entityPickerLoading()) return;
+    this.entityPickerType.set(null);
+    this.entityPickerOptions.set([]);
+    this.entityPickerError.set('');
   }
 
   onFilesSelected(event: Event) {
@@ -209,7 +290,11 @@ export class AssistantDrawerComponent implements OnInit {
 
     this.prompt.set('');
     const attachedFiles = this.attachments();
+    const includedEntities = this.includedEntities();
     this.attachments.set([]);
+    this.includedEntities.set([]);
+    this.entityPickerOpen.set(false);
+    this.entityPickerType.set(null);
     const previous = this.history();
     const historyWindow = buildAssistantHistoryWindow(previous);
     this.omittedHistoryMessages.set(historyWindow.omittedMessages);
@@ -220,6 +305,9 @@ export class AssistantDrawerComponent implements OnInit {
         role: 'user',
         content: [
           question,
+          includedEntities.length
+            ? `Included components: ${includedEntities.map((entity) => `${entity.type} "${entity.label}" (ID ${entity.id})`).join(', ')}`
+            : '',
           attachedFiles.length ? `Attachments: ${attachedFiles.map((file) => file.name).join(', ')}` : '',
         ].filter(Boolean).join('\n\n'),
       },
@@ -230,7 +318,10 @@ export class AssistantDrawerComponent implements OnInit {
         formId: this.currentFormId() ?? undefined,
         datasetId: this.currentDatasetId() ?? undefined,
         screenId: this.currentScreenId() ?? undefined,
-      })
+        includedFormIds: includedEntities
+          .filter((entity) => entity.type === 'form')
+          .map((entity) => entity.id),
+      }, question, includedEntities)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (context) => {
@@ -259,9 +350,9 @@ export class AssistantDrawerComponent implements OnInit {
               this.acceptPlan(event.plan);
             });
         },
-        error: () => {
+        error: (e) => {
           this.loading.set(false);
-          this.error.set('Could not read the app structure. Try again.');
+          this.error.set(e instanceof Error ? e.message : 'Could not read the app structure. Try again.');
         },
       });
   }
@@ -353,6 +444,9 @@ export class AssistantDrawerComponent implements OnInit {
   reset() {
     this.history.set([]);
     this.attachments.set([]);
+    this.includedEntities.set([]);
+    this.entityPickerOpen.set(false);
+    this.entityPickerType.set(null);
     this.omittedHistoryMessages.set(0);
     this.truncatedHistoryMessages.set(0);
     this.plan.set(null);

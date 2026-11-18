@@ -175,6 +175,65 @@
       
       <!-- Unified Chat Input Container -->
       <div class="rounded-2 m-3 bg-body-tertiary">
+        <div class="assistant-entity-toolbar px-3 pt-3">
+          <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+            [disabled]="loading() || applying() || entityPickerLoading()"
+            aria-label="Include an app component" title="Include form, dataset, dashboard, screen, or navigation"
+            [attr.aria-expanded]="entityPickerOpen()" (click)="toggleEntityPicker()">
+            <fa-icon [icon]="['fas', 'plus']" [fixedWidth]="true"></fa-icon>
+          </button>
+          @for (entity of includedEntities(); track entity.type + ':' + entity.id) {
+            <span class="badge rounded-pill border text-body bg-transparent d-inline-flex align-items-center gap-2">
+              <span>{{ entity.type }}: {{ entity.label }}</span>
+              <button type="button" class="btn-close" [disabled]="loading() || applying()"
+                [attr.aria-label]="'Remove ' + entity.type + ' ' + entity.label"
+                (click)="removeIncludedEntity(entity.type, entity.id)"></button>
+            </span>
+          }
+          @if (entityPickerOpen()) {
+            <div class="assistant-entity-picker" role="group" aria-label="Select an app component">
+              @if (entityPickerType(); as selectedType) {
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <strong class="small">{{ selectedType | titlecase }}</strong>
+                  <button type="button" class="btn btn-sm p-0"
+                    [disabled]="entityPickerLoading()" (click)="backToEntityTypes()">
+                    <fa-icon [icon]="['fas', 'arrow-left']" [spin]="true" [fixedWidth]="true"></fa-icon> Back
+                  </button>
+                </div>
+                @if (entityPickerLoading()) {
+                  <div class="small text-body-secondary py-2">
+                    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
+                    Loading components…
+                  </div>
+                } @else if (entityPickerOptions().length) {
+                  <div class="assistant-entity-options">
+                    @for (option of entityPickerOptions(); track option.id) {
+                      <button type="button" class="assistant-entity-option"
+                        [disabled]="entityPickerLoading() || isEntityIncluded(selectedType, option.id)"
+                        (click)="includeEntity(option)">
+                        {{ option.label }}
+                        <span class="text-body-secondary">#{{ option.id }}</span>
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <div class="small text-body-secondary py-2">No {{ selectedType }} components found.</div>
+                }
+              } @else {
+                <div class="small fw-semibold mb-2">Choose a component type</div>
+                @for (entityType of entityTypes; track entityType.type) {
+                  <button type="button" class="assistant-entity-option"
+                    (click)="selectEntityType(entityType.type)">
+                    {{ entityType.label }}
+                  </button>
+                }
+              }
+              @if (entityPickerError()) {
+                <div class="small text-danger mt-2" role="alert">{{ entityPickerError() }}</div>
+              }
+            </div>
+          }
+        </div>
         <textarea class="form-control border-0 rounded-0 shadow-none bg-transparent px-3 pt-3" rows="3" style="resize: none;"
           [value]="prompt()" [disabled]="loading() || applying()"
           [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
@@ -212,7 +271,8 @@
               <fa-icon [icon]="['fas', 'paperclip']" [fixedWidth]="true"></fa-icon>
             </button>
             @if (history().length) {
-              <button type="button" class="btn btn-outline-secondary btn-round btn-sm" [disabled]="loading() || applying()" (click)="reset()">
+              <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+                [disabled]="loading() || applying() || entityPickerLoading()" (click)="reset()">
                 Clear
               </button>
             }

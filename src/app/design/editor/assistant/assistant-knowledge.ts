@@ -525,6 +525,7 @@ export function buildScreenPayload(input: {
 export function assistantKnowledge() {
   return {
     editorSelection: 'When selectedFormId, selectedDatasetId, or selectedScreenId is set, prefer that entity for requests about the currently open editor. The selected screen data is in entities.screens[].data. update_screen can replace content and/or f; preserve existing content and f by omitting fields that should not change.',
+    includedComponents: 'If an entity in entities.forms, entities.datasets, entities.dashboards, entities.screens, or entities.navigation has fullData, use that complete object as the source of truth. For forms, inspect the detailed sections and their items as well as fullData; do not claim the fields are missing when they are present.',
     fieldTypes: FIELD_TYPE_LIST.map((t) => ({
       type: t.value,
       name: t.name,
