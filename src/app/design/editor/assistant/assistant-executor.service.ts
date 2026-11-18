@@ -123,7 +123,7 @@ export class AssistantExecutorService {
       case 'create_form':
         return this.createForm(appId, action, refs, changed);
       case 'create_tab':
-        return this.createTab(action, refs, forms);
+        return this.createTab(appId, action, refs, forms, changed);
       case 'update_tab':
         return this.updateTab(action, refs, forms);
       case 'remove_tab':
@@ -195,9 +195,17 @@ export class AssistantExecutorService {
     return id;
   }
 
-  private async createTab(action: CreateTabAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>) {
+  private async createTab(appId: number,action: CreateTabAction, refs: Map<string, ResolvedRef>, forms: Map<number, any>, changed: AssistantChanged) {
     const formId = this.resolveId(action.payload.formRef, refs);
     const form = await this.snapshot(formId, forms);
+
+    // 1. Update the form FIRST so we don't overwrite the new tab with stale data
+    if (form.nav === undefined || form.nav === 'simple') {
+      const updatedForm = { ...form, nav: 'pills' };
+      await firstValueFrom(this.formService.saveForm(appId, updatedForm));
+      changed.forms++;
+    }
+
     const tab = await firstValueFrom(
       this.formService.saveTab(formId, {
         title: action.payload.title,

@@ -163,6 +163,18 @@
   color: var(--bs-body-color) !important;
   float: right;
 }
+.group-by-toggle{
+  background-color: var(--bs-secondary-bg);
+  padding:1px;
+  border-radius:3px;
+}
+.group-by-toggle .btn-check + .btn{
+border:none;
+}
+.group-by-toggle .btn-check:checked + .btn{
+  border:none;
+  background-color: var(--bs-body-bg);
+}
 
 ::ng-deep .ui-sidemenu {
   &.accordion-item {

@@ -5,11 +5,11 @@
       <div class="d-flex align-items-center gap-2">
         <fa-icon [icon]="['fas', 'bolt']" size="lg"></fa-icon>
         <div>
-          <div class="fw-bold">App assistant</div>
-          <div class="smaller text-body-secondary">Describe what to build. Nothing changes until you apply.</div>
+          <div class="fw-bold">Creator Assistant</div>
+          <!-- <div class="smaller text-body-secondary">Describe what to build. Nothing changes until you apply.</div> -->
         </div>
       </div>
-      <button type="button" class="btn btn-sm btn-round" (click)="close()" aria-label="Close assistant">
+      <button type="button" class="btn btn-sm btn-round m-n1" (click)="close()" aria-label="Close assistant">
         <fa-icon [icon]="['fas', 'times']" [fixedWidth]="true"></fa-icon>
       </button>
     </header>
@@ -30,16 +30,18 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="small text-body-secondary">
           @if (settings(); as selectedAssistant) {
-            Using <strong>{{ selectedAssistant.name }}</strong> ({{ selectedAssistant.model }})
+            <strong>{{ selectedAssistant.name }}</strong> ({{ selectedAssistant.model }})
           } @else {
             No assistant selected
           }
         </div>
-        <a class="btn btn-outline-secondary btn-sm" routerLink="/devprofile">Manage assistants</a>
+        <a class="btn btn-outline-secondary btn-sm border-0" routerLink="/devprofile" title="Manage assistants">
+          <fa-icon [icon]="['fas', 'cog']" [fixedWidth]="true"></fa-icon>
+        </a>
       </div>
 
-      @for (msg of history(); track $index) {
-        <div class="assistant-msg" [class.assistant-msg-user]="msg.role === 'user'">{{ msg.content }}</div>
+      @for (msg of history(); track $index) {        
+        <div class="assistant-msg" [class.assistant-msg-user]="msg.role === 'user'" [innerHtml]="msg.content"></div>
       }
 
       @if (omittedHistoryMessages() || truncatedHistoryMessages()) {
@@ -54,12 +56,12 @@
           <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
           <span class="ms-1">Thinking…</span>
           @if (prose()) {
-            <div class="mt-2 assistant-prose">{{ prose() }}</div>
+            <div class="mt-2 assistant-prose" [innerHtml]="prose()"></div>
           }
         </div>
       }
 
-      @if (plan(); as currentPlan) {
+      <!-- @if (plan(); as currentPlan) {
         <div class="assistant-plan">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-semibold">{{ actions().length }} proposed step(s)</span>
@@ -97,7 +99,54 @@
             }
           </div>
         </div>
+      } -->
+
+      @if (plan(); as currentPlan) {
+        @for (warning of warnings(); track $index) {
+          <div class="alert alert-warning py-2 px-3 small mb-2 border-0" role="alert">
+            <fa-icon [icon]="['fas', 'exclamation-triangle']" class="me-1"></fa-icon>
+            {{ warning }}
+          </div>
+        }
+
+        @if (actions().length > 0) {
+          <div class="assistant-plan mt-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-semibold">{{ actions().length }} proposed step(s)</span>
+              @if (result()) {
+                <span class="badge bg-success-subtle text-success-emphasis">{{ doneCount() }} applied</span>
+              }
+            </div>
+
+            <app-assistant-plan-card
+              [actions]="actions()"
+              [included]="included()"
+              [results]="results()"
+              [busy]="applying() || result() !== null"
+              (toggle)="toggle($event)" />
+
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              @if (!result()) {
+                <button type="button" class="btn btn-primary btn-sm" [disabled]="!canApply()" (click)="apply()">
+                  @if (applying()) {
+                    <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
+                  }
+                  Apply {{ included().length }} step(s)
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="discard()">
+                  Discard
+                </button>
+              } @else {
+                <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="reset()">
+                  Start over
+                </button>
+              }
+            </div>
+          </div>
+        }
       }
+
+
     </div>
 
     <footer class="assistant-footer p-0">
@@ -106,11 +155,28 @@
       }
       
       <!-- Unified Chat Input Container -->
-      <div class="bg-body border-top">
+      <div class="rounded-2 m-3 bg-body-tertiary">
         <textarea class="form-control border-0 rounded-0 shadow-none bg-transparent px-3 pt-3" rows="3" style="resize: none;"
-          [value]="prompt()" [disabled]="applying()"
+          [value]="prompt()" [disabled]="loading() || applying()"
           [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
           placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
+
+        <input #filePicker class="d-none" type="file" multiple
+          accept="application/pdf,image/png,image/jpeg,image/gif,image/webp"
+          [disabled]="loading() || applying()" (change)="onFilesSelected($event)" />
+
+        @if (attachments().length) {
+            <div class="d-flex flex-wrap gap-2 px-3 pb-2" role="list" aria-label="Attached files">
+            @for (file of attachments(); track $index) {
+                <span class="badge rounded-pill border text-body bg-transparent d-inline-flex align-items-center gap-2" role="listitem">
+                <fa-icon [icon]="['fas', 'paperclip']" [fixedWidth]="true"></fa-icon>
+                  <span class="text-truncate" style="max-width: 12rem;">{{ file.name }}</span>
+                <button type="button" class="btn-close" [disabled]="loading() || applying()"
+                  [attr.aria-label]="'Remove ' + file.name" (click)="removeAttachment($index)"></button>
+              </span>
+            }
+          </div>
+        }
         
         <div class="d-flex justify-content-between align-items-center p-3 pt-0">
           <span class="smaller text-body-secondary">
@@ -120,12 +186,18 @@
             }
           </span>
           <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+              [disabled]="loading() || applying() || attachments().length >= maxAttachments"
+              aria-label="Attach files" title="Attach PDF or image (4 MB each, 8 MB total)"
+              (click)="openFilePicker(filePicker)">
+              <fa-icon [icon]="['fas', 'paperclip']" [fixedWidth]="true"></fa-icon>
+            </button>
             @if (history().length) {
-              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="loading() || applying()" (click)="reset()">
+              <button type="button" class="btn btn-outline-secondary btn-round btn-sm" [disabled]="loading() || applying()" (click)="reset()">
                 Clear
               </button>
             }
-            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" [disabled]="!canSend()" (click)="send()">
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-2" [disabled]="!canSend()" (click)="send()">
               <fa-icon [icon]="['fas', 'paper-plane']" [fixedWidth]="true"></fa-icon>
               Send
             </button>

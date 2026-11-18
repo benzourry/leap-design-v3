@@ -176,6 +176,8 @@ function r$markdown(match: string, p1: string): string {
     : p1;
 
   return marked.parse(markdown).toString().trim()
+         // Add this line to strip newlines between HTML tags
+         .replace(/>\r?\n\s*</g, '><') 
          .replace('<table>', '<table class="table table-bordered m-0">')
          .replace('<blockquote>', '<blockquote class="blockquote">');
 }

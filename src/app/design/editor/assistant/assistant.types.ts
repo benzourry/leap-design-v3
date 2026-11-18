@@ -575,6 +575,13 @@ export interface AssistantPlanRequest {
   assistantId: number;
   history: AssistantChatMessage[];
   context: AssistantContext;
+  attachments?: AssistantAttachment[];
+}
+
+export interface AssistantAttachment {
+  name: string;
+  mimeType: string;
+  dataBase64: string;
 }
 
 export interface AssistantHealth {

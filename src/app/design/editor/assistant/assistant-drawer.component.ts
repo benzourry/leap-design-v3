@@ -6,7 +6,12 @@ import { finalize } from 'rxjs';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantService } from './assistant.service';
 import { AssistantContextService } from './assistant-context.service';
-import { ASSISTANT_MAX_PROMPT_CHARS } from './assistant-api.contract';
+import {
+  ASSISTANT_MAX_ATTACHMENT_BYTES,
+  ASSISTANT_MAX_ATTACHMENT_TOTAL_BYTES,
+  ASSISTANT_MAX_ATTACHMENTS,
+  ASSISTANT_MAX_PROMPT_CHARS,
+} from './assistant-api.contract';
 import { AssistantProfile, AssistantSettingsService } from './assistant-settings.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 import { AssistantPlanCardComponent } from './assistant-plan-card.component';
@@ -14,10 +19,12 @@ import { buildAssistantHistoryWindow } from './assistant-history';
 import {
   AssistantActionResult,
   AssistantApplyResult,
+  AssistantAttachment,
   AssistantChanged,
   AssistantChatMessage,
   AssistantPlanResponse,
 } from './assistant.types';
+import { compileTpl } from '../../../_shared/utils';
 
 /**
  * Right-side drawer where a creator describes what they want and reviews the proposed plan.
@@ -49,6 +56,8 @@ export class AssistantDrawerComponent implements OnInit {
   changed = output<AssistantChanged>();
 
   readonly prompt = signal('');
+  readonly attachments = signal<File[]>([]);
+  readonly maxAttachments = ASSISTANT_MAX_ATTACHMENTS;
   readonly settings = signal<AssistantProfile | null>(null);
   readonly maxPromptChars = ASSISTANT_MAX_PROMPT_CHARS;
   readonly history = signal<AssistantChatMessage[]>([]);
@@ -97,6 +106,45 @@ export class AssistantDrawerComponent implements OnInit {
     this.prompt.set((event.target as HTMLTextAreaElement).value);
   }
 
+  openFilePicker(input: HTMLInputElement) {
+    input.click();
+  }
+
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const selected = Array.from(input.files ?? []);
+    input.value = '';
+    this.error.set('');
+
+    const attachments = [...this.attachments()];
+    let totalBytes = attachments.reduce((total, file) => total + file.size, 0);
+    for (const file of selected) {
+      if (!supportedAttachmentType(file)) {
+        this.error.set(`${file.name} is not supported. Attach a PDF or PNG, JPEG, GIF, or WebP image.`);
+        continue;
+      }
+      if (file.size > ASSISTANT_MAX_ATTACHMENT_BYTES) {
+        this.error.set(`${file.name} exceeds the 4 MB per-file limit.`);
+        continue;
+      }
+      if (attachments.length >= ASSISTANT_MAX_ATTACHMENTS) {
+        this.error.set(`Attach no more than ${ASSISTANT_MAX_ATTACHMENTS} files.`);
+        break;
+      }
+      if (totalBytes + file.size > ASSISTANT_MAX_ATTACHMENT_TOTAL_BYTES) {
+        this.error.set('Attachments cannot exceed 8 MB total.');
+        continue;
+      }
+      attachments.push(file);
+      totalBytes += file.size;
+    }
+    this.attachments.set(attachments);
+  }
+
+  removeAttachment(index: number) {
+    this.attachments.update((files) => files.filter((_, fileIndex) => fileIndex !== index));
+  }
+
   onKeydown(event: KeyboardEvent) {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && this.canSend()) {
       event.preventDefault();
@@ -104,7 +152,7 @@ export class AssistantDrawerComponent implements OnInit {
     }
   }
 
-  send() {
+  async send() {
     if (!this.canSend()) return;
     const question = this.prompt().trim();
     const app = this.app() ?? { id: this.appId() };
@@ -114,18 +162,38 @@ export class AssistantDrawerComponent implements OnInit {
       return;
     }
 
-    this.prompt.set('');
     this.error.set('');
     this.prose.set('');
     this.plan.set(null);
     this.result.set(null);
     this.loading.set(true);
 
+    let attachments: AssistantAttachment[];
+    try {
+      attachments = await Promise.all(this.attachments().map(readAttachment));
+    } catch (e) {
+      this.loading.set(false);
+      this.error.set(e instanceof Error ? e.message : 'Could not read the selected attachment.');
+      return;
+    }
+
+    this.prompt.set('');
+    const attachedFiles = this.attachments();
+    this.attachments.set([]);
     const previous = this.history();
     const historyWindow = buildAssistantHistoryWindow(previous);
     this.omittedHistoryMessages.set(historyWindow.omittedMessages);
     this.truncatedHistoryMessages.set(historyWindow.truncatedMessages);
-    this.history.set([...previous, { role: 'user', content: question }]);
+    this.history.set([
+      ...previous,
+      {
+        role: 'user',
+        content: [
+          question,
+          attachedFiles.length ? `Attachments: ${attachedFiles.map((file) => file.name).join(', ')}` : '',
+        ].filter(Boolean).join('\n\n'),
+      },
+    ]);
 
     this.contextService
       .build({ id: app.id, title: app.title, description: app.description }, {
@@ -142,6 +210,7 @@ export class AssistantDrawerComponent implements OnInit {
               assistantId: settings.id,
               history: historyWindow.messages,
               context,
+              attachments,
             })
             .pipe(
               takeUntilDestroyed(this.destroyRef),
@@ -149,11 +218,12 @@ export class AssistantDrawerComponent implements OnInit {
             )
             .subscribe((event) => {
               if (event.type === 'delta') {
-                this.prose.set(event.text);
+                this.prose.set(compileTpl('<x-markdown>' + event.text.trim() + '</x-markdown>', {}, 'ai-assistant'));
+                // this.prose.set(event.text.trim());
                 return;
               }
               if (event.type === 'error') {
-                this.error.set(event.message);
+                this.error.set(event.message.trim());
                 return;
               }
               this.acceptPlan(event.plan);
@@ -166,20 +236,42 @@ export class AssistantDrawerComponent implements OnInit {
       });
   }
 
+  // private acceptPlan(plan: AssistantPlanResponse) {
+  //   this.prose.set(plan.message || this.prose());
+  //   this.plan.set(plan);
+  //   this.included.set(plan.actions.filter((a) => !a.destructive && !a.kind.startsWith('remove_')).map((a) => a.id));
+    
+  //   this.history.set([
+  //     ...this.history(),
+  //     { role: 'assistant', content: compileTpl('<x-markdown>' + plan.message.trim() + '</x-markdown>', {}, 'ai-assistant') || `${plan.actions.length} step(s) proposed.` },
+  //   ]);
+  //   if (!plan.actions.length) {
+  //     const warnings = plan.warnings ?? [];
+  //     this.error.set(warnings.length
+  //       ? `The assistant proposed no executable steps. ${warnings.join(' ')}`
+  //       : 'The assistant did not propose any change it can apply. Try describing the screen or form in more detail.');
+  //   }
+  // }
+
   private acceptPlan(plan: AssistantPlanResponse) {
     this.prose.set(plan.message || this.prose());
     this.plan.set(plan);
     this.included.set(plan.actions.filter((a) => !a.destructive && !a.kind.startsWith('remove_')).map((a) => a.id));
+    
     this.history.set([
       ...this.history(),
-      { role: 'assistant', content: plan.message || `${plan.actions.length} step(s) proposed.` },
+      { 
+        role: 'assistant', 
+        content: compileTpl('<x-markdown>' + plan.message.trim() + '</x-markdown>', {}, 'ai-assistant') 
+                 || (plan.actions.length ? `${plan.actions.length} step(s) proposed.` : 'Analysis complete.') 
+      },
     ]);
-    if (!plan.actions.length) {
-      const warnings = plan.warnings ?? [];
-      this.error.set(warnings.length
-        ? `The assistant proposed no executable steps. ${warnings.join(' ')}`
-        : 'The assistant did not propose any change it can apply. Try describing the screen or form in more detail.');
-    }
+    
+    // Only show an error if there are actual warnings from the backend, 
+    // rather than defaulting to an error just because actions are empty.
+    // if (!plan.actions.length && plan.warnings?.length) {
+    //   this.error.set(plan.warnings.join(' '));
+    // }
   }
 
   toggle(id: string) {
@@ -216,8 +308,11 @@ export class AssistantDrawerComponent implements OnInit {
     }
   }
 
+  compileTpl = compileTpl;
+
   reset() {
     this.history.set([]);
+    this.attachments.set([]);
     this.omittedHistoryMessages.set(0);
     this.truncatedHistoryMessages.set(0);
     this.plan.set(null);
@@ -251,6 +346,48 @@ export class AssistantDrawerComponent implements OnInit {
       this.commService.emitChange({ key: 'assistant-screen', value: true });
     }
     if (summary.navigation) this.commService.emitChange({ key: 'assistant-navi', value: true });
+  }
+}
+
+function supportedAttachmentType(file: File): boolean {
+  const type = file.type.toLowerCase();
+  if (['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(type)) return true;
+  if (type) return false;
+  return /\.(pdf|png|jpe?g|gif|webp)$/i.test(file.name);
+}
+
+function readAttachment(file: File): Promise<AssistantAttachment> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}.`));
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+      const separator = dataUrl.indexOf(',');
+      if (separator < 0) {
+        reject(new Error(`Could not read ${file.name}.`));
+        return;
+      }
+      resolve({
+        name: file.name,
+        mimeType: normalizedAttachmentType(file),
+        dataBase64: dataUrl.slice(separator + 1),
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function normalizedAttachmentType(file: File): string {
+  if (file.type) return file.type.toLowerCase();
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  switch (extension) {
+    case 'pdf': return 'application/pdf';
+    case 'png': return 'image/png';
+    case 'jpg':
+    case 'jpeg': return 'image/jpeg';
+    case 'gif': return 'image/gif';
+    case 'webp': return 'image/webp';
+    default: return '';
   }
 }
 

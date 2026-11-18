@@ -18,6 +18,11 @@ export const ASSISTANT_MAX_ACTIONS = 60;
 /** Keep requests bounded before they reach the configured model provider. */
 export const ASSISTANT_MAX_PROMPT_CHARS = 4000;
 
+/** Keep inline file uploads small enough for a single bounded assistant request. */
+export const ASSISTANT_MAX_ATTACHMENTS = 4;
+export const ASSISTANT_MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024;
+export const ASSISTANT_MAX_ATTACHMENT_TOTAL_BYTES = 8 * 1024 * 1024;
+
 /** Only the most recent messages are needed to continue an active conversation. */
 export const ASSISTANT_MAX_HISTORY_MESSAGES = 10;
 
