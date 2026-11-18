@@ -15,6 +15,11 @@ import {
 import { AssistantProfile, AssistantSettingsService } from './assistant-settings.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 import { AssistantPlanCardComponent } from './assistant-plan-card.component';
+import {
+  getAssistantActionBlockReason,
+  getAssistantActionDescendants,
+  getDefaultAssistantActionSelection,
+} from './assistant-dependencies';
 import { buildAssistantHistoryWindow } from './assistant-history';
 import {
   AssistantActionResult,
@@ -73,8 +78,24 @@ export class AssistantDrawerComponent implements OnInit {
   readonly result = signal<AssistantApplyResult | null>(null);
 
   readonly actions = computed(() => this.plan()?.actions ?? []);
-  readonly warnings = computed(() => this.plan()?.warnings ?? []);
+  readonly warnings = computed(() => (this.plan()?.warnings ?? []).map(friendlyAssistantWarning));
   readonly results = computed<AssistantActionResult[]>(() => this.result()?.results ?? []);
+  readonly needsUserInput = computed(() => {
+    const plan = this.plan();
+    return plan?.needsUserInput === true || !!plan?.clarificationQuestion?.trim();
+  });
+  readonly clarificationQuestion = computed(() => this.plan()?.clarificationQuestion?.trim() ?? '');
+  readonly actionBlockReasons = computed<Record<string, string>>(() => {
+    const reasons: Record<string, string> = {};
+    const actions = this.actions();
+    const included = this.included();
+    for (const action of actions) {
+      const reason = getAssistantActionBlockReason(action.id, actions, included);
+      if (reason) reasons[action.id] = reason;
+    }
+    return reasons;
+  });
+  readonly blockedActionCount = computed(() => Object.keys(this.actionBlockReasons()).length);
   readonly canSend = computed(() => {
     const length = this.prompt().trim().length;
     return length > 2
@@ -83,7 +104,16 @@ export class AssistantDrawerComponent implements OnInit {
       && !this.loading()
       && !this.applying();
   });
-  readonly canApply = computed(() => this.included().length > 0 && !this.applying() && !this.result());
+  readonly canApply = computed(() => {
+    const included = this.included();
+    const blocked = this.actionBlockReasons();
+    return this.plan() !== null
+      && included.length > 0
+      && !this.needsUserInput()
+      && included.every((id) => !blocked[id])
+      && !this.applying()
+      && !this.result();
+  });
 
   readonly failedCount = computed(() => this.result()?.failed ?? 0);
   readonly doneCount = computed(() => this.results().filter((r) => r.status === 'done').length);
@@ -256,17 +286,18 @@ export class AssistantDrawerComponent implements OnInit {
   private acceptPlan(plan: AssistantPlanResponse) {
     this.prose.set(plan.message || this.prose());
     this.plan.set(plan);
-    this.included.set(plan.actions.filter((a) => !a.destructive && !a.kind.startsWith('remove_')).map((a) => a.id));
-    
+    this.included.set(getDefaultAssistantActionSelection(plan.actions));
+
+    const assistantMessage = this.needsUserInput()
+      ? this.clarificationQuestion() || this.prose().trim() || 'The assistant needs one more detail before it can finish this plan.'
+      : compileTpl('<x-markdown>' + plan.message.trim() + '</x-markdown>', {}, 'ai-assistant')
+        || (plan.actions.length ? `${plan.actions.length} step(s) proposed.` : 'Analysis complete.');
+
     this.history.set([
       ...this.history(),
-      { 
-        role: 'assistant', 
-        content: compileTpl('<x-markdown>' + plan.message.trim() + '</x-markdown>', {}, 'ai-assistant') 
-                 || (plan.actions.length ? `${plan.actions.length} step(s) proposed.` : 'Analysis complete.') 
-      },
+      { role: 'assistant', content: assistantMessage },
     ]);
-    
+
     // Only show an error if there are actual warnings from the backend, 
     // rather than defaulting to an error just because actions are empty.
     // if (!plan.actions.length && plan.warnings?.length) {
@@ -275,7 +306,15 @@ export class AssistantDrawerComponent implements OnInit {
   }
 
   toggle(id: string) {
-    this.included.update((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+    const actions = this.actions();
+    const selected = this.included();
+    if (selected.includes(id)) {
+      const descendants = getAssistantActionDescendants(id, actions);
+      this.included.set(selected.filter((actionId) => !descendants.has(actionId)));
+      return;
+    }
+    if (this.needsUserInput() || getAssistantActionBlockReason(id, actions, selected)) return;
+    this.included.set([...selected, id]);
   }
 
   async apply() {
@@ -290,6 +329,7 @@ export class AssistantDrawerComponent implements OnInit {
         includeIds: selected,
         // Ticking a destructive step IS the confirmation.
         confirmedIds: selected,
+        requiresResponse: this.needsUserInput(),
         email: this.email(),
       });
       this.result.set(outcome);
@@ -389,6 +429,16 @@ function normalizedAttachmentType(file: File): string {
     case 'webp': return 'image/webp';
     default: return '';
   }
+}
+
+function friendlyAssistantWarning(warning: string): string {
+  if (warning.includes('These steps point at something that is not in the plan:')) {
+    return 'Some steps need another step first, but it is missing or out of order. Ask the assistant to update the plan before applying.';
+  }
+  if (/proposed step\(s\) were dropped/i.test(warning)) {
+    return 'The assistant could not prepare some steps. Ask it to revise the plan before applying.';
+  }
+  return warning;
 }
 
 function summarize(outcome: AssistantApplyResult): AssistantChanged {

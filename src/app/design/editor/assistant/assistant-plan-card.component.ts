@@ -11,6 +11,7 @@ interface ActionView {
   destructive: boolean;
   status?: string;
   error?: string;
+  blockedReason?: string;
 }
 
 /**
@@ -26,6 +27,7 @@ interface ActionView {
     .step { display: flex; gap: .6rem; padding: .5rem .6rem; border: 1px solid var(--bs-border-color); border-radius: .5rem; margin-bottom: .4rem; align-items: flex-start; }
     .step.is-skipped { opacity: .55; }
     .step.is-destructive { border-color: var(--bs-danger-border-subtle); background: var(--bs-danger-bg-subtle); }
+    .step.is-blocked { border-color: var(--bs-warning-border-subtle); background: var(--bs-warning-bg-subtle); }
     .step-icon { width: 1.2rem; display: flex; justify-content: center; padding-top: .15rem; }
     .step-body { flex: 1 1 auto; min-width: 0; }
     .step-title { font-weight: 600; font-size: .875rem; overflow-wrap: anywhere; }
@@ -34,9 +36,10 @@ interface ActionView {
   `],
   template: `
     @for (step of views(); track step.id) {
-      <label class="step" [class.is-skipped]="!isIncluded(step.id)" [class.is-destructive]="step.destructive">
+      <label class="step" [class.is-skipped]="!isIncluded(step.id)" [class.is-destructive]="step.destructive"
+        [class.is-blocked]="!!step.blockedReason">
         <input type="checkbox" class="form-check-input mt-1" [checked]="isIncluded(step.id)"
-          [disabled]="busy()" (change)="toggle.emit(step.id)">
+          [disabled]="busy() || waitingForResponse() || !!step.blockedReason" (change)="toggle.emit(step.id)">
         <span class="step-icon">
           <fa-icon [icon]="['fas', step.icon]" [fixedWidth]="true"></fa-icon>
         </span>
@@ -47,6 +50,9 @@ interface ActionView {
           }
           @if (step.destructive) {
             <span class="step-detail d-block text-danger">Needs your confirmation: existing content is removed.</span>
+          }
+          @if (step.blockedReason) {
+            <span class="step-detail d-block text-warning-emphasis">{{ step.blockedReason }}</span>
           }
           @if (step.error) {
             <span class="step-detail d-block text-danger">{{ step.error }}</span>
@@ -61,6 +67,8 @@ export class AssistantPlanCardComponent {
   included = input<string[]>([]);
   results = input<AssistantActionResult[]>([]);
   busy = input<boolean>(false);
+  blockedReasons = input<Record<string, string>>({});
+  waitingForResponse = input<boolean>(false);
 
   toggle = output<string>();
 
@@ -68,7 +76,13 @@ export class AssistantPlanCardComponent {
     this.actions().map((action) => {
       const result = this.results().find((r) => r.actionId === action.id);
       const view = describe(action);
-      return { id: action.id, ...view, status: result?.status, error: result?.error };
+      return {
+        id: action.id,
+        ...view,
+        status: result?.status,
+        error: result?.error,
+        blockedReason: this.blockedReasons()[action.id],
+      };
     })
   );
 

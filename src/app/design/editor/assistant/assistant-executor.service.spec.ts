@@ -89,6 +89,38 @@ describe('AssistantExecutorService', () => {
     }));
   });
 
+  it('refuses selected steps with missing prerequisites before making changes', async () => {
+    let error = '';
+    try {
+      await TestBed.inject(AssistantExecutorService).apply(2, [{
+        id: 'add_details',
+        kind: 'add_section',
+        payload: { formRef: '$create_form', title: 'Details' },
+      }], { includeIds: ['add_details'], email: 'creator@example.com' });
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
+    }
+
+    expect(error).toContain('Some selected steps are waiting for required steps.');
+    expect(formService.saveSection).not.toHaveBeenCalled();
+  });
+
+  it('pauses execution while clarification is required', async () => {
+    let error = '';
+    try {
+      await TestBed.inject(AssistantExecutorService).apply(2, [{
+        id: 'create_form',
+        kind: 'create_form',
+        payload: { title: 'Stock form' },
+      }], { includeIds: ['create_form'], requiresResponse: true, email: 'creator@example.com' });
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
+    }
+
+    expect(error).toContain('The assistant is waiting for your reply.');
+    expect(formService.saveForm).not.toHaveBeenCalled();
+  });
+
   it('reuses and updates a form item snapshot across update actions', async () => {
     const result = await TestBed.inject(AssistantExecutorService).apply(2, [
       {

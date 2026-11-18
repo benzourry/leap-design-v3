@@ -137,7 +137,18 @@ function sanitizePlan(plan: AssistantPlanResponse | null | undefined, prose = ''
   if (valid.length < actions.length) {
     warnings.push(`${actions.length - valid.length} proposed step(s) were ignored because this version cannot apply them.`);
   }
-  return { planId: plan?.planId, message: plan?.message || prose || '', actions: valid, warnings };
+  const clarificationQuestion = typeof plan?.clarificationQuestion === 'string'
+    ? plan.clarificationQuestion.trim().slice(0, 1000)
+    : '';
+  const needsUserInput = plan?.needsUserInput === true || clarificationQuestion.length > 0;
+  return {
+    planId: plan?.planId,
+    message: plan?.message || prose || '',
+    actions: valid,
+    warnings,
+    needsUserInput,
+    clarificationQuestion: clarificationQuestion || undefined,
+  };
 }
 
 function describeError(err: unknown): string {

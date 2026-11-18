@@ -6,6 +6,7 @@ import { DashboardService } from '../../../service/dashboard.service';
 import { ScreenService } from '../../../service/screen.service';
 import { AppService } from '../../../service/app.service';
 import { compileTpl } from '../../../_shared/utils';
+import { getAssistantActionBlockReason } from './assistant-dependencies';
 import {
   buildChartPayload,
   buildDashboardPayload,
@@ -77,11 +78,23 @@ export class AssistantExecutorService {
   private appService = inject(AppService);
 
   async apply(appId: number, actions: AssistantAction[], options: AssistantApplyOptions): Promise<AssistantApplyResult> {
+    if (options.requiresResponse) {
+      throw new Error('The assistant is waiting for your reply. Respond before applying this plan.');
+    }
+
     const results: AssistantActionResult[] = [];
     const changed: AssistantChanged = { forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0 };
     const refs = new Map<string, ResolvedRef>();
 
     const runnable = actions.filter((action) => this.isRunnable(action, options));
+    const runnableIds = runnable.map((action) => action.id);
+    const blocked = runnable.find((action) =>
+      getAssistantActionBlockReason(action.id, actions, runnableIds) !== undefined
+    );
+    if (blocked) {
+      throw new Error('Some selected steps are waiting for required steps. Update the plan before applying.');
+    }
+
     for (const action of actions) {
       if (!runnable.includes(action)) {
         results.push({ actionId: action.id, kind: action.kind, status: 'skipped' });

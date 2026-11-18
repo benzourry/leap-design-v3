@@ -594,6 +594,8 @@ export interface AssistantPlanResponse {
   message: string;
   actions: AssistantAction[];
   warnings?: string[];
+  needsUserInput?: boolean;
+  clarificationQuestion?: string;
 }
 
 // ==========================
@@ -616,6 +618,8 @@ export interface AssistantApplyOptions {
   includeIds?: string[];
   /** Action ids the creator explicitly confirmed (required for destructive actions). */
   confirmedIds?: string[];
+  /** Do not apply a plan while the assistant is waiting for clarification. */
+  requiresResponse?: boolean;
   email: string;
 }
 
