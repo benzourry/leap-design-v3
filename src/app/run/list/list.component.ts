@@ -728,7 +728,7 @@ export class ListComponent implements OnInit, OnDestroy {
       try { value = this._eval(entry, data, field.f); } 
       catch (e) { this.logService.log(`{list-${field.code}-f}-${e}`); }
     }
-    return value || '';
+    return value ?? '';
   }
 
   filtersData = signal<any>({});
