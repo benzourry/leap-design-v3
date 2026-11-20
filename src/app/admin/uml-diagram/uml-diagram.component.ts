@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import mermaid from 'mermaid';
 import { DatasetService } from '../../service/dataset.service';
 import { FormService } from '../../service/form.service';
@@ -31,7 +32,7 @@ function records<T>(result: T[] | PageResult<T> | null | undefined): T[] {
 @Component({
   selector: 'app-uml-diagram',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, FaIconComponent],
   templateUrl: './uml-diagram.component.html',
   styleUrl: './uml-diagram.component.scss'
 })
@@ -408,7 +409,6 @@ export class UmlDiagramComponent implements OnInit {
       if (sequence !== this.renderSequence || !this.diagramElement) return;
       this.diagramElement.nativeElement.innerHTML = svg;
       this.bindDiagramInteractions();
-      requestAnimationFrame(() => this.fitDiagram());
     } catch (error) {
       console.error('Unable to render UML diagram', error);
       if (sequence !== this.renderSequence) return;

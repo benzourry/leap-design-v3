@@ -9,3 +9,33 @@
 .layout .selected {
     filter: sepia(90%) hue-rotate(180deg) saturate(900%);
   }
+
+.app-live-switch {
+  width: 3.4rem;
+  height: 1.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.app-live-state {
+  width: 3.5rem;
+}
+
+.app-live-switch-thumb {
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.app-live-switch.is-live .app-live-switch-thumb {
+  transform: translateX(1.5rem);
+}
+
+#appXLive:focus-visible + .app-live-switch {
+  outline: 0.2rem solid rgba(13, 110, 253, 0.25);
+}
+
+#appXLive:disabled + .app-live-switch {
+  cursor: wait;
+}

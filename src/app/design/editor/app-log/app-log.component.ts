@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AppService } from '../../../service/app.service';
 import { DatePipe, JsonPipe, PlatformLocation } from '@angular/common';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, Params } from '@angular/router';
 import { NgbDateAdapter, NgbDatepicker, NgbInputDatepicker, NgbModal, NgbTimeAdapter } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { UtilityService } from '../../../_shared/service/utility.service';
@@ -27,7 +27,7 @@ import { RxStompService } from '../../../_shared/service/rx-stomp.service';
 @Component({
   selector: 'app-app-log',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, FilterPipe, NgbInputDatepicker, FaIconComponent, DatePipe],
+  imports: [FormsModule, FilterPipe, NgbInputDatepicker, FaIconComponent, DatePipe, RouterLink],
   templateUrl: './app-log.component.html',
   providers: [
     { provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },

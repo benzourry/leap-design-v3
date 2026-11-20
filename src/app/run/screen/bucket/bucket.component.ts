@@ -17,13 +17,14 @@ import { UtilityService } from '../../../_shared/service/utility.service';
 import { ServerDate } from '../../../_shared/utils';
 import { RunService } from '../../_service/run.service';
 import { map, tap } from 'rxjs/operators';
-import { lastValueFrom } from 'rxjs';
+import { catchError, concatMap, EMPTY, finalize, from, lastValueFrom } from 'rxjs';
+import { FileDropPasteDirective } from '../../../_shared/directive/file-drop-paste.directive';
 
 @Component({
     selector: 'app-bucket',
     imports: [FormsModule, FaIconComponent, NgClass, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, 
       NgbPaginationLast, NgbDropdown, NgStyle, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, 
-      DecimalPipe, DatePipe, NgbCarousel, NgbSlide],
+      DecimalPipe, DatePipe, NgbCarousel, NgbSlide, FileDropPasteDirective],
     templateUrl: './bucket.component.html',
     styleUrl: './bucket.component.scss'
 })
@@ -173,23 +174,56 @@ export class BucketComponent {
   }
 
   importLoading = signal<boolean>(false);
-  uploadFile($event) {
-    if ($event.target.files &&$event.target.files.length) {
-      this.importLoading.set(true);
-      this.runService.uploadFile(this.bucket().id, this.app().id, $event.target.files[0], this.user().email)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next:res=>{          
-          this.importLoading.set(false);
-          this.toastService.show(this.lang()=='ms'?"Fail berjaya dimuatnaik":"File successfully uploaded", { classname: 'bg-success text-light' });
+  uploadFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    this.uploadFiles(files);
+  }
+
+  uploadFiles(files: File[]) {
+    if (!files.length || this.importLoading() || !this.screen()?.data?.enableUpload) return;
+    const bucketId = this.bucket()?.id;
+    const appId = this.app()?.id;
+    const email = this.user()?.email;
+    if (!bucketId || !appId) {
+      this.toastService.show(this.lang() == 'ms'
+        ? 'Bucket atau aplikasi belum sedia untuk muat naik.'
+        : 'Bucket or app is not ready for upload.', { classname: 'bg-danger text-light' });
+      return;
+    }
+    let uploaded = false;
+    this.importLoading.set(true);
+    from(files).pipe(
+      concatMap(file => this.runService.uploadFile(bucketId, appId, file, email).pipe(
+        map(res => ({ file, res })),
+        catchError(error => {
+          console.error(`Unable to upload ${file.name}`, error);
+          this.toastService.show(`${this.lang() == 'ms' ? 'Fail tidak berjaya dimuatnaik' : 'File upload failed'}: ${file.name}`, { classname: 'bg-danger text-light' });
+          return EMPTY;
+        })
+      )),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        this.importLoading.set(false);
+        if (!this.destroyRef.destroyed && uploaded && this.bucket()?.id === bucketId) {
           this.getFileList(this.pageNumber(), this.params);
-        },
-        error:error=>{
-          this.importLoading.set(false);
-          this.toastService.show(this.lang()=='ms'?"Fail tidak berjaya dimuatnaik":"File upload failed", { classname: 'bg-danger text-light' });
         }
       })
-    }
+    ).subscribe(({ file, res }) => {
+      if (res?.success === false) {
+        this.toastService.show(`${file.name}: ${res.message || (this.lang() == 'ms' ? 'Fail tidak berjaya dimuatnaik' : 'File upload failed')}`, { classname: 'bg-danger text-light' });
+      } else {
+        uploaded = true;
+        this.toastService.show(`${this.lang() == 'ms' ? 'Fail berjaya dimuatnaik' : 'File successfully uploaded'}: ${file.name}`, { classname: 'bg-success text-light' });
+      }
+    });
+  }
+
+  onUnreadableDrop() {
+    this.toastService.show(this.lang() == 'ms'
+      ? 'Fail tidak dapat dibaca. Letakkan fail dan bukan folder.'
+      : 'No files could be read. Drop files rather than folders.', { classname: 'bg-danger text-light' });
   }
 
   bucketZipMap: any = {};

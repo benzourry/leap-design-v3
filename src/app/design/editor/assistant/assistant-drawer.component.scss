@@ -76,6 +76,11 @@
   // border-top: 1px solid var(--bs-border-color);
 }
 
+.assistant-prompt.is-dragging-files {
+  outline: 2px dashed var(--bs-primary);
+  outline-offset: -2px;
+}
+
 .assistant-msg {
   border-radius: 0.75rem;
   padding: 0.5rem 0.75rem;

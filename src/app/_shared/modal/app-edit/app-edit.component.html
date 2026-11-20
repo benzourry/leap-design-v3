@@ -1,13 +1,43 @@
 <div ngForm #editItemForm="ngForm">
   <div class="modal-header border-0">
     <h4 class="modal-title">App Properties</h4>
-    <div class="form-check form-switch d-inline-block ms-auto m-0">
-      <input class="form-check-input" type="checkbox" role="switch"
-        [(ngModel)]="_data.live" name="appXLive" id="appXLive">
-        <label class="form-check-label" for="appXLive">{{_data.live ? 'Live' : 'Dev'}}</label>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <span class="app-live-state small fw-semibold text-nowrap text-end">
+        {{isReviewPending ? 'Review' : (_data.live ? 'Live' : 'Dev')}}
+      </span>
+      <input class="visually-hidden" type="checkbox" role="switch"
+        [ngModel]="isReviewPending || _data.live" (ngModelChange)="onLiveToggle($event)"
+        name="appXLive" id="appXLive" aria-label="Application live status">
+      <label class="app-live-switch rounded-pill shadow-sm d-flex align-items-center m-0 p-1"
+        [class.bg-warning]="isReviewPending"
+        [class.bg-success]="_data.live && !isReviewPending"
+        [class.bg-secondary]="!_data.live && !isReviewPending"
+        [class.is-live]="isReviewPending || _data.live"
+        [class.opacity-75]="isReviewPending"
+        for="appXLive">
+        <span class="app-live-switch-thumb rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
+          @if (isReviewPending) {
+            <fa-icon [icon]="['fas', 'question']" class="text-warning" [fixedWidth]="true"></fa-icon>
+          } @else if (_data.live) {
+            <fa-icon [icon]="['fas', 'check']" class="text-success" [fixedWidth]="true"></fa-icon>
+          }
+        </span>
+      </label>
     </div>
   </div>
   <div [class.disabled]="offline()">
+    @if (isReviewPending) {
+      <div class="alert alert-warning mx-3 mb-3 small">
+        Your request to make this application live is waiting for platform manager review.
+      </div>
+    } @else if (_data.reviewStatus === 'rejected') {
+      <div class="alert alert-danger mx-3 mb-3 small">
+        <strong>Live request rejected.</strong>
+        @if (_data.reviewReason) {
+          <div class="smaller mt-1">{{_data.reviewReason}}</div>
+        }
+      </div>
+    }
     <div class="tab-simple">
       <div class="nav-wrap">
         <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs justify-content-center">

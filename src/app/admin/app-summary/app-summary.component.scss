@@ -2,6 +2,12 @@
     column-count: 1;
 }
 
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--bs-tertiary-bg);
+}
+
 .card {
     break-inside: avoid-column;
 }
@@ -13,8 +19,18 @@
     -webkit-box-orient: vertical;  
 }
 
+.admin-chart {
+    height: 450px;
+}
+
 @media (min-width: 576px) {
     .masonry-wrap {
         column-count: 2;
+    }
+
+    @media (max-width: 575.98px) {
+        .admin-chart {
+            height: 300px;
+        }
     }
 }

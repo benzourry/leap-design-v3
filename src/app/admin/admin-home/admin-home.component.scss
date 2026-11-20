@@ -1,0 +1,23 @@
+.admin-action-card {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.admin-action-card:hover {
+  transform: translateY(-2px);
+}
+
+.admin-chart {
+  height: 450px;
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--bs-tertiary-bg);
+}
+
+@media (max-width: 575.98px) {
+  .admin-chart {
+    height: 300px;
+  }
+}

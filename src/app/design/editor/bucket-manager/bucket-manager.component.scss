@@ -2,6 +2,21 @@
   display: none;
 }
 
+.bucket-upload-dropzone {
+  padding: 0.75rem;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  color: var(--bs-secondary-color);
+  text-align: center;
+
+  &:focus-visible,
+  &.is-dragging-files {
+    border-color: var(--bs-primary);
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+}
+
 tr.row-danger * {
   background-color: var(--bs-danger-bg-subtle, rgb(220, 53, 69));
   color: var(--bs-danger-text-emphasis, white) !important;

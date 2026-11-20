@@ -288,7 +288,10 @@ export class DesignHomeComponent implements OnInit {
               if (isNew) {
                 this.router.navigate([`design/${res.id}`]);
               }
-              this.toastService.show('App properties saved successfully', { classname: 'bg-success text-light' });
+              const message = res.reviewStatus === 'pending'
+                ? 'App saved and submitted for platform review'
+                : 'App properties saved successfully';
+              this.toastService.show(message, { classname: 'bg-success text-light' });
             },
             error: (err) => {
               this.toastService.show(`App properties saved failure<br/>${err.error?.message}`, {

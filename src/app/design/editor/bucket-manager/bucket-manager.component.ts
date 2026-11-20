@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, HostListener, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { BucketService } from '../../../service/bucket.service';
@@ -15,12 +16,14 @@ import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-
 import { RunService } from '../../../run/_service/run.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { map } from 'rxjs/operators';
+import { catchError, concatMap, EMPTY, finalize, from } from 'rxjs';
+import { FileDropPasteDirective } from '../../../_shared/directive/file-drop-paste.directive';
 
 @Component({
   selector: 'app-bucket-manager',
   templateUrl: './bucket-manager.component.html',
   styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
-  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe],
+  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe, FileDropPasteDirective],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BucketManagerComponent implements OnInit {
@@ -52,6 +55,7 @@ export class BucketManagerComponent implements OnInit {
   private utilityService = inject(UtilityService);
   private lambdaService = inject(LambdaService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   secretList: any[] = [];
 
@@ -339,32 +343,53 @@ export class BucketManagerComponent implements OnInit {
   }
 
   importLoading: boolean = false;
-  uploadFile($event) {
-    if ($event.target.files && $event.target.files.length) {
-      this.importLoading = true;
-      this.cdr.detectChanges();
-      this.bucketService.uploadFile(this.bucket.id, this.app.id, $event.target.files[0], this.user.email)
-        .subscribe({
-          next: res => {
-            if (res.success) {
-              // this.importExcelData = res;
-              this.importLoading = false;
-              this.toastService.show("File successfully uploaded", { classname: 'bg-success text-light' });
-              this.getFileList(this.pageNumber, this.params);
-              this.cdr.detectChanges();
-            } else {
-              this.toastService.show(res.message, { classname: 'bg-danger text-light' });
-              this.cdr.detectChanges();
-            }
-          },
-          error: error => {
-            this.importLoading = false;
-            this.toastService.show("File upload failed", { classname: 'bg-danger text-light' });
-            this.cdr.detectChanges();
-          }
-        })
-    }
+  uploadFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    this.uploadFiles(files);
+  }
 
+  uploadFiles(files: File[]) {
+    if (!files.length || this.importLoading) return;
+    if (!this.bucket?.id || !this.app?.id) {
+      this.toastService.show('Bucket or app is not ready for upload.', { classname: 'bg-danger text-light' });
+      return;
+    }
+    const bucketId = this.bucket.id;
+    const appId = this.app.id;
+    const email = this.user?.email;
+    let uploaded = false;
+    this.importLoading = true;
+    this.cdr.markForCheck();
+    from(files).pipe(
+      concatMap(file => this.bucketService.uploadFile(bucketId, appId, file, email).pipe(
+        map(res => ({ file, res })),
+        catchError(error => {
+          console.error(`Unable to upload ${file.name}`, error);
+          this.toastService.show(`File upload failed: ${file.name}`, { classname: 'bg-danger text-light' });
+          return EMPTY;
+        })
+      )),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        this.importLoading = false;
+        if (this.destroyRef.destroyed) return;
+        if (uploaded && this.bucket?.id === bucketId) this.getFileList(this.pageNumber, this.params);
+        this.cdr.markForCheck();
+      })
+    ).subscribe(({ file, res }) => {
+      if (res.success) {
+        uploaded = true;
+        this.toastService.show(`File successfully uploaded: ${file.name}`, { classname: 'bg-success text-light' });
+      } else {
+        this.toastService.show(`${file.name}: ${res.message || 'File upload failed'}`, { classname: 'bg-danger text-light' });
+      }
+    });
+  }
+
+  onUnreadableDrop() {
+    this.toastService.show('No files could be read. Drop files rather than folders.', { classname: 'bg-danger text-light' });
   }
 
   bucketZipMap: any = {};

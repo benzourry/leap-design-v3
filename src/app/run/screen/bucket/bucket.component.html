@@ -11,7 +11,7 @@
         <div class="toolbar title d-flex print-hide m-a flex-wrap align-items-stretch input-group-sm">
             @if (screen().data?.enableUpload){
             <label class="m-0 d-flex">
-              <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
+              <input type="file" [hidden]="true" [disabled]="importLoading()" (change)="uploadFile($event)" name="file" />
               @if (!importLoading()) {
               <div class="btn btn-sm border border-1-5 rounded-2 btn-primary">
                 <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> {{lang()=='ms'?'Muatnaik Fail':'Upload File'}}
@@ -56,7 +56,15 @@
             </div>
             
         </div>
-        
+
+        @if (screen().data?.enableUpload) {
+          <div appFileDropPaste class="bucket-upload-dropzone mt-2 print-hide" tabindex="0"
+            [fileDropEnabled]="!importLoading()" (filesReceived)="uploadFiles($event)"
+            (unreadableDrop)="onUnreadableDrop()">
+            {{lang() == 'ms' ? 'Letakkan fail di sini, atau fokus di sini dan tampal fail atau imej.' : 'Drop files here, or focus here and paste files or an image.'}}
+          </div>
+        }
+
         @if (!fileLoading() && bucketFileList()?.length) {
           <div class="px-2 py-2">
             <div class="d-flex flex-wrap list-summary justify-content-center align-items-center gap-3 small text-body-secondary">

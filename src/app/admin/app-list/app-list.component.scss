@@ -6,3 +6,13 @@
     width: 4px;
     border-radius: 0 3px 3px 0;
 }
+
+#search_admin_apps {
+  min-width: 0;
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--bs-tertiary-bg);
+}

@@ -132,6 +132,15 @@ export class AppService {
   getSuperList(httpParam: any) {
     return this.http.get<any>(`${this.baseApi}/app/super`, { params: httpParam })
   }
+  getPendingReviewList(httpParam: any) {
+    return this.http.get<any>(`${this.baseApi}/app/review/pending`, { params: httpParam });
+  }
+  approveReview(appId: number) {
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/review/approve`, {});
+  }
+  rejectReview(appId: number, reason: string) {
+    return this.http.post<any>(`${this.baseApi}/app/${appId}/review/reject`, { reason });
+  }
   getAppList(httpParam: any) {
     return this.http.get<any>(`${this.baseApi}/app`, { params: httpParam })
   }

@@ -298,7 +298,10 @@ export class EditorComponent implements OnInit {
                         next: refreshedApp => {
                             this.app.set(refreshedApp);
                             this.getCopyRequestList();
-                            this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
+                            const message = refreshedApp.reviewStatus === 'pending'
+                                ? 'App saved and submitted for platform review'
+                                : 'App properties saved successfully';
+                            this.toastService.show(message, { classname: 'bg-success text-light' });
                         },
                         error: error => {
                             this.toastService.show("App properties saving failed: " + error.error.message, { classname: 'bg-danger text-light' });

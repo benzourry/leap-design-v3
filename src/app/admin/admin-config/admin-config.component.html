@@ -25,12 +25,12 @@
       </div>
       <div class="home-top-r pe-2">
         <div class="d-flex">
-          <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
-          <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/repo" routerLinkActive="active">REPO</a>
           @if (user()?.manager){
-          <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
           }
-          <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/devprofile" routerLinkActive="active">
             <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
           </a>
         </div>
@@ -39,9 +39,9 @@
 </div>
 
 
-<div class="limit-width centered p-3 tab-simple">
+<div class="limit-width centered p-3 p-sm-4 tab-simple bg-plain text-body">
     <div class="mb-3">
-        <button class="btn btn-outline-secondary btn-rounded fs-5" routerLink="/admin">
+        <button class="btn btn-sm btn-outline-secondary rounded-3" routerLink="/admin">
             <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
             Home
         </button>
@@ -49,11 +49,14 @@
 
 
     @if (user()?.manager){
-    <div class="alert alert-warning">
+    <div class="alert alert-warning shadow-sm">
         <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
     </div>
 
-    <h5 class="mb-3">Platform Management: Configurations</h5>
+    <div class="mb-3">
+        <h4 class="mb-1">Platform Configuration</h4>
+        <div class="small text-body-secondary">Manage platform settings, groups, and registered applications.</div>
+    </div>
 
     <div class="nav-wrap">
         <ul ngbNav #nav="ngbNav" class="nav-tabs px-3 mt-3 ">

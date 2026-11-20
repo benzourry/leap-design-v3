@@ -35,6 +35,9 @@ export class AppEditComponent implements OnInit {
 
   data = model<any>();
   _data: any = {};
+  liveReviewRequested = false;
+  liveReviewCancelled = false;
+  private initiallyLive = false;
   offline = input<boolean>(false);
   initialAppPath: string = "";
   user = input<any>();
@@ -77,11 +80,25 @@ export class AppEditComponent implements OnInit {
 
   appGroups = signal<any[]>([]);
 
+  onLiveToggle(live: boolean) {
+    this._data.live = live;
+    this.liveReviewRequested = live && !this.initiallyLive;
+    this.liveReviewCancelled = !live;
+  }
+
+  get isReviewPending() {
+    return !this.liveReviewCancelled &&
+      (this._data.reviewStatus === 'pending' || this.liveReviewRequested);
+  }
+
   ngOnInit() {
     // DEEP COPY to prevent bleeding mutations to the parent model before "Save" is clicked
     this._data = this.data() ? JSON.parse(JSON.stringify(this.data())) : {};
     
     this.initialAppPath = this._data.appPath;
+    this.initiallyLive = this._data.live;
+    this.liveReviewRequested = false;
+    this.liveReviewCancelled = false;
     
     if (!this._data.x) {
       this._data.x = {};

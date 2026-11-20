@@ -1,3 +1,20 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+  }
+}
+
 // @keyframes fade-green {
 //   0% {
 //     background-color: rgba(40, 167, 69, 0.3); /* Bootstrap success green, 30% opacity */

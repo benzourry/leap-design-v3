@@ -1,6 +1,11 @@
 <div class="p-3">
 
-    <h5 class="mb-3">App Log &#10095; {{ app?.title }}</h5> 
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <a routerLink="../summary" class="back-link" aria-label="Back to app summary" title="Back to app summary">
+            <fa-icon [icon]="['fas', 'arrow-left']" [fixedWidth]="true"></fa-icon>
+        </a>
+        <h5 class="mb-0">App Log &#10095; {{ app?.title }}</h5>
+    </div>
 
     <div>
         <div class="row g-2">

@@ -25,10 +25,10 @@
     </div>
     <div class="home-top-r pe-2">
       <div class="d-flex">
-        <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
-        <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
-        <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
-        <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
+        <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+        <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/repo" routerLinkActive="active">REPO</a>
+        <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+        <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/devprofile" routerLinkActive="active">
           <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
         </a>
       </div>
@@ -37,9 +37,9 @@
 </div>
 
 
-<div class="limit-width centered p-3">
+<div class="limit-width centered p-3 p-sm-4 bg-plain text-body">
   <div class="mb-3">
-    <button class="btn btn-outline-secondary btn-rounded fs-5" routerLink="/admin">
+    <button class="btn btn-sm btn-outline-secondary rounded-3" routerLink="/admin">
       <fa-icon [icon]="['fas','arrow-left']"></fa-icon>
       Home
     </button>
@@ -47,48 +47,58 @@
 
 
   @if(user()?.manager){
-    <div class="alert alert-warning">
+    <div class="alert alert-warning shadow-sm">
       <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
   </div>
 
-    <h5 class="mb-3">Platform Management: All Apps</h5>
+    <div class="mb-3">
+      <h4 class="mb-1">Application Management</h4>
+      <div class="text-body-secondary small">Review, inspect, and manage platform applications.</div>
+    </div>
 
-    <div class="repo-tool text-center mt-3">
-      <div class="tool-container" style="max-width:480px;margin:auto">
-        <input type="search" class="rounded" placeholder="Filter list" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
-          (keyup.enter)="getItemList(1)" autocapitalize="none">
+    <div class="repo-title mb-3">
+      <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> All App Collection
+    </div>
+
+    <div class="toolbar title d-flex mb-3 flex-nowrap overflow-hidden align-items-stretch position-relative gap-1">
+      <input type="search" autocapitalize="none" id="search_admin_apps"
+        class="search-icon bg-body rounded-2 border border-1-5 flex-grow-1 normal"
+        placeholder="Filter list" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"
+        (keyup.enter)="getItemList(1)">
+
+      <div class="btn-group align-items-center" role="group">
+        <input class="btn-check" type="radio" value="all" id="admin-apps-all" name="appStatusFilter"
+          [checked]="appStatusFilter() === 'all'" (change)="appStatusFilter.set('all'); getItemList(1)">
+        <label for="admin-apps-all" class="btn border-0 d-flex align-items-center m-0 px-1"
+          [class.text-primary]="appStatusFilter() === 'all'" [class.fw-bold]="appStatusFilter() === 'all'"
+          [class.text-body-secondary]="appStatusFilter() !== 'all'">All</label>
+
+        <input class="btn-check" type="radio" value="true" id="admin-apps-live" name="appStatusFilter"
+          [checked]="appStatusFilter() === 'true'" (change)="appStatusFilter.set('true'); getItemList(1)">
+        <label for="admin-apps-live" class="btn border-0 d-flex align-items-center m-0 px-1"
+          [class.text-primary]="appStatusFilter() === 'true'" [class.fw-bold]="appStatusFilter() === 'true'"
+          [class.text-body-secondary]="appStatusFilter() !== 'true'">Live</label>
+
+        <input class="btn-check" type="radio" value="false" id="admin-apps-dev" name="appStatusFilter"
+          [checked]="appStatusFilter() === 'false'" (change)="appStatusFilter.set('false'); getItemList(1)">
+        <label for="admin-apps-dev" class="btn border-0 d-flex align-items-center m-0 px-1"
+          [class.text-primary]="appStatusFilter() === 'false'" [class.fw-bold]="appStatusFilter() === 'false'"
+          [class.text-body-secondary]="appStatusFilter() !== 'false'">Dev</label>
+
+        <input class="btn-check" type="radio" value="pending" id="admin-apps-review" name="appStatusFilter"
+          [checked]="appStatusFilter() === 'pending'" (change)="appStatusFilter.set('pending'); getItemList(1)">
+        <label for="admin-apps-review" class="btn border-0 d-flex align-items-center m-0 px-1"
+          [class.text-primary]="appStatusFilter() === 'pending'" [class.fw-bold]="appStatusFilter() === 'pending'"
+          [class.text-body-secondary]="appStatusFilter() !== 'pending'">Review</label>
       </div>
     </div>
 
-
-
-    <div class="repo-item">
-      <div class="repo-title d-flex flex-row">
-        <div>
-          <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon> All App Collection
-        </div>
-
-        <div class="ms-auto btn-group-xs small group-by-toggle">
-          <input class="btn-check" type="radio" value="all" id="dsgb-ungroup" name="appStatusFilter"
-            [ngModel]="appStatusFilter()" (ngModelChange)="appStatusFilter.set($event); getItemList(1)">
-          <label for="dsgb-ungroup" class="btn ms-2">All</label>
-          <input class="btn-check" type="radio" value="true" id="dsgb-form" name="appStatusFilter" [ngModel]="appStatusFilter()"
-            (ngModelChange)="appStatusFilter.set($event); getItemList(1)">
-          <label for="dsgb-form" class="btn">Live</label>
-          <input class="btn-check" type="radio" value="false" id="dsgb-type" name="appStatusFilter"
-            [ngModel]="appStatusFilter()" (ngModelChange)="appStatusFilter.set($event); getItemList(1)">
-          <label for="dsgb-type" class="btn">Dev</label>
-        </div>
-      </div>
-
+    <div class="card border-0 bg-transparent">
       <div class="px-2 pb-3">
-        <!-- Added justify-content-center here -->
-        <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
-
+        <div class="d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
           <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
             Summary
           </span>         
-          <!-- Subtle vertical divider -->
           <div class="vr opacity-25"></div>         
           <div>
             Total:
@@ -112,14 +122,21 @@
         <h4>No application available</h4>
       </div>
       }@else {
-      <div class="list-group">
+      <div class="d-flex flex-column gap-3">
         @for (item of itemList() | filter:searchText(); track $index) {
-        <div class="list-group-item" [class.opacity-50]="!item.live">
-          <img src="{{baseApi}}/app/logo/{{item.logo}}" alt="Logo" style="float:left"
-            onError="this.src='assets/icons/logo.svg'" width="60" height="60" class="me-2">
-          <div style="margin-left:80px">
-            <h5 class="list-group-item-heading">{{item.title}}</h5>
-            <p class="desc text-body-secondary">{{item.description}}</p>
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden position-relative">
+          <div class="notch" [style.background-color]="item.theme"></div>
+          <div class="card-body p-3">
+          <div class="d-flex flex-column flex-sm-row gap-3">
+          <img src="{{baseApi}}/app/logo/{{item.logo}}" alt="{{item.title}} logo"
+            onError="this.src='assets/icons/logo.svg'" width="60" height="60" class="rounded-3 bg-body-tertiary flex-shrink-0">
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="d-flex align-items-start gap-2 pe-5">
+              <div class="flex-grow-1">
+                <h5 class="mb-1">{{item.title}}</h5>
+                <p class="desc text-body-secondary mb-2">{{item.description}}</p>
+              </div>
+            </div>
 
             <div class="input-group input-group-sm mb-2">
               <span class="input-group-text text-body-secondary small" id="basic-addon1">
@@ -174,31 +191,35 @@
               </div>
               }
             </div>
-            <div class="notch" [ngStyle]="{'background-color':item.theme}"></div>
 
-            @if (item.live) {
-            <div class="d-inline-block me-2 bg-success text-white rounded px-1 small"
-              style="position:absolute; top:5px; right:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+            @if (item.reviewStatus === 'pending') {
+            <div class="badge text-bg-warning position-absolute top-0 end-0 m-2">Review</div>
+            } @else if (item.live) {
+            <div class="badge text-bg-success position-absolute top-0 end-0 m-2">Live</div>
+            } @else {
+            <div class="badge text-bg-secondary position-absolute top-0 end-0 m-2">Dev</div>
             }
 
-            <div class="mt-3">
-              <button type="button" class="btn btn-sm btn-primary me-1 mb-1" [class.disabled]="offline()"
+            <div class="mt-3 d-flex flex-wrap gap-1">
+              <button type="button" class="btn btn-sm btn-primary" [class.disabled]="offline()"
                 routerLink="/admin/apps/{{item.id}}/summary">
                 Summary
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" [class.disabled]="offline()" title="Copy App"
+              <button type="button" class="btn btn-sm btn-outline-secondary" [class.disabled]="offline()" title="Copy App"
                 (click)="cloneItem(appEditTpl,item, true)">
                 Copy App
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1" title="Edit Properties"
+              <button type="button" class="btn btn-sm btn-outline-secondary" title="Edit Properties"
                 (click)="editItem(appEditTpl,item, false)">
                 Edit Properties
               </button>
-              <button type="button" class="btn btn-sm btn-danger me-1 mb-1" [class.disabled]="offline()" title="Remove App"
+              <button type="button" class="btn btn-sm btn-outline-danger" [class.disabled]="offline()" title="Remove App"
                 (click)="removeItem(removeItemTpl,item)">
                 Remove App
               </button>
             </div>
+          </div>
+          </div>
           </div>
 
         </div>

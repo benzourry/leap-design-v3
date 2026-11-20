@@ -1,3 +1,45 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+  }
+}
+
+.zoom-controls {
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow-sm);
+
+  .btn {
+    border: 0;
+    border-radius: 0;
+    color: var(--bs-body-color);
+  }
+
+  .zoom-step {
+    width: 2.25rem;
+  }
+
+  .zoom-value {
+    min-width: 4.25rem;
+    border-right: 1px solid var(--bs-border-color);
+    border-left: 1px solid var(--bs-border-color);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+}
+
 .diagram-viewport {
   height: calc(100vh - 220px);
   min-height: 420px;

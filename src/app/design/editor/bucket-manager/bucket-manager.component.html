@@ -111,7 +111,7 @@
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
                     <label class="form-label m-0">
-                      <input type="file" [hidden]="true" (change)="uploadFile($event)" name="file" />
+                      <input type="file" [hidden]="true" [disabled]="importLoading" (change)="uploadFile($event)" name="file" />
                       @if (!importLoading) {
                         <div class="btn border border-1-5 btn-outline-primary btn-sm ms-1">
                           <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon> Upload File
@@ -171,6 +171,11 @@
                   </div>
                 </div>
               }
+            </div>
+            <div appFileDropPaste class="bucket-upload-dropzone mt-2" tabindex="0"
+              [fileDropEnabled]="!importLoading" (filesReceived)="uploadFiles($event)"
+              (unreadableDrop)="onUnreadableDrop()">
+              Drop files here, or focus here and paste files or an image.
             </div>
             @if (loading) {
               <div class="p-4 text-center">

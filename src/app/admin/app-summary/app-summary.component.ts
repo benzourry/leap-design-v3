@@ -12,6 +12,7 @@ import { deepMerge, splitAsList } from '../../_shared/utils';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MetaTrailViewerComponent } from '../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
+import { ToastService } from '../../_shared/service/toast-service';
 
 @Component({
   selector: 'app-app-summary',
@@ -31,8 +32,8 @@ export class AppSummaryComponent implements OnInit {
   // private router = inject(Router);
   // private runService = inject(RunService);
   private appService = inject(AppService);
-  // private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
+  private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   private http = inject(HttpClient);
@@ -51,6 +52,8 @@ export class AppSummaryComponent implements OnInit {
 
   summary:any = {}
   app:any = {}
+  reviewReason = '';
+  reviewProcessing = false;
 
   userMonthlyOpt:any;
   userMonthlyCumulativeOpt:any;
@@ -194,6 +197,48 @@ export class AppSummaryComponent implements OnInit {
     // let note = app?.live?'':'* Please note that this app is currently in DEV mode';
     let url = app.appPath ? app.appPath + separator + domainBase : domainBase + "/#/run/" + app.id;
     return 'https://'+url;
+  }
+
+  approveReview() {
+    if (!confirm(`Approve "${this.app.title}" for public access?`)) return;
+    this.reviewProcessing = true;
+    this.appService.approveReview(this.app.id).subscribe({
+      next: app => {
+        this.app = app;
+        this.reviewReason = '';
+        this.reviewProcessing = false;
+        this.toastService.show('Application approved and published live.', { classname: 'bg-success text-light' });
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.reviewProcessing = false;
+        this.toastService.show('Approval failed: ' + (err.error?.message || 'Unknown error'), { classname: 'bg-danger text-light' });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  rejectReview() {
+    const reason = this.reviewReason.trim();
+    if (!reason) {
+      this.toastService.show('Please provide a rejection reason.', { classname: 'bg-danger text-light' });
+      return;
+    }
+    this.reviewProcessing = true;
+    this.appService.rejectReview(this.app.id, reason).subscribe({
+      next: app => {
+        this.app = app;
+        this.reviewReason = '';
+        this.reviewProcessing = false;
+        this.toastService.show('Application review rejected. The creator has been notified.', { classname: 'bg-success text-light' });
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.reviewProcessing = false;
+        this.toastService.show('Rejection failed: ' + (err.error?.message || 'Unknown error'), { classname: 'bg-danger text-light' });
+        this.cdr.detectChanges();
+      }
+    });
   }
 
 

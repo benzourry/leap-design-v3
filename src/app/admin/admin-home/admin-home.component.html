@@ -1,14 +1,14 @@
 <div class="position-sticky sticky-top bg-reka" [ngClass]="bgClassName">
     <div class="limit-width centered d-flex justify-content-between">
       <div class="home-top-l p-2 ps-3">
-        <img src="assets/icons/logo-w.svg" width="38">
+        <img src="assets/icons/logo-w.svg" alt="LEAP" width="38">
       </div>
       <div class="home-top-r pe-2">
         <div class="d-flex">
-          <a class="top-link py-3 mx-2" routerLink="/design" routerLinkActive="active">MY APP</a>
-          <a class="top-link py-3 mx-2" routerLink="/repo" routerLinkActive="active">REPO</a>
-          <a class="top-link py-3 mx-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
-          <a class="top-link py-3 mx-2" routerLink="/devprofile" routerLinkActive="active">
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/design" routerLinkActive="active">MY APP</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/repo" routerLinkActive="active">REPO</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/admin" routerLinkActive="active">ADMIN</a>
+          <a class="top-link py-3 mx-1 mx-sm-2" routerLink="/devprofile" routerLinkActive="active">
             <fa-icon [icon]="['far', 'user']" [fixedWidth]="true"></fa-icon>
           </a>
         </div>
@@ -16,44 +16,67 @@
     </div>
   </div>
   
-  <div class="wrapper">
+  <div class="wrapper bg-plain text-body">
     <div class="limit-width centered">
 
-        <div class="centered p-3 text-center">
-            <div>
-                <h3 class="mb-4">Platform Management</h3>
+        <div class="p-3 p-sm-4">
+            <div class="mb-4">
+                <h3 class="mb-1 text-start">Platform Management</h3>
+                <p class="text-body-secondary mb-0 text-start">Configuration, application moderation, and platform activity.</p>
             </div>
             @if (user?.manager){
               <div class="print-hide">
-                <div class="alert alert-warning">
+                <div class="alert alert-warning shadow-sm">
                     <strong>Warning:</strong> You are in the platform management area. Please proceed with caution.
                 </div>
 
-                <a routerLink="/admin/config" class="btn btn-primary me-2 mb-2">
-                    <div>Platform Configuration</div>
-                    <div class="small">Configure overall platform settings</div>
-                </a>
-                <a routerLink="/admin/apps" class="btn btn-primary me-2 mb-2">
-                    <div>Manage All Apps</div>
-                    <div class="small">Manage apps and monitor app analytics</div>
-                </a>
+                <div class="row g-3 mb-4">
+                  <div class="col-12 col-md-4">
+                    <a routerLink="/admin/config" class="card h-100 text-decoration-none text-body shadow-sm border-0 bg-body admin-action-card">
+                      <div class="card-body">
+                        <div class="text-primary mb-2"><fa-icon [icon]="['fas','cog']"></fa-icon></div>
+                        <h6 class="mb-1">Platform Configuration</h6>
+                        <div class="small text-body-secondary">Configure overall platform settings</div>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <a routerLink="/admin/apps" class="card h-100 text-decoration-none text-body shadow-sm border-0 bg-body admin-action-card">
+                      <div class="card-body">
+                        <div class="text-primary mb-2"><fa-icon [icon]="['fas','th-large']"></fa-icon></div>
+                        <h6 class="mb-1">Manage All Apps</h6>
+                        <div class="small text-body-secondary">Manage apps and monitor app analytics</div>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <a routerLink="/admin/apps" [queryParams]="{review: 'pending'}" class="card h-100 text-decoration-none text-body shadow-sm border-warning bg-body admin-action-card">
+                      <div class="card-body">
+                        <div class="text-warning mb-2"><fa-icon [icon]="['fas','check-circle']"></fa-icon></div>
+                        <h6 class="mb-1">Pending Reviews</h6>
+                        <div class="small text-body-secondary">Review requests to make applications live</div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
               </div>
 
               
               <div class="section-to-print">
-                <div class="my-3">
+                <div class="my-4">
                   <div class="fs-4">Platform Summary</div>
                   <div class="small text-body-secondary">Last updated: {{updatedOn}}</div>
                 </div>
 
-                <div class="card mb-3">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
                   <div class="card-header text-start">App by Status</div>
-                  <div class="demo-chart" style="height: 450px" echarts [options]="appStatByLiveOpt"></div>
+                  <div class="demo-chart admin-chart" echarts [options]="appStatByLiveOpt"></div>
                 </div>
 
-                <div class="card mb-3">                
-                  <div class="card-header pe-2 text-start">
-                      <div class="float-end">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
+                  <div class="card-header pe-2 d-flex flex-column flex-sm-row align-items-sm-center gap-2 text-start">
+                      <span class="flex-grow-1">Entry By Year/Month (Last 10 Month)</span>
+                      <div class="btn-group btn-group-sm flex-shrink-0">
                           <input class="btn-check" type="radio" [value]="true" id="entry-cumulative"
                             name="entry-cumulative" [(ngModel)]="entryStatIsCumulative"
                             required>
@@ -64,31 +87,31 @@
                           <label for="entry-new" class="btn btn-sm btn-outline-secondary">
                           New</label>
                       </div>
-                      Entry By Year/Month (Last 10 Month)
                   </div>
 
                   @if (entryStatIsCumulative){
-                    <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByYearMonthCumulativeOpt"></div>
+                    <div class="demo-chart admin-chart" echarts [options]="entryStatByYearMonthCumulativeOpt"></div>
                   }@else {
-                    <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByYearMonthOpt"></div>
+                    <div class="demo-chart admin-chart" echarts [options]="entryStatByYearMonthOpt"></div>
                   }
                 </div>
                 
                 <!-- Entry By App (Top 10) -->
-                <div class="card mb-3">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
                   <div class="card-header text-start">Entry By App (Top 10)</div>  
-                  <div class="demo-chart" style="height: 450px" echarts [options]="entryStatByAppOpt"></div>
+                  <div class="demo-chart admin-chart" echarts [options]="entryStatByAppOpt"></div>
                 </div>
                 
                 <!-- User By App (Top 10) -->
-                <div class="card mb-3">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
                   <div class="card-header text-start">User By App (Top 10)</div>  
-                  <div class="demo-chart" style="height: 450px" echarts [options]="userStatByAppOpt"></div>
+                  <div class="demo-chart admin-chart" echarts [options]="userStatByAppOpt"></div>
                 </div>
 
-                <div class="card mb-3">                
-                  <div class="card-header pe-2 text-start">
-                      <div class="float-end">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
+                  <div class="card-header pe-2 d-flex flex-column flex-sm-row align-items-sm-center gap-2 text-start">
+                      <span class="flex-grow-1">User By Year/Month (Last 10 Month)</span>
+                      <div class="btn-group btn-group-sm flex-shrink-0">
                           <input class="btn-check" type="radio" [value]="true" id="user-cumulative"
                             name="user-cumulative" [(ngModel)]="userStatIsCumulative"
                             required>
@@ -99,24 +122,24 @@
                           <label for="user-new" class="btn btn-sm btn-outline-secondary">
                           New</label>
                       </div>
-                      User By Year/Month (Last 10 Month)
                   </div>
 
                   @if (userStatIsCumulative){
-                          <div class="demo-chart" style="height: 450px" echarts [options]="userStatByYearMonthCumulativeOpt"></div>
+                          <div class="demo-chart admin-chart" echarts [options]="userStatByYearMonthCumulativeOpt"></div>
                   }@else {
-                        <div class="demo-chart" style="height: 450px" echarts [options]="userStatByYearMonthOpt"></div>
+                        <div class="demo-chart admin-chart" echarts [options]="userStatByYearMonthOpt"></div>
                   }
                 </div>
 
-                <div class="card mb-3">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
                   <div class="card-header text-start">Attachment By App (Top 10)</div>  
-                  <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByAppOpt"></div>
+                  <div class="demo-chart admin-chart" echarts [options]="attachmentStatByAppOpt"></div>
                 </div>
 
-                <div class="card mb-3">                
-                  <div class="card-header pe-2 text-start">
-                      <div class="float-end">
+                <div class="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
+                  <div class="card-header pe-2 d-flex flex-column flex-sm-row align-items-sm-center gap-2 text-start">
+                      <span class="flex-grow-1">Attachment By Year/Month (Last 10 Month)</span>
+                      <div class="btn-group btn-group-sm flex-shrink-0">
                           <input class="btn-check" type="radio" [value]="true" id="ea-cumulative"
                             name="ea-cumulative" [(ngModel)]="attachmentStatIsCumulative"
                             required>
@@ -127,13 +150,12 @@
                           <label for="ea-new" class="btn btn-sm btn-outline-secondary">
                           New</label>
                       </div>
-                      Attachment By Year/Month (Last 10 Month)
                   </div>
 
                   @if (attachmentStatIsCumulative){
-                    <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByYearMonthCumulativeOpt"></div>
+                    <div class="demo-chart admin-chart" echarts [options]="attachmentStatByYearMonthCumulativeOpt"></div>
                   }@else {
-                    <div class="demo-chart" style="height: 450px" echarts [options]="attachmentStatByYearMonthOpt"></div>
+                    <div class="demo-chart admin-chart" echarts [options]="attachmentStatByYearMonthOpt"></div>
                   }
                 </div>
               </div>

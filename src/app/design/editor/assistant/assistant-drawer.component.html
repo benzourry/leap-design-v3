@@ -174,7 +174,8 @@
       }
       
       <!-- Unified Chat Input Container -->
-      <div class="rounded-2 m-3 bg-body-tertiary">
+      <div class="assistant-prompt rounded-2 m-3 bg-body-tertiary" [class.is-dragging-files]="draggingFiles()"
+        (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
         <div class="assistant-entity-toolbar px-3 pt-3">
           <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
             [disabled]="loading() || applying() || entityPickerLoading()"
@@ -237,6 +238,7 @@
         <textarea class="form-control border-0 rounded-0 shadow-none bg-transparent px-3 pt-3" rows="3" style="resize: none;"
           [value]="prompt()" [disabled]="loading() || applying()"
           [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
+          (paste)="onPaste($event)"
           placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
 
         <input #filePicker class="d-none" type="file" multiple
@@ -258,7 +260,7 @@
         
         <div class="d-flex justify-content-between align-items-center p-3 pt-0">
           <span class="smaller text-body-secondary">
-            Ctrl+Enter to send
+            Drop or paste files &middot; Ctrl+Enter to send
             @if (prompt().length > maxPromptChars * 0.9) {
               &middot; <span [class.text-danger]="prompt().length >= maxPromptChars">{{ prompt().length }}/{{ maxPromptChars }}</span>
             }

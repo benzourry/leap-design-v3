@@ -1,9 +1,12 @@
 <main class="container-fluid p-3 section-to-print">
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <h5 class="mb-0">UML Diagram</h5>
-    <a [routerLink]="['/design', appId, 'summary']" class="btn btn-sm btn-outline-secondary screen-only">
-      Back to App Summary
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a [routerLink]="['/design', appId, 'summary']"
+      class="back-link screen-only"
+      aria-label="Back to app summary"
+      title="Back to app summary">
+      <fa-icon [icon]="['fas', 'arrow-left']" [fixedWidth]="true"></fa-icon>
     </a>
+    <h5 class="mb-0">UML Diagram</h5>
   </div>
 
   @if (loading) {
@@ -18,15 +21,28 @@
         <span class="small text-body-secondary">
           Drag to pan, pinch or use the controls to zoom. Click a class to highlight its connections.
         </span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Diagram zoom controls">
-          <button type="button" class="btn btn-outline-secondary" aria-label="Zoom out" (click)="zoomBy(-0.2)">-</button>
-          <button type="button" class="btn btn-outline-secondary" aria-label="Reset zoom" (click)="resetZoom()">
+        <div class="btn-group btn-group-sm zoom-controls" role="group" aria-label="Diagram zoom controls">
+          <button type="button" class="btn btn-light zoom-step" aria-label="Zoom out" title="Zoom out"
+            (click)="zoomBy(-0.2)">
+            <fa-icon [icon]="['fas', 'minus']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <button type="button" class="btn btn-light zoom-value" aria-label="Reset zoom" title="Reset zoom"
+            (click)="resetZoom()">
             {{ zoomPercent }}%
           </button>
-          <button type="button" class="btn btn-outline-secondary" aria-label="Zoom in" (click)="zoomBy(0.2)">+</button>
+          <button type="button" class="btn btn-light zoom-step" aria-label="Zoom in" title="Zoom in"
+            (click)="zoomBy(0.2)">
+            <fa-icon [icon]="['fas', 'plus']" [fixedWidth]="true"></fa-icon>
+          </button>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="fitDiagram()">Fit diagram</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="printDiagram()">Print</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="fitDiagram()">
+          <fa-icon [icon]="['fas', 'expand']" [fixedWidth]="true" class="me-1"></fa-icon>
+          Fit diagram
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="printDiagram()">
+          <fa-icon [icon]="['fas', 'print']" [fixedWidth]="true" class="me-1"></fa-icon>
+          Print
+        </button>
       </div>
 
     </div>

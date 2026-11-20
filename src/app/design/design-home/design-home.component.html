@@ -235,8 +235,12 @@
                               </div>
                             </div>
                           </div>
-                          @if (item.live) {
+                          @if (item.reviewStatus === 'pending') {
+                            <div class="d-inline-block me-2 bg-warning text-dark rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">PENDING REVIEW</div>
+                          } @else if (item.live) {
                             <div class="d-inline-block me-2 bg-success text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE</div>
+                          } @else if (item.reviewStatus === 'rejected') {
+                            <div class="d-inline-block me-2 bg-danger text-white rounded px-1 small" style="position:absolute; bottom:5px; left:5px;font-weight: bold; font-size: 0.6em;">LIVE REQUEST REJECTED</div>
                           }
                         </div>
                       }

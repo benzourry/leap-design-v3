@@ -1,4 +1,4 @@
-import { DatePipe, NgClass, NgStyle, PlatformLocation } from '@angular/common';
+import { DatePipe, NgClass, PlatformLocation } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
@@ -17,7 +17,7 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 
 @Component({
   selector: 'app-app-list',
-  imports: [FaIconComponent, FormsModule, NgStyle, NgClass, NgbPagination, RouterLink, RouterLinkActive,
+  imports: [FaIconComponent, FormsModule, NgClass, NgbPagination, RouterLink, RouterLinkActive,
     NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, 
     AppEditComponent
   ],
@@ -41,6 +41,7 @@ export class AppListComponent implements OnInit {
   private modalService = inject(NgbModal);
   private location = inject(PlatformLocation);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private appService = inject(AppService);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
@@ -65,10 +66,13 @@ export class AppListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('review') === 'pending') {
+      this.appStatusFilter.set('pending');
+    }
     this.userService.getCreator()
       .subscribe((user) => {
         this.user.set(user);
-        this.getItemList(0);
+        this.getItemList(1);
       });
   }
 
@@ -81,11 +85,15 @@ export class AppListComponent implements OnInit {
       email: this.user()?.email,
       sort: 'id,desc'
     }
-    if (this.appStatusFilter() != 'all') {
+    if (this.appStatusFilter() != 'all' && this.appStatusFilter() != 'pending') {
       params.live = this.appStatusFilter();
     }
 
-    this.appService.getSuperList(params)
+    const request$ = this.appStatusFilter() === 'pending'
+      ? this.appService.getPendingReviewList(params)
+      : this.appService.getSuperList(params);
+
+    request$
       .subscribe({
         next: res => {
           this.itemTotal.set(res.page?.totalElements || 0);
@@ -131,7 +139,10 @@ export class AppListComponent implements OnInit {
               if (isNew) {
                 this.router.navigate([`design/${res.id}`]);
               }
-              this.toastService.show("App properties saved successfully", { classname: 'bg-success text-light' });
+              const message = res.reviewStatus === 'pending'
+                ? 'App saved and submitted for platform review'
+                : 'App properties saved successfully';
+              this.toastService.show(message, { classname: 'bg-success text-light' });
             }, error: err => {
               this.toastService.show("App properties saved failure<br/>" + err.error?.message, { classname: 'bg-danger text-light' });
             }

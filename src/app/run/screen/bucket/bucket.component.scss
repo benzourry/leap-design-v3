@@ -7,6 +7,21 @@ tr.row-vault * { background-color: var(--bs-tertiary-bg, #eee); color: var(--bs-
 .code-container { display: flex; flex-direction: column-reverse; }
 .dropdown-toggle::after { display: none; }
 
+.bucket-upload-dropzone {
+  padding: 0.75rem;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  color: var(--bs-secondary-color);
+  text-align: center;
+
+  &:focus-visible,
+  &.is-dragging-files {
+    border-color: var(--bs-primary);
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+  }
+}
+
 .toolbar:not(:has(*)) { display: none !important; }
 .toolbar {
   background-color: var(--bs-body-bg); border-radius: 0.5rem; border: 2px solid var(--bs-border-color); padding: 0.25rem;

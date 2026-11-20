@@ -66,6 +66,7 @@ export class AssistantDrawerComponent implements OnInit {
 
   readonly prompt = signal('');
   readonly attachments = signal<File[]>([]);
+  readonly draggingFiles = signal(false);
   readonly entityTypes: { type: AssistantPromptEntityType; label: string }[] = [
     { type: 'form', label: 'Form' },
     { type: 'dataset', label: 'Dataset' },
@@ -225,6 +226,60 @@ export class AssistantDrawerComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const selected = Array.from(input.files ?? []);
     input.value = '';
+    this.addAttachments(selected);
+  }
+
+  onDragOver(event: DragEvent) {
+    if (!event.dataTransfer?.types.includes('Files')) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = this.loading() || this.applying() ? 'none' : 'copy';
+    this.draggingFiles.set(!this.loading() && !this.applying());
+  }
+
+  onDragLeave(event: DragEvent) {
+    const container = event.currentTarget as HTMLElement;
+    if (event.relatedTarget instanceof Node && container.contains(event.relatedTarget)) return;
+    this.draggingFiles.set(false);
+  }
+
+  onDrop(event: DragEvent) {
+    this.draggingFiles.set(false);
+    if (!event.dataTransfer?.types.includes('Files')) return;
+    event.preventDefault();
+    if (this.loading() || this.applying()) {
+      this.error.set('Wait until the assistant finishes before adding attachments.');
+      return;
+    }
+    const files = Array.from(event.dataTransfer.files);
+    if (!files.length) {
+      this.error.set('No files could be read from the drop. Attach files rather than folders.');
+      return;
+    }
+    this.addAttachments(files);
+  }
+
+  onPaste(event: ClipboardEvent) {
+    const clipboard = event.clipboardData;
+    if (!clipboard) return;
+    const files = Array.from(clipboard.files);
+    if (!files.length) {
+      for (const item of Array.from(clipboard.items)) {
+        if (item.kind !== 'file') continue;
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+    if (!files.length) return;
+    if (!clipboard.types.includes('text/plain')) event.preventDefault();
+    if (this.loading() || this.applying()) {
+      this.error.set('Wait until the assistant finishes before adding attachments.');
+      return;
+    }
+    this.addAttachments(files);
+  }
+
+  private addAttachments(selected: File[]) {
+    if (!selected.length) return;
     this.error.set('');
 
     const attachments = [...this.attachments()];
