@@ -1,0 +1,44 @@
+<main class="container-fluid p-3 section-to-print">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h5 class="mb-0">UML Diagram</h5>
+    <a [routerLink]="['/design', appId, 'summary']" class="btn btn-sm btn-outline-secondary screen-only">
+      Back to App Summary
+    </a>
+  </div>
+
+  @if (loading) {
+    <p class="text-body-secondary" role="status">Generating UML diagram…</p>
+  } @else if (error) {
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+  } @else if (!diagramSource) {
+    <p class="text-body-secondary">This app has no forms or lookups to display.</p>
+  } @else {
+    <div class="diagram-controls screen-only mb-3">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <span class="small text-body-secondary">
+          Drag to pan, pinch or use the controls to zoom. Click a class to highlight its connections.
+        </span>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Diagram zoom controls">
+          <button type="button" class="btn btn-outline-secondary" aria-label="Zoom out" (click)="zoomBy(-0.2)">-</button>
+          <button type="button" class="btn btn-outline-secondary" aria-label="Reset zoom" (click)="resetZoom()">
+            {{ zoomPercent }}%
+          </button>
+          <button type="button" class="btn btn-outline-secondary" aria-label="Zoom in" (click)="zoomBy(0.2)">+</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="fitDiagram()">Fit diagram</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="printDiagram()">Print</button>
+      </div>
+
+    </div>
+
+    <div #diagramViewport class="diagram-viewport" [class.is-dragging]="isDragging"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerEnd($event)"
+      (pointercancel)="onPointerEnd($event)">
+      <div class="diagram-content" [style.transform]="'scale(' + zoom + ')'">
+        <div #diagramContainer class="uml-diagram" role="img" aria-label="App UML class diagram"></div>
+      </div>
+    </div>
+  }
+</main>

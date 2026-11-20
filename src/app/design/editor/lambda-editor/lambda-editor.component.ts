@@ -471,6 +471,7 @@ export class LambdaEditorComponent implements OnInit {
           { label: "_entry.chartAsMap", type: "function", apply: "_entry.chartAsMap(${chartData})", detail: "Convert chart data to Map", boost: 10 },
           { label: "_entry.chartize", type: "function", apply: "_entry.chartize(${formId}, {\n\tagg:'#{count}',\n\tby:'#{$.category.name}',\n\tvalue:'#{$.$id}',\n\tseries:'',\n\tshowAgg: true,\n\tstatus: {},\n\tfilter: {}\n}, _user.email, _this)", detail: "Generate ad-hoc chart", boost: 10 },
           { label: "_entry.delete", type: "function", apply: "_entry.delete(${entryId}, _user.email, _this)", detail: "Delete entry" },
+          { label: "_entry.retract", type: "function", apply: "_entry.retract(${entryId}, _user.email)", detail: "Retract entry" },
           { label: "_entry.count", type: "function", apply: "_entry.count(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Get dataset entries count", boost: 10 },
           { label: "_entry.dataset", type: "function", apply: "_entry.dataset(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Load dataset entries", boost: 10 },
           { label: "_entry.flatDataset", type: "function", apply: "_entry.flatDataset(${datasetId}, {\n\t#{/*Filter obj*/}\n}, _user.email, _this)", detail: "Load flat dataset entries (without envelope)", boost: 10 },

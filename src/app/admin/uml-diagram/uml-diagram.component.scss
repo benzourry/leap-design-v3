@@ -1,0 +1,126 @@
+.diagram-viewport {
+  height: calc(100vh - 220px);
+  min-height: 420px;
+  max-height: none;
+  overflow: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  touch-action: none;
+  overscroll-behavior: contain;
+  cursor: grab;
+}
+
+.diagram-viewport.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.diagram-content {
+  width: 100%;
+  min-width: 100%;
+  transform-origin: top left;
+}
+
+.uml-diagram {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  overflow: auto;
+  padding: 1rem;
+}
+
+:host ::ng-deep .uml-diagram svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+:host ::ng-deep .uml-diagram .node {
+  cursor: pointer;
+}
+
+:host ::ng-deep .uml-diagram .node.is-highlighted path {
+  stroke: #f0ad00 !important;
+  stroke-width: 2px !important;
+}
+
+:host ::ng-deep .uml-diagram .node.is-dimmed {
+  opacity: 0.2;
+}
+
+:host ::ng-deep .uml-diagram path.relation.is-highlighted {
+  stroke: #f0ad00 !important;
+  stroke-width: 3px !important;
+  opacity: 1 !important;
+}
+
+:host ::ng-deep .uml-diagram path.relation.is-dimmed {
+  opacity: 0.12;
+}
+
+:host ::ng-deep .uml-diagram .uml-show-more-button {
+  display: inline-block;
+  margin: 0;
+  padding: 1px 5px;
+  border: 1px solid #6373dc;
+  border-radius: 4px;
+  background: #eef2ff;
+  color: #3349b8;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@page {
+  size: landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+
+  :host ::ng-deep .uml-show-more-button {
+    display: none !important;
+  }
+
+  .diagram-viewport {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    touch-action: auto;
+    background: #fff;
+  }
+
+  .diagram-content {
+    width: auto;
+    min-width: 0;
+    transform: none !important;
+  }
+
+  .uml-diagram {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  :host ::ng-deep .uml-diagram svg {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  :host ::ng-deep .uml-diagram .node.is-dimmed,
+  :host ::ng-deep .uml-diagram path.relation.is-dimmed {
+    opacity: 1 !important;
+  }
+}
