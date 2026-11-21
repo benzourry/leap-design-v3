@@ -69,6 +69,7 @@ export class UmlDiagramComponent implements OnInit {
   private relationships: UmlRelationship[] = [];
 
   readonly formFieldLimit = UML_FORM_FIELD_LIMIT;
+  readonly platformView = this.route.snapshot.data['platform'] === true;
   private readonly pointers = new Map<number, { x: number; y: number }>();
   private suppressNextClassClick = false;
   private panStart?: { x: number; y: number; scrollLeft: number; scrollTop: number };

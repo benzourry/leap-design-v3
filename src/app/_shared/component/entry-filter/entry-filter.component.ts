@@ -6,6 +6,7 @@ import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { AsListPipe } from '../../pipe/as-list.pipe';
+import { filterKey, filterOperatorOptions, getFilterOperator, isRangeFilter, operatorSettingKey, FilterField } from './filter-operators';
 
 @Component({
   selector: 'app-entry-filter',
@@ -27,6 +28,50 @@ export class EntryFilterComponent {
 
   excludedTypes = ['static', 'file', 'imagePreview', 'btn', 'dataset', 'screen', 'map'];
   noDynamicTypes = ['text', 'textarea', 'eval', 'qr'];
+  operatorError = '';
+  filterOperatorOptions = filterOperatorOptions;
+  getFilterOperator = getFilterOperator;
+  filterKey = filterKey;
+  isRangeFilter = isRangeFilter;
+
+  activePresetCount(): number {
+    return Object.entries(this.presetFilters()).filter(([key, value]) =>
+      key.startsWith('$') && value !== null && value !== undefined && value !== ''
+    ).length;
+  }
+
+  changeOperator(field: FilterField, path: string, select: HTMLSelectElement): void {
+    const presets = this.presetFilters();
+    const oldOperator = getFilterOperator(presets, field, path);
+    const nextOperator = filterOperatorOptions(field, path).find(option => option.value === select.value)?.value;
+    if (!nextOperator || nextOperator === oldOperator) return;
+
+    const oldKeys = oldOperator === 'range'
+      ? [`${path}~from`, `${path}~to`, path]
+      : [filterKey(path, oldOperator)];
+    const newKeys = nextOperator === 'range' ? [`${path}~from`, `${path}~to`] : [filterKey(path, nextOperator)];
+    const hasValue = (key: string) => presets[key] !== undefined && presets[key] !== null && presets[key] !== '';
+    const populated = oldKeys.filter(hasValue);
+    if ((populated.length > 1 && nextOperator !== 'range')
+        || newKeys.some(key => !oldKeys.includes(key) && hasValue(key))) {
+      select.value = oldOperator;
+      this.operatorError = 'Clear the conflicting preset values before changing this operator.';
+      return;
+    }
+
+    const updated = { ...presets };
+    const value = populated.length ? presets[populated[0]] : undefined;
+    oldKeys.forEach(key => delete updated[key]);
+    if (value !== undefined) {
+      const target = nextOperator === 'range'
+        ? (oldOperator === 'to' ? newKeys[1] : newKeys[0])
+        : newKeys[0];
+      updated[target] = value;
+    }
+    updated[operatorSettingKey(path)] = nextOperator;
+    this.operatorError = '';
+    this.presetFilters.set(updated);
+  }
 
   getPrefix(fm: string, section: any): string {
     const mapFm: Record<string, string> = { 'data': '$', 'prev': '$prev$', 'approval': '$$' };
@@ -85,10 +130,18 @@ export class EntryFilterComponent {
   }
 
   getClearKeys(field: any, prefixedField: string): string[] {
-    if (['scaleTo5', 'scaleTo10', 'scale', 'number', 'date'].includes(field.type)) {
-      return [`${prefixedField}~from`, `${prefixedField}~to`];
+    const path = this.getBindingPath(field, prefixedField);
+    const operator = getFilterOperator(this.presetFilters(), field, path);
+    if (operator === 'range') {
+      return [`${path}~from`, `${path}~to`];
     }
-    return [this.getBindingPath(field, prefixedField)];
+    return [filterKey(path, operator)];
+  }
+
+  isLegacyDynamicNumber(field: any, path: string, dynamic: boolean): boolean {
+    return dynamic && field.type !== 'date' && isRangeFilter(field)
+      && this.presetFilters()[operatorSettingKey(path)] === undefined
+      && this.presetFilters()[path] != null;
   }
 
   getAsList = splitAsList;

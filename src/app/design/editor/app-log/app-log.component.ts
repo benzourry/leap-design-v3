@@ -60,6 +60,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
   user: any;
   appId: number;
   app: any;
+  readonly platformView = this.route.snapshot.data['platform'] === true;
 
   params: any = {
     size: 1000,
@@ -110,8 +111,7 @@ export class AppLogComponent implements OnInit, OnDestroy {
         if (this.appId) {
           this.loadComps(this.appId);
 
-          let appParams = { email: user.email };
-          this.appService.getApp(this.appId, appParams).subscribe(res => {
+          this.appService.getApp(this.appId).subscribe(res => {
             this.app = res;
             this.cdr.markForCheck();
           });

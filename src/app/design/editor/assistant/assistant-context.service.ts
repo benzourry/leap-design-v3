@@ -7,6 +7,8 @@ import { ScreenService } from '../../../service/screen.service';
 import { AppService } from '../../../service/app.service';
 import { GroupService } from '../../../service/group.service';
 import { LookupService } from '../../../run/_service/lookup.service';
+import { LambdaService } from '../../../service/lambda.service';
+import { MailerService } from '../../../service/mailer.service';
 import { assistantKnowledge } from './assistant-knowledge';
 import {
   AssistantContext,
@@ -17,6 +19,8 @@ import {
   AssistantPromptEntityOption,
   AssistantPromptEntity,
   AssistantPromptEntityType,
+  AssistantLambdaSummary,
+  AssistantEmailTemplateSummary,
 } from './assistant.types';
 
 /** Forms that get their sections and fields described. Bounds the prompt size on large apps. */
@@ -41,6 +45,8 @@ export class AssistantContextService {
   private appService = inject(AppService);
   private groupService = inject(GroupService);
   private lookupService = inject(LookupService);
+  private lambdaService = inject(LambdaService);
+  private mailerService = inject(MailerService);
 
   listForms(appId: number): Observable<AssistantFormSummary[]> {
     return this.formService
@@ -73,6 +79,12 @@ export class AssistantContextService {
         break;
       case 'navigation':
         entities$ = this.appService.getNavisAll(appId);
+        break;
+      case 'lambda':
+        entities$ = this.lambdaService.getLambdaList({ appId, size: 9999, page: 0 });
+        break;
+      case 'email-template':
+        entities$ = this.mailerService.getMailerList({ appId, size: 9999, page: 0 });
         break;
     }
 
@@ -124,12 +136,23 @@ export class AssistantContextService {
             return entity;
           })
         );
+      case 'lambda':
+        return this.lambdaService.getLambda(id);
+      case 'email-template':
+        return this.mailerService.getMailer(id);
     }
   }
 
   build(
     app: { id: number; title?: string; description?: string },
-    selection: { formId?: number; datasetId?: number; screenId?: number; includedFormIds?: number[] } = {},
+    selection: {
+      formId?: number;
+      datasetId?: number;
+      screenId?: number;
+      lambdaId?: number;
+      emailTemplateId?: number;
+      includedFormIds?: number[];
+    } = {},
     requestText = '',
     includedEntities: AssistantPromptEntity[] = []
   ): Observable<AssistantContext> {
@@ -143,8 +166,12 @@ export class AssistantContextService {
       lookups: this.lookupService.getFullLookupList({ appId }).pipe(catchError(() => of([]))),
       navigation: this.appService.getNavisAll(appId),
       groups: this.groupService.getGroupList({ appId, size: 999 }),
+      lambdas: this.lambdaService.getLambdaList({ appId, size: 9999, page: 0 }).pipe(catchError(() => of([]))),
+      emailTemplates: this.mailerService.getMailerList({ appId, size: 9999, page: 0 }).pipe(catchError(() => of([]))),
     }).pipe(
-      switchMap(({ forms, datasets, dashboards, screens, lookups, navigation, groups }) => {
+      switchMap(({
+        forms, datasets, dashboards, screens, lookups, navigation, groups, lambdas, emailTemplates,
+      }) => {
         const selectedForm = selection.formId === undefined
           ? undefined
           : forms.find((form) => form.id === selection.formId);
@@ -214,10 +241,46 @@ export class AssistantContextService {
           ? this.screenService.getScreen(Number(selectedScreen.id))
           : of(undefined);
 
-        return forkJoin({ formList: formList$, datasetList: datasetList$, selectedScreen: selectedScreen$ })
-          .pipe(map(({ formList, datasetList, selectedScreen: screenDetail }) => {
+        const lambdaList = asList(lambdas);
+        const selectedLambdaSummary = lambdaList.find((lambda) => Number(lambda?.id) === selection.lambdaId);
+        if (selection.lambdaId !== undefined && !selectedLambdaSummary) {
+          throw new Error('The selected Lambda is no longer available. Choose it again and retry.');
+        }
+        const selectedLambda$ = selectedLambdaSummary
+          ? this.lambdaService.getLambda(Number(selectedLambdaSummary.id))
+          : of(undefined);
+        const emailTemplateList = asList(emailTemplates);
+        const selectedEmailTemplate = emailTemplateList.find(
+          (template) => Number(template?.id) === selection.emailTemplateId
+        );
+        if (selection.emailTemplateId !== undefined && !selectedEmailTemplate) {
+          throw new Error('The selected email template is no longer available. Choose it again and retry.');
+        }
+        const selectedEmailTemplate$ = selectedEmailTemplate
+          ? this.mailerService.getMailer(Number(selectedEmailTemplate.id))
+          : of(undefined);
+
+        return forkJoin({
+          formList: formList$,
+          datasetList: datasetList$,
+          selectedScreen: selectedScreen$,
+          selectedLambda: selectedLambda$,
+          selectedEmailTemplate: selectedEmailTemplate$,
+        })
+          .pipe(map(({
+            formList, datasetList, selectedScreen: screenDetail,
+            selectedLambda: lambdaDetail, selectedEmailTemplate: emailTemplateDetail,
+          }) => {
             if (selection.screenId !== undefined && !isScreenDetail(screenDetail, selection.screenId)) {
               throw new Error('The selected screen could not be loaded. Choose it again and retry.');
+            }
+            if (selection.lambdaId !== undefined
+                && Number((lambdaDetail as any)?.id) !== selection.lambdaId) {
+              throw new Error('The selected Lambda could not be loaded. Choose it again and retry.');
+            }
+            if (selection.emailTemplateId !== undefined
+                && Number((emailTemplateDetail as any)?.id) !== selection.emailTemplateId) {
+              throw new Error('The selected email template could not be loaded. Choose it again and retry.');
             }
             const orderedDatasets = selection.datasetId === undefined
               ? datasetList
@@ -230,6 +293,12 @@ export class AssistantContextService {
               datasets: orderedDatasets,
               dashboards: toSummaries(dashboards),
               screens: toScreenSummaries(screenList, selection.screenId, screenDetail),
+              lambdas: toLambdaSummaries(lambdaList, selection.lambdaId, lambdaDetail),
+              emailTemplates: toEmailTemplateSummaries(
+                emailTemplateList,
+                selection.emailTemplateId,
+                emailTemplateDetail
+              ),
               lookups: toSummaries(lookups),
               groups: toSummaries(groups),
               navigation: summarizeNavigation(navigation),
@@ -241,6 +310,8 @@ export class AssistantContextService {
               selectedFormId: selection.formId,
               selectedDatasetId: selection.datasetId,
               selectedScreenId: selection.screenId,
+              selectedLambdaId: selection.lambdaId,
+              selectedEmailTemplateId: selection.emailTemplateId,
             };
             return attachIncludedEntities(context, includedEntities);
           }));
@@ -280,6 +351,8 @@ function attachIncludedEntities(
     datasets: [...context.entities.datasets],
     dashboards: [...context.entities.dashboards],
     screens: [...context.entities.screens],
+    lambdas: [...context.entities.lambdas],
+    emailTemplates: [...context.entities.emailTemplates],
     navigation: [...context.entities.navigation],
   };
   for (const entity of includedEntities) {
@@ -298,6 +371,12 @@ function attachIncludedEntities(
         break;
       case 'navigation':
         entities.navigation = attachFullData(entities.navigation, entity);
+        break;
+      case 'lambda':
+        entities.lambdas = attachFullData(entities.lambdas, entity);
+        break;
+      case 'email-template':
+        entities.emailTemplates = attachFullData(entities.emailTemplates, entity);
         break;
     }
   }
@@ -351,7 +430,10 @@ function toScreenSummaries(
       code: screen.code,
       type: screen.type,
       ...(Number(screen.id) === selectedScreenId
-        ? { data: { content: selectedScreen?.data?.content, f: selectedScreen?.data?.f } }
+        ? {
+            data: { content: selectedScreen?.data?.content, f: selectedScreen?.data?.f },
+            actions: asList(selectedScreen?.actions),
+          }
         : {}),
     }));
 
@@ -359,6 +441,72 @@ function toScreenSummaries(
   return [
     ...summaries.filter((screen) => screen.id === selectedScreenId),
     ...summaries.filter((screen) => screen.id !== selectedScreenId),
+  ];
+}
+
+function toLambdaSummaries(
+  list: any[],
+  selectedLambdaId: number | undefined,
+  selectedLambda: any
+): AssistantLambdaSummary[] {
+  const summaries = list
+    .filter((lambda) => lambda?.id)
+    .map((lambda): AssistantLambdaSummary => ({
+      id: Number(lambda.id),
+      name: clampText(lambda.name),
+      code: lambda.code,
+      lang: lambda.lang,
+      description: clampText(lambda.description),
+      publicAccess: lambda.publicAccess,
+      binds: (Array.isArray(lambda.binds) ? lambda.binds : [])
+        .map((binding: any) => ({
+          id: Number(binding.id),
+          name: binding.name,
+          type: binding.type,
+          srcId: binding.srcId,
+          params: binding.params,
+        })),
+      ...(Number(lambda.id) === selectedLambdaId
+        ? {
+            data: { f: selectedLambda?.data?.f },
+            binds: asList(selectedLambda?.binds).map((binding: any) => ({
+              id: Number(binding.id),
+              name: binding.name,
+              type: binding.type,
+              srcId: binding.srcId,
+              params: binding.params,
+            })),
+          }
+        : {}),
+    }));
+  if (selectedLambdaId === undefined) return summaries;
+  return [
+    ...summaries.filter((lambda) => lambda.id === selectedLambdaId),
+    ...summaries.filter((lambda) => lambda.id !== selectedLambdaId),
+  ];
+}
+
+function toEmailTemplateSummaries(
+  list: any[],
+  selectedEmailTemplateId: number | undefined,
+  selectedTemplate: any
+): AssistantEmailTemplateSummary[] {
+  const summaries = list
+    .filter((template) => template?.id)
+    .map((template): AssistantEmailTemplateSummary => ({
+      id: Number(template.id),
+      name: clampText(template.name),
+      description: clampText(template.description),
+      subject: clampText(template.subject),
+      enabled: template.enabled,
+      ...(Number(template.id) === selectedEmailTemplateId
+        ? { content: selectedTemplate?.content, pre: selectedTemplate?.pre }
+        : {}),
+    }));
+  if (selectedEmailTemplateId === undefined) return summaries;
+  return [
+    ...summaries.filter((template) => template.id === selectedEmailTemplateId),
+    ...summaries.filter((template) => template.id !== selectedEmailTemplateId),
   ];
 }
 
@@ -377,6 +525,9 @@ function summarizeDataset(dataset: any, fallback: any, hasDetail: boolean): Assi
       type: item.type,
       sortOrder: item.sortOrder,
     })),
+    actions: asList(source.actions),
+    filters: asList(source.filters),
+    presetFilters: source.presetFilters,
     ...(sourceItems.length > MAX_DATASET_ITEMS
       ? { itemsTruncated: sourceItems.length - MAX_DATASET_ITEMS }
       : {}),
@@ -450,7 +601,20 @@ function summarizeFormDetail(formId: number, title: string, sections: any, items
       sectionRef: tier.section?.id === undefined ? undefined : String(tier.section.id),
       approverGroupRef: tier.approverGroup === undefined ? undefined : String(tier.approverGroup),
       sortOrder: tier.sortOrder,
+      actions: Object.values(tier.actions ?? {}).map((tierAction: any) => ({
+        id: Number(tierAction.id),
+        code: tierAction.code,
+        label: clampText(tierAction.label),
+        action: tierAction.action,
+        nextTier: tierAction.nextTier,
+        mailer: tierAction.mailer,
+      })),
     })),
+    addMailer: form?.addMailer,
+    updateMailer: form?.updateMailer,
+    retractMailer: form?.retractMailer,
+    deleteMailer: form?.deleteMailer,
+    updateApprovalMailer: form?.updateApprovalMailer,
     sections: sectionList.map((s, sectionIndex) => {
       return {
         id: s.id,

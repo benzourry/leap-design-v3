@@ -157,8 +157,8 @@ export class FormService {
   }
 
 
-  removeTier(id: number) {
-    return this.http.post<any>(`${this.baseApi}/form/tier/${id}/delete`, {})
+  removeTier(formId: number, id: number) {
+    return this.http.post<any>(`${this.baseApi}/form/tier/${id}/delete?formId=${formId}`, {})
   }
 
   saveItemOrder(list: any) {
@@ -173,24 +173,24 @@ export class FormService {
     return this.http.post<any>(`${this.baseApi}/form/save-tab-order`, list);
   }
 
-  saveTierOrder(list: any) {
-    return this.http.post<any>(`${this.baseApi}/form/save-tier-order`, list);
+  saveTierOrder(formId: number, list: any) {
+    return this.http.post<any>(`${this.baseApi}/form/save-tier-order?formId=${formId}`, list);
   }
 
-  saveTierActionOrder(tierId: number, list: any) {
-    return this.http.post<any>(`${this.baseApi}/form/save-tier-action-order?tierId=${tierId}`, list);
+  saveTierActionOrder(formId: number, tierId: number, list: any) {
+    return this.http.post<any>(`${this.baseApi}/form/save-tier-action-order?formId=${formId}&tierId=${tierId}`, list);
   }
 
   saveTier(formId: number, tier: any) {
     return this.http.post<any>(`${this.baseApi}/form/${formId}/tier`, tier)
   }
 
-  saveTierAction(tierId: any, tierAction: any) {
-    return this.http.post<any>(`${this.baseApi}/form/tier/${tierId}/action`, tierAction)
+  saveTierAction(formId: number, tierId: any, tierAction: any) {
+    return this.http.post<any>(`${this.baseApi}/form/tier/${tierId}/action?formId=${formId}`, tierAction)
   }
 
-  removeTierAction(id: number) {
-    return this.http.post<any>(`${this.baseApi}/form/tier/action/${id}/delete`, {})
+  removeTierAction(formId: number, id: number) {
+    return this.http.post<any>(`${this.baseApi}/form/tier/action/${id}/delete?formId=${formId}`, {})
   }
 
   moreAutocompleteJs() {

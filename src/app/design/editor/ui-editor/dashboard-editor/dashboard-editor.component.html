@@ -983,7 +983,7 @@
             <a ngbNavLink>Filters</a>
             <ng-template ngbNavContent>
               <div class="single-pane p-3">
-                <app-entry-filter [formHolder]="editHolderFormSig()" [presetFilters]="editChartData.presetFilters"
+                <app-entry-filter [formHolder]="editHolderFormSig()" [(presetFilters)]="editChartData.presetFilters"
                   [(filters)]="editChartData.filters" [sectionItems]="sectionItems" [lookup]="lookup"></app-entry-filter>
               </div>
             </ng-template>

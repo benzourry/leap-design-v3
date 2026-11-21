@@ -29,6 +29,7 @@ import { SignaService } from '../../../service/signa.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../service/metatrail.service';
+import { CommService } from '../../../_shared/service/comm.service';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -70,10 +71,18 @@ export class LambdaEditorComponent implements OnInit {
   private endpointService = inject(EndpointService)
   private utilityService = inject(UtilityService)
   private metaTrailService = inject(MetaTrailService)
+  private commService = inject(CommService);
   private destroyRef = inject(DestroyRef); 
   cdr = inject(ChangeDetectorRef);
 
   constructor() {
+        this.commService.changeEmitted$
+            .pipe(takeUntilDestroyed())
+            .subscribe(data => {
+              if (data.key !== 'assistant-lambda' || !this.appId) return;
+              this.loadLambdaList(this.pageNumber());
+              if (this.lambdaId) this.loadLambda(Number(this.lambdaId));
+            });
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;

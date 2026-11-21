@@ -1,0 +1,9 @@
+.filter-controls > .filter-operator {
+  flex: 0 1 12rem;
+  min-width: 9rem;
+}
+
+.filter-controls > .form-control,
+.filter-controls > .form-select:not(.filter-operator) {
+  min-width: 6rem;
+}

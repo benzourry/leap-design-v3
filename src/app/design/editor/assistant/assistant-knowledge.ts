@@ -176,14 +176,129 @@ export const SCREEN_TYPE_LIST = [
 
 export const PROCESS_TIER_TYPES = ['HOD', 'PERSON', 'GROUP'];
 
+export const TIER_ACTION_TYPES = ['nextTier', 'prevTier', 'curTier', 'goTier'];
+
 export const SCREEN_ACTION_TYPES = [
   'edit', 'edit-single', 'prev', 'view', 'view-single', 'screen', 'form', 'facet',
   'static', 'dataset', 'dashboard', 'lookup', 'user', 'function',
 ];
 
+export const DATASET_ACTION_TYPES = [
+  'view', 'edit', 'delete', 'retract', 'approve', 'screen', 'facet', 'prev', 'url',
+  'function',
+];
+
+export const DATASET_ACTION_PRESENTATIONS = ['inline', 'dropdown', 'bulk'];
+
 export const NAVI_ITEM_TYPES = [
   'form', 'form-single', 'view-single', 'dataset', 'dashboard', 'screen', 'lookup',
   'external', 'internal', 'lambda', 'user',
+];
+
+export const LAMBDA_BINDING_TYPES = [
+  'dataset', 'dashboard', 'lookup', '_mail', '_entry', '_lookup', '_cogna', '_endpoint',
+  '_secret', '_user', '_mapper', '_jsoup', '_krypta', '_live', '_log', '_token', '_sql',
+  '_io', '_util', '_http', '_pdf',
+];
+
+export interface LambdaScriptingReference {
+  symbol: string;
+  binding?: string;
+  syntax: string;
+  example?: string;
+  note?: string;
+}
+
+/**
+ * Runtime symbols available to generated Lambda source. Binding names are the exact
+ * LambdaBind.type values accepted by the backend.
+ */
+export const LAMBDA_SCRIPTING_REFERENCE: LambdaScriptingReference[] = [
+  { symbol: 'lookup_<lookupId>', binding: 'lookup', syntax: 'lookup_<lookupId>.content.forEach(element => { /* logic */ });', example: 'lookup_12110.content.forEach(le => print(le.getCode()));', note: 'Add the specific lookup binding with sourceRef set to its lookup id.' },
+  { symbol: 'dataset_<datasetId>', binding: 'dataset', syntax: 'dataset_<datasetId>.forEach(entry => { /* logic */ });', example: 'dataset_2100.forEach(e => print(e.getId()));', note: 'Loads the entire dataset into memory. Prefer _entry.dataset for controlled or paged queries. Add the specific dataset binding with sourceRef.' },
+  { symbol: 'dashboard_<dashboardId>', binding: 'dashboard', syntax: 'dashboard_<dashboardId>', note: 'Add the specific dashboard binding with sourceRef set to its dashboard id.' },
+  { symbol: '_mail.send', binding: '_mail', syntax: '_mail.send({ to, subject, content }, _this);' },
+  { symbol: '_mail.sendWithTemplate', binding: '_mail', syntax: '_mail.sendWithTemplate(templateId, entry, _this);', note: 'templateId is the numeric email template id in the current app.' },
+  { symbol: '_endpoint.run', binding: '_endpoint', syntax: '_endpoint.run(code, params, body, _this);' },
+  { symbol: '_mapper.convertValue', binding: '_mapper', syntax: '_mapper.convertValue(object, Object.class);' },
+  { symbol: '_mapper.readTree', binding: '_mapper', syntax: '_mapper.readTree(jsonText);' },
+  { symbol: '_mapper.writeValueAsString', binding: '_mapper', syntax: '_mapper.writeValueAsString(object);' },
+  { symbol: '_toMap', binding: '_mapper', syntax: '_toMap(object);' },
+  { symbol: '_toEntry', binding: '_mapper', syntax: '_toEntry(object);' },
+  { symbol: '_user.name', binding: '_user', syntax: '_user.name' },
+  { symbol: '_user.email', binding: '_user', syntax: '_user.email' },
+  { symbol: '_user.imageUrl', binding: '_user', syntax: '_user.imageUrl' },
+  { symbol: '_user.provider', binding: '_user', syntax: '_user.provider' },
+  { symbol: '_user.providerId', binding: '_user', syntax: '_user.providerId' },
+  { symbol: '_token.clearAccessToken', binding: '_token', syntax: '_token.clearAccessToken(clientIdSecret);' },
+  { symbol: '_token.getAccessToken', binding: '_token', syntax: '_token.getAccessToken(endpoint, clientId, clientSecret);' },
+  { symbol: '_io.write', binding: '_io', syntax: '_io.write(content, path);' },
+  { symbol: '_io.read', binding: '_io', syntax: '_io.read(path);' },
+  { symbol: '_io.path', binding: '_io', syntax: '_io.path(path);' },
+  { symbol: '_io.zip', binding: '_io', syntax: '_io.zip(paths);' },
+  { symbol: '_io.pathFromBucket', binding: '_io', syntax: '_io.pathFromBucket(bucketName);' },
+  { symbol: '_sql.select', binding: '_sql', syntax: '_sql.select(query, namedParams, nativeSql);' },
+  { symbol: '_sql.count', binding: '_sql', syntax: '_sql.count(query, namedParams, nativeSql);' },
+  { symbol: '_http.GET', binding: '_http', syntax: '_http.GET(url, options).body();' },
+  { symbol: '_http.POST', binding: '_http', syntax: "_http.POST(url, { headers, body }, 'json').body();" },
+  { symbol: '_pdf.fromHtml', binding: '_pdf', syntax: '_pdf.fromHtml(html);', note: 'Returns a byte array. Set response content type and length before writing it to the response stream.' },
+  { symbol: '_entry.byId', binding: '_entry', syntax: '_entry.byId(+entryId, _this);' },
+  { symbol: '_entry.save', binding: '_entry', syntax: '_entry.save({ data: {...} }, formId, previousEntryId, _this);' },
+  { symbol: '_entry.relinkPrev', binding: '_entry', syntax: '_entry.relinkPrev(entryId, previousEntryId, _this);' },
+  { symbol: '_entry.update', binding: '_entry', syntax: '_entry.update(entryId, dataObject, _this);' },
+  { symbol: '_entry.approval', binding: '_entry', syntax: "_entry.approval(entryId, { tier: { id: tierId }, status: 'approved', remark: '', data: {} }, _user.email, _this);" },
+  { symbol: '_entry.submit', binding: '_entry', syntax: '_entry.submit(entryId);' },
+  { symbol: '_entry.chart', binding: '_entry', syntax: '_entry.chart(chartId, params, _user.email, _this);' },
+  { symbol: '_entry.chartAsMap', binding: '_entry', syntax: '_entry.chartAsMap(chartData);' },
+  { symbol: '_entry.chartize', binding: '_entry', syntax: "_entry.chartize(datasetId, { agg, by, value, series }, _user.email, _this);", note: 'For multiple categories or values, use comma-separated field paths.' },
+  { symbol: '_entry.delete', binding: '_entry', syntax: '_entry.delete(entryId, _user.email, _this);' },
+  { symbol: '_entry.retract', binding: '_entry', syntax: '_entry.retract(entryId, _user.email);' },
+  { symbol: '_entry.count', binding: '_entry', syntax: '_entry.count(datasetId, filters, _user.email, _this);' },
+  { symbol: '_entry.dataset', binding: '_entry', syntax: '_entry.dataset(datasetId, filters, _user.email, _this);' },
+  { symbol: '_entry.flatDataset', binding: '_entry', syntax: '_entry.flatDataset(datasetId, filters, _user.email, _this);' },
+  { symbol: '_entry.streamDataset', binding: '_entry', syntax: '_entry.streamDataset(datasetId, filters, _user.email, _this);', note: 'Use for memory-friendly streaming of large datasets.' },
+  { symbol: '_entry.updateOwner', binding: '_entry', syntax: '_entry.updateOwner(entryId, newOwnerEmail, _this);' },
+  { symbol: '_lookup.list', binding: '_lookup', syntax: '_lookup.list(lookupId, filters, _this);' },
+  { symbol: '_secret.<key>', binding: '_secret', syntax: '_secret.<key>' },
+  { symbol: '_log.error', binding: '_log', syntax: '_log.error(message);' },
+  { symbol: '_log.success', binding: '_log', syntax: '_log.success(message);' },
+  { symbol: '_log.info', binding: '_log', syntax: '_log.info(message);' },
+  { symbol: '_live.publish', binding: '_live', syntax: '_live.publish(channels, payload);' },
+  { symbol: '_jsoup.connect', binding: '_jsoup', syntax: '_jsoup.connect(url).get();' },
+  { symbol: '_jsoup.parse', binding: '_jsoup', syntax: '_jsoup.parse(html);' },
+  { symbol: '_jsoup.parseBodyFragment', binding: '_jsoup', syntax: '_jsoup.parseBodyFragment(htmlFragment);' },
+  { symbol: '_cogna.prompt', binding: '_cogna', syntax: '_cogna.prompt(cognaId, { prompt }, email);' },
+  { symbol: '_cogna.extract', binding: '_cogna', syntax: '_cogna.extract(cognaId, { text, docList });' },
+  { symbol: '_cogna.summarize', binding: '_cogna', syntax: '_cogna.summarize(cognaId, text, pointCount);' },
+  { symbol: '_cogna.translate', binding: '_cogna', syntax: '_cogna.translate(cognaId, text, language);' },
+  { symbol: '_cogna.txtgenField', binding: '_cogna', syntax: '_cogna.txtgenField(fieldId, text, action);' },
+  { symbol: '_cogna.classify', binding: '_cogna', syntax: '_cogna.classify(cognaId, text);' },
+  { symbol: '_cogna.classifyField', binding: '_cogna', syntax: '_cogna.classifyField(fieldId, text);' },
+  { symbol: '_cogna.classifyWithLlm', binding: '_cogna', syntax: '_cogna.classifyWithLlm(cognaId, categories, what, text, multiple);' },
+  { symbol: '_cogna.classifyWithEmbedding', binding: '_cogna', syntax: '_cogna.classifyWithEmbedding(cognaId, text, minScore, multiple);' },
+  { symbol: '_cogna.generateImage', binding: '_cogna', syntax: '_cogna.generateImage(cognaId, text);' },
+  { symbol: '_cogna.generateImageField', binding: '_cogna', syntax: '_cogna.generateImageField(fieldId, text);' },
+  { symbol: '_cogna.findSimilarity', binding: '_cogna', syntax: '_cogna.findSimilarity(cognaId, search, maxResult, minScore);' },
+  { symbol: '_krypta.call', binding: '_krypta', syntax: '_krypta.call(walletId, functionName, args);' },
+  { symbol: '_krypta.logs', binding: '_krypta', syntax: '_krypta.logs(walletId, eventName);' },
+  { symbol: '_krypta.verify', binding: '_krypta', syntax: '_krypta.verify(walletId, transactionHash);' },
+  { symbol: '_util.ocr', binding: '_util', syntax: '_util.ocr(pathUrl, language);' },
+  { symbol: '_util.atob', binding: '_util', syntax: '_util.atob(encodedText);' },
+  { symbol: '_util.btoa', binding: '_util', syntax: '_util.btoa(text);' },
+  { symbol: '_util.hash', binding: '_util', syntax: '_util.hash(text, algorithm);' },
+  { symbol: '_util.readExcel', binding: '_util', syntax: '_util.readExcel(filePath);' },
+  { symbol: '_util.replaceMulti', binding: '_util', syntax: '_util.replaceMulti(text, replacements);' },
+  { symbol: '_env.IO_BASE_API_URL', syntax: '_env.IO_BASE_API_URL' },
+  { symbol: '_env.IO_BASE_URL', syntax: '_env.IO_BASE_URL' },
+  { symbol: '_env.UI_BASE_URL', syntax: '_env.UI_BASE_URL' },
+  { symbol: '_env.UPLOAD_DIR', syntax: '_env.UPLOAD_DIR' },
+  { symbol: '_env.TMP_DIR', syntax: '_env.TMP_DIR' },
+  { symbol: '_param.<key>', syntax: '_param.<key>' },
+  { symbol: '_param._body', syntax: '_param._body' },
+  { symbol: '_request.getParameter', syntax: "_request.getParameter(name)", note: 'Prefer _param; it works for HTTP and Cogna invocations.' },
+  { symbol: '_out.put', syntax: '_out.put(key, value);' },
+  { symbol: '_response', syntax: '_response.setStatus(status);' },
+  { symbol: 'print', syntax: 'print(message);' },
 ];
 
 export const CHART_TYPE_LIST = [
@@ -524,7 +639,7 @@ export function buildScreenPayload(input: {
  */
 export function assistantKnowledge() {
   return {
-    editorSelection: 'When selectedFormId, selectedDatasetId, or selectedScreenId is set, prefer that entity for requests about the currently open editor. The selected screen data is in entities.screens[].data. update_screen can replace content and/or f; preserve existing content and f by omitting fields that should not change.',
+    editorSelection: 'When a selected...Id field is set, prefer that entity for requests about the currently open editor. Selected screen data is in entities.screens[].data; selected Lambda source is in entities.lambdas[].data.f; selected email template content is in entities.emailTemplates[].content. Preserve omitted fields.',
     includedComponents: 'If an entity in entities.forms, entities.datasets, entities.dashboards, entities.screens, or entities.navigation has fullData, use that complete object as the source of truth. For forms, inspect the detailed sections and their items as well as fullData; do not claim the fields are missing when they are present.',
     fieldTypes: FIELD_TYPE_LIST.map((t) => ({
       type: t.value,
@@ -538,8 +653,15 @@ export function assistantKnowledge() {
     datasetTypes: DATASET_TYPE_LIST.map((d) => d.value),
     screenTypes: SCREEN_TYPE_LIST.map((t) => t.value),
     processTierTypes: PROCESS_TIER_TYPES,
+    tierActionTypes: TIER_ACTION_TYPES,
     screenActionTypes: SCREEN_ACTION_TYPES,
+    datasetActionTypes: DATASET_ACTION_TYPES,
+    datasetActionPresentations: DATASET_ACTION_PRESENTATIONS,
     navigationItemTypes: NAVI_ITEM_TYPES,
+    lambdaBindingTypes: LAMBDA_BINDING_TYPES,
+    lambdaScriptingReference: LAMBDA_SCRIPTING_REFERENCE,
+    emailAssignment: 'Assign email template ids through form.addMailer/updateMailer/retractMailer/deleteMailer/updateApprovalMailer, tier.submitMailer/assignMailer/resubmitMailer, or tierAction.mailer.',
+    lambdaAuthoring: 'Lambda source is stored in data.f. Inspect lambdaScriptingReference for exact syntax. Check the selected Lambda binds rather than assuming runtime availability. If generated source uses a symbol whose binding is missing, include add_lambda_binding; for a new Lambda include it in create_lambda.binds. The executor also verifies the final source and adds missing required bindings, but the plan should remain explicit and accurate. Use exact binding types and set sourceRef for dataset_<id>, lookup_<id>, and dashboard_<id>. Globals without a binding in the reference need none.',
     screenDsl: SCREEN_DSL_CHEATSHEET,
   };
 }

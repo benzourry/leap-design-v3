@@ -6,6 +6,21 @@ import { SafePipe } from '../../../_shared/pipe/safe.pipe';
 import { splitAsList, compileTpl } from '../../../_shared/utils';
 import { RunService } from '../../_service/run.service';
 import { AsListPipe } from '../../../_shared/pipe/as-list.pipe';
+import { filterKey, filterOperatorOptions, FilterOperator, getFilterOperator } from '../../../_shared/component/entry-filter/filter-operators';
+
+const malayOperatorLabels: Record<FilterOperator, string> = {
+  default: 'Padanan lalai',
+  range: 'Dari / Hingga',
+  not: 'Tidak sama dengan',
+  in: 'Dalam senarai (dipisahkan dengan koma)',
+  notin: 'Tiada dalam senarai (dipisahkan dengan koma)',
+  has: 'Mempunyai nilai (dipisahkan dengan koma)',
+  nothas: 'Tidak mempunyai nilai (dipisahkan dengan koma)',
+  contain: 'Mengandungi',
+  notcontain: 'Tidak mengandungi',
+  from: 'Lebih besar daripada atau sama dengan',
+  to: 'Lebih kecil daripada atau sama dengan'
+};
 
 @Component({
   selector: 'app-user-entry-filter',
@@ -50,21 +65,36 @@ export class UserEntryFilterComponent {
   // --- NEW DRY HELPERS ---
 
   // Centralizes the complex binding path logic and fixes the checkboxOption bug
-  getBindingKey(fil: any, field: any): string {
+  getBindingPath(fil: any, field: any): string {
     const baseKey = `${fil.prefix}.${fil.code}`;
-    
     if (['select', 'radio'].includes(field.type)) {
       return `${baseKey}${field.subType === 'multiple' ? '*' : ''}.code`;
-    }
-    if (field.type === 'checkboxOption') {
-      return `${baseKey}*.code`; // Fixed typo/mismatch in original template
-    }
-    if (field.type === 'modelPicker') {
+    } else if (field.type === 'checkboxOption') {
+      return `${baseKey}*.code`;
+    } else if (field.type === 'modelPicker') {
       return `${baseKey}.${field.bindLabel}`;
     }
     return baseKey;
   }
 
+  getBindingKey(fil: any, field: any): string {
+    const path = this.getBindingPath(fil, field);
+    return filterKey(path, getFilterOperator(this.presetFilters(), field, path));
+  }
+
+  getOperator(fil: any, field: any): string {
+    const path = this.getBindingPath(fil, field);
+    return getFilterOperator(this.presetFilters(), field, path);
+  }
+
+  getOperatorLabel(fil: any, field: any): string {
+    const path = this.getBindingPath(fil, field);
+    const operator = getFilterOperator(this.presetFilters(), field, path);
+    if (this.lang() === 'ms') {
+      return malayOperatorLabels[operator];
+    }
+    return filterOperatorOptions(field, path).find(option => option.value === operator)?.label ?? '';
+  }
   // Safe Signal Writer for Radio Buttons
   updateFilter(key: string, value: any) {
     this.filtersData.update(data => {

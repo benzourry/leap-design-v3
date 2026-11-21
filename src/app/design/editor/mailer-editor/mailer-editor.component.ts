@@ -22,6 +22,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { baseApi } from '../../../_shared/constant.service';
 import { LambdaService } from '../../../service/lambda.service';
+import { CommService } from '../../../_shared/service/comm.service';
 
 @Component({
     selector: 'app-mailer-editor',
@@ -49,6 +50,7 @@ export class MailerEditorComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);  
     private destroyRef = inject(DestroyRef);
     private lambdaService = inject(LambdaService);
+    private commService = inject(CommService);
 
     offline = false;
     app: any;
@@ -66,6 +68,13 @@ export class MailerEditorComponent implements OnInit {
     appId: number;
     
     constructor() {
+        this.commService.changeEmitted$
+            .pipe(takeUntilDestroyed())
+            .subscribe(data => {
+                if (data.key !== 'assistant-mailer' || !this.appId) return;
+                this.loadMailerList(this.pageNumber);
+                if (this.mailerId) this.loadMailer(Number(this.mailerId));
+            });
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;

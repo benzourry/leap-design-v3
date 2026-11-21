@@ -22,6 +22,10 @@
           The assistant will use the dataset currently open in the editor.
         } @else if (currentScreenId()) {
           The assistant will use the screen currently open in the editor.
+        } @else if (currentLambdaId()) {
+          The assistant will use the Lambda currently open in the editor, including its source and bindings.
+        } @else if (currentEmailTemplateId()) {
+          The assistant will use the email template currently open in the editor.
         } @else {
           The assistant will use the current app context.
         }

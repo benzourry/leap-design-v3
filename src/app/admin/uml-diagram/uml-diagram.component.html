@@ -1,6 +1,6 @@
 <main class="container-fluid p-3 section-to-print">
   <div class="d-flex align-items-center gap-2 mb-3">
-    <a [routerLink]="['/design', appId, 'summary']"
+    <a [routerLink]="platformView ? ['/admin', 'apps', appId, 'summary'] : ['/design', appId, 'summary']"
       class="back-link screen-only"
       aria-label="Back to app summary"
       title="Back to app summary">

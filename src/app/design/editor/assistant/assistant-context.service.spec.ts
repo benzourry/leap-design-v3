@@ -8,6 +8,8 @@ import { AppService } from '../../../service/app.service';
 import { GroupService } from '../../../service/group.service';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { AssistantContextService } from './assistant-context.service';
+import { LambdaService } from '../../../service/lambda.service';
+import { MailerService } from '../../../service/mailer.service';
 
 describe('AssistantContextService', () => {
   let forms: jasmine.SpyObj<FormService>;
@@ -15,6 +17,8 @@ describe('AssistantContextService', () => {
   let screens: jasmine.SpyObj<ScreenService>;
   let dashboards: jasmine.SpyObj<DashboardService>;
   let app: jasmine.SpyObj<AppService>;
+  let lambdas: jasmine.SpyObj<LambdaService>;
+  let mailers: jasmine.SpyObj<MailerService>;
 
   beforeEach(() => {
     forms = jasmine.createSpyObj<FormService>('FormService', [
@@ -79,6 +83,17 @@ describe('AssistantContextService', () => {
     }]));
     const groups = jasmine.createSpyObj<GroupService>('GroupService', ['getGroupList']);
     groups.getGroupList.and.returnValue(of({ content: [{ id: 70, name: 'Approvers' }] }));
+    lambdas = jasmine.createSpyObj<LambdaService>('LambdaService', ['getLambdaList', 'getLambda']);
+    lambdas.getLambdaList.and.returnValue(of({ content: [{ id: 71, name: 'Notify', code: 'notify', lang: 'js' }] }));
+    lambdas.getLambda.and.returnValue(of({
+      id: 71, name: 'Notify', code: 'notify', lang: 'js', data: { f: 'print("hello")' },
+      binds: [{ id: 710, name: 'Mailer', type: '_mail' }],
+    }));
+    mailers = jasmine.createSpyObj<MailerService>('MailerService', ['getMailerList', 'getMailer']);
+    mailers.getMailerList.and.returnValue(of({ content: [{ id: 80, name: 'Approved', subject: 'Approved' }] }));
+    mailers.getMailer.and.returnValue(of({
+      id: 80, name: 'Approved', subject: 'Approved', content: '<p>Approved</p>', enabled: 1,
+    }));
 
     TestBed.configureTestingModule({
       providers: [
@@ -90,6 +105,8 @@ describe('AssistantContextService', () => {
         { provide: LookupService, useValue: { getFullLookupList: () => of({ content: [{ id: 11, name: 'Countries' }] }) } },
         { provide: AppService, useValue: app },
         { provide: GroupService, useValue: groups },
+        { provide: LambdaService, useValue: lambdas },
+        { provide: MailerService, useValue: mailers },
       ],
     });
   });
@@ -285,5 +302,30 @@ describe('AssistantContextService', () => {
       id: 88,
       data: { content: '<h1>Review request</h1>', f: '$this$.initialized = true;' },
     }));
+  });
+
+  it('includes selected lambda source, bindings, and email template content', async () => {
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build(
+        { id: 1 },
+        { lambdaId: 71, emailTemplateId: 80 }
+      )
+    );
+
+    expect(context.selectedLambdaId).toBe(71);
+    expect(context.entities.lambdas[0]).toEqual(jasmine.objectContaining({
+      id: 71,
+      data: { f: 'print("hello")' },
+      binds: [jasmine.objectContaining({ id: 710, type: '_mail' })],
+    }));
+    expect(context.entities.emailTemplates[0]).toEqual(jasmine.objectContaining({
+      id: 80,
+      content: '<p>Approved</p>',
+    }));
+    expect(context.knowledge['lambdaScriptingReference']).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({ symbol: '_entry.dataset', binding: '_entry' }),
+      jasmine.objectContaining({ symbol: '_mail.sendWithTemplate', binding: '_mail' }),
+      jasmine.objectContaining({ symbol: 'dataset_<datasetId>', binding: 'dataset' }),
+    ]));
   });
 });

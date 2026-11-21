@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { EntryService } from '../../../run/_service/entry.service';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { GroupByPipe } from '../../pipe/group-by.pipe';
+import { QueryBuilderComponent } from '../../component/query-builder/query-builder.component';
 
 @Component({
     selector: 'app-edit-dataset',
@@ -23,7 +24,7 @@ import { GroupByPipe } from '../../pipe/group-by.pipe';
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
     FaIconComponent, NgSelectModule, NgCmComponent, EntryFilterComponent, NgbNavOutlet, KeyValuePipe,
-    FilterPipe, GroupByPipe]
+    FilterPipe, GroupByPipe, QueryBuilderComponent]
 })
 export class EditDatasetComponent implements OnInit {
 
@@ -55,8 +56,6 @@ export class EditDatasetComponent implements OnInit {
   formHolder: any = {};
 
   user = input<any>();
-
-  extraAutoComplete:any=[];
 
   showPrevStatus:boolean=false;
 
@@ -123,10 +122,6 @@ export class EditDatasetComponent implements OnInit {
         })
     }
 
-    this.extraAutoComplete.push(
-      { c: 1, detail: `$and`, type: "text", apply: `$and: [{#{filters}}]`, label: `And condition for query builder` },
-      { c: 1, detail: `$or`, type: "text", apply: `$or: [{#{filters}}]`, label: `Or condition for query builder` }
-    )
   }
 
   filterField:string = '';
@@ -610,21 +605,5 @@ export class EditDatasetComponent implements OnInit {
       }
       return this.lookupDataObs[cacheId];
   }
-
-  queryBuilderPlaceholder=`Q Walker composition, ie:
-[
-  {
-    "$and": [
-      { "$.age~between": null },
-      { "$.gender.code": "M" }      
-    ]
-  },
-  {
-    "$or":[
-      { "$.email" : "{{$user$.email}}" },
-      { "$_.email" : "{{$user$.email}}" }
-    ]
-  }
-]`;
 
 }

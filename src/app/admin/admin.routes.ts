@@ -14,6 +14,8 @@ export const ADMIN_ROUTES: Routes = [
       children: [
         { path: '', redirectTo:'summary', pathMatch:'full'},
         { path: 'summary', loadComponent: () => import('../admin/app-summary/app-summary.component').then(mod => mod.AppSummaryComponent), data:{platform:true}},
+        { path: 'uml', loadComponent: () => import('../admin/uml-diagram/uml-diagram.component').then(mod => mod.UmlDiagramComponent), data:{platform:true}},
+        { path: 'log', loadComponent: () => import('../design/editor/app-log/app-log.component').then(mod => mod.AppLogComponent), data:{platform:true}},
   
       ],
     },

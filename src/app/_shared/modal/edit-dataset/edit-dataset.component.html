@@ -693,7 +693,7 @@
             <ng-template ngbNavContent>
               <div class="single-pane">
                 <!-- {{lookup|json}} -->
-                <app-entry-filter [formHolder]="formHolder" [presetFilters]="_editDatasetData.presetFilters"
+                <app-entry-filter [formHolder]="formHolder" [(presetFilters)]="_editDatasetData.presetFilters"
                   [(filters)]="_editDatasetData.filters" [sectionItems]="sectionItems"
                 [lookup]="lookup"></app-entry-filter>
                 <div class="form-group mb-3">
@@ -711,15 +711,13 @@
                 </div>
                 <div class="form-group mb-3">
                   <label class="form-label">Custom query builder</label>
-                  <div class="mx-n3">
-                    <app-cm name="orgMapParam" lang="json" label="Custom query builder"
-                      [placeholder]="queryBuilderPlaceholder" [(ngModel)]="_editDatasetData.x.qFilter"
-                      [extraAutoComplete]="extraAutoComplete"  subType="passive"
-                      [linenumber]="true">
-                    </app-cm>
-                  </div>
+                  <app-query-builder
+                    [(query)]="_editDatasetData.x.qFilter"
+                    [formHolder]="formHolder"
+                    [sectionItems]="sectionItems">
+                  </app-query-builder>
                   <span class="text-secondary small">
-                    Value specified in custom query builder will be used if not specified in Query Parameter, Preset Filter or User Filter
+                    Runtime values can be supplied by query parameters, preset filters, or user filters.
                   </span>
                 </div>
               </div>

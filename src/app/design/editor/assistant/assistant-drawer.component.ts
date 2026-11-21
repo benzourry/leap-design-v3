@@ -60,6 +60,8 @@ export class AssistantDrawerComponent implements OnInit {
   currentFormId = input<number | null>(null);
   currentDatasetId = input<number | null>(null);
   currentScreenId = input<number | null>(null);
+  currentLambdaId = input<number | null>(null);
+  currentEmailTemplateId = input<number | null>(null);
 
   open = model(false);
   changed = output<AssistantChanged>();
@@ -73,6 +75,8 @@ export class AssistantDrawerComponent implements OnInit {
     { type: 'dashboard', label: 'Dashboard' },
     { type: 'screen', label: 'Screen' },
     { type: 'navigation', label: 'Navigation' },
+    { type: 'lambda', label: 'Lambda' },
+    { type: 'email-template', label: 'Email template' },
   ];
   readonly entityPickerOpen = signal(false);
   readonly entityPickerType = signal<AssistantPromptEntityType | null>(null);
@@ -373,6 +377,8 @@ export class AssistantDrawerComponent implements OnInit {
         formId: this.currentFormId() ?? undefined,
         datasetId: this.currentDatasetId() ?? undefined,
         screenId: this.currentScreenId() ?? undefined,
+        lambdaId: this.currentLambdaId() ?? undefined,
+        emailTemplateId: this.currentEmailTemplateId() ?? undefined,
         includedFormIds: includedEntities
           .filter((entity) => entity.type === 'form')
           .map((entity) => entity.id),
@@ -535,6 +541,8 @@ export class AssistantDrawerComponent implements OnInit {
       this.commService.emitChange({ key: 'assistant-screen', value: true });
     }
     if (summary.navigation) this.commService.emitChange({ key: 'assistant-navi', value: true });
+    if (summary.lambdas) this.commService.emitChange({ key: 'assistant-lambda', value: true });
+    if (summary.emailTemplates) this.commService.emitChange({ key: 'assistant-mailer', value: true });
   }
 }
 
@@ -591,7 +599,9 @@ function friendlyAssistantWarning(warning: string): string {
 }
 
 function summarize(outcome: AssistantApplyResult): AssistantChanged {
-  const changed: AssistantChanged = { forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0 };
+  const changed: AssistantChanged = {
+    forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0, lambdas: 0, emailTemplates: 0,
+  };
   for (const result of outcome.results) {
     if (result.status !== 'done') continue;
     switch (result.kind) {
@@ -610,12 +620,21 @@ function summarize(outcome: AssistantApplyResult): AssistantChanged {
       case 'create_tier':
       case 'update_tier':
       case 'remove_tier':
+      case 'add_tier_action':
+      case 'update_tier_action':
+      case 'remove_tier_action':
         changed.forms++;
         break;
       case 'create_dataset':
       case 'add_dataset_item':
       case 'update_dataset_item':
       case 'remove_dataset_item':
+      case 'add_dataset_action':
+      case 'update_dataset_action':
+      case 'remove_dataset_action':
+      case 'add_dataset_filter':
+      case 'update_dataset_filter':
+      case 'remove_dataset_filter':
         changed.datasets++;
         break;
       case 'create_dashboard':
@@ -624,9 +643,23 @@ function summarize(outcome: AssistantApplyResult): AssistantChanged {
         break;
       case 'create_screen':
       case 'add_screen_action':
+      case 'update_screen_action':
+      case 'remove_screen_action':
       case 'update_screen':
       case 'remove_screen':
         changed.screens++;
+        break;
+      case 'create_lambda':
+      case 'update_lambda':
+      case 'remove_lambda':
+      case 'add_lambda_binding':
+      case 'remove_lambda_binding':
+        changed.lambdas++;
+        break;
+      case 'create_email_template':
+      case 'update_email_template':
+      case 'remove_email_template':
+        changed.emailTemplates++;
         break;
       case 'create_navi_group':
       case 'update_navi_group':

@@ -27,16 +27,35 @@ export type AssistantActionKind =
   | 'create_tier'
   | 'update_tier'
   | 'remove_tier'
+  | 'add_tier_action'
+  | 'update_tier_action'
+  | 'remove_tier_action'
   | 'create_dataset'
   | 'add_dataset_item'
   | 'update_dataset_item'
   | 'remove_dataset_item'
+  | 'add_dataset_action'
+  | 'update_dataset_action'
+  | 'remove_dataset_action'
+  | 'add_dataset_filter'
+  | 'update_dataset_filter'
+  | 'remove_dataset_filter'
   | 'create_dashboard'
   | 'add_chart'
   | 'create_screen'
   | 'add_screen_action'
+  | 'update_screen_action'
+  | 'remove_screen_action'
   | 'update_screen'
   | 'remove_screen'
+  | 'create_lambda'
+  | 'update_lambda'
+  | 'remove_lambda'
+  | 'add_lambda_binding'
+  | 'remove_lambda_binding'
+  | 'create_email_template'
+  | 'update_email_template'
+  | 'remove_email_template'
   | 'create_navi_group'
   | 'update_navi_group'
   | 'remove_navi_group'
@@ -103,6 +122,11 @@ export interface UpdateFormAction extends ActionBase {
       onSave?: string;
       onSubmit?: string;
       onView?: string;
+      addMailerRefs?: EntityRef[];
+      updateMailerRefs?: EntityRef[];
+      retractMailerRefs?: EntityRef[];
+      deleteMailerRefs?: EntityRef[];
+      updateApprovalMailerRef?: EntityRef | null;
       x?: Record<string, unknown>;
     };
   };
@@ -225,6 +249,9 @@ export interface CreateTierAction extends ActionBase {
     showApprover?: boolean;
     pre?: string;
     post?: string;
+    submitMailerRefs?: EntityRef[];
+    assignMailerRefs?: EntityRef[];
+    resubmitMailerRefs?: EntityRef[];
     x?: Record<string, unknown>;
   };
 }
@@ -237,6 +264,9 @@ export interface UpdateTierAction extends ActionBase {
     patch: Record<string, unknown> & {
       sectionRef?: EntityRef;
       approverGroupRef?: EntityRef;
+      submitMailerRefs?: EntityRef[];
+      assignMailerRefs?: EntityRef[];
+      resubmitMailerRefs?: EntityRef[];
       x?: Record<string, unknown>;
     };
   };
@@ -245,6 +275,42 @@ export interface UpdateTierAction extends ActionBase {
 export interface RemoveTierAction extends ActionBase {
   kind: 'remove_tier';
   payload: { formRef: EntityRef; tierRef: EntityRef };
+}
+
+export interface AddTierActionAction extends ActionBase {
+  kind: 'add_tier_action';
+  payload: {
+    formRef: EntityRef;
+    tierRef: EntityRef;
+    label: string;
+    code?: string;
+    action: string;
+    icon?: string;
+    color?: string;
+    nextTierRef?: EntityRef;
+    mailerRefs?: EntityRef[];
+    userEdit?: boolean;
+    sortOrder?: number;
+    pre?: string;
+  };
+}
+
+export interface UpdateTierActionAction extends ActionBase {
+  kind: 'update_tier_action';
+  payload: {
+    formRef: EntityRef;
+    tierRef: EntityRef;
+    actionRef: EntityRef;
+    patch: Record<string, unknown> & {
+      nextTierRef?: EntityRef;
+      mailerRefs?: EntityRef[];
+    };
+  };
+}
+
+export interface RemoveTierActionAction extends ActionBase {
+  kind: 'remove_tier_action';
+  payload: { formRef: EntityRef; tierRef: EntityRef; actionRef: EntityRef };
 }
 
 export interface CreateDatasetAction extends ActionBase {
@@ -289,6 +355,78 @@ export interface UpdateDatasetItemAction extends ActionBase {
 export interface RemoveDatasetItemAction extends ActionBase {
   kind: 'remove_dataset_item';
   payload: { datasetRef: EntityRef; itemRef: EntityRef };
+}
+
+export interface AddDatasetActionAction extends ActionBase {
+  kind: 'add_dataset_action';
+  payload: {
+    datasetRef: EntityRef;
+    label: string;
+    action: string;
+    type?: string;
+    style?: string;
+    icon?: string;
+    sortOrder?: number;
+    inpop?: boolean;
+    targetRef?: EntityRef;
+    params?: string;
+    pre?: string;
+    f?: string;
+    url?: string;
+    x?: Record<string, unknown>;
+  };
+}
+
+export interface UpdateDatasetActionAction extends ActionBase {
+  kind: 'update_dataset_action';
+  payload: {
+    datasetRef: EntityRef;
+    actionRef: EntityRef;
+    patch: Record<string, unknown> & { targetRef?: EntityRef; x?: Record<string, unknown> };
+  };
+}
+
+export interface RemoveDatasetActionAction extends ActionBase {
+  kind: 'remove_dataset_action';
+  payload: { datasetRef: EntityRef; actionRef: EntityRef };
+}
+
+export interface AddDatasetFilterAction extends ActionBase {
+  kind: 'add_dataset_filter';
+  payload: {
+    datasetRef: EntityRef;
+    label: string;
+    code: string;
+    formIdRef: EntityRef;
+    root: string;
+    prefix: string;
+    type: string;
+    preset?: string;
+    sortOrder?: number;
+  };
+}
+
+export interface UpdateDatasetFilterAction extends ActionBase {
+  kind: 'update_dataset_filter';
+  payload: {
+    datasetRef: EntityRef;
+    filterRef: EntityRef;
+    patch: {
+      label?: string;
+      code?: string;
+      formIdRef?: EntityRef;
+      root?: string;
+      prefix?: string;
+      type?: string;
+      preset?: string;
+      sortOrder?: number;
+    };
+  };
+}
+
+export interface RemoveDatasetFilterAction extends ActionBase {
+  kind: 'remove_dataset_filter';
+  payload: { datasetRef: EntityRef; filterRef: EntityRef };
 }
 
 export interface CreateDashboardAction extends ActionBase {
@@ -362,6 +500,20 @@ export interface AddScreenActionAction extends ActionBase {
   };
 }
 
+export interface UpdateScreenActionAction extends ActionBase {
+  kind: 'update_screen_action';
+  payload: {
+    screenRef: EntityRef;
+    actionRef: EntityRef;
+    patch: Record<string, unknown> & { targetRef?: EntityRef; x?: Record<string, unknown> };
+  };
+}
+
+export interface RemoveScreenActionAction extends ActionBase {
+  kind: 'remove_screen_action';
+  payload: { screenRef: EntityRef; actionRef: EntityRef };
+}
+
 export interface UpdateScreenAction extends ActionBase {
   kind: 'update_screen';
   payload: {
@@ -377,6 +529,97 @@ export interface UpdateScreenAction extends ActionBase {
 export interface RemoveScreenAction extends ActionBase {
   kind: 'remove_screen';
   payload: { screenRef: EntityRef };
+}
+
+export interface CreateLambdaAction extends ActionBase {
+  kind: 'create_lambda';
+  payload: {
+    name: string;
+    code?: string;
+    description?: string;
+    lang?: 'js';
+    source: string;
+    publicAccess?: boolean;
+    binds?: LambdaBindingPayload[];
+  };
+}
+
+export interface UpdateLambdaAction extends ActionBase {
+  kind: 'update_lambda';
+  payload: {
+    lambdaRef: EntityRef;
+    patch: {
+      name?: string;
+      code?: string;
+      description?: string;
+      lang?: 'js';
+      source?: string;
+      publicAccess?: boolean;
+      accessGroupRef?: EntityRef;
+      signaRef?: EntityRef;
+      data?: Record<string, unknown>;
+    };
+  };
+}
+
+export interface RemoveLambdaAction extends ActionBase {
+  kind: 'remove_lambda';
+  payload: { lambdaRef: EntityRef };
+}
+
+export interface LambdaBindingPayload {
+  name: string;
+  type: string;
+  sourceRef?: EntityRef;
+  srcId?: number;
+  params?: string;
+}
+
+export interface AddLambdaBindingAction extends ActionBase {
+  kind: 'add_lambda_binding';
+  payload: { lambdaRef: EntityRef; binding: LambdaBindingPayload };
+}
+
+export interface RemoveLambdaBindingAction extends ActionBase {
+  kind: 'remove_lambda_binding';
+  payload: { lambdaRef: EntityRef; bindingRef: EntityRef };
+}
+
+export interface EmailTemplatePayload {
+  name: string;
+  subject: string;
+  content: string;
+  description?: string;
+  enabled?: number;
+  shared?: boolean;
+  pickable?: boolean;
+  pushable?: boolean;
+  pushUrl?: string;
+  toUser?: boolean;
+  toApprover?: boolean;
+  toAdmin?: boolean;
+  toExtra?: string;
+  ccUser?: boolean;
+  ccApprover?: boolean;
+  ccAdmin?: boolean;
+  ccExtra?: string;
+  log?: boolean;
+  pre?: string;
+}
+
+export interface CreateEmailTemplateAction extends ActionBase {
+  kind: 'create_email_template';
+  payload: EmailTemplatePayload;
+}
+
+export interface UpdateEmailTemplateAction extends ActionBase {
+  kind: 'update_email_template';
+  payload: { emailTemplateRef: EntityRef; patch: Partial<EmailTemplatePayload> };
+}
+
+export interface RemoveEmailTemplateAction extends ActionBase {
+  kind: 'remove_email_template';
+  payload: { emailTemplateRef: EntityRef };
 }
 
 export interface CreateNaviGroupAction extends ActionBase {
@@ -440,16 +683,35 @@ export type AssistantAction =
   | CreateTierAction
   | UpdateTierAction
   | RemoveTierAction
+  | AddTierActionAction
+  | UpdateTierActionAction
+  | RemoveTierActionAction
   | CreateDatasetAction
   | AddDatasetItemAction
   | UpdateDatasetItemAction
   | RemoveDatasetItemAction
+  | AddDatasetActionAction
+  | UpdateDatasetActionAction
+  | RemoveDatasetActionAction
+  | AddDatasetFilterAction
+  | UpdateDatasetFilterAction
+  | RemoveDatasetFilterAction
   | CreateDashboardAction
   | AddChartAction
   | CreateScreenAction
   | AddScreenActionAction
+  | UpdateScreenActionAction
+  | RemoveScreenActionAction
   | UpdateScreenAction
   | RemoveScreenAction
+  | CreateLambdaAction
+  | UpdateLambdaAction
+  | RemoveLambdaAction
+  | AddLambdaBindingAction
+  | RemoveLambdaBindingAction
+  | CreateEmailTemplateAction
+  | UpdateEmailTemplateAction
+  | RemoveEmailTemplateAction
   | CreateNaviGroupAction
   | UpdateNaviGroupAction
   | RemoveNaviGroupAction
@@ -483,7 +745,20 @@ export interface AssistantFormSummary {
     sectionRef?: EntityRef;
     approverGroupRef?: EntityRef;
     sortOrder?: number;
+    actions?: {
+      id: number;
+      code?: string;
+      label?: string;
+      action?: string;
+      nextTier?: number;
+      mailer?: number[];
+    }[];
   }[];
+  addMailer?: number[];
+  updateMailer?: number[];
+  retractMailer?: number[];
+  deleteMailer?: number[];
+  updateApprovalMailer?: number;
   sections?: {
     id: number;
     title?: string;
@@ -534,10 +809,14 @@ export interface AssistantEntitySummary {
   }[];
   itemsTruncated?: number;
   itemsMayBeIncomplete?: boolean;
+  actions?: unknown[];
+  filters?: unknown[];
+  presetFilters?: Record<string, unknown>;
 }
 
 export interface AssistantScreenSummary extends AssistantEntitySummary {
   data?: { content?: string; f?: string };
+  actions?: unknown[];
 }
 
 export interface AssistantNaviGroupSummary {
@@ -559,6 +838,8 @@ export interface AssistantContextEntities {
   datasets: AssistantEntitySummary[];
   dashboards: AssistantEntitySummary[];
   screens: AssistantScreenSummary[];
+  lambdas: AssistantLambdaSummary[];
+  emailTemplates: AssistantEmailTemplateSummary[];
   lookups: AssistantEntitySummary[];
   groups: AssistantEntitySummary[];
   navigation: AssistantNaviGroupSummary[];
@@ -571,6 +852,8 @@ export interface AssistantContext {
   selectedFormId?: number;
   selectedDatasetId?: number;
   selectedScreenId?: number;
+  selectedLambdaId?: number;
+  selectedEmailTemplateId?: number;
 }
 
 export interface AssistantPlanRequest {
@@ -587,7 +870,14 @@ export interface AssistantAttachment {
   dataBase64: string;
 }
 
-export type AssistantPromptEntityType = 'form' | 'dataset' | 'dashboard' | 'screen' | 'navigation';
+export type AssistantPromptEntityType =
+  | 'form'
+  | 'dataset'
+  | 'dashboard'
+  | 'screen'
+  | 'navigation'
+  | 'lambda'
+  | 'email-template';
 
 export interface AssistantPromptEntityOption {
   id: number;
@@ -652,4 +942,35 @@ export interface AssistantChanged {
   dashboards: number;
   screens: number;
   navigation: number;
+  lambdas: number;
+  emailTemplates: number;
+}
+
+export interface AssistantLambdaSummary {
+  id: number;
+  fullData?: unknown;
+  name?: string;
+  code?: string;
+  lang?: string;
+  description?: string;
+  publicAccess?: boolean;
+  binds?: {
+    id: number;
+    name?: string;
+    type?: string;
+    srcId?: number;
+    params?: string;
+  }[];
+  data?: { f?: string };
+}
+
+export interface AssistantEmailTemplateSummary {
+  id: number;
+  fullData?: unknown;
+  name?: string;
+  description?: string;
+  subject?: string;
+  enabled?: number;
+  content?: string;
+  pre?: string;
 }

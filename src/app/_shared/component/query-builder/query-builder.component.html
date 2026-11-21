@@ -1,0 +1,188 @@
+<div class="query-builder">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="text-secondary small">
+      Build nested criteria without writing JSON.
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleAdvanced()">
+      <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon>
+      {{advanced() ? 'Use visual builder' : 'Advanced JSON'}}
+    </button>
+  </div>
+
+  @if (parseError()) {
+    <div class="alert alert-danger py-2 mb-2">{{parseError()}}</div>
+  }
+
+  @if (advanced()) {
+    <app-cm
+      lang="json"
+      label="Custom query builder"
+      subType="passive"
+      [linenumber]="true"
+      [placeholder]="queryPlaceholder"
+      [extraAutoComplete]="queryAutoComplete"
+      [ngModel]="query()"
+      [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="updateAdvanced($event)">
+    </app-cm>
+  } @else {
+    <ng-container
+      [ngTemplateOutlet]="queryGroup"
+      [ngTemplateOutletContext]="{ $implicit: root(), parent: null, index: 0 }">
+    </ng-container>
+  }
+</div>
+
+<ng-template #queryGroup let-group let-parent="parent" let-index="index">
+  <div class="query-group" [class.query-root]="!parent">
+    <div class="query-group-header">
+      <div class="input-group input-group-sm query-condition">
+        <span class="input-group-text">Match</span>
+        <select class="form-select"
+          [(ngModel)]="group.condition"
+          [ngModelOptions]="{standalone: true}"
+          (ngModelChange)="changed()">
+          <option value="$and">All (AND)</option>
+          <option value="$or">Any (OR)</option>
+        </select>
+      </div>
+
+      <div class="query-actions">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="addCriterion(group)">
+          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+          Criterion
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="addGroup(group)">
+          <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true"></fa-icon>
+          Group
+        </button>
+        @if (parent) {
+          <button type="button" class="btn btn-outline-danger btn-sm"
+            (click)="removeNode(parent, index)"
+            aria-label="Delete group">
+            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (!group.children.length) {
+      <div class="query-empty">
+        No criteria yet. Add a criterion or a nested group.
+      </div>
+    }
+
+    <div class="query-children">
+      @for (node of group.children; track node.id) {
+        @if (node.kind === 'group') {
+          <ng-container
+            [ngTemplateOutlet]="queryGroup"
+            [ngTemplateOutletContext]="{ $implicit: node, parent: group, index: $index }">
+          </ng-container>
+        } @else {
+          <div class="query-criterion">
+            <div class="query-field">
+              <label class="form-label" [for]="'field-' + node.id">Field</label>
+              <select class="form-select form-select-sm"
+                [id]="'field-' + node.id"
+                [ngModel]="node.field"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="fieldChanged(node, $event)">
+                @if (!isKnownField(node.field)) {
+                  <option [value]="node.field">{{node.field || 'Custom field path'}}</option>
+                }
+                @for (field of fieldOptions(); track field.path) {
+                  <option [value]="field.path">{{field.group}}: {{field.label}}</option>
+                }
+                <option value="__custom">Custom field path…</option>
+              </select>
+            </div>
+
+            @if (!isKnownField(node.field)) {
+              <div class="query-custom-field">
+                <label class="form-label" [for]="'custom-field-' + node.id">Field path</label>
+                <input class="form-control form-control-sm"
+                  [id]="'custom-field-' + node.id"
+                  [(ngModel)]="node.field"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="changed()"
+                  placeholder="$.fieldCode">
+              </div>
+            }
+
+            <div class="query-operator">
+              <label class="form-label" [for]="'operator-' + node.id">Operator</label>
+              <select class="form-select form-select-sm"
+                [id]="'operator-' + node.id"
+                [(ngModel)]="node.operator"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="operatorChanged(node)">
+                @for (operator of operatorsFor(node); track operator.value) {
+                  <option [value]="operator.value">{{operator.label}}</option>
+                }
+              </select>
+            </div>
+
+            @if (node.operator !== 'null' && node.operator !== 'notnull') {
+              <div class="query-source">
+                <label class="form-label" [for]="'source-' + node.id">Value</label>
+                <select class="form-select form-select-sm"
+                  [id]="'source-' + node.id"
+                  [(ngModel)]="node.valueSource"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="valueSourceChanged(node)">
+                  <option value="fixed">Fixed value</option>
+                  <option value="runtime">Provided at runtime</option>
+                  <option value="template">Template expression</option>
+                </select>
+              </div>
+
+              @if (node.valueSource !== 'runtime') {
+                <div class="query-value">
+                  <label class="form-label" [for]="'value-' + node.id">
+                    {{node.operator === 'between' ? 'From' : 'Value'}}
+                  </label>
+                  @if (fieldFor(node.field)?.type === 'checkbox') {
+                    <select class="form-select form-select-sm"
+                      [id]="'value-' + node.id"
+                      [(ngModel)]="node.value"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="changed()">
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  } @else {
+                    <input class="form-control form-control-sm"
+                      [id]="'value-' + node.id"
+                      [(ngModel)]="node.value"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="changed()"
+                      [placeholder]="node.valueSource === 'template' ? '{{$user$.email}}' : 'Enter value'">
+                  }
+                </div>
+
+                @if (node.operator === 'between') {
+                  <div class="query-value">
+                    <label class="form-label" [for]="'second-value-' + node.id">To</label>
+                    <input class="form-control form-control-sm"
+                      [id]="'second-value-' + node.id"
+                      [(ngModel)]="node.secondValue"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="changed()"
+                      placeholder="Enter upper value">
+                  </div>
+                }
+              }
+            }
+
+            <button type="button" class="btn btn-outline-danger btn-sm query-delete"
+              (click)="removeNode(group, $index)"
+              aria-label="Delete criterion">
+              <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</ng-template>

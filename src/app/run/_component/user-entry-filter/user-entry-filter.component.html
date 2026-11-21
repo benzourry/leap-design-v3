@@ -5,9 +5,13 @@
     
     @let baseKey = fil.prefix + '.' + fil.code;
     @let bindKey = getBindingKey(fil, field);
+    @let operator = getOperator(fil, field);
 
     <div class="form-group mb-3">
       <label class="form-label">{{fil.label}} 
+        @if (operator !== 'default' && operator !== 'range') {
+          <span class="small text-secondary">({{getOperatorLabel(fil, field)}})</span>
+        }
         @if (['eval', 'qr'].includes(field.type)) {
           <span class="small">@if(lang()=='ms'){(Guna '%' sebagai <i>wildcard</i>)}@else{(Use '%' as wildcard)}</span>
         }
@@ -44,6 +48,7 @@
       }
 
       @if (field.type === 'date') {
+        @if (operator === 'range') {
         <div class="input-group flex-nowrap">
           <input class="form-control" type="text"
             [class.disabled]="presetFilters()[baseKey + '~from']"
@@ -63,9 +68,18 @@
               [(ngModel)]="filtersData()[baseKey + '~to']"></ngb-timepicker>
           </div>
         </div>
+        } @else {
+          <div class="input-group">
+            <input class="form-control" type="text" [class.disabled]="presetFilters()[bindKey]"
+              [(ngModel)]="filtersData()[bindKey]" placeholder="Date"
+              (click)="dateValue.toggle()" ngbDatepicker #dateValue="ngbDatepicker">
+            <ngb-timepicker name="f-{{fil.code}}-time" [(ngModel)]="filtersData()[bindKey]"></ngb-timepicker>
+          </div>
+        }
       }
 
       @if (['scaleTo5', 'scaleTo10', 'scale', 'number'].includes(field.type)) {
+        @if (operator === 'range') {
         <div class="input-group flex-nowrap">
           <input class="form-control" type="number"
             [class.disabled]="presetFilters()[baseKey + '~from']"
@@ -74,9 +88,17 @@
             [class.disabled]="presetFilters()[baseKey + '~to']"
             [(ngModel)]="filtersData()[baseKey + '~to']" placeholder="To">
         </div>
+        } @else {
+          <input class="form-control" type="number" [class.disabled]="presetFilters()[bindKey]"
+            [(ngModel)]="filtersData()[bindKey]" placeholder="Value">
+        }
       }
 
-      @if (['select', 'radio'].includes(field.type)) {
+      @if (['in', 'notin', 'has', 'nothas'].includes(operator)
+        && ['select', 'radio', 'simpleOption', 'modelPicker'].includes(field.type)) {
+        <input class="form-control" type="text" [class.disabled]="presetFilters()[bindKey]"
+          [(ngModel)]="filtersData()[bindKey]" placeholder="Comma-separated values">
+      } @else if (['select', 'radio'].includes(field.type)) {
         <ng-select [items]="lookup()[fil.code]" bindLabel="name" bindValue="code"
           [class.disabled]="presetFilters()[bindKey]"
           [(ngModel)]="filtersData()[bindKey]"
@@ -96,7 +118,7 @@
         </ng-select>
       }
 
-      @if (field.type === 'modelPicker') {
+      @if (field.type === 'modelPicker' && !['in', 'notin', 'has', 'nothas'].includes(operator)) {
         <ng-select [items]="lookup()[fil.code]" [bindLabel]="field.bindLabel" [bindValue]="field.bindLabel"
           [class.disabled]="presetFilters()[bindKey]"
           [(ngModel)]="filtersData()[bindKey]">
@@ -110,7 +132,7 @@
         </ng-select>
       }
 
-      @if (field.type === 'simpleOption') {
+      @if (field.type === 'simpleOption' && !['in', 'notin', 'has', 'nothas'].includes(operator)) {
         <select class="form-select" name="{{baseKey}}"
           [class.disabled]="presetFilters()[bindKey]"
           [(ngModel)]="filtersData()[bindKey]">

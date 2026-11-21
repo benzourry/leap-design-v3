@@ -1077,7 +1077,7 @@ export class FormEditorComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
-                this.formService.saveTierAction(tier.id, rItem)
+                this.formService.saveTierAction(this.curForm.id, tier.id, rItem)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
@@ -1131,7 +1131,7 @@ export class FormEditorComponent implements OnInit {
         }
 
         if (confirm('Are you sure you want to remove this action:' + ta.label)) {
-            this.formService.removeTierAction(ta.id)
+            this.formService.removeTierAction(this.curForm.id, ta.id)
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: (res) => {
@@ -1156,7 +1156,7 @@ export class FormEditorComponent implements OnInit {
         history.pushState(null, null, window.location.href);
         this.modalService.open(content, { backdrop: 'static' })
             .result.then(rItem => {
-                this.formService.removeTier(tier.id)
+                this.formService.removeTier(this.curForm.id, tier.id)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: (res) => {
@@ -1201,7 +1201,7 @@ export class FormEditorComponent implements OnInit {
             .map((val, index) => {
                 return { id: val.id, sortOrder: index }
             });
-        return this.formService.saveTierOrder(list)
+        return this.formService.saveTierOrder(this.curForm.id, list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 return res;
@@ -1213,7 +1213,7 @@ export class FormEditorComponent implements OnInit {
             .map((val) => {
                 return { id: val.id, sortOrder: val.sortOrder }
             });
-        return this.formService.saveTierOrder(list)
+        return this.formService.saveTierOrder(this.curForm.id, list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 this.scheduleTierLineRedraw();
@@ -1244,7 +1244,7 @@ export class FormEditorComponent implements OnInit {
             return { id: val.id, sortOrder: val.sortOrder };
         });
 
-        return this.formService.saveTierActionOrder(tier.id, list)
+        return this.formService.saveTierActionOrder(this.curForm.id, tier.id, list)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((res) => {
                 tier.actions = res;

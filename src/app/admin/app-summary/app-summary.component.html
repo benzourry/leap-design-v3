@@ -48,23 +48,21 @@
             }
 
             @if (platformView && app.reviewStatus === 'pending') {
-                <div class="card border-warning shadow-sm mb-3">
-                    <div class="card-header bg-warning-subtle">Live Review</div>
-                    <div class="card-body">
-                        <label class="form-label" for="reviewReason">Rejection reason</label>
-                        <textarea id="reviewReason" class="form-control mb-2" rows="3"
-                            [(ngModel)]="reviewReason"
-                            placeholder="Required only when rejecting this request"></textarea>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-success btn-sm"
-                                [disabled]="reviewProcessing" (click)="approveReview()">
-                                Approve and Publish
-                            </button>
-                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                [disabled]="reviewProcessing" (click)="rejectReview()">
-                                Reject Request
-                            </button>
-                        </div>
+                <div class="live-review border-top border-warning-subtle pt-3 mb-3">
+                    <div class="fw-semibold mb-2">Live Review</div>
+                    <label class="form-label" for="reviewReason">Rejection reason</label>
+                    <textarea id="reviewReason" class="form-control mb-2" rows="3"
+                        [(ngModel)]="reviewReason"
+                        placeholder="Required only when rejecting this request"></textarea>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-success btn-sm"
+                            [disabled]="reviewProcessing" (click)="approveReview()">
+                            Approve and Publish
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm"
+                            [disabled]="reviewProcessing" (click)="rejectReview()">
+                            Reject Request
+                        </button>
                     </div>
                 </div>
             } @else if (platformView && app.reviewStatus === 'rejected' && app.reviewReason) {
@@ -82,11 +80,13 @@
                 <fa-icon [icon]="['fas','file-export']"></fa-icon>
                 Export Metadata
             </button>
-            <a [routerLink]="['/design', app.id, 'uml']" class="btn btn-sm btn-outline-secondary">
+            <a [routerLink]="platformView ? ['/admin', 'apps', app.id, 'uml'] : ['/design', app.id, 'uml']"
+                class="btn btn-sm btn-outline-secondary">
                 <fa-icon [icon]="['fas','diagram-project']"></fa-icon>
                 UML Diagram
             </a>
-            <a [routerLink]="['../../'+app.id+'/log']" class="btn btn-sm btn-outline-secondary">
+            <a [routerLink]="platformView ? ['/admin', 'apps', app.id, 'log'] : ['/design', app.id, 'log']"
+                class="btn btn-sm btn-outline-secondary">
                 <fa-icon [icon]="['fas','list']"></fa-icon>
                 App Log
             </a>

@@ -5,6 +5,8 @@ import { DatasetService } from '../../../service/dataset.service';
 import { FormService } from '../../../service/form.service';
 import { ScreenService } from '../../../service/screen.service';
 import { AppService } from '../../../service/app.service';
+import { LambdaService } from '../../../service/lambda.service';
+import { MailerService } from '../../../service/mailer.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 
 describe('AssistantExecutorService', () => {
@@ -12,11 +14,14 @@ describe('AssistantExecutorService', () => {
   let datasetService: jasmine.SpyObj<DatasetService>;
   let appService: jasmine.SpyObj<AppService>;
   let screenService: jasmine.SpyObj<ScreenService>;
+  let lambdaService: jasmine.SpyObj<LambdaService>;
+  let mailerService: jasmine.SpyObj<MailerService>;
 
   beforeEach(() => {
     formService = jasmine.createSpyObj<FormService>('FormService', [
       'getItemList', 'saveItemOnly', 'getForm', 'saveSection', 'saveForm', 'saveTab', 'removeTab',
       'saveTier', 'removeTier', 'saveItem', 'removeItem', 'removeSection',
+      'saveTierAction', 'removeTierAction',
     ]);
     formService.getItemList.and.returnValue(of({ content: [
       { id: 19, code: 'reason', label: 'Old label', x: {}, v: {} },
@@ -41,10 +46,18 @@ describe('AssistantExecutorService', () => {
         x: { facet: { add: true }, sticky: false },
       }],
     }));
-    datasetService = jasmine.createSpyObj<DatasetService>('DatasetService', ['getDataset', 'updateDatasetItem', 'removeDatasetItem']);
+    datasetService = jasmine.createSpyObj<DatasetService>('DatasetService', [
+      'getDataset', 'updateDatasetItem', 'removeDatasetItem', 'saveAction', 'removeAction', 'saveDataset',
+    ]);
     datasetService.getDataset.and.returnValue(of({ id: 50, items: [{ id: 51, code: 'request', label: 'Request' }] }));
     datasetService.updateDatasetItem.and.returnValue(of({ id: 52 }));
     datasetService.removeDatasetItem.and.returnValue(of({}));
+    datasetService.saveAction.and.returnValue(of({ id: 53 }));
+    datasetService.removeAction.and.returnValue(of({}));
+    datasetService.saveDataset.and.callFake((_appId, dataset) => of({
+      ...dataset,
+      filters: (dataset.filters ?? []).map((filter, index) => ({ id: filter.id ?? 520 + index, ...filter })),
+    }));
     appService = jasmine.createSpyObj<AppService>('AppService', [
       'getNavisAll', 'addNaviGroup', 'removeNaviGroup', 'addNaviItem', 'removeNaviItem',
     ]);
@@ -53,13 +66,40 @@ describe('AssistantExecutorService', () => {
     appService.addNaviItem.and.returnValue(of({ id: 63 }));
     appService.removeNaviGroup.and.returnValue(of({}));
     appService.removeNaviItem.and.returnValue(of({}));
-    screenService = jasmine.createSpyObj<ScreenService>('ScreenService', ['saveScreen', 'getScreen']);
+    screenService = jasmine.createSpyObj<ScreenService>('ScreenService', [
+      'saveScreen', 'getScreen', 'saveAction', 'removeAction',
+    ]);
     screenService.saveScreen.and.returnValue(of({ id: 90 }));
     screenService.getScreen.and.returnValue(of({
       id: 90,
       title: 'Review',
       data: { content: '<p>Old</p>', comps: [{ type: 'dataset', screenId: 50 }] },
+      actions: [{ id: 91, label: 'Open', nextType: 'form', next: 7, x: {} }],
     }));
+    screenService.saveAction.and.returnValue(of({ id: 92 }));
+    screenService.removeAction.and.returnValue(of({}));
+    formService.saveTierAction.and.returnValue(of({ id: 42 }));
+    formService.removeTierAction.and.returnValue(of({}));
+    lambdaService = jasmine.createSpyObj<LambdaService>('LambdaService', [
+      'save', 'getLambda', 'deleteLambda', 'isCodeTaken',
+    ]);
+    lambdaService.isCodeTaken.and.returnValue(of(false));
+    lambdaService.getLambda.and.returnValue(of({
+      id: 70, appId: 2, name: 'Notify', email: 'creator@example.com',
+      data: { f: 'print("old")' }, binds: [{ id: 701, name: 'Mailer', type: '_mail' }],
+    }));
+    lambdaService.save.and.callFake((_email, _appId, lambda) => of({
+      ...lambda,
+      id: lambda.id ?? 70,
+      binds: lambda.binds?.map((binding, index) => ({ id: binding.id ?? 702 + index, ...binding })),
+    }));
+    lambdaService.deleteLambda.and.returnValue(of({}));
+    mailerService = jasmine.createSpyObj<MailerService>('MailerService', ['save', 'getMailer', 'deleteMailer']);
+    mailerService.getMailer.and.returnValue(of({
+      id: 80, appId: 2, name: 'Approved', subject: 'Old', content: '<p>Old</p>', enabled: 1,
+    }));
+    mailerService.save.and.callFake((_email, _appId, template) => of({ ...template, id: template.id ?? 80 }));
+    mailerService.deleteMailer.and.returnValue(of({}));
 
     TestBed.configureTestingModule({
       providers: [
@@ -69,6 +109,8 @@ describe('AssistantExecutorService', () => {
         { provide: DashboardService, useValue: {} },
         { provide: ScreenService, useValue: screenService },
         { provide: AppService, useValue: appService },
+        { provide: LambdaService, useValue: lambdaService },
+        { provide: MailerService, useValue: mailerService },
       ],
     });
   });
@@ -385,6 +427,147 @@ graph TD
       data: {
         comps: [{ type: 'dataset', title: 'Requests', appId: 2, screenId: 50 }],
       },
+    }));
+  });
+
+  it('adds and updates child actions without replacing their parents', async () => {
+    formService.getForm.and.returnValue(of({
+      id: 7,
+      appId: 2,
+      tiers: [{ id: 40, name: 'Manager', actions: {} }],
+    }));
+    datasetService.getDataset.and.returnValue(of({
+      id: 50, appId: 2, items: [], actions: [{ id: 51, label: 'Old', action: 'view', x: {} }],
+    }));
+
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [
+      {
+        id: 'tier_action',
+        kind: 'add_tier_action',
+        payload: { formRef: '7', tierRef: '40', label: 'Approve', code: 'approve', action: 'nextTier' },
+      },
+      {
+        id: 'dataset_action',
+        kind: 'update_dataset_action',
+        payload: { datasetRef: '50', actionRef: '51', patch: { label: 'Open', x: { confirm: true } } },
+      },
+      {
+        id: 'screen_action',
+        kind: 'update_screen_action',
+        payload: { screenRef: '90', actionRef: '91', patch: { label: 'Review' } },
+      },
+    ], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    expect(formService.saveTierAction).toHaveBeenCalledWith(7, 40, jasmine.objectContaining({
+      code: 'approve', label: 'Approve', action: 'nextTier',
+    }));
+    expect(datasetService.saveAction).toHaveBeenCalledWith(50, jasmine.objectContaining({
+      id: 51, label: 'Open', x: { confirm: true },
+    }));
+    expect(screenService.saveAction).toHaveBeenCalledWith(90, jasmine.objectContaining({
+      id: 91, label: 'Review',
+    }));
+  });
+
+  it('persists dataset filters and resolves their form reference', async () => {
+    datasetService.getDataset.and.returnValue(of({
+      id: 50, appId: 2, items: [], actions: [], filters: [],
+    }));
+
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [{
+      id: 'amount_filter',
+      kind: 'add_dataset_filter',
+      payload: {
+        datasetRef: '50', label: 'Amount', code: 'amount', formIdRef: '7',
+        root: 'data', prefix: '$', type: 'number',
+      },
+    }], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    expect(datasetService.saveDataset).toHaveBeenCalledWith(2, jasmine.objectContaining({
+      id: 50,
+      filters: [jasmine.objectContaining({
+        code: 'amount', formId: 7, root: 'data', prefix: '$',
+      })],
+    }));
+  });
+
+  it('authors lambda code in data.f and mutates bindings through a full save', async () => {
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [
+      {
+        id: 'author_lambda',
+        kind: 'update_lambda',
+        payload: { lambdaRef: '70', patch: { source: 'print("new");', publicAccess: true } },
+      },
+      {
+        id: 'bind_dataset',
+        kind: 'add_lambda_binding',
+        payload: {
+          lambdaRef: '70',
+          binding: { name: 'Requests', type: 'dataset', sourceRef: '50' },
+        },
+      },
+    ], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    expect(lambdaService.save.calls.argsFor(0)[2]).toEqual(jasmine.objectContaining({
+      publicAccess: true,
+      data: { f: 'print("new");' },
+    }));
+    expect(lambdaService.save.calls.argsFor(1)[2]).toEqual(jasmine.objectContaining({
+      binds: jasmine.arrayContaining([
+        jasmine.objectContaining({ name: 'Requests', type: 'dataset', srcId: 50 }),
+      ]),
+    }));
+  });
+
+  it('checks generated lambda code and adds every missing required binding', async () => {
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [{
+      id: 'send_and_query',
+      kind: 'update_lambda',
+      payload: {
+        lambdaRef: '70',
+        patch: {
+          source: `
+const rows = dataset_50.forEach(e => print(e.getId()));
+_mail.sendWithTemplate(80, rows, _this);
+const result = _entry.dataset(50, {}, _user.email, _this);
+`,
+        },
+      },
+    }], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    const saved = lambdaService.save.calls.mostRecent().args[2];
+    expect(saved.binds).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({ type: 'dataset', srcId: 50 }),
+      jasmine.objectContaining({ type: '_mail' }),
+      jasmine.objectContaining({ type: '_entry' }),
+      jasmine.objectContaining({ type: '_user' }),
+    ]));
+  });
+
+  it('updates email templates and resolves mailer assignments on forms', async () => {
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [
+      {
+        id: 'mailer',
+        kind: 'update_email_template',
+        payload: { emailTemplateRef: '80', patch: { subject: 'Request approved', content: '<p>Approved</p>' } },
+      },
+      {
+        id: 'assign_mailer',
+        kind: 'update_form',
+        payload: { formRef: '7', patch: { addMailerRefs: ['80'] } },
+      },
+    ], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    expect(mailerService.save).toHaveBeenCalledWith('creator@example.com', 2, jasmine.objectContaining({
+      id: 80, subject: 'Request approved',
+    }));
+    expect(formService.saveForm).toHaveBeenCalledWith(2, jasmine.objectContaining({
+      addMailer: [80],
     }));
   });
 });

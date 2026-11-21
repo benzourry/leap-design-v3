@@ -62,6 +62,8 @@ export class EditorComponent implements OnInit {
     activeFormId = signal<number | null>(null);
     activeDatasetId = signal<number | null>(null);
     activeScreenId = signal<number | null>(null);
+    activeLambdaId = signal<number | null>(null);
+    activeEmailTemplateId = signal<number | null>(null);
 
     private modalService = inject(NgbModal);
     private userService = inject(UserService);
@@ -110,11 +112,15 @@ export class EditorComponent implements OnInit {
 
     private updateActiveEntityIds() {
         const path = this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '');
-        const entityId = Number(this.route.snapshot.queryParamMap.get('id'));
+        const rawId = this.router.parseUrl(this.router.url).queryParams['id']
+            ?? this.route.snapshot.queryParamMap.get('id');
+        const entityId = Number(rawId);
         const validId = Number.isInteger(entityId) && entityId > 0 ? entityId : null;
         this.activeFormId.set(path.endsWith('/ui/form') ? validId : null);
         this.activeDatasetId.set(path.endsWith('/ui/dataset') ? validId : null);
         this.activeScreenId.set(path.endsWith('/ui/screen') ? validId : null);
+        this.activeLambdaId.set(path.endsWith('/lambda') ? validId : null);
+        this.activeEmailTemplateId.set(path.endsWith('/mailer') ? validId : null);
     }
 
     public model: any;
@@ -200,7 +206,8 @@ export class EditorComponent implements OnInit {
     }
 
     onAssistantChanged(change: AssistantChanged) {
-        const total = change.forms + change.datasets + change.dashboards + change.screens;
+        const total = change.forms + change.datasets + change.dashboards + change.screens
+            + change.lambdas + change.emailTemplates;
         if (total > 0) {
             this.toastService.show('Assistant applied ' + total + ' change(s)', { classname: 'bg-success text-light' });
         }
