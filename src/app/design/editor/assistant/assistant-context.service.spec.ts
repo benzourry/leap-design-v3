@@ -304,6 +304,19 @@ describe('AssistantContextService', () => {
     }));
   });
 
+  it('includes full data for the open dashboard', async () => {
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build({ id: 1 }, { dashboardId: 9 })
+    );
+
+    expect(context.selectedDashboardId).toBe(9);
+    expect(dashboards.getDashboard).toHaveBeenCalledWith(9);
+    expect(context.entities.dashboards[0]).toEqual(jasmine.objectContaining({
+      id: 9,
+      fullData: { id: 9, title: 'Overview', charts: [{ id: 91 }] },
+    }));
+  });
+
   it('includes selected lambda source, bindings, and email template content', async () => {
     const context = await firstValueFrom(
       TestBed.inject(AssistantContextService).build(

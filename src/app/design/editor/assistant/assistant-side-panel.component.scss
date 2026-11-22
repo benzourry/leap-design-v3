@@ -1,0 +1,203 @@
+:host {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  height: 100%;
+}
+
+.assistant-side-panel {
+  position: relative;
+  width: 2.75rem;
+  overflow: hidden;
+  transition: width 180ms ease;
+}
+
+.assistant-side-panel.is-expanded {
+  width: 15rem;
+  overflow: visible;
+}
+
+.assistant-side-panel.is-resizing {
+  cursor: ew-resize;
+  transition: none;
+  user-select: none;
+}
+
+.assistant-side-panel-header {
+  min-height: 3.25rem;
+}
+
+.assistant-side-panel-tabs {
+  min-width: 0;
+}
+
+.assistant-side-panel-tab {
+  min-width: 0;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.assistant-side-panel-tab:hover {
+  color: var(--bs-body-color);
+  background: color-mix(in srgb, var(--bs-secondary-bg) 65%, transparent);
+}
+
+.assistant-side-panel-tab.is-active {
+  color: var(--bs-primary-text-emphasis);
+  background: var(--bs-body-bg);
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.assistant-side-panel-tab:focus-visible,
+.assistant-side-panel-close:focus-visible,
+.assistant-side-panel-rail-button:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}
+
+.assistant-side-panel-close {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  color: var(--bs-secondary-color);
+  background: transparent;
+}
+
+.assistant-side-panel-close:hover {
+  color: var(--bs-body-color);
+  background: var(--bs-secondary-bg);
+}
+
+.assistant-side-panel-resize-handle {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  bottom: 0;
+  left: -0.25rem;
+  width: 0.5rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.assistant-side-panel-resize-handle:hover,
+.assistant-side-panel.is-resizing .assistant-side-panel-resize-handle {
+  background: rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.assistant-side-panel-content {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.assistant-side-panel-content.is-collapsed {
+  display: none;
+}
+
+.assistant-side-panel-view {
+  display: none;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.assistant-side-panel-view.is-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.palette-view {
+  overflow: hidden;
+  background: var(--bs-tertiary-bg);
+}
+
+.palette-scroll-container {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.assistant-side-panel-rail {
+  width: 2.75rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bs-tertiary-bg);
+}
+
+.assistant-side-panel-rail-button {
+  width: 2.75rem;
+  min-height: 8.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 0.75rem 0.5rem;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.assistant-side-panel-rail-button:hover {
+  color: var(--bs-body-color);
+  background: var(--bs-secondary-bg);
+}
+
+.assistant-side-panel-rail-button span {
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 767.98px) {
+  :host {
+    display: contents;
+  }
+
+  .assistant-side-panel.is-expanded {
+    position: fixed;
+    z-index: 1045;
+    right: 0;
+    top: 3rem;
+    bottom: 0;
+    height: calc(100vh - 3rem);
+    height: calc(100dvh - 3rem);
+    box-shadow: var(--bs-box-shadow-lg);
+    overscroll-behavior: contain;
+  }
+
+  .assistant-side-panel:not(.is-expanded) {
+    display: none !important;
+  }
+
+  .assistant-side-panel.is-expanded {
+    width: 100vw !important;
+    border-left: 0;
+  }
+
+  .assistant-side-panel-resize-handle {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-side-panel {
+    transition: none;
+  }
+}

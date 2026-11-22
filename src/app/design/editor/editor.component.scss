@@ -1,3 +1,8 @@
+.editor-topbar {
+  height: 48px;
+  z-index: 1050;
+}
+
 .sb {
   height: calc(100vh - 48px);
   left: 0px;
@@ -47,6 +52,27 @@
   overflow: auto;
 }
 
+.editor-workspace {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 767.98px) {
+  .editor-shell {
+    padding-top: 48px;
+  }
+
+  .editor-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    flex-shrink: 0;
+  }
+}
+
 /* ==========================================================================
    DESKTOP STYLES
    ========================================================================== */
@@ -80,6 +106,7 @@
 
   .content {
     flex: 1;
+    min-width: 0;
   }
 
   .logo {

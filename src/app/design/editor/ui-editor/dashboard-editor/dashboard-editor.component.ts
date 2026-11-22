@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 // import { LookupService } from '../../../../service/lookup.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
@@ -26,6 +26,7 @@ import { LookupService } from '../../../../run/_service/lookup.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { DatasetService } from '../../../../service/dataset.service';
 import { CHART_AGG_LIST, CHART_HEIGHT_LIST, CHART_TYPE_LIST, DASHBOARD_SIZE_LIST } from '../../assistant/assistant-knowledge';
+import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
 
 @Component({
   selector: 'app-dashboard-editor',
@@ -38,6 +39,8 @@ import { CHART_AGG_LIST, CHART_HEIGHT_LIST, CHART_TYPE_LIST, DASHBOARD_SIZE_LIST
     EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
 })
 export class DashboardEditorComponent implements OnInit {
+  readonly sameDropList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>
+    drag.dropContainer === drop;
 
   private formService = inject(FormService);
   private lookupService = inject(LookupService);
@@ -54,8 +57,11 @@ export class DashboardEditorComponent implements OnInit {
   private commService = inject(CommService);
   private location = inject(PlatformLocation);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private assistantContext = inject(AssistantLocalContextService).createRegistration();
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.assistantContext.clear());
     this.location.onPopState(() => {
         if (document.querySelector('.cm-fullscreen-mode')) {
             return;
@@ -192,6 +198,7 @@ export class DashboardEditorComponent implements OnInit {
     this.dashboardService.getDashboard(dashboardId)
       .subscribe(res => {
         this.curDashboard = res;
+        this.assistantContext.set({ type: 'dashboard', id: Number(res.id), label: res.title });
         this.cdr.detectChanges(); // ✅ Good: after async update
       })
   }

@@ -1,0 +1,84 @@
+<aside id="assistant-side-panel" class="assistant-side-panel d-flex flex-column h-100 bg-body text-body border-start"
+  [class.is-expanded]="panel.expanded()"
+  [class.is-resizing]="resizing()" [style.width.px]="panel.expanded() ? panelWidth() : null"
+  aria-label="Editor tools">
+  @if (panel.expanded()) {
+    <button type="button" class="assistant-side-panel-resize-handle"
+      role="separator" aria-label="Resize right sidebar" aria-orientation="vertical"
+      title="Drag to resize. Double-click to reset."
+      (pointerdown)="startResize($event)" (dblclick)="resetWidth($event)"></button>
+    <div class="assistant-side-panel-header d-flex align-items-center px-1 border-bottom bg-body">
+      @if (tabCount() > 1) {
+        <div class="assistant-side-panel-tabs d-flex flex-grow-1 gap-1 p-1 bg-body-tertiary rounded-3"
+          role="tablist" aria-label="Right panel views">
+          @if (panel.palette(); as palette) {
+            <button type="button" id="palette-tab" class="assistant-side-panel-tab btn btn-sm flex-fill border-0 p-2 rounded-2"
+              [class.is-active]="panel.activeTab() === 'palette'" role="tab" aria-controls="palette-panel"
+              [attr.aria-selected]="panel.activeTab() === 'palette'" (click)="panel.open('palette')">
+              <span>Palette</span>
+            </button>
+          }
+          @if (assistantAvailable()) {
+            <button type="button" id="assistant-tab" class="assistant-side-panel-tab btn btn-sm flex-fill border-0 p-2 rounded-2"
+              [class.is-active]="panel.activeTab() === 'assistant'" role="tab" aria-controls="assistant-panel"
+              [attr.aria-selected]="panel.activeTab() === 'assistant'" (click)="panel.open('assistant')">
+              <span>Creator Assistant</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <strong class="small flex-grow-1 px-2">
+          {{ panel.palette() ? 'Palette' : 'Creator Assistant' }}
+        </strong>
+      }
+      <button type="button" class="assistant-side-panel-close btn btn-sm border-0 rounded-2" aria-label="Collapse right panel"
+        title="Collapse panel" (click)="panel.close()">
+        <fa-icon [icon]="['fas', 'angle-right']" [fixedWidth]="true"></fa-icon>
+      </button>
+    </div>
+
+  } @else {
+    <div class="assistant-side-panel-rail">
+      @if (panel.palette()) {
+        <button type="button" class="assistant-side-panel-rail-button" aria-label="Open palette"
+          title="Open palette" (click)="panel.open('palette')">
+          <fa-icon [icon]="['fas', 'layer-group']" [fixedWidth]="true"></fa-icon>
+          <span>Palette</span>
+        </button>
+      }
+      @if (assistantAvailable()) {
+        <button type="button" class="assistant-side-panel-rail-button" aria-label="Open AI assistant"
+          title="Open AI assistant" (click)="panel.open('assistant')">
+          <fa-icon [icon]="['fas', 'bolt']" [fixedWidth]="true"></fa-icon>
+          <span>Creator Assistant</span>
+        </button>
+      }
+    </div>
+  }
+
+  <div class="assistant-side-panel-content flex-grow-1" [class.is-collapsed]="!panel.expanded()">
+    @if (panel.palette(); as palette) {
+      <div id="palette-panel" class="assistant-side-panel-view palette-view"
+        [class.is-active]="panel.activeTab() === 'palette'" role="tabpanel" aria-labelledby="palette-tab"
+        [attr.aria-hidden]="!panel.expanded() || panel.activeTab() !== 'palette'">
+        <div class="palette-scroll-container">
+          <ng-container [ngTemplateOutlet]="palette.template"></ng-container>
+        </div>
+      </div>
+    }
+    @if (assistantAvailable()) {
+      <div id="assistant-panel" class="assistant-side-panel-view assistant-view"
+        [class.is-active]="panel.activeTab() === 'assistant'" role="tabpanel" aria-labelledby="assistant-tab"
+        [attr.aria-hidden]="!panel.expanded() || panel.activeTab() !== 'assistant'">
+        @defer (when panel.expanded() && panel.activeTab() === 'assistant') {
+          <app-assistant-drawer
+            [appId]="appId()" [app]="app()" [email]="email()"
+            [localContext]="localContext.context()"
+            (changed)="changed.emit($event)"></app-assistant-drawer>
+        } @placeholder {
+          <div class="flex-grow-1"></div>
+        }
+      </div>
+    }
+  </div>
+</aside>

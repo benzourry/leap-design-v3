@@ -26,7 +26,7 @@ import { ToastService } from '../../../../_shared/service/toast-service';
 import { KeyValue, PlatformLocation, NgClass, NgStyle, DatePipe, KeyValuePipe, JsonPipe, SlicePipe } from '@angular/common';
 import { UserService } from '../../../../_shared/service/user.service';
 import { AppService } from '../../../../service/app.service';
-import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle, CdkDragPreview } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropList, CdkDrag, CdkDragHandle, CdkDragPreview } from '@angular/cdk/drag-drop';
 import { DatasetService } from '../../../../service/dataset.service';
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
@@ -65,6 +65,10 @@ import { AsListPipe } from '../../../../_shared/pipe/as-list.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { HttpClient } from '@angular/common/http';
 import { MetaTrailService } from '../../../../service/metatrail.service';
+import { AssistantPaletteDirective } from '../../assistant/assistant-palette.directive';
+import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
+import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
+import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
 
 @Component({
     selector: 'app-form-editor',
@@ -74,12 +78,12 @@ import { MetaTrailService } from '../../../../service/metatrail.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter },
     { provide: NgbTimeAdapter, useClass: NgbUnixTimestampTimeAdapter }],
-    imports: [CdkDropListGroup, FaIconComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
+    imports: [FaIconComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
         FormsModule, RouterLink, NgClass, NgStyle, CdkDropList, CdkDrag, FieldViewComponent, FieldEditComponent, CdkDragHandle,
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
         EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, SlicePipe,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
-        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe,
+        KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe, AssistantPaletteDirective,
     MetaTrailViewerComponent]
 })
 export class FormEditorComponent implements OnInit {
@@ -164,6 +168,13 @@ export class FormEditorComponent implements OnInit {
         this.palettes = palettes;
     }
 
+    get paletteGroups() {
+        return groupAssistantPalette(this.palettes, '', true);
+    }
+    get paletteItems() {
+        return flattenAssistantPalette(this.paletteGroups);
+    }
+
     superItems = [];
     buildSuper() {
         this.superItems = Object.values(this.superForm?.items).map((i: any) => {
@@ -203,6 +214,9 @@ export class FormEditorComponent implements OnInit {
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
     private destroyRef = inject(DestroyRef);
+    private assistantContext = inject(AssistantLocalContextService).createRegistration();
+    readonly assistantPanel = inject(AssistantSidePanelService);
+    readonly paletteDragDelay = ASSISTANT_PALETTE_DRAG_DELAY;
 
     // Business services
     private userService = inject(UserService);
@@ -244,6 +258,7 @@ export class FormEditorComponent implements OnInit {
             if (this.curFormId) {
                 delete (window as any)['_this_form_' + this.curFormId + '_design'];
             }
+            this.assistantContext.clear();
         });
 
         this.location.onPopState(() => {
@@ -320,9 +335,6 @@ export class FormEditorComponent implements OnInit {
                 }
             });
 
-        if (window.matchMedia("(max-width: 768px)").matches) {
-            this.showPalette = false;
-        }
     }
 
     canEditForm(): boolean {
@@ -538,6 +550,7 @@ export class FormEditorComponent implements OnInit {
                 this.cleanBackendForm = JSON.parse(JSON.stringify(res));
                 
                 this.curForm = res;
+                this.assistantContext.set({ type: 'form', id: Number(res.id), label: res.title });
                 this.buildGroupedItems(); 
                 this.cdr.detectChanges(); 
 

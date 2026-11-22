@@ -29,8 +29,8 @@
   }
 }
 
-/* Mobile Screens (< 640px) */
-@media screen and (max-width: 639.98px) {
+/* Mobile Screens (< 768px) */
+@media screen and (max-width: 767.98px) {
   ::ng-deep [sidebar] {
     max-width: none !important;
   }
@@ -40,8 +40,8 @@
   }
 }
 
-/* Desktop Screens (>= 640px) */
-@media screen and (min-width: 640px) {
+/* Desktop Screens (>= 768px) */
+@media screen and (min-width: 768px) {
   :host {
     display: flex;
   }

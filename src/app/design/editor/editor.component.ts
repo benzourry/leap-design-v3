@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../_shared/service/user.service';
-import { ActivatedRoute, NavigationEnd, Params, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AppService } from '../../service/app.service';
 import { PlatformLocation, NgClass } from '@angular/common';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
@@ -16,16 +16,19 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 import { ToastService } from '../../_shared/service/toast-service';
 import { Title } from '@angular/platform-browser';
 import { baseApi, domainBase } from '../../_shared/constant.service';
-import { debounceTime, distinctUntilChanged, filter, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
 import Fuse from 'fuse.js';
 import { atobUTF } from '../../_shared/utils';
 import { LoadingService } from '../../_shared/service/loading.service';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ThemeToggleComponent } from '../../run/_component/theme-toggle.component';
-import { AssistantDrawerComponent } from './assistant/assistant-drawer.component';
+import { AssistantSidePanelComponent } from './assistant/assistant-side-panel.component';
 import { AssistantStatusService } from './assistant/assistant-status.service';
 import { AssistantChanged } from './assistant/assistant.types';
+import { AssistantSidePanelService } from './assistant/assistant-side-panel.service';
+import { CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { ViewportService } from '../../_shared/service/viewport.service';
 
 @Component({
     selector: 'app-editor',
@@ -39,7 +42,7 @@ import { AssistantChanged } from './assistant/assistant.types';
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, FormsModule, NgbTypeahead,
-        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantDrawerComponent]
+        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantSidePanelComponent, CdkDropListGroup]
 })
 export class EditorComponent implements OnInit {
 
@@ -56,14 +59,8 @@ export class EditorComponent implements OnInit {
     editAppData = signal<any>(null);
 
     readonly assistantStatus = inject(AssistantStatusService);
-    assistantOpen = signal<boolean>(false);
-    private assistantHistoryEntry = false;
-    private ignoreAssistantHistoryPop = false;
-    activeFormId = signal<number | null>(null);
-    activeDatasetId = signal<number | null>(null);
-    activeScreenId = signal<number | null>(null);
-    activeLambdaId = signal<number | null>(null);
-    activeEmailTemplateId = signal<number | null>(null);
+    readonly assistantPanel = inject(AssistantSidePanelService);
+    readonly viewport = inject(ViewportService);
 
     private modalService = inject(NgbModal);
     private userService = inject(UserService);
@@ -79,15 +76,6 @@ export class EditorComponent implements OnInit {
 
     constructor() {
         this.location.onPopState(() => {
-            if (this.ignoreAssistantHistoryPop) {
-                this.ignoreAssistantHistoryPop = false;
-                return;
-            }
-            if (this.assistantOpen()) {
-                this.assistantOpen.set(false);
-                this.assistantHistoryEntry = false;
-                return;
-            }
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
             }
@@ -97,30 +85,6 @@ export class EditorComponent implements OnInit {
             .pipe(takeUntilDestroyed())
             .subscribe(online => this.offline.set(!online));
 
-        this.route.queryParams
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(() => this.updateActiveEntityIds());
-
-        this.router.events
-            .pipe(
-                filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-                takeUntilDestroyed(this.destroyRef)
-            )
-            .subscribe(() => this.updateActiveEntityIds());
-        this.updateActiveEntityIds();
-    }
-
-    private updateActiveEntityIds() {
-        const path = this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '');
-        const rawId = this.router.parseUrl(this.router.url).queryParams['id']
-            ?? this.route.snapshot.queryParamMap.get('id');
-        const entityId = Number(rawId);
-        const validId = Number.isInteger(entityId) && entityId > 0 ? entityId : null;
-        this.activeFormId.set(path.endsWith('/ui/form') ? validId : null);
-        this.activeDatasetId.set(path.endsWith('/ui/dataset') ? validId : null);
-        this.activeScreenId.set(path.endsWith('/ui/screen') ? validId : null);
-        this.activeLambdaId.set(path.endsWith('/lambda') ? validId : null);
-        this.activeEmailTemplateId.set(path.endsWith('/mailer') ? validId : null);
     }
 
     public model: any;
@@ -214,24 +178,13 @@ export class EditorComponent implements OnInit {
     }
 
     openAssistant() {
-        if (this.assistantOpen()) return;
-        history.pushState(null, '', window.location.href);
-        this.assistantHistoryEntry = true;
-        this.assistantOpen.set(true);
-    }
-
-    onAssistantOpenChange(open: boolean) {
-        if (open) {
-            this.openAssistant();
+        const isMobile = this.viewport.isMobile();
+        const tab = isMobile && this.assistantPanel.palette() ? 'palette' : 'assistant';
+        if (isMobile) {
+            this.assistantPanel.toggle(tab);
             return;
         }
-        if (!this.assistantOpen()) return;
-        this.assistantOpen.set(false);
-        if (this.assistantHistoryEntry) {
-            this.assistantHistoryEntry = false;
-            this.ignoreAssistantHistoryPop = true;
-            history.back();
-        }
+        this.assistantPanel.open(tab);
     }
 
     popShare(id: any) {

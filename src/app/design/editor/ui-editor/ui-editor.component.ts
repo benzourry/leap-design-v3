@@ -89,6 +89,8 @@ export class UiEditorComponent implements OnInit, OnDestroy {
     }
 
     otherAppList: any[] = [];
+    readonly sameReorderList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>
+        drag.dropContainer === drop;
     currentPath: string = "form";
     excelImportIsNext: boolean = false;
 

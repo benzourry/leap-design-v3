@@ -30,6 +30,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../service/metatrail.service';
 import { CommService } from '../../../_shared/service/comm.service';
+import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -73,9 +74,11 @@ export class LambdaEditorComponent implements OnInit {
   private metaTrailService = inject(MetaTrailService)
   private commService = inject(CommService);
   private destroyRef = inject(DestroyRef); 
+  private assistantContext = inject(AssistantLocalContextService).createRegistration();
   cdr = inject(ChangeDetectorRef);
 
   constructor() {
+        this.destroyRef.onDestroy(() => this.assistantContext.clear());
         this.commService.changeEmitted$
             .pipe(takeUntilDestroyed())
             .subscribe(data => {
@@ -325,6 +328,7 @@ export class LambdaEditorComponent implements OnInit {
       .subscribe(lambda => {
         this.showSecret = false;
         this.lambda = lambda;
+        this.assistantContext.set({ type: 'lambda', id: Number(lambda.id), label: lambda.name });
         this.initialCode = lambda.code;
         this.extraAutoComplete = [];
         this.populateAutoComplete();

@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, model, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RouterLink } from '@angular/router';
@@ -16,6 +16,7 @@ import {
 import { AssistantProfile, AssistantSettingsService } from './assistant-settings.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 import { AssistantPlanCardComponent } from './assistant-plan-card.component';
+import { AssistantLocalContext } from './assistant-local-context.service';
 import {
   getAssistantActionBlockReason,
   getAssistantActionDescendants,
@@ -57,13 +58,8 @@ export class AssistantDrawerComponent implements OnInit {
   appId = input.required<number>();
   app = input<{ id: number; title?: string; description?: string } | null>(null);
   email = input.required<string>();
-  currentFormId = input<number | null>(null);
-  currentDatasetId = input<number | null>(null);
-  currentScreenId = input<number | null>(null);
-  currentLambdaId = input<number | null>(null);
-  currentEmailTemplateId = input<number | null>(null);
+  localContext = input<AssistantLocalContext>({ type: 'app' });
 
-  open = model(false);
   changed = output<AssistantChanged>();
 
   readonly prompt = signal('');
@@ -98,6 +94,32 @@ export class AssistantDrawerComponent implements OnInit {
   readonly included = signal<string[]>([]);
   readonly applying = signal(false);
   readonly result = signal<AssistantApplyResult | null>(null);
+
+  readonly currentFormId = computed(() => {
+    const context = this.localContext();
+    return context.type === 'form' ? context.id : null;
+  });
+  readonly contextDescription = computed(() => {
+    const context = this.localContext();
+    switch (context.type) {
+      case 'form':
+        return `Using the open form${context.label ? ` "${context.label}"` : ''}.`;
+      case 'dataset':
+        return `Using the open dataset${context.label ? ` "${context.label}"` : ''}.`;
+      case 'dashboard':
+        return `Using the open dashboard${context.label ? ` "${context.label}"` : ''}.`;
+      case 'screen':
+        return `Using the open screen${context.label ? ` "${context.label}"` : ''}.`;
+      case 'navigation':
+        return 'Using the navigation currently open in the editor.';
+      case 'lambda':
+        return `Using the open Lambda${context.label ? ` "${context.label}"` : ''}, including its source and bindings.`;
+      case 'email-template':
+        return `Using the open email template${context.label ? ` "${context.label}"` : ''}.`;
+      default:
+        return 'Using the current app context.';
+    }
+  });
 
   readonly actions = computed(() => this.plan()?.actions ?? []);
   readonly warnings = computed(() => (this.plan()?.warnings ?? []).map(friendlyAssistantWarning));
@@ -138,8 +160,20 @@ export class AssistantDrawerComponent implements OnInit {
       && !this.result();
   });
 
-  readonly failedCount = computed(() => this.result()?.failed ?? 0);
   readonly doneCount = computed(() => this.results().filter((r) => r.status === 'done').length);
+  private lastAppId: number | null = null;
+
+  constructor() {
+    effect(() => {
+      const appId = this.appId();
+      if (this.lastAppId !== null && this.lastAppId !== appId) {
+        this.reset();
+        this.loading.set(false);
+        this.applying.set(false);
+      }
+      this.lastAppId = appId;
+    });
+  }
 
   ngOnInit() {
     this.settingsService.list(this.email())
@@ -324,6 +358,7 @@ export class AssistantDrawerComponent implements OnInit {
 
   async send() {
     if (!this.canSend()) return;
+    const requestAppId = this.appId();
     const question = this.prompt().trim();
     const app = this.app() ?? { id: this.appId() };
     const settings = this.settings();
@@ -342,10 +377,12 @@ export class AssistantDrawerComponent implements OnInit {
     try {
       attachments = await Promise.all(this.attachments().map(readAttachment));
     } catch (e) {
+      if (this.appId() !== requestAppId) return;
       this.loading.set(false);
       this.error.set(e instanceof Error ? e.message : 'Could not read the selected attachment.');
       return;
     }
+    if (this.appId() !== requestAppId) return;
 
     this.prompt.set('');
     const attachedFiles = this.attachments();
@@ -374,11 +411,12 @@ export class AssistantDrawerComponent implements OnInit {
 
     this.contextService
       .build({ id: app.id, title: app.title, description: app.description }, {
-        formId: this.currentFormId() ?? undefined,
-        datasetId: this.currentDatasetId() ?? undefined,
-        screenId: this.currentScreenId() ?? undefined,
-        lambdaId: this.currentLambdaId() ?? undefined,
-        emailTemplateId: this.currentEmailTemplateId() ?? undefined,
+        formId: localId(this.localContext(), 'form'),
+        datasetId: localId(this.localContext(), 'dataset'),
+        dashboardId: localId(this.localContext(), 'dashboard'),
+        screenId: localId(this.localContext(), 'screen'),
+        lambdaId: localId(this.localContext(), 'lambda'),
+        emailTemplateId: localId(this.localContext(), 'email-template'),
         includedFormIds: includedEntities
           .filter((entity) => entity.type === 'form')
           .map((entity) => entity.id),
@@ -386,8 +424,9 @@ export class AssistantDrawerComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (context) => {
+          if (this.appId() !== requestAppId) return;
           this.assistant
-            .planStream(this.appId(), {
+            .planStream(requestAppId, {
               prompt: question,
               assistantId: settings.id,
               history: historyWindow.messages,
@@ -396,12 +435,14 @@ export class AssistantDrawerComponent implements OnInit {
             })
             .pipe(
               takeUntilDestroyed(this.destroyRef),
-              finalize(() => this.loading.set(false))
+              finalize(() => {
+                if (this.appId() === requestAppId) this.loading.set(false);
+              })
             )
             .subscribe((event) => {
+              if (this.appId() !== requestAppId) return;
               if (event.type === 'delta') {
                 this.prose.set(compileTpl('<x-markdown>' + event.text.trim() + '</x-markdown>', {}, 'ai-assistant'));
-                // this.prose.set(event.text.trim());
                 return;
               }
               if (event.type === 'error') {
@@ -412,28 +453,12 @@ export class AssistantDrawerComponent implements OnInit {
             });
         },
         error: (e) => {
+          if (this.appId() !== requestAppId) return;
           this.loading.set(false);
           this.error.set(e instanceof Error ? e.message : 'Could not read the app structure. Try again.');
         },
       });
   }
-
-  // private acceptPlan(plan: AssistantPlanResponse) {
-  //   this.prose.set(plan.message || this.prose());
-  //   this.plan.set(plan);
-  //   this.included.set(plan.actions.filter((a) => !a.destructive && !a.kind.startsWith('remove_')).map((a) => a.id));
-    
-  //   this.history.set([
-  //     ...this.history(),
-  //     { role: 'assistant', content: compileTpl('<x-markdown>' + plan.message.trim() + '</x-markdown>', {}, 'ai-assistant') || `${plan.actions.length} step(s) proposed.` },
-  //   ]);
-  //   if (!plan.actions.length) {
-  //     const warnings = plan.warnings ?? [];
-  //     this.error.set(warnings.length
-  //       ? `The assistant proposed no executable steps. ${warnings.join(' ')}`
-  //       : 'The assistant did not propose any change it can apply. Try describing the screen or form in more detail.');
-  //   }
-  // }
 
   private acceptPlan(plan: AssistantPlanResponse) {
     this.prose.set(plan.message || this.prose());
@@ -450,11 +475,6 @@ export class AssistantDrawerComponent implements OnInit {
       { role: 'assistant', content: assistantMessage },
     ]);
 
-    // Only show an error if there are actual warnings from the backend, 
-    // rather than defaulting to an error just because actions are empty.
-    // if (!plan.actions.length && plan.warnings?.length) {
-    //   this.error.set(plan.warnings.join(' '));
-    // }
   }
 
   toggle(id: string) {
@@ -472,18 +492,20 @@ export class AssistantDrawerComponent implements OnInit {
   async apply() {
     const plan = this.plan();
     if (!plan || !this.canApply()) return;
+    const requestAppId = this.appId();
 
     this.applying.set(true);
     this.error.set('');
     try {
       const selected = this.included();
-      const outcome = await this.executor.apply(this.appId(), plan.actions, {
+      const outcome = await this.executor.apply(requestAppId, plan.actions, {
         includeIds: selected,
         // Ticking a destructive step IS the confirmation.
         confirmedIds: selected,
         requiresResponse: this.needsUserInput(),
         email: this.email(),
       });
+      if (this.appId() !== requestAppId) return;
       this.result.set(outcome);
       if (outcome.failed) {
         this.error.set(`${outcome.failed} step(s) failed. The rest were applied; you can undo everything below.`);
@@ -494,9 +516,11 @@ export class AssistantDrawerComponent implements OnInit {
         this.changed.emit(summary);
       }
     } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Applying the plan failed.');
+      if (this.appId() === requestAppId) {
+        this.error.set(e instanceof Error ? e.message : 'Applying the plan failed.');
+      }
     } finally {
-      this.applying.set(false);
+      if (this.appId() === requestAppId) this.applying.set(false);
     }
   }
 
@@ -523,10 +547,6 @@ export class AssistantDrawerComponent implements OnInit {
     this.error.set('');
   }
 
-  close() {
-    this.open.set(false);
-  }
-
   /** Ask the design editors to refetch the lists the assistant touched. */
   private refreshEditors(summary: AssistantChanged, formId: number | null) {
     if (summary.forms) this.commService.emitChange({ key: 'form', value: summary.forms });
@@ -551,6 +571,13 @@ function supportedAttachmentType(file: File): boolean {
   if (['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(type)) return true;
   if (type) return false;
   return /\.(pdf|png|jpe?g|gif|webp)$/i.test(file.name);
+}
+
+function localId(
+  context: AssistantLocalContext,
+  type: Exclude<AssistantLocalContext['type'], 'app' | 'navigation'>
+): number | undefined {
+  return context.type === type && 'id' in context ? context.id : undefined;
 }
 
 function readAttachment(file: File): Promise<AssistantAttachment> {

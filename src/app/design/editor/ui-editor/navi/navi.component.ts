@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { UserService } from '../../../../_shared/service/user.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -10,12 +10,11 @@ import { ToastService } from '../../../../_shared/service/toast-service';
 import { FormService } from '../../../../service/form.service';
 import { DatasetService } from '../../../../service/dataset.service';
 import { DashboardService } from '../../../../service/dashboard.service';
-import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropListGroup, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { ScreenService } from '../../../../service/screen.service';
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
-import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
 import { IconPickerComponent } from '../../../../_shared/component/icon-picker/icon-picker.component';
 import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.component';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -26,6 +25,10 @@ import { EditRoleComponent } from '../../../../_shared/modal/edit-role/edit-role
 import { LookupService } from '../../../../run/_service/lookup.service';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { LambdaService } from '../../../../service/lambda.service';
+import { AssistantPaletteDirective } from '../../assistant/assistant-palette.directive';
+import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
+import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
+import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
 
 @Component({
     selector: 'app-navi',
@@ -34,9 +37,9 @@ import { LambdaService } from '../../../../service/lambda.service';
     styleUrls: ['./navi.component.scss',
         '../../../../../assets/css/element-action.css',
         '../../../../../assets/css/start.css'],
-    imports: [CdkDropListGroup, FaIconComponent, NgClass, CdkDropList, CdkDrag, CdkDragHandle, FormsModule, NgSelectModule,
-        NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, IconPickerComponent,
-        NgbNavOutlet, FilterPipe, DatePipe, EditRoleComponent, IconSplitPipe]
+    imports: [FaIconComponent, NgClass, CdkDropList, CdkDrag, CdkDragHandle, FormsModule, NgSelectModule,
+        NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, IconPickerComponent, AssistantPaletteDirective,
+        NgbNavOutlet, DatePipe, EditRoleComponent, IconSplitPipe]
 })
 export class NaviComponent implements OnInit {
   naviData: any = {};
@@ -60,8 +63,13 @@ export class NaviComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
   private location = inject(PlatformLocation);
+  private destroyRef = inject(DestroyRef);
+  private assistantContext = inject(AssistantLocalContextService).createRegistration();
+  readonly assistantPanel = inject(AssistantSidePanelService);
+  readonly paletteDragDelay = ASSISTANT_PALETTE_DRAG_DELAY;
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.assistantContext.clear());
     this.location.onPopState(() => {
         if (document.querySelector('.cm-fullscreen-mode')) {
             return;
@@ -103,6 +111,12 @@ export class NaviComponent implements OnInit {
   lambdaList: any[];
   screenList: any[];
   palettes: any[] = [];
+  get paletteGroups() {
+    return groupAssistantPalette(this.palettes, this.paletteFilter);
+  }
+  get paletteItems() {
+    return flattenAssistantPalette(this.paletteGroups);
+  }
   viewAs: string;
   viewAsGroup: any;
 
@@ -121,6 +135,7 @@ export class NaviComponent implements OnInit {
           this.appService.getApp(this.appId)
             .subscribe(res => {
               this.app = res;
+              this.assistantContext.set({ type: 'navigation', label: res.title });
               this.loadPaletteList(this.appId);
               this.getNavisAll(this.appId);
               this.getNaviData(this.appId);
@@ -152,7 +167,6 @@ export class NaviComponent implements OnInit {
 
   paletteAppId: number;
 
-  showPalette: boolean = true;
   getFormList(appId) {
     this.formService.getListBasic({ appId: appId, size: 9999 })
       .subscribe(res => {

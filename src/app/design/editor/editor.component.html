@@ -1,5 +1,6 @@
-<div style="view-transition-name: active-app-morph; display: flex; flex-direction: column; min-height: 100vh; background: var(--bs-body-bg);">
-<div class="d-flex flex-row bg-body position-relative shadow-sm" style="height:48px; z-index:1">
+<div class="editor-shell"
+  style="view-transition-name: active-app-morph; display: flex; flex-direction: column; min-height: 100vh; background: var(--bs-body-bg);">
+<div class="editor-topbar d-flex flex-row bg-body shadow-sm">
   @if (loading()){
     <div class="header-colors"></div>
   }
@@ -36,10 +37,13 @@
       
       <div class="p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
-          @if (assistantStatus.available()) {
-            <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="openAssistant()"
-              title="App assistant" aria-label="Open app assistant">
-              <fa-icon [icon]="['fas','bolt']" [fixedWidth]="true"></fa-icon>
+          @if (assistantStatus.available() || assistantPanel.palette()) {
+            <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1 d-md-none" (click)="openAssistant()"
+              [attr.aria-expanded]="assistantPanel.expanded()"
+              aria-controls="assistant-side-panel"
+              [title]="assistantPanel.palette() ? 'Open editor tools' : 'Creator Assistant'"
+              [attr.aria-label]="assistantPanel.palette() ? 'Open editor tools' : 'Open Creator Assistant'">
+              <fa-icon [icon]="['fas', assistantPanel.palette() ? 'layer-group' : 'bolt']" [fixedWidth]="true"></fa-icon>
             </button>
           }
           <a type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
@@ -63,7 +67,7 @@
 
 @if (app()?.id) {
   @if (authorized()){
-    <div class="sb bg-plain">
+    <div class="sb bg-plain" cdkDropListGroup>
       <div class="bar bg-reka" [ngClass]="bgClassName">
         <div class="bar-1">
           <a class="bar-link" routerLink="ui" routerLinkActive="active">
@@ -103,8 +107,16 @@
           </div>
         </div>
       </div>
-      <div class="content">
-        <router-outlet></router-outlet>
+      <div class="editor-workspace">
+        <div class="content">
+          <router-outlet></router-outlet>
+        </div>
+        @if ((assistantStatus.available() || assistantPanel.palette()) && app()?.id && user()?.email) {
+          <app-assistant-side-panel
+            [appId]="app().id" [app]="app()" [email]="user().email"
+            [assistantAvailable]="assistantStatus.available()"
+            (changed)="onAssistantChanged($event)"></app-assistant-side-panel>
+        }
       </div>
     </div>
   } @else {
@@ -114,15 +126,6 @@
   @if (!loading()) {
     <div class="p-3 text-center text-secondary"><h4>No app found with ID: {{appId}}</h4></div>
   }
-}
-
-@if (assistantStatus.available() && app()?.id && authorized()) {
-  <app-assistant-drawer [open]="assistantOpen()" (openChange)="onAssistantOpenChange($event)"
-    [appId]="app().id" [app]="app()" [email]="user()?.email"
-    [currentFormId]="activeFormId()"
-    [currentDatasetId]="activeDatasetId()" [currentScreenId]="activeScreenId()"
-    [currentLambdaId]="activeLambdaId()" [currentEmailTemplateId]="activeEmailTemplateId()"
-    (changed)="onAssistantChanged($event)"></app-assistant-drawer>
 }
 
 </div>

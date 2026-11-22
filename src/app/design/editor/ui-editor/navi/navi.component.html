@@ -1,4 +1,4 @@
-<div class="d-flex flex-row h-100" cdkDropListGroup>
+<div class="d-flex flex-row h-100">
   <div style="flex:auto; overflow: auto;">
     <div class="p-2 pb-0 limit-width">
       <div class="d-flex flex-row">
@@ -293,33 +293,10 @@
       </div>
     </div>
   </div>
-  @if (!showPalette) {
-    <button type="button" class="position-relative border-0 rounded end-0 d-none d-md-flex flex-column py-2 px-1 bg-body-tertiary text-body" (click)="showPalette=true">
-      <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
-      </fa-icon>
-      <div style="width:20px; margin-top:2.5em;font-weight: bold;">
-        <div class="small" style="transform: rotate(270deg)">Palette</div>
-      </div>
-    </button>
-  }
-  @if (showPalette) {
-    <div class="bg-body-tertiary border-start d-none d-md-block"
-      style="max-width:180px; overflow-x: hidden; overflow-y: auto;">
-      <div class="small" cdkDragHandle >
-        <button type="button" class="p-2 border-0 w-100 bg-transparent text-body" (click)="showPalette=false">
-          <strong>Palette</strong>
-          <div class="float-end pointer" style="width:20px;">
-            @if (showPalette) {
-              <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true">
-              </fa-icon>
-            }
-            @if (!showPalette) {
-              <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true">
-              </fa-icon>
-            }
-          </div>
-        </button>
-        <div class="p-2 pb-0">
+  <ng-template assistantPalettePanel>
+    <div class="p-3 pb-5">
+      <div class="vstack gap-2 mb-3">
+        <div>
           <select class="form-select" name="paletteAppId" (change)="loadPaletteList(paletteAppId)"
             [(ngModel)]="paletteAppId">
             @for (app of otherAppList; track app.id) {
@@ -327,32 +304,41 @@
             }
           </select>
         </div>
-        <div class="p-2 bg-body-tertiary position-sticky sticky-top">
-          <input type="text" class="form-control form-control-sm small p-1" placeholder="Type to filter" [(ngModel)]="paletteFilter"
+        <div>
+          <input type="text" class="form-control form-control-sm" placeholder="Filter components" [(ngModel)]="paletteFilter"
             name="paletteFilter" />
         </div>
       </div>
-      @if (showPalette) {
-        <div id="palette-pane" class="card-body p-1" cdkDropListSortingDisabled cdkDropList
-          [cdkDropListData]="(palettes|filter:paletteFilter)">
-          @for (item of palettes|filter:paletteFilter; track $index) {
-            <button type="button" class="btn btn-sm btn-outline-secondary text-truncate d-inline-block" style="font-size:11px; padding:3px; margin:2px;"
-              title="{{item.title}}"
-              cdkDrag>
-              <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit" [fixedWidth]="true">
-              </fa-icon>
-              {{item.title}}
-            </button>
+        <div id="palette-pane" cdkDropListSortingDisabled cdkDropList
+          [cdkDropListData]="paletteItems">
+          @for (group of paletteGroups; track group.label) {
+            <details class="mb-2" open>
+              <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
+                <span>{{ group.label }}</span>
+                <span class="badge rounded-pill text-bg-secondary">{{ group.items.length }}</span>
+              </summary>
+              <div class="row row-cols-2 g-2">
+                @for (item of group.items; track $index) {
+                  <div class="col" cdkDrag [cdkDragStartDelay]="paletteDragDelay"
+                    (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-truncate d-flex align-items-center gap-1"
+                      style="cursor: grab;" [title]="item.title">
+                      <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                      <span class="text-truncate">{{item.title}}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            </details>
           }
-          @if (palettes.length==0) {
+          @if (paletteGroups.length==0) {
             <div class="p-3 text-body-secondary">
-              No component available
+              No matching component
             </div>
           }
         </div>
-      }
     </div>
-  }
+  </ng-template>
 </div>
 
 <ng-template #editGroupTpl let-c="close" let-d="dismiss">

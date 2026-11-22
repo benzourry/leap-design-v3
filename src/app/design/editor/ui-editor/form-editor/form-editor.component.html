@@ -1,4 +1,4 @@
-<div class="fix-gutter d-flex flex-row h-100" cdkDropListGroup>
+<div class="fix-gutter d-flex flex-row h-100">
   <div style="flex:auto; overflow: auto;" (window:resize)="scheduleTierLineRedraw()">
     <div class="limit-width">
       @if (!curForm && !formError) {
@@ -902,68 +902,71 @@
       }
     </div>
   </div>
-  <div class="d-none d-md-flex flex-column" style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px var(--bs-border-color)">
+  <ng-template assistantPalettePanel>
+  <div class="p-3 pb-5">
     @if (curForm?.x?.extended && superForm){
-      @if (!showSuper && !showPalette) {
-        <button type="button" class="flex-1 bg-info position-relative border-0 rounded-0 end-0 d-none d-sm-flex flex-column py-2 px-1"
+      <section class="mb-3">
+        <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-1 border-0"
           (click)="showSuper=!showSuper">
-          <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true"></fa-icon>
-          <div style="width:20px; margin-top:2.5em;font-weight: bold;">
-            <div class="small" style="transform: rotate(270deg)">Super</div>
-          </div>
+          <span>Super form fields</span>
+          <fa-icon [icon]="['fas', showSuper ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
         </button>
-      }@else{
-        <button type="button" class="p-2 small bg-info border-0 w-100 text-start" (click)="showSuper=!showSuper">
-          <strong>Super</strong>
-          <div class="float-end pointer" style="width:20px;">
-            <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
-          </div>
-        </button>
-      }
-      @if (showSuper) {
-        <div id="palette-pane" class="flex-1 list-group list-group-flush" cdkDropListSortingDisabled cdkDropList
-          [cdkDropListData]="superItems" [cdkDropListDisabled]="isTimeWarpingForm"
-          style="max-width:180px; border-left:solid 1px var(--bs-border-color)">
+        @if (showSuper) {
+        <div id="super-palette-pane" class="row row-cols-2 g-2" cdkDropListSortingDisabled cdkDropList
+          [cdkDropListData]="superItems" [cdkDropListDisabled]="isTimeWarpingForm">
           @for (p of superItems; track $index) {
-            <div class="list-group-item p-2 list-group-item-info bg-opacity-10" style="font-size:11px; cursor:pointer;" cdkDrag [cdkDragDisabled]="isTimeWarpingForm">
-              {{p.label}}
+            <div class="col" cdkDrag
+              [cdkDragStartDelay]="paletteDragDelay"
+              [cdkDragDisabled]="isTimeWarpingForm"
+              (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
+              <div class="btn btn-sm btn-outline-info w-100 text-start text-truncate"
+                style="cursor: grab;" [title]="p.label">
+                {{p.label}}
+              </div>
               <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
             </div>
           }
         </div>
-      }
+        }
+      </section>
     }
 
-    @if (!showPalette && (!curForm?.x?.extended || !showSuper)) {
-      <button type="button" class="flex-1 bg-body-secondary position-relative border-0 rounded-0 end-0 d-none d-sm-flex flex-column py-2 px-1"
+    <section>
+      <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-1 border-0"
         (click)="showPalette=!showPalette">
-        <fa-icon [icon]="['fas','angle-left']" [fixedWidth]="true"></fa-icon>
-        <div style="width:20px; margin-top:2.5em;font-weight: bold;">
-          <div class="small" style="transform: rotate(270deg)">Palette</div>
-        </div>
+        <span>Form fields</span>
+        <fa-icon [icon]="['fas', showPalette ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
       </button>
-    }@else{
-      <button type="button" class="p-2 bg-body-secondary small border-0 w-100 text-start" (click)="showPalette=!showPalette">
-        <strong>Palette</strong>
-        <div class="float-end pointer" style="width:20px;">
-          <fa-icon [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
-        </div>
-      </button>
-    }
     @if (showPalette) {
-      <div id="palette-pane" class="p-1 flex-1" cdkDropListSortingDisabled cdkDropList
-        [cdkDropListData]="palettes" [cdkDropListDisabled]="isTimeWarpingForm"
-        style="max-width:180px; overflow-x: hidden; overflow-y: auto; border-left:solid 1px var(--bs-border-color)">
-        @for (p of palettes; track $index) {
-          <button type="button" class="btn bg-body-secondary text-truncate" style="font-size:11px; padding:3px; margin:2px;"
-            cdkDrag [cdkDragDisabled]="isTimeWarpingForm">
-            {{p.label}}
-            <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
-          </button>
+      <div id="palette-pane" cdkDropListSortingDisabled cdkDropList
+        [cdkDropListData]="paletteItems" [cdkDropListDisabled]="isTimeWarpingForm">
+        @for (group of paletteGroups; track group.label) {
+          <details class="mb-2" open>
+            <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
+              <span>{{ group.label }}</span>
+              <span class="badge rounded-pill text-bg-secondary">{{ group.items.length }}</span>
+            </summary>
+            <div class="row row-cols-2 g-2">
+              @for (p of group.items; track $index) {
+                <div class="col"
+                  cdkDrag [cdkDragDisabled]="isTimeWarpingForm"
+                  [cdkDragStartDelay]="paletteDragDelay"
+                  (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
+                  <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-truncate"
+                    style="cursor: grab;" [title]="p.label">
+                    {{p.label}}
+                  </button>
+                  <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
+                </div>
+              }
+            </div>
+          </details>
         }
       </div>
     }
+    </section>
   </div>
+  </ng-template>
 </div>
 
 <ng-template #editFormTpl let-c="close" let-d="dismiss">

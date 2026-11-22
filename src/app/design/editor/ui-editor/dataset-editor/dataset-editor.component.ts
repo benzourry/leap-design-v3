@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
@@ -28,6 +28,7 @@ import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { HttpClient } from '@angular/common/http';
 import { MetaTrailService } from '../../../../service/metatrail.service';
+import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -41,6 +42,8 @@ import { MetaTrailService } from '../../../../service/metatrail.service';
         KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe]
 })
 export class DatasetEditorComponent implements OnInit {
+    readonly sameDropList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>
+        drag.dropContainer === drop;
 
     private formService = inject(FormService);
     private datasetService = inject(DatasetService);
@@ -61,8 +64,11 @@ export class DatasetEditorComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     // private http = inject(HttpClient);
     private metaTrailService = inject(MetaTrailService);
+    private destroyRef = inject(DestroyRef);
+    private assistantContext = inject(AssistantLocalContextService).createRegistration();
     
     constructor() {
+        this.destroyRef.onDestroy(() => this.assistantContext.clear());
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
@@ -163,6 +169,7 @@ export class DatasetEditorComponent implements OnInit {
             next: (res) => {
                 this.form = {};
                 this.curDataset = res;
+                this.assistantContext.set({ type: 'dataset', id: Number(res.id), label: res.title });
                 this.initSubForm();
                 this.editDatasetData = res;
                 this.datasetLoading = false;

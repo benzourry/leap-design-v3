@@ -160,6 +160,7 @@
                   <h6>Displayed Columns</h6>
                   <div style="position:relative">
                     <div cdkDropList cdkDropListOrientation="horizontal"
+                      [cdkDropListEnterPredicate]="sameDropList"
                       class="my-2 column-list touch-overflow scroll--h" [cdkDropListDisabled]="isTimeWarpingDataset"
                       (cdkDropListDropped)="dropField($event, curDataset)">
                       @for (field of curDataset.items; track $index) {
@@ -214,6 +215,7 @@
                           </div>
                           @if(field.subs && field.subs?.length>0){
                             <div class="flex-grow-1 d-flex flex-row border-top" style="border-top-color: var(--bs-border-color, #ccc) !important;" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
+                            [cdkDropListEnterPredicate]="sameDropList"
                             cdkDropListOrientation="horizontal"
                             (cdkDropListDropped)="dropSubs($event, field.subs)">                            
                               @for(cf of field.subs; track $index){
@@ -265,7 +267,9 @@
                           <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
                             <table class="table tblcard w-100 m-0">
                               <tbody class="ds-tbody">
-                                <tr class="ds-row" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit" (cdkDropListDropped)="dropField($event, curDataset)">
+                                <tr class="ds-row" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit"
+                                  [cdkDropListEnterPredicate]="sameDropList"
+                                  (cdkDropListDropped)="dropField($event, curDataset)">
                                   
                                   @if (curDataset.x?.bulkAction) {
                                     <td class="ds-check">
@@ -459,6 +463,7 @@
               }
               <div class="p-2 border border-1-5 rounded mb-3">
                 <div class="row width-auto align-items-center g-2" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
+                  [cdkDropListEnterPredicate]="sameDropList"
                   cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
                   @for (a of curDataset.actions; track $index) {
@@ -508,6 +513,7 @@
                   <h6>Allowed Filters</h6>
                   <div style="position:relative">
                     <div cdkDropList cdkDropListOrientation="vertical" [cdkDropListDisabled]="isTimeWarpingDataset"
+                      [cdkDropListEnterPredicate]="sameDropList"
                       (cdkDropListDropped)="dropFilter($event, curDataset.filters)">
                       @for (field of curDataset.filters; track field.id) {
                         <div class="element p-2 mb-1 bg-body-tertiary text-body border rounded small position-relative" (dblclick)="!isTimeWarpingDataset && editFilterText(field)" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">

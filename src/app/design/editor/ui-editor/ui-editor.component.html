@@ -18,7 +18,9 @@
                       <div ngbAccordionBody>
                         
                         <!-- EDITABLE FORMS (Draggable & Clickable) -->
-                        <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderForm($event, editableForms)">
+                        <div cdkDropList cdkDropListOrientation="vertical"
+                          [cdkDropListEnterPredicate]="sameReorderList"
+                          (cdkDropListDropped)="reorderForm($event, editableForms)">
                           @for (i of (editableForms | filter:searchText); track i.id) {
                             @if (i?.id) {
                               <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
@@ -115,7 +117,9 @@
                     <div ngbAccordionBody>
                       
                       <!-- EDITABLE DATASETS (Draggable & Grouped) -->
-                      <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
+                      <div cdkDropList cdkDropListOrientation="vertical"
+                        [cdkDropListEnterPredicate]="sameReorderList"
+                        (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
                         @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
                           @if (datasetGroupBy && dsKv?.key) {
                             <div class="element fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
@@ -197,6 +201,7 @@
                     <div ngbAccordionCollapse>
                         <div ngbAccordionBody
                         cdkDropList cdkDropListOrientation="vertical"
+                        [cdkDropListEnterPredicate]="sameReorderList"
                         (cdkDropListDropped)="reorderDashboard($event, dashboardList)">
                             @for (i of dashboardList|filter:searchText; track i.id) {
                               @if (i?.id){
@@ -253,7 +258,9 @@
                       <div ngbAccordionBody>
                         
                         <!-- EDITABLE SCREENS (Draggable & Grouped) -->
-                        <div cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="reorderScreen($event, editableScreens)">
+                        <div cdkDropList cdkDropListOrientation="vertical"
+                          [cdkDropListEnterPredicate]="sameReorderList"
+                          (cdkDropListDropped)="reorderScreen($event, editableScreens)">
                           @for (scKv of (editableScreens | filter:searchText) | groupBy:screenGroupBy; track $index) {
                             @if (screenGroupBy && scKv?.key) {
                               <div class="element fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>

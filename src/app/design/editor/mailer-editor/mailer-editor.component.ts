@@ -23,6 +23,7 @@ import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-view
 import { baseApi } from '../../../_shared/constant.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { CommService } from '../../../_shared/service/comm.service';
+import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 
 @Component({
     selector: 'app-mailer-editor',
@@ -51,6 +52,7 @@ export class MailerEditorComponent implements OnInit {
     private destroyRef = inject(DestroyRef);
     private lambdaService = inject(LambdaService);
     private commService = inject(CommService);
+    private assistantContext = inject(AssistantLocalContextService).createRegistration();
 
     offline = false;
     app: any;
@@ -68,6 +70,7 @@ export class MailerEditorComponent implements OnInit {
     appId: number;
     
     constructor() {
+        this.destroyRef.onDestroy(() => this.assistantContext.clear());
         this.commService.changeEmitted$
             .pipe(takeUntilDestroyed())
             .subscribe(data => {
@@ -298,6 +301,11 @@ export class MailerEditorComponent implements OnInit {
             .subscribe({
                 next: mailer => {
                     this.mailer = mailer;
+                    this.assistantContext.set({
+                      type: 'email-template',
+                      id: Number(mailer.id),
+                      label: mailer.name,
+                    });
                     this.viewType = 'mailer';
                     this.cdr.markForCheck();
                 },

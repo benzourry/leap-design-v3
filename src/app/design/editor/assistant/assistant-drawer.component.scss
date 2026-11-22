@@ -1,79 +1,57 @@
 :host {
-  position: relative;
-  z-index: 9003;
-}
-
-.assistant-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 1040;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 180ms ease, visibility 0s linear 240ms;
-}
-
-.assistant-backdrop.is-visible {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 180ms ease;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .assistant-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(30rem, 100vw);
-  display: flex;
-  flex-direction: column;
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  border-left: 1px solid var(--bs-border-color);
-  box-shadow: var(--bs-box-shadow-lg, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
-  z-index: 1045;
-  transform: translateX(100%);
-  visibility: hidden;
-  pointer-events: none;
-  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 240ms;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
-.assistant-drawer.is-open {
-  transform: translateX(0);
-  visibility: visible;
-  pointer-events: auto;
-  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .assistant-backdrop,
-  .assistant-drawer {
-    transition: none;
-  }
-}
-
-.assistant-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--bs-border-color);
-  flex: 0 0 auto;
+.assistant-context-chip {
+  padding: 0.5rem 0.75rem;
 }
 
 .assistant-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 0.75rem 1rem;
+  min-height: 0;
+  // padding: 0 0 0.75rem;
 }
 
-.assistant-footer {
-  flex: 0 0 auto;
-  padding: 0.75rem 1rem;
-  // border-top: 1px solid var(--bs-border-color);
+.assistant-prompt {
+  position: relative;
+  margin: 0.75rem;
+  overflow: visible;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  background: var(--bs-body-bg);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
+}
+
+.assistant-footer-empty {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-bottom: 0;
+}
+
+.assistant-empty-state {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--bs-secondary-color);
+}
+
+.assistant-empty-state > fa-icon {
+  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  opacity: 0.5;
 }
 
 .assistant-prompt.is-dragging-files {
@@ -81,8 +59,153 @@
   outline-offset: -2px;
 }
 
+.assistant-textarea {
+  min-height: 6rem;
+  padding: 0.625rem 0.75rem;
+  resize: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.assistant-textarea:focus {
+  box-shadow: none;
+  background: transparent;
+}
+
+.assistant-textarea::placeholder {
+  color: var(--bs-secondary-color);
+  opacity: 0.75;
+}
+
+.assistant-prompt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.625rem 0.375rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.assistant-icon-button {
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+}
+
+.assistant-icon-button:hover:not(:disabled) {
+  color: var(--bs-body-color);
+  background: var(--bs-secondary-bg);
+}
+
+.assistant-send-button {
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  color: var(--bs-white);
+  background: var(--bs-primary);
+  border: 0;
+  border-radius: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.assistant-send-button:disabled,
+.assistant-icon-button:disabled {
+  opacity: 0.45;
+}
+
+.assistant-prompt-hint {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem 0.625rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.6875rem;
+}
+
+.assistant-entity-chip,
+.assistant-file-chip {
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  color: var(--bs-body-color);
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  font-size: 0.7rem;
+}
+
+.assistant-entity-chip .text-truncate,
+.assistant-file-chip .text-truncate {
+  max-width: 9rem;
+}
+
+.assistant-entity-chip .btn-close,
+.assistant-file-chip .btn-close {
+  width: 0.45rem;
+  height: 0.45rem;
+  padding: 0;
+  background-size: 0.45rem;
+}
+
+@media (max-width: 767.98px) {
+  .assistant-footer {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .assistant-prompt {
+    margin: 0.75rem 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  }
+
+  .assistant-textarea {
+    min-height: clamp(4.5rem, 24dvh, 8.5rem);
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .assistant-prompt-actions {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .assistant-icon-button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .assistant-send-button {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .assistant-prompt-hint {
+    padding: 0 1rem 0.75rem;
+  }
+
+  .assistant-entity-picker {
+    left: 0.75rem;
+    bottom: calc(100% + 0.75rem);
+    width: calc(100% - 1.5rem);
+    max-height: min(18rem, calc(100dvh - 12rem));
+  }
+}
+
 .assistant-msg {
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
@@ -113,17 +236,13 @@
 
 .assistant-entity-toolbar {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .assistant-entity-picker {
   position: absolute;
   left: 0.75rem;
   bottom: calc(100% + 0.5rem);
-  z-index: 2;
+  z-index: 1050;
   width: min(20rem, calc(100% - 1.5rem));
   max-height: 18rem;
   overflow-y: auto;

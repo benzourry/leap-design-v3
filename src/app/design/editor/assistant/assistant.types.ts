@@ -851,6 +851,7 @@ export interface AssistantContext {
   knowledge: Record<string, unknown>;
   selectedFormId?: number;
   selectedDatasetId?: number;
+  selectedDashboardId?: number;
   selectedScreenId?: number;
   selectedLambdaId?: number;
   selectedEmailTemplateId?: number;

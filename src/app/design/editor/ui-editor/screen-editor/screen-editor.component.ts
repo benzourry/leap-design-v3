@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
 import { DatePipe, KeyValuePipe, NgClass } from '@angular/common';
@@ -27,11 +27,14 @@ import { IconPickerComponent } from '../../../../_shared/component/icon-picker/i
 import { BucketService } from '../../../../service/bucket.service';
 import { EntryService } from '../../../../run/_service/entry.service';
 import { LookupService } from '../../../../run/_service/lookup.service';
-import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
-import { FilterPipe } from '../../../../_shared/pipe/filter.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../../service/metatrail.service';
+import { AssistantPaletteDirective } from '../../assistant/assistant-palette.directive';
+import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
+import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
+import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
 
 @Component({
     selector: 'app-screen-editor',
@@ -40,8 +43,8 @@ import { MetaTrailService } from '../../../../service/metatrail.service';
     styleUrls: ['./screen-editor.component.scss', '../../../../../assets/css/tile.scss',
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
-        NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule, CdkDropListGroup,
-        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, FilterPipe, NgClass, DatePipe,
+        NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule,
+        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, NgClass, DatePipe, AssistantPaletteDirective,
         NgbNavOutlet, EditScreenComponent, KeyValuePipe, MetaTrailViewerComponent]
 })
 export class ScreenEditorComponent implements OnInit {
@@ -63,8 +66,13 @@ export class ScreenEditorComponent implements OnInit {
   private commService = inject(CommService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private assistantContext = inject(AssistantLocalContextService).createRegistration();
+  readonly assistantPanel = inject(AssistantSidePanelService);
+  readonly paletteDragDelay = ASSISTANT_PALETTE_DRAG_DELAY;
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.assistantContext.clear());
     this.commService.changeEmitted$.subscribe(data => {
       if (data.key === 'assistant-screen' && this.app?.id) {
         this.getScreenList(this.app.id);
@@ -580,6 +588,7 @@ export class ScreenEditorComponent implements OnInit {
     this.screenService.getScreen(id)
       .subscribe(res => {
         this.curScreen = res;
+        this.assistantContext.set({ type: 'screen', id: Number(res.id), label: res.title });
         this.cdr.detectChanges(); 
         
         if (!res.data) {
@@ -894,10 +903,15 @@ export class ScreenEditorComponent implements OnInit {
   }
 
   // --- PALETTE VARIABLES ---
-  showPalette: boolean = true;
   paletteFilter: string = "";
   paletteAppId: number;
   palettes: any[] = [];
+  get paletteGroups() {
+    return groupAssistantPalette(this.palettes, this.paletteFilter);
+  }
+  get paletteItems() {
+    return flattenAssistantPalette(this.paletteGroups);
+  }
   
   datasetIcon: any = {
     all: 'fas:list',

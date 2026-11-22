@@ -148,6 +148,7 @@ export class AssistantContextService {
     selection: {
       formId?: number;
       datasetId?: number;
+      dashboardId?: number;
       screenId?: number;
       lambdaId?: number;
       emailTemplateId?: number;
@@ -191,6 +192,13 @@ export class AssistantContextService {
           : screenList.find((screen) => Number(screen?.id) === selection.screenId);
         if (selection.screenId !== undefined && !selectedScreen) {
           throw new Error('The selected screen is no longer available. Choose it again and retry.');
+        }
+        const dashboardList = asList(dashboards);
+        const selectedDashboard = selection.dashboardId === undefined
+          ? undefined
+          : dashboardList.find((dashboard) => Number(dashboard?.id) === selection.dashboardId);
+        if (selection.dashboardId !== undefined && !selectedDashboard) {
+          throw new Error('The selected dashboard is no longer available. Choose it again and retry.');
         }
 
         const formList$ = formsToDescribe.length
@@ -240,6 +248,9 @@ export class AssistantContextService {
         const selectedScreen$ = selectedScreen
           ? this.screenService.getScreen(Number(selectedScreen.id))
           : of(undefined);
+        const selectedDashboard$ = selectedDashboard
+          ? this.dashboardService.getDashboard(Number(selectedDashboard.id))
+          : of(undefined);
 
         const lambdaList = asList(lambdas);
         const selectedLambdaSummary = lambdaList.find((lambda) => Number(lambda?.id) === selection.lambdaId);
@@ -263,16 +274,22 @@ export class AssistantContextService {
         return forkJoin({
           formList: formList$,
           datasetList: datasetList$,
+          selectedDashboard: selectedDashboard$,
           selectedScreen: selectedScreen$,
           selectedLambda: selectedLambda$,
           selectedEmailTemplate: selectedEmailTemplate$,
         })
           .pipe(map(({
-            formList, datasetList, selectedScreen: screenDetail,
+            formList, datasetList, selectedDashboard: dashboardDetail,
+            selectedScreen: screenDetail,
             selectedLambda: lambdaDetail, selectedEmailTemplate: emailTemplateDetail,
           }) => {
             if (selection.screenId !== undefined && !isScreenDetail(screenDetail, selection.screenId)) {
               throw new Error('The selected screen could not be loaded. Choose it again and retry.');
+            }
+            if (selection.dashboardId !== undefined
+                && Number((dashboardDetail as any)?.id) !== selection.dashboardId) {
+              throw new Error('The selected dashboard could not be loaded. Choose it again and retry.');
             }
             if (selection.lambdaId !== undefined
                 && Number((lambdaDetail as any)?.id) !== selection.lambdaId) {
@@ -291,7 +308,7 @@ export class AssistantContextService {
             const entities: AssistantContextEntities = {
               forms: formList,
               datasets: orderedDatasets,
-              dashboards: toSummaries(dashboards),
+              dashboards: toSelectedSummaries(dashboardList, selection.dashboardId, dashboardDetail),
               screens: toScreenSummaries(screenList, selection.screenId, screenDetail),
               lambdas: toLambdaSummaries(lambdaList, selection.lambdaId, lambdaDetail),
               emailTemplates: toEmailTemplateSummaries(
@@ -309,6 +326,7 @@ export class AssistantContextService {
               knowledge: assistantKnowledge(),
               selectedFormId: selection.formId,
               selectedDatasetId: selection.datasetId,
+              selectedDashboardId: selection.dashboardId,
               selectedScreenId: selection.screenId,
               selectedLambdaId: selection.lambdaId,
               selectedEmailTemplateId: selection.emailTemplateId,
@@ -414,6 +432,21 @@ function toSummaries(list: any): AssistantEntitySummary[] {
       code: e.code,
       type: e.type,
     }));
+}
+
+function toSelectedSummaries(
+  list: any,
+  selectedId: number | undefined,
+  fullData: unknown
+): AssistantEntitySummary[] {
+  const summaries = toSummaries(list);
+  if (selectedId === undefined) return summaries;
+  const selected = summaries.find((entity) => entity.id === selectedId);
+  if (!selected) return summaries;
+  return [
+    { ...selected, fullData },
+    ...summaries.filter((entity) => entity.id !== selectedId),
+  ];
 }
 
 function toScreenSummaries(

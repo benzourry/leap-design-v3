@@ -1,34 +1,8 @@
-<div class="assistant-backdrop" [class.is-visible]="open()" aria-hidden="true" (click)="close()"></div>
-<aside class="assistant-drawer" [class.is-open]="open()" role="dialog" aria-label="App assistant"
-  aria-modal="true" [attr.aria-hidden]="!open()" [attr.inert]="open() ? null : ''">
-    <header class="assistant-header">
-      <div class="d-flex align-items-center gap-2">
-        <fa-icon [icon]="['fas', 'bolt']" size="lg"></fa-icon>
-        <div>
-          <div class="fw-bold">Creator Assistant</div>
-          <!-- <div class="smaller text-body-secondary">Describe what to build. Nothing changes until you apply.</div> -->
-        </div>
-      </div>
-      <button type="button" class="btn btn-sm btn-round m-n1" (click)="close()" aria-label="Close assistant">
-        <fa-icon [icon]="['fas', 'times']" [fixedWidth]="true"></fa-icon>
-      </button>
-    </header>
-
-    <div class="assistant-body" aria-live="polite">
-      <div class="small text-body-secondary mb-3">
-        @if (currentFormId()) {
-          The assistant will use the form currently open in the editor.
-        } @else if (currentDatasetId()) {
-          The assistant will use the dataset currently open in the editor.
-        } @else if (currentScreenId()) {
-          The assistant will use the screen currently open in the editor.
-        } @else if (currentLambdaId()) {
-          The assistant will use the Lambda currently open in the editor, including its source and bindings.
-        } @else if (currentEmailTemplateId()) {
-          The assistant will use the email template currently open in the editor.
-        } @else {
-          The assistant will use the current app context.
-        }
+<aside class="assistant-drawer h-100 d-flex flex-column bg-body text-body" role="region"
+  aria-label="Creator Assistant">
+    <div class="assistant-body flex-grow-1 overflow-auto p-3" [class.d-none]="!settings()" aria-live="polite">
+      <div class="assistant-context-chip small text-body-secondary bg-body-tertiary border rounded mb-3">
+        {{ contextDescription() }}
       </div>
 
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -65,47 +39,7 @@
         </div>
       }
 
-      <!-- @if (plan(); as currentPlan) {
-        <div class="assistant-plan">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-semibold">{{ actions().length }} proposed step(s)</span>
-            @if (result()) {
-              <span class="badge bg-success-subtle text-success-emphasis">{{ doneCount() }} applied</span>
-            }
-          </div>
-
-          <app-assistant-plan-card
-            [actions]="actions()"
-            [included]="included()"
-            [results]="results()"
-            [busy]="applying() || result() !== null"
-            (toggle)="toggle($event)" />
-
-          @for (warning of warnings(); track $index) {
-            <div class="small text-warning-emphasis mb-1">{{ warning }}</div>
-          }
-
-          <div class="d-flex flex-wrap gap-2 mt-2">
-            @if (!result()) {
-              <button type="button" class="btn btn-primary btn-sm" [disabled]="!canApply()" (click)="apply()">
-                @if (applying()) {
-                  <fa-icon [icon]="['fas', 'spinner']" [spin]="true" [fixedWidth]="true"></fa-icon>
-                }
-                Apply {{ included().length }} step(s)
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="discard()">
-                Discard
-              </button>
-            } @else {
-              <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="applying()" (click)="reset()">
-                Start over
-              </button>
-            }
-          </div>
-        </div>
-      } -->
-
-      @if (plan(); as currentPlan) {
+      @if (plan()) {
         @if (needsUserInput()) {
           <div class="alert alert-info py-2 px-3 small mb-2 border-0" role="status">
             <div class="fw-semibold">
@@ -172,25 +106,25 @@
 
     </div>
 
-    <footer class="assistant-footer p-0">
-      @if (error()) {
+    <footer class="assistant-footer flex-shrink-0" [class.assistant-footer-empty]="!settings()">
+      @if (settings() && error()) {
         <div class="alert alert-danger py-2 px-3 small m-0 rounded-0" role="alert">{{ error() }}</div>
       }
-      
-      <!-- Unified Chat Input Container -->
-      <div class="assistant-prompt rounded-2 m-3 bg-body-tertiary" [class.is-dragging-files]="draggingFiles()"
+
+      @if (settings()) {
+      <div class="assistant-prompt" [class.is-dragging-files]="draggingFiles()"
         (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-        <div class="assistant-entity-toolbar px-3 pt-3">
-          <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+        <div class="assistant-entity-toolbar d-flex flex-wrap align-items-center gap-2 px-2 pt-2">
+          <button type="button" class="assistant-icon-button"
             [disabled]="loading() || applying() || entityPickerLoading()"
             aria-label="Include an app component" title="Include form, dataset, dashboard, screen, or navigation"
             [attr.aria-expanded]="entityPickerOpen()" (click)="toggleEntityPicker()">
             <fa-icon [icon]="['fas', 'plus']" [fixedWidth]="true"></fa-icon>
           </button>
           @for (entity of includedEntities(); track entity.type + ':' + entity.id) {
-            <span class="badge rounded-pill border text-body bg-transparent d-inline-flex align-items-center gap-2">
-              <span>{{ entity.type }}: {{ entity.label }}</span>
-              <button type="button" class="btn-close" [disabled]="loading() || applying()"
+            <span class="assistant-entity-chip" [title]="entity.type + ': ' + entity.label">
+              <span class="text-truncate">{{ entity.label }}</span>
+              <button type="button" class="btn-close btn-close-sm" [disabled]="loading() || applying()"
                 [attr.aria-label]="'Remove ' + entity.type + ' ' + entity.label"
                 (click)="removeIncludedEntity(entity.type, entity.id)"></button>
             </span>
@@ -202,7 +136,7 @@
                   <strong class="small">{{ selectedType | titlecase }}</strong>
                   <button type="button" class="btn btn-sm p-0"
                     [disabled]="entityPickerLoading()" (click)="backToEntityTypes()">
-                    <fa-icon [icon]="['fas', 'arrow-left']" [spin]="true" [fixedWidth]="true"></fa-icon> Back
+                    <fa-icon [icon]="['fas', 'arrow-left']" [fixedWidth]="true"></fa-icon> Back
                   </button>
                 </div>
                 @if (entityPickerLoading()) {
@@ -239,55 +173,72 @@
             </div>
           }
         </div>
-        <textarea class="form-control border-0 rounded-0 shadow-none bg-transparent px-3 pt-3" rows="3" style="resize: none;"
+        <textarea class="assistant-textarea form-control" rows="4"
           [value]="prompt()" [disabled]="loading() || applying()"
           [attr.maxlength]="maxPromptChars" (input)="onInput($event)" (keydown)="onKeydown($event)"
           (paste)="onPaste($event)"
-          placeholder="e.g. Add an approval section to the form I’m editing, or create a combined screen with my existing forms and datasets"></textarea>
+          placeholder="Describe what you want to build or change…"></textarea>
 
         <input #filePicker class="d-none" type="file" multiple
           accept="application/pdf,image/png,image/jpeg,image/gif,image/webp"
           [disabled]="loading() || applying()" (change)="onFilesSelected($event)" />
 
         @if (attachments().length) {
-            <div class="d-flex flex-wrap gap-2 px-3 pb-2" role="list" aria-label="Attached files">
+          <div class="d-flex flex-wrap gap-2 px-3 pb-2" role="list" aria-label="Attached files">
             @for (file of attachments(); track $index) {
-                <span class="badge rounded-pill border text-body bg-transparent d-inline-flex align-items-center gap-2" role="listitem">
+              <span class="assistant-file-chip" role="listitem" [title]="file.name">
                 <fa-icon [icon]="['fas', 'paperclip']" [fixedWidth]="true"></fa-icon>
-                  <span class="text-truncate" style="max-width: 12rem;">{{ file.name }}</span>
-                <button type="button" class="btn-close" [disabled]="loading() || applying()"
+                <span class="text-truncate">{{ file.name }}</span>
+                <button type="button" class="btn-close btn-close-sm" [disabled]="loading() || applying()"
                   [attr.aria-label]="'Remove ' + file.name" (click)="removeAttachment($index)"></button>
               </span>
             }
           </div>
         }
-        
-        <div class="d-flex justify-content-between align-items-center p-3 pt-0">
-          <span class="smaller text-body-secondary">
-            Drop or paste files &middot; Ctrl+Enter to send
-            @if (prompt().length > maxPromptChars * 0.9) {
-              &middot; <span [class.text-danger]="prompt().length >= maxPromptChars">{{ prompt().length }}/{{ maxPromptChars }}</span>
-            }
-          </span>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+
+        <div class="assistant-prompt-actions gap-2">
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="assistant-icon-button"
               [disabled]="loading() || applying() || attachments().length >= maxAttachments"
               aria-label="Attach files" title="Attach PDF or image (4 MB each, 8 MB total)"
               (click)="openFilePicker(filePicker)">
               <fa-icon [icon]="['fas', 'paperclip']" [fixedWidth]="true"></fa-icon>
             </button>
             @if (history().length) {
-              <button type="button" class="btn btn-outline-secondary btn-round btn-sm"
+              <button type="button" class="assistant-icon-button"
+                aria-label="Clear conversation" title="Clear conversation"
                 [disabled]="loading() || applying() || entityPickerLoading()" (click)="reset()">
-                Clear
+                <fa-icon [icon]="['fas', 'trash-alt']" [fixedWidth]="true"></fa-icon>
               </button>
             }
-            <button type="button" class="btn btn-primary btn-sm rounded-pill px-2" [disabled]="!canSend()" (click)="send()">
+          </div>
+          <button type="button" class="assistant-send-button" [disabled]="!canSend()" (click)="send()">
               <fa-icon [icon]="['fas', 'paper-plane']" [fixedWidth]="true"></fa-icon>
               Send
-            </button>
-          </div>
+          </button>
+        </div>
+        <div class="assistant-prompt-hint">
+          <span>Drop or paste files</span>
+          <span class="text-nowrap">
+            Ctrl+Enter
+            @if (prompt().length > maxPromptChars * 0.9) {
+              &middot; <span [class.text-danger]="prompt().length >= maxPromptChars">{{ prompt().length }}/{{ maxPromptChars }}</span>
+            }
+          </span>
         </div>
       </div>
+      } @else {
+        <div class="assistant-empty-state">
+          <fa-icon [icon]="['fas', 'robot']" [fixedWidth]="true" aria-hidden="true"></fa-icon>
+          <div class="fs-5 fw-semibold text-body-secondary">No assistant selected</div>
+          <div class="small text-body-secondary text-center">
+            Select or configure a creator assistant to start.
+          </div>
+          <a class="btn btn-primary btn-sm mt-2" routerLink="/devprofile">
+            <fa-icon [icon]="['fas', 'cog']" [fixedWidth]="true"></fa-icon>
+            Manage Assistant
+          </a>
+        </div>
+      }
     </footer>
 </aside> 
