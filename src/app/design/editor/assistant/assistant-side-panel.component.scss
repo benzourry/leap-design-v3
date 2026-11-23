@@ -129,6 +129,12 @@
   touch-action: pan-y;
 }
 
+::ng-deep .palette-scroll-container #super-palette-pane .btn,
+::ng-deep .palette-scroll-container #palette-pane .btn {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
 .assistant-side-panel-rail {
   width: 2.75rem;
   height: 100%;
