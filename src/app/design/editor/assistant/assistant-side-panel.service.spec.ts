@@ -54,6 +54,49 @@ describe('AssistantSidePanelService', () => {
     expect(service.activeTab()).toBe('assistant');
   });
 
+  it('closes after removing the palette when the assistant is not configured', () => {
+    const service = TestBed.inject(AssistantSidePanelService);
+    const owner = {};
+
+    service.registerPalette(owner, {} as TemplateRef<unknown>);
+    service.setAssistantConfigured(false);
+    service.unregisterPalette(owner);
+
+    expect(service.expanded()).toBeFalse();
+    expect(service.palette()).toBeNull();
+  });
+
+  it('closes once an unconfigured assistant is resolved after removing the palette', () => {
+    const service = TestBed.inject(AssistantSidePanelService);
+    const owner = {};
+
+    service.registerPalette(owner, {} as TemplateRef<unknown>);
+    service.unregisterPalette(owner);
+    service.setAssistantConfigured(false);
+
+    expect(service.expanded()).toBeFalse();
+  });
+
+  it('keeps an explicitly opened unconfigured assistant expanded', () => {
+    const service = TestBed.inject(AssistantSidePanelService);
+
+    service.open('assistant');
+    service.setAssistantConfigured(false);
+
+    expect(service.expanded()).toBeTrue();
+  });
+
+  it('keeps the assistant open after removing the palette when configured', () => {
+    const service = TestBed.inject(AssistantSidePanelService);
+    const owner = {};
+
+    service.registerPalette(owner, {} as TemplateRef<unknown>);
+    service.setAssistantConfigured(true);
+    service.unregisterPalette(owner);
+
+    expect(service.expanded()).toBeTrue();
+  });
+
   it('opens the requested tab while preserving a collapsed palette registration', () => {
     const service = TestBed.inject(AssistantSidePanelService);
     service.registerPalette({}, {} as TemplateRef<unknown>);
@@ -73,6 +116,36 @@ describe('AssistantSidePanelService', () => {
 
     service.collapseForPaletteDrag();
 
+    expect(service.expanded()).toBeFalse();
+  });
+
+  it('adds a history entry when opened on mobile and closes it on Back', () => {
+    mobile.set(true);
+    const pushState = spyOn(window.history, 'pushState');
+    const service = TestBed.inject(AssistantSidePanelService);
+
+    service.open('assistant');
+
+    expect(service.expanded()).toBeTrue();
+    expect(pushState).toHaveBeenCalled();
+
+    window.dispatchEvent(new PopStateEvent('popstate'));
+
+    expect(service.expanded()).toBeFalse();
+  });
+
+  it('uses Back to remove the mobile panel history entry when closed', () => {
+    mobile.set(true);
+    const pushState = spyOn(window.history, 'pushState');
+    spyOnProperty(window.history, 'state', 'get').and.returnValue({ assistantSidePanel: true });
+    const back = spyOn(window.history, 'back');
+    const service = TestBed.inject(AssistantSidePanelService);
+
+    service.open('assistant');
+    service.close();
+
+    expect(pushState).toHaveBeenCalled();
+    expect(back).toHaveBeenCalledTimes(1);
     expect(service.expanded()).toBeFalse();
   });
 

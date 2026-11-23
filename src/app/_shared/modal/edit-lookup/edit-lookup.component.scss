@@ -1,0 +1,40 @@
+.additional-data-editor {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  padding: .75rem;
+}
+
+.additional-data-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: end;
+  padding-bottom: .75rem;
+  margin-bottom: .75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 55%, transparent);
+}
+
+.additional-data-row:last-of-type {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+.additional-data-row > div {
+  flex: 1 1 8rem;
+}
+
+.additional-data-empty {
+  padding: .5rem 0;
+}
+
+@media (max-width: 767.98px) {
+  .additional-data-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .additional-data-row .btn {
+    justify-self: start;
+  }
+}

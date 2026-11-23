@@ -74,6 +74,7 @@
           <app-assistant-drawer
             [appId]="appId()" [app]="app()" [email]="email()"
             [localContext]="localContext.context()"
+            (configured)="panel.setAssistantConfigured($event)"
             (changed)="changed.emit($event)"></app-assistant-drawer>
         } @placeholder {
           <div class="flex-grow-1"></div>

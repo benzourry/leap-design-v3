@@ -323,6 +323,9 @@
                       <option value="{{secretKey}}">Secret: {{secret.key}}</option>
                     }
                   </datalist>
+                @if (secretListError) {
+                  <small class="text-danger">{{ secretListError }}</small>
+                }
               </div>
             </div>
           </div>
@@ -346,17 +349,115 @@
     }
     @if (_lookup.dataEnabled) {
       <div class="form-group mb-3">
-        @if (_lookup.sourceType=='rest') {
-          <label class="form-label">Data fields to retain (comma separated,
-            leave blank if
-          retain all)</label>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <label class="form-label mb-0">
+            Additional data fields{{ _lookup.sourceType == 'db' ? ' *' : '' }}
+          </label>
+          <div class="ms-auto btn-group-xs small group-by-toggle" role="group"
+            aria-label="Additional data editor mode">
+            <input class="btn-check" type="radio" value="visual" id="additionalDataVisual"
+              name="additionalDataMode" [ngModel]="additionalDataMode"
+              (ngModelChange)="setAdditionalDataMode($event)">
+            <label for="additionalDataVisual" class="btn px-2">Visual</label>
+            <input class="btn-check" type="radio" value="code" id="additionalDataCode"
+              name="additionalDataMode" [ngModel]="additionalDataMode"
+              (ngModelChange)="setAdditionalDataMode($event)">
+            <label for="additionalDataCode" class="btn px-2">Code</label>
+          </div>
+        </div>
+        @if (_lookup.sourceType == 'rest') {
+          <small class="d-block text-secondary mb-2">Leave the list empty to retain all response fields.</small>
+        } @else if (_lookup.sourceType == 'db') {
+          <small class="d-block text-secondary mb-2">Database lookups require at least one field.</small>
         }
-        @if (_lookup.sourceType=='db') {
-          <label class="form-label">Additional Data fields (comma separated)
-          *</label>
+
+        @if (additionalDataMode === 'visual') {
+          <div class="additional-data-editor">
+            @for (field of additionalDataFields; track $index) {
+              <div class="additional-data-row">
+                <div>
+                  <label class="form-label small mb-1" [for]="'dataFieldName' + $index">Field name</label>
+                  <input class="form-control form-control-sm" type="text"
+                    [id]="'dataFieldName' + $index" [name]="'dataFieldName' + $index"
+                    [(ngModel)]="field.name" (ngModelChange)="syncAdditionalDataFields()"
+                    placeholder="designation" [required]="_lookup.sourceType == 'db'">
+                </div>
+                <div>
+                  <label class="form-label small mb-1" [for]="'dataFieldType' + $index">Type</label>
+                  <select class="form-select form-select-sm"
+                    [id]="'dataFieldType' + $index" [name]="'dataFieldType' + $index"
+                    [(ngModel)]="field.type" (ngModelChange)="syncAdditionalDataFields()">
+                    @for (type of additionalFieldTypes; track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </select>
+                </div>
+                @if (additionalFieldHasConfig(field.type)) {
+                  <div>
+                    <label class="form-label small mb-1" [for]="'dataFieldConfig' + $index">
+                      {{ field.type === 'options' ? 'Options' : 'Lookup' }}
+                    </label>
+                    @if (field.type === 'options') {
+                      <input class="form-control form-control-sm" type="text"
+                        [id]="'dataFieldConfig' + $index" [name]="'dataFieldConfig' + $index"
+                        [(ngModel)]="field.config" (ngModelChange)="syncAdditionalDataFields()"
+                        placeholder="Male|Female">
+                    } @else {
+                      <select class="form-select form-select-sm"
+                        [id]="'dataFieldConfig' + $index" [name]="'dataFieldConfig' + $index"
+                        [(ngModel)]="field.config" (ngModelChange)="syncAdditionalDataFields()">
+                        <option value="">Select lookup</option>
+                        @for (lookupOption of lookupOptions; track lookupOption.id) {
+                          <option [value]="lookupOption.id">{{ lookupOption.name }} ({{ lookupOption.id }})</option>
+                        }
+                      </select>
+                    }
+                  </div>
+                }
+                @if (_lookup.sourceType == 'rest') {
+                  <div>
+                    <label class="form-label small mb-1" [for]="'dataFieldPath' + $index">JSON path</label>
+                    <input class="form-control form-control-sm" type="text"
+                      [id]="'dataFieldPath' + $index" [name]="'dataFieldPath' + $index"
+                      [(ngModel)]="field.path" (ngModelChange)="syncAdditionalDataFields()"
+                      placeholder="/data/designation/name">
+                  </div>
+                }
+                <button type="button" class="btn btn-sm btn-outline-danger align-self-end"
+                  (click)="removeAdditionalDataField($index)"
+                  [attr.aria-label]="'Remove ' + (field.name || 'additional data field')">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                </button>
+              </div>
+            }
+
+            @if (lookupOptionsError) {
+              <small class="d-block text-danger mb-2">{{ lookupOptionsError }}</small>
+            }
+            @if (additionalDataFields.length === 0) {
+              <div class="additional-data-empty text-secondary small">No fields configured.</div>
+            }
+
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2"
+              (click)="addAdditionalDataField()">
+              <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+              Add field
+            </button>
+          </div>
+
+          <input class="d-none" name="dataFieldsVisual" [(ngModel)]="_lookup.dataFields"
+            [required]="_lookup.sourceType == 'db'">
+          @if (_lookup.dataFields) {
+            <div class="mt-2">
+              <label class="form-label small mb-1">Generated configuration</label>
+              <code class="d-block bg-light border rounded p-2 text-break">{{ _lookup.dataFields }}</code>
+            </div>
+          }
+        } @else {
+          <textarea class="form-control" rows="4" [(ngModel)]="_lookup.dataFields"
+            name="dataFieldsCode" [required]="_lookup.sourceType == 'db'"
+            placeholder="designation:text,age:number,department:lookup:4121"></textarea>
         }
-        <textarea type="text" class="form-control" [(ngModel)]="_lookup.dataFields"
-        #endpoint="ngModel" name="dataFields" [required]="_lookup.sourceType=='db'"></textarea>
       </div>
     }
   </div>

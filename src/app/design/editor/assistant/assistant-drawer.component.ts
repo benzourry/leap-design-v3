@@ -61,6 +61,7 @@ export class AssistantDrawerComponent implements OnInit {
   localContext = input<AssistantLocalContext>({ type: 'app' });
 
   changed = output<AssistantChanged>();
+  configured = output<boolean>();
 
   readonly prompt = signal('');
   readonly attachments = signal<File[]>([]);
@@ -181,6 +182,7 @@ export class AssistantDrawerComponent implements OnInit {
       .subscribe({
         next: (profiles) => {
           this.settings.set(profiles.find((profile) => profile.selected) ?? null);
+          this.configured.emit(this.settings() !== null);
           if (!this.settings()) this.error.set('Add and select an assistant in your developer profile first.');
         },
         error: (e) => this.error.set(e instanceof Error
