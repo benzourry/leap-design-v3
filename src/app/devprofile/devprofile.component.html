@@ -182,19 +182,25 @@
     </div>
 
     <div class="form-group mb-3">
-      <label class="form-label" for="assistant-base-url">API base URL</label>
-      <input id="assistant-base-url" class="form-control" name="assistantBaseUrl" required type="url"
-        list="assistant-base-url-suggestions" [(ngModel)]="assistantDraft.apiBaseUrl"
-        (ngModelChange)="assistantUrlChanged()" (change)="assistantUrlConfirmed()"
-        placeholder="https://api.openai.com/v1">
-      <div class="small text-secondary mt-1">
-        The endpoint must support OpenAI-compatible chat completions. Use a compatible gateway for Claude models.
-      </div>
-      <datalist id="assistant-base-url-suggestions">
+      <label class="form-label" for="assistant-provider">AI Provider</label>
+      <select id="assistant-provider" class="form-select" name="assistantProvider" required
+        [(ngModel)]="assistantProvider" (ngModelChange)="assistantProviderChanged()">
+        <option value="" disabled>Select a provider</option>
         @for (providerSuggestion of assistantBaseUrlSuggestions; track providerSuggestion.url) {
           <option [value]="providerSuggestion.url">{{ providerSuggestion.name }}</option>
         }
-      </datalist>
+        <option value="custom">Custom</option>
+      </select>
+      @if (assistantProvider === 'custom') {
+        <label class="form-label mt-2" for="assistant-base-url">API base URL</label>
+        <input id="assistant-base-url" class="form-control" name="assistantBaseUrl" required type="url"
+          [(ngModel)]="assistantDraft.apiBaseUrl"
+          (ngModelChange)="assistantUrlChanged()" (change)="assistantUrlConfirmed()"
+          placeholder="https://example.com/v1">
+      }
+      <div class="small text-secondary mt-1">
+        The endpoint must support OpenAI-compatible chat completions. Use a compatible gateway for Claude models.
+      </div>
     </div>
 
     <div class="form-group mb-3">

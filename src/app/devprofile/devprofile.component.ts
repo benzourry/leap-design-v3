@@ -26,7 +26,7 @@ import { SwPush } from '@angular/service-worker';
 import { PushService } from '../_shared/service/push.service';
 import { take, withLatestFrom } from 'rxjs/operators';
 import { Subscription, switchMap, timer } from 'rxjs';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, NgClass, PlatformLocation } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // import { PageTitleComponent } from '../_shared/component/page-title.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -71,9 +71,11 @@ export class DevProfileComponent implements OnInit {
     private route = inject(ActivatedRoute);
     private cdr = inject(ChangeDetectorRef);
     private destroyRef = inject(DestroyRef);
+    private location = inject(PlatformLocation);
 
   constructor() { 
     this.destroyRef.onDestroy(() => this.modelLookup?.unsubscribe());
+    this.destroyRef.onDestroy(this.location.onPopState(() => this.modalService.dismissAll('')));
     effect(()=>{
       this.app = this.runService.$app();
     })
@@ -228,6 +230,7 @@ export class DevProfileComponent implements OnInit {
   assistants: AssistantProfile[] = [];
   editingAssistantId: number | null = null;
   assistantDraft: AssistantProfileDraft = this.emptyAssistantDraft();
+  assistantProvider = '';
   readonly assistantModels = signal<string[]>([]);
   readonly modelsLoading = signal(false);
   readonly modelsMessage = signal('');
@@ -275,6 +278,8 @@ export class DevProfileComponent implements OnInit {
     this.editingAssistantId = null;
     this.savedAssistantUrl = '';
     this.assistantDraft = this.emptyAssistantDraft();
+    this.assistantProvider = '';
+    history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' }).result.then(
       (draft) => { this.clearModelLookup(); this.saveAssistant(draft); },
       () => this.clearModelLookup()
@@ -293,11 +298,23 @@ export class DevProfileComponent implements OnInit {
       additionalInstructions: assistant.additionalInstructions,
       maxActions: assistant.maxActions,
     };
+    this.assistantProvider = this.assistantBaseUrlSuggestions.find(
+      provider => this.normalizeAssistantUrl(provider.url) === this.savedAssistantUrl
+    )?.url ?? 'custom';
+    history.pushState(null, null, window.location.href);
     this.modalService.open(tpl, { backdrop: 'static' }).result.then(
       (draft) => { this.clearModelLookup(); this.saveAssistant(draft); },
       () => this.clearModelLookup()
     );
     this.loadAssistantModels();
+  }
+
+  assistantProviderChanged() {
+    this.assistantDraft.apiBaseUrl = this.assistantProvider === 'custom' ? '' : this.assistantProvider;
+    this.assistantUrlChanged();
+    if (this.assistantProvider !== 'custom') {
+      this.assistantUrlConfirmed();
+    }
   }
 
   assistantUrlChanged() {

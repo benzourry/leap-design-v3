@@ -16,9 +16,16 @@ describe('DevProfileComponent model lookup', () => {
   let component: DevProfileComponent;
   let fixture: ComponentFixture<DevProfileComponent>;
   let settings: jasmine.SpyObj<AssistantSettingsService>;
+  let openModal: jasmine.Spy;
+  let dismissAll: jasmine.Spy;
 
   beforeEach(() => {
     jasmine.clock().install();
+    spyOn(window.history, 'pushState');
+    openModal = jasmine.createSpy('open').and.returnValue({
+      result: new Promise(() => {}),
+    });
+    dismissAll = jasmine.createSpy('dismissAll');
     settings = jasmine.createSpyObj<AssistantSettingsService>('AssistantSettingsService', ['models']);
     TestBed.configureTestingModule({
       imports: [DevProfileComponent],
@@ -30,7 +37,7 @@ describe('DevProfileComponent model lookup', () => {
         { provide: ToastService, useValue: {} },
         { provide: ActivatedRoute, useValue: {} },
         { provide: AssistantSettingsService, useValue: settings },
-        { provide: NgbModal, useValue: { open: () => ({ result: new Promise(() => {}) }) } },
+        { provide: NgbModal, useValue: { open: openModal, dismissAll } },
       ],
     });
     TestBed.overrideComponent(DevProfileComponent, { set: { template: '' } });
@@ -80,4 +87,59 @@ describe('DevProfileComponent model lookup', () => {
     expect(settings.models.calls.count()).toBe(1);
     expect(component.modelsMessage()).toContain('Enter an API key');
   });
+
+  it('selects a built-in provider and clears stale model suggestions', () => {
+    component.assistantModels.set(['old-model']);
+    component.assistantProvider = 'https://api.openai.com/v1';
+    component.assistantProviderChanged();
+
+    expect(component.assistantDraft.apiBaseUrl).toBe('https://api.openai.com/v1');
+    expect(component.assistantModels()).toEqual([]);
+    component.assistantProvider = 'custom';
+    component.assistantProviderChanged();
+    expect(component.assistantDraft.apiBaseUrl).toBe('');
+  });
+
+  it('preserves custom URLs and recognizes normalized built-in URLs when editing', () => {
+    const assistant: AssistantProfile = {
+      id: 5, name: 'Test', apiBaseUrl: 'https://other.example/v1', model: 'model',
+      additionalInstructions: '', maxActions: 10, selected: true, apiKeyConfigured: true,
+    };
+    settings.models.and.returnValue(NEVER);
+    component.editAssistant(null, assistant);
+    expect(component.assistantProvider).toBe('custom');
+    expect(component.assistantDraft.apiBaseUrl).toBe(assistant.apiBaseUrl);
+
+    assistant.apiBaseUrl = 'https://api.openai.com/v1/';
+    component.editAssistant(null, assistant);
+    expect(component.assistantProvider).toBe('https://api.openai.com/v1');
+    expect(component.assistantDraft.apiBaseUrl).toBe(assistant.apiBaseUrl);
+  });
+
+  for (const mode of ['add', 'edit'] as const) {
+    it(`dismisses the ${mode} assistant form on browser back without saving`, async () => {
+      let rejectModal: (reason?: unknown) => void = () => {};
+      const result = new Promise((_, reject) => { rejectModal = reject; });
+      dismissAll.and.callFake(() => rejectModal());
+      openModal.and.returnValue({ result });
+      const save = spyOn(component, 'saveAssistant');
+      settings.models.and.returnValue(NEVER);
+
+      if (mode === 'add') {
+        component.addAssistant(null);
+      } else {
+        component.editAssistant(null, {
+          id: 5, name: 'Test', apiBaseUrl: 'https://api.openai.com/v1', model: 'gpt',
+          additionalInstructions: '', maxActions: 10, selected: true, apiKeyConfigured: true,
+        });
+      }
+
+      expect(window.history.pushState).toHaveBeenCalledWith(null, null, window.location.href);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      await result.catch(() => {});
+      expect(dismissAll).toHaveBeenCalledTimes(1);
+      expect(save).not.toHaveBeenCalled();
+      expect(component.modelsLoading()).toBeFalse();
+    });
+  }
 });
