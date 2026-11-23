@@ -58,6 +58,10 @@ export class AssistantSettingsService {
     return this.http.put<AssistantProfile>(ASSISTANT_API.selectProfile(id), {});
   }
 
+  models(apiBaseUrl: string, apiKey: string, assistantId: number | null): Observable<string[]> {
+    return this.http.post<string[]>(ASSISTANT_API.models(), { apiBaseUrl, apiKey, assistantId });
+  }
+
   private loadLegacy(storageKey: string): AssistantProfileDraft | null {
     const raw = localStorage.getItem(storageKey);
     if (!raw) return null;

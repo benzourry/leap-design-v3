@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
 import { UserService } from '../_shared/service/user.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../_shared/service/toast-service';
@@ -25,6 +25,7 @@ import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { SwPush } from '@angular/service-worker';
 import { PushService } from '../_shared/service/push.service';
 import { take, withLatestFrom } from 'rxjs/operators';
+import { Subscription, switchMap, timer } from 'rxjs';
 import { DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // import { PageTitleComponent } from '../_shared/component/page-title.component';
@@ -69,8 +70,10 @@ export class DevProfileComponent implements OnInit {
     private assistantSettingsService = inject(AssistantSettingsService);
     private route = inject(ActivatedRoute);
     private cdr = inject(ChangeDetectorRef);
+    private destroyRef = inject(DestroyRef);
 
   constructor() { 
+    this.destroyRef.onDestroy(() => this.modelLookup?.unsubscribe());
     effect(()=>{
       this.app = this.runService.$app();
     })
@@ -225,6 +228,11 @@ export class DevProfileComponent implements OnInit {
   assistants: AssistantProfile[] = [];
   editingAssistantId: number | null = null;
   assistantDraft: AssistantProfileDraft = this.emptyAssistantDraft();
+  readonly assistantModels = signal<string[]>([]);
+  readonly modelsLoading = signal(false);
+  readonly modelsMessage = signal('');
+  private modelLookup?: Subscription;
+  private savedAssistantUrl = '';
   readonly assistantBaseUrlSuggestions = [
     { name: 'OpenAI', url: 'https://api.openai.com/v1' },
     { name: 'OpenRouter', url: 'https://openrouter.ai/api/v1' },
@@ -263,16 +271,20 @@ export class DevProfileComponent implements OnInit {
   }
 
   addAssistant(tpl: any) {
+    this.clearModelLookup();
     this.editingAssistantId = null;
+    this.savedAssistantUrl = '';
     this.assistantDraft = this.emptyAssistantDraft();
     this.modalService.open(tpl, { backdrop: 'static' }).result.then(
-      (draft) => this.saveAssistant(draft),
-      () => {}
+      (draft) => { this.clearModelLookup(); this.saveAssistant(draft); },
+      () => this.clearModelLookup()
     );
   }
 
   editAssistant(tpl: any, assistant: AssistantProfile) {
+    this.clearModelLookup();
     this.editingAssistantId = assistant.id;
+    this.savedAssistantUrl = this.normalizeAssistantUrl(assistant.apiBaseUrl);
     this.assistantDraft = {
       name: assistant.name,
       apiBaseUrl: assistant.apiBaseUrl,
@@ -282,9 +294,78 @@ export class DevProfileComponent implements OnInit {
       maxActions: assistant.maxActions,
     };
     this.modalService.open(tpl, { backdrop: 'static' }).result.then(
-      (draft) => this.saveAssistant(draft),
-      () => {}
+      (draft) => { this.clearModelLookup(); this.saveAssistant(draft); },
+      () => this.clearModelLookup()
     );
+    this.loadAssistantModels();
+  }
+
+  assistantUrlChanged() {
+    this.clearModelLookup();
+  }
+
+  assistantUrlConfirmed() {
+    if (!this.assistantDraft.apiKey.trim()) {
+      if (this.canLoadAssistantModels()) {
+        this.loadAssistantModels();
+      } else if (this.editingAssistantId !== null) {
+        this.modelsMessage.set('Enter an API key for this URL to load models.');
+      }
+    } else {
+      this.modelsMessage.set('Confirm the API key belongs to this provider, then select Load models.');
+    }
+  }
+
+  assistantKeyChanged() {
+    this.clearModelLookup();
+    this.loadAssistantModels();
+  }
+
+  canLoadAssistantModels(): boolean {
+    try {
+      const url = new URL(this.assistantDraft.apiBaseUrl.trim());
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
+        return false;
+      }
+      return !!this.assistantDraft.apiKey.trim()
+        || (this.editingAssistantId !== null
+          && this.normalizeAssistantUrl(this.assistantDraft.apiBaseUrl) === this.savedAssistantUrl);
+    } catch {
+      return false;
+    }
+  }
+
+  loadAssistantModels() {
+    this.clearModelLookup();
+    if (!this.canLoadAssistantModels()) return;
+
+    const { apiBaseUrl, apiKey } = this.assistantDraft;
+    const assistantId = this.editingAssistantId;
+    this.modelsLoading.set(true);
+    this.modelLookup = timer(600).pipe(
+      switchMap(() => this.assistantSettingsService.models(apiBaseUrl, apiKey, assistantId))
+    ).subscribe({
+      next: (models) => {
+        this.assistantModels.set(models);
+        this.modelsLoading.set(false);
+        if (!models.length) this.modelsMessage.set('No models were returned. You can enter a model manually.');
+      },
+      error: () => {
+        this.modelsLoading.set(false);
+        this.modelsMessage.set('Could not load models for this provider. Check the URL and API key, or enter a model manually.');
+      },
+    });
+  }
+
+  private clearModelLookup() {
+    this.modelLookup?.unsubscribe();
+    this.assistantModels.set([]);
+    this.modelsLoading.set(false);
+    this.modelsMessage.set('');
+  }
+
+  private normalizeAssistantUrl(url: string): string {
+    return url.trim().replace(/\/+$/, '').replace(/\/chat\/completions$/, '');
   }
 
   saveAssistant(draft: AssistantProfileDraft) {

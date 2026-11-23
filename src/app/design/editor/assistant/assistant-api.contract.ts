@@ -6,6 +6,7 @@ import { baseApi } from '../../../_shared/constant.service';
 export const ASSISTANT_API = {
   health: () => `${baseApi}/assistant/health`,
   profiles: () => `${baseApi}/assistant/profiles`,
+  models: () => `${baseApi}/assistant/profiles/models`,
   profile: (id: number) => `${baseApi}/assistant/profiles/${id}`,
   selectProfile: (id: number) => `${baseApi}/assistant/profiles/${id}/select`,
   plan: (appId: number) => `${baseApi}/assistant/${appId}/plan`,

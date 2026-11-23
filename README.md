@@ -78,6 +78,12 @@ LEAP-DESIGN v3.2 is an Angular-based frontend framework designed for the **LEAP 
 - Leverage your own bucket files and datasets for RAG pipelines.
 - Integration with 3rd-party MCP servers.
 
+Creator profile AI assistant settings can suggest models from the configured OpenAI-compatible
+provider after an API key is supplied. When editing an assistant, its saved key is used only
+with its saved base URL. If model discovery is unavailable, enter the model name manually.
+Discovery sends the key to the configured URL from the backend; deployments should restrict
+creator access and backend outbound network access appropriately.
+
 
 ## ⚙️ LEAP Lambda (Function-as-a-Service)
 - Lightweight serverless environment for building custom logic.

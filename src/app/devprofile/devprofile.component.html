@@ -185,6 +185,7 @@
       <label class="form-label" for="assistant-base-url">API base URL</label>
       <input id="assistant-base-url" class="form-control" name="assistantBaseUrl" required type="url"
         list="assistant-base-url-suggestions" [(ngModel)]="assistantDraft.apiBaseUrl"
+        (ngModelChange)="assistantUrlChanged()" (change)="assistantUrlConfirmed()"
         placeholder="https://api.openai.com/v1">
       <div class="small text-secondary mt-1">
         The endpoint must support OpenAI-compatible chat completions. Use a compatible gateway for Claude models.
@@ -197,17 +198,36 @@
     </div>
 
     <div class="form-group mb-3">
-      <label class="form-label" for="assistant-model">Model</label>
-      <input id="assistant-model" class="form-control" name="assistantModel" required
-        [(ngModel)]="assistantDraft.model" placeholder="e.g. gpt-4o-mini">
-      </div>
-
-    <div class="form-group mb-3">
       <label class="form-label" for="assistant-api-key">API key</label>
       <input id="assistant-api-key" class="form-control" name="assistantApiKey" type="password"
         [required]="editingAssistantId === null" [(ngModel)]="assistantDraft.apiKey"
+        (ngModelChange)="assistantKeyChanged()"
         [placeholder]="editingAssistantId === null ? 'Enter API key' : 'Leave blank to keep the saved key'"
         autocomplete="new-password">
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="assistant-model">Model</label>
+      <div class="input-group">
+        <input id="assistant-model" class="form-control" name="assistantModel" required
+          list="assistant-model-suggestions" [(ngModel)]="assistantDraft.model" placeholder="e.g. gpt-4o-mini">
+        <button type="button" class="btn btn-outline-secondary" (click)="loadAssistantModels()"
+          [disabled]="!canLoadAssistantModels() || modelsLoading()">Load models</button>
+      </div>
+      <datalist id="assistant-model-suggestions">
+        @for (model of assistantModels(); track model) {
+          <option [value]="model"></option>
+        }
+      </datalist>
+      <div class="small text-secondary mt-1" role="status" aria-live="polite">
+        @if (modelsLoading()) {
+          Loading models...
+        } @else if (modelsMessage()) {
+          {{ modelsMessage() }}
+        } @else {
+          Choose a suggestion or enter a model manually.
+        }
+      </div>
     </div>
 
     <div class="form-group mb-3">

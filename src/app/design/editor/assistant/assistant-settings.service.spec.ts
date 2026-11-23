@@ -68,4 +68,16 @@ describe('AssistantSettingsService', () => {
 
     expect(localStorage.getItem('leap-assistant-settings:creator@example.com')).toBeNull();
   });
+
+  it('requests models for the specified provider without requiring a saved profile', () => {
+    let models: string[] | undefined;
+    service.models('https://api.openai.com/v1', 'key', null).subscribe((value) => models = value);
+    const request = http.expectOne(ASSISTANT_API.models());
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      apiBaseUrl: 'https://api.openai.com/v1', apiKey: 'key', assistantId: null,
+    });
+    request.flush(['gpt-4o']);
+    expect(models).toEqual(['gpt-4o']);
+  });
 });
