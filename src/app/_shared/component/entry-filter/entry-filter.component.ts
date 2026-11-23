@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
-import { splitAsList } from '../../utils';
 import { FilterPipe } from '../../pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
 import { AsListPipe } from '../../pipe/as-list.pipe';
 import { filterKey, filterOperatorOptions, getFilterOperator, isRangeFilter, operatorSettingKey, FilterField } from './filter-operators';
 
@@ -24,8 +22,6 @@ export class EntryFilterComponent {
   sectionItems = input<any>({});
   lookup = input<any>({});
   
-  hasFocus: any = {};
-
   excludedTypes = ['static', 'file', 'imagePreview', 'btn', 'dataset', 'screen', 'map'];
   noDynamicTypes = ['text', 'textarea', 'eval', 'qr'];
   operatorError = '';
@@ -78,7 +74,6 @@ export class EntryFilterComponent {
     const tier = this.getTierFromSection(section?.id, this.formHolder()['data']);
     
     if (section?.type === 'approval') {
-      // FIXED: Removed the rogue leading dot. Now correctly yields $$.123
       return tier ? `$$.${tier.id}` : mapFm[fm];
     } else if (section?.type === 'list') {
       return `${mapFm[fm]}.${section.code}*`;
@@ -114,6 +109,11 @@ export class EntryFilterComponent {
     return this.filters().some(i => f.code === i.code && i.root === root);
   }
 
+  hasVisibleFields(root: string, items: any[]): boolean {
+    const fields = this.formHolder()[root]?.items;
+    return items.some(item => fields?.[item.code] && !this.excludedTypes.includes(fields[item.code].type));
+  }
+
   getBindingPath(field: any, prefixedField: string): string {
     const multi = field.subType === 'multiple' ? '*' : '';
     switch (field.type) {
@@ -144,5 +144,4 @@ export class EntryFilterComponent {
       && this.presetFilters()[path] != null;
   }
 
-  getAsList = splitAsList;
 }

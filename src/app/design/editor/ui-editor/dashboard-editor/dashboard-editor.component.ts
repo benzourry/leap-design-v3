@@ -703,7 +703,7 @@ export class DashboardEditorComponent implements OnInit {
       this._getLookupObs(code, param, cb, err)
         .subscribe({
           next: res => {
-            this.lookup[code] = res;
+            this.lookup = { ...this.lookup, [code]: res };
           }, error: err => {
           }
         })

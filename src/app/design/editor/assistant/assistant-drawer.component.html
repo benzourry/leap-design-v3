@@ -1,7 +1,7 @@
 <aside class="assistant-drawer h-100 d-flex flex-column bg-body text-body" role="region"
   aria-label="Creator Assistant">
-    <div class="assistant-body flex-grow-1 overflow-auto p-3" [class.d-none]="!settings()" aria-live="polite">
-      <div class="assistant-context-chip small text-body-secondary bg-body-tertiary border rounded mb-3">
+    <div class="assistant-body flex-grow-1 overflow-auto p-2" [class.d-none]="!settings()" aria-live="polite">
+      <div class="assistant-context-chip small text-body-secondary bg-body-tertiary border rounded mb-2">
         {{ contextDescription() }}
       </div>
 
@@ -228,7 +228,7 @@
         </div>
       </div>
       } @else {
-        <div class="assistant-empty-state">
+        <div class="assistant-empty-state text-center">
           <fa-icon [icon]="['fas', 'robot']" [fixedWidth]="true" aria-hidden="true"></fa-icon>
           <div class="fs-5 fw-semibold text-body-secondary">No assistant selected</div>
           <div class="small text-body-secondary text-center">

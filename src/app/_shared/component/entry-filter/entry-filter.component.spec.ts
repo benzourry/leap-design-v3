@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EntryFilterComponent } from './entry-filter.component';
 import { filterOperatorOptions, getFilterOperator, operatorSettingKey } from './filter-operators';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 describe('EntryFilterComponent', () => {
   let component: EntryFilterComponent;
@@ -15,7 +15,7 @@ describe('EntryFilterComponent', () => {
 })
     .compileComponents();
 
-    TestBed.inject(FaIconLibrary).addIcons(faTrash);
+    TestBed.inject(FaIconLibrary).addIcons(faAngleRight, faTrash);
     fixture = TestBed.createComponent(EntryFilterComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('formHolder', {});
@@ -196,5 +196,57 @@ describe('EntryFilterComponent', () => {
     const dynamicPreset: HTMLInputElement = fixture.nativeElement.querySelector('input[aria-label="Preset for Gender"]');
     expect(dynamicPreset.value).toBe('M');
     expect(dynamicPreset.parentElement).toBe(operator.parentElement);
+  });
+
+  it('expands the first non-built-in section and matching sections while filtering', async () => {
+    fixture.componentRef.setInput('formHolder', {
+      data: {
+        id: 1,
+        title: 'Form',
+        items: {
+          created: { code: 'created', label: 'Created', type: 'text' },
+          name: { code: 'name', label: 'Name', type: 'text' },
+          email: { code: 'email', label: 'Email', type: 'text' }
+        },
+        tiers: []
+      }
+    });
+    fixture.componentRef.setInput('sectionItems', {
+      data: [
+        { section: { id: -1, title: 'Built-in Properties' }, items: [{ code: 'created' }] },
+        { section: { id: 1, title: 'Details' }, items: [{ code: 'name' }] },
+        { section: { id: 2, title: 'Contact' }, items: [{ code: 'email' }] }
+      ]
+    });
+    fixture.detectChanges();
+
+    let sections: HTMLDetailsElement[] = Array.from(fixture.nativeElement.querySelectorAll('details'));
+    expect(sections.map(section => section.open)).toEqual([false, true, false]);
+
+    const search = fixture.nativeElement.querySelector('input[name="filterField"]') as HTMLInputElement;
+    search.value = 'email';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    sections = Array.from(fixture.nativeElement.querySelectorAll('details'));
+    expect(sections.length).toBe(1);
+    expect(sections[0].open).toBeTrue();
+    expect(sections[0].textContent).toContain('Contact');
+  });
+
+  it('renders preset dropdown options on the initial render', () => {
+    const gender = { code: 'gender', label: 'Gender', type: 'select' };
+    fixture.componentRef.setInput('formHolder', {
+      data: { id: 1, title: 'Form', items: { gender }, tiers: [] }
+    });
+    fixture.componentRef.setInput('sectionItems', {
+      data: [{ section: { id: 1, title: 'Details' }, items: [{ code: 'gender' }] }]
+    });
+    fixture.componentRef.setInput('lookup', { gender: [{ code: 'M', name: 'Male' }] });
+    fixture.detectChanges();
+
+    const preset: HTMLSelectElement = fixture.nativeElement.querySelector('[aria-label="Preset for Gender"]');
+    expect(Array.from(preset.options).map(option => option.value)).toEqual(['', 'M']);
   });
 });

@@ -15,49 +15,62 @@
 
 @for (fm of ['data','prev']; track fm) {
   @if (formHolder()[fm]) {
+    @let sections = sectionItems()[fm] || [];
+    @let firstSectionIndex = sections.findIndex(sec => sec.section?.id != -1 && hasVisibleFields(fm, sec.items));
     <div class="form-group mb-3">
       <label class="form-label">Included Filters ({{formHolder()[fm].title}})</label>
       
-      @for (sec of sectionItems()[fm]; track $index) {
-        @for (f of sec.items | filter:filterField; track $index) {
-          @let field = formHolder()[fm].items[f.code];
-          @let prefixedField = getPrefix(fm, sec.section) + '.' + f.code;
+      @for (sec of sections; track $index) {
+        @let visibleItems = sec.items | filter:filterField;
+        @if (hasVisibleFields(fm, visibleItems)) {
+          <details class="filter-section-group" [open]="!!filterField || $index === firstSectionIndex">
+            <summary [title]="sec.section.title">
+              <fa-icon class="filter-section-toggle-icon" [icon]="['fas','angle-right']" [fixedWidth]="true"></fa-icon>
+              {{sec.section.title}}
+            </summary>
+            @for (f of visibleItems; track $index) {
+              @let field = formHolder()[fm].items[f.code];
+              @let prefix = getPrefix(fm, sec.section);
+              @let prefixedField = prefix + '.' + f.code;
           
-          @if (field && !excludedTypes.includes(field.type)) {
-            <div class="mb-2">
-              @let allowDynamic = !noDynamicTypes.includes(field.type);
-              @let dynKey = 'dynamic.' + f.code + '.code';
-              @let isDynamic = presetFilters()[dynKey];
-              @let bindPath = getBindingPath(field, prefixedField);
-              @let operator = getFilterOperator(presetFilters(), field, bindPath);
-              @let valueKey = filterKey(bindPath, operator);
-              @let legacyDynamicNumber = isLegacyDynamicNumber(field, bindPath, isDynamic);
+              @if (field && !excludedTypes.includes(field.type)) {
+                <div class="filter-row">
+                  @let allowDynamic = !noDynamicTypes.includes(field.type);
+                  @let dynKey = 'dynamic.' + f.code + '.code';
+                  @let isDynamic = presetFilters()[dynKey];
+                  @let bindPath = getBindingPath(field, prefixedField);
+                  @let operator = getFilterOperator(presetFilters(), field, bindPath);
+                  @let operatorOptions = filterOperatorOptions(field, bindPath);
+                  @let valueKey = filterKey(bindPath, operator);
+                  @let legacyDynamicNumber = isLegacyDynamicNumber(field, bindPath, isDynamic);
 
-              <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
-                <div class="form-check">
+                  <div class="d-flex flex-nowrap align-items-center gap-2">
+                <div class="form-check flex-grow-1 filter-field">
                   <input type="checkbox" class="form-check-input" id="filter{{f.code}}{{fm}}" [value]="f.code"
-                    (click)="toggleItem(field, fm, formHolder()[fm].id, sec.section.type, getPrefix(fm, sec.section))"
+                    (click)="toggleItem(field, fm, formHolder()[fm].id, sec.section.type, prefix)"
                     [checked]="checkItem(field, fm)">
-                  <label class="form-check-label" for="filter{{f.code}}{{fm}}" [class.fst-italic]="sec.section.id == -1">
-                    <span class="text-secondary">{{sec.section.title}} - </span>{{field.label}}
+                  <label class="form-check-label d-flex" for="filter{{f.code}}{{fm}}" [class.fst-italic]="sec.section.id == -1">
+                    <span class="text-secondary filter-section" [title]="sec.section.title">{{sec.section.title}}</span>
+                    <span class="text-secondary flex-shrink-0">&nbsp;-&nbsp;</span>
+                    <span class="text-truncate" [title]="field.label">{{field.label}}</span>
                   </label>
                 </div>
                 @if (allowDynamic) {
-                  <div class="form-check">
+                  <div class="form-check flex-shrink-0">
                     <input type="checkbox" class="form-check-input" id="filter{{f.code}}{{fm}}-dyn"
                       [(ngModel)]="presetFilters()[dynKey]" name="dynamic-{{f.code}}">
                     <label class="form-check-label" for="filter{{f.code}}{{fm}}-dyn">Dynamic</label>
                   </div>
                 }
-              </div>
+                  </div>
 
-              <div class="input-group input-group-sm filter-controls">
-                @if (filterOperatorOptions(field, bindPath).length > 1) {
+                  <div class="input-group input-group-sm filter-controls">
+                @if (operatorOptions.length > 1) {
                   <select #operatorSelect class="form-select filter-operator" id="operator-{{prefixedField}}"
                     [attr.aria-label]="'Operator for ' + field.label"
                     [ngModel]="operator" [ngModelOptions]="{standalone: true}"
                     (change)="changeOperator(field, bindPath, operatorSelect)">
-                    @for (option of filterOperatorOptions(field, bindPath); track option.value) {
+                    @for (option of operatorOptions; track option.value) {
                       <option [value]="option.value">{{option.label}}</option>
                     }
                   </select>
@@ -109,44 +122,36 @@
                     }
 
                     @case('select') {
-                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" (focus)="hasFocus[f.code]=true" [(ngModel)]="presetFilters()[valueKey]">
+                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" [(ngModel)]="presetFilters()[valueKey]">
                         <option value="" disabled>{{optionInput.value || 'Preset'}}</option>
-                        @if (hasFocus[f.code] || !!optionInput.value) {
-                          @for (item of lookup()[f.code]; track $index) {
-                            <option [value]="item.code">{{item.name}}</option>
-                          }
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [value]="item.code">{{item.name}}</option>
                         }
                       </select>
                     }
                     @case('radio') {
-                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" (focus)="hasFocus[f.code]=true" [(ngModel)]="presetFilters()[valueKey]">
+                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" [(ngModel)]="presetFilters()[valueKey]">
                         <option value="" disabled>{{optionInput.value || 'Preset'}}</option>
-                        @if (hasFocus[f.code] || !!optionInput.value) {
-                          @for (item of lookup()[f.code]; track $index) {
-                            <option [value]="item.code">{{item.name}}</option>
-                          }
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [value]="item.code">{{item.name}}</option>
                         }
                       </select>
                     }
 
                     @case('checkboxOption') {
-                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" (focus)="hasFocus[f.code]=true" [(ngModel)]="presetFilters()[valueKey]">
+                      <select class="form-select" name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" [(ngModel)]="presetFilters()[valueKey]">
                         <option value="" disabled>Preset</option>
-                        @if (hasFocus[f.code] || !!optionInput.value) {
-                          @for (item of lookup()[f.code]; track $index) {
-                            <option [value]="item.code">{{item.name}}</option>
-                          }
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [value]="item.code">{{item.name}}</option>
                         }
                       </select>
                     }
 
                     @case('modelPicker') {
-                      <select class="form-select" #optionInput name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" (focus)="hasFocus[f.code]=true" [(ngModel)]="presetFilters()[valueKey]">
+                      <select class="form-select" name="{{prefixedField}}" [attr.aria-label]="'Preset for ' + field.label" [(ngModel)]="presetFilters()[valueKey]">
                         <option value="" disabled>Preset</option>
-                        @if (hasFocus[f.code] || !!optionInput?.value) {
-                          @for (item of lookup()[f.code]; track $index) {
-                            <option [ngValue]="item[field.bindLabel]">{{item[field.bindLabel]}}</option>
-                          }
+                        @for (item of lookup()[f.code]; track $index) {
+                          <option [ngValue]="item[field.bindLabel]">{{item[field.bindLabel]}}</option>
                         }
                       </select>
                     }
@@ -196,20 +201,24 @@
                   }
                 }
 
-                <button type="button" class="btn btn-secondary" aria-label="Clear preset"
+                <button type="button" class="btn btn-secondary bg-secondary-subtle border-secondary-subtle text-secondary-emphasis"
+                  aria-label="Clear preset"
+                  title="Clear preset"
                   (click)="clearPreset(legacyDynamicNumber ? [bindPath] : getClearKeys(field, prefixedField))">
                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                 </button>
 
-              </div>
-              @if (isRangeFilter(field) && field.type !== 'date' && operator === 'range'
-                && !(allowDynamic && isDynamic)
-                && presetFilters()[prefixedField+'~from'] != null && presetFilters()[prefixedField+'~to'] != null
-                && presetFilters()[prefixedField+'~from'] > presetFilters()[prefixedField+'~to']) {
-                <span class="text-danger small">From must not exceed To.</span>
+                  </div>
+                  @if (isRangeFilter(field) && field.type !== 'date' && operator === 'range'
+                    && !(allowDynamic && isDynamic)
+                    && presetFilters()[prefixedField+'~from'] != null && presetFilters()[prefixedField+'~to'] != null
+                    && presetFilters()[prefixedField+'~from'] > presetFilters()[prefixedField+'~to']) {
+                    <span class="text-danger small">From must not exceed To.</span>
+                  }
+                </div>
               }
-            </div>
-          }
+            }
+          </details>
         }
       }
     </div>

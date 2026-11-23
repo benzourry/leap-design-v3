@@ -568,7 +568,7 @@ export class EditDatasetComponent implements OnInit {
       this._getLookupObs(code, param, cb, err)
       .subscribe({
         next:res=>{
-          this.lookup[code] = res;
+          this.lookup = { ...this.lookup, [code]: res };
           this.cdr.detectChanges();
         }, error:err=>{
           this.cdr.detectChanges();

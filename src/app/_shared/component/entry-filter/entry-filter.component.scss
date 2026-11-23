@@ -1,3 +1,46 @@
+.filter-row {
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.filter-section-group {
+  border-bottom: 1px solid var(--bs-border-color);
+
+  summary {
+    padding: .5rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+
+    &::marker,
+    &::-webkit-details-marker {
+      display: none;
+      content: '';
+    }
+  }
+
+  &[open] .filter-section-toggle-icon {
+    transform: rotate(90deg);
+  }
+}
+
+.filter-field,
+.filter-field .form-check-label {
+  min-width: 0;
+}
+
+.filter-section {
+  max-width: 10ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-controls {
+  flex-wrap: nowrap;
+}
+
 .filter-controls > .filter-operator {
   flex: 0 1 12rem;
   min-width: 9rem;

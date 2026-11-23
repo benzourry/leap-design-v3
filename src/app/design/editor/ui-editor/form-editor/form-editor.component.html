@@ -903,10 +903,10 @@
     </div>
   </div>
   <ng-template assistantPalettePanel>
-  <div class="p-3 pb-5">
+  <div class="p-2 pb-5">
     @if (curForm?.x?.extended && superForm){
       <section class="mb-3">
-        <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-1 border-0"
+        <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-0 border-0"
           (click)="showSuper=!showSuper">
           <span>Super form fields</span>
           <fa-icon [icon]="['fas', showSuper ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
@@ -932,7 +932,7 @@
     }
 
     <section>
-      <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-1 border-0"
+      <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-0 border-0"
         (click)="showPalette=!showPalette">
         <span>Form fields</span>
         <fa-icon [icon]="['fas', showPalette ? 'angle-up' : 'angle-down']" [fixedWidth]="true"></fa-icon>
