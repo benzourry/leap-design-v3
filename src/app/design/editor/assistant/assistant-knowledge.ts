@@ -342,10 +342,40 @@ Data variables available in expressions:
   $this$        component scope object; assign state here, e.g. $this$.rows = res.content
   $user$        current user, e.g. $user$.email, $user$.name
   $conf$        platform configuration
-  $.            initial data passed to the screen (:key arguments)
-  $_            current entry (edit screens)
-  $prev$        previous entry value
-  $go['key']    navigate to a configured action; $popup['key']() opens it as a popup
+  $param$       route/query parameters passed to the screen
+  $_            full current entry object, including id and metadata
+  $$_           current entry approval object
+  $             current entry data
+  $prev$        previous entry data
+  $go['actionId']       URL for a configured screen action
+  $popup['actionId']()  opens the configured action in a popup
+
+Screen-type binding rules:
+  page          The template renders one loaded entry. Use $.<fieldCode> for a field in
+                the screen's form (screen.form.items), and $prev$.<fieldCode> for a
+                field in the previous form (screen.form.prev.items). Use $.field for
+                data and $prev$.field for the previous entry; do not loop the content.
+  list          The content template is rendered once for every entry from the backing
+                dataset. Inside one render, $ is that entry's data, $_ is the full entry,
+                $prev$ is its previous entry data, and $$_ is its approval data. Do NOT
+                add an outer data loop around the entry list; screen.content is already
+                the per-entry card/row template. The valid field codes come from
+                screen.dataset.form.items and its prev items.
+  static        There is no backing form or entry list. Use screen parameters/state and
+                values loaded into $this$.
+
+Field value details:
+  Use {{$.fieldCode}} for ordinary values.
+  A single lookup selection is an object: use {{$.fieldCode.name}} for its display
+  name, not {{$.fieldCode}}. Multiple lookup selections are arrays of objects, not
+  a single object. Loop over them to display their names:
+  <x-foreach $="option of $.fieldCode"><span>{{option.name}}</span></x-foreach>
+  For modelPicker fields, use the configured bindLabel rather than assuming name.
+  A single file value is a file reference: use {{$.fileField|src}} for its URL.
+  Use {{$.dateField|date}} to display a date.
+  Apply the same rules to previous-form fields using $prev$ instead of $.
+  Child/list form sections are arrays under $.<sectionCode>; loop those explicitly
+  with x-foreach.
 
 Directives (attributes on any element):
   x-if="$=\"<expression>\""        conditional block, close with </x-if>
@@ -377,15 +407,12 @@ JavaScript:
   Use supported Reka expressions and event bindings (for example onclick="$popup['edit']()")
   only for template interactions. Do not use them to embed initialization code.
 
-Example list screen:
-  <div class="p-3">
-    <h4>{{ $user$.name }} - Leave requests</h4>
-    <x-foreach $="row of $.rows">
-      <div class="card p-2 mb-2">
-        <strong>{{ row.code }}</strong> &mdash; {{ row.status }}
-        <button class="btn btn-sm btn-outline-primary" onclick="$popup['edit']()">Open</button>
-      </div>
-    </x-foreach>
+Example list screen (content itself is the per-entry template):
+  <div class="card p-2 mb-2">
+    <strong>{{ $.code }}</strong> &mdash; {{ $.status.name }}
+    <span>Request #{{ $_.id }}</span>
+    <a class="btn btn-sm btn-outline-primary" href="{{$go['view']}}">Open</a>
+    <button class="btn btn-sm btn-outline-secondary" onclick="$popup['edit']()">Edit</button>
   </div>
 
 Rules:
@@ -639,8 +666,8 @@ export function buildScreenPayload(input: {
  */
 export function assistantKnowledge() {
   return {
-    editorSelection: 'When a selected...Id field is set, prefer that entity for requests about the currently open editor. Selected screen data is in entities.screens[].data; selected Lambda source is in entities.lambdas[].data.f; selected email template content is in entities.emailTemplates[].content. Preserve omitted fields.',
-    includedComponents: 'If an entity in entities.forms, entities.datasets, entities.dashboards, entities.screens, or entities.navigation has fullData, use that complete object as the source of truth. For forms, inspect the detailed sections and their items as well as fullData; do not claim the fields are missing when they are present.',
+    editorSelection: 'When a selected...Id field is set, prefer that entity for requests about the currently open editor. A selected screen has its complete screen/form/dataset shape in fullData and current template in data.content. A selected lookup has fullData and entries. Selected Lambda source is in entities.lambdas[].data.f; selected email template content is in entities.emailTemplates[].content. Preserve omitted fields.',
+    includedComponents: 'If an entity in entities.forms, entities.datasets, entities.dashboards, entities.screens, entities.lookups, or entities.navigation has fullData, use that complete object as the source of truth. For forms, inspect the detailed sections and their items as well as fullData; do not claim the fields are missing when they are present. Lookup fullData contains its configuration and entries so update/delete entry actions can use real ids.',
     fieldTypes: FIELD_TYPE_LIST.map((t) => ({
       type: t.value,
       name: t.name,

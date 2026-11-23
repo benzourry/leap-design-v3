@@ -40,6 +40,11 @@ export type AssistantActionKind =
   | 'add_dataset_filter'
   | 'update_dataset_filter'
   | 'remove_dataset_filter'
+  | 'create_lookup'
+  | 'update_lookup'
+  | 'add_lookup_entry'
+  | 'update_lookup_entry'
+  | 'delete_lookup_entry'
   | 'create_dashboard'
   | 'add_chart'
   | 'create_screen'
@@ -429,6 +434,76 @@ export interface RemoveDatasetFilterAction extends ActionBase {
   payload: { datasetRef: EntityRef; filterRef: EntityRef };
 }
 
+export interface LookupPayload {
+  name: string;
+  description?: string;
+  accessList?: number[];
+  shared?: boolean;
+  dataEnabled?: boolean;
+  sourceType?: 'db' | 'rest';
+  proxyId?: number;
+  responseType?: string;
+  headers?: string;
+  method?: string;
+  endpoint?: string;
+  codeProp?: string;
+  descProp?: string;
+  extraProp?: string;
+  dataFields?: string;
+  jsonRoot?: string;
+  auth?: boolean;
+  authFlow?: string;
+  clientId?: string;
+  clientSecret?: string;
+  tokenEndpoint?: string;
+  tokenTo?: string;
+  x?: Record<string, unknown>;
+}
+
+export interface CreateLookupAction extends ActionBase {
+  kind: 'create_lookup';
+  payload: LookupPayload;
+}
+
+export interface UpdateLookupAction extends ActionBase {
+  kind: 'update_lookup';
+  payload: { lookupRef: EntityRef; patch: Partial<LookupPayload> };
+}
+
+export interface AddLookupEntryAction extends ActionBase {
+  kind: 'add_lookup_entry';
+  payload: {
+    lookupRef: EntityRef;
+    code: string;
+    name: string;
+    extra?: string;
+    data?: Record<string, unknown>;
+    enabled?: number;
+    ordering?: number;
+  };
+}
+
+export interface UpdateLookupEntryAction extends ActionBase {
+  kind: 'update_lookup_entry';
+  payload: {
+    lookupRef: EntityRef;
+    entryRef: EntityRef;
+    patch: {
+      code?: string;
+      name?: string;
+      extra?: string;
+      data?: Record<string, unknown>;
+      enabled?: number;
+      ordering?: number;
+    };
+  };
+}
+
+export interface DeleteLookupEntryAction extends ActionBase {
+  kind: 'delete_lookup_entry';
+  payload: { lookupRef: EntityRef; entryRef: EntityRef };
+}
+
 export interface CreateDashboardAction extends ActionBase {
   kind: 'create_dashboard';
   payload: {
@@ -696,6 +771,11 @@ export type AssistantAction =
   | AddDatasetFilterAction
   | UpdateDatasetFilterAction
   | RemoveDatasetFilterAction
+  | CreateLookupAction
+  | UpdateLookupAction
+  | AddLookupEntryAction
+  | UpdateLookupEntryAction
+  | DeleteLookupEntryAction
   | CreateDashboardAction
   | AddChartAction
   | CreateScreenAction
@@ -812,6 +892,15 @@ export interface AssistantEntitySummary {
   actions?: unknown[];
   filters?: unknown[];
   presetFilters?: Record<string, unknown>;
+  entries?: {
+    id: number;
+    code?: string;
+    name?: string;
+    extra?: string;
+    data?: Record<string, unknown>;
+    enabled?: number;
+    ordering?: number;
+  }[];
 }
 
 export interface AssistantScreenSummary extends AssistantEntitySummary {
@@ -855,6 +944,7 @@ export interface AssistantContext {
   selectedScreenId?: number;
   selectedLambdaId?: number;
   selectedEmailTemplateId?: number;
+  selectedLookupId?: number;
 }
 
 export interface AssistantPlanRequest {
@@ -876,6 +966,7 @@ export type AssistantPromptEntityType =
   | 'dataset'
   | 'dashboard'
   | 'screen'
+  | 'lookup'
   | 'navigation'
   | 'lambda'
   | 'email-template';
@@ -945,6 +1036,7 @@ export interface AssistantChanged {
   navigation: number;
   lambdas: number;
   emailTemplates: number;
+  lookups: number;
 }
 
 export interface AssistantLambdaSummary {

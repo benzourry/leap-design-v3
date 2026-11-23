@@ -6,6 +6,7 @@ export type AssistantLocalContext =
   | { type: 'dataset'; id: number; label?: string }
   | { type: 'dashboard'; id: number; label?: string }
   | { type: 'screen'; id: number; label?: string }
+  | { type: 'lookup'; id: number; label?: string }
   | { type: 'navigation'; label?: string }
   | { type: 'lambda'; id: number; label?: string }
   | { type: 'email-template'; id: number; label?: string };

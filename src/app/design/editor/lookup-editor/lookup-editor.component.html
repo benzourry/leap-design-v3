@@ -206,7 +206,7 @@
                   </div>
                 </div> -->
 
-                <div class="px-2 py-3">
+                <div class="p-2">
                   <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
                     
                     <!-- <span class="text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
@@ -272,11 +272,15 @@
                         <th style="width: 5%">&nbsp;</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody cdkDropList
+                      [cdkDropListDisabled]="offline || lookup.sourceType !== 'db'"
+                      (cdkDropListDropped)="dropEntry($event)">
                       @for (entry of lookupEntryList; track $index) {
                         <tr
                           [class.lookup-disabled]="lookup.sourceType=='db' && !entry.enabled"
-                          [ngClass]="entry.altClass">
+                          [ngClass]="entry.altClass"
+                          cdkDrag
+                          [cdkDragDisabled]="offline || lookup.sourceType !== 'db'">
                           @if (!lookup.x?.codeHidden){
                             <td title="$.<field-code>.code">{{entry.code}}</td>
                           }
@@ -325,6 +329,13 @@
                           <td class="text-nowrap">
                             @if (lookup.sourceType=='db') {
                               <div>
+                                <button type="button" class="btn btn-secondary me-1 btn-sm btn-round cursor-move"
+                                  [disabled]="offline"
+                                  title="Drag to reorder"
+                                  aria-label="Drag to reorder lookup entry"
+                                  cdkDragHandle>
+                                  <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
+                                </button>
                                 <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
                                   [class.disabled]="offline"
                                   (click)="removeLookupEntry(removeLookupEntryTpl,entry)">

@@ -87,7 +87,9 @@ export function getAssistantActionDescendants(
 }
 
 export function isDestructiveAssistantAction(action: AssistantAction): boolean {
-  return action.destructive === true || action.kind.startsWith('remove_');
+  return action.destructive === true
+    || action.kind.startsWith('remove_')
+    || action.kind.startsWith('delete_');
 }
 
 function getActionTitle(action: AssistantAction): string {

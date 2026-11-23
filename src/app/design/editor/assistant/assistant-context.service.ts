@@ -77,6 +77,9 @@ export class AssistantContextService {
       case 'screen':
         entities$ = this.screenService.getScreenList(appId);
         break;
+      case 'lookup':
+        entities$ = this.lookupService.getFullLookupList({ appId });
+        break;
       case 'navigation':
         entities$ = this.appService.getNavisAll(appId);
         break;
@@ -128,6 +131,8 @@ export class AssistantContextService {
         return this.dashboardService.getDashboard(id);
       case 'screen':
         return this.screenService.getScreen(id);
+      case 'lookup':
+        return this.describeLookup(id);
       case 'navigation':
         return this.appService.getNavisAll(appId).pipe(
           map((response) => {
@@ -150,6 +155,7 @@ export class AssistantContextService {
       datasetId?: number;
       dashboardId?: number;
       screenId?: number;
+      lookupId?: number;
       lambdaId?: number;
       emailTemplateId?: number;
       includedFormIds?: number[];
@@ -199,6 +205,13 @@ export class AssistantContextService {
           : dashboardList.find((dashboard) => Number(dashboard?.id) === selection.dashboardId);
         if (selection.dashboardId !== undefined && !selectedDashboard) {
           throw new Error('The selected dashboard is no longer available. Choose it again and retry.');
+        }
+        const lookupList = asList(lookups);
+        const selectedLookup = selection.lookupId === undefined
+          ? undefined
+          : lookupList.find((lookup) => Number(lookup?.id) === selection.lookupId);
+        if (selection.lookupId !== undefined && !selectedLookup) {
+          throw new Error('The selected lookup is no longer available. Choose it again and retry.');
         }
 
         const formList$ = formsToDescribe.length
@@ -251,6 +264,9 @@ export class AssistantContextService {
         const selectedDashboard$ = selectedDashboard
           ? this.dashboardService.getDashboard(Number(selectedDashboard.id))
           : of(undefined);
+        const selectedLookup$ = selectedLookup
+          ? this.describeLookup(Number(selectedLookup.id))
+          : of(undefined);
 
         const lambdaList = asList(lambdas);
         const selectedLambdaSummary = lambdaList.find((lambda) => Number(lambda?.id) === selection.lambdaId);
@@ -275,12 +291,14 @@ export class AssistantContextService {
           formList: formList$,
           datasetList: datasetList$,
           selectedDashboard: selectedDashboard$,
+          selectedLookup: selectedLookup$,
           selectedScreen: selectedScreen$,
           selectedLambda: selectedLambda$,
           selectedEmailTemplate: selectedEmailTemplate$,
         })
           .pipe(map(({
             formList, datasetList, selectedDashboard: dashboardDetail,
+            selectedLookup: lookupDetail,
             selectedScreen: screenDetail,
             selectedLambda: lambdaDetail, selectedEmailTemplate: emailTemplateDetail,
           }) => {
@@ -290,6 +308,10 @@ export class AssistantContextService {
             if (selection.dashboardId !== undefined
                 && Number((dashboardDetail as any)?.id) !== selection.dashboardId) {
               throw new Error('The selected dashboard could not be loaded. Choose it again and retry.');
+            }
+            if (selection.lookupId !== undefined
+                && Number((lookupDetail as any)?.id) !== selection.lookupId) {
+              throw new Error('The selected lookup could not be loaded. Choose it again and retry.');
             }
             if (selection.lambdaId !== undefined
                 && Number((lambdaDetail as any)?.id) !== selection.lambdaId) {
@@ -316,7 +338,7 @@ export class AssistantContextService {
                 selection.emailTemplateId,
                 emailTemplateDetail
               ),
-              lookups: toSummaries(lookups),
+              lookups: toLookupSummaries(lookupList, selection.lookupId, lookupDetail),
               groups: toSummaries(groups),
               navigation: summarizeNavigation(navigation),
             };
@@ -328,6 +350,7 @@ export class AssistantContextService {
               selectedDatasetId: selection.datasetId,
               selectedDashboardId: selection.dashboardId,
               selectedScreenId: selection.screenId,
+              selectedLookupId: selection.lookupId,
               selectedLambdaId: selection.lambdaId,
               selectedEmailTemplateId: selection.emailTemplateId,
             };
@@ -345,6 +368,20 @@ export class AssistantContextService {
       tabs: this.formService.getTabList(formId, 0),
       form: this.formService.getForm(formId),
     }).pipe(map(({ sections, items, tabs, form }) => summarizeFormDetail(formId, title, sections, items, tabs, form)));
+  }
+
+  private describeLookup(lookupId: number): Observable<any> {
+    return forkJoin({
+      lookup: this.lookupService.getLookup(lookupId),
+      entries: this.lookupService.getEntryListFull(lookupId, {
+        size: 100,
+        page: 0,
+        sort: 'ordering,asc',
+      }).pipe(catchError(() => of([]))),
+    }).pipe(map(({ lookup, entries }) => ({
+      ...(lookup as Record<string, unknown>),
+      entries: asList(entries),
+    })));
   }
 }
 
@@ -369,6 +406,7 @@ function attachIncludedEntities(
     datasets: [...context.entities.datasets],
     dashboards: [...context.entities.dashboards],
     screens: [...context.entities.screens],
+    lookups: [...context.entities.lookups],
     lambdas: [...context.entities.lambdas],
     emailTemplates: [...context.entities.emailTemplates],
     navigation: [...context.entities.navigation],
@@ -386,6 +424,9 @@ function attachIncludedEntities(
         break;
       case 'screen':
         entities.screens = attachFullData(entities.screens, entity);
+        break;
+      case 'lookup':
+        entities.lookups = attachFullData(entities.lookups, entity);
         break;
       case 'navigation':
         entities.navigation = attachFullData(entities.navigation, entity);
@@ -449,6 +490,43 @@ function toSelectedSummaries(
   ];
 }
 
+function toLookupSummaries(
+  list: any[],
+  selectedLookupId: number | undefined,
+  selectedLookup: any
+): AssistantEntitySummary[] {
+  const summaries = list
+    .filter((lookup) => lookup?.id)
+    .map((lookup): AssistantEntitySummary => ({
+      id: Number(lookup.id),
+      name: clampText(lookup.name),
+      type: lookup.sourceType,
+      ...(Number(lookup.id) === selectedLookupId
+        ? {
+            fullData: selectedLookup,
+            entries: asList(selectedLookup?.entries).slice(0, 100).map(summarizeLookupEntry),
+          }
+        : {}),
+    }));
+  if (selectedLookupId === undefined) return summaries;
+  return [
+    ...summaries.filter((lookup) => lookup.id === selectedLookupId),
+    ...summaries.filter((lookup) => lookup.id !== selectedLookupId),
+  ];
+}
+
+function summarizeLookupEntry(entry: any) {
+  return {
+    id: Number(entry.id),
+    code: entry.code,
+    name: clampText(entry.name),
+    extra: clampText(entry.extra),
+    data: entry.data,
+    enabled: entry.enabled,
+    ordering: entry.ordering,
+  };
+}
+
 function toScreenSummaries(
   list: any[],
   selectedScreenId: number | undefined,
@@ -464,6 +542,7 @@ function toScreenSummaries(
       type: screen.type,
       ...(Number(screen.id) === selectedScreenId
         ? {
+            fullData: selectedScreen,
             data: { content: selectedScreen?.data?.content, f: selectedScreen?.data?.f },
             actions: asList(selectedScreen?.actions),
           }

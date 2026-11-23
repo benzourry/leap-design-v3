@@ -171,7 +171,7 @@ export class EditorComponent implements OnInit {
 
     onAssistantChanged(change: AssistantChanged) {
         const total = change.forms + change.datasets + change.dashboards + change.screens
-            + change.lambdas + change.emailTemplates;
+            + change.lambdas + change.emailTemplates + change.lookups;
         if (total > 0) {
             this.toastService.show('Assistant applied ' + total + ' change(s)', { classname: 'bg-success text-light' });
         }

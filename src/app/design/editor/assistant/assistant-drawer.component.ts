@@ -71,6 +71,7 @@ export class AssistantDrawerComponent implements OnInit {
     { type: 'dataset', label: 'Dataset' },
     { type: 'dashboard', label: 'Dashboard' },
     { type: 'screen', label: 'Screen' },
+    { type: 'lookup', label: 'Lookup' },
     { type: 'navigation', label: 'Navigation' },
     { type: 'lambda', label: 'Lambda' },
     { type: 'email-template', label: 'Email template' },
@@ -111,6 +112,8 @@ export class AssistantDrawerComponent implements OnInit {
         return `Using the open dashboard${context.label ? ` "${context.label}"` : ''}.`;
       case 'screen':
         return `Using the open screen${context.label ? ` "${context.label}"` : ''}.`;
+      case 'lookup':
+        return `Using the open lookup${context.label ? ` "${context.label}"` : ''}, including its entries.`;
       case 'navigation':
         return 'Using the navigation currently open in the editor.';
       case 'lambda':
@@ -417,6 +420,7 @@ export class AssistantDrawerComponent implements OnInit {
         datasetId: localId(this.localContext(), 'dataset'),
         dashboardId: localId(this.localContext(), 'dashboard'),
         screenId: localId(this.localContext(), 'screen'),
+        lookupId: localId(this.localContext(), 'lookup'),
         lambdaId: localId(this.localContext(), 'lambda'),
         emailTemplateId: localId(this.localContext(), 'email-template'),
         includedFormIds: includedEntities
@@ -565,6 +569,7 @@ export class AssistantDrawerComponent implements OnInit {
     if (summary.navigation) this.commService.emitChange({ key: 'assistant-navi', value: true });
     if (summary.lambdas) this.commService.emitChange({ key: 'assistant-lambda', value: true });
     if (summary.emailTemplates) this.commService.emitChange({ key: 'assistant-mailer', value: true });
+    if (summary.lookups) this.commService.emitChange({ key: 'assistant-lookup', value: true });
   }
 }
 
@@ -629,7 +634,8 @@ function friendlyAssistantWarning(warning: string): string {
 
 function summarize(outcome: AssistantApplyResult): AssistantChanged {
   const changed: AssistantChanged = {
-    forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0, lambdas: 0, emailTemplates: 0,
+    forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0, lambdas: 0,
+    emailTemplates: 0, lookups: 0,
   };
   for (const result of outcome.results) {
     if (result.status !== 'done') continue;
@@ -665,6 +671,13 @@ function summarize(outcome: AssistantApplyResult): AssistantChanged {
       case 'update_dataset_filter':
       case 'remove_dataset_filter':
         changed.datasets++;
+        break;
+      case 'create_lookup':
+      case 'update_lookup':
+      case 'add_lookup_entry':
+      case 'update_lookup_entry':
+      case 'delete_lookup_entry':
+        changed.lookups++;
         break;
       case 'create_dashboard':
       case 'add_chart':

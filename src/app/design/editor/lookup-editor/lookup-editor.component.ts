@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, viewChild } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -16,6 +17,9 @@ import { EditLookupComponent } from '../../../_shared/modal/edit-lookup/edit-loo
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
 import { EditLookupEntryComponent } from '../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
+import { CommService } from '../../../_shared/service/comm.service';
 
 @Component({
     selector: 'app-lookup-editor',
@@ -23,7 +27,8 @@ import { EditLookupEntryComponent } from '../../../_shared/modal/edit-lookup-ent
     styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css',
         './lookup-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
-        NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent],
+        NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent,
+        CdkDropList, CdkDrag, CdkDragHandle],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LookupEditorComponent implements OnInit {
@@ -40,6 +45,9 @@ export class LookupEditorComponent implements OnInit {
     private location = inject(PlatformLocation);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly commService = inject(CommService);
+    private readonly assistantContext = inject(AssistantLocalContextService).createRegistration();
 
     offline = false;
     app: any;
@@ -64,9 +72,18 @@ export class LookupEditorComponent implements OnInit {
             this.modalService.dismissAll('')
         });
         this.utilityService.testOnline$().subscribe(online => this.offline = !online);
+        this.destroyRef.onDestroy(() => this.assistantContext.clear());
     }
 
     ngOnInit() {
+        this.commService.changeEmitted$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(data => {
+                if (data?.key !== 'assistant-lookup') return;
+                this.loadLookupList(this.pageNumber);
+                if (this.lookupId) this.loadLookup(this.lookupId);
+            });
+
         this.userService.getCreator()
             .subscribe((user) => {
                 this.user = user;
@@ -318,6 +335,11 @@ export class LookupEditorComponent implements OnInit {
             .subscribe(lookup => {
                 this.requestParams = {};
                 this.lookup = lookup;
+                this.assistantContext.set({
+                    type: 'lookup',
+                    id: Number(lookup.id),
+                    label: lookup.name,
+                });
                 
                 this.cdr.markForCheck();
 
@@ -479,6 +501,12 @@ export class LookupEditorComponent implements OnInit {
 
     reorderItem(index, op) {
         this.reorder(this.lookupEntryList, index, op);
+        this.saveItemOrder();
+    }
+
+    dropEntry(event: CdkDragDrop<unknown[]>) {
+        if (event.previousIndex === event.currentIndex) return;
+        moveItemInArray(this.lookupEntryList, event.previousIndex, event.currentIndex);
         this.saveItemOrder();
     }
 

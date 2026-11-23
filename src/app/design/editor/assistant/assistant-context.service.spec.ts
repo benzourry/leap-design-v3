@@ -10,6 +10,8 @@ import { LookupService } from '../../../run/_service/lookup.service';
 import { AssistantContextService } from './assistant-context.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { MailerService } from '../../../service/mailer.service';
+import { compileTpl } from '../../../_shared/utils';
+import { baseApi } from '../../../_shared/constant.service';
 
 describe('AssistantContextService', () => {
   let forms: jasmine.SpyObj<FormService>;
@@ -19,6 +21,7 @@ describe('AssistantContextService', () => {
   let app: jasmine.SpyObj<AppService>;
   let lambdas: jasmine.SpyObj<LambdaService>;
   let mailers: jasmine.SpyObj<MailerService>;
+  let lookups: jasmine.SpyObj<LookupService>;
 
   beforeEach(() => {
     forms = jasmine.createSpyObj<FormService>('FormService', [
@@ -94,6 +97,16 @@ describe('AssistantContextService', () => {
     mailers.getMailer.and.returnValue(of({
       id: 80, name: 'Approved', subject: 'Approved', content: '<p>Approved</p>', enabled: 1,
     }));
+    lookups = jasmine.createSpyObj<LookupService>('LookupService', [
+      'getFullLookupList', 'getLookup', 'getEntryListFull',
+    ]);
+    lookups.getFullLookupList.and.returnValue(of({ content: [{ id: 11, name: 'Countries', sourceType: 'db' }] }));
+    lookups.getLookup.and.returnValue(of({
+      id: 11, name: 'Countries', sourceType: 'db', dataEnabled: true, dataFields: 'region:text',
+    }));
+    lookups.getEntryListFull.and.returnValue(of({
+      content: [{ id: 111, code: 'my', name: 'Malaysia', enabled: 1 }],
+    }));
 
     TestBed.configureTestingModule({
       providers: [
@@ -102,7 +115,7 @@ describe('AssistantContextService', () => {
         { provide: DatasetService, useValue: datasets },
         { provide: DashboardService, useValue: dashboards },
         { provide: ScreenService, useValue: screens },
-        { provide: LookupService, useValue: { getFullLookupList: () => of({ content: [{ id: 11, name: 'Countries' }] }) } },
+        { provide: LookupService, useValue: lookups },
         { provide: AppService, useValue: app },
         { provide: GroupService, useValue: groups },
         { provide: LambdaService, useValue: lambdas },
@@ -177,6 +190,19 @@ describe('AssistantContextService', () => {
     expect(context.entities.forms.find((form) => form.id === 6698)?.sections?.[0].items?.[0]).toEqual(
       jasmine.objectContaining({ id: 6700, label: 'Asset', code: 'asset' })
     );
+  });
+
+  it('includes the selected lookup configuration and entry ids', async () => {
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build({ id: 1 }, { lookupId: 11 })
+    );
+
+    expect(context.selectedLookupId).toBe(11);
+    expect(context.entities.lookups[0]).toEqual(jasmine.objectContaining({
+      id: 11,
+      entries: [jasmine.objectContaining({ id: 111, code: 'my', name: 'Malaysia' })],
+      fullData: jasmine.objectContaining({ dataFields: 'region:text' }),
+    }));
   });
 
   it('places included full entities in their regular context collections', async () => {
@@ -302,6 +328,40 @@ describe('AssistantContextService', () => {
       id: 88,
       data: { content: '<h1>Review request</h1>', f: '$this$.initialized = true;' },
     }));
+  });
+
+  it('provides usable lookup, file, and date binding guidance for screen templates', async () => {
+    const context = await firstValueFrom(
+      TestBed.inject(AssistantContextService).build({ id: 1 }, { screenId: 88 })
+    );
+    const guidance = String(context.knowledge['screenDsl']);
+    expect(guidance).toContain('{{$.fieldCode.name}}');
+    expect(guidance).toContain('<x-foreach $="option of $.fieldCode"><span>{{option.name}}</span></x-foreach>');
+    expect(guidance).toContain('{{$.fileField|src}}');
+    expect(guidance).toContain('{{$.dateField|date}}');
+    expect(guidance).toContain('using $prev$ instead of $');
+
+    const date = new Date(2024, 0, 15);
+    const rendered = compileTpl(
+      '<p>{{$.country.name}}</p><x-foreach $="option of $.countries"><span>{{option.name}}</span></x-foreach>'
+        + '<img src="{{$.fileField|src}}"><time>{{$.dateField|date}}</time><p>{{$prev$.country.name}}</p>',
+      {
+        $: {
+          country: { name: 'Malaysia' },
+          countries: [{ name: 'Malaysia' }, { name: 'Japan' }],
+          fileField: 'photo.png',
+          dateField: date,
+        },
+        $prev$: { country: { name: 'Thailand' } },
+      },
+      'assistant-screen-bindings-test'
+    );
+
+    expect(rendered).toContain('<p>Malaysia</p>');
+    expect(rendered).toContain('<span>Malaysia</span><span>Japan</span>');
+    expect(rendered).toContain(`${baseApi}/entry/file/photo.png`);
+    expect(rendered).toContain(`<time>${date.toDateString()}</time>`);
+    expect(rendered).toContain('<p>Thailand</p>');
   });
 
   it('includes full data for the open dashboard', async () => {

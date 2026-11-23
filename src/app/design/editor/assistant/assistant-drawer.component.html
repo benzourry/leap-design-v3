@@ -42,8 +42,8 @@
       @if (plan()) {
         @if (needsUserInput()) {
           <div class="alert alert-info py-2 px-3 small mb-2 border-0" role="status">
-            <div class="fw-semibold">
-              <fa-icon [icon]="['fas', 'comment-dots']" class="me-1"></fa-icon>
+            <div class="fw-semibold mb-1">
+              <fa-icon [icon]="['far', 'comment-dots']" class="me-1"></fa-icon>
               Your reply is needed
             </div>
             <div>{{ clarificationQuestion() || 'The assistant needs one more detail before it can finish this plan.' }}</div>
@@ -208,7 +208,7 @@
               <button type="button" class="assistant-icon-button"
                 aria-label="Clear conversation" title="Clear conversation"
                 [disabled]="loading() || applying() || entityPickerLoading()" (click)="reset()">
-                <fa-icon [icon]="['fas', 'trash-alt']" [fixedWidth]="true"></fa-icon>
+                <fa-icon [icon]="['fas', 'trash']" [fixedWidth]="true"></fa-icon>
               </button>
             }
           </div>

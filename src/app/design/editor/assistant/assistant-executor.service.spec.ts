@@ -7,6 +7,7 @@ import { ScreenService } from '../../../service/screen.service';
 import { AppService } from '../../../service/app.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { MailerService } from '../../../service/mailer.service';
+import { LookupService } from '../../../run/_service/lookup.service';
 import { AssistantExecutorService } from './assistant-executor.service';
 
 describe('AssistantExecutorService', () => {
@@ -16,6 +17,7 @@ describe('AssistantExecutorService', () => {
   let screenService: jasmine.SpyObj<ScreenService>;
   let lambdaService: jasmine.SpyObj<LambdaService>;
   let mailerService: jasmine.SpyObj<MailerService>;
+  let lookupService: jasmine.SpyObj<LookupService>;
 
   beforeEach(() => {
     formService = jasmine.createSpyObj<FormService>('FormService', [
@@ -100,6 +102,22 @@ describe('AssistantExecutorService', () => {
     }));
     mailerService.save.and.callFake((_email, _appId, template) => of({ ...template, id: template.id ?? 80 }));
     mailerService.deleteMailer.and.returnValue(of({}));
+    lookupService = jasmine.createSpyObj<LookupService>('LookupService', [
+      'save', 'getLookup', 'saveEntry', 'getEntryListFull', 'removeEntry',
+    ]);
+    lookupService.save.and.callFake((_email, _appId, lookup) => of({ ...lookup, id: lookup.id ?? 11 }));
+    lookupService.getLookup.and.returnValue(of({
+      id: 11,
+      appId: 2,
+      name: 'Countries',
+      sourceType: 'db',
+      x: { codeHidden: false },
+    }));
+    lookupService.saveEntry.and.callFake((_lookupId, entry) => of({ ...entry, id: entry.id ?? 111 }));
+    lookupService.getEntryListFull.and.returnValue(of({
+      content: [{ id: 111, code: 'my', name: 'Malaysia', data: { region: 'asia' }, enabled: 1 }],
+    }));
+    lookupService.removeEntry.and.returnValue(of({}));
 
     TestBed.configureTestingModule({
       providers: [
@@ -111,6 +129,7 @@ describe('AssistantExecutorService', () => {
         { provide: AppService, useValue: appService },
         { provide: LambdaService, useValue: lambdaService },
         { provide: MailerService, useValue: mailerService },
+        { provide: LookupService, useValue: lookupService },
       ],
     });
   });
@@ -226,6 +245,68 @@ graph TD
     expect(screenService.saveScreen).toHaveBeenCalledWith(2, jasmine.objectContaining({
       data: jasmine.objectContaining({ content }),
     }));
+  });
+
+  it('creates and updates lookups and their entries through the lookup API', async () => {
+    const result = await TestBed.inject(AssistantExecutorService).apply(2, [
+      {
+        id: 'lookup_country',
+        kind: 'create_lookup',
+        payload: { name: 'Countries', dataEnabled: true, dataFields: 'region:text' },
+      },
+      {
+        id: 'update_lookup',
+        kind: 'update_lookup',
+        payload: { lookupRef: '$lookup_country', patch: { description: 'Country list', x: { codeHidden: true } } },
+      },
+      {
+        id: 'entry_my',
+        kind: 'add_lookup_entry',
+        payload: { lookupRef: '$lookup_country', code: 'my', name: 'Malaysia' },
+      },
+      {
+        id: 'rename_entry',
+        kind: 'update_lookup_entry',
+        payload: {
+          lookupRef: '$lookup_country',
+          entryRef: '$entry_my',
+          patch: { name: 'Malaysia (MY)', data: { active: true } },
+        },
+      },
+    ], { email: 'creator@example.com' });
+
+    expect(result.failed).toBe(0);
+    expect(lookupService.save).toHaveBeenCalledWith(
+      'creator@example.com',
+      2,
+      jasmine.objectContaining({ name: 'Countries', dataEnabled: true })
+    );
+    expect(lookupService.saveEntry).toHaveBeenCalledWith(
+      11,
+      jasmine.objectContaining({ code: 'my', name: 'Malaysia', enabled: 1 })
+    );
+    expect(lookupService.save.calls.argsFor(1)[2]).toEqual(jasmine.objectContaining({
+      id: 11,
+      description: 'Country list',
+      x: { codeHidden: true },
+    }));
+    expect(lookupService.saveEntry.calls.argsFor(1)[1]).toEqual(jasmine.objectContaining({
+      id: 111,
+      name: 'Malaysia (MY)',
+      data: { region: 'asia', active: true },
+    }));
+  });
+
+  it('requires confirmation before deleting a lookup entry', async () => {
+    const confirmed = await TestBed.inject(AssistantExecutorService).apply(2, [{
+      id: 'delete_my',
+      kind: 'delete_lookup_entry',
+      payload: { lookupRef: '11', entryRef: '111' },
+      destructive: true,
+    }], { email: 'creator@example.com', confirmedIds: ['delete_my'] });
+
+    expect(confirmed.failed).toBe(0);
+    expect(lookupService.removeEntry).toHaveBeenCalledWith(111, {});
   });
 
   it('creates a screen with its init JavaScript stored in data.f', async () => {

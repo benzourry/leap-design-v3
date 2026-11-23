@@ -120,6 +120,11 @@ const TITLES: Record<string, { icon: string; verb: string }> = {
   add_dataset_filter: { icon: 'filter', verb: 'Add dataset filter' },
   update_dataset_filter: { icon: 'pen', verb: 'Change dataset filter' },
   remove_dataset_filter: { icon: 'trash', verb: 'Remove dataset filter' },
+  create_lookup: { icon: 'list', verb: 'Create lookup' },
+  update_lookup: { icon: 'pen', verb: 'Change lookup' },
+  add_lookup_entry: { icon: 'plus', verb: 'Add lookup entry' },
+  update_lookup_entry: { icon: 'pen', verb: 'Change lookup entry' },
+  delete_lookup_entry: { icon: 'trash', verb: 'Delete lookup entry' },
   create_dashboard: { icon: 'tachometer-alt', verb: 'Create dashboard' },
   add_chart: { icon: 'chart-bar', verb: 'Add chart' },
   create_screen: { icon: 'file', verb: 'Create screen' },
@@ -157,6 +162,8 @@ function describe(action: AssistantAction): Omit<ActionView, 'id' | 'status' | '
   if (payload.sectionRef) details.push(`section ${payload.sectionRef}`);
   if (payload.dashboardRef) details.push(`dashboard ${payload.dashboardRef}`);
   if (payload.screenRef) details.push(`screen ${payload.screenRef}`);
+  if (payload.lookupRef) details.push(`lookup ${payload.lookupRef}`);
+  if (payload.entryRef) details.push(`entry ${payload.entryRef}`);
   if (action.note) details.push(action.note);
 
   return {
@@ -164,6 +171,6 @@ function describe(action: AssistantAction): Omit<ActionView, 'id' | 'status' | '
     icon: meta.icon,
     title,
     detail: details.join(' · '),
-    destructive: action.destructive === true || action.kind.startsWith('remove_'),
+    destructive: action.destructive === true || action.kind.startsWith('remove_') || action.kind.startsWith('delete_'),
   };
 }

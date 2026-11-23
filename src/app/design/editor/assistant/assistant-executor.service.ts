@@ -7,6 +7,7 @@ import { ScreenService } from '../../../service/screen.service';
 import { AppService } from '../../../service/app.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { MailerService } from '../../../service/mailer.service';
+import { LookupService } from '../../../run/_service/lookup.service';
 import { compileTpl } from '../../../_shared/utils';
 import { getAssistantActionBlockReason } from './assistant-dependencies';
 import {
@@ -77,6 +78,11 @@ import {
   CreateEmailTemplateAction,
   UpdateEmailTemplateAction,
   RemoveEmailTemplateAction,
+  CreateLookupAction,
+  UpdateLookupAction,
+  AddLookupEntryAction,
+  UpdateLookupEntryAction,
+  DeleteLookupEntryAction,
 } from './assistant.types';
 
 /** Where a plan-local id (`$step`) ended up after it was applied. */
@@ -99,6 +105,7 @@ export class AssistantExecutorService {
   private appService = inject(AppService);
   private lambdaService = inject(LambdaService);
   private mailerService = inject(MailerService);
+  private lookupService = inject(LookupService);
 
   async apply(appId: number, actions: AssistantAction[], options: AssistantApplyOptions): Promise<AssistantApplyResult> {
     if (options.requiresResponse) {
@@ -107,7 +114,8 @@ export class AssistantExecutorService {
 
     const results: AssistantActionResult[] = [];
     const changed: AssistantChanged = {
-      forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0, lambdas: 0, emailTemplates: 0,
+      forms: 0, datasets: 0, dashboards: 0, screens: 0, navigation: 0, lambdas: 0,
+      emailTemplates: 0, lookups: 0,
     };
     const refs = new Map<string, ResolvedRef>();
 
@@ -214,6 +222,16 @@ export class AssistantExecutorService {
         return this.updateDatasetFilter(appId, action, refs, changed);
       case 'remove_dataset_filter':
         return this.removeDatasetFilter(appId, action, refs, changed);
+      case 'create_lookup':
+        return this.createLookup(appId, action, refs, changed, options.email);
+      case 'update_lookup':
+        return this.updateLookup(appId, action, refs, changed, options.email);
+      case 'add_lookup_entry':
+        return this.addLookupEntry(action, refs, changed);
+      case 'update_lookup_entry':
+        return this.updateLookupEntry(action, refs, changed);
+      case 'delete_lookup_entry':
+        return this.deleteLookupEntry(action, refs, changed);
       case 'create_dashboard':
         return this.createDashboard(appId, action, refs, changed);
       case 'add_chart':
@@ -964,6 +982,111 @@ export class AssistantExecutorService {
     }));
     changed.datasets++;
     return filterId;
+  }
+
+  private async createLookup(
+    appId: number,
+    action: CreateLookupAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged,
+    email: string
+  ) {
+    const { x, ...payload } = action.payload;
+    const lookup = await firstValueFrom(this.lookupService.save(email, appId, {
+      sourceType: 'db',
+      dataEnabled: false,
+      shared: false,
+      ...payload,
+      x: { ...(x ?? {}) },
+    }));
+    const id = requireId(lookup, 'lookup');
+    refs.set(action.id, { id });
+    changed.lookups++;
+    return id;
+  }
+
+  private async updateLookup(
+    appId: number,
+    action: UpdateLookupAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged,
+    email: string
+  ) {
+    const lookupId = this.resolveId(action.payload.lookupRef, refs);
+    const existing: any = await firstValueFrom(this.lookupService.getLookup(lookupId));
+    if (!existing) throw new Error(`Lookup ${lookupId} was not found. Refresh the lookup list and try again.`);
+    assertAppOwner(existing, appId, 'lookup');
+    const patch = action.payload.patch ?? {};
+    await firstValueFrom(this.lookupService.save(email, appId, {
+      ...existing,
+      ...patch,
+      x: { ...(existing.x ?? {}), ...(patch.x ?? {}) },
+    }));
+    refs.set(action.id, { id: lookupId });
+    changed.lookups++;
+    return lookupId;
+  }
+
+  private async addLookupEntry(
+    action: AddLookupEntryAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const lookupId = this.resolveId(action.payload.lookupRef, refs);
+    const { lookupRef: _lookupRef, ...entry } = action.payload;
+    const saved = await firstValueFrom(this.lookupService.saveEntry(lookupId, {
+      ...entry,
+      enabled: entry.enabled ?? 1,
+    }));
+    const id = requireId(saved, 'lookup entry');
+    refs.set(action.id, { id });
+    changed.lookups++;
+    return id;
+  }
+
+  private async updateLookupEntry(
+    action: UpdateLookupEntryAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const lookupId = this.resolveId(action.payload.lookupRef, refs);
+    const entryId = this.resolveId(action.payload.entryRef, refs);
+    const entries = await this.lookupEntries(lookupId);
+    const existing = entries.find((entry) => Number(entry?.id) === entryId);
+    if (!existing) {
+      throw new Error(`Lookup entry ${entryId} was not found in lookup ${lookupId}. Refresh the lookup and try again.`);
+    }
+    const patch = action.payload.patch ?? {};
+    await firstValueFrom(this.lookupService.saveEntry(lookupId, {
+      ...existing,
+      ...patch,
+      data: { ...(existing.data ?? {}), ...(patch.data ?? {}) },
+    }));
+    changed.lookups++;
+    return entryId;
+  }
+
+  private async deleteLookupEntry(
+    action: DeleteLookupEntryAction,
+    refs: Map<string, ResolvedRef>,
+    changed: AssistantChanged
+  ) {
+    const lookupId = this.resolveId(action.payload.lookupRef, refs);
+    const entryId = this.resolveId(action.payload.entryRef, refs);
+    const entries = await this.lookupEntries(lookupId);
+    if (!entries.some((entry) => Number(entry?.id) === entryId)) {
+      throw new Error(`Lookup entry ${entryId} was not found in lookup ${lookupId}. Refresh the lookup and try again.`);
+    }
+    await firstValueFrom(this.lookupService.removeEntry(entryId, {}));
+    changed.lookups++;
+    return entryId;
+  }
+
+  private async lookupEntries(lookupId: number): Promise<any[]> {
+    const response: any = await firstValueFrom(
+      this.lookupService.getEntryListFull(lookupId, { size: 9999, page: 0, sort: 'ordering,asc' })
+    );
+    return Array.isArray(response) ? response : (response?.content ?? []);
   }
 
   private async createDashboard(appId: number, action: CreateDashboardAction, refs: Map<string, ResolvedRef>, changed: AssistantChanged) {
