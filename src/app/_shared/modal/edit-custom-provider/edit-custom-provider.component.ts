@@ -18,6 +18,7 @@ import { base } from '../../constant.service';
     IconSplitPipe
   ],
   templateUrl: './edit-custom-provider.component.html',
+  styleUrl: './edit-custom-provider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditCustomProviderComponent implements OnInit {
@@ -37,6 +38,9 @@ export class EditCustomProviderComponent implements OnInit {
   ngOnInit() {
     // Clone to prevent mutating original data before save
     this._provider = { ...this.provider() };
+    if (!this._provider.authorizationMethod) {
+      this._provider.authorizationMethod = 'GET';
+    }
     this.loadSecretList();
   }
 
