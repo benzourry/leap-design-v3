@@ -1,218 +1,102 @@
-/* ==========================================================================
-   UTILITY CLASSES & ANIMATIONS
-   ========================================================================== */
-.grid-animate {
-  transition: all 0.2s ease-in-out;
+.group-list > a.element {
+  padding-left: 1.85rem;
+  font-weight: 600;
+  color: var(--reka-text);
+}
+.group-list > a.element fa-icon { color: var(--reka-text-muted); }
+.group-list > a.element.active { color: var(--reka-accent); }
+
+.utilities-heading {
+  margin: .75rem 0 .4rem;
+  padding: .85rem .6rem 0;
+  border-top: 1px solid var(--reka-border);
+  color: var(--reka-text-muted);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.disabled-region {
-  opacity: 0.6;
-  pointer-events: none !important;
+.badgeUi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 21px;
+  padding: 0 .3rem;
+  border-radius: 5px;
+  background: var(--reka-bg-subtle);
+  color: var(--reka-text-muted);
+  font: 600 .75rem var(--bs-font-monospace);
 }
 
-.half {
-  opacity: 0.5;
+.group-by-controls { padding: .5rem .6rem; font-size: 14px; }
+.group-label { padding: .25rem .6rem; font-size: .9rem; }
 
-  &::after {
-    content: 'hidden';
-    padding: 3px;
-    font-weight: bold;
-    position: absolute;
-    top: 0px;
-    right: 1em;
-    font-size: 0.7em;
+.group-by-toggle {
+  background: var(--reka-bg-subtle);
+  padding: 2px;
+  border-radius: 6px;
+
+  .btn-check + .btn { border: 0; color: var(--reka-text-muted); }
+  .btn-check:checked + .btn { background: var(--reka-bg-sidebar); color: var(--reka-text); }
+}
+
+:host ::ng-deep .ui-sidemenu {
+  &.accordion-item { background: transparent; border: 0; }
+
+  .accordion-button {
+    display: flex;
+    gap: .5rem;
+    width: 100%;
+    padding: .55rem .6rem;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--reka-text);
+    font-size: .9rem;
+    font-weight: 600;
+
+    &:hover { background: var(--reka-bg-hover); }
+    &::after { order: -1; margin: 0; width: .75rem; height: .75rem; background-size: .75rem; }
+    fa-icon { color: var(--reka-text-muted); }
+    &:not(.collapsed) fa-icon { color: var(--reka-accent); }
   }
-}
 
-.element {
-  display: flex;
-
-  &:hover .dd-move,
-  &:active .dd-move {
-    display: block;
+  .accordion-body { padding: 0 0 .5rem; }
+  .accordion-body .element {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-width: 0;
   }
+  .accordion-body .element > .text-truncate { min-width: 0; }
+  .accordion-body .restricted-item { color: var(--reka-text-muted); background: var(--reka-bg-subtle); }
+  .accordion-body .section-action {
+    display: inline-flex;
+    justify-content: center;
+    width: calc(50% - .2rem);
+    padding: .4rem .25rem;
+    border: 1px solid var(--reka-border);
+    font-size: .75rem;
+    vertical-align: middle;
+  }
+  .accordion-body .section-action + .section-action { margin-left: .4rem; margin-top: .5rem; }
 }
 
 .dd-move {
-  display: none;
+  order: 1;
+  flex-shrink: 0;
+  margin-inline: -.25rem;
+  visibility: hidden;
+  color: var(--reka-text-muted);
+  font-size: .75rem;
 }
+.element:hover .dd-move, .element:focus-within .dd-move, .element:active .dd-move { visibility: visible; }
 
-.form-group > label,
-.custom-checkbox > label {
-  font-size: 14px;
+.disabled-region { opacity: .6; pointer-events: none !important; }
+.half {
+  opacity: .5;
+  &::after { content: 'hidden'; padding: 3px; font-weight: bold; position: absolute; top: 0; right: 1em; font-size: .7em; }
 }
-
-/* ==========================================================================
-   LAYOUT & SIDEBAR
-   ========================================================================== */
-.sb {
-  height: 100vh;
-  left: 0px;
-  width: 100%;
-  z-index: 300;
-  transition: height 0.25s ease-in-out 0s;
-}
-
-.logo {
-  padding: 6px;
-}
-
-.bar {
-  display: flex;
-  position: sticky;
-  flex-direction: row;
-}
-
-.bar-1,
-.bar-2 {
-  display: flex;
-  flex-direction: row;
-}
-
-.bar-1 {
-  margin-left: 1em;
-}
-
-.bar-2 {
-  margin: 0 1em 0 auto;
-}
-
-.bar-link {
-  font-size: 1.3em;
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.6);
-  display: block;
-  padding: 10px;
-  text-align: center;
-
-  &.active {
-    color: #fff;
-  }
-}
-
-.content {
-  overflow: auto;
-}
-
-/* ==========================================================================
-   DESKTOP OVERRIDES
-   ========================================================================== */
-@media screen and (min-width: 640px) {
-  .sb {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .bar {
-    display: flex;
-    flex-shrink: 0;
-    flex-direction: column;
-  }
-
-  .bar-1,
-  .bar-2 {
-    flex-direction: column;
-  }
-
-  .bar-1 {
-    margin: 1em 0 0 0;
-  }
-
-  .bar-2 {
-    margin: auto 0 1em 0;
-  }
-
-  .bar-link {
-    padding: 8px 10px;
-  }
-
-  .content {
-    flex: 1;
-  }
-}
-
-/* ==========================================================================
-   EDITOR COMPONENT OVERRIDES
-   ========================================================================== */
-.editor ::ng-deep .clfx {
-  background: var(--bs-secondary-bg); /* Adapts to dark mode (formerly #eee) */
-  height: 2em;
-  margin-bottom: 1rem;
-}
-
-/* ==========================================================================
-   UI SIDEMENU & BADGES
-   ========================================================================== */
-.badgeUi {
-  padding: 0.35rem 0.4rem;
-  font-size: 75%;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 0.4rem;
-  color: var(--bs-body-color) !important;
-  background-color: var(--bs-secondary-bg);
-  float: right;
-}
-
-.toggleUi {
-  font-size: 75%;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.4rem 0rem !important;
-  margin-left: 0.4rem;
-  color: var(--bs-body-color) !important;
-  float: right;
-}
-.group-by-toggle{
-  background-color: var(--bs-secondary-bg);
-  padding:1px;
-  border-radius:3px;
-}
-.group-by-toggle .btn-check + .btn{
-border:none;
-}
-.group-by-toggle .btn-check:checked + .btn{
-  border:none;
-  background-color: var(--bs-body-bg);
-}
-
-::ng-deep .ui-sidemenu {
-  &.accordion-item {
-    display: block;
-    background: transparent;
-    border: none;
-  }
-
-  button {
-    display: block;
-    background: transparent !important;
-    border: none;
-    width: 100%;
-    text-align: unset;
-    padding: 0.6rem 0.4rem 0.6rem 1rem;
-    color: var(--bs-body-color); /* Added to prevent black text in dark mode */
-  }
-
-  .collapse {
-    transition: all ease-in-out 200ms;
-
-    &.show {
-      background: var(--bs-tertiary-bg); /* Adapts to dark mode (formerly #fafafa) */
-    }
-  }
-
-  .accordion-body {
-    padding: 0;
-    padding-bottom: 0.5em;
-
-    .element {
-      font-size: 0.95em;
-      padding: 0.5rem 1rem !important;
-      color: var(--bs-body-color); /* Ensures links stay readable in dark mode */
-    }
-  }
-
-  .accordion-button::after {
-    margin-left: 0.4rem;
-  }
-}
+.form-group > label, .custom-checkbox > label { font-size: 14px; }
+.editor ::ng-deep .clfx { background: var(--bs-secondary-bg); height: 2em; margin-bottom: 1rem; }

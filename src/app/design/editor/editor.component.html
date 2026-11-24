@@ -1,25 +1,21 @@
-<div class="editor-shell"
-  style="view-transition-name: active-app-morph; display: flex; flex-direction: column; min-height: 100vh; background: var(--bs-body-bg);">
-<div class="editor-topbar d-flex flex-row bg-body shadow-sm">
+<div class="editor-shell">
+<div class="editor-topbar d-flex align-items-center">
   @if (loading()){
     <div class="header-colors"></div>
   }
   
-  <a class="bar-link text-body" routerLink="/design" title="Back to Home Page" routerLinkActive="active">
+  <a class="topbar-home" routerLink="/design" title="Back to Home Page" routerLinkActive="active">
     <fa-icon [icon]="['fas','th-large']" [fixedWidth]="true"></fa-icon>
   </a>
   
   @if (app()?.id) {
     @if (authorized()){
-      <!-- <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
-        <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-body-secondary text-body border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
+      <div class="topbar-search position-relative d-none d-sm-flex align-items-center">
+        <fa-icon [icon]="['fas','search']" class="search-icon" aria-hidden="true"></fa-icon>
+        <input type="search" id="g-search" name="g-search" class="reka-search w-100" (focus)="setFuseSearch()" #searchInput
           [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
-          (selectItem)="selectItem($event)" placeholder="Search components" list="searchresult">
-      </div> -->
-      <div class="py-2 d-none d-sm-flex align-items-center me-2" style="width:240px;">
-        <input type="search" id="g-search" name="g-search" class="p-1 px-3 bg-body-secondary text-body border-0 w-100 form-control-sm" (focus)="setFuseSearch()" #searchInput
-          [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
-          (selectItem)="selectItem($event)" placeholder="Search components (Ctrl+/)" list="searchresult">
+          (selectItem)="selectItem($event)" placeholder="Search components..." aria-label="Search components" list="searchresult">
+        <span class="reka-kbd">Ctrl /</span>
       </div>
       
       <ng-template #rt let-r="result" let-t="term">
@@ -27,15 +23,15 @@
         <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
       </ng-template>
       
-      <div class="me-auto d-flex align-items-center text-truncate py-3" style="font-size:1.1em">
+      <div class="app-identity me-auto d-flex align-items-center fw-semibold">
         @if (app()?.logo) {
           <img [src]="baseApi + '/app/logo/' + app()?.logo" alt="Logo"
-            (error)="handleImageError($event)" width="30" height="30" class="me-2">
+            (error)="handleImageError($event)" width="28" height="28" class="app-logo me-2">
         }
         {{app()?.title}}
       </div>
       
-      <div class="p-1 d-flex align-items-center">
+      <div class="topbar-actions p-1 d-flex align-items-center">
         <div class="d-flex align-items-center" style="white-space:nowrap">
           @if (assistantStatus.available() || assistantPanel.palette()) {
             <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1 d-md-none" (click)="openAssistant()"
@@ -46,13 +42,13 @@
               <fa-icon [icon]="['fas', assistantPanel.palette() ? 'layer-group' : 'bolt']" [fixedWidth]="true"></fa-icon>
             </button>
           }
-          <a type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active">
+          <a type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" routerLink="/design/{{app()?.id}}/summary" routerLinkActive="active" title="Summary" aria-label="Summary">
             <fa-icon [icon]="['fas','chart-bar']" [fixedWidth]="true"></fa-icon>
           </a>
-          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="popShare(app()?.id)">
+          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="popShare(app()?.id)" title="Share" aria-label="Share">
             <fa-icon [icon]="['fas','share-alt']" [fixedWidth]="true"></fa-icon>
           </button>
-          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="editApp(appEditTpl, app())">
+          <button type="button" class="btn btn-round btn-outline-secondary border-0 ms-1" (click)="editApp(appEditTpl, app())" title="App settings" aria-label="App settings">
             <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
           </button>
           <button type="button" class="btn btn-round btn-success ms-1 px-2" (click)="runApp()">
@@ -68,7 +64,7 @@
 @if (app()?.id) {
   @if (authorized()){
     <div class="sb bg-plain" cdkDropListGroup>
-      <div class="bar bg-reka" [ngClass]="bgClassName">
+      <div class="bar" aria-label="App modules">
         <div class="bar-1">
           <a class="bar-link" routerLink="ui" routerLinkActive="active">
             <fa-icon [icon]="['fas', 'quidditch']" [fixedWidth]="true"></fa-icon>

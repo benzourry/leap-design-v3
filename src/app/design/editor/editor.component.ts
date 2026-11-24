@@ -9,7 +9,7 @@ import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootst
 import { UserService } from '../../_shared/service/user.service';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AppService } from '../../service/app.service';
-import { PlatformLocation, NgClass } from '@angular/common';
+import { PlatformLocation } from '@angular/common';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
 import { UtilityService } from '../../_shared/service/utility.service';
 import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.component';
@@ -41,12 +41,11 @@ import { ViewportService } from '../../_shared/service/viewport.service';
         './editor.component.scss'
     ],
     providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
-    imports: [RouterLink, RouterLinkActive, FaIconComponent, NgClass, FormsModule, NgbTypeahead,
+    imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbTypeahead,
         NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantSidePanelComponent, CdkDropListGroup]
 })
 export class EditorComponent implements OnInit {
 
-    bgClassName: string = domainBase.replace(/\./g,'-');
     baseApi = baseApi;
     appId: number;
 

@@ -1,0 +1,82 @@
+:host { display: block; height: 100%; }
+
+.wrapper { min-width: 0; }
+.sidebar { background: var(--reka-bg-sidebar); color: var(--reka-text); }
+.content { min-width: 0; background: var(--reka-bg-canvas); }
+
+.sidebar-heading {
+  padding: 1rem .85rem .75rem;
+  border-bottom: 1px solid var(--reka-border);
+
+  h5 {
+    color: var(--reka-text-muted);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+}
+
+.filter-wrap fa-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--reka-text-muted);
+  font-size: .75rem;
+  pointer-events: none;
+}
+
+.ui-filter {
+  height: 32px;
+  padding: 0 .65rem 0 2rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--reka-bg-subtle);
+  color: var(--reka-text);
+  font-size: .85rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--reka-accent);
+    box-shadow: 0 0 0 3px rgba(7, 71, 166, .18);
+  }
+}
+
+.group-list { padding: .5rem .3rem 1.25rem .4rem; }
+
+.group-list a, .group-list .link-item {
+  display: block;
+  position: relative;
+  border-radius: 6px;
+  color: var(--reka-text-sub);
+  padding: .48rem .6rem;
+  font-size: .9rem;
+  text-decoration: none;
+  transition: background 140ms, color 140ms;
+
+  &:hover { background: var(--reka-bg-hover); color: var(--reka-text); }
+  &.active { background: var(--reka-bg-active); color: var(--reka-accent); font-weight: 600; }
+}
+
+.sidebar-item-title { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.sidebar-item-title .text-truncate { min-width: 0; }
+.group-list .list-group-item-text { font-size: 13px; overflow-wrap: anywhere; }
+
+.ui-item-id {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--reka-text-muted);
+  font: .78rem var(--bs-font-monospace);
+}
+
+@media (min-width: 768px) {
+  .sidebar { flex: 0 0 100%; }
+}
+
+@media (max-width: 767.98px) {
+  :host { height: auto; }
+  .wrapper { height: auto; }
+  .sidebar { width: 100%; border-bottom: 1px solid var(--reka-border); }
+  .content { min-height: 45vh; }
+}

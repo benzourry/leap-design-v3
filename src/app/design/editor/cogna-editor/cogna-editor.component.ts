@@ -57,7 +57,7 @@ marked.use({
     selector: 'app-cogna-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './cogna-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
       NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgClass,
       NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,

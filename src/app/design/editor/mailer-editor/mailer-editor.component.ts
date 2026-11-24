@@ -28,7 +28,7 @@ import { AssistantLocalContextService } from '../assistant/assistant-local-conte
 @Component({
     selector: 'app-mailer-editor',
     templateUrl: './mailer-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
         NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent, SlicePipe,
         NotiListComponent, MetaTrailViewerComponent],

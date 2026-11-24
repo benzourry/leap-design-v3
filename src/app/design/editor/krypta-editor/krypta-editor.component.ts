@@ -23,7 +23,7 @@ import { LambdaService } from '../../../service/lambda.service';
     selector: 'app-krypta-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './krypta-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './krypta-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './krypta-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgCmComponent,
         NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, JsonPipe, JsonViewerComponent]
 })

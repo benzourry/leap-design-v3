@@ -41,7 +41,7 @@ import { Observable } from 'rxjs';
     selector: 'app-ui-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './ui-editor.component.html',
-    styleUrls: ['./ui-editor.component.scss', '../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css'],
+    styleUrls: ['../_workspace-sidebar.scss', './ui-editor.component.scss', '../../../../assets/css/element-action.css'],
     imports: [SplitPaneComponent, NgbAccordionDirective, NgbAccordionItem, NgbAccordionToggle, NgbAccordionButton, RouterLinkActive, NgbCollapse,
         NgbAccordionCollapse, NgbAccordionBody, CdkDropList, CdkDrag, CdkDragHandle, RouterLink, FaIconComponent, RouterOutlet, FormsModule,
         EditFormComponent, CloneFormComponent, CloneDatasetComponent, CloneScreenComponent, EditDatasetComponent,

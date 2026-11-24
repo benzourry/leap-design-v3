@@ -35,7 +35,7 @@ import { AssistantLocalContextService } from '../assistant/assistant-local-conte
 @Component({
     selector: 'app-lambda-editor',
     templateUrl: './lambda-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './lambda-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './lambda-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, 
       NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
       NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, 

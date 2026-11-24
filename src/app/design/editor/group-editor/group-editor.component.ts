@@ -25,7 +25,7 @@ import { RunService } from '../../../run/_service/run.service';
     selector: 'app-group-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './group-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './group-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './group-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, JsonPipe, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgClass, NgbInputDatepicker, NgSelectModule, AngularEditorModule, FilterPipe, DatePipe, KeyValuePipe,
         EditRoleComponent]
 })

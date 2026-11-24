@@ -21,7 +21,7 @@ import { baseApi } from '../../../_shared/constant.service';
     selector: 'app-signa-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './signa-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './signa-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './signa-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst,
     NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe]
 })

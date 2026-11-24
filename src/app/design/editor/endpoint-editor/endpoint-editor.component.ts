@@ -21,7 +21,7 @@ import { LambdaService } from '../../../service/lambda.service';
     selector: 'app-endpoint-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './endpoint-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './endpoint-editor.component.scss'],
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './endpoint-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, 
         NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, JsonPipe, JsonViewerComponent]
 })

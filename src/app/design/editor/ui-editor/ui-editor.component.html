@@ -1,8 +1,11 @@
 <div class="wrapper" split-pane>
-    <!-- 1. Changed bg-white to bg-body to dynamically switch background -->
-    <div class="sidebar bg-body" sidebar #sidebar>
-        <div class="p-3 pb-2">
+    <div class="sidebar" sidebar #sidebar>
+        <div class="sidebar-heading">
             <h5 class="m-0 text-truncate">UI Editor</h5>
+            <div class="filter-wrap position-relative mt-2">
+              <fa-icon [icon]="['fas','filter']" aria-hidden="true"></fa-icon>
+              <input type="search" class="ui-filter w-100" placeholder="Filter UI items..." aria-label="Filter UI items" [(ngModel)]="searchText">
+            </div>
         </div>
         <div class="group-list pb-3 editor-nav touch-overflow">
             <div ngbAccordion class="ui-sidemenu" [closeOthers]="true">
@@ -11,7 +14,7 @@
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-form" [collapsed]="currentPath!='form'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;"
                         routerLinkActive="active">
-                        Forms
+                        <fa-icon [icon]="['far','file-lines']" [fixedWidth]="true"></fa-icon> Forms
                         <div class="badgeUi ms-auto">{{counts().form}}</div>
                     </button>
                     <div ngbAccordionCollapse>
@@ -28,15 +31,15 @@
                                 [queryParams]="{id:i?.id}" draggable="false" cdkDrag>
                                 
                                 @if(counts().form>1){
-                                  <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1" cdkDragHandle>
+                                  <div class="cursor-move dd-move" cdkDragHandle>
                                     <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
                                   </div>
                                 }
 
                                 @if (i?.title?.trim()) {
-                                  {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                 } @else {
-                                  <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                 }
                               </a>
                             }
@@ -55,9 +58,9 @@
                             
                             @if (showRestrictedForms) {
                               <div>
-                                @for (i of restrictedForms; track i.id) {
+                                @for (i of (restrictedForms | filter:searchText); track i.id) {
                                   <!-- 3. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate text-secondary bg-body-secondary" 
+                                  <a class="element text-truncate restricted-item"
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"
@@ -67,9 +70,9 @@
                                     draggable="false">
                                     <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                     @if (i?.title?.trim()) {
-                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     } @else {
-                                      <span class="font-italic">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                      <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     }
                                   </a>
                                 }
@@ -79,10 +82,10 @@
                         }
 
                         <!-- ACTIONS -->
-                        <a class="element pointer text-truncate mt-2" (click)="editForm(editFormTpl, newForm)">
+                        <a class="element pointer text-truncate section-action mt-2" (click)="editForm(editFormTpl, newForm)">
                           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Form
                         </a>
-                        <a class="element pointer text-truncate" (click)="cloneForm(cloneFormTpl)">
+                        <a class="element pointer text-truncate section-action" (click)="cloneForm(cloneFormTpl)">
                           <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Form
                         </a>
                         
@@ -93,11 +96,11 @@
                 <!-- 2. DATASETS SECTION -->
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dataset" [collapsed]="currentPath!='dataset'">
                   <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                      Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
+                      <fa-icon [icon]="['fas','table']" [fixedWidth]="true"></fa-icon> Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
                   </button>
                   <div ngbAccordionCollapse>
                     @if (counts().dataset>1){
-                      <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
+                      <div class="d-flex flex-row group-by-controls">
                         <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
                         <div class="ms-auto btn-group-xs small group-by-toggle">
                           <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
@@ -122,7 +125,7 @@
                         (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
                         @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
                           @if (datasetGroupBy && dsKv?.key) {
-                            <div class="element fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
+                            <div class="element group-label fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
                           }
                           
                           @for (i of dsKv?.value; track i.id) {
@@ -132,15 +135,15 @@
                                 [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts().dataset==1">
                                 
                                 @if(!datasetGroupBy && counts().dataset>1) {
-                                  <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1" cdkDragHandle>
+                                  <div class="cursor-move dd-move" cdkDragHandle>
                                     <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
                                   </div>
                                 }
                                 
                                 @if (i?.title?.trim()) {
-                                  {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                 } @else {
-                                  <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                 }
                             </a>
                           }
@@ -159,9 +162,9 @@
                           
                           @if (showRestrictedDatasets) {
                             <div>
-                              @for (i of restrictedDatasets; track i.id) {
+                              @for (i of (restrictedDatasets | filter:searchText); track i.id) {
                                 <!-- 5. Changed bg-light to bg-body-secondary -->
-                                <a class="element pointer text-truncate text-secondary bg-body-secondary" 
+                                <a class="element pointer text-truncate restricted-item"
                                   title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
                                   routerLinkActive="active" 
                                   [routerLink]="['/design', app.id, 'ui', 'dataset']" 
@@ -169,9 +172,9 @@
                                   draggable="false">
                                   <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                   @if (i?.title?.trim()) {
-                                    {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                   } @else {
-                                    <span class="font-italic">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                   }
                                 </a>
                               }
@@ -181,10 +184,10 @@
                       }
 
                       <!-- ACTIONS -->
-                      <a class="element pointer text-truncate mt-2" (click)="editDataset(editDatasetTpl, newDataset)">
+                      <a class="element pointer text-truncate section-action mt-2" (click)="editDataset(editDatasetTpl, newDataset)">
                           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dataset
                       </a>
-                      <a class="element pointer text-truncate" (click)="cloneDataset(cloneDatasetTpl)">
+                      <a class="element pointer text-truncate section-action" (click)="cloneDataset(cloneDatasetTpl)">
                           <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dataset
                       </a>
                       
@@ -195,7 +198,7 @@
                 <!-- 3. DASHBOARD SECTION -->
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-dashboard" [collapsed]="currentPath!='dashboard'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        Dashboard
+                        <fa-icon [icon]="['fas','chart-pie']" [fixedWidth]="true"></fa-icon> Dashboard
                         <div class="badgeUi ms-auto">{{counts().dashboard}}</div>
                     </button>
                     <div ngbAccordionCollapse>
@@ -209,24 +212,23 @@
                                     draggable="false"
                                     [routerLink]="['/design',app.id,'ui','dashboard']" [queryParams]="{id:i?.id}" cdkDrag>
                                     @if(counts().dashboard>1){
-                                      <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1"
-                                        cdkDragHandle>
+                                      <div class="cursor-move dd-move" cdkDragHandle>
                                         <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
                                         </fa-icon>
                                       </div>
                                     }
                                     @if (i?.title?.trim()) {
-                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     }@else{
-                                      <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                      <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     }
                                 </a>
                               }
                             }
-                            <a class="element pointer text-truncate" (click)="editDashboard(editDashboardTpl, newDashboard)">
+                            <a class="element pointer text-truncate section-action mt-2" (click)="editDashboard(editDashboardTpl, newDashboard)">
                                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Dashboard
                             </a>
-                            <a class="element pointer text-truncate" (click)="cloneDashboard(cloneDashboardTpl)">
+                            <a class="element pointer text-truncate section-action" (click)="cloneDashboard(cloneDashboardTpl)">
                               <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Dashboard
                             </a>    
                         </div>
@@ -236,12 +238,12 @@
                 <!-- 4. CUSTOM SCREEN SECTION (UPDATED) -->
                 <div ngbAccordionItem class="ui-sidemenu" id="ui-screen" [collapsed]="currentPath!='screen'">
                     <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        Custom Screen
+                        <fa-icon [icon]="['fas','window-restore']" [fixedWidth]="true"></fa-icon> Custom Screen
                         <div class="badgeUi ms-auto">{{counts().screen}}</div>
                     </button>
                     <div ngbAccordionCollapse>
                       @if (counts().screen>1){
-                        <div class="d-flex flex-row p-2 ps-3" style="font-size:14px">
+                        <div class="d-flex flex-row group-by-controls">
                           <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
                           <div class="ms-auto btn-group-xs small group-by-toggle">
                             <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
@@ -263,7 +265,7 @@
                           (cdkDropListDropped)="reorderScreen($event, editableScreens)">
                           @for (scKv of (editableScreens | filter:searchText) | groupBy:screenGroupBy; track $index) {
                             @if (screenGroupBy && scKv?.key) {
-                              <div class="element fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>
+                              <div class="element group-label fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>
                             }
                             
                             @for (i of scKv?.value; track i.id) {
@@ -274,15 +276,15 @@
                                   [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts().screen==1">
                                   
                                   @if(!screenGroupBy && counts().screen>1) {
-                                    <div class="cursor-move dd-move" style="top:8px; right:5px;position: absolute;z-index:1" cdkDragHandle>
+                                    <div class="cursor-move dd-move" cdkDragHandle>
                                       <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
                                     </div>
                                   }
                                   
                                   @if (i?.title?.trim()) {
-                                    {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                   } @else {
-                                    <span class="font-italic text-secondary">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                    <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                   }
                                 </a>
                               }
@@ -302,9 +304,9 @@
                             
                             @if (showRestrictedScreens) {
                               <div>
-                                @for (i of restrictedScreens; track i.id) {
+                                @for (i of (restrictedScreens | filter:searchText); track i.id) {
                                   <!-- 7. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate text-secondary bg-body-secondary" 
+                                  <a class="element text-truncate restricted-item"
                                     title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
                                     [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
                                     [style.opacity]="user?.manager ? '1' : '0.65'"
@@ -314,9 +316,9 @@
                                     draggable="false">
                                     <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                     @if (i?.title?.trim()) {
-                                      {{cleanText(i?.title)}} <sup>{{i?.id}}</sup>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     } @else {
-                                      <span class="font-italic">(Untitled)</span> <sup>{{i?.id}}</sup>
+                                      <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
                                     }
                                   </a>
                                 }
@@ -326,10 +328,10 @@
                         }
 
                         <!-- ACTIONS -->
-                        <a class="element pointer text-truncate mt-2" (click)="editScreen(editScreenTpl, newScreen)">
+                        <a class="element pointer text-truncate section-action mt-2" (click)="editScreen(editScreenTpl, newScreen)">
                           <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Screen
                         </a>
-                        <a class="element pointer text-truncate" (click)="cloneScreen(cloneScreenTpl)">
+                        <a class="element pointer text-truncate section-action" (click)="cloneScreen(cloneScreenTpl)">
                           <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone Screen
                         </a>
                         
@@ -340,12 +342,13 @@
             </div>
             
             <a class="pointer element text-truncate" [routerLink]="['navi']" routerLinkActive="active">
-                Structure
+                <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="me-2"></fa-icon>Structure
                 @if (!counts().navi) {
                 <fa-icon style="opacity:.3" class="float-end me-1" [icon]="['fas','exclamation-triangle']"
                     [fixedWidth]="true"></fa-icon>
                 }
             </a>
+            <div class="utilities-heading">Workspace &amp; Utilities</div>
             <a class="pointer text-truncate" (click)="importMetadata(importMetadataTpl)">
                 <fa-icon class="float-start" [icon]="['fas','file-import']" [fixedWidth]="true"></fa-icon>
                 <div class="list-group-item-heading ms-4">

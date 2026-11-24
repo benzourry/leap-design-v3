@@ -24,7 +24,7 @@ import { CommService } from '../../../_shared/service/comm.service';
 @Component({
     selector: 'app-lookup-editor',
     templateUrl: './lookup-editor.component.html',
-    styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css',
+    styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css',
         './lookup-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
         NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent,

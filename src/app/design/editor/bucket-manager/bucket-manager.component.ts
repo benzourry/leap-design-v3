@@ -22,7 +22,7 @@ import { FileDropPasteDirective } from '../../../_shared/directive/file-drop-pas
 @Component({
   selector: 'app-bucket-manager',
   templateUrl: './bucket-manager.component.html',
-  styleUrls: ['../../../../assets/css/side-menu.css', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
+  styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
   imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe, FileDropPasteDirective],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
