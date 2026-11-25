@@ -233,7 +233,7 @@
 
       <div class="row g-3">
         <!-- LEFT COLUMN: models, sources, tools, MCP & vector store -->
-        <div class="col-sm-4 col-lg-3">
+        <div class="col-sm-4 col-lg-4">
           @if(['txtgen'].includes(cogna.type)){
           <section class="cg-panel">
             <div class="cg-panel-header">
@@ -657,7 +657,7 @@
         </div>
 
         <!-- RIGHT COLUMN: interactive preview & testing sandbox -->
-        <div class="col-sm-8 col-lg-9">
+        <div class="col-sm-8 col-lg-8">
           @if(['txtgen','master'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
@@ -718,14 +718,24 @@
             </div>
 
             <div class="border-top">
-              <div class="small text-body-secondary px-3 py-2 bg-body-tertiary border-bottom">Custom Parameters</div>
-              <div>
+              <button type="button" class="cg-param-toggle" (click)="showCognaParams = !showCognaParams"
+                [attr.aria-expanded]="showCognaParams" aria-controls="cogna-params-drawer">
+                <span class="d-inline-flex align-items-center gap-2">
+                  <fa-icon [icon]="['fas','sliders']" [fixedWidth]="true" size="xs"></fa-icon>
+                  Custom Parameters
+                </span>
+                <fa-icon [icon]="['fas',showCognaParams?'angle-up':'angle-down']" [fixedWidth]="true"
+                  size="xs"></fa-icon>
+              </button>
+              @if (showCognaParams) {
+              <div id="cogna-params-drawer">
                 <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
                   label="Cogna Parameters"
                   subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
                   [(ngModel)]="chatPromptParam" [linenumber]="true" required>
                 </app-cm>
               </div>
+              }
             </div>
 
             <div class="cg-composer">

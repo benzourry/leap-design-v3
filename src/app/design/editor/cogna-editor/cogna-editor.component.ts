@@ -994,6 +994,7 @@ export class CognaEditorComponent implements OnInit {
   lastChatPromptText = signal<string>("");
   chatPromptText = signal<string>("");
   chatPromptParam:string="";
+  showCognaParams = false;
   chatPromptLoading = signal<boolean>(false);
   streamTyping = signal<boolean>(false);
   streamResult = signal<string>("");
