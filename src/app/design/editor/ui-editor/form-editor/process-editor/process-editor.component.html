@@ -1,93 +1,99 @@
-<div #processPane class="single-pane position-relative" (window:resize)="scheduleTierLineRedraw()">
+<div #processPane class="single-pane position-relative process-pane" (window:resize)="scheduleTierLineRedraw()">
+                        <div class="process-toolbar-strip">
+                          @if (curForm.tiers.length>0) {
+                            <div class="form-check form-switch m-0">
+                              <input type="checkbox" class="form-check-input" id="simplifiedProcessView"
+                                [(ngModel)]="simplifiedProcessView" (ngModelChange)="scheduleTierLineRedraw()" name="simplifiedProcessView">
+                              <label class="form-check-label small fw-medium" for="simplifiedProcessView">View Simplified Tiers</label>
+                            </div>
+                          }
+                          @if (curForm.admin) {
+                            <span class="admin-chip">
+                              <fa-icon [icon]="['fas','user-shield']" class="text-secondary" size="xs"></fa-icon>
+                              <span>Admin Group: <strong>{{curForm.admin.name}}</strong></span>
+                            </span>
+                          }
+                        </div>
                         @if (curForm.tiers.length>0) {
-                          <div class="form-switch mb-2">
-                            <input type="checkbox" class="form-check-input" id="simplifiedProcessView"
-                              [(ngModel)]="simplifiedProcessView" (ngModelChange)="scheduleTierLineRedraw()" name="simplifiedProcessView">
-                            <label class="form-check-label ms-2" for="simplifiedProcessView"> View
-                              Simplified Tiers
-                            </label>
-                          </div>
-                        }
-                        @if (curForm.tiers.length>0) {
-                          <div [style.margin-right.px]="maxValue(lines?.length*3,15)">
-                            <div class="ballx position-relative" style="min-height:55px; min-width:320px;">
-                              <button type="button" [style.background-color]="selectedLine==-1?selectedColor:'#ccc'"
-                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
+                          <div class="process-flow" [style.margin-right.px]="maxValue(lines?.length*3,15)">
+                            <div class="process-node-row process-start-row">
+                              <button type="button" class="proc-terminal-pill"
+                                [style.background-color]="selectedLine==-1?selectedColor:'var(--bs-body-bg)'"
+                                [style.border-color]="selectedLine==-1?selectedColor:'var(--bs-border-color)'"
+                                [style.color]="selectedLine==-1?'var(--bs-white)':'var(--bs-body-color)'"
                                 (click)="highlightSubmit()"
-                                style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                                >
+                                <fa-icon [icon]="['fas','paper-plane']" size="xs"></fa-icon>
                                 Submission
                               </button>
                               <div id="t_-1_line" [class.selected-line]="selectedLine==-1"
-                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
-                                style="left:130px; min-width:190px"></div>
+                                [style.border-color]="selectedLine==-1?selectedColor:'var(--bs-border-color)'"></div>
                               <div id="line_-1" [class.selected-line]="selectedLine==-1"
-                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'" style="border: 2px solid rgb(204, 204, 204);
-                                border-left: none;
-                                border-radius: 0px 4px 4px 0px; right: -10px;
-                                position: absolute; top: 20px; width: 10px;
-                                opacity: 0.5;">
+                                [style.border-color]="selectedLine==-1?selectedColor:'var(--bs-border-color)'">
                               </div>
                             </div>
                             @for (tier of curForm.tiers; track tier.id; let $t_index = $index) {
-                              <div class="ballx" [class]="tier.altClass">
-                                <div style="margin-left: 0px; min-height:55px; min-width:320px; position: relative;">
+                              <div class="tier-row-wrap" [class]="tier.altClass">
                                   @if (tier.pre) {
-                                    <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
-                                      <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
-                                        <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
+                                    <div class="tier-pre-badge-wrap">
+                                      <span class="tier-pre-chip badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" [title]="tier.pre">
+                                        <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon>
                                         IF: {{ tier.pre.length > 40 ? (tier.pre | slice:0:40) + '...' : tier.pre }}
                                       </span>
                                     </div>
                                   }
-                                  <div class="card card-clean mb-3"
+                                  <div class="card tier-card"
                                     [class.selected-tier]="selectedTier==tier.id"
-                                    [style.outline-color]="selectedColor">
-                                    <div class="card-header element ps-3 overflow-hidden" style="font-size:18px;">
+                                    [style.outline-color]="selectedTier==tier.id ? selectedColor : null">
+                                    <div class="tier-card-head">
                                       @if (!curForm.x?.extended){
-                                        <div class="element-edit" style="position:absolute;top:6px;right:12px;">
+                                        <div class="element-edit workspace-action-bar tier-header-actions">
                                           @if (!$first) {
-                                            <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn btn-round btn-info btn-sm" title="Move tier up" aria-label="Move tier up" [disabled]="isTimeWarpingForm"
                                               (click)="reorderTier(tier, -1)">
                                               <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
                                             </button>
                                           }
                                           @if (!$last) {
-                                            <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn btn-round btn-info btn-sm" title="Move tier down" aria-label="Move tier down" [disabled]="isTimeWarpingForm"
                                               (click)="reorderTier(tier, 1)">
                                               <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
                                             </button>
                                           }
-                                          <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                          <button type="button" class="btn btn-round btn-info btn-sm" title="Edit tier" aria-label="Edit tier" [disabled]="isTimeWarpingForm"
                                             (click)="editTier(editTierTpl,tier)">
                                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                           </button>
-                                          <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                          <button type="button" class="btn btn-round btn-info btn-sm" title="Remove tier" aria-label="Remove tier" [disabled]="isTimeWarpingForm"
                                             (click)="removeTier(removeTierTpl,tier)">
                                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                           </button>
                                         </div>
                                       }
-                                      <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
-                                        [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
-                                        style="width:30px;right:14px;font-weight: bold;position:absolute;background: var(--bs-body-bg); height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
+                                      <div class="tier-title-group">
+                                        <h2 class="tier-title mb-0">{{tier.name}}</h2>
+                                        <app-editor-id-chip [id]="tier.id" kind="tier"></app-editor-id-chip>
+                                      </div>
+                                      <span class="tier-step-circle"
+                                        [style.border-color]="selectedLineTier==tier.id?selectedColor:'var(--bs-border-color)'"
+                                        [style.color]="selectedLineTier==tier.id?selectedColor:'var(--bs-secondary-color)'">
                                         {{$t_index+1}}
-                                      </div>
-                                      <div class="element-item">
-                                        {{tier.name}}<sup class="ms-2">{{tier.id}}</sup>
-                                      </div>
+                                      </span>
                                       <div id="t_{{tier.id}}"
+                                        class="tier-target-diamond"
                                         [class.selected-line-tier]="selectedLineTier==tier.id"
-                                        [style.background-color]="selectedLineTier==tier.id?selectedColor:'#ddd'"
-                                        style="position:absolute; top:18px; right:-5px;width:10px;height:10px;background:#ddd; transform: rotate(-45deg);">
+                                        [style.background-color]="selectedLineTier==tier.id?selectedColor:'var(--bs-border-color)'">
                                       </div>
                                     </div>
-                                    <div class="card-body pt-1">
+                                    <div class="tier-card-body">
                                       @if (!simplifiedProcessView) {
+                                        <div class="tier-detail-block">
                                         @if (tier.type=='ALL') {
-                                          <div class="small mb-2">Any user with access may approve</div>
+                                          <div class="small mb-2"><span class="tier-type-chip">ALL</span> Any user with access may approve</div>
                                         }
                                         @if (tier.type=='ASSIGN') {
                                           <div class="small mb-2">
+                                            <span class="tier-type-chip">ASSIGN</span>
                                             <span class="me-1 mb-2">Approver will be assigned by</span>
                                             @if (!curForm.admin) {
                                               <span class="text-danger">Please set admin group in form setting!</span>
@@ -99,11 +105,13 @@
                                         }
                                         @if (tier.type=='DYNAMIC') {
                                           <div class="small mb-2">
+                                            <span class="tier-type-chip">DYNAMIC</span>
                                             Dynamic approver from <code>{{tier.orgMapPointer}}</code> in <code>{{tier.orgMap}}</code>
                                           </div>
                                         }
                                         @if (tier.type=='FIXED') {
                                           <div class="small mb-2">
+                                            <span class="tier-type-chip">FIXED</span>
                                             <span class="me-1 mb-2">Fixed approver to </span>
                                             @for (i of tier.approver|asList; track $index) {
                                               <div class="d-inline-block me-2 border bg-body-secondary rounded px-1 mb-1">{{i}}</div>
@@ -112,41 +120,48 @@
                                         }
                                         @if (tier.type=='GROUP') {
                                           <div class="small mb-2">
+                                            <span class="tier-type-chip">GROUP</span>
                                             <span class="me-1 mb-2">Approver group : {{accessMap()[tier.approverGroup]?.name}}</span>
                                           </div>
                                         }
-                                        <div class="mb-2 d-flex align-items-center text-secondary">
+                                        <div class="tier-meta-strip">
                                           @if (tier.canRemark) {
-                                            <fa-icon class="me-2" [icon]="['far','comment-dots']" title="Remark field is enabled" [fixedWidth]="true"></fa-icon>
+                                            <span class="meta-chip" title="Remark field is enabled">
+                                              <fa-icon [icon]="['far','comment-dots']" [fixedWidth]="true"></fa-icon> Remark
+                                            </span>
                                           }
                                           @if (tier.submitMailer?.length>0) {
-                                            <fa-icon class="me-2" [icon]="['far','envelope']" title="Has submission mailer" [fixedWidth]="true"></fa-icon>
+                                            <span class="meta-chip" title="Has submission mailer">
+                                              <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> Mailer
+                                            </span>
                                           }
                                           @if (tier.alwaysApprove) {
-                                            <fa-icon class="me-2 text-primary" [icon]="['fas','circle-notch']" title="Decision always approve mode" [fixedWidth]="true"></fa-icon>
+                                            <span class="meta-chip text-primary" title="Decision always approve mode">
+                                              <fa-icon [icon]="['fas','circle-notch']" [fixedWidth]="true"></fa-icon> Auto-advance
+                                            </span>
                                           }
                                           @if (tier.section) {
-                                            <div class="me-2 d-flex align-items-center text-truncate" title="Custom approval form">
+                                            <span class="meta-chip" title="Custom approval form">
                                               <fa-icon [icon]="['fab','wpforms']" [fixedWidth]="true"></fa-icon>
-                                              <span class="small">{{tier.section.title}}</span>
-                                            </div>
+                                              {{tier.section.title}}
+                                            </span>
                                           }
                                           @if (tier.pre) {
-                                            <div class="me-2 d-inline-block border border-1 border-secondary rounded px-1 small" style="font-weight: bold;font-size:0.6em" [title]="tier.pre">PRE</div>
+                                            <span class="meta-chip micro-tag" [title]="tier.pre">PRE</span>
                                           }
                                           @if (tier.post) {
-                                            <div class="me-2 d-inline-block border border-1 border-secondary rounded px-1 small" style="font-weight: bold;font-size:0.6em" [title]="tier.post">POST</div>
+                                            <span class="meta-chip micro-tag" [title]="tier.post">POST</span>
                                           }
                                         </div>
+                                        </div>
                                       }
-                                      <div>
+                                      <div class="tier-actions-row">
                                         @if (tier.alwaysApprove) {
                                           <button type="button" (click)="highlightLine(tier,{id:-2323, color:'rgb(0, 123, 255)', action:'nextTier'})"
                                               title="Always approve"
-                                              [style.border-color]="selectedLine==-2323?'rgb(0, 123, 255)':'#aaa'"
-                                              [style.color]="selectedLine==-2323?'rgb(0, 123, 255)':''"
-                                              style="border-style:dashed;"
-                                              class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative">
+                                              [style.border-color]="selectedLine==-2323?selectedColor:'var(--bs-border-color)'"
+                                              [style.color]="selectedLine==-2323?selectedColor:''"
+                                              class="btn btn-tier-action btn-sm btn-round py-1 mt-1 nowrap always-approve-action">
                                               @if (!simplifiedProcessView) {
                                                 Always approve
                                               } @else {
@@ -155,74 +170,76 @@
                                           </button>
                                         }@else{
                                           @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
-                                            <button type="button" (click)="highlightLine(tier,o.value)"
-                                              [title]="o.value.label"
-                                              [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
-                                              [style.color]="selectedLine==o.value.id?selectedColor:''"
-                                              class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
-                                              [class]="o.value.altClass">
-                                              @if (!simplifiedProcessView) {
-                                                {{o.value.label}}
-                                              } @else {
-                                                <fa-icon [fixedWidth]="true" [icon]="['fas',o.value.icon]"></fa-icon>
-                                              }
-                                              @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
-                                                <fa-icon class="text-danger blink_me" style="position:absolute; right:-5px;top:-10px"
-                                                  title="Action [Go to tier] leads to nonexistent tier"
-                                                  [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" size="xs">
-                                                </fa-icon>
-                                              }
-                                              @if (o.value.mailer?.length>0) {
-                                                <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
-                                              }
-                                              @if (!curForm.x?.extended){
-                                                <div class="element-edit shadow-sm leafup nowrap">
-                                                  <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                            <div class="tier-action-wrap" [class.selected-action]="selectedLine==o.value.id">
+                                              <button type="button" (click)="highlightLine(tier,o.value)"
+                                                [title]="o.value.label"
+                                                [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'"
+                                                [style.color]="selectedLine==o.value.id?selectedColor:''"
+                                                class="btn btn-tier-action btn-sm btn-round py-1 mt-1 nowrap"
+                                                [class]="o.value.altClass">
+                                                @if (!simplifiedProcessView) {
+                                                  {{o.value.label}}
+                                                } @else {
+                                                  <fa-icon [fixedWidth]="true" [icon]="['fas',o.value.icon]"></fa-icon>
+                                                }
+                                                @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
+                                                  <fa-icon class="text-danger blink_me" style="position:absolute; right:-5px;top:-10px"
+                                                    title="Action [Go to tier] leads to nonexistent tier"
+                                                    [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" size="xs">
+                                                  </fa-icon>
+                                                }
+                                                @if (o.value.mailer?.length>0) {
+                                                  <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
+                                                }
+                                              </button>
+                                              @if (!curForm.x?.extended) {
+                                                <div class="element-edit workspace-action-bar tier-action-actions">
+                                                  <button type="button" class="btn btn-round btn-sm btn-info" title="Edit action" aria-label="Edit action" [disabled]="isTimeWarpingForm"
                                                     (click)="editTierAction(editTierActionTpl,tier,o.value)">
                                                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                                   </button>
-                                                  <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                                  <button type="button" class="btn btn-round btn-sm btn-info" title="Remove action" aria-label="Remove action" [disabled]="isTimeWarpingForm"
                                                     (click)="removeTierAction(o.value)">
                                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                                   </button>
                                                   @if (!$a_first) {
-                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Move action left" aria-label="Move action left" [disabled]="isTimeWarpingForm"
                                                       (click)="reorderTierAction(tier, o.value, -1)">
                                                       <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                                     </button>
                                                   }
                                                   @if (!$a_last) {
-                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Move action right" aria-label="Move action right" [disabled]="isTimeWarpingForm"
                                                       (click)="reorderTierAction(tier, o.value, 1)">
                                                       <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                                     </button>
                                                   }
                                                 </div>
                                               }
-                                            </button>
+                                            </div>
                                           }
                                         }
                                         @if (!curForm.x?.extended && !tier.alwaysApprove) {
-                                          <button [disabled]="isTimeWarpingForm"
-                                            class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
+                                          <button type="button" [disabled]="isTimeWarpingForm"
+                                            class="btn btn-add-action btn-sm btn-round mt-1 nowrap"
                                             (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
                                             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                           </button>
                                         }
                                       </div>
-                                      <div style="position:absolute;right:0px; top:0px; width:0px; height:100%">
+                                      <div class="tier-route-anchors">
                                         @if (tier.alwaysApprove) {
-                                          <div id="ta_-2323" style="position:absolute;left:0px;height:4px;width:0px;" [style.top.px]="50+(0*10)"></div>
-                                          <div id="line_-2323" class="line-tier" [style.border-color]="selectedLine==-2323?selectedColor:'#ccc'"
+                                          <div id="ta_-2323" class="tier-action-anchor" [style.top.px]="50"></div>
+                                          <div id="line_-2323" class="line-tier" [style.border-color]="selectedLine==-2323?selectedColor:'var(--bs-border-color)'"
                                             [class.selected-line]="selectedLine==-2323"
-                                            [style.top.px]="50+(0*10)" [style.width.px]="10+0*10">
+                                            [style.top.px]="50" [style.width.px]="10">
                                           </div>
                                         }@else{
                                           @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
-                                            <div id="ta_{{o.value.id}}" style="position:absolute;left:0px;height:4px;width:0px;" [style.top.px]="50+($a_index*10)"></div>
+                                            <div id="ta_{{o.value.id}}" class="tier-action-anchor" [style.top.px]="50+($a_index*10)"></div>
                                             @if (['goTier','nextTier','prevTier'].includes(o.value.action)) {
                                               <div id="line_{{o.value.id}}" class="line-tier"
-                                                [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'"
                                                 [class.selected-line]="selectedLine==o.value.id"
                                                 [style.top.px]="50+($a_index*10)"
                                                 [style.width.px]="10+$a_index*10">
@@ -231,13 +248,12 @@
                                             @if (['curTier'].includes(o.value.action)) {
                                               @if (o.value.userEdit) {
                                                 <div id="line_{{o.value.id}}" class="line-tier"
-                                                  [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                  [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'"
                                                   [style.display]="selectedLine==o.value.id?'block':'none'"
                                                   [class.selected-line]="selectedLine==o.value.id"
                                                   [style.top.px]="50+($a_index*10)"
                                                   style="width:15px;">
-                                                  <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
-                                                    style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
+                                                  <div class="tier-route-node" [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'">
                                                     @if (o.value.action=='curTier') {
                                                       <fa-icon size="xs" [icon]="['fas',o.value.icon]"></fa-icon>
                                                     }
@@ -247,11 +263,11 @@
                                               @if (!o.value.userEdit) {
                                                 <div id="term_{{o.value.id}}"
                                                   [style.display]="selectedLine==o.value.id?'block':'none'"
-                                                  [style.top.px]="50+($a_index*10)"
-                                                  style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
-                                                  <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                  class="tier-terminal-anchor"
+                                                  [style.top.px]="52+($a_index*10)">
+                                                  <div [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'"
                                                     [style.color]="selectedLine==o.value.id?selectedColor:'var(--bs-body-color)'"
-                                                    style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
+                                                    class="tier-terminal-badge">
                                                     @if (o.value.action=='curTier') {
                                                       <fa-icon size="xs" [icon]="['fas',o.value.icon]"></fa-icon>
                                                     }
@@ -264,46 +280,41 @@
                                       </div>
                                     </div>
                                   </div>
-                                </div>
                               </div>
                             }
-                            @if(!curForm.x?.extended){
-                              <div class="ballx" style="min-height:55px;">
-                                <button type="button" class="btn btn-sm btn-primary btn-round" [disabled]="isTimeWarpingForm"
-                                  (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
-                                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
-                                  Tier
-                                </button>
-                              </div>
-                            }
-                            <div class="ballx position-relative" style="min-height:55px;">
-                              <div id="t_999"
-                                [style.background-color]="selectedLineTier==999?selectedColor:'#ccc'"
-                                [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'"
-                                style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                            <div class="process-node-row process-complete-row">
+                              <div id="t_999" class="proc-terminal-pill"
+                                [style.background-color]="selectedLineTier==999?selectedColor:'var(--bs-body-bg)'"
+                                [style.border-color]="selectedLineTier==999?selectedColor:'var(--bs-border-color)'"
+                                [style.color]="selectedLineTier==999?'var(--bs-white)':'var(--bs-body-color)'">
+                                <fa-icon [icon]="['fas','check']" size="xs"></fa-icon>
                                 Complete
                               </div>
                               @if (hasLineToComplete) {
                                 <div id="t_999_line" [class.selected-line]="selectedLineTier==999"
-                                  style="min-width:205px;"
-                                  [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'">
+                                  [style.border-color]="selectedLineTier==999?selectedColor:'var(--bs-border-color)'">
                                 </div>
                               }
                             </div>
-                            @if(!curForm.x?.extended){
-                              <div>
-                                <button type="button" class="btn btn-secondary btn-round btn-sm mb-3"
-                                  (click)="reconApprover()" [disabled]="reconLoading || isTimeWarpingForm">
-                                  @if (reconLoading) {
-                                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-                                    Processing...
-                                  } @else {
-                                    <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
-                                    Update approver for all tiers
-                                  }
-                                </button>
-                              </div>
-                            }
+                          </div>
+                        }
+                        @if (curForm.tiers.length>0 && !curForm.x?.extended) {
+                          <div class="proc-bottom-actions">
+                            <button type="button" class="btn-subtle-action" [disabled]="isTimeWarpingForm"
+                              (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
+                              <fa-icon [icon]="['fas','plus']" class="text-primary" [fixedWidth]="true"></fa-icon>
+                              <span>Add New Tier</span>
+                            </button>
+                            <button type="button" class="btn-subtle-action"
+                              (click)="reconApprover()" [disabled]="reconLoading || isTimeWarpingForm">
+                              @if (reconLoading) {
+                                <fa-icon [icon]="['fas','sync']" class="text-secondary" [fixedWidth]="true"></fa-icon>
+                                <span>Processing...</span>
+                              } @else {
+                                <fa-icon [icon]="['fas','cog']" class="text-secondary" [fixedWidth]="true"></fa-icon>
+                                <span>Update approver for all tiers</span>
+                              }
+                            </button>
                           </div>
                         }
                         @if (curForm.tiers.length==0) {
@@ -316,13 +327,6 @@
                                 <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
                                 Tier
                               </button>
-                            </div>
-                          </div>
-                        }
-                        @if (curForm.admin) {
-                          <div class="card mb-2">
-                            <div class="card-body p-3 bordered">
-                              Admin Group : {{curForm.admin.name}}
                             </div>
                           </div>
                         }

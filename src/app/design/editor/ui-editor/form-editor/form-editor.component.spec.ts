@@ -71,6 +71,79 @@ describe('FormEditorComponent', () => {
     expect(toast).toHaveBeenCalledWith('This tab has no sections to scroll to.', jasmine.anything());
   });
 
+  it('shows the previous form details, hidden-data notice and link when applicable', () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 1, title: 'Form', nav: 'tabs', tabs: [], sections: [], tiers: [], items: {},
+      prev: { id: 123, title: 'Previous', description: 'Earlier form' }, x: { hidePrev: true }
+    };
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const notice = host.querySelector<HTMLElement>('.previous-form-notice')!;
+    expect(notice.textContent).toContain('Previous');
+    expect(notice.textContent).toContain('Earlier form');
+    expect(notice.textContent).toContain('Previous data is hidden in this form');
+    expect(notice.querySelector('a')!.getAttribute('href')).toContain('id=123');
+  });
+
+  it('floats only the tapped tab actions without changing the layout on touch', () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 1, title: 'Form', nav: 'tabs',
+      tabs: [{ id: 7, title: 'Application Details' }, { id: 8, title: 'Documents and Attachments' }],
+      sections: [], tiers: [], items: {}, x: {}
+    };
+    fixture.detectChanges();
+
+    const touchRules = Array.from(document.querySelectorAll('style'))
+      .flatMap(style => Array.from(style.sheet?.cssRules ?? []))
+      .find((rule): rule is CSSMediaRule => rule instanceof CSSMediaRule
+        && rule.conditionText.includes('hover: none') && rule.cssText.includes('form-tab.is-action-selected'));
+    expect(touchRules).toBeDefined();
+    const touchStyles = document.createElement('style');
+    touchStyles.textContent = Array.from(touchRules!.cssRules).map(rule => rule.cssText).join('\n');
+    document.head.appendChild(touchStyles);
+
+    try {
+      const host = fixture.nativeElement as HTMLElement;
+      const list = host.querySelector<HTMLElement>('.form-tabs-list')!;
+      list.style.width = '180px';
+      const tabs = list.querySelectorAll<HTMLElement>('.form-tab');
+      const firstActions = tabs[0].querySelector<HTMLElement>('.element-edit')!;
+      const secondActions = tabs[1].querySelector<HTMLElement>('.element-edit')!;
+      const listHeight = list.getBoundingClientRect().height;
+      const secondTop = tabs[1].getBoundingClientRect().top;
+      expect(getComputedStyle(firstActions).display).toBe('none');
+      expect(getComputedStyle(secondActions).display).toBe('none');
+
+      tabs[0].querySelector<HTMLButtonElement>('.form-tab-link')!.click();
+      fixture.detectChanges();
+      expect(getComputedStyle(firstActions).display).toBe('block');
+      expect(getComputedStyle(firstActions).position).toBe('absolute');
+      expect(getComputedStyle(secondActions).display).toBe('none');
+      expect(list.getBoundingClientRect().height).toBe(listHeight);
+      expect(tabs[1].getBoundingClientRect().top).toBe(secondTop);
+      const edit = spyOn(component, 'editTab');
+      firstActions.querySelector<HTMLButtonElement>('[aria-label="Edit tab"]')!.click();
+      expect(edit).toHaveBeenCalled();
+
+      tabs[1].querySelector<HTMLButtonElement>('.form-tab-link')!.click();
+      fixture.detectChanges();
+      expect(getComputedStyle(firstActions).display).toBe('none');
+      expect(getComputedStyle(secondActions).display).toBe('block');
+      expect(list.getBoundingClientRect().height).toBe(listHeight);
+    } finally {
+      touchStyles.remove();
+    }
+  });
+
   it('keeps tab navigation separate from edit actions', async () => {
     new SharedModule(TestBed.inject(FaIconLibrary));
     spyOn(FormEditorComponent.prototype, 'ngOnInit');
@@ -175,6 +248,80 @@ describe('FormEditorComponent', () => {
 
     component.scheduleTierLineRedraw();
     expect(setTimeoutSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('only outlines the selected source tier, not every tier when Submission is selected', () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    const processFixture = TestBed.createComponent(ProcessEditorComponent);
+    processFixture.componentRef.setInput('form', {
+      tiers: [
+        { id: 11, name: 'First', sortOrder: 0, type: 'ALL',
+          actions: { next: { id: 21, action: 'nextTier', label: 'Next', sortOrder: 0, color: 'rgb(255, 0, 0)' } } },
+        { id: 12, name: 'Second', sortOrder: 1, type: 'ALL', actions: {} }
+      ]
+    });
+    processFixture.detectChanges();
+
+    const host = processFixture.nativeElement as HTMLElement;
+    const cards = host.querySelectorAll<HTMLElement>('.tier-card');
+    host.querySelector<HTMLButtonElement>('.proc-terminal-pill')!.click();
+    processFixture.detectChanges();
+    expect(getComputedStyle(cards[0]).outlineStyle).toBe('none');
+    expect(getComputedStyle(cards[1]).outlineStyle).toBe('none');
+    expect(host.querySelector('#t_11')!.classList.contains('selected-line-tier')).toBeTrue();
+
+    host.querySelector<HTMLButtonElement>('.btn-tier-action')!.click();
+    processFixture.detectChanges();
+    expect(getComputedStyle(cards[0]).outlineStyle).toBe('solid');
+    expect(getComputedStyle(cards[0]).outlineColor).toBe('rgb(255, 0, 0)');
+    expect(getComputedStyle(cards[1]).outlineStyle).toBe('none');
+    processFixture.destroy();
+  });
+
+  it('floats selected tier action controls without changing card height on touch', () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    const processFixture = TestBed.createComponent(ProcessEditorComponent);
+    processFixture.componentRef.setInput('form', {
+      tiers: [{
+        id: 11, name: 'First', sortOrder: 0, type: 'ALL', actions: {
+          first: { id: 21, action: 'curTier', label: 'First action', sortOrder: 0, color: 'rgb(255, 0, 0)', icon: 'check' },
+          second: { id: 22, action: 'curTier', label: 'Second action', sortOrder: 1, color: 'rgb(0, 0, 255)', icon: 'check' }
+        }
+      }]
+    });
+    processFixture.detectChanges();
+
+    const touchRules = Array.from(document.querySelectorAll('style'))
+      .flatMap(style => Array.from(style.sheet?.cssRules ?? []))
+      .find((rule): rule is CSSMediaRule => rule instanceof CSSMediaRule
+        && rule.conditionText.includes('hover: none') && rule.cssText.includes('tier-action-wrap.selected-action'));
+    expect(touchRules).toBeDefined();
+    const touchStyles = document.createElement('style');
+    touchStyles.textContent = Array.from(touchRules!.cssRules).map(rule => rule.cssText).join('\n');
+    document.head.appendChild(touchStyles);
+
+    try {
+      const host = processFixture.nativeElement as HTMLElement;
+      const card = host.querySelector<HTMLElement>('.tier-card')!;
+      const actions = host.querySelectorAll<HTMLElement>('.tier-action-wrap');
+      const height = card.getBoundingClientRect().height;
+      actions[0].querySelector<HTMLButtonElement>('.btn-tier-action')!.click();
+      processFixture.detectChanges();
+
+      const firstBar = actions[0].querySelector<HTMLElement>('.tier-action-actions')!;
+      const secondBar = actions[1].querySelector<HTMLElement>('.tier-action-actions')!;
+      expect(card.getBoundingClientRect().height).toBe(height);
+      expect(getComputedStyle(firstBar).position).toBe('absolute');
+      expect(getComputedStyle(firstBar).display).not.toBe('none');
+      expect(getComputedStyle(secondBar).display).toBe('none');
+
+      const edit = spyOn(processFixture.componentInstance, 'editTierAction');
+      firstBar.querySelector<HTMLButtonElement>('[aria-label="Edit action"]')!.click();
+      expect(edit).toHaveBeenCalled();
+    } finally {
+      touchStyles.remove();
+      processFixture.destroy();
+    }
   });
 
   it('redraws tier connectors when the Process tab is shown and when tiers are simplified', async () => {

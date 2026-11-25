@@ -118,6 +118,7 @@ export class FormEditorComponent implements OnInit {
     filterField: string = "";
     readonly headIcon = faThumbtack;
     readonly activeFormTab = signal<string | null>(null);
+    readonly selectedFormTabActions = signal<string | null>(null);
 
     sizeList: any[] = SIZE_LIST;
     sizeFixList: any[] = SIZE_FIX_LIST;
@@ -543,7 +544,10 @@ export class FormEditorComponent implements OnInit {
         delete this.superForm
         delete this.formError;
         this.superItems = [];
-        if (String(this.curFormId) !== String(id)) this.activeFormTab.set(null);
+        if (String(this.curFormId) !== String(id)) {
+            this.activeFormTab.set(null);
+            this.selectedFormTabActions.set(null);
+        }
         this.curFormId = id;
         this.formService.getForm(id)
             .pipe(takeUntilDestroyed(this.destroyRef))

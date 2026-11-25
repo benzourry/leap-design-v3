@@ -15,6 +15,7 @@ import { ToastService } from '../../../../../_shared/service/toast-service';
 import { AsListPipe } from '../../../../../_shared/pipe/as-list.pipe';
 import { NgCmComponent } from '../../../../../_shared/component/ng-cm/ng-cm.component';
 import { toSnakeCase } from '../../../../../_shared/utils';
+import { EditorIdChipComponent } from '../../editor-id-chip.component';
 
 @Component({
     selector: 'app-process-editor',
@@ -22,7 +23,7 @@ import { toSnakeCase } from '../../../../../_shared/utils';
     styleUrls: ['../../../../../../assets/css/element-action.css', './process-editor.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [FormsModule, FaIconComponent, NgSelectModule, KeyValuePipe, SlicePipe, AsListPipe, NgCmComponent,
-        NgbNav, NgbNavItem, NgbNavLink, NgbNavContent, NgbNavOutlet]
+        NgbNav, NgbNavItem, NgbNavLink, NgbNavContent, NgbNavOutlet, EditorIdChipComponent]
 })
 export class ProcessEditorComponent implements OnChanges {
     readonly form = input.required<any>();
@@ -115,7 +116,7 @@ export class ProcessEditorComponent implements OnChanges {
         this.hasLineToComplete = false;
         var allTaIndex = 0;
         this.drawSubmitLine();
-        this.curForm?.tiers?.forEach((t, indext) => {
+        this.curForm?.tiers?.forEach((t) => {
             this.tierMap[t.id] = t;
 
             let actionsObj: any[] = Object.values(t.actions || {})
@@ -124,10 +125,9 @@ export class ProcessEditorComponent implements OnChanges {
                 actionsObj = [{ id: -2323, color: "rgb(0, 123, 255)", action: 'nextTier' }]; 
             }
 
-            actionsObj.forEach((ta, indexta) => {
+            actionsObj.forEach((ta) => {
                 let addToLines = false;
                 let tElem;
-                let toComplete: boolean;
                 if (ta.action == 'nextTier') {
                     var nextTier = this.curForm.tiers[t.sortOrder + 1];
                     if (nextTier) {
@@ -136,7 +136,6 @@ export class ProcessEditorComponent implements OnChanges {
                     } else if (t.sortOrder == this.curForm.tiers?.length - 1) {
                         tElem = document.getElementById("t_999");
                         this.hasLineToComplete = true;
-                        toComplete = true;
                     }
                 } else if (ta.action == 'prevTier') {
                     var nextTier = this.curForm.tiers[t.sortOrder - 1];
@@ -161,21 +160,14 @@ export class ProcessEditorComponent implements OnChanges {
                     }
 
                     var taOffsets = taElem.getBoundingClientRect();
-                    var taTop = taOffsets.top;
-
+                    var sourceCenterY = taOffsets.top + taOffsets.height / 2;
                     var tOffsets = tElem.getBoundingClientRect();
-                    var tTop = tOffsets.top;
+                    var targetCenterY = tOffsets.top + tOffsets.height / 2;
+                    var lineContainer = line.offsetParent?.getBoundingClientRect();
+                    if (!lineContainer) return;
 
-                    if (tTop >= taTop) {
-                        line.style.height = (tTop - taTop + 8) + "px";
-                        if (toComplete) { 
-                            line.style.height = (tTop - taTop + 22) + "px";
-                        }
-                    } else {
-                        line.style.height = (taTop - tTop - 8 + 3) + "px"; 
-                        var diff = taTop - (50 + (indexta * 10)); 
-                        line.style.top = (tTop - diff + 6) + "px"; 
-                    }
+                    line.style.top = (Math.min(sourceCenterY, targetCenterY) - lineContainer.top - 1) + "px";
+                    line.style.height = (Math.abs(targetCenterY - sourceCenterY) + 2) + "px";
                     line.style.opacity = ".5";
                     if (addToLines) {
                         line.style.width = (6 + allTaIndex * 3) + "px";
@@ -198,10 +190,15 @@ export class ProcessEditorComponent implements OnChanges {
         var anchor = document.getElementById('t_' + firstTier.id);
         if (!submitLine || !rail || !anchor) return;
 
-        var railTop = rail.getBoundingClientRect().top;
-        var anchorTop = anchor.getBoundingClientRect().top;
-        submitLine.style.top = '20px';
-        submitLine.style.height = (anchorTop - railTop + 8) + 'px';
+        var railBounds = rail.getBoundingClientRect();
+        var railCenterY = railBounds.top + railBounds.height / 2;
+        var anchorBounds = anchor.getBoundingClientRect();
+        var anchorCenterY = anchorBounds.top + anchorBounds.height / 2;
+        var lineContainer = submitLine.offsetParent?.getBoundingClientRect();
+        if (!lineContainer) return;
+
+        submitLine.style.top = (Math.min(railCenterY, anchorCenterY) - lineContainer.top - 1) + 'px';
+        submitLine.style.height = (Math.abs(anchorCenterY - railCenterY) + 2) + 'px';
     }
 
     selectedLine: number = -1;

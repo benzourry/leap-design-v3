@@ -164,20 +164,25 @@
                       </div>
                       <div class="px-3 pt-2 pb-3">
                         @if (curForm.prev) {
-                          <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">                          
-                            <div class="flex-grow-1 p-2 text-truncate">
-                              Previous Form: <strong>{{curForm.prev.title}}</strong>
+                          <div class="previous-form-notice d-flex flex-wrap align-items-center gap-3 bg-body border rounded-3 p-3 mb-3">
+                            <span class="callout-icon bg-body-tertiary text-body-secondary rounded-2">
+                              <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                            </span>
+                            <div class="flex-grow-1">
+                              <div class="small text-body-secondary">Previous Form</div>
+                              <div class="fw-semibold text-break">{{curForm.prev.title}}</div>
                               @if (curForm.prev.description) {
-                                <div class="text-truncate">{{curForm.prev.description}}</div>
+                                <div class="small text-body-secondary text-break">{{curForm.prev.description}}</div>
                               }
                               @if (curForm.x?.hidePrev) {
-                                <div class="small">Previous data is hidden in this form</div>
+                                <div class="small text-body-secondary mt-1">
+                                  <fa-icon [icon]="['far','eye-slash']" [fixedWidth]="true"></fa-icon>
+                                  Previous data is hidden in this form
+                                </div>
                               }
                             </div>
-                            <div class="p-2">
-                              <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-                                [routerLink]="[]" [queryParams]="{id:curForm.prev.id}">View Form</a>
-                            </div>
+                            <a class="btn btn-outline-secondary btn-sm text-nowrap"
+                              [routerLink]="[]" [queryParams]="{id:curForm.prev.id}">View Form</a>
                           </div>
                         }
                         @if (curForm.x?.extended && superForm) {
@@ -198,14 +203,16 @@
                           <div class="border rounded-3 bg-body p-3 mb-3 shadow-sm">
                             <div class="d-flex justify-content-between align-items-center gap-2 mb-2 small text-body-secondary">
                               <strong class="text-uppercase"><fa-icon [icon]="['fas','folder']"></fa-icon> Form Tabs ({{curForm.tabs.length}})</strong>
-                              <span>Hover or focus a tab to edit or reorder</span>
+                              <span class="form-tab-hover-hint">Hover or focus a tab to edit or reorder</span>
+                              <span class="form-tab-touch-hint">Tap a tab to edit or reorder</span>
                             </div>
-                            <div class="d-flex flex-wrap gap-2">
+                            <div class="form-tabs-list d-flex flex-wrap">
                               @for (tab of curForm.tabs; track tab.id) {
                                 <div class="element form-tab" [class.is-active]="activeFormTab() === '' + tab.id"
+                                  [class.is-action-selected]="selectedFormTabActions() === '' + tab.id"
                                   [ngClass]="tab.altClass">
                                   <button type="button" class="form-tab-link btn btn-sm" [attr.aria-current]="activeFormTab() === '' + tab.id ? 'location' : null"
-                                    (click)="scrollToFormTab(editorScroll, tab.id)">
+                                    (click)="selectedFormTabActions.set('' + tab.id); scrollToFormTab(editorScroll, tab.id)">
                                     @if (tab.x?.icon){
                                       <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     }

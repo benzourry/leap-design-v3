@@ -133,6 +133,10 @@
   height: 1.75rem;
 }
 
+.form-tabs-list {
+  gap: 0.5rem;
+}
+
 .form-tab {
   display: inline-flex;
   align-items: center;
@@ -153,6 +157,10 @@
   padding: 0.4rem 0.65rem;
   text-align: left;
   color: var(--bs-body-color);
+}
+
+.form-tab-touch-hint {
+  display: none;
 }
 
 .section-group-heading {
@@ -259,7 +267,21 @@
 }
 
 @media (hover: none) {
-  .form-editor-tabs .form-tab > .element-edit {
+  .form-tab-hover-hint {
+    display: none;
+  }
+
+  .form-tab-touch-hint {
+    display: inline;
+  }
+
+  .form-editor-tabs .form-tab:not(.is-action-selected) > .element-edit {
+    display: none;
+    pointer-events: none;
+  }
+
+  .form-editor-tabs .form-tab.is-action-selected > .element-edit {
+    top: calc(100% + 4px);
     display: block;
     pointer-events: auto;
   }
