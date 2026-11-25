@@ -23,7 +23,7 @@ import { NgbModal, NgbDateAdapter, NgbTimeAdapter, NgbNav, NgbNavItem, NgbNavIte
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { KeyValue, PlatformLocation, NgClass, NgStyle, DatePipe, KeyValuePipe, JsonPipe, SlicePipe } from '@angular/common';
+import { PlatformLocation, NgClass, NgStyle, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
 import { UserService } from '../../../../_shared/service/user.service';
 import { AppService } from '../../../../service/app.service';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, CdkDropList, CdkDrag, CdkDragHandle, CdkDragPreview } from '@angular/cdk/drag-drop';
@@ -71,6 +71,7 @@ import { AssistantLocalContextService } from '../../assistant/assistant-local-co
 import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
 import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
 import { EditorIdChipComponent } from '../editor-id-chip.component';
+import { ProcessEditorComponent } from './process-editor/process-editor.component';
 
 @Component({
     selector: 'app-form-editor',
@@ -83,10 +84,10 @@ import { EditorIdChipComponent } from '../editor-id-chip.component';
     imports: [FaIconComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent,
         FormsModule, RouterLink, NgClass, NgStyle, CdkDropList, CdkDrag, FieldViewComponent, FieldEditComponent, CdkDragHandle,
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbNavOutlet, CdkDragPreview,
-        EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, SlicePipe,
+        EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
         KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe, AssistantPaletteDirective,
-    MetaTrailViewerComponent, EditorIdChipComponent]
+    MetaTrailViewerComponent, EditorIdChipComponent, ProcessEditorComponent]
 })
 export class FormEditorComponent implements OnInit {
 
@@ -94,7 +95,6 @@ export class FormEditorComponent implements OnInit {
     formTotal: number = 0;
     formList: any;
     user: any;
-    editTierItems: { sections: any; };
     items: any;
     lookupList: any;
     mailerList: any;
@@ -245,26 +245,17 @@ export class FormEditorComponent implements OnInit {
     private metaTrailService = inject(MetaTrailService);
 
 
-    constructor() {}
-
-    private tierLinesFrame: number | null = null;
+    private readonly processEditor = viewChild(ProcessEditorComponent);
+    processRefreshVersion = 0;
 
     scheduleTierLineRedraw() {
-        if (this.tierLinesFrame !== null) return;
-
-        this.tierLinesFrame = requestAnimationFrame(() => {
-            this.tierLinesFrame = null;
-            this.drawTierLines();
-        });
+        this.processEditor()?.scheduleTierLineRedraw();
     }
 
     otherAppList: any[] = [];
     ngOnInit() {
 
         this.destroyRef.onDestroy(() => {
-            if (this.tierLinesFrame !== null) {
-                cancelAnimationFrame(this.tierLinesFrame);
-            }
             if (this.curFormId) {
                 delete (window as any)['_this_form_' + this.curFormId + '_design'];
             }
@@ -561,6 +552,7 @@ export class FormEditorComponent implements OnInit {
                 this.cleanBackendForm = JSON.parse(JSON.stringify(res));
                 
                 this.curForm = res;
+                this.processRefreshVersion++;
                 this.assistantContext.set({ type: 'form', id: Number(res.id), label: res.title });
                 this.buildGroupedItems(); 
                 this.cdr.detectChanges(); 
@@ -581,9 +573,6 @@ export class FormEditorComponent implements OnInit {
 
                 this.populateAutoComplete();
                 this.populateCodeList();
-                if (res.tiers?.length > 0) {
-                    this.highlightSubmit();
-                }
                 if (res?.x?.extended) {
                     this.formService.getForm(res?.x?.extended)
                         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -606,10 +595,6 @@ export class FormEditorComponent implements OnInit {
             }, err => {
                 this.formError = err.error;
             })
-    }
-
-    highlightSubmit() {
-        this.highlightLine({ id: -1 }, { id: -1, color: 'rgb(0, 123, 255)', action: 'goTier', nextTier: this.curForm.tiers[0].id });
     }
 
     compareByIdFn(a, b): boolean {
@@ -665,7 +650,6 @@ export class FormEditorComponent implements OnInit {
         return g;
     }
 
-    getObjLength = (obj) => Object.keys(obj).length;
 
     insertTextAtCursor(text, cm) {
         cm.insertText("{{" + text + "}}");
@@ -912,372 +896,6 @@ export class FormEditorComponent implements OnInit {
                 this.cdr.detectChanges(); 
 
             }, res => { });
-    }
-
-    maxValue = (a, b) => Math.max(a, b);
-
-    lines: any[];
-    showProcessLine: boolean;
-    hasLineToComplete: boolean = false;
-    tierMap: any = {}
-    drawTierLines() {
-        this.lines = [];
-        this.tierMap = {};
-        this.hasLineToComplete = false;
-        var allTaIndex = 0;
-        this.curForm?.tiers?.forEach((t, indext) => {
-            this.tierMap[t.id] = t;
-
-            let actionsObj: any[] = Object.values(t.actions);
-            if (t.alwaysApprove) {
-                actionsObj = [{ id: -2323, color: "rgb(0, 123, 255)", action: 'nextTier' }]; 
-            }
-
-            actionsObj.forEach((ta, indexta) => {
-                let addToLines = false;
-                let tElem;
-                let toComplete: boolean;
-                if (ta.action == 'nextTier') {
-                    var nextTier = this.curForm.tiers[t.sortOrder + 1];
-                    if (nextTier) {
-                        tElem = document.getElementById("t_" + nextTier.id);
-                        addToLines = true;
-                    } else if (t.sortOrder == this.curForm.tiers?.length - 1) {
-                        tElem = document.getElementById("t_999");
-                        this.hasLineToComplete = true;
-                        toComplete = true;
-                    }
-                } else if (ta.action == 'prevTier') {
-                    var nextTier = this.curForm.tiers[t.sortOrder - 1];
-                    if (nextTier) {
-                        tElem = document.getElementById("t_" + nextTier.id);
-                        addToLines = true;
-                    }
-                } else if (ta.action == 'goTier') {
-                    tElem = document.getElementById("t_" + ta.nextTier);
-                    addToLines = true;
-                } else if (ta.action == 'curTier') {
-                    if (ta.userEdit) {
-                        tElem = document.getElementById("t_" + t.id);
-                    }
-                }
-
-                if (tElem) {
-                    var taElem = document.getElementById("ta_" + ta.id);
-                    var taOffsets = taElem.getBoundingClientRect();
-                    var taTop = taOffsets.top;
-
-                    var tOffsets = tElem.getBoundingClientRect();
-                    var tTop = tOffsets.top;
-
-                    var line = document.getElementById("line_" + ta.id);
-
-                    if (tTop >= taTop) {
-                        line.style.height = (tTop - taTop + 8) + "px";
-                        if (toComplete) { 
-                            line.style.height = (tTop - taTop + 22) + "px";
-                        }
-                    } else {
-                        line.style.height = (taTop - tTop - 8 + 3) + "px"; 
-                        var diff = taTop - (50 + (indexta * 10)); 
-                        line.style.top = (tTop - diff + 6) + "px"; 
-                    }
-                    line.style.opacity = ".5";
-                    if (addToLines) {
-                        line.style.width = (6 + allTaIndex * 3) + "px";
-                        this.lines.push(line);
-                        allTaIndex++;
-                    }
-                }
-            });
-        })
-        this.cdr.detectChanges();
-    }
-
-    selectColor(number) {
-        const hue = number * 137.508; 
-        return `hsla(${hue},50%,75%)`;
-    }
-    selectedLine: number = -1;
-    selectedLineTier: number = -1;
-    selectedTier: number = -1;
-    selectedColor: string = "rgb(0, 123, 255)";
-    
-    highlightLine(tier, tierAction) {
-        this.selectedLine = tierAction.id;
-        this.selectedTier = tier.id;
-        this.selectedColor = tierAction.color;
-        if (tierAction.action == 'goTier') {
-            this.selectedLineTier = tierAction.nextTier;
-        } else if (tierAction.action == 'nextTier') {
-            if (this.curForm.tiers[tier.sortOrder + 1]) {
-                this.selectedLineTier = this.curForm.tiers[tier.sortOrder + 1]?.id;
-            } else if (tier.sortOrder == this.curForm?.tiers?.length - 1) {
-                this.selectedLineTier = 999;
-            } else {
-                this.selectedLineTier = -1;
-            }
-
-        } else if (tierAction.action == 'prevTier') {
-            this.selectedLineTier = this.curForm.tiers[tier.sortOrder - 1]?.id;
-
-        } else if (tierAction.action == 'curTier') {
-            if (tierAction.userEdit) {
-                this.selectedLineTier = tier.id;
-            } else {
-                this.selectedLineTier = -1;
-            }
-        } else {
-            this.selectedLineTier = -1;
-        }
-    }
-
-    simplifiedProcessView: boolean;
-
-    position() {
-        this.lines.forEach(l => l.position());
-    }
-
-    editTierData: any;
-    editTier(content, data) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        this.editTierData = data;
-        if (!this.editTierData.x) {
-            this.editTierData.x = {};
-        }
-        if (this.editTierData.orgMapParam) {
-            this.editTierData.orgMapParamStr = JSON.stringify(this.editTierData.orgMapParam);
-        }
-        this.editTierItems = { sections: this.curForm.sections.filter((res) => res.type == 'approval') };
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(rItem => {
-                if (rItem.orgMapParam) {
-                    rItem.orgMapParam = JSON.parse(rItem.orgMapParamStr);
-                }
-                this.formService.saveTier(this.curForm.id, rItem)
-                    .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe({
-                        next: (res) => {
-                            this.formService.getForm(this.curForm.id)
-                                .pipe(takeUntilDestroyed(this.destroyRef))
-                                .subscribe(res => {
-                                    this.curForm = res;
-                                    this.reorderAllTier();
-                                    this.cdr.detectChanges();
-                                    this.scheduleTierLineRedraw();
-                                }, err => {
-                                    this.formError = err.error;
-                                })
-                            this.toastService.show("Tier saved successfully", { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges();
-                        },
-                        error: (err) => {
-                            this.toastService.show("Tier saving failed", { classname: 'bg-danger text-light' });
-                        }
-                    })
-                this.cdr.detectChanges();
-            }, dismiss => {
-                if (this.editTierData.orgMapParamStr) {
-                    this.editTierData.orgMapParam = JSON.parse(this.editTierData.orgMapParamStr);
-                }
-            });
-        this.cdr.detectChanges();
-    }
-
-    editTierActionData: any;
-    editTierAction(content, tier, data) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        this.editTierActionData = data;
-        this.editTierActionData.tierOrder = tier.sortOrder;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(rItem => {
-                this.formService.saveTierAction(this.curForm.id, tier.id, rItem)
-                    .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe({
-                        next: (res) => {
-                            this.getFormData(this.curForm.id);
-                            this.reorderAllTier();
-                            this.toastService.show("Tier action saved successfully", { classname: 'bg-success text-light' });
-                            this.cdr.detectChanges(); 
-                        }, error: (error) => {
-                            this.toastService.show("Tier action saving failed", { classname: 'bg-danger text-light' });
-                        }
-                    })
-            }, res => { });
-    }
-
-    actionIcons = ['check', 'share', 'reply', 'times', 'square'];
-    actionColors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d'];
-    actionPreset: any = {
-        approved: {
-            action: 'nextTier',
-            label: 'Approved',
-            code: 'approved',
-            color: '#28a745',
-            icon: 'check',
-            userEdit: false,
-            sortOrder: 0
-        },
-        rejected: {
-            action: 'curTier',
-            label: 'Rejected',
-            code: 'rejected',
-            color: '#dc3545',
-            icon: 'times',
-            userEdit: false,
-            sortOrder: 1
-        },
-        returned: {
-            action: 'curTier',
-            label: 'Returned',
-            code: 'returned',
-            color: '#007bff',
-            icon: 'reply',
-            userEdit: true,
-            sortOrder: 2
-        }
-    }
-
-    removeTierAction(ta) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        if (confirm('Are you sure you want to remove this action:' + ta.label)) {
-            this.formService.removeTierAction(this.curForm.id, ta.id)
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe({
-                    next: (res) => {
-                        this.getFormData(this.curForm.id);
-                        this.toastService.show("Tier action removed successfully", { classname: 'bg-success text-light' });
-
-                    }, error: (error) => {
-                        this.toastService.show("Tier action removal failed", { classname: 'bg-danger text-light' });
-                    }
-                })
-        }
-    }
-
-    removeTierData: any;
-    removeTier(content, tier) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        this.removeTierData = tier;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(rItem => {
-                this.formService.removeTier(this.curForm.id, tier.id)
-                    .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe({
-                        next: (res) => {
-                            this.formService.getForm(this.curForm.id)
-                                .pipe(takeUntilDestroyed(this.destroyRef))
-                                .subscribe(res => {
-                                    this.curForm = res;
-                                    this.reorderAllTier();
-                                    this.cdr.detectChanges(); 
-                                    this.scheduleTierLineRedraw();
-                                }, err => {
-                                    this.formError = err.error;
-                                })
-                            this.toastService.show("Tier removed successfully", { classname: 'bg-success text-light' });
-
-                        }, error: (error) => {
-                            this.toastService.show("Tier removal failed", { classname: 'bg-danger text-light' });
-
-                        }
-                    })
-            }, res => { });
-    }
-
-    reorderTier(tier: any, op: number) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        if (confirm(`Are you sure you want to reorder this tier?\n\nTier: ${tier.name}\nAction: ${op == -1 ? 'Move up' : 'Move down'}`)) {
-            let index = this.curForm.tiers.findIndex((t: any) => t.id === tier.id);
-
-            if (index > -1 && index + op >= 0 && index + op < this.curForm.tiers.length) {
-                this.reorder(this.curForm.tiers, index, op);
-                this.saveTierOrder();
-            }
-        }
-    }
-    
-    reorderAllTier() {
-        var list = this.curForm.tiers
-            .map((val, index) => {
-                return { id: val.id, sortOrder: index }
-            });
-        return this.formService.saveTierOrder(this.curForm.id, list)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((res) => {
-                return res;
-            });
-    }
-
-    saveTierOrder() {
-        var list = this.curForm.tiers
-            .map((val) => {
-                return { id: val.id, sortOrder: val.sortOrder }
-            });
-        return this.formService.saveTierOrder(this.curForm.id, list)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((res) => {
-                this.scheduleTierLineRedraw();
-                this.cdr.detectChanges();
-                return res;
-            });
-    }
-
-    reorderTierAction(tier: any, actionRef: any, op: number) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        var orderList = Object.values(tier.actions)
-            .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
-
-        let index = orderList.findIndex((a: any) => a.id === actionRef.id);
-
-        if (index > -1 && index + op >= 0 && index + op < orderList.length) {
-            this.reorder(orderList, index, op);
-            this.saveTierActionOrder(tier, orderList);
-        }
-    }
-
-    saveTierActionOrder(tier: any, orderList: any[]) {
-        var list = orderList.map((val: any) => {
-            return { id: val.id, sortOrder: val.sortOrder };
-        });
-
-        return this.formService.saveTierActionOrder(this.curForm.id, tier.id, list)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((res) => {
-                tier.actions = res;
-                this.cdr.detectChanges();
-            });
-    }
-    
-    sortOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
-        return a.value.sortOrder - b.value.sortOrder;
     }
 
     removeItemData: any;
@@ -1575,76 +1193,6 @@ export class FormEditorComponent implements OnInit {
             })
     }
 
-    forceApf: any = {};
-    showlogApf: any = {};
-    apfResult: any = {};
-    apfLoading: any = {};
-    backendApf(tier, force) {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        if (tier.orgMapParamStr) {
-            tier.orgMapParam = JSON.parse(tier.orgMapParamStr);
-        }
-
-        this.formService.saveTier(this.curForm.id, tier)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: (res) => {
-                    this.getFormData(this.curForm.id);
-                    this.toastService.show("Tier saved successfully", { classname: 'bg-success text-light' });
-
-                    this.apfLoading[tier.id] = true;
-                    this.formService.backendApf(this.curForm.id, tier.id, force == true)
-                        .pipe(takeUntilDestroyed(this.destroyRef))
-                        .subscribe(res => {
-                            let result = `<table width="100%">
-                                <tr><td>Success</td><td>: ${res.successCount}</td></tr>
-                                <tr><td>Failed</td><td>: ${res.errorCount}</td></tr>
-                                <tr><td>Not updated (unchanged)</td><td>: ${res.notEmptyCount}</td></tr>
-                              </table>`;
-                            this.apfResult[tier.id] = res;
-
-                            this.toastService.show("Approver updated successfully " + result + " ", { classname: 'bg-success text-light' });
-                            this.apfLoading[tier.id] = false;
-                            this.cdr.detectChanges(); 
-                        })
-                    this.cdr.detectChanges(); 
-
-                }, error: (error) => {
-                    this.toastService.show("Tier saving failed", { classname: 'bg-danger text-light' });
-                    this.cdr.detectChanges(); 
-                }
-            })
-    }
-
-    reconApprover() {
-        if (this.isTimeWarpingForm) { 
-            this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); 
-            return; 
-        }
-
-        if (prompt("Are you sure you want to update the approver for all tiers in this form?\n Type 'update-all-tier' and press OK to proceed") == 'update-all-tier') {
-            this.efLoading["all"] = true;
-            this.formService.reconApprover(this.curForm.id)
-                .pipe(takeUntilDestroyed(this.destroyRef))
-                .subscribe({
-                    next: (res) => {
-                        this.efLoading["all"] = false;
-                        this.toastService.show("Tier approver reconstructed successfully ", { classname: 'bg-success text-light' });
-                        this.cdr.detectChanges(); 
-                    },
-                    error: (error) => {
-                        this.efLoading["all"] = false;
-                        this.toastService.show("Tier approver reconstruction failed", { classname: 'bg-danger text-light' });
-                        this.cdr.detectChanges(); 
-                    }
-                })
-        }
-    }
-
     removeSectionData: any;
     removeSection(content, data) {
         if (this.isTimeWarpingForm) { 
@@ -1804,6 +1352,7 @@ export class FormEditorComponent implements OnInit {
         setTimeout(() => {
             items[index + op].altClass = 'swapEnd';
             items[index].altClass = 'swapEnd';
+            this.processEditor()?.refreshView();
             this.cdr.detectChanges(); 
         }, 500);
     }
@@ -2688,6 +2237,7 @@ export class FormEditorComponent implements OnInit {
         );
         this.curForm.sections.forEach((sec: any) => sec.items?.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)));
         this.buildGroupedItems();
+        this.processEditor()?.refreshView();
         this.cdr.detectChanges();
     }
 }

@@ -1,61 +1,6 @@
 @use '../editor-workspace';
 
 /* ==========================================================================
-   TIER & PROCESS FLOW STYLES
-   ========================================================================== */
-.btn-tier-action {
-  border: solid 2px var(--bs-border-color);
-  background-color: var(--bs-tertiary-bg);
-  color: var(--bs-body-color);
-}
-
-.line-tier {
-  position: absolute;
-  left: 0px;
-  border: solid 2px var(--bs-border-color);
-  border-left: none;
-  border-radius: 0px 4px 4px 0px;
-
-  &.is-nexttier.is-last {
-    display: none;
-  }
-}
-
-.selected-line {
-  // border-color: var(--bs-primary) !important;
-  opacity: 1 !important;
-  z-index: 2;
-}
-
-.selected-line-tier {
-  background-color: var(--bs-primary);
-}
-
-.selected-tier {
-  outline: solid 2px var(--bs-primary);
-}
-
-#t_999_line,
-#t_-1_line {
-  position: absolute;
-  left: 115px;
-  right: 0;
-  top: 20px;
-  border-top: solid 2px var(--bs-border-color);
-  display: block;
-  opacity: 0.5;
-}
-
-.flytag {
-  position: absolute;
-  top: 10px;
-  left: -25px;
-  font-size: 0.6em;
-  width: 37px;
-  text-align: right;
-}
-
-/* ==========================================================================
    CDK DRAG & DROP
    ========================================================================== */
 .cdk-drag-preview {
@@ -86,15 +31,6 @@
   position: absolute;
   top: 0;
   right: 0;
-}
-
-.active-outline {
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.7) !important;
-}
-
-.color-item {
-  width: 38px;
 }
 
 ::ng-deep .static-html .surface-control-wrapper {

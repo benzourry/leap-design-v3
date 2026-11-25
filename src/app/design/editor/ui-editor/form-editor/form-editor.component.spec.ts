@@ -4,11 +4,15 @@ import { provideRouter } from '@angular/router';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { By } from '@angular/platform-browser';
+import { NgbModal, NgbNav } from '@ng-bootstrap/ng-bootstrap';
+import { of } from 'rxjs';
 
 import { FormEditorComponent } from './form-editor.component';
+import { ProcessEditorComponent } from './process-editor/process-editor.component';
 import { EditorIdChipComponent } from '../editor-id-chip.component';
 import { ToastService } from '../../../../_shared/service/toast-service';
 import { SharedModule } from '../../../../_shared/shared.module';
+import { FormService } from '../../../../service/form.service';
 
 describe('FormEditorComponent', () => {
   let component: FormEditorComponent;
@@ -151,12 +155,12 @@ describe('FormEditorComponent', () => {
     expect(parseFloat(getComputedStyle(menu).borderTopLeftRadius)).toBeGreaterThan(0);
   });
 
-  it('coalesces tier-line redraws into one animation frame', () => {
-    const component = Object.create(FormEditorComponent.prototype) as FormEditorComponent;
-    Object.defineProperty(component, 'tierLinesFrame', { value: null, writable: true });
+  it('coalesces tier-line redraws into one timer', () => {
+    const component = Object.create(ProcessEditorComponent.prototype) as ProcessEditorComponent;
+    Object.defineProperty(component, 'tierLinesTimer', { value: null, writable: true });
 
-    let scheduledCallback: FrameRequestCallback | undefined;
-    const requestAnimationFrameSpy = spyOn(window, 'requestAnimationFrame').and.callFake(callback => {
+    let scheduledCallback: (() => void) | undefined;
+    const setTimeoutSpy = spyOn(window, 'setTimeout').and.callFake((callback: any) => {
       scheduledCallback = callback;
       return 1;
     });
@@ -165,11 +169,272 @@ describe('FormEditorComponent', () => {
     component.scheduleTierLineRedraw();
     component.scheduleTierLineRedraw();
 
-    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(1);
-    scheduledCallback?.(0);
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    scheduledCallback?.();
     expect(drawTierLinesSpy).toHaveBeenCalledTimes(1);
 
     component.scheduleTierLineRedraw();
-    expect(requestAnimationFrameSpy).toHaveBeenCalledTimes(2);
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('redraws tier connectors when the Process tab is shown and when tiers are simplified', async () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 3, title: 'Process Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [
+        {
+          id: 11, name: 'HOD Review', sortOrder: 0, type: 'ALL',
+          actions: { approved: { id: 21, action: 'nextTier', label: 'Recommended', sortOrder: 0, icon: 'check' } }
+        },
+        { id: 12, name: 'CDO Review', sortOrder: 1, type: 'ALL', actions: {} }
+      ]
+    };
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const processTab = Array.from(host.querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'))
+      .find(a => a.textContent?.trim() === 'Process')!;
+    processTab.click();
+    fixture.detectChanges();
+    const process = fixture.debugElement.query(By.directive(ProcessEditorComponent)).componentInstance as ProcessEditorComponent;
+    const draw = spyOn(process, 'drawTierLines');
+    await new Promise<void>(resolve => setTimeout(resolve));
+    expect(draw).toHaveBeenCalled();
+
+    draw.calls.reset();
+    host.querySelector<HTMLInputElement>('#simplifiedProcessView')!.click();
+    fixture.detectChanges();
+    await new Promise<void>(resolve => setTimeout(resolve));
+    expect(draw).toHaveBeenCalled();
+  });
+
+  it('measures the Submission and action connectors once the Process tab content is rendered', async () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 3, title: 'Process Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [
+        {
+          id: 5097, name: 'HOD Review', sortOrder: 0, type: 'ALL',
+          actions: { approved: { id: 21, action: 'nextTier', label: 'Recommended', sortOrder: 0, icon: 'check' } }
+        },
+        {
+          id: 5098, name: 'CDO Review', sortOrder: 1, type: 'ALL',
+          actions: { approved: { id: 22, action: 'nextTier', label: 'Approved', sortOrder: 0, icon: 'check' } }
+        }
+      ]
+    };
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const processTab = Array.from(host.querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'))
+      .find(a => a.textContent?.trim() === 'Process')!;
+    processTab.click();
+    fixture.detectChanges();
+    await new Promise<void>(resolve => setTimeout(resolve, 400));
+
+    const submitLine = host.querySelector<HTMLElement>('#line_-1')!;
+    const firstActionLine = host.querySelector<HTMLElement>('#line_21')!;
+    const rail = host.querySelector<HTMLElement>('#t_-1_line')!;
+    const firstTierAnchor = host.querySelector<HTMLElement>('#t_5097')!;
+    const source = host.querySelector<HTMLElement>('#ta_21')!;
+    const nextTierAnchor = host.querySelector<HTMLElement>('#t_5098')!;
+
+    expect(parseFloat(submitLine.style.height))
+      .toBeCloseTo(firstTierAnchor.getBoundingClientRect().top - rail.getBoundingClientRect().top + 8, 0);
+    expect(parseFloat(firstActionLine.style.height))
+      .toBeCloseTo(nextTierAnchor.getBoundingClientRect().top - source.getBoundingClientRect().top + 8, 0);
+  });
+
+  it('redraws tier connectors once the nav reports the Process pane as shown', async () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 3, title: 'Process Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [{ id: 11, name: 'HOD Review', sortOrder: 0, type: 'ALL', actions: {} }]
+    };
+    fixture.detectChanges();
+
+    const nav = fixture.debugElement.query(By.directive(NgbNav)).injector.get(NgbNav);
+    const processTab = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'))
+      .find(a => a.textContent?.trim() === 'Process')!;
+    processTab.click();
+    fixture.detectChanges();
+    await new Promise<void>(resolve => setTimeout(resolve, 400));
+    const process = fixture.debugElement.query(By.directive(ProcessEditorComponent)).componentInstance as ProcessEditorComponent;
+    const draw = spyOn(process, 'drawTierLines');
+    nav.shown.emit('process');
+    await new Promise<void>(resolve => setTimeout(resolve));
+
+    expect(draw).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves tier connector geometry alone until the Process pane is displayed', () => {
+    const processFixture = TestBed.createComponent(ProcessEditorComponent);
+    const component = processFixture.componentInstance;
+    const target = component as any;
+    target.cdr = { detectChanges: () => { } };
+    processFixture.componentRef.setInput('form', { tiers: [{ id: 5097, sortOrder: 0, actions: {} }] });
+    const existingLine = document.createElement('div');
+    component.lines = [existingLine];
+
+    component.drawTierLines();
+
+    expect(component.lines).toEqual([existingLine]);
+  });
+
+  it('orders tier action connectors by sort order, matching the rendered buttons', () => {
+    const processFixture = TestBed.createComponent(ProcessEditorComponent);
+    const component = processFixture.componentInstance;
+    const target = component as any;
+    target.cdr = { detectChanges: () => { } };
+    processFixture.componentRef.setInput('form', {
+      tiers: [
+        {
+          id: 5097, sortOrder: 0, actions: {
+            second: { id: 22, action: 'nextTier', sortOrder: 1 },
+            first: { id: 21, action: 'nextTier', sortOrder: 0 }
+          }
+        },
+        { id: 5098, sortOrder: 1, actions: {} }
+      ]
+    });
+
+    const box = (top: number) => {
+      const el = document.createElement('div');
+      el.getBoundingClientRect = () => ({ top, height: 0, width: 10 } as DOMRect);
+      return el;
+    };
+    const lineEl = (id: string) => {
+      const el = document.createElement('div');
+      el.id = id;
+      return el;
+    };
+    const dom: Record<string, HTMLElement> = {
+      't_-1_line': box(200),
+      'line_-1': lineEl('line_-1'),
+      't_5097': box(280),
+      'ta_21': box(400), 'line_21': lineEl('line_21'),
+      'ta_22': box(410), 'line_22': lineEl('line_22'),
+      't_5098': box(480)
+    };
+    spyOn(document, 'getElementById').and.callFake((id: string) => dom[id] ?? null);
+
+    component.drawTierLines();
+
+    expect(component.lines.map((line: HTMLElement) => line.id)).toEqual(['line_21', 'line_22']);
+    expect(dom['line_21'].style.width).toBe('6px');
+    expect(dom['line_22'].style.width).toBe('9px');
+  });
+
+  it('updates the parent form after saving a tier and retains process state across tabs', async () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    const form = {
+      id: 3, title: 'Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [{ id: 11, name: 'Original', sortOrder: 0, type: 'ALL', actions: {} }]
+    };
+    const savedForm = { ...form, tiers: [{ ...form.tiers[0], name: 'Saved' }] };
+    component.curForm = form;
+    fixture.detectChanges();
+
+    const tabs = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'));
+    tabs.find(tab => tab.textContent?.trim() === 'Process')!.click();
+    fixture.detectChanges();
+    const process = fixture.debugElement.query(By.directive(ProcessEditorComponent)).componentInstance as ProcessEditorComponent;
+    process.simplifiedProcessView = true;
+    tabs.find(tab => tab.textContent?.trim() === 'Forms')!.click();
+    fixture.detectChanges();
+    tabs.find(tab => tab.textContent?.trim() === 'Process')!.click();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(ProcessEditorComponent)).componentInstance).toBe(process);
+    expect(process.simplifiedProcessView).toBeTrue();
+
+    const service = TestBed.inject(FormService);
+    spyOn(TestBed.inject(NgbModal), 'open').and.returnValue({ result: Promise.resolve(form.tiers[0]) } as any);
+    spyOn(service, 'saveTier').and.returnValue(of({} as any));
+    spyOn(service, 'getForm').and.returnValue(of(savedForm as any));
+    const saveOrder = spyOn(service, 'saveTierOrder').and.returnValue(of({} as any));
+    process.editTier({} as any, form.tiers[0]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.curForm).toBe(savedForm);
+    expect(saveOrder).toHaveBeenCalledWith(3, [{ id: 11, sortOrder: 0 }]);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Saved');
+  });
+
+  it('updates the process view when TimeWarp mutates the shared form in place', () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    const form = {
+      id: 3, title: 'Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [{ id: 11, name: 'Current tier', sortOrder: 0, type: 'ALL', actions: {} }]
+    };
+    component.curForm = form;
+    fixture.detectChanges();
+    const processTab = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'))
+      .find(tab => tab.textContent?.trim() === 'Process')!;
+    processTab.click();
+    fixture.detectChanges();
+
+    component.liveFormSnapshot = form;
+    component.isTimeWarpingForm = true;
+    component.timeWarpFormTrails = [{
+      module: 'form',
+      data: { ...form, tiers: [{ ...form.tiers[0], name: 'Historical tier' }] }
+    }];
+    component.applyTimeWarpForm(0);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Historical tier');
+  });
+
+  it('uses the parent mailer and group editors from the tier modal', async () => {
+    new SharedModule(TestBed.inject(FaIconLibrary));
+    spyOn(FormEditorComponent.prototype, 'ngOnInit');
+    fixture = TestBed.createComponent(FormEditorComponent);
+    component = fixture.componentInstance;
+    component.curForm = {
+      id: 3, title: 'Form', nav: 'tabs', tabs: [], sections: [], items: {}, x: { skipValidate: true },
+      tiers: [{ id: 11, name: 'Review', sortOrder: 0, type: 'ALL', actions: {} }]
+    };
+    const mailer = spyOn(component, 'editMailer');
+    const group = spyOn(component, 'editGroup');
+    const modalService = TestBed.inject(NgbModal);
+    const open = spyOn(modalService, 'open').and.callThrough();
+    fixture.detectChanges();
+    const processTab = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.form-editor-tabs .nav-tabs a'))
+      .find(tab => tab.textContent?.trim() === 'Process')!;
+    processTab.click();
+    fixture.detectChanges();
+    const addTier = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button'))
+      .find(button => button.textContent?.includes('Add New'))!;
+    addTier.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const modal = document.querySelector<HTMLElement>('.modal')!;
+    Array.from(modal.querySelectorAll<HTMLButtonElement>('button'))
+      .find(button => button.textContent?.includes('Mailer'))!.click();
+    expect(mailer).toHaveBeenCalledWith(jasmine.anything(), { enabled: 1 }, jasmine.anything(), 'submitMailer');
+
+    modal.querySelector<HTMLInputElement>('#type-GROUP')!.click();
+    fixture.detectChanges();
+    Array.from(modal.querySelectorAll<HTMLButtonElement>('button'))
+      .find(button => button.textContent?.includes('New Group'))!.click();
+    expect(group).toHaveBeenCalledWith(jasmine.anything(), { x: {} }, jasmine.anything(), 'approverGroup', false);
+    const hidden = new Promise<void>(resolve => open.calls.mostRecent().returnValue.hidden.subscribe(() => resolve()));
+    modalService.dismissAll();
+    await hidden;
   });
 });

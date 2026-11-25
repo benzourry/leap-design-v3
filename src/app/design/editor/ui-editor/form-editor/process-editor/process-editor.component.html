@@ -1,0 +1,721 @@
+<div #processPane class="single-pane position-relative" (window:resize)="scheduleTierLineRedraw()">
+                        @if (curForm.tiers.length>0) {
+                          <div class="form-switch mb-2">
+                            <input type="checkbox" class="form-check-input" id="simplifiedProcessView"
+                              [(ngModel)]="simplifiedProcessView" (ngModelChange)="scheduleTierLineRedraw()" name="simplifiedProcessView">
+                            <label class="form-check-label ms-2" for="simplifiedProcessView"> View
+                              Simplified Tiers
+                            </label>
+                          </div>
+                        }
+                        @if (curForm.tiers.length>0) {
+                          <div [style.margin-right.px]="maxValue(lines?.length*3,15)">
+                            <div class="ballx position-relative" style="min-height:55px; min-width:320px;">
+                              <button type="button" [style.background-color]="selectedLine==-1?selectedColor:'#ccc'"
+                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
+                                (click)="highlightSubmit()"
+                                style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                                Submission
+                              </button>
+                              <div id="t_-1_line" [class.selected-line]="selectedLine==-1"
+                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'"
+                                style="left:130px; min-width:190px"></div>
+                              <div id="line_-1" [class.selected-line]="selectedLine==-1"
+                                [style.border-color]="selectedLine==-1?selectedColor:'#ccc'" style="border: 2px solid rgb(204, 204, 204);
+                                border-left: none;
+                                border-radius: 0px 4px 4px 0px; right: -10px;
+                                position: absolute; top: 20px; width: 10px;
+                                opacity: 0.5;">
+                              </div>
+                            </div>
+                            @for (tier of curForm.tiers; track tier.id; let $t_index = $index) {
+                              <div class="ballx" [class]="tier.altClass">
+                                <div style="margin-left: 0px; min-height:55px; min-width:320px; position: relative;">
+                                  @if (tier.pre) {
+                                    <div style="position: absolute; top: -12px; right: 45px; z-index: 2;">
+                                      <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="tier.pre">
+                                        <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
+                                        IF: {{ tier.pre.length > 40 ? (tier.pre | slice:0:40) + '...' : tier.pre }}
+                                      </span>
+                                    </div>
+                                  }
+                                  <div class="card card-clean mb-3"
+                                    [class.selected-tier]="selectedTier==tier.id"
+                                    [style.outline-color]="selectedColor">
+                                    <div class="card-header element ps-3 overflow-hidden" style="font-size:18px;">
+                                      @if (!curForm.x?.extended){
+                                        <div class="element-edit" style="position:absolute;top:6px;right:12px;">
+                                          @if (!$first) {
+                                            <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                              (click)="reorderTier(tier, -1)">
+                                              <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                                            </button>
+                                          }
+                                          @if (!$last) {
+                                            <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                              (click)="reorderTier(tier, 1)">
+                                              <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                                            </button>
+                                          }
+                                          <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                            (click)="editTier(editTierTpl,tier)">
+                                            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                          </button>
+                                          <button type="button" class="btn btn-round btn-info btn-sm" [disabled]="isTimeWarpingForm"
+                                            (click)="removeTier(removeTierTpl,tier)">
+                                            <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                          </button>
+                                        </div>
+                                      }
+                                      <div [style.border-color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
+                                        [style.color]="selectedLineTier==tier.id?selectedColor:'#ccc'"
+                                        style="width:30px;right:14px;font-weight: bold;position:absolute;background: var(--bs-body-bg); height:30px; border:solid 2px #ccc;color:#ccc; border-radius:50%; font-size:16px; text-align: center; line-height: 26px;">
+                                        {{$t_index+1}}
+                                      </div>
+                                      <div class="element-item">
+                                        {{tier.name}}<sup class="ms-2">{{tier.id}}</sup>
+                                      </div>
+                                      <div id="t_{{tier.id}}"
+                                        [class.selected-line-tier]="selectedLineTier==tier.id"
+                                        [style.background-color]="selectedLineTier==tier.id?selectedColor:'#ddd'"
+                                        style="position:absolute; top:18px; right:-5px;width:10px;height:10px;background:#ddd; transform: rotate(-45deg);">
+                                      </div>
+                                    </div>
+                                    <div class="card-body pt-1">
+                                      @if (!simplifiedProcessView) {
+                                        @if (tier.type=='ALL') {
+                                          <div class="small mb-2">Any user with access may approve</div>
+                                        }
+                                        @if (tier.type=='ASSIGN') {
+                                          <div class="small mb-2">
+                                            <span class="me-1 mb-2">Approver will be assigned by</span>
+                                            @if (!curForm.admin) {
+                                              <span class="text-danger">Please set admin group in form setting!</span>
+                                            }
+                                            @if (curForm.admin) {
+                                              <span>{{curForm.admin.name}}</span>
+                                            }
+                                          </div>
+                                        }
+                                        @if (tier.type=='DYNAMIC') {
+                                          <div class="small mb-2">
+                                            Dynamic approver from <code>{{tier.orgMapPointer}}</code> in <code>{{tier.orgMap}}</code>
+                                          </div>
+                                        }
+                                        @if (tier.type=='FIXED') {
+                                          <div class="small mb-2">
+                                            <span class="me-1 mb-2">Fixed approver to </span>
+                                            @for (i of tier.approver|asList; track $index) {
+                                              <div class="d-inline-block me-2 border bg-body-secondary rounded px-1 mb-1">{{i}}</div>
+                                            }
+                                          </div>
+                                        }
+                                        @if (tier.type=='GROUP') {
+                                          <div class="small mb-2">
+                                            <span class="me-1 mb-2">Approver group : {{accessMap()[tier.approverGroup]?.name}}</span>
+                                          </div>
+                                        }
+                                        <div class="mb-2 d-flex align-items-center text-secondary">
+                                          @if (tier.canRemark) {
+                                            <fa-icon class="me-2" [icon]="['far','comment-dots']" title="Remark field is enabled" [fixedWidth]="true"></fa-icon>
+                                          }
+                                          @if (tier.submitMailer?.length>0) {
+                                            <fa-icon class="me-2" [icon]="['far','envelope']" title="Has submission mailer" [fixedWidth]="true"></fa-icon>
+                                          }
+                                          @if (tier.alwaysApprove) {
+                                            <fa-icon class="me-2 text-primary" [icon]="['fas','circle-notch']" title="Decision always approve mode" [fixedWidth]="true"></fa-icon>
+                                          }
+                                          @if (tier.section) {
+                                            <div class="me-2 d-flex align-items-center text-truncate" title="Custom approval form">
+                                              <fa-icon [icon]="['fab','wpforms']" [fixedWidth]="true"></fa-icon>
+                                              <span class="small">{{tier.section.title}}</span>
+                                            </div>
+                                          }
+                                          @if (tier.pre) {
+                                            <div class="me-2 d-inline-block border border-1 border-secondary rounded px-1 small" style="font-weight: bold;font-size:0.6em" [title]="tier.pre">PRE</div>
+                                          }
+                                          @if (tier.post) {
+                                            <div class="me-2 d-inline-block border border-1 border-secondary rounded px-1 small" style="font-weight: bold;font-size:0.6em" [title]="tier.post">POST</div>
+                                          }
+                                        </div>
+                                      }
+                                      <div>
+                                        @if (tier.alwaysApprove) {
+                                          <button type="button" (click)="highlightLine(tier,{id:-2323, color:'rgb(0, 123, 255)', action:'nextTier'})"
+                                              title="Always approve"
+                                              [style.border-color]="selectedLine==-2323?'rgb(0, 123, 255)':'#aaa'"
+                                              [style.color]="selectedLine==-2323?'rgb(0, 123, 255)':''"
+                                              style="border-style:dashed;"
+                                              class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative">
+                                              @if (!simplifiedProcessView) {
+                                                Always approve
+                                              } @else {
+                                                <fa-icon [fixedWidth]="true" [icon]="['fas','circle-notch']"></fa-icon>
+                                              }
+                                          </button>
+                                        }@else{
+                                          @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                            <button type="button" (click)="highlightLine(tier,o.value)"
+                                              [title]="o.value.label"
+                                              [style.border-color]="selectedLine==o.value.id?selectedColor:'#aaa'"
+                                              [style.color]="selectedLine==o.value.id?selectedColor:''"
+                                              class="btn btn-tier-action btn-sm btn-round py-1 me-1 mt-1 nowrap element position-relative"
+                                              [class]="o.value.altClass">
+                                              @if (!simplifiedProcessView) {
+                                                {{o.value.label}}
+                                              } @else {
+                                                <fa-icon [fixedWidth]="true" [icon]="['fas',o.value.icon]"></fa-icon>
+                                              }
+                                              @if (o.value.action=='goTier'&&!tierMap[o.value.nextTier]) {
+                                                <fa-icon class="text-danger blink_me" style="position:absolute; right:-5px;top:-10px"
+                                                  title="Action [Go to tier] leads to nonexistent tier"
+                                                  [icon]="['fas','exclamation-triangle']" [fixedWidth]="true" size="xs">
+                                                </fa-icon>
+                                              }
+                                              @if (o.value.mailer?.length>0) {
+                                                <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon>
+                                              }
+                                              @if (!curForm.x?.extended){
+                                                <div class="element-edit shadow-sm leafup nowrap">
+                                                  <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                                    (click)="editTierAction(editTierActionTpl,tier,o.value)">
+                                                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                                                  </button>
+                                                  <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                                    (click)="removeTierAction(o.value)">
+                                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                                  </button>
+                                                  @if (!$a_first) {
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                      (click)="reorderTierAction(tier, o.value, -1)">
+                                                      <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
+                                                    </button>
+                                                  }
+                                                  @if (!$a_last) {
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                      (click)="reorderTierAction(tier, o.value, 1)">
+                                                      <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
+                                                    </button>
+                                                  }
+                                                </div>
+                                              }
+                                            </button>
+                                          }
+                                        }
+                                        @if (!curForm.x?.extended && !tier.alwaysApprove) {
+                                          <button [disabled]="isTimeWarpingForm"
+                                            class="btn btn-secondary btn-sm btn-round me-1 mt-1 nowrap"
+                                            (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
+                                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                                          </button>
+                                        }
+                                      </div>
+                                      <div style="position:absolute;right:0px; top:0px; width:0px; height:100%">
+                                        @if (tier.alwaysApprove) {
+                                          <div id="ta_-2323" style="position:absolute;left:0px;height:4px;width:0px;" [style.top.px]="50+(0*10)"></div>
+                                          <div id="line_-2323" class="line-tier" [style.border-color]="selectedLine==-2323?selectedColor:'#ccc'"
+                                            [class.selected-line]="selectedLine==-2323"
+                                            [style.top.px]="50+(0*10)" [style.width.px]="10+0*10">
+                                          </div>
+                                        }@else{
+                                          @for (o of tier.actions|keyvalue:sortOrder; track o.value.id; let $a_first = $first; let $a_last = $last; let $a_index = $index) {
+                                            <div id="ta_{{o.value.id}}" style="position:absolute;left:0px;height:4px;width:0px;" [style.top.px]="50+($a_index*10)"></div>
+                                            @if (['goTier','nextTier','prevTier'].includes(o.value.action)) {
+                                              <div id="line_{{o.value.id}}" class="line-tier"
+                                                [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                [class.selected-line]="selectedLine==o.value.id"
+                                                [style.top.px]="50+($a_index*10)"
+                                                [style.width.px]="10+$a_index*10">
+                                              </div>
+                                            }
+                                            @if (['curTier'].includes(o.value.action)) {
+                                              @if (o.value.userEdit) {
+                                                <div id="line_{{o.value.id}}" class="line-tier"
+                                                  [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                  [style.display]="selectedLine==o.value.id?'block':'none'"
+                                                  [class.selected-line]="selectedLine==o.value.id"
+                                                  [style.top.px]="50+($a_index*10)"
+                                                  style="width:15px;">
+                                                  <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                    style="position:absolute;top:calc(50% - 10px);right:-10px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
+                                                    @if (o.value.action=='curTier') {
+                                                      <fa-icon size="xs" [icon]="['fas',o.value.icon]"></fa-icon>
+                                                    }
+                                                  </div>
+                                                </div>
+                                              }
+                                              @if (!o.value.userEdit) {
+                                                <div id="term_{{o.value.id}}"
+                                                  [style.display]="selectedLine==o.value.id?'block':'none'"
+                                                  [style.top.px]="50+($a_index*10)"
+                                                  style="position:absolute;left:0px;width:10px; border-top:solid 2px #ccc;display:none">
+                                                  <div [style.border-color]="selectedLine==o.value.id?selectedColor:'#ccc'"
+                                                    [style.color]="selectedLine==o.value.id?selectedColor:'var(--bs-body-color)'"
+                                                    style="position:absolute;top:-10px;right:0px;border-radius:50%;width:20px;height:20px; line-height:15px; text-align:center; background:var(--bs-body-bg); border:solid 2px #ccc;">
+                                                    @if (o.value.action=='curTier') {
+                                                      <fa-icon size="xs" [icon]="['fas',o.value.icon]"></fa-icon>
+                                                    }
+                                                  </div>
+                                                </div>
+                                              }
+                                            }
+                                          }
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            }
+                            @if(!curForm.x?.extended){
+                              <div class="ballx" style="min-height:55px;">
+                                <button type="button" class="btn btn-sm btn-primary btn-round" [disabled]="isTimeWarpingForm"
+                                  (click)="editTier(editTierTpl,{sortOrder:curForm.tiers?.length, canRemark:true, actions: actionPreset})">
+                                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
+                                  Tier
+                                </button>
+                              </div>
+                            }
+                            <div class="ballx position-relative" style="min-height:55px;">
+                              <div id="t_999"
+                                [style.background-color]="selectedLineTier==999?selectedColor:'#ccc'"
+                                [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'"
+                                style="padding: 0px 10px;float:left;font-weight: bold;position:absolute;background: #ccc; height:40px; border:solid 4px #ccc;color:#fff; border-radius:20px; font-size:20px; text-align: center; line-height: 32px;">
+                                Complete
+                              </div>
+                              @if (hasLineToComplete) {
+                                <div id="t_999_line" [class.selected-line]="selectedLineTier==999"
+                                  style="min-width:205px;"
+                                  [style.border-color]="selectedLineTier==999?selectedColor:'#ccc'">
+                                </div>
+                              }
+                            </div>
+                            @if(!curForm.x?.extended){
+                              <div>
+                                <button type="button" class="btn btn-secondary btn-round btn-sm mb-3"
+                                  (click)="reconApprover()" [disabled]="reconLoading || isTimeWarpingForm">
+                                  @if (reconLoading) {
+                                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                                    Processing...
+                                  } @else {
+                                    <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                                    Update approver for all tiers
+                                  }
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        }
+                        @if (curForm.tiers.length==0) {
+                          <div>
+                            <div class="p-4 text-secondary text-center">
+                              <h1>:(</h1>
+                              <h4>No tier specified</h4>
+                              <button type="button" class="btn btn-primary btn-round mt-3" [disabled]="isTimeWarpingForm"
+                                (click)="editTier(editTierTpl,{sortOrder:curForm.tiers.length, canRemark:true, actions: actionPreset})">
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add New
+                                Tier
+                              </button>
+                            </div>
+                          </div>
+                        }
+                        @if (curForm.admin) {
+                          <div class="card mb-2">
+                            <div class="card-body p-3 bordered">
+                              Admin Group : {{curForm.admin.name}}
+                            </div>
+                          </div>
+                        }
+                      </div>
+
+<ng-template #editTierActionTpl let-c="close" let-d="dismiss">
+  <div #editTierActionForm="ngForm" ngForm>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tier Action</h4>
+    </div>
+    <div class="bg-primary text-white p-3">
+      <label class="form-label small">
+        <fa-icon [icon]="['fas','info-circle']" [fixedWidth]="true"></fa-icon>
+        Feeling lost? Relax. You can click the button below to preset the value.
+      </label>
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-light" (click)="editTierActionData=actionPreset['approved']">Approve</button>
+        <button type="button" class="btn btn-outline-light" (click)="editTierActionData=actionPreset['rejected']">Reject</button>
+        <button type="button" class="btn btn-outline-light" (click)="editTierActionData=actionPreset['returned']">Return</button>
+      </div>
+    </div>
+    <div class="modal-body fix-gutter">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Label *</label>
+            <input type="text" class="form-control" [(ngModel)]="editTierActionData.label" name="label"
+              (ngModelChange)="editTierActionData.id||editTierActionData.code=toSnakeCase(editTierActionData.label)" required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Code *</label>
+            <input type="text" class="form-control" [(ngModel)]="editTierActionData.code" name="code" required>
+          </div>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Action *</label>
+        <div class="row">
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-nextTier" name="action" [(ngModel)]="editTierActionData.action" value="nextTier" required>
+              <label for="type-nextTier" class="form-check-label">Next Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check" [class.disabled]="editTierActionData.tierOrder<=0">
+              <input type="radio" class="form-check-input" id="type-prevTier" name="action" [(ngModel)]="editTierActionData.action" value="prevTier" required>
+              <label for="type-prevTier" class="form-check-label">Previous Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-curTier" name="action" [(ngModel)]="editTierActionData.action" value="curTier" required>
+              <label for="type-curTier" class="form-check-label">Current Tier</label>
+            </div>
+          </div>
+          <div class="col-3 mb-2">
+            <div class="form-check">
+              <input type="radio" class="form-check-input" id="type-goTier" name="action" [(ngModel)]="editTierActionData.action" value="goTier" required>
+              <label for="type-goTier" class="form-check-label">Go to Tier</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      @if (editTierActionData.action=='goTier') {
+        <div class="form-group mb-3">
+          <label class="form-label">Select Tier</label>
+          <select class="form-control custom-select" id="tierId" name="tierId" [(ngModel)]="editTierActionData.nextTier" required>
+            <option [ngValue]="undefined" style="color:gray">No Tier</option>
+            @for (item of curForm.tiers; track item.id) {
+              <option [value]="item.id">{{item.name}} [{{item.id}}]</option>
+            }
+          </select>
+        </div>
+      }
+      <div class="form-group mb-3">
+        <label class="form-label">Select Mailer</label>
+        <div class="d-flex">
+          <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
+            placeholder="No mailer" [(ngModel)]="editTierActionData.mailer" id="mailer" name="mailer">
+          </ng-select>
+          <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="mailerRequested.emit({data: editTierActionData, property: 'mailer'})">New&nbsp;Mailer</button>
+        </div>            
+      </div>
+      <div class="form-check form-group">
+        <input type="checkbox" class="form-check-input" [(ngModel)]="editTierActionData.userEdit" name="userEdit" id="userEdit">
+        <label for="userEdit" class="form-check-label">Allow user to edit and resubmit</label>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Icon *</label>
+            <div class="btn-group-toggle">
+              @for (c of actionIcons; track c) {
+                <input type="radio" class="btn-check" [value]="c" id="icon-{{c}}" name="icon-{{c}}" [(ngModel)]="editTierActionData.icon" required>
+                <label for="icon-{{c}}" class="btn btn-round color-item me-1 mb-1 bg-body-secondary" [class.active-outline]="editTierActionData.icon==c">
+                  <fa-icon [icon]="['fas',c]" [fixedWidth]="true"></fa-icon>
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group mb-3">
+            <label class="form-label">Color *</label>
+            <div class="btn-group-toggle">
+              @for (c of actionColors; track c) {
+                <input type="radio" class="btn-check" [value]="c" id="color-{{c}}" name="color-{{c}}" [(ngModel)]="editTierActionData.color" required>
+                <label for="color-{{c}}" class="btn btn-round text-white color-item me-1 mb-1" [class.active-outline]="editTierActionData.color==c" [style.background-color]="c">
+                  {{$index+1}}
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Pre-requisite (tier action will be hidden if false)</label>
+        <div class="mx-n3">
+          <app-cm name="pre" lang="javascript" [(ngModel)]="editTierActionData.pre"
+            [extraAutoComplete]="extraAutoCompleteTier()" subType="passive"
+            label="Tier Pre-requisite" placeholder="Expression (ie: $$_.status == 'approved')" [linenumber]="true">
+          </app-cm>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editTierActionForm.invalid" (click)="c(editTierActionData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Tier Action
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editTierTpl let-c="close" let-d="dismiss">
+  <form #editTierForm="ngForm">
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tier</h4>
+    </div>
+    <div class="tab-simple fix-gutter" justify="center">
+      <div class="nav-wrap">
+        <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+          <li ngbNavItem>
+            <a ngbNavLink>Tier Info</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane fix-gutter">
+                <div class="form-group mb-3">
+                  <label class="form-label">Tier Name *</label>
+                  <input class="form-control" type="text" [(ngModel)]="editTierData.name" name="name" placeholder="Tier name (ie: PTJ Approval)" required>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label" for="submitMailer">Submission Mailer</label>
+                  <div class="d-flex">
+                    <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
+                      placeholder="No mailer" [(ngModel)]="editTierData.submitMailer" id="submitMailer" name="submitMailer">
+                    </ng-select>
+                    <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="mailerRequested.emit({data: editTierData, property: 'submitMailer'})">New&nbsp;Mailer</button>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label" for="resubmitMailer">Resubmission Mailer</label>
+                  <div class="d-flex">
+                    <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
+                      placeholder="No mailer" [(ngModel)]="editTierData.resubmitMailer" id="resubmitMailer" name="resubmitMailer">
+                    </ng-select>
+                    <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="mailerRequested.emit({data: editTierData, property: 'resubmitMailer'})">New&nbsp;Mailer</button>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Approval Type *</label>
+                  <div>
+                    <div class="">
+                      <input type="radio" class="btn-check" value="ALL" id="type-ALL" name="type-ALL" [(ngModel)]="editTierData.type" required>
+                      <label for="type-ALL" class="btn btn-outline-secondary me-1"> All</label>
+                      <input type="radio" class="btn-check" value="DYNAMIC" id="type-DYNAMIC" name="type-DYNAMIC" [(ngModel)]="editTierData.type" required>
+                      <label for="type-DYNAMIC" class="btn btn-outline-secondary me-1"> Dynamic</label>
+                      <input type="radio" class="btn-check" value="FIXED" id="type-FIXED" name="type-FIXED" [(ngModel)]="editTierData.type" required>
+                      <label for="type-FIXED" class="btn btn-outline-secondary me-1"> Fixed</label>
+                      <input type="radio" class="btn-check" value="GROUP" id="type-GROUP" name="type-GROUP" [(ngModel)]="editTierData.type" required>
+                      <label for="type-GROUP" class="btn btn-outline-secondary me-1"> Group</label>
+                      <input type="radio" class="btn-check" value="ASSIGN" id="type-ASSIGN" name="type-ASSIGN" [(ngModel)]="editTierData.type" required>
+                      <label [class.disabled]="!curForm.admin" for="type-ASSIGN" class="btn btn-outline-secondary me-1">Assign</label>
+                    </div>
+                  </div>
+                </div>
+                @if (editTierData.type=='DYNAMIC') {
+                  <div>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <div class="form-group mb-3">
+                          <label class="form-label">OrgMap Endpoint *</label>
+                          <input type="text" class="form-control" name="orgMap" [(ngModel)]="editTierData.orgMap" required>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="form-group mb-3">
+                          <label class="form-label">Pointer to email *</label>
+                          <input type="text" class="form-control" name="orgMapPointer" [(ngModel)]="editTierData.orgMapPointer" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+                @if (editTierData.type=='DYNAMIC') {
+                  <div class="form-group mb-3">
+                    <label class="form-label">Parameter</label>
+                    <div class="mx-n3">
+                      <app-cm name="orgMapParam" lang="javascript"
+                        label="Tier Org Mapping Parameter"
+                        [(ngModel)]="editTierData.orgMapParamStr" [skipCheck]="true" subType="passive"
+                        placeholder="ie: { extra: '$.$id'}" [linenumber]="true">
+                      </app-cm>
+                    </div>
+                  </div>
+                }
+                @if (editTierData.type=='FIXED') {
+                  <div>
+                    <div class="form-group mb-3">
+                      <label class="form-label">Approver email (comma separated) *</label>
+                      <input type="text" class="form-control" name="tierPerson" [(ngModel)]="editTierData.approver" required />
+                    </div>
+                  </div>
+                }
+                @if (editTierData.type=='GROUP') {
+                  <div>
+                    <div class="form-group mb-3">
+                      <label class="form-label">Approver group *</label>
+                      <div class="input-group">
+                        <select class="form-select" name="access" [(ngModel)]="editTierData.approverGroup" required>
+                          @for (access of accessList(); track access.id) {
+                            <option [ngValue]="access.id">{{access.name}}</option>
+                          }
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="groupRequested.emit({data: editTierData, property: 'approverGroup'})">New Group</button>
+                      </div>  
+                    </div>
+                  </div>
+                }
+                @if (editTierData.type=='ASSIGN') {
+                  <div class="form-group mb-3">
+                    <label class="form-label" for="assignMailer">Assign Mailer</label>
+                    <div class="d-flex">
+                      <ng-select class="flex-grow-1" [items]="mailerList()" bindLabel="name" [multiple]="true" bindValue="id"
+                        placeholder="No mailer" [(ngModel)]="editTierData.assignMailer" id="assignMailer" name="assignMailer">
+                      </ng-select>
+                      <button type="button" class="btn btn-secondary btn-sm ms-1" (click)="mailerRequested.emit({data: editTierData, property: 'assignMailer'})">New&nbsp;Mailer</button>
+                    </div>
+                  </div>
+                }
+                <div class="form-check form-switch form-group">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.showApprover" name="showApprover" id="showApprover">
+                  <label class="form-check-label" for="showApprover">Show approver email in approval form panel</label>
+                </div>
+                <div class="form-check form-switch form-group">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.x.anyApproverEdit" name="anyApproverEdit" id="anyApproverEdit">
+                  <label class="form-check-label" for="anyApproverEdit">Allow <strong>any</strong> specified approver to edit approval</label>
+                </div>
+                <div class="form-check form-switch form-group">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.alwaysApprove" name="alwaysApprove" id="alwaysApprove">
+                  <label class="form-check-label" for="alwaysApprove">Always approve decision - decision option will be hidden, move to the next tier</label>
+                </div>
+                <div class="form-check form-switch form-group">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="editTierData.canRemark" name="canRemark" id="canRemark">
+                  <label for="canRemark" class="form-check-label">Enable Remark - Allow approver to add decision remark</label>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Custom Approval Form</label>
+                  <ng-select [items]="curForm.sections" bindLabel="title" [(ngModel)]="editTierData.section" name="customForm"></ng-select>
+                  @if (editTierData.alwaysApprove && !editTierData.section) {
+                    <small class="has-error">
+                      <input type="hidden" name="hiddenCustomForm" [(ngModel)]="editTierData.section" required>
+                      <span class="form-text">Custom form is required for Always Approved Option!</span>
+                    </small>
+                  }
+                </div>
+                @if (editTierData.id) {
+                  <div class="bg-danger mx-n2 text-white">
+                    <div class="p-3">
+                      Update approver for prior entry
+                      <div class="form-group small">
+                        <div class="form-check">
+                          <input type="checkbox" class="form-check-input" id="forceApf_{{editTierData.id}}" [(ngModel)]="forceApf[editTierData.id]" name="forceApf_{{editTierData.id}}">
+                          <label class="form-check-label" for="forceApf_{{editTierData.id}}">Include approved entry (force update ALL)</label>
+                        </div>
+                      </div>
+                      <button type="button" [disabled]="apfLoading[editTierData.id]" class="btn btn-sm btn-danger text-start border-white" style="border-width:2px;"
+                        (click)="backendApf(editTierData, forceApf[editTierData.id])">
+                        @if (apfLoading[editTierData.id]) {
+                          <span>Executing update...please wait</span>
+                        }
+                        @if (!apfLoading[editTierData.id]) {
+                          <span>Update <strong>{{forceApf[editTierData.id]?'all':'pending'}}</strong> approver in this tier</span>
+                        }
+                        <div class="small">Update tier prior of approver changes (if any)</div>
+                      </button>
+                      @if (apfResult[editTierData.id]) {
+                        <div class="text-white mt-2">
+                          <table width="100%">
+                            <tr>
+                              <td>Success</td>
+                              <td>: {{apfResult[editTierData.id].successCount}}</td>
+                            </tr>
+                            <tr>
+                              <td>Failed</td>
+                              <td>: {{apfResult[editTierData.id].errorCount}}</td>
+                            </tr>
+                            <tr>
+                              <td>Not updated (unchanged)</td>
+                              <td>: {{apfResult[editTierData.id].notEmptyCount}}</td>
+                            </tr>
+                          </table>
+                          @if (apfResult[editTierData.id].errorCount) {
+                            <div class="form-check mt-2">
+                              <input type="checkbox" class="form-check-input" id="showlogApf_{{editTierData.id}}" [(ngModel)]="showlogApf[editTierData.id]" name="showlogApf_{{editTierData.id}}">
+                              <label class="form-check-label" for="showlogApf_{{editTierData.id}}">Show error logs</label>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                    @if (showlogApf[editTierData.id]) {
+                      <div class="p-3" style="max-height:200px; overflow:auto">
+                        @for (l of apfResult[editTierData.id].errorLog; track $index) {
+                          <div>{{l}}</div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </li>
+          <li ngbNavItem>
+            <a ngbNavLink>Callback</a>
+            <ng-template ngbNavContent>
+              <div class="single-pane fix-gutter">
+                <div class="form-group mb-3">
+                  <label class="form-label">Pre-requisite (tier will be hidden if false)</label>
+                  <div class="mx-n3">
+                    <app-cm name="pre" lang="javascript" [(ngModel)]="editTierData.pre"
+                      label="Tier Pre-requisite"
+                      [extraAutoComplete]="extraAutoCompleteTier()" subType="passive"
+                      placeholder="ie: $user$.groups['213']" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">Post-action</label>
+                  <div class="mx-n3">
+                    <app-cm name="post" lang="javascript" [(ngModel)]="editTierData.post"
+                      label="Tier Post-action"
+                      [extraAutoComplete]="extraAutoCompleteTier()" subType="active"
+                      placeholder="ie: $update($.$id,{'_submittedOn':Date.now()})" [linenumber]="true">
+                    </app-cm>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </li>
+        </ul>
+      </div>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="d()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="editTierForm.invalid" (click)="c(editTierData)">
+        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+        Save Tier
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #removeTierTpl let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Remove Approval Tier</h4>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to remove this approval tier?</p>
+    <div class="form">
+      <div class="form-group mb-3">
+        <label class="form-label">Tier Name</label>
+        <p class="form-control-static">{{removeTierData.name}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="d()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" (click)="c(removeTierData)">Remove Tier</button>
+  </div>
+</ng-template>
+
