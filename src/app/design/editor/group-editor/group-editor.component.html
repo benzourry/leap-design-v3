@@ -98,10 +98,10 @@
       <div class="workspace-toolbar">
         <div class="limit-width px-3 d-flex align-items-center gap-2">
           <div class="me-auto d-flex align-items-center min-w-0">
-            <span class="badge rounded-pill border fw-normal d-inline-flex align-items-center gap-1"
-              [ngClass]="groupId=='all' ? 'border-primary-subtle bg-primary-subtle text-primary-emphasis'
-                : group?.appId!=appId ? 'border-warning-subtle bg-warning-subtle text-warning-emphasis'
-                : 'border-success-subtle bg-success-subtle text-success-emphasis'">
+            <span class="ws-pill"
+              [ngClass]="groupId=='all' ? 'is-primary'
+                : group?.appId!=appId ? 'is-warning'
+                : 'is-success'">
               <fa-icon [fixedWidth]="true"
                 [icon]="groupId=='all' ? ['fas','sitemap'] : group?.appId!=appId ? ['fas','diagram-project'] : ['fas','users']"></fa-icon>{{groupId=='all' ? 'Directory Overview' : group?.appId!=appId ? 'Shared External Group' : 'App Role Group'}}
             </span>
@@ -113,7 +113,7 @@
                 aria-label="Edit group" (click)="editGroup(editGroupTpl,group,false)" [class.disabled]="offline">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <div ngbDropdown class="d-flex align-items-center">
+              <div ngbDropdown class="d-flex">
                 <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
                   title="More group actions" aria-label="More group actions">
                   <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
@@ -161,7 +161,7 @@
               placeholder="Filter users by name, email, or tag..."
               (keyup.enter)="getAppUserList(appUserPageNumber,params)" [(ngModel)]="searchTextUsr">
           </div>
-          <div class="list-summary bg-body border rounded-3">
+          <div class="list-summary">
             <span class="list-summary-item">
               Total <span class="font-monospace fw-semibold text-body">{{appUserTotal()}}</span>
             </span>
@@ -187,9 +187,9 @@
           @if (appUserList()?.length>0) {
             <div class="border rounded-3 overflow-hidden bg-body">
               <div class="table-responsive">
-                <table class="table user-table small mb-0">
+                <table class="table small mb-0 ws-table">
                   <thead>
-                    <tr class="text-uppercase fw-semibold small text-nowrap">
+                    <tr>
                       @if (group && group.appId==appId) {
                         <th class="tblcol-check">
                           <input type="checkbox" class="form-check-input" #checkAll aria-label="Select all users"
@@ -229,7 +229,7 @@
                           </div>
                           <div class="small text-body-secondary">{{appUser.user.email}}</div>
                           <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
-                            <span class="badge rounded-1 border bg-body-tertiary text-body-secondary fw-normal d-inline-flex align-items-center gap-1 mw-100">
+                            <span class="ws-pill is-secondary">
                               @if (appUser.user?.provider) {
                                 <fa-icon [icon]="provider[appUser.user.provider]" [fixedWidth]="true"></fa-icon>
                                 {{appUser.user.provider}}
@@ -237,7 +237,7 @@
                                 No provider specified
                               }
                             </span>
-                            <span class="badge rounded-1 border bg-body-tertiary text-body-secondary fw-normal d-inline-flex align-items-center gap-1 mw-100">
+                            <span class="ws-pill is-secondary">
                               <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
                               @if (appUser.user.firstLogin) {
                                 First login: {{appUser.user.firstLogin|date:'medium'}}
@@ -246,7 +246,7 @@
                               }
                             </span>
                             @for (tag of appUser.tags; track $index) {
-                              <span class="badge rounded-1 border border-primary-subtle bg-primary-subtle text-primary-emphasis fw-medium mw-100">{{tag}}</span>
+                              <span class="ws-pill is-primary">{{tag}}</span>
                             }
                           </div>
                           @if (appUser.user.attributes) {
@@ -276,11 +276,11 @@
                         </td>
                         <td>
                           @if (appUser.status) {
-                            <span class="badge rounded-pill border fw-medium text-capitalize d-inline-flex align-items-center gap-1"
-                              [ngClass]="appUser.status=='approved' ? 'bg-success-subtle border-success-subtle text-success-emphasis'
-                                : appUser.status=='pending' ? 'bg-warning-subtle border-warning-subtle text-warning-emphasis'
-                                : appUser.status=='rejected' ? 'bg-danger-subtle border-danger-subtle text-danger-emphasis'
-                                : 'bg-body-tertiary border-secondary-subtle text-body-secondary'">
+                            <span class="ws-pill text-capitalize"
+                              [ngClass]="appUser.status=='approved' ? 'is-success'
+                                : appUser.status=='pending' ? 'is-warning'
+                                : appUser.status=='rejected' ? 'is-danger'
+                                : 'is-secondary'">
                               <span class="status-dot"></span>{{appUser.status}}
                             </span>
                           } @else {

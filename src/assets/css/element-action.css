@@ -41,8 +41,8 @@
 }
 
 .leafup{
-    position:absolute;top:calc(100% + 1px);left:-1px;border:solid 1px #ccc;padding:4px; 
-    border-radius:4px;
+    position:absolute;top:calc(100%);left:-1px;border:solid 1px #ccc;padding:4px; 
+    border-radius:0.5rem;
     /* border-radius:0 24px 24px 24px;  */
     background: white;
     z-index:6 !important;

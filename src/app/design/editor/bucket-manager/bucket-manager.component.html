@@ -79,7 +79,7 @@
       <div class="workspace-toolbar">
         <div class="limit-width px-3 d-flex align-items-center gap-2">
           <div class="me-auto d-flex align-items-center gap-2 min-w-0 flex-wrap">
-            <span class="bucket-pill" [class.is-cloud]="bucket.type!='local'">
+            <span class="ws-pill" [class.is-primary]="bucket.type!='local'">
               @switch (bucket.type) {
                 @case ('s3') {
                   <fa-icon [icon]="['fas','cloud']" [fixedWidth]="true"></fa-icon> Amazon S3
@@ -96,18 +96,18 @@
               }
             </span>
             @if (serverInfo.avEnabled) {
-              <span class="bucket-pill is-success" title="Anti-virus scan is enabled">
+              <span class="ws-pill is-success" title="Anti-virus scan is enabled">
                 <fa-icon [icon]="['fas','shield-alt']" [fixedWidth]="true"></fa-icon> ClamAV active
               </span>
             }
           </div>
 
-          <div class="d-flex align-items-center text-nowrap">
+          <div class="d-flex align-items-center gap-1 flex-shrink-0">
             <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit bucket"
               aria-label="Edit bucket" (click)="editBucket(editBucketTpl,bucket,false)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
             </button>
-            <div ngbDropdown class="d-flex align-items-center">
+            <div ngbDropdown class="d-flex">
               <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
                 title="More bucket actions" aria-label="More bucket actions">
                 <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
@@ -148,7 +148,7 @@
                 </button>
               </div>
             </div>
-            <label class="form-label m-0 ms-2">
+            <label class="form-label m-0 ms-1">
               <input type="file" [hidden]="true" [disabled]="importLoading" (change)="uploadFile($event)" name="file" />
               <span class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
                 [class.disabled]="importLoading">
@@ -169,9 +169,9 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
-          <div class="bucket-filter position-relative">
-            <fa-icon class="bucket-filter-icon" [icon]="['fas','search']" aria-hidden="true"></fa-icon>
-            <input type="search" class="form-control form-control-sm" autocapitalize="none" aria-label="Filter list"
+          <div class="list-filter">
+            <fa-icon class="list-filter-icon" [icon]="['fas','search']" aria-hidden="true"></fa-icon>
+            <input type="search" class="form-control" autocapitalize="none" aria-label="Filter list"
               placeholder="Filter list" (keyup.enter)="getFileList(1,params)" [(ngModel)]="searchTextFile">
           </div>
           <div class="status-filter-pills" role="group" aria-label="Filter files by scan status">
@@ -196,8 +196,8 @@
         @if (bucketFileList?.length) {
           <div class="border rounded-3 bg-body shadow-sm overflow-hidden">
             <div class="table-responsive">
-              <table class="table table-sm align-middle mb-0 bucket-file-table">
-                <thead class="text-nowrap">
+              <table class="table table-sm align-middle mb-0 ws-table">
+                <thead>
                   <tr>
                     <th class="bucket-col-preview text-uppercase fw-semibold text-body-secondary bg-body-tertiary" scope="col">Preview</th>
                     <th class="text-uppercase fw-semibold text-body-secondary bg-body-tertiary" scope="col">File Info</th>
@@ -225,7 +225,7 @@
                         <div class="d-flex align-items-center gap-2 min-w-0">
                           <span class="fw-semibold text-truncate">{{bucketFile.fileName}}</span>
                           @if (quarantined) {
-                            <span class="meta-tag is-status">{{bucketFile.sstatus}}</span>
+                            <span class="ws-pill" [class.is-danger]="bucketFile.sstatus!='VAULT'" [class.is-warning]="bucketFile.sstatus=='VAULT'">{{bucketFile.sstatus}}</span>
                           }
                         </div>
                         <div class="small text-body-secondary text-truncate">
@@ -237,21 +237,21 @@
                           }
                         </div>
                         <div class="d-flex flex-wrap gap-1 mt-1">
-                          <span class="meta-tag">
+                          <span class="ws-pill">
                             <fa-icon [icon]="['far','clock']"></fa-icon>
                             {{bucketFile.timestamp|date:'medium'}}
                           </span>
-                          <span class="meta-tag">
+                          <span class="ws-pill">
                             <fa-icon [icon]="['far','user']"></fa-icon>
                             {{bucketFile.email}}
                           </span>
-                          <span class="meta-tag">{{bucketFile.fileSize/(1024*1024)|number}} MiB</span>
-                          <span class="meta-tag">{{bucketFile.fileType}}</span>
+                          <span class="ws-pill">{{bucketFile.fileSize/(1024*1024)|number}} MiB</span>
+                          <span class="ws-pill">{{bucketFile.fileType}}</span>
                           @if (bucketFile.itemLabel) {
-                            <span class="meta-tag">From input: {{bucketFile.itemLabel}}</span>
+                            <span class="ws-pill">From input: {{bucketFile.itemLabel}}</span>
                           }
                           @if (bucketFile.entryId) {
-                            <span class="meta-tag">Entry #{{bucketFile.entryId}}</span>
+                            <span class="ws-pill">Entry #{{bucketFile.entryId}}</span>
                           }
                         </div>
                         @if (bucketFile.sstatus=='FOUND') {

@@ -84,7 +84,7 @@
       <div class="workspace-toolbar">
         <div class="limit-width px-3 d-flex align-items-center gap-2">
           <div class="me-auto d-flex align-items-center gap-2 min-w-0">
-            <span class="endpoint-pill" [class.is-shared]="endpoint.shared" [class.is-private]="!endpoint.shared">
+            <span class="ws-pill" [class.is-success]="endpoint.shared" [class.is-danger]="!endpoint.shared">
               <fa-icon [icon]="['fas',endpoint.shared?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
               {{endpoint.shared ? 'Shared' : 'Private'}} Endpoint
             </span>
@@ -96,7 +96,7 @@
                 aria-label="Edit endpoint" (click)="editEndpoint(editEndpointTpl,endpoint,false)" [class.disabled]="offline">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <div ngbDropdown class="d-flex align-items-center">
+              <div ngbDropdown class="d-flex">
                 <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
                   title="More actions" aria-label="More actions">
                   <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
@@ -134,7 +134,7 @@
         @if (!loading) {
           <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
             <div class="d-flex align-items-center gap-2 px-3 py-3">
-              <span class="endpoint-method" [class.is-get]="endpoint.method=='GET'" [class.is-post]="endpoint.method=='POST'">{{endpoint.method}}</span>
+              <span class="ws-pill endpoint-method" [class.is-success]="endpoint.method=='GET'" [class.is-primary]="endpoint.method=='POST'">{{endpoint.method}}</span>
               <span class="flex-grow-1 font-monospace text-break min-w-0">{{endpoint.url}}</span>
               <button type="button" class="btn btn-sm border-0 text-body-secondary flex-shrink-0" title="Copy endpoint URL"
                 aria-label="Copy endpoint URL" (click)="copyText(endpoint.url, 'Endpoint URL')">
@@ -225,7 +225,7 @@
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
                 <div class="d-flex align-items-center gap-2">
                   <h6 class="m-0 fw-semibold">Result</h6>
-                  <span class="result-status">
+                  <span class="ws-pill is-success result-status">
                     <fa-icon [icon]="['fas','check']" [fixedWidth]="true" size="xs"></fa-icon>
                     {{resultStatus}}
                   </span>
@@ -240,7 +240,7 @@
                 </div>
               </div>
               @if (resultType=='text'){
-                <div class="bg-body-tertiary border-top scroll-cap">
+                <div class="bg-body-tertiary border-top limit-height">
                   <pre class="m-0 px-3 py-2 font-monospace small"><code class="language-js">{{result | json}}</code></pre>
                 </div>
               }@else{
@@ -258,7 +258,7 @@
               </span>
               <div class="flex-grow-1 min-w-0">
                 <div class="fw-semibold text-danger-emphasis mb-1">Endpoint Execution Error</div>
-                <pre class="m-0 rounded-2 border border-danger-subtle bg-body px-2 py-1 font-monospace small scroll-cap"><code class="language-js">{{error.error | json}}</code></pre>
+                <pre class="m-0 rounded-2 border border-danger-subtle bg-body px-2 py-1 font-monospace small limit-height"><code class="language-js">{{error.error | json}}</code></pre>
               </div>
             </div>
           }

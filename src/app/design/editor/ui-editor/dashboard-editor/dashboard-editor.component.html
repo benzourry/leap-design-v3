@@ -31,12 +31,12 @@
         </div>
       </div>
       <div class="workspace-toolbar">
-        <div class="limit-width px-3 d-flex align-items-center justify-content-end">
-              <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit dashboard" aria-label="Edit dashboard"
+        <div class="limit-width px-3 d-flex align-items-center justify-content-end gap-1 flex-shrink-0">
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit dashboard" aria-label="Edit dashboard"
                 (click)="editDashboard(editDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <button type="button" class="btn btn-sm border-0 text-danger ms-1 me-1" title="Remove dashboard" aria-label="Remove dashboard"
+              <button type="button" class="btn btn-sm border-0 text-danger" title="Remove dashboard" aria-label="Remove dashboard"
                 (click)="removeDashboard(removeDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
               </button>

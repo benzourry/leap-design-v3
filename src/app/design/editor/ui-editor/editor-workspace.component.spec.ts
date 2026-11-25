@@ -64,6 +64,8 @@ describe('Editor workspace toolbars', () => {
     const gap = menu.getBoundingClientRect().top - toolbar.getBoundingClientRect().bottom;
     expect(gap).toBeGreaterThanOrEqual(1);
     expect(gap).toBeLessThanOrEqual(3);
+    expect(host.querySelector<HTMLElement>('.workspace-toolbar .dropdown > .dropdown-toggle.border-0')!.getBoundingClientRect().height)
+      .toBe(toolbar.getBoundingClientRect().height);
     expect(menu.querySelector('[title="Resync Dataset"]')!.classList.contains('disabled')).toBeTrue();
     expect(menu.querySelector<HTMLButtonElement>('[title="Remove dataset"]')!.disabled).toBeTrue();
     expect(menu.querySelector('[title="Download Entry JSON"]')!.classList.contains('disabled')).toBeFalse();
@@ -190,7 +192,7 @@ describe('Editor workspace toolbars', () => {
     host.style.width = '320px';
     scroll.style.width = '320px';
     await frame();
-    const tabs = host.querySelector<HTMLElement>('.screen-tabs')!;
+    const tabs = host.querySelector<HTMLElement>('.ws-tabs')!;
     const preview = host.querySelector<HTMLElement>('[title="Preview screen"]')!;
     expect(tabs.scrollWidth).toBeGreaterThan(tabs.clientWidth);
     expect(preview.getBoundingClientRect().right).toBeLessThanOrEqual(scroll.getBoundingClientRect().left + scroll.clientWidth);
@@ -282,7 +284,7 @@ describe('Editor workspace toolbars', () => {
     const saveScreen = spyOn(fixture.componentInstance, 'saveScreen');
     save.click();
     expect(saveScreen).toHaveBeenCalledWith(fixture.componentInstance.curScreen, form);
-    const tabs = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.screen-tabs a');
+    const tabs = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('.ws-tabs a');
     Array.from(tabs).find(tab => tab.textContent?.trim() === 'Pre')!.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -318,7 +320,7 @@ describe('Editor workspace toolbars', () => {
       fixture.detectChanges();
 
       const host = fixture.nativeElement as HTMLElement;
-      const tabs = Array.from(host.querySelectorAll<HTMLAnchorElement>('.screen-tabs a'));
+      const tabs = Array.from(host.querySelectorAll<HTMLAnchorElement>('.ws-tabs a'));
       for (const tab of [
         { label: 'Content', visible: testCase.content },
         { label: 'Pre', visible: testCase.pre },

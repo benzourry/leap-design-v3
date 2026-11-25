@@ -66,7 +66,7 @@
     <!-- Non-sticky title bar (shared editor shell) -->
     <div class="bg-body">
       <div class="limit-width px-3 pt-3 pb-2">
-        <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
+        <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
           <h5 class="m-0 text-truncate">{{cogna.name}}</h5>
           <app-editor-id-chip [id]="cogna.id" kind="Cogna"></app-editor-id-chip>
         </div>
@@ -79,8 +79,8 @@
     <!-- Sticky workspace toolbar (shared editor shell) -->
     <div class="workspace-toolbar">
       <div class="limit-width px-3 d-flex align-items-center gap-2">
-        <div class="me-auto d-flex align-items-center gap-2 flex-wrap" style="min-width:0">
-          <span class="cg-pill is-type">
+        <div class="me-auto d-flex align-items-center gap-2 flex-wrap min-w-0">
+          <span class="ws-pill is-primary">
             @switch (cogna.type) {
             @case ('txtgen') {
             <fa-icon [icon]="['fas','pen']" [fixedWidth]="true" size="xs"></fa-icon> Generate Text
@@ -105,10 +105,10 @@
             }
             }
           </span>
-          <span class="cg-pill" [class.is-success]="cogna.publicAccess" [class.is-warning]="!cogna.publicAccess">
+          <!-- <span class="ws-pill" [class.is-success]="cogna.publicAccess" [class.is-warning]="!cogna.publicAccess">
             <fa-icon [icon]="['fas',cogna.publicAccess?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
             {{cogna.publicAccess?'Public Cogna':'Private Cogna'}}
-          </span>
+          </span> -->
         </div>
 
         <div class="d-flex align-items-center text-nowrap">
@@ -133,12 +133,12 @@
             [disabled]="offline || isTimeWarpingCogna">
             <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
           </button>
-          <div ngbDropdown class="d-flex align-items-center ms-1">
+          <div ngbDropdown class="d-flex ms-1">
             <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
               title="More actions" aria-label="More actions">
               <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
             </button>
-            <div ngbDropdownMenu class="dropdown-menu-end rounded-3 py-2" style="min-width:340px">
+            <div ngbDropdownMenu class="dropdown-menu-end rounded-3 py-2 ws-menu-wide">
               <button type="button" ngbDropdownItem title="Chat history"
                 (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
                 <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
@@ -184,22 +184,22 @@
     <div class="limit-width px-3 py-3">
       <!-- TimeWarp Interface Block -->
       @if (isTimeWarpingCogna) {
-      <div class="cg-timewarp">
+      <div class="timewarp-panel mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-          <div class="d-flex align-items-center gap-2">
-            <span class="fw-semibold small">
-              <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon> TimeWarp Active
+          <div class="d-flex align-items-center gap-2 min-w-0">
+            <span class="timewarp-panel-title">
+              <fa-icon [icon]="['far','clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
             </span>
-            <span class="cg-pill is-warning">Previewing Revision</span>
+            <span class="ws-pill is-warning">Preview</span>
           </div>
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2 min-w-0">
             <button type="button" class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarpCogna()">Cancel</button>
             <button type="button" class="btn btn-sm btn-warning fw-medium"
               (click)="restoreTimeWarpCognaVersion()">Restore This</button>
           </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-3 min-w-0">
           <span class="small fw-medium text-body-secondary">Oldest</span>
           <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpCognaTrails.length - 1"
             [(ngModel)]="timeWarpCognaIndex" (ngModelChange)="applyTimeWarpCogna($event)">
@@ -207,14 +207,15 @@
         </div>
 
         @let trail = timeWarpCognaTrails[timeWarpCognaIndex];
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 border-top small">
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="cg-chip">{{ trail?.timestamp | date:'medium' }}</span>
-            <span class="cg-chip">{{ trail?.email }}</span>
+        <div class="timewarp-meta d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 small">
+          <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
+            <span>{{ trail?.timestamp | date:'medium' }}</span>
+            <span class="opacity-50">•</span>
+            <span>{{ trail?.email }}</span>
           </div>
-          <div class="d-flex align-items-center gap-1 font-monospace text-uppercase">
-            <span class="cg-chip">{{ trail?.action }}</span>
-            <span class="cg-chip is-type">{{ trail?.module }}</span>
+          <div class="timewarp-tags d-flex align-items-center gap-1 text-uppercase">
+            <span class="timewarp-tag">{{ trail?.action }}</span>
+            <span class="timewarp-tag is-module">{{ trail?.module }}</span>
           </div>
         </div>
       </div>
@@ -259,8 +260,8 @@
               }
             </div>
             <div class="cg-panel-footer">
-              <span class="cg-chip font-monospace">Chunk: {{cogna.chunkLength}}</span>
-              <span class="cg-chip font-monospace">Overlap: {{cogna.chunkOverlap}}</span>
+              <span class="ws-pill font-monospace">Chunk: {{cogna.chunkLength}}</span>
+              <span class="ws-pill font-monospace">Overlap: {{cogna.chunkOverlap}}</span>
             </div>
           </section>
           }
@@ -293,14 +294,14 @@
             </div>
             @if(['txtgen'].includes(cogna.type)){
             <div class="cg-panel-footer">
-              <span class="cg-chip font-monospace">Temp: {{cogna.temperature}}</span>
-              <span class="cg-chip font-monospace">Memory: {{cogna.maxChatMemory}}</span>
+              <span class="ws-pill font-monospace">Temp: {{cogna.temperature}}</span>
+              <span class="ws-pill font-monospace">Memory: {{cogna.maxChatMemory}}</span>
             </div>
             }
             @if(['imgcls'].includes(cogna.type)){
             <div class="cg-panel-footer">
-              <span class="cg-chip font-monospace">Min Score: {{cogna.data?.imgclsMinScore}}</span>
-              <span class="cg-chip font-monospace">Limit: {{cogna.data?.imgclsLimit}}</span>
+              <span class="ws-pill font-monospace">Min Score: {{cogna.data?.imgclsMinScore}}</span>
+              <span class="ws-pill font-monospace">Limit: {{cogna.data?.imgclsLimit}}</span>
             </div>
             }
           </section>
@@ -309,9 +310,9 @@
           @if(['txtext'].includes(cogna.type)){
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">Fields to extract</h2>
-                <span class="cg-count-pill">{{(extractJsonObj?.properties | keyvalue)?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{(extractJsonObj?.properties | keyvalue)?.length || 0}}</span>
               </div>
             </div>
             <div class="cg-list-wrap">
@@ -319,9 +320,9 @@
               @for(i of jsonObj|keyvalue; track $index){
               <div class="cg-item-row">
                 <div class="cg-item-body">
-                  <div class="d-flex align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-2 min-w-0">
                     <span class="fw-medium small text-truncate" [title]="i.key">{{i.key}}</span>
-                    <span class="cg-chip font-monospace ms-auto">{{i.value?.type}}</span>
+                    <span class="ws-pill font-monospace ms-auto">{{i.value?.type}}</span>
                     @if(['object','array'].includes(i.value?.type)){
                     <button type="button" class="btn btn-sm border-0 text-body-secondary p-0 px-1"
                       [title]="nestedProp[i.key] ? 'Hide fields' : 'Show fields'"
@@ -337,7 +338,7 @@
                     @for(j of (jsonObj[i.key]?.properties||jsonObj[i.key]?.items?.properties)|keyvalue; track $index){
                     <div class="d-flex align-items-center justify-content-between gap-2">
                       <span class="small text-truncate">{{j.key}}</span>
-                      <span class="cg-chip font-monospace">{{j.value?.type}}</span>
+                      <span class="ws-pill font-monospace">{{j.value?.type}}</span>
                     </div>
                     }
                   </div>
@@ -355,15 +356,15 @@
           @if(['imgcls'].includes(cogna.type) && imgclsCat.length>0){
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">SynSet</h2>
-                <span class="cg-count-pill">{{imgclsLen}}</span>
+                <span class="ws-pill font-monospace">{{imgclsLen}}</span>
               </div>
             </div>
             <div class="cg-panel-body">
               <div class="d-flex flex-wrap gap-1">
                 @for(i of imgclsCat; track $index){
-                <span class="cg-chip font-monospace">{{i}}</span>
+                <span class="ws-pill font-monospace">{{i}}</span>
                 }
               </div>
               @if (imgclsMore>0){
@@ -376,7 +377,7 @@
           @if (['txtcls'].includes(cogna.type) && cogna.data?.txtclsLlm){
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title text-truncate">
                   @if (classifyWhat){
                   {{classifyWhat}}
@@ -385,7 +386,7 @@
                   }
                 </h2>
                 @if (classifyLookupId){
-                <span class="cg-count-pill">{{lookupEntries?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{lookupEntries?.length || 0}}</span>
                 }
               </div>
             </div>
@@ -411,9 +412,9 @@
           <section class="cg-panel" [class.border-success]="ingestSuccess()[cogna.id]=='true'"
             [class.border-danger]="ingestSuccess()[cogna.id]=='false'">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">Sources</h2>
-                <span class="cg-count-pill">{{cogna.sources?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{cogna.sources?.length || 0}}</span>
               </div>
               @if (cogna.sources?.length>0){
               <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Ingest document sources"
@@ -503,9 +504,9 @@
 
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">Tools</h2>
-                <span class="cg-count-pill">{{cogna.tools?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{cogna.tools?.length || 0}}</span>
               </div>
             </div>
             <div class="cg-list-wrap">
@@ -542,9 +543,9 @@
 
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">MCP Servers</h2>
-                <span class="cg-count-pill">{{cogna.mcps?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{cogna.mcps?.length || 0}}</span>
               </div>
             </div>
             <div class="cg-list-wrap">
@@ -597,7 +598,7 @@
               </button>
             </div>
             <div class="cg-panel-body">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <img [src]="dbMap[cogna.vectorStoreType]?.logo" height="18" alt="" />
                 <span class="fw-semibold small text-truncate">{{dbMap[cogna.vectorStoreType]?.name}}</span>
               </div>
@@ -608,8 +609,8 @@
               }
             </div>
             <div class="cg-panel-footer">
-              <span class="cg-chip font-monospace">Max: {{cogna.embedMaxResult}}</span>
-              <span class="cg-chip font-monospace">Min Score: {{cogna.embedMinScore??'None'}}</span>
+              <span class="ws-pill font-monospace">Max: {{cogna.embedMaxResult}}</span>
+              <span class="ws-pill font-monospace">Min Score: {{cogna.embedMinScore??'None'}}</span>
             </div>
           </section>
           }
@@ -617,9 +618,9 @@
           @if(['master'].includes(cogna.type)){
           <section class="cg-panel">
             <div class="cg-panel-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <h2 class="cg-panel-title">Sub Agents</h2>
-                <span class="cg-count-pill">{{cogna.subs?.length || 0}}</span>
+                <span class="ws-pill font-monospace">{{cogna.subs?.length || 0}}</span>
               </div>
             </div>
             <div class="cg-list-wrap">
@@ -661,10 +662,10 @@
           @if(['txtgen','master'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <fa-icon [icon]="['fas','stream']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
                 <span class="fw-semibold small">Interactive Preview</span>
-                <span class="cg-chip font-monospace text-truncate">
+                <span class="ws-pill font-monospace text-truncate">
                   {{embedModelTypeMap[cogna.inferModelType]?.name}} &middot; {{cogna.inferModelName}}
                 </span>
               </div>
@@ -699,7 +700,7 @@
                 <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file.path" class="img-fluid rounded border"
                   style="max-width:70%">
                 }@else {
-                <span class="cg-chip"><fa-icon [icon]="['far','file']" [fixedWidth]="true"></fa-icon> {{file.path}}</span>
+                <span class="ws-pill"><fa-icon [icon]="['far','file']" [fixedWidth]="true"></fa-icon> {{file.path}}</span>
                 }
                 }
               </div>
@@ -749,7 +750,7 @@
                 <input type="text" id="chat-prompt-text" class="cg-composer-input" autocomplete="off"
                   autocapitalize="none" (keyup.enter)="chatPrompt(cogna, chatPromptText())" [(ngModel)]="chatPromptText"
                   maxlength="2000" placeholder="Ask me something...">
-                <span class="cg-chip font-monospace d-none d-sm-inline">{{chatPromptText()?.length||0}}/2000</span>
+                <span class="ws-pill font-monospace d-none d-sm-inline">{{chatPromptText()?.length||0}}/2000</span>
                 <button type="button" class="cg-send" title="Send prompt" aria-label="Send prompt"
                   [disabled]="!(chatPromptText()?.trim() || fileList.length>0)"
                   (click)="chatPrompt(cogna, chatPromptText())">
@@ -769,7 +770,7 @@
                   </button>
                 </div>
                 }@else {
-                <span class="cg-chip">
+                <span class="ws-pill">
                   {{f.path}}
                   <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
                     (click)="removeFile($index)">
@@ -787,7 +788,7 @@
           @if(['txtext'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
                 <span class="fw-semibold small">Testing / Preview</span>
               </div>
@@ -806,7 +807,7 @@
               @if(fileList.length>0){
               <div class="d-flex flex-wrap gap-2 mb-3">
                 @for(f of fileList; track $index){
-                <span class="cg-chip">
+                <span class="ws-pill">
                   {{f}}
                   <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
                     (click)="removeFile($index)">
@@ -858,7 +859,7 @@
           @if(['imgcls'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <fa-icon [icon]="['fas','photo-film']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
                 <span class="fw-semibold small">Testing / Preview</span>
               </div>
@@ -940,7 +941,7 @@
           @if(['txtcls'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <fa-icon [icon]="['fas','tags']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
                 <span class="fw-semibold small">Testing / Preview</span>
               </div>
@@ -1043,7 +1044,7 @@
           @if(['imggen'].includes(cogna.type)){
           <section class="cg-preview">
             <div class="cg-preview-header">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <fa-icon [icon]="['fas','image']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
                 <span class="fw-semibold small">Testing / Preview</span>
               </div>

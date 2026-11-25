@@ -115,38 +115,38 @@
 
           <!-- TimeWarp Interface Block -->
           @if (isTimeWarping) {
-            <div class="card bg-warning bg-opacity-10 border-1-5 border-warning mb-3 shadow-sm">
-              <div class="card-body p-2">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="card-title text-warning-emphasis m-0 fw-bold">
-                    <fa-icon [icon]="['far', 'clock']" class="me-1"></fa-icon> TimeWarp Active
-                  </h6>
-                  <div>
-                    <button class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
-                    <button class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This</button>
-                  </div>
+            <div class="timewarp-panel mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="timewarp-panel-title">
+                    <fa-icon [icon]="['far', 'clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
+                  </span>
+                  <span class="ws-pill is-warning">Preview</span>
                 </div>
-                <div class="d-flex align-items-center">
-                  <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
-                  <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
-                        [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
-                  <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarp()">Cancel</button>
+                  <button class="btn btn-sm btn-warning fw-medium" (click)="restoreTimeWarpVersion()">Restore This</button>
                 </div>
+              </div>
 
-                @let trail = timeWarpTrails[timeWarpIndex];
+              <div class="d-flex align-items-center gap-3">
+                <span class="small fw-medium text-body-secondary">Oldest</span>
+                <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1"
+                       [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
+                <span class="small fw-medium text-body-secondary">Latest</span>
+              </div>
 
-                <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
-                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
-                    <span class="input-group-text bg-body text-body smaller">{{ trail?.timestamp | date:'medium' }}</span>
-                    <span class="input-group-text bg-body text-body smaller">{{ trail?.email }}</span>
-                  </div>
-                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
-                    <span class="input-group-text bg-secondary text-white smaller">{{ trail?.action }}</span>
-                    <span class="input-group-text bg-primary text-white smaller">{{ trail?.module }}</span>
-                  </div>
+              @let trail = timeWarpTrails[timeWarpIndex];
+              <div class="timewarp-meta d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 small">
+                <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
+                  <span>{{ trail?.timestamp | date:'medium' }}</span>
+                  <span class="opacity-50">•</span>
+                  <span>{{ trail?.email }}</span>
                 </div>
-
-
+                <div class="timewarp-tags d-flex align-items-center gap-1 text-uppercase">
+                  <span class="timewarp-tag">{{ trail?.action }}</span>
+                  <span class="timewarp-tag is-module">{{ trail?.module }}</span>
+                </div>
               </div>
             </div>
           }
@@ -157,7 +157,7 @@
                 <div #screenToolbar class="workspace-toolbar">
                   <div class="limit-width d-flex align-items-center">
                   <ul ngbNav #nav="ngbNav" [destroyOnHide]="false"
-                    class="nav-tabs nav screen-tabs">
+                    class="nav-tabs ws-tabs">
                     @if (hasHtmlTabs) {
                       <li [ngbNavItem]="'content'">
                         <a ngbNavLink>Content</a>
@@ -948,7 +948,7 @@
                       (click)="toggleTimeWarp()">
                       <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <div ngbDropdown class="d-flex align-self-stretch ms-1">
+                    <div ngbDropdown class="d-flex ms-1">
                       <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
                         <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                       </button>
@@ -1022,7 +1022,7 @@
               <tbody>
                 @for (ac of curScreen.actions; track ac.id) {
                   <tr>
-                    <td><span class="badge bg-body-secondary text-body-secondary">{{ac.id}}</span></td>
+                    <td><span class="ws-pill">{{ac.id}}</span></td>
                   <td>{{ac.label}}</td>
                   <td>
                     @if (ac.nextType=='view') {
@@ -1164,7 +1164,7 @@
             <details class="palette-group mb-2" open>
               <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
                 <span>{{ group.label }}</span>
-                <span class="badge rounded-pill bg-body-secondary text-body-secondary">{{ group.items.length }}</span>
+                <span class="ws-pill">{{ group.items.length }}</span>
               </summary>
               <div class="row row-cols-2 g-2">
                 @for (item of group.items; track $index) {

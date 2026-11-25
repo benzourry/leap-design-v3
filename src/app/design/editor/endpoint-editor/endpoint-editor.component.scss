@@ -2,64 +2,13 @@
 
 @include editor-workspace.workspace;
 
-.min-w-0 { min-width: 0; }
-
-.scroll-cap {
-  max-height: 400px;
-  overflow: auto;
-}
-
-/* Pill frame shared by the visibility pill, the HTTP method and the result status. */
-.endpoint-pill,
-.endpoint-method,
-.result-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.15rem 0.6rem;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-pill);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-.endpoint-pill {
-  font-size: 0.75rem;
-}
-
-.endpoint-pill.is-shared,
-.result-status {
-  border-color: var(--bs-success-border-subtle);
-  background: var(--bs-success-bg-subtle);
-  color: var(--bs-success-text-emphasis);
-}
-
-.endpoint-pill.is-private {
-  border-color: var(--bs-danger-border-subtle);
-  background: var(--bs-danger-bg-subtle);
-  color: var(--bs-danger-text-emphasis);
-}
-
+/* The method chip keeps the pill frame but reads as a compact code token. */
 .endpoint-method {
   border-radius: var(--bs-border-radius-sm);
   font-family: var(--bs-font-monospace);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-
-  &.is-get {
-    border-color: var(--bs-success-border-subtle);
-    background: var(--bs-success-bg-subtle);
-    color: var(--bs-success-text-emphasis);
-  }
-
-  &.is-post {
-    border-color: var(--bs-primary-border-subtle);
-    background: var(--bs-primary-bg-subtle);
-    color: var(--bs-primary-text-emphasis);
-  }
 }
 
 .result-status {

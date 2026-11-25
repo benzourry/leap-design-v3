@@ -52,8 +52,8 @@ describe('FormEditorComponent', () => {
     component = TestBed.createComponent(FormEditorComponent).componentInstance;
     const toast = spyOn(TestBed.inject(ToastService), 'show');
     const container = document.createElement('div');
-    container.innerHTML = '<div class="form-editor-tabs"><div class="nav-wrap"></div></div><div data-form-group="123"></div>';
-    const toolbar = container.querySelector<HTMLElement>('.nav-wrap')!;
+    container.innerHTML = '<div class="form-editor-tabs"><div class="ws-tabs-bar"></div></div><div data-form-group="123"></div>';
+    const toolbar = container.querySelector<HTMLElement>('.ws-tabs-bar')!;
     const heading = container.querySelector<HTMLElement>('[data-form-group]')!;
     Object.defineProperty(toolbar, 'offsetHeight', { value: 48 });
     spyOn(container, 'getBoundingClientRect').and.returnValue({ top: 100 } as DOMRect);
@@ -164,7 +164,7 @@ describe('FormEditorComponent', () => {
     const edit = spyOn(component, 'editTab');
     const host = fixture.nativeElement as HTMLElement;
     const tab = host.querySelector<HTMLButtonElement>('.form-tab-link')!;
-    const toolbar = host.querySelector<HTMLElement>('.form-editor-tabs > .nav-wrap')!;
+    const toolbar = host.querySelector<HTMLElement>('.form-editor-tabs > .ws-tabs-bar')!;
     const heading = host.querySelector<HTMLElement>('.section-group-heading')!;
     const actions = host.querySelector<HTMLElement>('.form-tab > .element-edit')!;
     const workspace = host.querySelector<HTMLElement>('.form-editor-scroll')!;
@@ -182,7 +182,13 @@ describe('FormEditorComponent', () => {
     workspace.style.flex = '0 0 1000px';
     expect(titlebar.getBoundingClientRect().width).toBe(workspace.clientWidth);
     expect(toolbar.getBoundingClientRect().width).toBe(workspace.clientWidth);
-    expect(toolbar.querySelector('.nav-tabs')!.getBoundingClientRect().width).toBe(780);
+    // The tab strip and the action cluster share one row capped at the workspace limit width.
+    const toolbarRow = host.querySelector<HTMLElement>('.form-editor-tabs > .ws-tabs-bar > .limit-width')!;
+    expect(toolbarRow.getBoundingClientRect().width).toBe(780);
+    // Toolbar dropdowns stay outside the horizontally scrollable tab list, otherwise that
+    // scroll container clips the opened menu instead of letting it render below the bar.
+    expect(toolbarRow.querySelector('.nav-tabs .dropdown')).toBeNull();
+    expect(toolbarRow.querySelector('.dropdown')).not.toBeNull();
     expect(host.querySelector('.form-editor-tabs > .tab-content')!.getBoundingClientRect().width).toBe(780);
     workspace.style.flex = '0 0 320px';
     const filter = host.querySelector<HTMLElement>('.filter-control')!;

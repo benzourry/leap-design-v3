@@ -1,36 +1,7 @@
 @use '../ui-editor/editor-workspace';
 
 @include editor-workspace.workspace;
-
-.min-w-0 { min-width: 0; }
-
-.border-dashed { border-style: dashed !important; }
-
-/* Provider / scanner pills, aligned with the other editor toolbars */
-.bucket-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.15rem 0.6rem;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-pill);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  font-size: 0.75rem;
-  white-space: nowrap;
-
-  &.is-cloud {
-    border-color: var(--bs-primary-border-subtle);
-    background: var(--bs-primary-bg-subtle);
-    color: var(--bs-primary-text-emphasis);
-  }
-
-  &.is-success {
-    border-color: var(--bs-success-border-subtle);
-    background: var(--bs-success-bg-subtle);
-    color: var(--bs-success-text-emphasis);
-  }
-}
+@include editor-workspace.lists;
 
 .bucket-upload-dropzone {
   padding: 1.25rem 1rem;
@@ -52,27 +23,6 @@
     outline: 2px solid var(--bs-primary);
     outline-offset: 2px;
   }
-}
-
-.bucket-filter {
-  flex: 1 1 220px;
-  max-width: 380px;
-
-  .form-control {
-    height: 2.125rem;
-    padding-left: 2.1rem;
-    border-radius: var(--bs-border-radius-lg);
-    box-shadow: var(--bs-box-shadow-sm);
-  }
-}
-
-.bucket-filter-icon {
-  position: absolute;
-  top: 50%;
-  left: 0.7rem;
-  transform: translateY(-50%);
-  color: var(--bs-tertiary-color);
-  pointer-events: none;
 }
 
 .status-filter-pills {
@@ -128,26 +78,8 @@
   }
 }
 
-.bucket-file-table {
-  thead th {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-  }
-
-  > tbody > tr > td {
-    padding: 0.55rem 0.75rem;
-    border-color: var(--bs-border-color-translucent);
-  }
-
-  > tbody > tr:last-child > td {
-    border-bottom: 0;
-  }
-
-  > tbody > tr:hover > td {
-    background: var(--bs-tertiary-bg);
-  }
-
+/* Row state tints and hover-revealed actions on top of the shared table chrome. */
+.ws-table {
   > tbody > tr:is(:hover, :focus-within) .row-action-group {
     opacity: 1;
   }
@@ -200,36 +132,6 @@
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
-}
-
-.meta-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  max-width: 100%;
-  padding: 0 0.4rem;
-  overflow: hidden;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-sm);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  font-size: 0.72rem;
-  line-height: 1.6;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &.is-status {
-    border-color: var(--bs-danger-border-subtle);
-    background: var(--bs-danger-bg-subtle);
-    color: var(--bs-danger-text-emphasis);
-    font-weight: 600;
-  }
-}
-
-tr.row-vault .meta-tag.is-status {
-  border-color: var(--bs-warning-border-subtle);
-  background: var(--bs-warning-bg-subtle);
-  color: var(--bs-warning-text-emphasis);
 }
 
 .threat-alert-bar {

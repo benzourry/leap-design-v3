@@ -1,4 +1,7 @@
 @use '../editor-workspace';
+@use '../../timewarp';
+
+@include editor-workspace.chrome;
 
 /* ==========================================================================
    CDK DRAG & DROP
@@ -48,11 +51,6 @@
   padding: 0;
 }
 
-.limit-height {
-  max-height: 400px;
-  overflow: auto;
-}
-
 .code-container {
   display: flex;
   flex-direction: column;
@@ -73,30 +71,6 @@
 .form-editor-scroll {
   min-width: 0;
   background: var(--bs-tertiary-bg);
-}
-
-.tab-simple.form-editor-tabs > .nav-wrap {
-  z-index: 10;
-  background: var(--bs-body-bg);
-  box-shadow: inset 0 -1px var(--bs-border-color);
-}
-
-.tab-simple.form-editor-tabs > .nav-wrap > .nav-tabs {
-  min-height: 48px;
-
-  .nav-link {
-    border: 0;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-    padding: 0.65rem 0.8rem;
-    color: var(--bs-secondary-color);
-  }
-
-  .nav-link.active {
-    color: var(--bs-body-color);
-    background: transparent;
-    border-color: var(--bs-body-color);
-  }
 }
 
 .filter-control {
@@ -138,21 +112,22 @@
 }
 
 .form-tab {
-  display: inline-flex;
   align-items: center;
   max-width: 100%;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
-  background: var(--bs-tertiary-bg);
+  display: inline-flex;
 }
 
-.form-tab.is-active {
+.form-tab-link.is-active {
   border-color: var(--bs-primary);
   background: var(--bs-body-bg);
   box-shadow: 0 0 0 2px var(--bs-primary-bg-subtle);
 }
 
 .form-tab-link {
+    border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-tertiary-bg);
+  margin-bottom:4px;
   min-width: 0;
   padding: 0.4rem 0.65rem;
   text-align: left;

@@ -175,7 +175,7 @@
                                                 [title]="o.value.label"
                                                 [style.border-color]="selectedLine==o.value.id?selectedColor:'var(--bs-border-color)'"
                                                 [style.color]="selectedLine==o.value.id?selectedColor:''"
-                                                class="btn btn-tier-action btn-sm btn-round py-1 mt-1 nowrap"
+                                                class="btn btn-tier-action btn-sm btn-round py-1 nowrap"
                                                 [class]="o.value.altClass">
                                                 @if (!simplifiedProcessView) {
                                                   {{o.value.label}}
@@ -221,7 +221,7 @@
                                         }
                                         @if (!curForm.x?.extended && !tier.alwaysApprove) {
                                           <button type="button" [disabled]="isTimeWarpingForm"
-                                            class="btn btn-add-action btn-sm btn-round mt-1 nowrap"
+                                            class="btn btn-add-action btn-sm btn-round nowrap"
                                             (click)="editTierAction(editTierActionTpl,tier,{sortOrder:getObjLength(tier.actions)})">
                                             <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                                           </button>

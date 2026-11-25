@@ -977,7 +977,7 @@ export class FormEditorComponent implements OnInit {
             this.toastService.show('This tab has no sections to scroll to.', { classname: 'bg-warning text-dark' });
             return;
         }
-        const toolbar = container.querySelector<HTMLElement>('.form-editor-tabs > .nav-wrap');
+        const toolbar = container.querySelector<HTMLElement>('.form-editor-tabs > .ws-tabs-bar');
         const top = container.scrollTop + heading.getBoundingClientRect().top
             - container.getBoundingClientRect().top - (toolbar?.offsetHeight ?? 0);
         container.scrollTo({ top, behavior: 'smooth' });

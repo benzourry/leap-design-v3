@@ -1,149 +1,16 @@
 @use '../ui-editor/editor-workspace';
 
 @include editor-workspace.workspace;
+@include editor-workspace.lists;
 
-.lookup-workspace.lookup-wide .limit-width {
-  max-width: none;
+.lookup-workspace.lookup-wide {
+  --limit-width: none;
 }
 
-.lookup-disabled {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
-
-.border-dashed {
-  border-style: dashed !important;
-}
-
-.lookup-source-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  max-width: 100%;
-  padding: 0.15rem 0.6rem;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-pill);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  font-size: 0.75rem;
-  white-space: nowrap;
-  overflow: hidden;
-
-  &.is-db {
-    background: var(--bs-success-bg-subtle);
-    border-color: var(--bs-success-border-subtle);
-    color: var(--bs-success-text-emphasis);
-  }
-
-  &.is-rest {
-    background: var(--bs-primary-bg-subtle);
-    border-color: var(--bs-primary-border-subtle);
-    color: var(--bs-primary-text-emphasis);
-  }
-
-  &.is-proxy {
-    background: var(--bs-warning-bg-subtle);
-    border-color: var(--bs-warning-border-subtle);
-    color: var(--bs-warning-text-emphasis);
-  }
-}
-
-.list-controls {
-  container-type: inline-size;
-}
-
-.list-filter {
-  position: relative;
-  flex: 1 1 240px;
-  max-width: 420px;
-  margin-right: auto;
-
-  .form-control {
-    height: 2.375rem;
-    padding-left: 2.25rem;
-    font-size: 0.9rem;
-    border-radius: var(--bs-border-radius-lg);
-    box-shadow: var(--bs-box-shadow-sm);
-  }
-}
-
-.list-filter-icon {
-  position: absolute;
-  top: 50%;
-  left: 0.75rem;
-  transform: translateY(-50%);
-  font-size: 0.85rem;
-  color: var(--bs-tertiary-color);
-  pointer-events: none;
-}
-
-.list-summary {
-  display: inline-flex;
-  align-items: center;
-  height: 2.375rem;
-  overflow: hidden;
-  color: var(--bs-secondary-color);
-  font-size: 0.8125rem;
-  white-space: nowrap;
-  box-shadow: var(--bs-box-shadow-sm);
-}
-
-.list-summary-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  height: 100%;
-  padding: 0 0.7rem;
-
-  // Separator as a short line the height of the text, not a full-height rule.
-  & + &::before {
-    content: '';
-    flex: none;
-    width: 1px;
-    height: 1em;
-    margin-right: 0.35rem;
-    background: var(--bs-border-color);
-  }
-}
-
-// Once the row is too narrow to keep the filter and summary on one line, center both.
-@container (max-width: 40rem) {
-  .list-filter,
-  .list-summary {
-    margin-inline: auto;
-  }
-}
-
-.lookup-table {
-  thead th {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--bs-border-color);
-    background: var(--bs-tertiary-bg);
-    color: var(--bs-secondary-color);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  > tbody > tr > td {
-    padding: 0.5rem 0.75rem;
-    border-color: var(--bs-border-color-translucent);
-    overflow-wrap: break-word;
-  }
-
-  > tbody > tr:last-child > td {
-    border-bottom: 0;
-  }
-
-  > tbody > tr:is(:hover, :focus-within) {
-    background: var(--bs-tertiary-bg);
-
-    .lookup-drag-handle,
-    .lookup-row-actions {
-      opacity: 1;
-    }
+.ws-table > tbody > tr:is(:hover, :focus-within) {
+  .lookup-drag-handle,
+  .lookup-row-actions {
+    opacity: 1;
   }
 }
 
@@ -183,17 +50,6 @@
     font-weight: 500;
     white-space: nowrap;
   }
-}
-
-.lookup-tag {
-  display: inline-block;
-  padding: 0 0.45rem;
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-sm);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  font-size: 0.74rem;
-  line-height: 1.6;
 }
 
 .lookup-drag-handle {

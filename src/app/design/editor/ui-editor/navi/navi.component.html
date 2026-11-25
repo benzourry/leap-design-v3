@@ -10,7 +10,7 @@
     </div>
     <div class="workspace-toolbar">
       <div class="limit-width px-3 d-flex align-items-center gap-2">
-        <span class="meta-pill me-auto text-truncate">
+        <span class="ws-pill me-auto text-truncate">
           <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
           {{navis.length}} Groups · {{naviItemCount}} Items
         </span>
@@ -32,10 +32,10 @@
                   <div class="fw-semibold d-flex align-items-center gap-1 text-truncate min-w-0">
                     <span class="text-truncate">{{group.title}}</span>
                     @if (group.pre) {
-                      <span class="navi-tag flex-shrink-0" [title]="group.pre">PRE</span>
+                      <span class="ws-pill is-info flex-shrink-0" [title]="group.pre">PRE</span>
                     }
                     @if (group.x?.type=='bottom') {
-                      <span class="navi-tag navi-tag-muted flex-shrink-0" title="Shown as mobile bottom bar">BOTTOM</span>
+                      <span class="ws-pill is-secondary flex-shrink-0" title="Shown as mobile bottom bar">BOTTOM</span>
                     }
                   </div>
                   <div class="element-edit workspace-action-bar nowrap">
@@ -67,7 +67,7 @@
                 <div class="p-2 d-flex flex-column gap-1" cdkDropList [cdkDropListData]="group.items"
                   (cdkDropListDropped)="dropItem($event, group)">
                   @if (group.items && group.items.length==0) {
-                    <div class="navi-empty-dropzone p-4 text-center text-body-secondary small rounded bg-body-tertiary">
+                    <div class="navi-empty-dropzone border-dashed p-4 text-center text-body-secondary small rounded bg-body-tertiary">
                       <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="d-block mb-1"></fa-icon>
                       Empty Group — Drag items here or click Add Item
                     </div>
@@ -90,7 +90,7 @@
                         <div class="d-flex align-items-center gap-1 min-w-0">
                           <span class="small fw-medium text-truncate" [class.text-danger]="broken">{{item.title}}</span>
                           @if (item.pre) {
-                            <span class="navi-tag flex-shrink-0" [title]="item.pre">PRE</span>
+                            <span class="ws-pill is-info flex-shrink-0" [title]="item.pre">PRE</span>
                           }
                         </div>
                         <div class="navi-item-route font-monospace text-body-secondary text-truncate"
@@ -148,7 +148,7 @@
                 </div>
               </div>
             }
-            <button type="button" class="btn btn-outline-secondary btn-add-group w-100 mb-3"
+            <button type="button" class="btn btn-outline-secondary border-dashed w-100 mb-3"
               (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length,x:{type:'menu'}}, true)">
               <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
               Add Group
@@ -235,7 +235,7 @@
                   <fa-icon class="palette-chev flex-shrink-0" [icon]="['fas','chevron-right']" [fixedWidth]="true"></fa-icon>
                   <span class="text-truncate">{{ group.label }}</span>
                 </span>
-                <span class="badge rounded-pill bg-body-secondary text-body-secondary">{{ group.items.length }}</span>
+                <span class="ws-pill">{{ group.items.length }}</span>
               </summary>
               <div class="row row-cols-2 g-2">
                 @for (item of group.items; track $index) {

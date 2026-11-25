@@ -80,42 +80,42 @@
 
         <div class="workspace-toolbar">
           <div class="limit-width px-3 d-flex align-items-center gap-2">
-            <div class="me-auto d-flex align-items-center gap-2 text-truncate" style="min-width:0">
+            <div class="me-auto d-flex align-items-center gap-2 min-w-0">
               @if (lookup.sourceType=='db') {
-                <span class="lookup-source-pill is-db">
+                <span class="ws-pill is-success">
                   <fa-icon [icon]="['fas','database']" [fixedWidth]="true" size="xs"></fa-icon>
                   Database Table
                 </span>
               }
               @if (lookup.sourceType=='rest') {
-                <span class="lookup-source-pill is-rest" [title]="lookup.endpoint">
+                <span class="ws-pill is-primary" [title]="lookup.endpoint">
                   <fa-icon [icon]="['fas','cloud']" [fixedWidth]="true" size="xs"></fa-icon>
                   <span class="text-truncate">REST ({{lookup.responseType}}) · {{lookup.endpoint}}</span>
                 </span>
               }
               @if (lookup.sourceType=='proxy') {
-                <span class="lookup-source-pill is-proxy">
+                <span class="ws-pill is-warning">
                   <fa-icon [icon]="['fas','server']" [fixedWidth]="true" size="xs"></fa-icon>
                   <span class="text-truncate">Proxy for lookup <strong>{{lookup.proxyId}}</strong></span>
                 </span>
               }
             </div>
 
-            <div class="d-flex align-items-center text-nowrap ms-auto">
-              <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit lookup"
+            <div class="d-flex align-items-center gap-1 flex-shrink-0">
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit lookup"
                 aria-label="Edit lookup" (click)="editLookup(editLookupTpl,lookup,false)" [class.disabled]="offline">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Reload lookup entries"
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Reload lookup entries"
                 aria-label="Reload lookup entries" (click)="getLookupEntryList(1)">
                 <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
               </button>
-              <div ngbDropdown class="d-flex align-self-stretch ms-1">
+              <div ngbDropdown class="d-flex">
                 <button type="button" class="btn btn-sm border-0 text-body-secondary" id="dropdownLookupEditor"
                   ngbDropdownToggle title="More actions" aria-label="More actions">
                   <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <div ngbDropdownMenu class="rounded-3 py-2" aria-labelledby="dropdownLookupEditor" style="min-width:320px">
+                <div ngbDropdownMenu class="rounded-3 py-2 ws-menu-wide" aria-labelledby="dropdownLookupEditor">
                   @if (lookup.sourceType=='db') {
                     <button type="button" ngbDropdownItem title="Import from Excel" [class.disabled]="offline"
                       (click)="importExcel(importExcelTpl)">
@@ -169,7 +169,7 @@
                 [(ngModel)]="searchTextEntry">
             </div>
             @if (hasLoadList) {
-              <div class="list-summary bg-body border rounded-3">
+              <div class="list-summary">
                 <span class="list-summary-item">
                   Total <span class="font-monospace fw-semibold text-body">{{lookupEntryTotal}}</span>
                 </span>
@@ -197,7 +197,7 @@
               @if(duplicatedCodes.length>0){
                 <div class="alert alert-warning d-flex align-items-start gap-2 mb-3 py-2" role="alert">
                   <fa-icon [icon]="['fas','exclamation-triangle']" class="mt-1" [fixedWidth]="true"></fa-icon>
-                  <div class="flex-grow-1" style="min-width:0">
+                  <div class="flex-grow-1 min-w-0">
                     <div class="fw-semibold">Duplicate entry code detected</div>
                     <div class="small">Please review and resolve the duplicate codes below to avoid unexpected system behavior.</div>
                     <div class="d-flex flex-wrap gap-2 mt-2">
@@ -222,7 +222,7 @@
 
               <div class="bg-body border rounded-3 overflow-hidden shadow-sm">
                 <div class="table-responsive position-relative">
-                  <table class="table table-sm align-top mb-0 lookup-table">
+                  <table class="table table-sm align-top mb-0 ws-table">
                     <thead>
                       <tr>
                         @if (lookup.sourceType=='db') {
@@ -246,7 +246,7 @@
                       (cdkDropListDropped)="dropEntry($event)">
                       @for (entry of lookupEntryList; track $index) {
                         <tr
-                          [class.lookup-disabled]="lookup.sourceType=='db' && !entry.enabled"
+                          [class.strike]="lookup.sourceType=='db' && !entry.enabled"
                           [ngClass]="entry.altClass"
                           cdkDrag
                           [cdkDragDisabled]="offline || lookup.sourceType !== 'db'">
@@ -283,7 +283,7 @@
                                             @if (o.value && o.value.length>0) {
                                               <span class="d-inline-flex flex-wrap gap-1">
                                                 @for(v of o.value; track $index) {
-                                                  <span class="lookup-tag">{{v.name}}</span>
+                                                  <span class="ws-pill is-secondary">{{v.name}}</span>
                                                 }
                                               </span>
                                             }

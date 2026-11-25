@@ -19,6 +19,9 @@
   background: var(--bs-body-bg);
   box-shadow: var(--bs-box-shadow-sm);
 }
+.process-toolbar-strip:not(:has(*)) {
+  display: none;
+}
 
 .admin-chip {
   display: inline-flex;
@@ -263,6 +266,7 @@
   border: 2px solid var(--bs-border-color);
   background: var(--bs-tertiary-bg);
   color: var(--bs-body-color);
+  margin-bottom: 4px;
 }
 
 .always-approve-action {
@@ -276,7 +280,7 @@
 }
 
 .tier-action-actions {
-  top: calc(100% + 4px);
+  top: 100%;
   right: auto;
   left: 0;
   z-index: 7;
@@ -292,6 +296,7 @@
   border: 1px dashed var(--bs-border-color);
   background: var(--bs-body-bg);
   color: var(--bs-secondary-color);
+  margin-bottom: 4px;
 }
 
 .tier-route-anchors {

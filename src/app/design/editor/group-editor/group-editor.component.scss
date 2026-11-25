@@ -1,103 +1,23 @@
 @use '../ui-editor/editor-workspace';
 
 @include editor-workspace.workspace;
-
-.min-w-0 { min-width: 0; }
-
-/* Scope pill and callout are pure Bootstrap utilities in the template. */
-
-/* Filter input and list summary: same treatment as the lookup editor. */
-.list-controls {
-  container-type: inline-size;
-}
-
-.list-filter {
-  position: relative;
-  flex: 1 1 240px;
-  max-width: 420px;
-  margin-right: auto;
-
-  .form-control {
-    height: 2.375rem;
-    padding-left: 2.25rem;
-    font-size: 0.9rem;
-    border-radius: var(--bs-border-radius-lg);
-    box-shadow: var(--bs-box-shadow-sm);
-  }
-}
-
-.list-filter-icon {
-  position: absolute;
-  top: 50%;
-  left: 0.75rem;
-  transform: translateY(-50%);
-  font-size: 0.85rem;
-  color: var(--bs-tertiary-color);
-  pointer-events: none;
-}
-
-.list-summary {
-  display: inline-flex;
-  align-items: center;
-  height: 2.375rem;
-  overflow: hidden;
-  color: var(--bs-secondary-color);
-  font-size: 0.8125rem;
-  white-space: nowrap;
-  box-shadow: var(--bs-box-shadow-sm);
-}
-
-.list-summary-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  height: 100%;
-  padding: 0 0.7rem;
-
-  // Separator as a short line the height of the text, not a full-height rule.
-  & + &::before {
-    content: '';
-    flex: none;
-    width: 1px;
-    height: 1em;
-    margin-right: 0.35rem;
-    background: var(--bs-border-color);
-  }
-}
-
-// Once the row is too narrow to keep the filter and summary on one line, center both.
-@container (max-width: 40rem) {
-  .list-filter,
-  .list-summary {
-    margin-inline: auto;
-  }
-}
+@include editor-workspace.lists;
 
 /* ---------- User directory table ---------- */
-.user-table {
-  // Mockup cell rhythm. `.user-table thead th` outranks Bootstrap's
-  // `.table > :not(caption) > * > *` padding, while `.tblcol-check` still wins.
-  thead th,
+.ws-table {
   tbody td {
-    padding: 0.7rem 0.85rem;
     vertical-align: top;
-    border-bottom: 1px solid var(--bs-border-color-translucent);
     transition: box-shadow 0.12s ease;
-  }
-
-  tbody tr:last-child td { border-bottom: 0; }
-
-  thead th {
-    background: var(--bs-tertiary-bg);
-    color: var(--bs-secondary-color);
-    letter-spacing: 0.04em;
   }
 
   tbody tr {
     // Bootstrap paints every cell with `--bs-table-bg`, which hides a background set
     // on the row itself. Route the row tints through `--bs-table-bg-state` so the
     // inset box-shadow (same mechanism as `.table-info`) colors the whole row.
-    &:is(:hover, :focus-within) { --bs-table-bg-state: rgba(var(--bs-primary-rgb), 0.08); }
+    &:is(:hover, :focus-within) {
+      background: transparent;
+      --bs-table-bg-state: rgba(var(--bs-primary-rgb), 0.08);
+    }
 
     // Declared after hover so a pending/rejected row keeps its status tint on hover.
     &.is-pending { --bs-table-bg-state: rgba(var(--bs-warning-rgb), 0.1); }
@@ -149,7 +69,7 @@
   transition: opacity 0.15s ease-in-out;
 }
 
-.user-table tr:is(:hover, :focus-within) .row-action-group { opacity: 1; }
+.ws-table tr:is(:hover, :focus-within) .row-action-group { opacity: 1; }
 
 @media (hover: none) {
   .row-action-group { opacity: 1; }

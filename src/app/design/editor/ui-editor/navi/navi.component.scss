@@ -23,27 +23,9 @@
   border-left: 3px solid var(--bs-primary) !important;
 }
 
-.min-w-0 {
-  min-width: 0;
-}
-
 .s-icon-wrap {
   min-height: 75px;
   min-width: 100%;
-}
-
-.meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: .375rem;
-  padding: .25rem .6875rem;
-  border-radius: 999px;
-  font-size: .8125rem;
-  font-weight: 500;
-  color: var(--bs-secondary-color);
-  background-color: var(--bs-tertiary-bg);
-  border: 1px solid var(--bs-border-color);
-  white-space: nowrap;
 }
 
 .view-as-bar {
@@ -104,23 +86,6 @@
   cursor: grab;
 }
 
-.navi-tag {
-  padding: .0625rem .3125rem;
-  border-radius: var(--bs-border-radius-sm);
-  font-family: var(--bs-font-monospace);
-  font-size: .625rem;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: .02em;
-  color: var(--bs-info-text-emphasis);
-  background-color: var(--bs-info-bg-subtle);
-}
-
-.navi-tag-muted {
-  color: var(--bs-secondary-color);
-  background-color: var(--bs-secondary-bg);
-}
-
 .navi-empty-dropzone {
   border: 1px dashed var(--bs-border-color);
 }
@@ -171,10 +136,6 @@
 .navi-item-row > .workspace-action-bar {
   top: -13px;
   right: 8px;
-}
-
-.btn-add-group {
-  border-style: dashed;
 }
 
 .palette-tile {

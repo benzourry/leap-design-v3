@@ -62,7 +62,7 @@
       }
       @if (!schedLoading) {
         <div class="mb-3">
-          <small class="ms-3 text-body-secondary">Scheduled Mailer</small>
+          <small class="ms-2 text-body-secondary">Scheduled Mailer</small>
           @for (a of schedList | filter:searchText; track a.id) {
             <div class="pointer element link-item">
               <div class="list-group-item-heading sidebar-item-title" [class.strike]="a.enabled==0">
@@ -88,13 +88,13 @@
           </a>
         </div>
         <div class="mb-3">
-          <small class="ms-3 text-body-secondary">Mailer History</small>
+          <small class="ms-2 text-body-secondary">Mailer History</small>
           <a class="pointer element link-item" (click)="openHistory(notiListTpl, null)">
             <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon> View Mail History
           </a>
         </div>
         <div class="mb-3 border-top pt-3">
-          <small class="ms-3 text-body-secondary">SMTP Configuration</small>
+          <small class="ms-2 text-body-secondary">SMTP Configuration</small>
           <a class="pointer element link-item" (click)="openSmtpConfig(smtpConfigTpl)">
             <fa-icon [icon]="['fas','server']" [fixedWidth]="true"></fa-icon> Custom SMTP Config
           </a>
@@ -118,27 +118,27 @@
 
       <div class="workspace-toolbar">
         <div class="limit-width px-3 d-flex align-items-center gap-2">
-          <div class="me-auto d-flex align-items-center gap-2 flex-wrap" style="min-width:0">
-            <span class="mailer-status-pill" [class.is-success]="mailer.shared" [class.is-danger]="!mailer.shared">
+          <div class="me-auto d-flex align-items-center gap-2 flex-wrap min-w-0">
+            <span class="ws-pill" [class.is-success]="mailer.shared" [class.is-danger]="!mailer.shared">
               <fa-icon [icon]="['fas',mailer.shared?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
               {{mailer.shared ? 'Public' : 'Private'}} Mailer
             </span>
-            <span class="mailer-status-pill" [class.is-success]="mailer.enabled!=0" [class.is-danger]="mailer.enabled==0">
+            <span class="ws-pill" [class.is-success]="mailer.enabled!=0" [class.is-danger]="mailer.enabled==0">
               <fa-icon [icon]="['fas','circle']" [fixedWidth]="true" size="xs"></fa-icon>
               {{mailer.enabled==0 ? 'Disabled' : 'Enabled'}}
             </span>
           </div>
 
-          <div class="d-flex align-items-center text-nowrap ms-auto">
-            <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="View mail history"
+          <div class="d-flex align-items-center gap-1 flex-shrink-0">
+            <button type="button" class="btn btn-sm border-0 text-body-secondary" title="View mail history"
               aria-label="View mail history" (click)="openHistory(notiListTpl, mailer.id)">
               <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
             </button>
-            <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit mailer"
+            <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit mailer"
               aria-label="Edit mailer" (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
             </button>
-            <div ngbDropdown class="d-flex align-items-center ms-1">
+            <div ngbDropdown class="d-flex">
               <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
                 title="More actions" aria-label="More actions">
                 <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
@@ -186,14 +186,14 @@
         } @else {
           <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
-              <div class="d-flex align-items-center gap-2" style="min-width:0">
+              <div class="d-flex align-items-center gap-2 min-w-0">
                 <span [class.text-danger]="mailer.enabled==0" [class.text-success]="mailer.enabled!=0">
                   <fa-icon [icon]="['fas','circle']" [fixedWidth]="true" size="xs"></fa-icon>
                 </span>
                 <span class="fw-semibold text-truncate" [title]="mailer.subject">{{mailer.subject}}</span>
               </div>
               @if (mailer.pre) {
-                <span class="d-inline-flex align-items-center gap-1 rounded-2 border border-warning-subtle bg-warning-subtle text-warning-emphasis font-monospace small px-2 py-1 mw-100" [title]="mailer.pre">
+                <span class="ws-pill is-warning font-monospace" [title]="mailer.pre">
                   <fa-icon [icon]="['fas','code-branch']" [fixedWidth]="true" size="xs"></fa-icon>
                   <span class="text-truncate">IF: {{ mailer.pre | slice:0:40 }}{{ mailer.pre.length > 40 ? '…' : '' }}</span>
                 </span>
@@ -203,21 +203,21 @@
             <div class="d-flex flex-column gap-2 border-bottom small px-3 py-3">
               <div class="d-flex align-items-start gap-2">
                 <span class="mailer-recipient-label">To</span>
-                <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toUser">
+                <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.toUser">
                     <fa-icon [icon]="['far',mailer.toUser?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     User
                   </span>
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toApprover">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.toApprover">
                     <fa-icon [icon]="['far',mailer.toApprover?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     Approver
                   </span>
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toAdmin">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.toAdmin">
                     <fa-icon [icon]="['far',mailer.toAdmin?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     Admin
                   </span>
                   @if (mailer.toExtra) {
-                    <span class="d-inline-flex align-items-center rounded-2 border bg-body text-body-secondary font-monospace small px-2 py-1 mw-100" title="Extra To">
+                    <span class="ws-pill font-monospace" title="Extra To">
                       <span class="text-truncate">{{mailer.toExtra}}</span>
                     </span>
                   } @else {
@@ -228,21 +228,21 @@
 
               <div class="d-flex align-items-start gap-2">
                 <span class="mailer-recipient-label">CC</span>
-                <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccUser">
+                <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.ccUser">
                     <fa-icon [icon]="['far',mailer.ccUser?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     User
                   </span>
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccApprover">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.ccApprover">
                     <fa-icon [icon]="['far',mailer.ccApprover?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     Approver
                   </span>
-                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccAdmin">
+                  <span class="ws-pill mailer-recip-chip" [class.is-primary]="mailer.ccAdmin">
                     <fa-icon [icon]="['far',mailer.ccAdmin?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
                     Admin
                   </span>
                   @if (mailer.ccExtra) {
-                    <span class="d-inline-flex align-items-center rounded-2 border bg-body text-body-secondary font-monospace small px-2 py-1 mw-100" title="Extra CC">
+                    <span class="ws-pill font-monospace" title="Extra CC">
                       <span class="text-truncate">{{mailer.ccExtra}}</span>
                     </span>
                   } @else {

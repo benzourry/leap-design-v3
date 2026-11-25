@@ -168,41 +168,41 @@
 
           <div class="workspace-toolbar">
             <div class="limit-width px-3 d-flex align-items-center">
-              <div class="me-auto d-flex align-items-center gap-2 text-truncate" style="min-width:0">
-                <span class="lambda-pill is-lang">{{lambda.lang}}</span>
+              <div class="me-auto d-flex align-items-center gap-2 min-w-0">
+                <span class="ws-pill is-secondary is-lang">{{lambda.lang}}</span>
                 @if (lambda.publicAccess) {
-                  <span class="lambda-pill is-public">
+                  <span class="ws-pill is-success">
                     <fa-icon [icon]="['fas','globe']" [fixedWidth]="true" size="xs"></fa-icon> Public
                   </span>
                 } @else {
-                  <span class="lambda-pill">
+                  <span class="ws-pill">
                     <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" size="xs"></fa-icon> Private
                   </span>
                 }
                 @if (lambda.scheduled) {
-                  <span class="lambda-pill d-none d-md-inline-flex text-capitalize">
+                  <span class="ws-pill d-none d-md-inline-flex text-capitalize">
                     <fa-icon [icon]="['far','clock']" [fixedWidth]="true" size="xs"></fa-icon> {{lambda.freq}}
                   </span>
                 }
               </div>
 
               @if (lambda.app?.id == appId) {
-                <div class="d-flex align-items-center text-nowrap ms-auto">
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
                   @if (lambda.email.indexOf(user.email)>-1) {
-                    <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit lambda settings" aria-label="Edit lambda settings"
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit lambda settings" aria-label="Edit lambda settings"
                       (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline || isTimeWarping">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="TimeWarp (real-time version slider)" aria-label="TimeWarp"
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary" title="TimeWarp (real-time version slider)" aria-label="TimeWarp"
                       [class.text-warning]="isTimeWarping" [class.bg-warning-subtle]="isTimeWarping" (click)="toggleTimeWarp()">
                       <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
                     </button>
 
-                    <div ngbDropdown class="d-flex align-items-center ms-1">
+                    <div ngbDropdown class="d-flex">
                       <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
                         <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                       </button>
-                      <div ngbDropdownMenu class="rounded-3 py-2" style="min-width:340px">
+                      <div ngbDropdownMenu class="rounded-3 py-2 ws-menu-wide">
                         <button type="button" ngbDropdownItem title="View Meta Trails"
                           (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id, lambda)">
                           <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
@@ -265,13 +265,13 @@
                       </div>
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-primary ms-1" title="Save lambda (Ctrl+S)"
+                    <button type="button" class="btn btn-sm btn-primary" title="Save lambda (Ctrl+S)"
                       [disabled]="contentForm.pristine || isTimeWarping" (click)="saveLambda(lambda)">
                       <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
                       <span class="d-none d-md-inline ms-1">Save</span>
                     </button>
 
-                    <div ngbDropdown class="d-flex align-items-center ms-1">
+                    <div ngbDropdown class="d-flex">
                       <button type="button" class="btn btn-sm btn-success" ngbDropdownToggle [disabled]="isTimeWarping" title="Run lambda">
                         <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                         <span class="d-none d-md-inline ms-1">Run</span>
@@ -300,43 +300,37 @@
           </div>
           <!-- TimeWarp Interface Block -->
           @if (isTimeWarping) {
-            <div class="card bg-warning bg-opacity-10 border-warning shadow-sm mx-3 my-2">
-              <div class="card-body p-2">
-                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-                  <h6 class="card-title text-warning-emphasis m-0 fw-bold">
-                    <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
-                  </h6>
-                  <div class="d-flex align-items-center">
-                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-normal me-2">Previewing revision</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
-                    <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This</button>
-                  </div>
+            <div class="timewarp-panel mx-3 my-2">
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="timewarp-panel-title">
+                    <fa-icon [icon]="['far', 'clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
+                  </span>
+                  <span class="ws-pill is-warning">Preview</span>
                 </div>
-                
-                <div class="d-flex align-items-center">
-                  <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
-                  <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
-                         [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
-                  <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarp()">Cancel</button>
+                  <button type="button" class="btn btn-sm btn-warning fw-medium" (click)="restoreTimeWarpVersion()">Restore This</button>
                 </div>
-                
-                @let trail = timeWarpTrails[timeWarpIndex];
-                <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
-                  <!-- Left: Date & Email -->
-                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
-                    <span class="input-group-text bg-body text-body smaller">
-                      {{ trail?.timestamp | date:'medium' }}
-                    </span>
-                    <span class="input-group-text bg-body text-body smaller">
-                      {{ trail?.email }}
-                    </span>
-                  </div>
+              </div>
 
-                  <!-- Right: Action & Module -->
-                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase">
-                    <span class="input-group-text bg-body-secondary text-body-secondary border smaller">{{ trail?.action }}</span>
-                    <span class="input-group-text bg-warning-subtle text-warning-emphasis border smaller">{{ trail?.module }}</span>
-                  </div>
+              <div class="d-flex align-items-center gap-3">
+                <span class="small fw-medium text-body-secondary">Oldest</span>
+                <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1"
+                       [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
+                <span class="small fw-medium text-body-secondary">Latest</span>
+              </div>
+
+              @let trail = timeWarpTrails[timeWarpIndex];
+              <div class="timewarp-meta d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 small">
+                <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
+                  <span>{{ trail?.timestamp | date:'medium' }}</span>
+                  <span class="opacity-50">•</span>
+                  <span>{{ trail?.email }}</span>
+                </div>
+                <div class="timewarp-tags d-flex align-items-center gap-1 text-uppercase">
+                  <span class="timewarp-tag">{{ trail?.action }}</span>
+                  <span class="timewarp-tag is-module">{{ trail?.module }}</span>
                 </div>
               </div>
             </div>
@@ -387,11 +381,11 @@
                   <fa-icon [icon]="['fas','terminal']" [fixedWidth]="true"></fa-icon>
                   Console
                   @if (runRes()[lambda.id]?.success) {
-                    <span class="lambda-pill is-ok">
+                    <span class="ws-pill is-success">
                       <fa-icon [icon]="['fas','check-circle']" [fixedWidth]="true" size="xs"></fa-icon> Success
                     </span>
                   } @else {
-                    <span class="lambda-pill is-err">
+                    <span class="ws-pill is-danger">
                       <fa-icon [icon]="['fas','exclamation-circle']" [fixedWidth]="true" size="xs"></fa-icon> Failed
                     </span>
                   }

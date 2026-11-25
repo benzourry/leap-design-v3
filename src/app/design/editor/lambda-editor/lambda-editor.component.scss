@@ -1,17 +1,9 @@
 @use '../ui-editor/editor-workspace';
+@use '../timewarp';
 
 @include editor-workspace.workspace;
 
-.limit-height {
-  max-height: 400px;
-  overflow: auto;
-}
-
 /* Lambda workspace */
-
-.workspace-toolbar {
-  z-index: 11;
-}
 
 /* Sidebar disclosure toggle (e.g. Restricted Lambdas) */
 .sidebar-section-toggle {
@@ -30,39 +22,11 @@
 }
 
 /* Toolbar meta pills */
-.lambda-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--bs-secondary-color);
-  background: var(--bs-secondary-bg);
-  border: 1px solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius-pill);
-  white-space: nowrap;
-
-  &.is-lang {
-    font-family: var(--bs-font-monospace);
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--bs-body-color);
-  }
-
-  &.is-public,
-  &.is-ok {
-    color: var(--bs-success-text-emphasis);
-    background: var(--bs-success-bg-subtle);
-    border-color: var(--bs-success-border-subtle);
-  }
-
-  &.is-err {
-    color: var(--bs-danger-text-emphasis);
-    background: var(--bs-danger-bg-subtle);
-    border-color: var(--bs-danger-border-subtle);
-  }
+.ws-pill.is-lang {
+  color: var(--bs-body-color);
+  font-family: var(--bs-font-monospace);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .lambda-bindings {
