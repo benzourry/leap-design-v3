@@ -3,7 +3,7 @@ import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass, JsonPipe, DatePipe } from '@angular/common';
+import { PlatformLocation, JsonPipe, DatePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
@@ -31,6 +31,7 @@ import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-view
 import { MetaTrailService } from '../../../service/metatrail.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 @Component({
     selector: 'app-lambda-editor',
@@ -38,8 +39,8 @@ import { AssistantLocalContextService } from '../assistant/assistant-local-conte
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './lambda-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, 
       NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
-      NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgClass, NgCmComponent_1, 
-      JsonViewerComponent,
+      NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgCmComponent_1, 
+      JsonViewerComponent, EditorIdChipComponent,
       NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, DatePipe, MetaTrailViewerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -68,7 +68,8 @@
                 @if (f.x?.prefix) { <ng-template [ngTemplateOutlet]="prefixTpl"></ng-template> }
                 <input class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid"
                   type="text" [id]="uid" [name]="uid" #formField="ngModel" [(ngModel)]="value"
-                  [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [ngxMask]="f.v?.mask"
+                  [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" autocomplete="off" [mask]="f.v?.mask"
+                  [dropSpecialCharacters]="f.v?.dropSpecialCharacters" [showMaskTyped]="f.v?.showMaskTyped"
                   [minlength]="f.v?.minlength" [placeholder]="placeholder" [pattern]="f.v?.pattern"
                   (blur)="valueBlured($event)" [required]="f.v?.required" (ngModelChange)="valueChanged($event)" [readonly]="f.readOnly" />
                 @if (f.x?.suffix) { <ng-template [ngTemplateOutlet]="suffixTpl"></ng-template> }
@@ -81,7 +82,8 @@
             }
             @else if (f.subType == 'textarea') {
               <textarea class="form-control smyds" [attr.list]="'datalist-'+uid" [class.is-invalid]="isInvalid" [id]="uid"
-                [ngxMask]="f.v?.mask" [name]="uid" #formField="ngModel" [(ngModel)]="value"
+                [mask]="f.v?.mask" [dropSpecialCharacters]="f.v?.dropSpecialCharacters" [showMaskTyped]="f.v?.showMaskTyped"
+                [name]="uid" #formField="ngModel" [(ngModel)]="value"
                 [maxlength]="f.v?.maxlength" (focus)="selectFocused($event)" [minlength]="f.v?.minlength" [placeholder]="placeholder"
                 [pattern]="f.v?.pattern" [rows]="f.v?.rows||3" [required]="f.v?.required"
                 (ngModelChange)="valueChanged($event)" (blur)="valueBlured($event)" [readonly]="f.readOnly"></textarea>

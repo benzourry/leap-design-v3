@@ -99,4 +99,49 @@ describe('Bucket file uploads', () => {
     expect(upload.calls.argsFor(1)).toEqual([1, 2, second, 'creator']);
     expect(component.getFileList).not.toHaveBeenCalled();
   });
+
+  it('shows an uploaded file even when the refreshed page does not contain it', () => {
+    const oldFile = { id: 1, fileName: 'old.png', sstatus: 'OK' };
+    const list = jasmine.createSpy('getFileList').and.returnValue(of({ content: [oldFile], page: { totalElements: 1 } }));
+    TestBed.overrideProvider(BucketService, { useValue: { uploadFile: upload, getFileList: list } });
+    upload.and.returnValue(of({ success: true, id: 2, fileName: 'new.png', sstatus: 'OK' }));
+
+    const fixture = TestBed.createComponent(BucketManagerComponent);
+    const component = fixture.componentInstance;
+    (component as any).cdr = { detectChanges: () => { }, markForCheck: () => { } };
+    component.bucket = { id: 1, code: 'code' };
+    component.app = { id: 2 };
+    component.user = { email: 'creator' };
+    component.bucketFileList = [oldFile];
+    component.bucketFileTotal = 1;
+    component.params = { bucket: 1 };
+
+    component.uploadFiles([second]);
+
+    expect(list).toHaveBeenCalled();
+    expect(component.bucketFileList.map((file: any) => file.fileName)).toEqual(['new.png', 'old.png']);
+  });
+
+  it('does not duplicate an uploaded file already returned by the refreshed page', () => {
+    const oldFile = { id: 1, fileName: 'old.png', sstatus: 'OK' };
+    const newFile = { id: 2, fileName: 'new.png', sstatus: 'OK', success: true };
+    const list = jasmine.createSpy('getFileList').and.returnValue(of({ content: [oldFile, newFile], page: { totalElements: 2 } }));
+    TestBed.overrideProvider(BucketService, { useValue: { uploadFile: upload, getFileList: list } });
+    upload.and.returnValue(of(newFile));
+
+    const fixture = TestBed.createComponent(BucketManagerComponent);
+    const component = fixture.componentInstance;
+    (component as any).cdr = { detectChanges: () => { }, markForCheck: () => { } };
+    component.bucket = { id: 1, code: 'code' };
+    component.app = { id: 2 };
+    component.user = { email: 'creator' };
+    component.bucketFileList = [oldFile];
+    component.bucketFileTotal = 1;
+    component.params = { bucket: 1 };
+
+    component.uploadFiles([second]);
+
+    expect(component.bucketFileList.map((file: any) => file.fileName)).toEqual(['old.png', 'new.png']);
+    expect(component.bucketFileTotal).toBe(2);
+  });
 });

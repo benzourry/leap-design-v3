@@ -27,6 +27,7 @@ import { EntryService } from '../../../../run/_service/entry.service';
 import { DatasetService } from '../../../../service/dataset.service';
 import { CHART_AGG_LIST, CHART_HEIGHT_LIST, CHART_TYPE_LIST, DASHBOARD_SIZE_LIST } from '../../assistant/assistant-knowledge';
 import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
+import { EditorIdChipComponent } from '../editor-id-chip.component';
 
 @Component({
   selector: 'app-dashboard-editor',
@@ -36,7 +37,7 @@ import { AssistantLocalContextService } from '../../assistant/assistant-local-co
     '../../../../../assets/css/element-action.css'],
   imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, NgClass, NgStyle, CdkDragHandle, EditDashboardComponent, 
     FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgCmComponent, 
-    EntryFilterComponent, NgbNavOutlet, KeyValuePipe]
+    EntryFilterComponent, NgbNavOutlet, KeyValuePipe, EditorIdChipComponent]
 })
 export class DashboardEditorComponent implements OnInit {
   readonly sameDropList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>

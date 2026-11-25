@@ -1,55 +1,62 @@
 <div class="d-flex flex-row h-100">
   <div style="flex:auto; overflow: auto;">
-    <div class="p-2 pb-0 limit-width">
-      <div class="d-flex flex-row">
-        <div class="text-md-right pe-0 pe-md-3 mb-1">
-          <h5 class="my-2">Navigation</h5>
-        </div>
-        <div class="text-start ps-3 d-flex align-items-center ms-auto">
-          <button type="button" class="btn btn-sm border border-1-5" (click)="editNaviSetting(editNaviTpl,app)"
-            [class.disabled]="offline">
-            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-          </button>
+    <div class="bg-body">
+      <div class="limit-width pt-3 px-3 pb-2">
+        <h5 class="m-0">Navigation</h5>
+        <div class="small text-body-secondary mt-1">
+          Configure app menus, mobile bottom navigation bars, and role-based launchpad tiles
         </div>
       </div>
     </div>
+    <div class="workspace-toolbar">
+      <div class="limit-width px-3 d-flex align-items-center gap-2">
+        <span class="meta-pill me-auto text-truncate">
+          <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true"></fa-icon>
+          {{navis.length}} Groups · {{naviItemCount}} Items
+        </span>
+        <button type="button" class="btn btn-sm btn-link text-body-secondary px-2" title="Edit navigation settings"
+          aria-label="Edit navigation settings" (click)="editNaviSetting(editNaviTpl,app)" [class.disabled]="offline">
+          <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+        </button>
+      </div>
+    </div>
     <div class="limit-width fix-gutter">
-      <div class="p-2 pt-3">
+      <div class="p-3">
         <div class="row">
           <div class="col-md-4">
             @for (group of navis; track $index; let $idx_group = $index; let $grp_first = $first; let $grp_last = $last) {
-              <div class=" card card-default group mb-2 border-3"
-                [ngClass]="group.altClass">
-                <div class="card-header group-header element">
-                  {{group.title}}
-                  @if (group.pre) {
-                    <div>
-                      <div class="mt-2"
-                        class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
-                        style="font-weight: bold;font-size:0.6em"
-                        [title]="group.pre">PRE</div>
-                    </div>
-                  }
-                  <div class="element-edit nowrap"
-                    style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info"
+              <div class="card group mb-2"
+                [ngClass]="group.altClass"
+                [class.is-bottom]="group.x?.type=='bottom'">
+                <div class="card-header group-header element d-flex align-items-center justify-content-between gap-2 py-2" tabindex="0">
+                  <div class="fw-semibold d-flex align-items-center gap-1 text-truncate min-w-0">
+                    <span class="text-truncate">{{group.title}}</span>
+                    @if (group.pre) {
+                      <span class="navi-tag flex-shrink-0" [title]="group.pre">PRE</span>
+                    }
+                    @if (group.x?.type=='bottom') {
+                      <span class="navi-tag navi-tag-muted flex-shrink-0" title="Shown as mobile bottom bar">BOTTOM</span>
+                    }
+                  </div>
+                  <div class="element-edit workspace-action-bar nowrap">
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit group" aria-label="Edit group"
                       (click)="editGroup(editGroupTpl, group, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                       </fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm btn-info"
+                    <button type="button" class="btn btn-round btn-sm btn-info" title="Remove group" aria-label="Remove group"
                       (click)="removeGroup(removeGroupTpl,group,$idx_group)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
                     @if (!$grp_first) {
-                      <button type="button" class="btn btn-info btn-round btn-sm"
+                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move group up" aria-label="Move group up"
                         (click)="swapGroup(navis, $idx_group-1, $idx_group)">
                         <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
                         </fa-icon>
                       </button>
                     }
                     @if (!$grp_last) {
-                      <button type="button" class="btn btn-info btn-round btn-sm"
+                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move group down" aria-label="Move group down"
                         (click)="swapGroup(navis, $idx_group, $idx_group+1)">
                         <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
                         </fa-icon>
@@ -57,85 +64,72 @@
                     }
                   </div>
                 </div>
-                <div class="list-group list-group-flush child" cdkDropList [cdkDropListData]="group.items"
+                <div class="p-2 d-flex flex-column gap-1" cdkDropList [cdkDropListData]="group.items"
                   (cdkDropListDropped)="dropItem($event, group)">
                   @if (group.items && group.items.length==0) {
-                    <div class="list-group-item p-3 bg-body-tertiary">
-                      <h5 class="text-body-secondary text-center fst-italic">Empty Group</h5>
+                    <div class="navi-empty-dropzone p-4 text-center text-body-secondary small rounded bg-body-tertiary">
+                      <fa-icon [icon]="['fas','folder']" [fixedWidth]="true" class="d-block mb-1"></fa-icon>
+                      Empty Group — Drag items here or click Add Item
                     </div>
                   }
                   @for (item of group.items; track $index; let $idx_item = $index; let $idx_first = $first; let $idx_last = $last) {
-                    <div class="list-group-item icon element p-2 ps-3" cdkDrag
-                      [ngClass]="item.altClass">
-                      <span class="element-item"
-                        [class.text-danger]="!naviData[item.type+'-'+item.screenId] && ['home','external','internal','lambda','user','start','profile'].indexOf(item.type)==-1">
-                        <fa-icon class="float-start" size="1x" [icon]="item.icon|iconSplit"
-                          [fixedWidth]="true">
-                        </fa-icon>
-                        <div style="margin-left:2rem">
-                          <div>{{item.title}}</div>
-                          @if (item.type=='form') {
-                            <small class="text-body-secondary">/form/{{item.screenId}}/add</small>
-                          }@else if (item.type=='form-single') {
-                            <small class="text-body-secondary">/form/{{item.screenId}}/edit-single</small>
-                          }@else if (item.type=='view-single') {
-                            <small class="text-body-secondary">/form/{{item.screenId}}/view</small>
-                          }@else if (item.type=='dataset') {
-                            <small class="text-body-secondary">/dataset/{{item.screenId}}</small>
-                          }@else if (item.type=='dashboard') {
-                            <small class="text-body-secondary">/dashboard/{{item.screenId}}</small>
-                          }@else if (item.type=='lookup') {
-                            <small class="text-body-secondary">/lookup/{{item.screenId}}</small>
-                          }@else if (item.type=='screen') {
-                            <small class="text-body-secondary">/screen/{{item.screenId}}</small>
-                          }@else if (item.type=='user') {
-                            <small class="text-body-secondary">/user/{{item.screenId}}</small>
-                          }@else if (item.type=='lambda') {
-                            <small class="text-body-secondary">/webui/{{item.url}}</small>
-                          }@else if (item.type=='start') {
-                            <small class="text-body-secondary">/start</small>
-                         }@else if (item.type=='profile') {
-                            <small class="text-body-secondary">/profile</small>
-                          }@else if (item.type=='external'||item.type=='internal') {
-                            <small class="text-body-secondary">{{item.url}}</small>
-                          }
-
-                          @if (item.pre) {
-                            <div>
-                              <div class="mt-2"
-                                class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
-                                style="font-weight: bold;font-size:0.6em"
-                                [title]="item.pre">PRE</div>
-                            </div>
-                          }
-
-                        </div>
-                      </span>
-                      <div class="element-edit mt-1 cursor-move bg-body text-info border rounded"
-                        style="position:absolute;top:3px;left:3px; padding:2px;" cdkDragHandle>
-                        <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
+                    @let broken = !naviData[item.type+'-'+item.screenId] && item.type!='home' && !typesWithoutNaviData.has(item.type);
+                    <div class="navi-item-row icon element d-flex align-items-center gap-2 p-2 rounded border bg-body" cdkDrag tabindex="0"
+                      [ngClass]="item.altClass"
+                      [class.border-danger-subtle]="broken">
+                      <div class="workspace-drag-handle cursor-move text-body-secondary" title="Drag to reorder" cdkDragHandle>
+                        <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true">
                         </fa-icon>
                       </div>
-                      <div class="element-edit nowrap"
-                        style="position:absolute;top:3px;right:3px; padding:3px">
-                        <button type="button" class="btn btn-round btn-sm btn-info"
+                      <span class="navi-item-icon" [class.text-danger]="broken">
+                        <fa-icon size="1x" [icon]="item.icon|iconSplit"
+                          [fixedWidth]="true">
+                        </fa-icon>
+                      </span>
+                      <div class="element-item flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-1 min-w-0">
+                          <span class="small fw-medium text-truncate" [class.text-danger]="broken">{{item.title}}</span>
+                          @if (item.pre) {
+                            <span class="navi-tag flex-shrink-0" [title]="item.pre">PRE</span>
+                          }
+                        </div>
+                        <div class="navi-item-route font-monospace text-body-secondary text-truncate"
+                          [class.text-danger]="broken">
+                          @switch (item.type) {
+                            @case ('form') { /form/{{item.screenId}}/add }
+                            @case ('form-single') { /form/{{item.screenId}}/edit-single }
+                            @case ('view-single') { /form/{{item.screenId}}/view }
+                            @case ('dataset') { /dataset/{{item.screenId}} }
+                            @case ('dashboard') { /dashboard/{{item.screenId}} }
+                            @case ('lookup') { /lookup/{{item.screenId}} }
+                            @case ('screen') { /screen/{{item.screenId}} }
+                            @case ('user') { /user/{{item.screenId}} }
+                            @case ('lambda') { /webui/{{item.url}} }
+                            @case ('start') { /start }
+                            @case ('profile') { /profile }
+                            @default { {{item.url}} }
+                          }
+                        </div>
+                      </div>
+                      <div class="element-edit workspace-action-bar nowrap">
+                        <button type="button" class="btn btn-round btn-sm btn-info" title="Edit item" aria-label="Edit item"
                           (click)="editItem(editItemTpl, item, group, false)">
                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn btn-round btn-sm btn-info"
+                        <button type="button" class="btn btn-round btn-sm btn-info" title="Remove item" aria-label="Remove item"
                           (click)="removeItem(removeItemTpl,item,$idx_item)">
                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                         </button>
                         @if (!$idx_first) {
-                          <button type="button" class="btn btn-info btn-round btn-sm"
+                          <button type="button" class="btn btn-info btn-round btn-sm" title="Move item up" aria-label="Move item up"
                             (click)="swapItem(group,group.items, $idx_item-1, $idx_item)">
                             <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
                             </fa-icon>
                           </button>
                         }
                         @if (!$idx_last) {
-                          <button type="button" class="btn btn-info btn-round btn-sm"
+                          <button type="button" class="btn btn-info btn-round btn-sm" title="Move item down" aria-label="Move item down"
                             (click)="swapItem(group,group.items, $idx_item, $idx_item+1)">
                             <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
                             </fa-icon>
@@ -145,142 +139,64 @@
                     </div>
                   }
                 </div>
-                <div class="card-footer">
-                  <a class="pointer text-decoration-none" (click)="editItem(editItemTpl, {}, group, true)">
+                <div class="card-footer bg-body-tertiary p-1">
+                  <button type="button" class="btn btn-sm btn-link w-100 text-start text-decoration-none text-body-secondary py-1 px-2"
+                    (click)="editItem(editItemTpl, {}, group, true)">
                     <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
                     Add Item
-                  </a>
+                  </button>
                 </div>
               </div>
             }
-            <div class="row">
-              <div class="col-12 text-center p-2 mb-3">
-                <a class="p-2 pointer text-decoration-none" (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length,x:{type:'menu'}}, true)">
-                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                  Add Group
-                </a>
-              </div>
-            </div>
+            <button type="button" class="btn btn-outline-secondary btn-add-group w-100 mb-3"
+              (click)="editGroup(editGroupTpl, {items:[],sortOrder:navis.length,x:{type:'menu'}}, true)">
+              <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+              Add Group
+            </button>
           </div>
           <div class="col-md-8">
-            <div class="input-group mb-3">
-              <span class="input-group-text">
+            <div class="view-as-bar mb-3">
+              <span class="view-as-label">
+                <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>
                 View as
               </span>
-              <input class="form-control" type="text" placeholder="ie: admin@email.com" autocapitalize="none"
-                [(ngModel)]="viewAs" (keyup.enter)="getNaviData(appId)">
+              <input class="view-as-input" type="text" placeholder="ie: admin@email.com" autocapitalize="none"
+                aria-label="Preview navigation as role" [(ngModel)]="viewAs" (keyup.enter)="getNaviData(appId)">
+              @if (viewAs) {
+                <button type="button" class="btn btn-sm btn-link text-body-secondary text-decoration-none px-1 py-0 flex-shrink-0"
+                  title="Clear role preview" aria-label="Clear role preview"
+                  (click)="viewAs=''; getNaviData(appId)">
+                  Clear
+                </button>
+              }
             </div>
             <div class="d-flex flex-wrap flex-row align-content-center">
               @for (group of navis; track $index) {
-                <div
-                  [class.group-hidden]="!(!group?.access||group?.access?.users?.indexOf(viewAs||'*')>-1)" style="flex-grow:1">
-                  <div class="s-icon-heading fw-bold mb-2">
-                    {{group.title}}
-                  </div>
-                  
-                  <!-- ADDED cdkDropList DIRECTIVES AND min-height HERE -->
-                  <div class="s-icon-wrap" 
-                       cdkDropList cdkDropListOrientation="mixed" 
-                       [cdkDropListData]="group.items" 
-                       (cdkDropListDropped)="dropItem($event, group)"
-                       style="min-height: 75px; min-width: 100%;">
-                    
+                <div class="flex-grow-1"
+                  [class.group-hidden]="!(!group?.access||group?.access?.users?.indexOf(viewAs||'*')>-1)">
+                  <div class="s-icon-heading fw-bold mb-2">{{group.title}}</div>
+                  <div class="s-icon-wrap" cdkDropList cdkDropListOrientation="mixed"
+                    [cdkDropListData]="group.items" (cdkDropListDropped)="dropItem($event, group)">
                     @for (item of group.items; track $index) {
                       @let naviDataItem = naviData[item.type+'-'+item.screenId];
                       @if (!naviDataItem?.access||naviDataItem?.access.users.indexOf(viewAs||'*')>-1) {
-                        @if (!naviDataItem && ['external','internal','user','start','profile','lambda'].indexOf(item.type)==-1) {
-                          <div class="s-icon text-danger disabled" cdkDrag> <!-- ADDED cdkDrag -->
-                            <fa-icon [icon]="['fas','exclamation-triangle']" size="3x"
-                              [fixedWidth]="true">
-                            </fa-icon>
+                        @if (!naviDataItem && !typesWithoutNaviData.has(item.type)) {
+                          <div class="s-icon text-danger disabled" cdkDrag>
+                            <fa-icon [icon]="['fas','exclamation-triangle']" size="3x" [fixedWidth]="true"></fa-icon>
                             <div class="title">{{item.title}}</div>
                           </div>
-                        }
-                        @if (naviDataItem || ['external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
-                          @if (item.type=='form') {
-                            <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
-                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
-                                [fixedWidth]="true">
-                              </fa-icon>
-                              <div class="title">{{item.title}}</div>
-                              @if (!naviDataItem?.inactive) {
-                                @if(!item.x?.hideDesc){
-                                  <div class="sub text-body-secondary">
-                                    {{naviDataItem?.description}}
-                                  </div>
-                                }
-                              }
-                              @if (naviDataItem?.inactive) {
-                                <span class="sub text-danger">Open
-                                  within:
-                                  {{naviDataItem?.startDate|date:'mediumDate'}}
-                                  -
-                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
-                              }
-                            </a>
-                          }
-                          @if (item.type=='form-single') {
-                            <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
-                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
-                                [fixedWidth]="true">
-                              </fa-icon>
-                              <div class="title">{{item.title}}</div>
-                              @if (!naviDataItem?.inactive) {
-                                @if(!item.x?.hideDesc){
-                                  <div class="sub text-body-secondary">
-                                    {{naviDataItem?.description}}
-                                  </div>
-                                }
-                              }
-                              @if (naviDataItem?.inactive) {
-                                <span class="sub text-danger"
-                                  >Open
-                                  within:
-                                  {{naviDataItem?.startDate|date:'mediumDate'}}
-                                  -
-                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
-                              }
-                            </a>
-                          }
-                          @if (item.type=='view-single') {
-                            <a class="s-icon text-body"
-                              [class.disabled]="naviDataItem?.inactive" cdkDrag> <!-- ADDED cdkDrag -->
-                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
-                                [fixedWidth]="true">
-                              </fa-icon>
-                              <div class="title">{{item.title}}</div>
-                              @if (!naviDataItem?.inactive) {
-                                @if(!item.x?.hideDesc){
-                                  <div class="sub text-body-secondary">
-                                    {{naviDataItem?.description}}
-                                  </div>
-                                }
-                              }
-                              @if (naviDataItem?.inactive) {
-                                <span class="sub text-danger"
-                                  >Open
-                                  within:
-                                  {{naviDataItem?.startDate|date:'mediumDate'}}
-                                  -
-                                {{naviDataItem?.endDate|date:'mediumDate'}}</span>
-                              }
-                            </a>
-                          }
-                          @if (['dataset','dashboard','lookup','screen','external','internal','user','start','profile','lambda'].indexOf(item.type)>-1) {
-                            <!-- Replaced ng-container with standard anchor to bind cdkDrag cleanly -->
-                            <a class="s-icon text-body" cdkDrag>
-                              <fa-icon [icon]="item.icon|iconSplit" size="3x"
-                              [fixedWidth]="true"></fa-icon>
-                              <div class="title">{{item.title}}</div>
-                              @if(!item.x?.hideDesc){
-                                <div class="sub text-body-secondary">
-                                  {{naviDataItem?.description}}
-                                </div>
-                              }
-                            </a>
-                          }
+                        } @else {
+                          @let scheduled = !!naviDataItem?.inactive && scheduledTypes.has(item.type);
+                          <a class="s-icon text-body" [class.disabled]="scheduled" cdkDrag>
+                            <fa-icon [icon]="item.icon|iconSplit" size="3x" [fixedWidth]="true"></fa-icon>
+                            <div class="title">{{item.title}}</div>
+                            @if (scheduled) {
+                              <span class="sub text-danger">Open within: {{naviDataItem?.startDate|date:'mediumDate'}}
+                                - {{naviDataItem?.endDate|date:'mediumDate'}}</span>
+                            } @else if (!item.x?.hideDesc) {
+                              <div class="sub text-body-secondary">{{naviDataItem?.description}}</div>
+                            }
+                          </a>
                         }
                       }
                     }
@@ -297,33 +213,37 @@
     <div class="p-2 pb-5">
       <div class="vstack gap-2 mb-3">
         <div>
-          <select class="form-select" name="paletteAppId" (change)="loadPaletteList(paletteAppId)"
+          <select class="form-select form-select-sm" aria-label="Palette app" name="paletteAppId" (change)="loadPaletteList(paletteAppId)"
             [(ngModel)]="paletteAppId">
             @for (app of otherAppList; track app.id) {
               <option [ngValue]="app.id">{{app.title}}</option>
             }
           </select>
         </div>
-        <div>
-          <input type="text" class="form-control form-control-sm" placeholder="Filter components" [(ngModel)]="paletteFilter"
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-body-secondary border-0"><fa-icon [icon]="['fas','search']"></fa-icon></span>
+          <input type="text" class="form-control bg-body-secondary border-0" placeholder="Filter components" aria-label="Filter palette components" [(ngModel)]="paletteFilter"
             name="paletteFilter" />
         </div>
       </div>
         <div id="palette-pane" cdkDropListSortingDisabled cdkDropList
           [cdkDropListData]="paletteItems">
           @for (group of paletteGroups; track group.label) {
-            <details class="mb-2" open>
+            <details class="palette-group mb-2" open>
               <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
-                <span>{{ group.label }}</span>
-                <span class="badge rounded-pill text-bg-secondary">{{ group.items.length }}</span>
+                <span class="d-flex align-items-center gap-1 text-truncate min-w-0">
+                  <fa-icon class="palette-chev flex-shrink-0" [icon]="['fas','chevron-right']" [fixedWidth]="true"></fa-icon>
+                  <span class="text-truncate">{{ group.label }}</span>
+                </span>
+                <span class="badge rounded-pill bg-body-secondary text-body-secondary">{{ group.items.length }}</span>
               </summary>
               <div class="row row-cols-2 g-2">
                 @for (item of group.items; track $index) {
                   <div class="col" cdkDrag [cdkDragStartDelay]="paletteDragDelay"
                     (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-truncate d-flex align-items-center gap-1"
-                      style="cursor: grab;" [title]="item.title">
-                      <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                    <button type="button" class="palette-tile btn btn-sm border w-100 text-start d-flex align-items-center gap-1 px-1"
+                      [title]="item.title">
+                      <fa-icon class="palette-icon bg-body-secondary rounded" [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                       <span class="text-truncate">{{item.title}}</span>
                     </button>
                   </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
 import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownButtonItem, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
@@ -7,9 +7,10 @@ import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { AppService } from '../../../../service/app.service';
 import { UtilityService } from '../../../../_shared/service/utility.service';
 import { ToastService } from '../../../../_shared/service/toast-service';
-import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe, JsonPipe, DatePipe } from '@angular/common';
+import { PlatformLocation, NgTemplateOutlet, NgClass, KeyValuePipe, DatePipe } from '@angular/common';
 import { DatasetService } from '../../../../service/dataset.service';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { GroupService } from '../../../../service/group.service';
 import { CommService } from '../../../../_shared/service/comm.service';
 import { ScreenService } from '../../../../service/screen.service';
@@ -26,9 +27,9 @@ import { RunService } from '../../../../run/_service/run.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { IconSplitPipe } from '../../../../_shared/pipe/icon-split.pipe';
 import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
-import { HttpClient } from '@angular/common/http';
 import { MetaTrailService } from '../../../../service/metatrail.service';
 import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
+import { EditorIdChipComponent } from '../editor-id-chip.component';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -36,10 +37,11 @@ import { AssistantLocalContextService } from '../../assistant/assistant-local-co
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['../../../../../assets/css/element-action.css',
         './dataset-editor.component.scss'],
+    providers: [Clipboard],
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
         FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
         NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem,
-        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe]
+        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe, EditorIdChipComponent]
 })
 export class DatasetEditorComponent implements OnInit {
     readonly sameDropList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>
@@ -57,12 +59,12 @@ export class DatasetEditorComponent implements OnInit {
     private utilityService = inject(UtilityService);
     private groupService = inject(GroupService);
     private toastService = inject(ToastService);
+    private clipboard = inject(Clipboard);
     private commService = inject(CommService);
     private screenService = inject(ScreenService);
     private runService = inject(RunService);
     private location = inject(PlatformLocation);
     private cdr = inject(ChangeDetectorRef);
-    // private http = inject(HttpClient);
     private metaTrailService = inject(MetaTrailService);
     private destroyRef = inject(DestroyRef);
     private assistantContext = inject(AssistantLocalContextService).createRegistration();
@@ -102,6 +104,14 @@ export class DatasetEditorComponent implements OnInit {
     baseApi = baseApi;
     base = base;
     dynamic: any = {};
+
+    copyEndpoint(url: string): void {
+        if (this.clipboard.copy(url)) {
+            this.toastService.show('Endpoint copied to clipboard', { classname: 'bg-success text-light' });
+        } else {
+            this.toastService.show('Failed to copy endpoint', { classname: 'bg-danger text-light' });
+        }
+    }
 
     filterField: string = "";
 

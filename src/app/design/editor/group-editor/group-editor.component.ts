@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, 
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { GroupService } from '../../../service/group.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbPaginationPrevious, NgbPaginationNext, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
@@ -18,6 +18,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { EditRoleComponent } from '../../../_shared/modal/edit-role/edit-role.component';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
 
@@ -27,7 +28,7 @@ import { RunService } from '../../../run/_service/run.service';
     templateUrl: './group-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './group-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, JsonPipe, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgClass, NgbInputDatepicker, NgSelectModule, AngularEditorModule, FilterPipe, DatePipe, KeyValuePipe,
-        EditRoleComponent]
+        EditRoleComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, EditorIdChipComponent]
 })
 export class GroupEditorComponent implements OnInit {
 

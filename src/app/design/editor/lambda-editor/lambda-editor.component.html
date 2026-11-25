@@ -41,8 +41,8 @@
           <!-- 2. RESTRICTED LAMBDAS -->
           @if ((restrictedLambdas() | filter:searchText).length > 0) {
             <div>
-              <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-body-secondary d-flex align-items-center rounded-0 border-0 bg-body-secondary"
-                (click)="showRestrictedLambdas = !showRestrictedLambdas" style="box-shadow: none;">
+              <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center rounded-0 border-0 sidebar-section-toggle"
+                (click)="showRestrictedLambdas = !showRestrictedLambdas">
                 <fa-icon [icon]="['fas', showRestrictedLambdas ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
                 Restricted Lambdas ({{(restrictedLambdas() | filter:searchText).length}})
               </button>
@@ -117,9 +117,8 @@
     </div>
   </div>
   <div class="content" content>
-    <div class="p-2">
-
-      @if(showSecret){
+      @if (showSecret) {
+        <div class="p-2">
         <div class="p-3 pb-0 limit-width">
           <div class="text-center">
             <h4>Manage Secret</h4>
@@ -152,315 +151,309 @@
             </div>
           </div>
         </div>
-      }@else {
+        </div>
+      } @else {
         @if (lambda) {
-          <div>
-            <div class="limit-width">
-              <div class="me-auto d-flex flex-row w-100 py-2">
-                <h5 class="m-0 text-truncate">{{lambda.name}}</h5>
-                @if (lambda.description) {
-                  <div class="ms-2 text-truncate align-bottom text-body-secondary">
-                  {{lambda.description}}</div>
+          <div class="bg-body">
+            <div class="limit-width pt-3 px-3 pb-2">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <h5 class="m-0">{{lambda.name}}</h5>
+                <app-editor-id-chip [id]="lambda.id" kind="Lambda"></app-editor-id-chip>
+              </div>
+              @if (lambda.description) {
+                <div class="small text-body-secondary mt-1">{{lambda.description}}</div>
+              }
+            </div>
+          </div>
+
+          <div class="workspace-toolbar">
+            <div class="limit-width px-3 d-flex align-items-center">
+              <div class="me-auto d-flex align-items-center gap-2 text-truncate" style="min-width:0">
+                <span class="lambda-pill is-lang">{{lambda.lang}}</span>
+                @if (lambda.publicAccess) {
+                  <span class="lambda-pill is-public">
+                    <fa-icon [icon]="['fas','globe']" [fixedWidth]="true" size="xs"></fa-icon> Public
+                  </span>
+                } @else {
+                  <span class="lambda-pill">
+                    <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" size="xs"></fa-icon> Private
+                  </span>
+                }
+                @if (lambda.scheduled) {
+                  <span class="lambda-pill d-none d-md-inline-flex text-capitalize">
+                    <fa-icon [icon]="['far','clock']" [fixedWidth]="true" size="xs"></fa-icon> {{lambda.freq}}
+                  </span>
                 }
               </div>
-              @if (lambda && (lambda.app?.id == appId)) {
-                <div class="d-flex flex-row mt-2">
+
+              @if (lambda.app?.id == appId) {
+                <div class="d-flex align-items-center text-nowrap ms-auto">
                   @if (lambda.email.indexOf(user.email)>-1) {
-                    <div ngbDropdown>
-                      <button type="button" class="btn btn-sm border border-1-5" id="lambdaEditor" ngbDropdownToggle>
-                        <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
-                      </button>
-                      <div ngbDropdownMenu aria-labelledby="lambdaEditor" style="min-width:340px">
-                        <div class="px-2" [class.text-danger]="!lambda.publicAccess">
-                          @if (lambda.publicAccess) {
-                            <fa-icon [icon]="['fas','globe']"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }
-                          @if (!lambda.publicAccess) {
-                            <fa-icon [icon]="['fas','lock']"
-                              [fixedWidth]="true">
-                            </fa-icon>
-                          }
-                          {{lambda.publicAccess?'Public Lambda': 'Private Lambda'}}
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <div class="px-2">
-                          <label class="small text-body-secondary">Lambda Endpoint</label>
-                          <input name="endpointUrl"
-                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                            type="text" class="form-control border-0 bg-body-tertiary text-body small"
-                            value="{{lambda.code? base+'/~/'+lambda.code+'/out':baseApi+'/lambda/'+lambda.id+'/out'}}"
-                            readonly>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <div class="px-2">
-                          <label class="small text-body-secondary">Lambda Print Output</label>
-                          <input name="printUrl"
-                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                            type="text" class="form-control border-0 bg-body-tertiary text-body small"
-                            value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}"
-                            readonly>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <div class="px-2">
-                          <label class="small text-body-secondary">Lambda Print Output (PDF)</label>
-                          <input name="printUrl"
-                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                            type="text" class="form-control border-0 bg-body-tertiary text-body small"
-                            value="{{lambda.code? base+'/~/'+lambda.code+'/pdf':baseApi+'/lambda/'+lambda.id+'/pdf'}}"
-                            readonly>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <div class="px-2">
-                          <label class="small text-body-secondary">Lambda Stream Output</label>
-                          <input name="printUrl"
-                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                            type="text" class="form-control border-0 bg-body-tertiary text-body small"
-                            value="{{lambda.code? base+'/~/'+lambda.code+'/stream':baseApi+'/lambda/'+lambda.id+'/stream'}}"
-                            readonly>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        @if (lambda.code) {
-                          <div class="px-2">
-                            <label class="small text-body-secondary">UI viewer</label>
-                            <input name="printUrl"
-                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
-                              type="text" class="form-control border-0 bg-body-tertiary text-body small"
-                              [value]="'https://' +(this.app?.appPath ? this.app?.appPath+'.'+domainBase+'/#/web/'+lambda.code : domainBase+'/#/run/'+appId+'/web/'+lambda.code)"
-                              readonly>
-                          </div>
-                          <div class="dropdown-divider"></div>
-                        }
-                        <div class="px-2">
-                          <small class="text-body-secondary">Append <code>/cache</code> at the end of URL to use cached version for faster loading</small>
-                          <div>
-                            <button type="button" class="btn btn-danger btn-sm mt-2" (click)="evictCache()">Evict
-                            Cache</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit lambda settings" aria-label="Edit lambda settings"
                       (click)="editLambda(editLambdaTpl,lambda,false)" [class.disabled]="offline || isTimeWarping">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                      (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id, lambda)">
-                      <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <!-- TimeWarp Toggle Button -->
-                    <button type="button" class="btn btn-sm border border-1-5 ms-1" 
-                      [ngClass]="isTimeWarping ? 'btn-warning' : 'btn-outline-warning'" 
-                      title="TimeWarp (Real-time Version Slider)"
-                      (click)="toggleTimeWarp()">
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="TimeWarp (real-time version slider)" aria-label="TimeWarp"
+                      [class.text-warning]="isTimeWarping" [class.bg-warning-subtle]="isTimeWarping" (click)="toggleTimeWarp()">
                       <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-                      (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline || isTimeWarping">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-primary ms-1"
-                      [disabled]="contentForm.pristine || isTimeWarping" (click)="saveLambda(lambda)">
-                      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <div ngbDropdown>
-                      <button type="button" class="btn btn-sm border border-1-5 btn-outline-success ms-1" ngbDropdownToggle [disabled]="isTimeWarping">
-                        <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+
+                    <div ngbDropdown class="d-flex align-items-center ms-1">
+                      <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
+                        <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                       </button>
-                      <div ngbDropdownMenu aria-labelledby="lambdaRun" style="min-width:340px">
-                        <button type="button" title="Run lambda normally" ngbDropdownItem (click)="runLambda(lambda)">
-                          Normal Run
-                          <div class="small text-body-secondary fst-italic">Run lambda normally.<br />Result will
-                          be displayed once finish.</div>
+                      <div ngbDropdownMenu class="rounded-3 py-2" style="min-width:340px">
+                        <button type="button" ngbDropdownItem title="View Meta Trails"
+                          (click)="viewMetaTrails(viewLambdaMetaTrailTpl, 'lambda_' + lambda.id, lambda)">
+                          <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                          Meta Trails
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button type="button" title="Run lambda with trailing output" ngbDropdownItem
-                          (click)="streamLambda(lambda)">
-                          Run with trailing output stream
-                          <div class="small text-body-secondary fst-italic">Display output stream in real-time.
+                        <div class="px-3 small fw-semibold" [class.text-success]="lambda.publicAccess" [class.text-body-secondary]="!lambda.publicAccess">
+                          <fa-icon [icon]="['fas', lambda.publicAccess ? 'globe' : 'lock']" [fixedWidth]="true"></fa-icon>
+                          {{lambda.publicAccess ? 'Public Lambda' : 'Private Lambda'}}
+                        </div>
+                        <div class="px-3 mt-2">
+                          <label class="small text-body-secondary">Lambda Endpoint</label>
+                          <input name="endpointUrl" type="text" readonly title="Click to copy"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            class="form-control form-control-sm font-monospace text-body-tertiary"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/out':baseApi+'/lambda/'+lambda.id+'/out'}}">
+                        </div>
+                        <div class="px-3 mt-1">
+                          <label class="small text-body-secondary">Lambda Print Output</label>
+                          <input name="printUrl" type="text" readonly title="Click to copy"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            class="form-control form-control-sm font-monospace text-body-tertiary"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/print':baseApi+'/lambda/'+lambda.id+'/print'}}">
+                        </div>
+                        <div class="px-3 mt-1">
+                          <label class="small text-body-secondary">Lambda Print Output (PDF)</label>
+                          <input name="pdfUrl" type="text" readonly title="Click to copy"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            class="form-control form-control-sm font-monospace text-body-tertiary"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/pdf':baseApi+'/lambda/'+lambda.id+'/pdf'}}">
+                        </div>
+                        <div class="px-3 mt-1">
+                          <label class="small text-body-secondary">Lambda Stream Output</label>
+                          <input name="streamUrl" type="text" readonly title="Click to copy"
+                            onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                            class="form-control form-control-sm font-monospace text-body-tertiary"
+                            value="{{lambda.code? base+'/~/'+lambda.code+'/stream':baseApi+'/lambda/'+lambda.id+'/stream'}}">
+                        </div>
+                        @if (lambda.code) {
+                          <div class="px-3 mt-1">
+                            <label class="small text-body-secondary">UI viewer</label>
+                            <input name="viewerUrl" type="text" readonly title="Click to copy"
+                              onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')"
+                              class="form-control form-control-sm font-monospace text-body-tertiary"
+                              [value]="'https://' +(this.app?.appPath ? this.app?.appPath+'.'+domainBase+'/#/web/'+lambda.code : domainBase+'/#/run/'+appId+'/web/'+lambda.code)">
                           </div>
+                        }
+                        <div class="px-3 mt-2">
+                          <small class="text-body-secondary">Append <code>/cache</code> at the end of URL to use cached version for faster loading</small>
+                          <div>
+                            <button type="button" class="btn btn-danger btn-sm mt-2" (click)="evictCache()">Evict Cache</button>
+                          </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" ngbDropdownItem class="text-danger" title="Remove lambda"
+                          (click)="removeLambda(removeLambdaTpl,lambda)" [class.disabled]="offline || isTimeWarping">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                          Remove Lambda
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-primary ms-1" title="Save lambda (Ctrl+S)"
+                      [disabled]="contentForm.pristine || isTimeWarping" (click)="saveLambda(lambda)">
+                      <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                      <span class="d-none d-md-inline ms-1">Save</span>
+                    </button>
+
+                    <div ngbDropdown class="d-flex align-items-center ms-1">
+                      <button type="button" class="btn btn-sm btn-success" ngbDropdownToggle [disabled]="isTimeWarping" title="Run lambda">
+                        <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                        <span class="d-none d-md-inline ms-1">Run</span>
+                      </button>
+                      <div ngbDropdownMenu class="rounded-3">
+                        <button type="button" title="Run lambda normally" ngbDropdownItem (click)="runLambda(lambda)">
+                          Normal Run
+                          <div class="small text-body-secondary fst-italic">Run lambda normally.<br />Result will be displayed once finish.</div>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" title="Run lambda with trailing output" ngbDropdownItem (click)="streamLambda(lambda)">
+                          Run with trailing output stream
+                          <div class="small text-body-secondary fst-italic">Display output stream in real-time.</div>
                         </button>
                       </div>
                     </div>
                   } @else {
-                    <div class="bg-warning text-dark p-1 small rounded">
+                    <div class="bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-2 px-2 py-1 small">
+                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
                       Interactive access and modification only available for <i>{{lambda.email}}</i>
                     </div>
                   }
                 </div>
               }
             </div>
-
-            <!-- TimeWarp Interface Block -->
-            @if (isTimeWarping) {
-              <div class="card bg-warning bg-opacity-10 border-warning mt-3 mb-3 shadow-sm limit-width">
-                <div class="card-body p-2">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="card-title text-warning-emphasis m-0 fw-bold">
-                      <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
-                    </h6>
-                    <div>
-                      <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
-                      <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This</button>
-                    </div>
-                  </div>
-                  
+          </div>
+          <!-- TimeWarp Interface Block -->
+          @if (isTimeWarping) {
+            <div class="card bg-warning bg-opacity-10 border-warning shadow-sm mx-3 my-2">
+              <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                  <h6 class="card-title text-warning-emphasis m-0 fw-bold">
+                    <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
+                  </h6>
                   <div class="d-flex align-items-center">
-                    <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
-                    <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
-                           [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
-                    <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
-                  </div>
-                  
-                  @let trail = timeWarpTrails[timeWarpIndex];
-                  <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
-                    <!-- Left: Date & Email -->
-                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
-                      <span class="input-group-text bg-body text-body smaller">
-                        {{ trail?.timestamp | date:'medium' }}
-                      </span>
-                      <span class="input-group-text bg-body text-body smaller">
-                        {{ trail?.email }}
-                      </span>
-                    </div>
-
-                    <!-- Right: Action & Module -->
-                    <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase">
-                      <span class="input-group-text bg-secondary text-white smaller">{{ trail?.action }}</span>
-                      <span class="input-group-text bg-primary text-white smaller">{{ trail?.module }}</span>
-                    </div>
+                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-normal me-2">Previewing revision</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarp()">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpVersion()">Restore This</button>
                   </div>
                 </div>
-              </div>
-            }
-
-            @if (loading) {
-              <div class="p-4 text-center">
-                <div class="lds-ellipsis">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
+                
+                <div class="d-flex align-items-center">
+                  <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
+                  <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpTrails.length - 1" 
+                         [(ngModel)]="timeWarpIndex" (ngModelChange)="applyTimeWarp($event)">
+                  <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
                 </div>
-              </div>
-            }
-            <div class="row width-auto align-items-center g-1 mt-1 gx-0">
-              <div class=" col-auto small">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text"
-                    style="text-transform: uppercase;"><strong>{{lambda.lang}}</strong></span>
-                </div>
-              </div>
-              @for (b of lambda.binds; track $index) {
-                <div class=" col-auto">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text">{{b.name}}</span>
-                    <span class="input-group-text"
-                      [ngClass]="['_mail','_entry','_endpoint','_secret','_mapper','_user','_token','_io','_sql','_http','_util','_jsoup','_krypta','_live', '_log'].indexOf(b.type)>-1?'bg-secondary text-white':'bg-body-tertiary text-body border'">
-                      {{b.type}}{{b.srcId?'_'+b.srcId:''}}
+                
+                @let trail = timeWarpTrails[timeWarpIndex];
+                <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
+                  <!-- Left: Date & Email -->
+                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
+                    <span class="input-group-text bg-body text-body smaller">
+                      {{ trail?.timestamp | date:'medium' }}
+                    </span>
+                    <span class="input-group-text bg-body text-body smaller">
+                      {{ trail?.email }}
                     </span>
                   </div>
-                </div>
-              }
-              <div class=" col-auto">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Request</span>
-                  <span class="input-group-text bg-secondary text-white">_request</span>
-                </div>
-              </div>
-              <div class=" col-auto">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Response</span>
-                  <span class="input-group-text bg-secondary text-white">_response</span>
-                </div>
-              </div>
-              <div class=" col-auto">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Output</span>
-                  <span class="input-group-text bg-secondary text-white">_out</span>
+
+                  <!-- Right: Action & Module -->
+                  <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase">
+                    <span class="input-group-text bg-body-secondary text-body-secondary border smaller">{{ trail?.action }}</span>
+                    <span class="input-group-text bg-warning-subtle text-warning-emphasis border smaller">{{ trail?.module }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <form name="contentForm" #contentForm="ngForm" ngForm>
-              <div class="mt-2">
-                <app-cm name="init" #codeeditorinit lang="lambda" lambda="true"
-                  label="Lambda Function" placeholder="Write your lambda function here..."
-                  [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
-                  [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
-                  [readOnly]="isTimeWarping || lambda.email.indexOf(user.email)==-1">
-                </app-cm>
+          }
+
+          @if (loading) {
+            <div class="p-4 text-center">
+              <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
               </div>
-            </form>
-            
-            @if (runRes()[lambda.id]) {
-              <div [class.opacity-50]="resultLoading()[lambda.id]" class="border rounded my-2">
-                @if (runRes()[lambda.id]?.print) {
-                  <div class="bg-secondary text-white px-2 py-1 small d-flex align-items-center"
-                    [class.bg-danger]="runRes()[lambda.id]?.print.indexOf('!err')>-1">
-                    Console
-                    <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
-                      <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText"
-                        [(ngModel)]="consoleType" value="text">
-                      <label class="btn btn-outline-light btn-sm" for="consoleTypeText"> Plain Text </label>
-                      <input type="radio" class="btn-check" name="consoleTypeHtml" id="consoleTypeHtml"
-                        [(ngModel)]="consoleType" value="html">
-                      <label class="btn btn-outline-light btn-sm" for="consoleTypeHtml"> HTML (rendered) </label>
-                      <input type="radio" class="btn-check" name="consoleTypePdf" id="consoleTypePdf"
-                        [(ngModel)]="consoleType" value="pdf">
-                      <label class="btn btn-outline-light btn-sm" for="consoleTypePdf"> PDF </label>
-                    </div>
-                  </div>
-                  @if (runRes()[lambda.id]) {
-                    <div style="position: relative;">
-                      @if (consoleType=='text') {
-                        <div class="px-2 py-1 bg-body-tertiary text-body border-top limit-height code-container">
-                          <div>
-                            <pre class="my-0">{{runRes()[lambda.id].print}}</pre>
-                          </div>
-                        </div>
-                      }
-                      @if (consoleType=='html') {
-                        <div class="px-2 py-1 bg-body-tertiary text-body border-top" [innerHtml]="runRes()[lambda.id].print | safe:'html'">
-                        </div>
-                      }
-                      @if (consoleType=='pdf') {
-                        <div>
-                          <iframe style="height: 450px;width:100%" [src]="getPdfUrl()|safe:'resourceUrl'"></iframe>
-                        </div>
-                      }
-                    </div>
+            </div>
+          }
+          <form name="contentForm" #contentForm="ngForm" ngForm>
+            <div class="card border-0 rounded-0 lambda-code">
+              <div class="lambda-bindings">
+                @if (lambda.binds?.length) {
+                  <span class="lambda-bindings-label">Bindings</span>
+                  @for (b of lambda.binds; track $index) {
+                    <span class="lambda-chip" [title]="b.name">
+                      <span class="lambda-chip-name">{{b.name}}</span>
+                      <span class="lambda-chip-var"
+                        [class.is-internal]="['_mail','_entry','_endpoint','_secret','_mapper','_user','_token','_io','_sql','_http','_util','_jsoup','_krypta','_live','_log'].indexOf(b.type)>-1">
+                        {{b.type}}{{b.srcId?'_'+b.srcId:''}}
+                      </span>
+                    </span>
                   }
                 }
-                @if (runRes()[lambda.id] && !isEmptyObject(runRes()[lambda.id].out)) {
-                  <div class="px-2 py-1 bg-success text-white small">
-                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                    This function returns output: <span>{{'{ '}}{{keyList(runRes()[lambda.id]?.out)}}{{' }'}}</span>
-                  </div>
-                  <div class="px-2 py-1 bg-body-tertiary text-body border-top small limit-height">
-                    <json-viewer [json]="runRes()[lambda.id]?.out"></json-viewer>
-                  </div>
-                }
-                @if (runRes()[lambda.id] && !runRes()[lambda.id]?.success) {
-                  <div class="px-2 py-1 bg-danger text-white">
-                    <div>{{runRes()[lambda.id]?.message}}</div>
-                    @if (runRes()[lambda.id]?.line||runRes()[lambda.id]?.col) {
-                      <div>Line: {{runRes()[lambda.id]?.line}}, Col: {{runRes()[lambda.id]?.col}}</div>
-                    }
+                <span class="lambda-bindings-label">Built-in</span>
+                <span class="lambda-chip"><span class="lambda-chip-name">Request</span><span class="lambda-chip-var is-internal">_request</span></span>
+                <span class="lambda-chip"><span class="lambda-chip-name">Response</span><span class="lambda-chip-var is-internal">_response</span></span>
+                <span class="lambda-chip"><span class="lambda-chip-name">Output</span><span class="lambda-chip-var is-internal">_out</span></span>
+              </div>
+              <app-cm name="init" #codeeditorinit lang="lambda" lambda="true"
+                placeholder="Write your lambda function here..."
+                [extraAutoComplete]="extraAutoComplete" (keydown)="onKeyDown($event)"
+                [ngModel]="lambda.data && lambda.data.f" (ngModelChange)="lambda.data && (lambda.data.f = $event)" [linenumber]="true"
+                [readOnly]="isTimeWarping || lambda.email.indexOf(user.email)==-1">
+              </app-cm>
+            </div>
+          </form>
+          @if (runRes()[lambda.id]) {
+            <div class="card border-0 rounded-0 border-top" [class.opacity-50]="resultLoading()[lambda.id]">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 small bg-body-tertiary border-bottom">
+                <span class="d-inline-flex align-items-center gap-2 fw-semibold">
+                  <fa-icon [icon]="['fas','terminal']" [fixedWidth]="true"></fa-icon>
+                  Console
+                  @if (runRes()[lambda.id]?.success) {
+                    <span class="lambda-pill is-ok">
+                      <fa-icon [icon]="['fas','check-circle']" [fixedWidth]="true" size="xs"></fa-icon> Success
+                    </span>
+                  } @else {
+                    <span class="lambda-pill is-err">
+                      <fa-icon [icon]="['fas','exclamation-circle']" [fixedWidth]="true" size="xs"></fa-icon> Failed
+                    </span>
+                  }
+                </span>
+                @if (runRes()[lambda.id]?.print) {
+                  <div class="lambda-segmented" role="group" aria-label="Console output view">
+                    <input type="radio" class="btn-check" name="consoleTypeText" id="consoleTypeText" [(ngModel)]="consoleType" value="text">
+                    <label class="lambda-segmented-btn" for="consoleTypeText">Plain Text</label>
+                    <input type="radio" class="btn-check" name="consoleTypeHtml" id="consoleTypeHtml" [(ngModel)]="consoleType" value="html">
+                    <label class="lambda-segmented-btn" for="consoleTypeHtml">HTML</label>
+                    <input type="radio" class="btn-check" name="consoleTypePdf" id="consoleTypePdf" [(ngModel)]="consoleType" value="pdf">
+                    <label class="lambda-segmented-btn" for="consoleTypePdf">PDF</label>
                   </div>
                 }
               </div>
-            }
-          </div>
-        }@else {
-          <div class="text-body-secondary">
-            <h3>Please select Lambda from the list on the left to view it's data.</h3>
+
+              @if (runRes()[lambda.id]?.print) {
+                @if (consoleType=='text') {
+                  <pre class="lambda-console-pre limit-height">{{runRes()[lambda.id].print}}</pre>
+                }
+                @if (consoleType=='html') {
+                  <div class="p-2" [innerHtml]="runRes()[lambda.id].print | safe:'html'"></div>
+                }
+                @if (consoleType=='pdf') {
+                  <iframe class="lambda-console-frame" [src]="getPdfUrl()|safe:'resourceUrl'"></iframe>
+                }
+              }
+
+              @if (!runRes()[lambda.id]?.success) {
+                <div class="d-flex gap-2 p-3 small text-danger-emphasis bg-danger-subtle border-top border-danger-subtle">
+                  <fa-icon [icon]="['fas','exclamation-circle']" class="mt-1" [fixedWidth]="true"></fa-icon>
+                  <div>
+                    <div class="fw-semibold">{{runRes()[lambda.id]?.message}}</div>
+                    @if (runRes()[lambda.id]?.line||runRes()[lambda.id]?.col) {
+                      <div class="small font-monospace">Line: {{runRes()[lambda.id]?.line}}, Col: {{runRes()[lambda.id]?.col}}</div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (!isEmptyObject(runRes()[lambda.id].out)) {
+                <div class="lambda-out-bar">
+                  <span><fa-icon [icon]="['fas','check-circle']" [fixedWidth]="true"></fa-icon> This function returns output</span>
+                  <span class="font-monospace">{{'{ '}}{{keyList(runRes()[lambda.id]?.out)}}{{' }'}}</span>
+                </div>
+                <div class="p-2 bg-body-tertiary limit-height">
+                  <json-viewer [json]="runRes()[lambda.id]?.out"></json-viewer>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="limit-width px-3 py-3">
+            <div class="border border-dashed rounded-3 p-4 text-center">
+              <div class="fw-semibold mb-1 fs-4 text-body-secondary">No lambda selected</div>
+              <p class="small text-body-tertiary mb-0">
+                Please select a lambda from the list on the left to view its data.
+              </p>
+            </div>
           </div>
         }
-
       }
-
-    </div>
   </div>
 </div>
 <ng-template #removeLambdaTpl let-c="close" let-d="dismiss">

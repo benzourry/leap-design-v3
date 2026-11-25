@@ -117,6 +117,13 @@ export class NaviComponent implements OnInit {
   get paletteItems() {
     return flattenAssistantPalette(this.paletteGroups);
   }
+  get naviItemCount(): number {
+    return this.navis.reduce((total: number, group: any) => total + (group?.items?.length ?? 0), 0);
+  }
+  /** Item types that render a tile even when no navi-data entry is returned. */
+  readonly typesWithoutNaviData = new Set(['external', 'internal', 'user', 'start', 'profile', 'lambda']);
+  /** Item types whose inactive window is reflected on the launchpad tile. */
+  readonly scheduledTypes = new Set(['form', 'form-single', 'view-single']);
   viewAs: string;
   viewAsGroup: any;
 

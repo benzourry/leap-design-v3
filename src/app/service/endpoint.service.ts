@@ -39,7 +39,7 @@ export class EndpointService {
   //   return this.http.get(`${this.baseApi}/endpoint/${endpointId}/entry-full`, { params: params });
   // }
   runEndpoint(endpointId: any, params: any): any {
-    return this.http.get(`${this.baseApi}/endpoint/run/${endpointId}`, { params: params });
+    return this.http.get(`${this.baseApi}/endpoint/run/${endpointId}`, { params: params, observe: 'response' });
   }
   // removeEntry(id: any, data: any): any {
   //   return this.http.post(`${this.baseApi}/endpoint/entry/${id}/delete`, data)

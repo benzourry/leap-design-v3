@@ -1,13 +1,13 @@
-<div class="p-3 pb-0 limit-width">
-  <div class="text-center">
-    <h4>Manage API Keys</h4>
+<div class="bg-body">
+  <div class="limit-width p-3">
+    <h5 class="m-0">Manage API Keys</h5>
+    <p class="small text-body-secondary mt-1 mb-0">API/App Key can be used to access the app as anonymous user without individual/personal credential</p>
   </div>
 </div>
 <div class="limit-width fix-gutter">
-  <div class="single-pane pt-0">
-    <p class="text-center text-body-secondary">API/App Key can be used to access the app as anonymous user without individual/personal credential</p>
+  <div class="single-pane pt-3">
     @for (rp of apiKeyList; track rp.id) {
-      <div class="p-3 bg-body-tertiary border rounded mb-2">
+      <div class="p-3 bg-body border rounded mb-2">
         <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeApiKey(removeApiKeyTpl,rp)"><fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon></button>
         <button type="button" class="btn btn-round btn-sm btn-outline-secondary float-end me-2" (click)="rp.visible=!rp.visible">
           <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>

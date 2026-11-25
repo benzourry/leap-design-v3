@@ -1,12 +1,12 @@
-<div class="p-3 pb-0 limit-width">
-  <div class="text-center">
-    <h4>Restore Points</h4>
+<div class="bg-body">
+  <div class="limit-width p-3">
+    <h5 class="m-0">Restore Points</h5>
   </div>
 </div>
 <div class="limit-width fix-gutter">
-  <div class="single-pane pt-0">
+  <div class="single-pane pt-3">
     @for (rp of restorePointList; track rp.id) {
-      <div class="p-3 bg-body-tertiary border rounded mb-3">
+      <div class="p-3 bg-body border rounded mb-3">
         <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeRestorePoint(removeRestorePointTpl,rp)"><fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon></button>
         <button type="button" class="btn btn-round btn-sm btn-outline-secondary float-end me-2" (click)="goRestorePoint(goRestorePointTpl,rp)">Restore</button>
         <div class="fw-bold">{{rp.name}}</div>

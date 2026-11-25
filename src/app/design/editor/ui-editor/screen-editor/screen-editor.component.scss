@@ -1,3 +1,45 @@
+@use '../editor-workspace';
+
+@include editor-workspace.workspace;
+@include editor-workspace.palette;
+
+.workspace-toolbar {
+  z-index: 11;
+}
+
+.screen-tabs {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  border-bottom: 0;
+  padding-left: 0.5rem;
+  font-size: 0.95em;
+
+  .nav-item {
+    flex: none;
+  }
+
+  .nav-link {
+    margin-bottom: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 0.65rem 0.8rem;
+    color: var(--bs-secondary-color);
+  }
+
+  .nav-link.active {
+    color: var(--bs-body-color);
+    background: transparent;
+    border-color: var(--bs-body-color);
+  }
+}
+
+.screen-status:has(> :not(.d-none), > .d-block) {
+  padding: 1rem;
+}
+
 ::ng-deep .angular-editor-textarea {
   border: 1px solid var(--bs-border-color, #dee2e6) !important;
   background-color: var(--bs-body-bg, #f8f9fa) !important;

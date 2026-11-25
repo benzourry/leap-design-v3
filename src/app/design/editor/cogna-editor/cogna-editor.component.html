@@ -61,941 +61,1034 @@
       }
     </div>
   </div>
-  <div class="content" content>
-    <div class="p-2">
-      @if (cogna) {
-      <div>
-        <div class="limit-widthx">
-          <div class="me-auto d-flex flex-row w-100 py-2">
-            <h5 class="m-0 text-truncate">{{cogna.name}}</h5>
-            @if (cogna.description) {
-            <div class="ms-2 text-truncate align-bottom text-body-secondary">
-              {{cogna.description}}</div>
-            }
-          </div>
-          <div class="text-body-secondary mb-2">
-            <small>Cogna ID : {{cogna.id}}</small>
-          </div>
+  <div class="content cogna-workspace" content>
+    @if (cogna) {
+    <!-- Non-sticky title bar (shared editor shell) -->
+    <div class="bg-body">
+      <div class="limit-width px-3 pt-3 pb-2">
+        <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
+          <h5 class="m-0 text-truncate">{{cogna.name}}</h5>
+          <app-editor-id-chip [id]="cogna.id" kind="Cogna"></app-editor-id-chip>
+        </div>
+        @if (cogna.description) {
+        <div class="small text-body-secondary mt-1 text-truncate">{{cogna.description}}</div>
+        }
+      </div>
+    </div>
 
-          @if (cogna && (cogna.app?.id == appId)) {
-          <div class="d-flex flex-row mt-2">
-            @if (cogna.email.indexOf(user.email)>-1) {
-            <div ngbDropdown>
-              <button type="button" class="btn btn-sm border border-1-5" id="cognaEditor" ngbDropdownToggle>
-                <fa-icon [icon]="['fas','link']" [fixedWidth]="true"></fa-icon>
-              </button>
-              <div ngbDropdownMenu aria-labelledby="cognaEditor" style="min-width:340px">
-                <div class="px-2" [class.text-danger]="!cogna.publicAccess">
-                  @if (cogna.publicAccess) {
-                  <fa-icon [icon]="['fas','globe']" [fixedWidth]="true">
-                  </fa-icon>
-                  }@else{
-                  <fa-icon [icon]="['fas','lock']" [fixedWidth]="true">
-                  </fa-icon>
-                  }
-                  {{cogna.publicAccess?'Public Cogna': 'Private Cogna'}}
-                </div>
-                <div class="dropdown-divider"></div>
-                <div class="px-2">
-                  <label class="small text-body-secondary">Cogna Endpoint</label>
-                  <input name="endpointUrl"
-                    onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" type="text"
-                    class="form-control border-0 bg-body-tertiary text-body small"
-                    value="{{cogna.code? base+'/~cogna/'+cogna.code+'/'+cognaEp[cogna.type]:baseApi+'/cogna/'+cogna.id+'/'+cognaEp[cogna.type]}}"
-                    readonly>
-                </div>
-              </div>
-            </div>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
-              (click)="editCogna(editCognaTpl,cogna,false)" [disabled]="offline || isTimeWarpingCogna">
-              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-              (click)="viewMetaTrails(viewCognaMetaTrailTpl, 'cogna_' + cogna.id, cogna)">
-              <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <!-- TimeWarp Toggle Button -->
-            <button type="button" class="btn btn-sm border border-1-5 ms-1"
-              [ngClass]="isTimeWarpingCogna ? 'btn-warning' : 'btn-outline-warning'"
-              title="TimeWarp (Real-time Version Slider)"
-              (click)="toggleTimeWarpCogna()"> 
-              <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1"
-              title="Re-initialize models" (click)="reinitCogna(cogna)" [disabled]="offline || isTimeWarpingCogna">
-              <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Search vector DB"
-              (click)="openSearchDb(searchDbTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
-              <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-1" title="Chat history"
-              (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
-              <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
-            </button>
-            <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-              (click)="removeCogna(removeCognaTpl,cogna)" [disabled]="offline || isTimeWarpingCogna">
-              <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-            </button>
-            } @else {
-            <div class="bg-warning text-dark p-1 small rounded">
-              Interactive access and modification only available for <i>{{cogna.email}}</i>
-            </div>
+    <!-- Sticky workspace toolbar (shared editor shell) -->
+    <div class="workspace-toolbar">
+      <div class="limit-width px-3 d-flex align-items-center gap-2">
+        <div class="me-auto d-flex align-items-center gap-2 flex-wrap" style="min-width:0">
+          <span class="cg-pill is-type">
+            @switch (cogna.type) {
+            @case ('txtgen') {
+            <fa-icon [icon]="['fas','pen']" [fixedWidth]="true" size="xs"></fa-icon> Generate Text
             }
+            @case ('txtcls') {
+            <fa-icon [icon]="['fas','tags']" [fixedWidth]="true" size="xs"></fa-icon> Classify Text
+            }
+            @case ('txtext') {
+            <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true" size="xs"></fa-icon> Extract Data
+            }
+            @case ('imggen') {
+            <fa-icon [icon]="['fas','image']" [fixedWidth]="true" size="xs"></fa-icon> Generate Image
+            }
+            @case ('imgcls') {
+            <fa-icon [icon]="['fas','photo-film']" [fixedWidth]="true" size="xs"></fa-icon> Classify Image
+            }
+            @case ('master') {
+            <fa-icon [icon]="['fas','robot']" [fixedWidth]="true" size="xs"></fa-icon> Master Agent
+            }
+            @default {
+            <fa-icon [icon]="['fas','brain']" [fixedWidth]="true" size="xs"></fa-icon> {{cogna.type}}
+            }
+            }
+          </span>
+          <span class="cg-pill" [class.is-success]="cogna.publicAccess" [class.is-warning]="!cogna.publicAccess">
+            <fa-icon [icon]="['fas',cogna.publicAccess?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
+            {{cogna.publicAccess?'Public Cogna':'Private Cogna'}}
+          </span>
+        </div>
+
+        <div class="d-flex align-items-center text-nowrap">
+          @if (cogna && (cogna.app?.id == appId)) {
+          @if (cogna.email.indexOf(user.email)>-1) {
+          <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit Cogna settings"
+            aria-label="Edit Cogna settings" (click)="editCogna(editCognaTpl,cogna,false)"
+            [disabled]="offline || isTimeWarpingCogna">
+            <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <button type="button" class="btn btn-sm ms-1"
+            [ngClass]="isTimeWarpingCogna ? 'btn-warning' : 'border-0 text-body-secondary'"
+            title="TimeWarp (Real-time Version Slider)" aria-label="TimeWarp" (click)="toggleTimeWarpCogna()">
+            <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Re-initialize models"
+            aria-label="Re-initialize models" (click)="reinitCogna(cogna)" [disabled]="offline || isTimeWarpingCogna">
+            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Search vector DB"
+            aria-label="Search vector DB" (click)="openSearchDb(searchDbTpl, cogna)"
+            [disabled]="offline || isTimeWarpingCogna">
+            <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
+          </button>
+          <div ngbDropdown class="d-flex align-items-center ms-1">
+            <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
+              title="More actions" aria-label="More actions">
+              <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+            </button>
+            <div ngbDropdownMenu class="dropdown-menu-end rounded-3 py-2" style="min-width:340px">
+              <button type="button" ngbDropdownItem title="Chat history"
+                (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
+                <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
+                Chat History
+              </button>
+              <button type="button" ngbDropdownItem title="View meta trails"
+                (click)="viewMetaTrails(viewCognaMetaTrailTpl, 'cogna_' + cogna.id, cogna)">
+                <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                Meta Trails
+              </button>
+              <div class="dropdown-divider"></div>
+              <div class="px-2 py-1">
+                <div class="small fw-semibold mb-1" [class.text-success]="cogna.publicAccess"
+                  [class.text-body-secondary]="!cogna.publicAccess">
+                  <fa-icon [icon]="['fas',cogna.publicAccess?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
+                  {{cogna.publicAccess?'Public Cogna':'Private Cogna'}}
+                </div>
+                <label class="small text-body-secondary mb-1">Cogna Endpoint</label>
+                <input name="endpointUrl"
+                  onclick="this.setSelectionRange(0, this.value.length);document.execCommand('copy')" type="text"
+                  class="form-control form-control-sm border bg-body-tertiary text-body font-monospace"
+                  value="{{cogna.code? base+'/~cogna/'+cogna.code+'/'+cognaEp[cogna.type]:baseApi+'/cogna/'+cogna.id+'/'+cognaEp[cogna.type]}}"
+                  readonly>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button type="button" ngbDropdownItem class="text-danger" title="Remove Cogna"
+                (click)="removeCogna(removeCognaTpl,cogna)" [disabled]="offline || isTimeWarpingCogna">
+                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                Remove Cogna
+              </button>
+            </div>
           </div>
+          } @else {
+          <span class="badge text-bg-warning fw-normal text-wrap text-start lh-sm">
+            Interactive access and modification only available for <i>{{cogna.email}}</i>
+          </span>
+          }
           }
         </div>
+      </div>
+    </div>
 
-        <!-- TimeWarp Interface Block -->
-        @if (isTimeWarpingCogna) {
-        <div class="card bg-warning bg-opacity-10 border-warning my-2 shadow-sm">
-          <div class="card-body p-2">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="card-title text-warning-emphasis m-0 fw-bold">
-                <fa-icon [icon]="['far', 'clock']" class="me-2"></fa-icon> TimeWarp Active
-              </h6>
-              <div>
-                <button type="button" class="btn btn-sm btn-outline-secondary me-2" (click)="exitTimeWarpCogna()">Cancel</button>
-                <button type="button" class="btn btn-sm btn-warning" (click)="restoreTimeWarpCognaVersion()">Restore This</button>
-              </div>
-            </div>
-            
-            <div class="d-flex align-items-center">
-              <span class="small text-body-secondary me-2 fw-bold">Oldest</span>
-              <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpCognaTrails.length - 1" 
-                     [(ngModel)]="timeWarpCognaIndex" (ngModelChange)="applyTimeWarpCogna($event)">
-              <span class="small text-body-secondary ms-2 fw-bold">Latest</span>
-            </div>
-            
-            @let trail = timeWarpCognaTrails[timeWarpCognaIndex];
-            <div class="d-flex flex-wrap justify-content-between gap-2 mt-2 small">
-              <!-- Left: Date & Email -->
-              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm">
-                <span class="input-group-text bg-body text-body">{{ trail?.timestamp | date:'medium' }}</span>
-                <span class="input-group-text bg-info text-dark">{{ trail?.email }}</span>
-              </div>
-
-              <!-- Right: Action & Module -->
-              <div class="input-group input-group-sm flex-nowrap w-auto shadow-sm text-uppercase text-white">
-                <span class="input-group-text bg-secondary text-white">{{ trail?.action }}</span>
-                <span class="input-group-text bg-primary text-white">{{ trail?.module }}</span>
-              </div>
-            </div>
+    <div class="limit-width px-3 py-3">
+      <!-- TimeWarp Interface Block -->
+      @if (isTimeWarpingCogna) {
+      <div class="cg-timewarp">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold small">
+              <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon> TimeWarp Active
+            </span>
+            <span class="cg-pill is-warning">Previewing Revision</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarpCogna()">Cancel</button>
+            <button type="button" class="btn btn-sm btn-warning fw-medium"
+              (click)="restoreTimeWarpCognaVersion()">Restore This</button>
           </div>
         </div>
-        }
 
-        @if (loading) {
-        <div class="p-4 text-center">
-          <div class="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="small fw-medium text-body-secondary">Oldest</span>
+          <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpCognaTrails.length - 1"
+            [(ngModel)]="timeWarpCognaIndex" (ngModelChange)="applyTimeWarpCogna($event)">
+          <span class="small fw-medium text-body-secondary">Latest</span>
+        </div>
+
+        @let trail = timeWarpCognaTrails[timeWarpCognaIndex];
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 border-top small">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="cg-chip">{{ trail?.timestamp | date:'medium' }}</span>
+            <span class="cg-chip">{{ trail?.email }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-1 font-monospace text-uppercase">
+            <span class="cg-chip">{{ trail?.action }}</span>
+            <span class="cg-chip is-type">{{ trail?.module }}</span>
           </div>
         </div>
-        }
-        <div class="row g-2 mt-1">
-          <div class="col-sm-4 col-lg-3">
-            @if(['txtgen'].includes(cogna.type)){
-            <div class="card overflow-hidden border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <div class="text-body-secondary text-strong col">Embedding</div>
-              </div>
-              <div class="list-group list-group-flush">
-                <div class="list-group-item">
-                  @if (cogna.embedModelType=='minilm'){
-                  All-MiniLM (built-in)
-                  }@else if(cogna.embedModelType=='e5small'){
-                  Multilingual E5-Small-V2 (built-in)
-                  }@else if(cogna.embedModelType=='e5large'){
-                  E5-Large-V2 (built-in)
-                  }@else{
-                  <div class="small text-body-secondary">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
-                  <div>{{cogna.embedModelName}}</div>
-                  }
-                </div>
-              </div>
+      </div>
+      }
 
-              <div class="card-body bg-body-tertiary small p-2">
-                Chunk: {{cogna.chunkLength}}, Overlap: {{cogna.chunkOverlap}}
-              </div>
+      @if (loading) {
+      <div class="p-4 text-center">
+        <div class="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      }
+
+      <div class="row g-3">
+        <!-- LEFT COLUMN: models, sources, tools, MCP & vector store -->
+        <div class="col-sm-4 col-lg-3">
+          @if(['txtgen'].includes(cogna.type)){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <h2 class="cg-panel-title">
+                <fa-icon [icon]="['fas','layer-group']" [fixedWidth]="true" size="xs"
+                  class="text-body-secondary"></fa-icon>
+                Embedding
+              </h2>
             </div>
-            }
-            @if(['txtgen','txtext','imggen','imgcls'].includes(cogna.type) || (['txtcls'].includes(cogna.type) &&
-            cogna.data?.txtclsLlm)){
-            <div class="card overflow-hidden border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <div class="text-body-secondary text-strong col">Inference</div>
-              </div>
-              <div class="list-group list-group-flush">
-                <div class="list-group-item">
-                  <div class="small text-body-secondary">
-                    {{embedModelTypeMap[cogna.inferModelType]?.name}}
-                  </div>
-                  <div>{{cogna.inferModelName}}</div>
-                </div>
-                @if(['imggen'].includes(cogna.type)){
-                <div class="list-group-item">
-                  <div class="small text-body-secondary">
-                    Size
-                  </div>
-                  <div>{{cogna.data?.imgSize}}</div>
-                </div>
-                @if (cogna.data?.genBucket){
-                <div class="list-group-item">
-                  <div class="small text-body-secondary">
-                    Generated image saved to
-                  </div>
-                  <div>Bucket: <strong>{{cogna.data?.genBucketId}} </strong> <a
-                      [routerLink]="['../../'+app?.id+'/bucket']" [queryParams]="{id:cogna.data?.genBucketId}">View
-                      Bucket</a></div>
-                </div>
-                }
-                }
-                @if(['imgcls'].includes(cogna.type)){
-                <div class="list-group-item">
-                  <div class="small text-body-secondary">
-                    Min Score
-                  </div>
-                  <div>{{cogna.data?.imgclsMinScore}}</div>
-                </div>
-                <div class="list-group-item">
-                  <div class="small text-body-secondary">
-                    Limit Result
-                  </div>
-                  <div>{{cogna.data?.imgclsLimit}}</div>
-                </div>
-                }
-              </div>
-              @if(['txtgen'].includes(cogna.type)){
-              <div class="card-body bg-body-tertiary small p-2">
-                Temperature: {{cogna.temperature}}, Max Memory: {{cogna.maxChatMemory}}
-              </div>
+            <div class="cg-panel-body">
+              @if (cogna.embedModelType=='minilm'){
+              <div class="small text-body-secondary">Built-in Model</div>
+              <div class="fw-semibold small">All-MiniLM</div>
+              }@else if(cogna.embedModelType=='e5small'){
+              <div class="small text-body-secondary">Built-in Model</div>
+              <div class="fw-semibold small">Multilingual E5-Small-V2</div>
+              }@else if(cogna.embedModelType=='e5large'){
+              <div class="small text-body-secondary">Built-in Model</div>
+              <div class="fw-semibold small">E5-Large-V2</div>
+              }@else{
+              <div class="small text-body-secondary">{{embedModelTypeMap[cogna.embedModelType]?.name}}</div>
+              <div class="fw-semibold small font-monospace text-truncate">{{cogna.embedModelName}}</div>
               }
             </div>
-            }
+            <div class="cg-panel-footer">
+              <span class="cg-chip font-monospace">Chunk: {{cogna.chunkLength}}</span>
+              <span class="cg-chip font-monospace">Overlap: {{cogna.chunkOverlap}}</span>
+            </div>
+          </section>
+          }
 
-            @if(['txtext'].includes(cogna.type)){
-            <div class="card overflow-hidden border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <div class="text-body-secondary text-strong col">Fields to extract</div>
+          @if(['txtgen','txtext','imggen','imgcls'].includes(cogna.type) || (['txtcls'].includes(cogna.type) &&
+          cogna.data?.txtclsLlm)){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <h2 class="cg-panel-title">
+                <fa-icon [icon]="['fas','sliders']" [fixedWidth]="true" size="xs" class="text-body-secondary"></fa-icon>
+                Inference
+              </h2>
+            </div>
+            <div class="cg-panel-body">
+              <div class="small text-body-secondary">{{embedModelTypeMap[cogna.inferModelType]?.name}}</div>
+              <div class="fw-semibold small font-monospace text-truncate">{{cogna.inferModelName}}</div>
+              @if(['imggen'].includes(cogna.type)){
+              <div class="d-flex align-items-center justify-content-between gap-2 small mt-2">
+                <span class="text-body-secondary">Size</span>
+                <span class="font-monospace">{{cogna.data?.imgSize}}</span>
               </div>
-              <div class="list-group list-group-flush">
-                @let jsonObj = extractJsonObj?.properties;
-                @for(i of jsonObj|keyvalue; track $index){
-                <div class="list-group-item p-2">
-                  @if(['object','array'].includes(i.value?.type)){
-                  <button type="button" class="btn btn-xs btn-outline-secondary float-end"
-                    (click)="nestedProp[i.key]=!nestedProp[i.key]">◢</button>
-                  }
-                  <div>{{i.key}}</div>
-                  <div class="text-body-secondary small">{{i.value?.type}}</div>
+              @if (cogna.data?.genBucket){
+              <div class="small mt-1">
+                <span class="text-body-secondary">Saved to</span>
+                <a class="ms-1" [routerLink]="['../../'+app?.id+'/bucket']"
+                  [queryParams]="{id:cogna.data?.genBucketId}">Bucket {{cogna.data?.genBucketId}}</a>
+              </div>
+              }
+              }
+            </div>
+            @if(['txtgen'].includes(cogna.type)){
+            <div class="cg-panel-footer">
+              <span class="cg-chip font-monospace">Temp: {{cogna.temperature}}</span>
+              <span class="cg-chip font-monospace">Memory: {{cogna.maxChatMemory}}</span>
+            </div>
+            }
+            @if(['imgcls'].includes(cogna.type)){
+            <div class="cg-panel-footer">
+              <span class="cg-chip font-monospace">Min Score: {{cogna.data?.imgclsMinScore}}</span>
+              <span class="cg-chip font-monospace">Limit: {{cogna.data?.imgclsLimit}}</span>
+            </div>
+            }
+          </section>
+          }
+
+          @if(['txtext'].includes(cogna.type)){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">Fields to extract</h2>
+                <span class="cg-count-pill">{{(extractJsonObj?.properties | keyvalue)?.length || 0}}</span>
+              </div>
+            </div>
+            <div class="cg-list-wrap">
+              @let jsonObj = extractJsonObj?.properties;
+              @for(i of jsonObj|keyvalue; track $index){
+              <div class="cg-item-row">
+                <div class="cg-item-body">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="fw-medium small text-truncate" [title]="i.key">{{i.key}}</span>
+                    <span class="cg-chip font-monospace ms-auto">{{i.value?.type}}</span>
+                    @if(['object','array'].includes(i.value?.type)){
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary p-0 px-1"
+                      [title]="nestedProp[i.key] ? 'Hide fields' : 'Show fields'"
+                      (click)="nestedProp[i.key]=!nestedProp[i.key]">
+                      <fa-icon [icon]="['fas',nestedProp[i.key]?'angle-up':'angle-down']" [fixedWidth]="true"
+                        size="xs"></fa-icon>
+                    </button>
+                    }
+                  </div>
                   @if(['object','array'].includes(i.value?.type)){
                   @if (nestedProp[i.key]){
-                  <div class="small list-group mt-2">
-                    @for(j of (jsonObj[i.key]?.properties||jsonObj[i.key]?.items?.properties)|keyvalue;
-                    track $index){
-                    <div class="list-group-item p-2">
-                      <div>{{j.key}}</div>
-                      <div class="text-body-secondary small">{{j.value?.type}}</div>
+                  <div class="d-flex flex-column gap-1 mt-2">
+                    @for(j of (jsonObj[i.key]?.properties||jsonObj[i.key]?.items?.properties)|keyvalue; track $index){
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                      <span class="small text-truncate">{{j.key}}</span>
+                      <span class="cg-chip font-monospace">{{j.value?.type}}</span>
                     </div>
                     }
                   </div>
                   }
                   }
                 </div>
-                }
+              </div>
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No fields specified</div>
+              }
+            </div>
+          </section>
+          }
+
+          @if(['imgcls'].includes(cogna.type) && imgclsCat.length>0){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">SynSet</h2>
+                <span class="cg-count-pill">{{imgclsLen}}</span>
               </div>
             </div>
-            }
-            @if(['imgcls'].includes(cogna.type) && imgclsCat.length>0){
-            <div class="card overflow-hidden border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <div class="text-body-secondary text-strong col">SynSet ({{imgclsLen}} classes)</div>
-              </div>
-              <div class="list-group list-group-flush">
+            <div class="cg-panel-body">
+              <div class="d-flex flex-wrap gap-1">
                 @for(i of imgclsCat; track $index){
-                <div class="list-group-item p-2 small">
-                  {{i}}
-                </div>
-                }
-                @if (imgclsMore>0){
-                <div class="list-group-item p-1 bg-body-tertiary small text-center fst-italic">
-                  ...and {{imgclsMore}} more
-                </div>
+                <span class="cg-chip font-monospace">{{i}}</span>
                 }
               </div>
+              @if (imgclsMore>0){
+              <div class="small text-body-secondary fst-italic mt-2">...and {{imgclsMore}} more</div>
+              }
             </div>
-            }
+          </section>
+          }
 
-            @if (['txtcls'].includes(cogna.type) && cogna.data?.txtclsLlm){
-
-            <div class="card overflow-hidden border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <div class="text-body-secondary text-strong col">
+          @if (['txtcls'].includes(cogna.type) && cogna.data?.txtclsLlm){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title text-truncate">
                   @if (classifyWhat){
                   {{classifyWhat}}
                   }@else {
                   Classifications
                   }
-                </div>
-              </div>
-
-              @if (classifyLookupId){
-              <div class="list-group list-group-flush">
-                @for(le of lookupEntries;track $index){
-                <div class="list-group-item p-2">
-                  {{le.name}}
-                </div>
-                }@empty {
-                <div class="text-body-secondary p-3 text-center fs-4"> No lookup entries</div>
+                </h2>
+                @if (classifyLookupId){
+                <span class="cg-count-pill">{{lookupEntries?.length || 0}}</span>
                 }
               </div>
-              }@else{
-              <div class="text-body-secondary p-3 text-center fs-4"> No lookup selected</div>
+            </div>
+            @if (classifyLookupId){
+            <div class="cg-list-wrap">
+              @for(le of lookupEntries;track $index){
+              <div class="cg-item-row">
+                <div class="cg-item-body">
+                  <div class="fw-medium small text-truncate" [title]="le.name">{{le.name}}</div>
+                </div>
+              </div>
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No lookup entries</div>
               }
             </div>
+            }@else{
+            <div class="cg-panel-body text-body-secondary text-center small">No lookup selected</div>
             }
+          </section>
+          }
 
-            @if(['txtgen'].includes(cogna.type) || (['txtcls'].includes(cogna.type) && !cogna.data?.txtclsLlm)){
-            <div class="card border border-1-5 mb-2" [class.border-success]="ingestSuccess[cogna.id]=='true'"
-              [class.border-danger]="ingestSuccess[cogna.id]=='false'">
-              <div class="card-header p-2">
-                @if (cogna.sources?.length>0){
-                <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
-                  title="Ingest document sources" (click)="ingest(cogna)" [class.disabled]="ingestLoading()[cogna.id] || isTimeWarpingCogna">
-                  @if (ingestLoading()[cogna.id]) {
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  }@else {
-                  <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
-                  }
-                  Ingest
-                </button>
-                }
-                Sources
-                <div class="small">{{cogna.sources.length}} documents</div>
+          @if(['txtgen'].includes(cogna.type) || (['txtcls'].includes(cogna.type) && !cogna.data?.txtclsLlm)){
+          <section class="cg-panel" [class.border-success]="ingestSuccess()[cogna.id]=='true'"
+            [class.border-danger]="ingestSuccess()[cogna.id]=='false'">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">Sources</h2>
+                <span class="cg-count-pill">{{cogna.sources?.length || 0}}</span>
               </div>
-              <div class="list-group list-group-flush" [class.disabled]="ingestLoading()[cogna.id]">
-                @for (b of cogna.sources; track b.id) {
-                <div class="list-group-item p-2 element">
-                  <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    @if(['dataset','bucket','url'].indexOf(b.type)>-1){
-                    <a class="btn btn-round btn-sm btn-info"
-                      href="{{baseApi}}/cogna/{{cogna?.id}}/ingested-file/{{b.id}}?r={{rand}}">
-                      <fa-icon [icon]="['fas','download']" [fixedWidth]="true">
-                      </fa-icon>
-                    </a>
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Source" [disabled]="isTimeWarpingCogna"
-                      (click)="editCognaSrc(editCognaSrcTpl, b, false)">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                    }
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Ingest Source"
-                      (click)="ingestSrc(b)" [class.disabled]="ingestSrcLoading()[b.id] || isTimeWarpingCogna">
-                      @if (ingestSrcLoading()[b.id]) {
-                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                      }@else {
-                      <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
-                      }
-                    </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Clear DB Source"
-                      (click)="clearDbSrc(b)" [class.disabled]="clearDbSrcLoading()[b.id] || isTimeWarpingCogna">
-                      @if (clearDbSrcLoading()[b.id]) {
-                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                      }@else {
-                      <fa-icon [icon]="['fas','remove']" [fixedWidth]="true"></fa-icon>
-                      }
-                    </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Source" [disabled]="isTimeWarpingCogna"
-                      (click)="removeCognaSrc(b)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                  </div>
-                  <fa-icon class="float-start" [icon]="['fas',{'bucket':'box','dataset':'th','url':'globe'}[b.type]]"
+              @if (cogna.sources?.length>0){
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Ingest document sources"
+                (click)="ingest(cogna)" [disabled]="ingestLoading()[cogna.id] || isTimeWarpingCogna">
+                @if (ingestLoading()[cogna.id]) {
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                }@else {
+                <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true" size="xs"></fa-icon>
+                }
+                Ingest
+              </button>
+              }
+            </div>
+            <div class="cg-list-wrap" [class.disabled]="ingestLoading()[cogna.id]">
+              @for (b of cogna.sources; track b.id) {
+              <div class="cg-item-row element">
+                <span class="cg-item-icon">
+                  <fa-icon [icon]="['fas',{'bucket':'box','dataset':'th','url':'globe'}[b.type] || 'file']"
                     [fixedWidth]="true"></fa-icon>
-                  <div class=" ms-4">
-                    @if (['bucket','dataset'].includes(b.type)){
-                    {{b.name}}
-                    <div class="small text-body-secondary">{{b.type}}{{b.srcId?'_'+b.srcId:''}}</div>
-                    }
-                    @if (b.type=='url'){
-                    {{b.srcUrl}}
-                    <div class="small text-body-secondary">Webpage</div>
-                    }
-                    @if (b.lastIngest){
-                    <div class="text-body-secondary small">{{b.lastIngest|date:'medium'}}</div>
+                </span>
+                <div class="cg-item-body">
+                  @if (['bucket','dataset'].includes(b.type)){
+                  <div class="fw-medium small text-truncate" [title]="b.name">{{b.name}}</div>
+                  <div class="text-body-secondary cg-meta font-monospace">{{b.type}}{{b.srcId?'_'+b.srcId:''}}</div>
+                  }
+                  @if (b.type=='url'){
+                  <div class="fw-medium small text-truncate" [title]="b.srcUrl">{{b.srcUrl}}</div>
+                  <div class="text-body-secondary cg-meta">Webpage</div>
+                  }
+                  @if (b.lastIngest){
+                  <div class="text-body-secondary cg-meta">{{b.lastIngest|date:'medium'}}</div>
+                  }@else {
+                  <div class="text-danger cg-meta">Not yet ingested</div>
+                  }
+                </div>
+                <div class="element-edit workspace-action-bar nowrap">
+                  @if(['dataset','bucket','url'].indexOf(b.type)>-1){
+                  <a class="btn btn-sm text-body-secondary" title="Download ingested file"
+                    href="{{baseApi}}/cogna/{{cogna?.id}}/ingested-file/{{b.id}}?r={{rand}}">
+                    <fa-icon [icon]="['fas','download']" [fixedWidth]="true"></fa-icon>
+                  </a>
+                  <button type="button" class="btn btn-sm text-body-secondary" title="Edit Source"
+                    [disabled]="isTimeWarpingCogna" (click)="editCognaSrc(editCognaSrcTpl, b, false)">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  }
+                  <button type="button" class="btn btn-sm text-body-secondary" title="Ingest Source"
+                    (click)="ingestSrc(b)" [disabled]="ingestSrcLoading()[b.id] || isTimeWarpingCogna">
+                    @if (ingestSrcLoading()[b.id]) {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                     }@else {
-                    <div class="text-danger small">Not yet ingested</div>
+                    <fa-icon [icon]="['fas','file-waveform']" [fixedWidth]="true"></fa-icon>
                     }
-
-                  </div>
-                </div>
-                }@empty {
-                <div class="text-body-secondary p-3 text-center fs-4"> No sources specified</div>
-                }
-                <div class="list-group-item p-2">
-                  <a class="pointer" [class.disabled]="isTimeWarpingCogna" (click)="!isTimeWarpingCogna && editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                    Add Source
-                  </a>
-                </div>
-                @if(ingestSuccess()[cogna.id]){
-                <div class="list-group-item p-2 small text-white" [class.bg-success]="ingestSuccess()[cogna.id]=='true'"
-                  [class.bg-danger]="ingestSuccess()[cogna.id]=='false'" [innerHTML]="ingestMessage()[cogna.id]">
-                </div>
-                }
-              </div>
-            </div>
-
-            <div class="card border border-1-5 mb-2">
-              <div class="card-header p-2">
-                Tools
-                <div class="small">{{cogna.tools?.length}} tools</div>
-              </div>
-              <div class="list-group list-group-flush">
-                @for (b of cogna.tools; track b.id) {
-                <div class="list-group-item p-2 element">
-                  <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Tool" [disabled]="isTimeWarpingCogna"
-                      (click)="editCognaTool(editCognaToolTpl, b, false)">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Tool" [disabled]="isTimeWarpingCogna"
-                      (click)="removeCognaTool(b)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                  </div>
-                  <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
-                </div>
-                }@empty {
-                <div class="text-body-secondary p-3 text-center fs-4"> No tool specified</div>
-                }
-                <div class="list-group-item p-2">
-                  <a class="pointer" [class.disabled]="isTimeWarpingCogna"
-                    (click)="!isTimeWarpingCogna && editCognaTool(editCognaToolTpl,{appId:app.id, enabled: true, params:[]},false)">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                    Add Tool
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div class="card border border-1-5 mb-2">
-              <div class="card-header p-2">
-                Model Context Protocol (MCP)
-                <div class="small">{{cogna.mcps?.length}} MCP Server</div>
-              </div>
-              <div class="list-group list-group-flush">
-                @for (b of cogna.mcps; track b.id) {
-                <div class="list-group-item p-2 element">
-                  <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Server" [disabled]="isTimeWarpingCogna"
-                      (click)="editCognaMcp(editCognaMcpTpl, b, false)">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Server" [disabled]="isTimeWarpingCogna"
-                      (click)="removeCognaMcp(b)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                  </div>
-                  <fa-icon class="float-start" [icon]="['fas','file']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
-                </div>
-                }@empty {
-                <div class="text-body-secondary p-3 text-center fs-4"> No MCP server specified</div>
-                }
-                <div class="list-group-item p-2">
-                  <a class="pointer" [class.disabled]="isTimeWarpingCogna"
-                    (click)="!isTimeWarpingCogna && editCognaMcp(editCognaMcpTpl,{appId:app.id, enabled: true, timeout:60},false)">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                    Add MCP server
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div class="card border border-1-5 mb-2">
-              <div class="card-header p-2">
-                <button type="button" class="btn btn-sm border border-1-5 btn-outline-secondary ms-auto float-end"
-                  title="Clear vector collection" (click)="clearDb(cogna)" [class.disabled]="clearDbLoading || isTimeWarpingCogna">
-                  @if (clearDbLoading) {
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  }@else {
-                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                  }
-                  Clear
-                </button>
-                Vector Store/DB
-              </div>
-              <div class="card-body">
-                <img [src]="dbMap[cogna.vectorStoreType]?.logo" height="18" />
-                {{dbMap[cogna.vectorStoreType]?.name}}
-                @if (cogna.vectorStoreType=='inmemory'){
-                <div class="small text-danger mt-2">
-                  Embedding will be stored in memory and will be lost on restart
-                </div>
-                }
-              </div>
-              <div class="card-body bg-body-tertiary small p-2">
-                Max Result: {{cogna.embedMaxResult}}, Min Score: {{cogna.embedMinScore??'None'}}
-              </div>
-            </div>
-            }
-
-            @if(['master'].includes(cogna.type)){
-            <div class="card border border-1-5 mb-2">
-              <div class="card-header p-2">
-                Sub Agents
-                <div class="small">{{cogna.subs?.length}} tools</div>
-              </div>
-              <div class="list-group list-group-flush">
-                @for (b of cogna.subs; track b.id) {
-                <div class="list-group-item p-2 element">
-                  <div class="element-edit nowrap" style="position:absolute;top:3px;right:3px; padding:3px">
-                    <button type="button" class="btn btn-round btn-sm btn-info" title="Edit Sub" [disabled]="isTimeWarpingCogna"
-                      (click)="editCognaSub(editCognaSubTpl, b, false)">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                    <button type="button" class="btn btn-round btn-sm btn-danger" title="Remove Sub" [disabled]="isTimeWarpingCogna"
-                      (click)="removeCognaSub(b)">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
-                      </fa-icon>
-                    </button>
-                  </div>
-                  <fa-icon class="float-start" [icon]="['fas','box']" [fixedWidth]="true"></fa-icon>
-                  <div class="ms-4" [class.strike]="!b.enabled" [class.text-body-secondary]="!b.enabled">{{b.name}}</div>
-                </div>
-                }@empty {
-                <div class="text-body-secondary p-3 text-center fs-4"> No sub specified</div>
-                }
-                <div class="list-group-item p-2">
-                  <a class="pointer" [class.disabled]="isTimeWarpingCogna" (click)="!isTimeWarpingCogna && editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                    Add Sub
-                  </a>
-                </div>
-              </div>
-            </div>
-            }
-          </div>
-          <div class="col-sm-8 col-lg-9">
-            @if(['txtgen','master'].includes(cogna.type)){
-            <div class="rounded rounded-2 bg-body-tertiary border border-1 overflow-hidden shadow-sm">
-              <div class="bg-body-secondary d-flex flex-row p-1 border-bottom">
-                <div class="p-3 py-1">
-                  Preview: ({{embedModelTypeMap[cogna.inferModelType]?.name}} - {{cogna.inferModelName}})
-                </div>
-                <div ngbDropdown class="ms-auto d-inline-block">
-                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-auto"
-                    title="Clear chat memory" [disabled]="isTimeWarpingCogna" ngbDropdownToggle>
-                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Clear Memory
                   </button>
-                  <div ngbDropdownMenu style="min-width:340px">
-                    <button type="button" title="Clear memory for {{user.email}}" ngbDropdownItem
-                      (click)="clearUserMemory(cogna)">
-                      Clear memory for {{user.email}}
-                    </button>
-                    <div class="dropdown-divider"></div>
-                    <button type="button" title="Clear memory for all user" ngbDropdownItem
-                      (click)="clearMemory(cogna)">
-                      Clear memory for all user
-                    </button>
-                  </div>
+                  <button type="button" class="btn btn-sm text-danger" title="Clear DB Source"
+                    (click)="clearDbSrc(b)" [disabled]="clearDbSrcLoading()[b.id] || isTimeWarpingCogna">
+                    @if (clearDbSrcLoading()[b.id]) {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    }@else {
+                    <fa-icon [icon]="['fas','times']" [fixedWidth]="true"></fa-icon>
+                    }
+                  </button>
+                  <button type="button" class="btn btn-sm text-danger" title="Remove Source"
+                    [disabled]="isTimeWarpingCogna" (click)="removeCognaSrc(b)">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
                 </div>
               </div>
-              <div id="chat-response-list" class="p-3 bg-body"
-                style="min-height:300px; max-height:600px;overflow:auto">
-                @for (p of chatResponseList; track $index) {
-                @if(p.text){
-                <div class="p-2 border mb-3 rounded-2 shadow-sm cogna-resp {{p.type}}"
-                  [innerHtml]="targetBlank(p.text)">
-                </div>
-                }
-                @if (p.files?.length>0){
-                <div class="mb-3">
-                  @for(file of p.files; track $index){
-                  @if (file.isImage){
-                  <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file.path" style="max-width:70%">
-                  }@else {
-                  <div><fa-icon [icon]="['far','file']"></fa-icon> {{file.path}} </div>
-                  }
-                  }
-                </div>
-                }
-                }
-                @if (chatPromptLoading()){
-                <div class="text-center">
-                  <div class="spinner-grow" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-                }
-                @if (streamTyping()){
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No sources specified</div>
+              }
+            </div>
+            @if(ingestSuccess()[cogna.id]){
+            <div class="alert m-2 mb-0 py-2 px-3 small"
+              [class.alert-success]="ingestSuccess()[cogna.id]=='true'"
+              [class.alert-danger]="ingestSuccess()[cogna.id]=='false'" [innerHTML]="ingestMessage()[cogna.id]">
+            </div>
+            }
+            <div class="cg-panel-footer">
+              <a class="btn-add-inline pointer" [class.disabled]="isTimeWarpingCogna"
+                (click)="!isTimeWarpingCogna && editCognaSrc(editCognaSrcTpl,{appId:app.id},false)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true" size="xs"></fa-icon>
+                Add Source
+              </a>
+            </div>
+          </section>
 
-                <div class="p-2 border mb-3 rounded-2 shadow-sm cogna-resp response" [innerHtml]="streamResult()">
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">Tools</h2>
+                <span class="cg-count-pill">{{cogna.tools?.length || 0}}</span>
+              </div>
+            </div>
+            <div class="cg-list-wrap">
+              @for (b of cogna.tools; track b.id) {
+              <div class="cg-item-row element">
+                <span class="cg-item-icon"><fa-icon [icon]="['fas','box']" [fixedWidth]="true"></fa-icon></span>
+                <div class="cg-item-body">
+                  <div class="fw-medium small text-truncate" [class.strike]="!b.enabled"
+                    [class.text-body-secondary]="!b.enabled" [title]="b.name">{{b.name}}</div>
                 </div>
+                <div class="element-edit workspace-action-bar nowrap">
+                  <button type="button" class="btn btn-sm text-body-secondary" title="Edit Tool"
+                    [disabled]="isTimeWarpingCogna" (click)="editCognaTool(editCognaToolTpl, b, false)">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm text-danger" title="Remove Tool"
+                    [disabled]="isTimeWarpingCogna" (click)="removeCognaTool(b)">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No tool specified</div>
+              }
+            </div>
+            <div class="cg-panel-footer">
+              <a class="btn-add-inline pointer" [class.disabled]="isTimeWarpingCogna"
+                (click)="!isTimeWarpingCogna && editCognaTool(editCognaToolTpl,{appId:app.id, enabled: true, params:[]},false)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true" size="xs"></fa-icon>
+                Add Tool
+              </a>
+            </div>
+          </section>
+
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">MCP Servers</h2>
+                <span class="cg-count-pill">{{cogna.mcps?.length || 0}}</span>
+              </div>
+            </div>
+            <div class="cg-list-wrap">
+              @for (b of cogna.mcps; track b.id) {
+              <div class="cg-item-row element">
+                <span class="cg-item-icon"><fa-icon [icon]="['fas','server']" [fixedWidth]="true"></fa-icon></span>
+                <div class="cg-item-body">
+                  <div class="fw-medium small text-truncate" [class.strike]="!b.enabled"
+                    [class.text-body-secondary]="!b.enabled" [title]="b.name">{{b.name}}</div>
+                </div>
+                <div class="element-edit workspace-action-bar nowrap">
+                  <button type="button" class="btn btn-sm text-body-secondary" title="Edit Server"
+                    [disabled]="isTimeWarpingCogna" (click)="editCognaMcp(editCognaMcpTpl, b, false)">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm text-danger" title="Remove Server"
+                    [disabled]="isTimeWarpingCogna" (click)="removeCognaMcp(b)">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No MCP server specified</div>
+              }
+            </div>
+            <div class="cg-panel-footer">
+              <a class="btn-add-inline pointer" [class.disabled]="isTimeWarpingCogna"
+                (click)="!isTimeWarpingCogna && editCognaMcp(editCognaMcpTpl,{appId:app.id, enabled: true, timeout:60},false)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true" size="xs"></fa-icon>
+                Add MCP server
+              </a>
+            </div>
+          </section>
+
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <h2 class="cg-panel-title">
+                <fa-icon [icon]="['fas','database']" [fixedWidth]="true" size="xs" class="text-body-secondary"></fa-icon>
+                Vector Store
+              </h2>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2"
+                title="Clear vector collection" (click)="clearDb(cogna)"
+                [disabled]="clearDbLoading || isTimeWarpingCogna">
+                @if (clearDbLoading) {
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                }@else {
+                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true" size="xs"></fa-icon>
+                }
+                Clear
+              </button>
+            </div>
+            <div class="cg-panel-body">
+              <div class="d-flex align-items-center gap-2">
+                <img [src]="dbMap[cogna.vectorStoreType]?.logo" height="18" alt="" />
+                <span class="fw-semibold small text-truncate">{{dbMap[cogna.vectorStoreType]?.name}}</span>
+              </div>
+              @if (cogna.vectorStoreType=='inmemory'){
+              <div class="small text-danger mt-2">
+                Embedding will be stored in memory and will be lost on restart
+              </div>
+              }
+            </div>
+            <div class="cg-panel-footer">
+              <span class="cg-chip font-monospace">Max: {{cogna.embedMaxResult}}</span>
+              <span class="cg-chip font-monospace">Min Score: {{cogna.embedMinScore??'None'}}</span>
+            </div>
+          </section>
+          }
+
+          @if(['master'].includes(cogna.type)){
+          <section class="cg-panel">
+            <div class="cg-panel-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <h2 class="cg-panel-title">Sub Agents</h2>
+                <span class="cg-count-pill">{{cogna.subs?.length || 0}}</span>
+              </div>
+            </div>
+            <div class="cg-list-wrap">
+              @for (b of cogna.subs; track b.id) {
+              <div class="cg-item-row element">
+                <span class="cg-item-icon"><fa-icon [icon]="['fas','robot']" [fixedWidth]="true"></fa-icon></span>
+                <div class="cg-item-body">
+                  <div class="fw-medium small text-truncate" [class.strike]="!b.enabled"
+                    [class.text-body-secondary]="!b.enabled" [title]="b.name">{{b.name}}</div>
+                </div>
+                <div class="element-edit workspace-action-bar nowrap">
+                  <button type="button" class="btn btn-sm text-body-secondary" title="Edit Sub"
+                    [disabled]="isTimeWarpingCogna" (click)="editCognaSub(editCognaSubTpl, b, false)">
+                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <button type="button" class="btn btn-sm text-danger" title="Remove Sub"
+                    [disabled]="isTimeWarpingCogna" (click)="removeCognaSub(b)">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              }@empty {
+              <div class="text-body-secondary text-center small py-3">No sub specified</div>
+              }
+            </div>
+            <div class="cg-panel-footer">
+              <a class="btn-add-inline pointer" [class.disabled]="isTimeWarpingCogna"
+                (click)="!isTimeWarpingCogna && editCognaSub(editCognaSubTpl,{appId:app.id, enabled: true},false)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true" size="xs"></fa-icon>
+                Add Sub
+              </a>
+            </div>
+          </section>
+          }
+        </div>
+
+        <!-- RIGHT COLUMN: interactive preview & testing sandbox -->
+        <div class="col-sm-8 col-lg-9">
+          @if(['txtgen','master'].includes(cogna.type)){
+          <section class="cg-preview">
+            <div class="cg-preview-header">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <fa-icon [icon]="['fas','stream']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
+                <span class="fw-semibold small">Interactive Preview</span>
+                <span class="cg-chip font-monospace text-truncate">
+                  {{embedModelTypeMap[cogna.inferModelType]?.name}} &middot; {{cogna.inferModelName}}
+                </span>
+              </div>
+              <div ngbDropdown class="ms-auto">
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" title="Clear chat memory"
+                  [disabled]="isTimeWarpingCogna" ngbDropdownToggle>
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true" size="xs"></fa-icon> Clear Memory
+                </button>
+                <div ngbDropdownMenu class="dropdown-menu-end">
+                  <button type="button" title="Clear memory for {{user.email}}" ngbDropdownItem
+                    (click)="clearUserMemory(cogna)">
+                    Clear memory for {{user.email}}
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="text-danger" title="Clear memory for all user" ngbDropdownItem
+                    (click)="clearMemory(cogna)">
+                    Clear memory for all user
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="chat-response-list" class="cg-chat-stream">
+              @for (p of chatResponseList; track $index) {
+              @if(p.text){
+              <div class="cogna-resp {{p.type}}" [innerHtml]="targetBlank(p.text)"></div>
+              }
+              @if (p.files?.length>0){
+              <div class="d-flex flex-column gap-2">
+                @for(file of p.files; track $index){
+                @if (file.isImage){
+                <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+file.path" class="img-fluid rounded border"
+                  style="max-width:70%">
+                }@else {
+                <span class="cg-chip"><fa-icon [icon]="['far','file']" [fixedWidth]="true"></fa-icon> {{file.path}}</span>
+                }
                 }
               </div>
+              }
+              }
+              @if (chatPromptLoading()){
+              <div class="text-center">
+                <div class="spinner-grow" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              }
+              @if (streamTyping()){
+              <div class="cogna-resp response" [innerHtml]="streamResult()"></div>
+              }
+            </div>
+
+            <div class="border-top">
+              <div class="small text-body-secondary px-3 py-2 bg-body-tertiary border-bottom">Custom Parameters</div>
               <div>
-                <div class="bg-body-secondary border-top border-bottom p-2">Custom Parameters</div>
-                <div class="mx-n3">
-                  <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
-                    label="Cogna Parameters"
-                    subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
-                    [(ngModel)]="chatPromptParam" [linenumber]="true" required>
-                  </app-cm>
-                </div>
+                <app-cm name="cognaparam" lang="javascript" #codeeditorcognaparam [placeholder]="defaultCognaParam"
+                  label="Cogna Parameters"
+                  subType="active" [skipCheck]="true" [hideControl]="true" [extraAutoComplete]="extraAutoCompleteJs"
+                  [(ngModel)]="chatPromptParam" [linenumber]="true" required>
+                </app-cm>
               </div>
+            </div>
 
-              <div class="bg-body-secondary border-top">
-
-
-                <div class="d-flex flex-row p-2">
-                  @if (cogna.mmSupport){
-                  <label class="rounded-pill me-2 cursor-pointer d-flex align-items-center justify-content-center"
-                    style="width:48px; cursor: pointer;">
-                    <input type="file" [hidden]="true" (change)="onUpload($event)" name="file" />
-                    <fa-icon [icon]="['fas','upload']"></fa-icon>
-                  </label>
-                  }
-
-
-                  <input type="text" id="chat-prompt-text" class="border-0 w-100 rounded-pill px-3 py-1 bg-body-tertiary text-body"
-                    autocomplete="off" (keyup.enter)="chatPrompt(cogna, chatPromptText())" autocapitalize="none"
-                    [(ngModel)]="chatPromptText" maxlength="2000" placeholder="Ask me something...">
-                  <button type="button" class="btn bg-transparent border-0 text-body" style="height:38px; min-width:38px"
-                    [disabled]="!(chatPromptText()?.trim() || fileList.length>0)"
-                    (click)="chatPrompt(cogna, chatPromptText())">
-                    <fa-icon [icon]="['fas','paper-plane']"></fa-icon>
+            <div class="cg-composer">
+              <div class="cg-composer-pill">
+                @if (cogna.mmSupport){
+                <label class="cg-attach" title="Attach image or file (multimodal)">
+                  <input type="file" [hidden]="true" (change)="onUpload($event)" name="file" />
+                  <fa-icon [icon]="['fas','upload']"></fa-icon>
+                </label>
+                }
+                <input type="text" id="chat-prompt-text" class="cg-composer-input" autocomplete="off"
+                  autocapitalize="none" (keyup.enter)="chatPrompt(cogna, chatPromptText())" [(ngModel)]="chatPromptText"
+                  maxlength="2000" placeholder="Ask me something...">
+                <span class="cg-chip font-monospace d-none d-sm-inline">{{chatPromptText()?.length||0}}/2000</span>
+                <button type="button" class="cg-send" title="Send prompt" aria-label="Send prompt"
+                  [disabled]="!(chatPromptText()?.trim() || fileList.length>0)"
+                  (click)="chatPrompt(cogna, chatPromptText())">
+                  <fa-icon [icon]="['fas','paper-plane']" [fixedWidth]="true"></fa-icon>
+                </button>
+              </div>
+              @if(fileList.length>0){
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                @for(f of fileList; track $index){
+                @if (f.isImage){
+                <div class="border rounded-3 bg-body p-2 text-center">
+                  <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f.path" class="rounded d-block mb-1"
+                    style="max-width:120px">
+                  <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
+                    (click)="removeFile($index)">
+                    <fa-icon [icon]="['fas','times']" [fixedWidth]="true" size="xs"></fa-icon>
                   </button>
-                </div>
-                @if(fileList.length>0){
-                <div class="small list-group list-group-flush mb-3">
-                  @for(f of fileList; track $index){
-                  @if (f.isImage){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
-                      (click)="removeFile($index)">&times;</button>
-                    <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f.path" style="max-width:200px">
-                  </div>
-                  }@else {
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
-                      (click)="removeFile($index)">&times;</button> {{f.path}} </div>
-                  }
-                  }
-                </div>
-                }
-
-                <div class="text-end text-body-secondary px-3 py-1 small">
-                  {{chatPromptText()?.length||0}}/2000
-                </div>
-
-              </div>
-            </div>
-            }
-            @if(['txtext'].includes(cogna.type)){
-            <div class="card">
-              <div class="card-header">
-                Testing/Preview
-              </div>
-              <div class="card-body" [class.disabled]="extractLoading()">
-                <div class="form-group mb-3">
-                  <label class="form-label">Extract from documents</label>
-                  <label style="width:100%">
-                    <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
-                    <div class="form-control">
-                      <fa-icon [icon]="['fas','upload']"></fa-icon>
-                      Browse documents
-                    </div>
-                  </label>
-                </div>
-                @if(fileList.length>0){
-                <div class="small list-group list-group-flushed mb-3">
-                  @for(f of fileList; track $index){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
-                      (click)="removeFile($index)">&times;</button> {{f}} </div>
-                  }
-                </div>
-                }
-                <div class="text-center my-2 mx-n3 bg-body-tertiary p-2">or</div>
-                <div class="form-group mb-3">
-                  <label class="form-label">Extract from text</label>
-                  <textarea class="form-control" [(ngModel)]="extractData.text" rows="4" name="extractText"
-                    id="extractText" required></textarea>
-                </div>
-              </div>
-              <div class="card-footer">
-                <button type="button" (click)="startExtractData(cogna)"
-                  [disabled]="extractLoading() || !(fileList.length>0||extractData.text)"
-                  class="btn btn-primary btn-round px-3">
-                  @if(extractLoading()){
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  <span class="visually-hidden" role="status">Loading...</span>
-                  }
-                  Extract Data
-                </button>
-              </div>
-            </div>
-
-            <div class="card mt-2">
-              <div class="card-header">Result</div>
-              <div class="card-body">
-                <div class="px-2 py-1 bg-body-tertiary small limit-height border rounded">
-                  @if (!isEmptyObject(extractRes()[cogna.id])) {
-                  <json-viewer [json]="extractRes()[cogna.id]"></json-viewer>
-                  }@else{
-                  <div class="text-body-secondary">No response</div>
-                  }
-                  @if(extractError()[cogna.id]){
-                  <div class="bg-danger text-white p-2 rounded mt-2">{{extractError()[cogna.id]}}</div>
-                  }
-                </div>
-              </div>
-            </div>
-            }
-            @if(['imgcls'].includes(cogna.type)){
-            <div class="card">
-              <div class="card-header">
-                Testing/Preview
-              </div>
-              <div class="card-body" [class.disabled]="imgclsLoading">
-                <div class="form-group mb-3">
-                  <label class="form-label">Classify image</label>
-                  <label style="width:100%">
-                    <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
-                    <div class="form-control">
-                      <fa-icon [icon]="['fas','upload']"></fa-icon>
-                      Browse documents
-                    </div>
-                  </label>
-                </div>
-                @if(fileList.length>0){
-                <div class="small list-group list-group-flushed mb-3">
-                  @for(f of fileList; track $index){
-                  <div class="list-group-item p-2"><button type="button" class="btn btn-xs btn-outline-secondary float-end"
-                      (click)="removeFile($index)">&times;</button>
-                    <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f" style="max-width:70%">
-                  </div>
-                  }
-                </div>
-                }
-              </div>
-              <div class="card-footer">
-                <button type="button" (click)="startImgClsData(cogna)" [disabled]="imgclsLoading"
-                  class="btn btn-primary btn-round px-3">
-                  @if(imgclsLoading){
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  <span class="visually-hidden" role="status">Loading...</span>
-                  }
-                  Classify Image
-                </button>
-              </div>
-            </div>
-
-            <div class="card mt-2">
-              <div class="card-header">Result</div>
-              <div class="card-body">
-                <div class="px-2 py-1 bg-body-tertiary small rounded border">
-                  @if (!isEmptyObject(imgclsRes[cogna.id])) {
-                  @for(img of imgclsRes[cogna.id]|keyvalue; track $index){
-                  <div class="row g-1">
-                    <div class="col-6">
-                      @if (cogna.inferModelName.includes("yolo")){
-                      <img [src]="baseApi+'/cogna/'+cogna.id+'/file/segmented-'+img.key" width="100%">
-                      }@else {
-                      <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+img.key" width="100%">
-                      }
-                    </div>
-                    <div class="col-6">
-                      <ul>
-                        @for (pred of img.value; track $index){
-                        <li>{{pred.desc}} (Score: {{pred.score}})</li>
-                        }
-                      </ul>
-                    </div>
-                  </div>
-
-
-
-                  }
-
-
-                  }@else{
-                  <div class="text-body-secondary">No response</div>
-                  }
-                  @if(imgclsError[cogna.id]){
-                  <div class="bg-danger text-white p-2 rounded mt-2">{{imgclsError[cogna.id]}}</div>
-                  }
-                </div>
-              </div>
-            </div>
-            }
-            @if(['txtcls'].includes(cogna.type)){
-            <div class="card">
-              <div class="card-header">
-                Testing/Preview
-              </div>
-              <div class="card-body" [class.disabled]="classifyLoading">
-
-
-                @if (cogna.data?.txtclsLlm){
-                <div class="input-group input-group-sm mt-1 mb-2">
-                  <label class="input-group-text">Classification of what *</label>
-                  <input type="text" class="form-control" [(ngModel)]="classifyWhat" name="classifyWhat"
-                    placeholder="ie: Sentiment" required>
-                </div>
-                <div class="input-group input-group-sm mt-1 mb-2">
-                  <label class="input-group-text">Classification Lookup *</label>
-                  <select class="form-select" name="classifyLookupId" (ngModelChange)="loadLookupEntries($event)"
-                    [(ngModel)]="classifyLookupId" required>
-                    <option value="" disabled>Select lookup...</option>
-                    @for (lookup of lookupList; track $index) {
-                    <option [ngValue]="lookup.id">{{lookup.name}}
-                      [{{lookup.id}}]
-                    </option>
-                    }
-                  </select>
                 </div>
                 }@else {
-                <div class="input-group input-group-sm mt-1 mb-2">
-                  <label class="input-group-text">Min Score *</label>
-                  <input type="text" class="form-control" [(ngModel)]="classifyMinScore" name="classifyMinScore"
-                    (change)="startClassifyData(cogna)" placeholder="ie: 0.8" required>
+                <span class="cg-chip">
+                  {{f.path}}
+                  <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
+                    (click)="removeFile($index)">
+                    <fa-icon [icon]="['fas','times']" [fixedWidth]="true" size="xs"></fa-icon>
+                  </button>
+                </span>
+                }
+                }
+              </div>
+              }
+            </div>
+          </section>
+          }
+
+          @if(['txtext'].includes(cogna.type)){
+          <section class="cg-preview">
+            <div class="cg-preview-header">
+              <div class="d-flex align-items-center gap-2">
+                <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
+                <span class="fw-semibold small">Testing / Preview</span>
+              </div>
+            </div>
+            <div class="cg-preview-body" [class.disabled]="extractLoading()">
+              <div class="mb-3">
+                <label class="form-label small fw-medium">Extract from documents</label>
+                <label class="w-100">
+                  <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
+                  <div class="form-control text-body-secondary">
+                    <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon>
+                    Browse documents
+                  </div>
+                </label>
+              </div>
+              @if(fileList.length>0){
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                @for(f of fileList; track $index){
+                <span class="cg-chip">
+                  {{f}}
+                  <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
+                    (click)="removeFile($index)">
+                    <fa-icon [icon]="['fas','times']" [fixedWidth]="true" size="xs"></fa-icon>
+                  </button>
+                </span>
+                }
+              </div>
+              }
+              <div class="text-center small text-body-secondary py-2">or</div>
+              <div>
+                <label class="form-label small fw-medium">Extract from text</label>
+                <textarea class="form-control" [(ngModel)]="extractData.text" rows="4" name="extractText"
+                  id="extractText" required></textarea>
+              </div>
+            </div>
+            <div class="cg-preview-footer">
+              <button type="button" (click)="startExtractData(cogna)"
+                [disabled]="extractLoading() || !(fileList.length>0||extractData.text)"
+                class="btn btn-sm btn-primary px-3">
+                @if(extractLoading()){
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span class="visually-hidden" role="status">Loading...</span>
+                }
+                Extract Data
+              </button>
+            </div>
+          </section>
+
+          <section class="cg-preview mt-3">
+            <div class="cg-preview-header">
+              <span class="fw-semibold small">Result</span>
+            </div>
+            <div class="cg-preview-body">
+              <div class="px-2 py-1 bg-body-tertiary small limit-height border rounded">
+                @if (!isEmptyObject(extractRes()[cogna.id])) {
+                <json-viewer [json]="extractRes()[cogna.id]"></json-viewer>
+                }@else{
+                <div class="text-body-secondary">No response</div>
+                }
+                @if(extractError()[cogna.id]){
+                <div class="bg-danger text-white p-2 rounded mt-2">{{extractError()[cogna.id]}}</div>
+                }
+              </div>
+            </div>
+          </section>
+          }
+
+          @if(['imgcls'].includes(cogna.type)){
+          <section class="cg-preview">
+            <div class="cg-preview-header">
+              <div class="d-flex align-items-center gap-2">
+                <fa-icon [icon]="['fas','photo-film']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
+                <span class="fw-semibold small">Testing / Preview</span>
+              </div>
+            </div>
+            <div class="cg-preview-body" [class.disabled]="imgclsLoading">
+              <div class="mb-3">
+                <label class="form-label small fw-medium">Classify image</label>
+                <label class="w-100">
+                  <input type="file" [hidden]="true" (change)="onUploadExtract($event)" name="file" />
+                  <div class="form-control text-body-secondary">
+                    <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon>
+                    Browse documents
+                  </div>
+                </label>
+              </div>
+              @if(fileList.length>0){
+              <div class="d-flex flex-wrap gap-2">
+                @for(f of fileList; track $index){
+                <div class="border rounded-3 bg-body p-2 text-center">
+                  <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+f" class="rounded d-block mb-1"
+                    style="max-width:120px">
+                  <button type="button" class="btn btn-sm border-0 text-danger p-0" title="Remove file"
+                    (click)="removeFile($index)">
+                    <fa-icon [icon]="['fas','times']" [fixedWidth]="true" size="xs"></fa-icon>
+                  </button>
                 </div>
                 }
+              </div>
+              }
+            </div>
+            <div class="cg-preview-footer">
+              <button type="button" (click)="startImgClsData(cogna)" [disabled]="imgclsLoading"
+                class="btn btn-sm btn-primary px-3">
+                @if(imgclsLoading){
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span class="visually-hidden" role="status">Loading...</span>
+                }
+                Classify Image
+              </button>
+            </div>
+          </section>
 
-                <div class="form-group mb-3">
-                  <div class="form-check form-switch">
-                    <input type="checkbox" class="form-check-input" id="classifyMultiple"
-                      (change)="startClassifyData(cogna)" [(ngModel)]="classifyMultiple" name="classifyMultiple">
-                    <label class="form-check-label" for="classifyMultiple">Classify into multiple results</label>
+          <section class="cg-preview mt-3">
+            <div class="cg-preview-header">
+              <span class="fw-semibold small">Result</span>
+            </div>
+            <div class="cg-preview-body">
+              <div class="px-2 py-1 bg-body-tertiary small rounded border">
+                @if (!isEmptyObject(imgclsRes[cogna.id])) {
+                @for(img of imgclsRes[cogna.id]|keyvalue; track $index){
+                <div class="row g-2">
+                  <div class="col-6">
+                    @if (cogna.inferModelName.includes("yolo")){
+                    <img [src]="baseApi+'/cogna/'+cogna.id+'/file/segmented-'+img.key" width="100%">
+                    }@else {
+                    <img [src]="baseApi+'/cogna/'+cogna.id+'/file/'+img.key" width="100%">
+                    }
+                  </div>
+                  <div class="col-6">
+                    <ul>
+                      @for (pred of img.value; track $index){
+                      <li>{{pred.desc}} (Score: {{pred.score}})</li>
+                      }
+                    </ul>
                   </div>
                 </div>
-
-                <div class="form-group mb-3">
-                  <label class="form-label">Classify from text</label>
-                  <textarea class="form-control" [(ngModel)]="classifyText" rows="4" name="classifyText"
-                    id="classifyText" required></textarea>
-                </div>
-              </div>
-              <div class="card-footer">
-                <button type="button" (click)="startClassifyData(cogna)"
-                  [disabled]="classifyLoading || (cogna.data?.txtclsLlm && (!classifyWhat || !classifyLookupId))"
-                  class="btn btn-primary btn-round px-3">
-                  @if(classifyLoading){
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  <span class="visually-hidden" role="status">Loading...</span>
-                  }
-                  Classify Data</button>
+                }
+                }@else{
+                <div class="text-body-secondary">No response</div>
+                }
+                @if(imgclsError[cogna.id]){
+                <div class="bg-danger text-white p-2 rounded mt-2">{{imgclsError[cogna.id]}}</div>
+                }
               </div>
             </div>
-            <div class="card mt-2">
-              <div class="card-header">Result</div>
-              <div class="card-body">
-                <div class="px-2 py-1 bg-body-tertiary small limit-height rounded border">
-                  @if (classifyIsOk){
-                  @if (!isEmptyObject(classifyRes[cogna.id])) {
+          </section>
+          }
 
-                  @if (classifyMultiple){
-
-                  @for(cat of classifyRes[cogna.id]?.category; track $index; let last = $last){
-                  <div>Category: <strong>{{classifyRes[cogna.id]?.category[$index]}}</strong></div>
-                  @if (classifyRes[cogna.id]?.data){
-                  <div>Data:</div>
-                  <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data[$index] | json}}</code></pre>
-                  }
-                  @if (classifyRes[cogna.id]?.score){
-                  <div>Score: {{classifyRes[cogna.id]?.score[$index]}}</div>
-                  }
-                  @if (!$last){
-                  <hr>
-                  }
-                  }
-
-                  }@else{
-                  <div>Category: <strong>{{classifyRes[cogna.id]?.category}}</strong></div>
-                  @if (classifyRes[cogna.id]?.score){
-                  <div>Score: {{classifyRes[cogna.id]?.score}}</div>
-                  }
-                  @if (classifyRes[cogna.id]?.data){
-                  <div>Data:</div>
-                  <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
-                  }
-
-                  }
-
-                  }@else{
-                  <div class="text-body-secondary">No response</div>
-                  }
-                  }@else{
-                  <div class="text-danger">{{classifyError[cogna.id]}}</div>
-                  }
-
-                </div>
+          @if(['txtcls'].includes(cogna.type)){
+          <section class="cg-preview">
+            <div class="cg-preview-header">
+              <div class="d-flex align-items-center gap-2">
+                <fa-icon [icon]="['fas','tags']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
+                <span class="fw-semibold small">Testing / Preview</span>
               </div>
             </div>
-            }
-            @if(['imggen'].includes(cogna.type)){
-            <div class="card">
-              <div class="card-header">
-                Testing/Preview
+            <div class="cg-preview-body" [class.disabled]="classifyLoading">
+              @if (cogna.data?.txtclsLlm){
+              <div class="input-group input-group-sm mb-2">
+                <label class="input-group-text">Classification of what *</label>
+                <input type="text" class="form-control" [(ngModel)]="classifyWhat" name="classifyWhat"
+                  placeholder="ie: Sentiment" required>
               </div>
-              <div class="card-body" [class.disabled]="imgGenLoading">
-                <div class="form-group">
-                  <label class="form-label">Generate from text</label>
-                  <textarea class="form-control" [(ngModel)]="imgGenText" rows="4" name="imgGenText" id="imgGenText"
-                    required></textarea>
-                </div>
-              </div>
-              <div class="card-footer">
-                <button type="button" (click)="startGenerateImg(cogna)" [disabled]="imgGenLoading"
-                  class="btn btn-primary btn-round px-3">
-                  @if(imgGenLoading){
-                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  <span class="visually-hidden" role="status">Loading...</span>
+              <div class="input-group input-group-sm mb-2">
+                <label class="input-group-text">Classification Lookup *</label>
+                <select class="form-select" name="classifyLookupId" (ngModelChange)="loadLookupEntries($event)"
+                  [(ngModel)]="classifyLookupId" required>
+                  <option value="" disabled>Select lookup...</option>
+                  @for (lookup of lookupList; track $index) {
+                  <option [ngValue]="lookup.id">{{lookup.name}}
+                    [{{lookup.id}}]
+                  </option>
                   }
-                  Generate Image</button>
+                </select>
+              </div>
+              }@else {
+              <div class="input-group input-group-sm mb-2">
+                <label class="input-group-text">Min Score *</label>
+                <input type="text" class="form-control" [(ngModel)]="classifyMinScore" name="classifyMinScore"
+                  (change)="startClassifyData(cogna)" placeholder="ie: 0.8" required>
+              </div>
+              }
+
+              <div class="form-check form-switch my-2">
+                <input type="checkbox" class="form-check-input" id="classifyMultiple"
+                  (change)="startClassifyData(cogna)" [(ngModel)]="classifyMultiple" name="classifyMultiple">
+                <label class="form-check-label small" for="classifyMultiple">Classify into multiple results</label>
+              </div>
+
+              <div>
+                <label class="form-label small fw-medium">Classify from text</label>
+                <textarea class="form-control" [(ngModel)]="classifyText" rows="4" name="classifyText"
+                  id="classifyText" required></textarea>
               </div>
             </div>
+            <div class="cg-preview-footer">
+              <button type="button" (click)="startClassifyData(cogna)"
+                [disabled]="classifyLoading || (cogna.data?.txtclsLlm && (!classifyWhat || !classifyLookupId))"
+                class="btn btn-sm btn-primary px-3">
+                @if(classifyLoading){
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span class="visually-hidden" role="status">Loading...</span>
+                }
+                Classify Data
+              </button>
+            </div>
+          </section>
 
-
-            <div class="card mt-2">
-              <div class="card-header">Result</div>
-              <div class="card-body">
-                <div class="px-2 py-1 bg-body-tertiary small rounded border">
-                  @if (!isEmptyObject(imgGenRes[cogna.id])) {
-                  Generated Image URL:
-                  <div class="mb-3"><a [href]="imgGenRes[cogna.id]?.url"
-                      target="_blank">{{imgGenRes[cogna.id]?.url}}</a></div>
-                  <img [src]="imgGenRes[cogna.id]?.url" width="100%">
-                  }@else{
-                  <div class="text-body-secondary">No response</div>
-                  }
-                  @if(imgGenError[cogna.id]){
-                  <div class="bg-danger text-white p-2 rounded mt-2">{{imgGenError[cogna.id]}}</div>
-                  }
-
-                </div>
+          <section class="cg-preview mt-3">
+            <div class="cg-preview-header">
+              <span class="fw-semibold small">Result</span>
+            </div>
+            <div class="cg-preview-body">
+              <div class="px-2 py-1 bg-body-tertiary small limit-height rounded border">
+                @if (classifyIsOk){
+                @if (!isEmptyObject(classifyRes[cogna.id])) {
+                @if (classifyMultiple){
+                @for(cat of classifyRes[cogna.id]?.category; track $index; let last = $last){
+                <div>Category: <strong>{{classifyRes[cogna.id]?.category[$index]}}</strong></div>
+                @if (classifyRes[cogna.id]?.data){
+                <div>Data:</div>
+                <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data[$index] | json}}</code></pre>
+                }
+                @if (classifyRes[cogna.id]?.score){
+                <div>Score: {{classifyRes[cogna.id]?.score[$index]}}</div>
+                }
+                @if (!$last){
+                <hr>
+                }
+                }
+                }@else{
+                <div>Category: <strong>{{classifyRes[cogna.id]?.category}}</strong></div>
+                @if (classifyRes[cogna.id]?.score){
+                <div>Score: {{classifyRes[cogna.id]?.score}}</div>
+                }
+                @if (classifyRes[cogna.id]?.data){
+                <div>Data:</div>
+                <pre class="text-body"><code class="language-js">{{classifyRes[cogna.id]?.data | json}}</code></pre>
+                }
+                }
+                }@else{
+                <div class="text-body-secondary">No response</div>
+                }
+                }@else{
+                <div class="text-danger">{{classifyError[cogna.id]}}</div>
+                }
               </div>
             </div>
-            }
-          </div>
+          </section>
+          }
+
+          @if(['imggen'].includes(cogna.type)){
+          <section class="cg-preview">
+            <div class="cg-preview-header">
+              <div class="d-flex align-items-center gap-2">
+                <fa-icon [icon]="['fas','image']" [fixedWidth]="true" class="text-body-secondary"></fa-icon>
+                <span class="fw-semibold small">Testing / Preview</span>
+              </div>
+            </div>
+            <div class="cg-preview-body" [class.disabled]="imgGenLoading">
+              <label class="form-label small fw-medium">Generate from text</label>
+              <textarea class="form-control" [(ngModel)]="imgGenText" rows="4" name="imgGenText" id="imgGenText"
+                required></textarea>
+            </div>
+            <div class="cg-preview-footer">
+              <button type="button" (click)="startGenerateImg(cogna)" [disabled]="imgGenLoading"
+                class="btn btn-sm btn-primary px-3">
+                @if(imgGenLoading){
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span class="visually-hidden" role="status">Loading...</span>
+                }
+                Generate Image
+              </button>
+            </div>
+          </section>
+
+          <section class="cg-preview mt-3">
+            <div class="cg-preview-header">
+              <span class="fw-semibold small">Result</span>
+            </div>
+            <div class="cg-preview-body">
+              <div class="px-2 py-1 bg-body-tertiary small rounded border">
+                @if (!isEmptyObject(imgGenRes[cogna.id])) {
+                Generated Image URL:
+                <div class="mb-3"><a [href]="imgGenRes[cogna.id]?.url" target="_blank"
+                    class="text-truncate d-block">{{imgGenRes[cogna.id]?.url}}</a></div>
+                <img [src]="imgGenRes[cogna.id]?.url" width="100%">
+                }@else{
+                <div class="text-body-secondary">No response</div>
+                }
+                @if(imgGenError[cogna.id]){
+                <div class="bg-danger text-white p-2 rounded mt-2">{{imgGenError[cogna.id]}}</div>
+                }
+              </div>
+            </div>
+          </section>
+          }
         </div>
       </div>
-      }@else{
-      <div class="text-body-secondary">
-        <h3>Please select Cogna from the list on the left to view it's data.</h3>
-      </div>
-      }
     </div>
+    }@else{
+    <div class="limit-width px-3 py-3">
+      <div class="border border-dashed rounded-3 p-4 text-center">
+        <div class="fw-semibold mb-1 fs-4 text-body-secondary">No cogna selected</div>
+        <p class="small text-body-tertiary mb-0">
+          Please select a cogna from the list on the left to view its data.
+        </p>
+      </div>
+    </div>
+    }
   </div>
 </div>
 

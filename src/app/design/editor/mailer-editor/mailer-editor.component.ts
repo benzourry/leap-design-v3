@@ -2,8 +2,8 @@ import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, 
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { MailerService } from '../../../service/mailer.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgClass, SlicePipe } from '@angular/common';
+import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { PlatformLocation, SlicePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
@@ -24,14 +24,16 @@ import { baseApi } from '../../../_shared/constant.service';
 import { LambdaService } from '../../../service/lambda.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 @Component({
     selector: 'app-mailer-editor',
     templateUrl: './mailer-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './mailer-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast,
-        NgClass, FilterPipe, EditMailerComponent, EditDatasetComponent, SlicePipe,
-        NotiListComponent, MetaTrailViewerComponent],
+        FilterPipe, EditMailerComponent, EditDatasetComponent, SlicePipe,
+        NotiListComponent, MetaTrailViewerComponent, EditorIdChipComponent,
+        NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MailerEditorComponent implements OnInit {

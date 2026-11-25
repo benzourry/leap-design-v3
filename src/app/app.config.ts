@@ -7,9 +7,19 @@ import { SharedModule } from './_shared/shared.module';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AuthenticationInterceptor } from './_shared/service/auth-interceptor.service';
 import { LoadingInterceptor } from './_shared/service/loading-interceptor.service';
+import { initialConfig, provideEnvironmentNgxMask } from 'ngx-mask';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+        provideEnvironmentNgxMask({
+          dropSpecialCharacters: false,
+          patterns: {
+            ...initialConfig.patterns,
+            a: { pattern: /[a-z]/ },
+            A: { pattern: /[A-Z]/ },
+            B: { pattern: /[a-zA-Z]/ }
+          }
+        }),
         importProvidersFrom(SharedModule),
         // provideZoneChangeDetection({ eventCoalescing: true }), 
         provideZonelessChangeDetection(),

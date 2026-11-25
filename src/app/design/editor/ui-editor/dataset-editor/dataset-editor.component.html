@@ -1,5 +1,5 @@
 <div class="fix-gutter">
-  <div class="p-2 limit-width">
+  <div>
     @if (datasetList?.length==0) {
       <div class="m-a col-sm-12">
         <div class="p-4 text-body-secondary text-center">
@@ -16,25 +16,30 @@
       </div>
     }
     @if (dsError) {
-      <div class="m-3 p-3 bg-danger text-white rounded">
+      <div class="alert alert-danger m-3 limit-width" role="alert">
         <h5>Failed to load dataset with id <strong>{{curDatasetId}}</strong></h5>
         <p>Message: {{dsError.message}}</p>
-        <button type="button" class="btn btn-outline-light btn-round" [disabled]="isTimeWarpingDataset"
+        <button type="button" class="btn btn-outline-danger btn-sm" [disabled]="isTimeWarpingDataset"
           (click)="removeDataset(removeDatasetTpl,{id:curDatasetId, title:'n/a', description:'n/a'})">Remove
         Dataset</button>
       </div>
     }
     @if (curDataset && !dsError) {
       <div class="mb-2">
-        <div class="py-2">
-          <div class="d-flex flex-column">
-            <div class="me-auto d-flex flex-row w-100 mb-2">
-              <h5 class="m-0 text-truncate">{{cleanText(curDataset.title)}} <sup>{{curDataset.id}}</sup></h5>
-              <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curDataset.description)}}
-              </div>
+        <div class="bg-body">
+          <div class="limit-width pt-3 px-3 pb-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <h5 class="m-0">{{cleanText(curDataset.title)}}</h5>
+              <app-editor-id-chip [id]="curDataset.id" kind="Dataset"></app-editor-id-chip>
             </div>
-            <div class="d-flex align-items-baseline">
-              <div class="me-auto mt-2">
+            @if (curDataset.description) {
+              <div class="small text-body-secondary mt-1">{{cleanText(curDataset.description)}}</div>
+            }
+          </div>
+        </div>
+        <div class="workspace-toolbar">
+            <div class="limit-width px-3 d-flex align-items-center">
+              <div class="me-auto text-body-secondary small text-truncate" style="min-width:0">
                 @if (curDataset.type == 'all') {
                   <span>
                     <fa-icon [icon]="['fas','list']" [fixedWidth]="true"></fa-icon>
@@ -52,50 +57,53 @@
                   </span>
                 }
               </div>
-              <div class="text-nowrap">
-                <a type="button" class="btn btn-sm border border-1-5 ms-1"
-                 title="Download Entry JSON" [class.disabled]="offline"
-                  href="{{base}}/report/export-data/{{curDataset.id}}/json" target="_blank">
-                    <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon>
-                </a>
-                <button type="button" class="btn btn-sm border border-1-5 ms-1"
-                 title="Resync Dataset" [class.disabled]="offline || isTimeWarpingDataset"
-                  (click)="resyncDataset(curDataset?.id)">
-                    <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-                </button>
-                <button type="button" class="btn btn-sm border border-1-5 ms-1"
+              <div class="d-flex align-items-center text-nowrap ms-auto align-self-stretch">
+                <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1"
                 title="Edit dataset" [disabled]="isTimeWarpingDataset"
                   (click)="editDataset(editDatasetTpl,curDataset, false, form)">
                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1"
-                title="View Meta Trails"
-                  (click)="viewMetaTrails(viewDatasetMetaTrailTpl, 'dataset_' + curDataset.id, curDataset)">
-                  <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                </button>
-                <!-- TimeWarp Toggle Button -->
-                <button type="button" class="btn btn-sm border border-1-5 ms-1" 
-                  [ngClass]="isTimeWarpingDataset ? 'btn-warning' : 'btn-outline-warning'" 
+                <button type="button" class="btn btn-sm ms-1"
+                  [ngClass]="isTimeWarpingDataset ? 'btn-warning' : 'border-0 text-body-secondary'"
                   title="TimeWarp (Real-time Version Slider)"
                   (click)="toggleTimeWarpDataset()">
                   <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
                 </button>
-                <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1"
-                title="Remove dataset" [disabled]="isTimeWarpingDataset"
-                  (click)="removeDataset(removeDatasetTpl,curDataset)">
-                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                </button>
-                <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
+                <div ngbDropdown class="d-flex align-self-stretch ms-1">
+                  <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
+                    <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                  </button>
+                  <div ngbDropdownMenu class="rounded-3">
+                    <button ngbDropdownItem type="button"
+                      (click)="viewMetaTrails(viewDatasetMetaTrailTpl, 'dataset_' + curDataset.id, curDataset)">
+                      <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Meta Trails
+                    </button>
+                    <a ngbDropdownItem title="Download Entry JSON" [class.disabled]="offline"
+                      href="{{base}}/report/export-data/{{curDataset.id}}/json" target="_blank">
+                      <fa-icon [icon]="['fas','file-export']" [fixedWidth]="true"></fa-icon> Download Entry JSON
+                    </a>
+                    <button ngbDropdownItem type="button" title="Resync Dataset" [class.disabled]="offline || isTimeWarpingDataset"
+                      (click)="resyncDataset(curDataset?.id)">
+                      <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon> Resync Dataset
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button ngbDropdownItem type="button" class="text-danger" title="Remove dataset" [disabled]="isTimeWarpingDataset"
+                      (click)="removeDataset(removeDatasetTpl,curDataset)">
+                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove Dataset
+                    </button>
+                  </div>
+                </div>
+                <a class="btn btn-sm btn-success ms-1"
                 title="Run dataset"
                   routerLink="/run/{{app?.id}}/dataset/{{curDataset.id}}">
                   <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                 </a>
-                
+
               </div>
             </div>
-          </div>
         </div>
 
+        <div class="limit-width p-3">
         <!-- TimeWarp Interface Block -->
         @if (isTimeWarpingDataset) {
          <div class="card bg-warning bg-opacity-10 border-warning mb-3 shadow-sm">
@@ -138,97 +146,98 @@
           Loading...
         }@else{
           @if (!form.data) {
-            <div class="text-white bg-danger p-3 rounded">
+            <div class="alert alert-danger" role="alert">
               <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
               No form found associated with this dataset. It might has been removed.
             </div>
           }
           @if (form.data) {
             <div>
-              <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
-                <div class="flex-grow-1 p-2 text-truncate">
-                  Form: <strong>{{form.data.title}}</strong>
+              <div class="ds-panel mb-3 d-flex flex-row flex-nowrap align-items-center gap-3 p-3">
+                <div class="flex-grow-1 text-truncate">
+                  <div class="small text-body-secondary">Source Form</div>
+                  <strong>{{form.data.title}}</strong>
                   @if (form.data.description) {
-                    <div>{{form.data.description}}</div>
+                    <div class="small text-body-secondary text-truncate">{{form.data.description}}</div>
                   }
                 </div>
-                <div class="p-2"><a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                <div><a class="btn btn-outline-secondary btn-sm text-nowrap"
                 [routerLink]="['../../../'+form.data.appId+'/ui/form']" [queryParams]="{id:form.data.id}">View Form</a></div>
               </div>
               @if (curDataset.items && form) {
-                <div class="mb-3">
-                  <h6>Displayed Columns</h6>
+                <section class="ds-panel mb-3">
+                  <div class="ds-panel-header">
+                    <h6 class="m-0">Displayed Columns <span class="ds-count">{{curDataset.items.length}}</span></h6>
+                    <div class="d-flex flex-wrap gap-1">
+                      <span class="ds-meta">Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong></span>
+                      @if (curDataset.x?.defGroupField) {
+                        <span class="ds-meta">Group: <strong>{{curDataset.x.defGroupField}}</strong></span>
+                      }
+                      @if (curDataset.showIndex) {
+                        <span class="ds-meta"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> Show Index Number</span>
+                      }
+                      @if (curDataset.x?.showSummary) {
+                        <span class="ds-meta"><fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon> Show Summary</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="ds-panel-body">
                   <div style="position:relative">
                     <div cdkDropList cdkDropListOrientation="horizontal"
                       [cdkDropListEnterPredicate]="sameDropList"
-                      class="my-2 column-list touch-overflow scroll--h" [cdkDropListDisabled]="isTimeWarpingDataset"
+                      class="column-list touch-overflow" [cdkDropListDisabled]="isTimeWarpingDataset"
                       (cdkDropListDropped)="dropField($event, curDataset)">
                       @for (field of curDataset.items; track $index) {
                         <div class="column-box d-flex flex-column"
                             cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
-                          <div class="element flex-grow-1 p-2" style="min-width:120px;min-height:50px"
+                          <div class="element column-main flex-grow-1" tabindex="0"
                             (dblclick)="!isTimeWarpingDataset && editColumnText(field,field)">
+                            <div class="workspace-drag-handle cursor-move" title="Drag to reorder" cdkDragHandle>
+                              <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
+                            </div>
                             <div class="element-item" style="user-select:none;">
-                              <div style="font-size: 12px;">
+                              <div class="column-source">
                                 {{cleanText(form[field.root]?.title)}}
                               </div>
-                              <div>{{field.label}}</div>
+                              <div class="column-label">{{field.label}}</div>
                               @if (field.pre) {
-                                <div class="mt-2"
-                                  class="d-inline-block me-2 border border-1 border-info text-info rounded px-1 small"
-                                  style="font-weight: bold;font-size:0.6em"
-                                [title]="field.pre">PRE</div>
+                                <span class="ds-tag bg-info-subtle text-info-emphasis border-info-subtle" [title]="field.pre">PRE</span>
                               }
                               @if (field.x?.showTotal) {
-                                <div class="mt-2"
-                                  class="d-inline-block me-2 border border-1 border-success text-success rounded px-1 small"
-                                  style="font-weight: bold;font-size:0.6em"
-                                [title]="field.pre">TOTAL</div>
+                                <span class="ds-tag bg-success-subtle text-success-emphasis border-success-subtle" [title]="field.pre">TOTAL</span>
                               }
                               @if (field.x?.showAvg) {
-                                <div class="mt-2"
-                                  class="d-inline-block me-2 border border-1 border-success text-success rounded px-1 small"
-                                  style="font-weight: bold;font-size:0.6em"
-                                [title]="field.pre">AVERAGE</div>
+                                <span class="ds-tag bg-success-subtle text-success-emphasis border-success-subtle" [title]="field.pre">AVG</span>
                               }
                             </div>
-                            <div class="element-edit text-info position-absolute around-0">
-                              <div class="d-flex flex-column">
-                                <div class="cursor-move" style="top:5px; left:0px;position: absolute"
-                                  cdkDragHandle>
-                                  <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
-                                  </fa-icon>
-                                </div>
-                                <div style="position:absolute; bottom:5px; right:3px;">
-                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
+                            <div class="element-edit workspace-action-bar">
+                                  <button type="button" class="btn btn-info btn-round btn-sm" title="Edit column" aria-label="Edit column" [disabled]="isTimeWarpingDataset"
                                     (click)="editItem(editItemTpl,field)">
                                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                                     </fa-icon>
                                   </button>
-                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
+                                  <button type="button" class="btn btn-info btn-round btn-sm" title="Remove column" aria-label="Remove column" [disabled]="isTimeWarpingDataset"
                                     (click)="removeDsItem(field)">
                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                   </button>
-                                </div>
-                              </div>
                             </div>
                           </div>
                           @if(field.subs && field.subs?.length>0){
-                            <div class="flex-grow-1 d-flex flex-row border-top" style="border-top-color: var(--bs-border-color, #ccc) !important;" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
+                            <div class="column-subs d-flex flex-row border-top" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
                             [cdkDropListEnterPredicate]="sameDropList"
                             cdkDropListOrientation="horizontal"
                             (cdkDropListDropped)="dropSubs($event, field.subs)">                            
                               @for(cf of field.subs; track $index){
-                                <div class="f-subs-item" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
-                                  <div class="p-2 pb-0 text-truncate" style="max-width:120px">{{cf.label}}</div>
-                                  <div class="p-2 btn-group">
-                                    <div class="btn btn-sm btn-outline-secondary cursor-move" cdkDragHandle>
+                                <div class="f-subs-item element" tabindex="0" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
+                                  <div class="workspace-drag-handle cursor-move" title="Drag to reorder" cdkDragHandle>
                                       <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="isTimeWarpingDataset" (click)="editColumnText(cf, field)">
+                                  </div>
+                                  <div class="element-item text-truncate" [title]="cf.label">{{cf.label}}</div>
+                                  <div class="element-edit workspace-action-bar">
+                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Edit sub-column" aria-label="Edit sub-column" [disabled]="isTimeWarpingDataset" (click)="editColumnText(cf, field)">
                                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-danger" [disabled]="isTimeWarpingDataset" (click)="removeSub(cf, field, $index)">
+                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Remove sub-column" aria-label="Remove sub-column" [disabled]="isTimeWarpingDataset" (click)="removeSub(cf, field, $index)">
                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   </div>
@@ -243,28 +252,24 @@
 
 
                   @if (curDataset.x?.tblcard){
-                    <!-- Card Layout Preview Section -->
-                    <div class="mt-4 mb-3">
-                      <div class="d-flex align-items-center" 
-                          style="cursor: pointer;" 
-                          (click)="showCardPreview = !showCardPreview">
-                        <h6 class="m-0 user-select-none">
-                          <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-secondary me-1"></fa-icon>Card Layout Preview
-                        </h6>
-                        <button type="button" class="btn btn-sm btn-link ms-3 text-secondary p-0 text-decoration-none">
-                          <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true"></fa-icon>
+                    <div class="mt-3 pt-3 border-top">
+                      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <button type="button" class="btn btn-link p-0 text-decoration-none text-body fw-semibold"
+                          [attr.aria-expanded]="showCardPreview" (click)="showCardPreview = !showCardPreview">
+                          <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-body-secondary me-1"></fa-icon>Card Layout Preview
+                          <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true" class="text-body-secondary ms-1"></fa-icon>
                         </button>
-                      </div>
-                      
-                      @if (showCardPreview) {
                         @if (showCardPreview) {
-                          <div class="form-check m-0 ms-4 mb-2">
+                          <div class="form-check form-switch m-0">
                             <input class="form-check-input" type="checkbox" id="enableCardEdit" [(ngModel)]="enableCardPreviewEdit" [disabled]="isTimeWarpingDataset">
-                            <label class="form-check-label small user-select-none text-secondary" for="enableCardEdit">Enable Card Edit</label>
+                            <label class="form-check-label small user-select-none text-body-secondary" for="enableCardEdit">Enable Card Edit</label>
                           </div>
                         }
-                        <div class="forceCard position-relative mt-2">
-                          <div class="centered mx-auto mx-sm-0" style="max-width: 360px;">
+                      </div>
+
+                      @if (showCardPreview) {
+                        <div class="forceCard position-relative mt-3">
+                          <div class="centered mx-auto mx-sm-0 card-preview-surface" style="max-width: 360px;">
                             <table class="table tblcard w-100 m-0">
                               <tbody class="ds-tbody">
                                 <tr class="ds-row" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit"
@@ -405,41 +410,26 @@
                       }
                     </div>
                   }@else {
-                    <div class="mt-4 mb-3 text-warning"><fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="me-1"></fa-icon>Card on smaller screen not enabled. 
+                    <div class="alert alert-warning mt-3 mb-3"><fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="me-1"></fa-icon>Card on smaller screen not enabled.
                       <div class="small ms-4">To enable, Edit Dataset > Options > Enable 'Turn row to card on smaller screen'</div>
                     </div>
                   }
-
-
-                  <div>
-                    Default Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong>
                   </div>
-                  @if (curDataset.x?.defGroupField){
-                    <div>
-                      Default Group: {{curDataset.x.defGroupField}}
-                    </div>
-                  }
-                  @if (curDataset.showIndex) {
-                    <div>
-                      <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true">
-                      </fa-icon>
-                      Show Index Number
-                    </div>
-                  }
-                  @if (curDataset.x?.showSummary) {
-                    <div>
-                      <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true">
-                      </fa-icon>
-                      Show Summary
-                    </div>
-                  }
-                </div>
+                </section>
               }
+              <section class="ds-panel mb-3">
+                <div class="ds-panel-header">
+                  <h6 class="m-0">Actions <span class="ds-count">{{curDataset.actions?.length || 0}}</span></h6>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="isTimeWarpingDataset"
+                    (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file', style:'btn-secondary'})">
+                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New Action
+                  </button>
+                </div>
+                <div class="ds-panel-body">
               @if (curDataset.showAction && (curDataset.canEdit||curDataset.canView||curDataset.canDelete||curDataset.canRetract||!isEmptyObject(curDataset?.screen)||!isEmptyObject(curDataset?.next))) {
-                <div class="mb-3">
-                  <h6>Allowed Actions</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
                   @if (curDataset.x?.canAdd) {
-                    <div>
+                    <div class="ds-meta">
                       <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
                       </fa-icon>
                       Can Add 
@@ -453,7 +443,7 @@
                     </div>
                   }
                   @if (curDataset.canBlast) {
-                    <div>
+                    <div class="ds-meta">
                       <fa-icon [icon]="['far','envelope']" [fixedWidth]="true">
                       </fa-icon>
                       Field used to blast email: <strong>{{curDataset.blastTo}}</strong>
@@ -461,87 +451,74 @@
                   }
                 </div>
               }
-              <div class="p-2 border border-1-5 rounded mb-3">
-                <div class="row width-auto align-items-center g-2" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
+                <div class="d-flex flex-wrap align-items-center gap-2" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
                   [cdkDropListEnterPredicate]="sameDropList"
                   cdkDropListOrientation="mixed"
                   (cdkDropListDropped)="dropAction($event, curDataset.actions)">
                   @for (a of curDataset.actions; track $index) {
-                    <div class="col-auto pe-0 position-relative cursor-move"
+                    <div class="ds-action-chip cursor-move"
                       cdkDrag [cdkDragDisabled]="curAction!=a.id || isTimeWarpingDataset"
-                      (click)="curAction=a.id">
-                      <div class="input-group input-group-sm border border-1-5 rounded"
-                        [class.border-primary]="curAction==a.id">
-                        <span class="input-group-text border-0 bg-body-tertiary text-body">
+                      (click)="curAction=a.id" [class.is-selected]="curAction==a.id">
+                        <span class="d-inline-flex align-items-center gap-1">
                           @if (a.icon) {
                             <fa-icon [icon]="a.icon|iconSplit" [fixedWidth]="true">
                             </fa-icon>
                           }
                           {{a.label}}
                           @if (a.type=='bulk') {
-                            <span style="font-size: 0.7em;"
-                              class="border-secondary small pointer border rounded d-inline-block px-1 py-0 ms-1">BULK</span>
+                            <span class="ds-tag bg-body-secondary text-body-secondary ms-1">BULK</span>
                           }
                           @if (a.pre) {
-                            <div [title]="a.pre" style="font-size: 0.7em;"
-                              class="border-info small pointer border rounded d-inline-block px-1 py-0 ms-1">
-                            PRE</div>
+                            <span [title]="a.pre" class="ds-tag bg-info-subtle text-info-emphasis border-info-subtle ms-1">PRE</span>
                           }
                         </span>
-                        <button type="button" class="btn" [disabled]="isTimeWarpingDataset" (click)="editAction(editActionTpl,a)">
+                        <span class="ds-action-buttons">
+                        <button type="button" class="btn btn-sm" title="Edit action" aria-label="Edit action" [disabled]="isTimeWarpingDataset" (click)="editAction(editActionTpl,a)">
                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn" [disabled]="isTimeWarpingDataset" (click)="deleteAction(a)">
+                        <button type="button" class="btn btn-sm" title="Delete action" aria-label="Delete action" [disabled]="isTimeWarpingDataset" (click)="deleteAction(a)">
                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                      </div>
+                        </span>
                     </div>
                   }
                 </div>
-                <div class="mt-2">
-                  <button type="button" class="btn btn-secondary btn-sm" [disabled]="isTimeWarpingDataset"
-                    (click)="editAction(editActionTpl,{type:'dropdown',icon:'far:file', style:'btn-secondary'})">
-                    <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
-                    </fa-icon>
-                  New Action</button>
                 </div>
-              </div>
+              </section>
+              @if ((curDataset.filters.length>0 && form) || qFilter || !isEmptyObject(curDataset?.presetFilters)) {
+              <section class="ds-panel mb-3">
+                <div class="ds-panel-header"><h6 class="m-0">Filters &amp; Conditions</h6></div>
+                <div class="ds-panel-body d-flex flex-column gap-4">
               @if (curDataset.filters.length>0 && form) {
-                <div class="mb-3">
-                  <h6>Allowed Filters</h6>
+                <div>
+                  <h6 class="small text-body-secondary mb-2">Allowed Filters <span class="ds-count">{{curDataset.filters.length}}</span></h6>
                   <div style="position:relative">
-                    <div cdkDropList cdkDropListOrientation="vertical" [cdkDropListDisabled]="isTimeWarpingDataset"
+                    <div class="d-flex flex-column gap-2" cdkDropList cdkDropListOrientation="vertical" [cdkDropListDisabled]="isTimeWarpingDataset"
                       [cdkDropListEnterPredicate]="sameDropList"
                       (cdkDropListDropped)="dropFilter($event, curDataset.filters)">
                       @for (field of curDataset.filters; track field.id) {
-                        <div class="element p-2 mb-1 bg-body-tertiary text-body border rounded small position-relative" (dblclick)="!isTimeWarpingDataset && editFilterText(field)" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
+                        <div class="element ds-filter" tabindex="0" (dblclick)="!isTimeWarpingDataset && editFilterText(field)" cdkDrag [cdkDragDisabled]="isTimeWarpingDataset">
+                          <div class="workspace-drag-handle cursor-move" title="Drag to reorder" cdkDragHandle>
+                            <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
+                          </div>
                           <div class="element-item" style="user-select:none;">
-                            <div style="font-size: 12px;" class="text-body-secondary">
+                            <div class="column-source">
                               {{cleanText(form[field.root]?.title)}}
                             </div>
-                            <span>{{field.label}}</span>
+                            <span class="column-label">{{field.label}}</span>
                           </div>
-                          <div class="element-edit text-info position-absolute around-0">
-                            <div class="d-flex flex-column">
-                              <div class="cursor-move" style="top:5px; left:0px;position: absolute"
-                                cdkDragHandle>
-                                <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true">
-                                </fa-icon>
-                              </div>
-                              <div style="position:absolute; bottom:5px; right:3px;">
-                                <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
+                          <div class="element-edit workspace-action-bar">
+                                <button type="button" class="btn btn-info btn-round btn-sm" title="Edit filter" aria-label="Edit filter" [disabled]="isTimeWarpingDataset"
                                   (click)="editFilterText(field)">
                                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                                   </fa-icon>
                                 </button>
-                                <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingDataset"
+                                <button type="button" class="btn btn-info btn-round btn-sm" title="Remove filter" aria-label="Remove filter" [disabled]="isTimeWarpingDataset"
                                   (click)="removeFilter($index)">
                                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                 </button>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       }
@@ -551,39 +528,39 @@
               }     
               @if (qFilter) {
                 <div>
-                  <h6>Filters Condition Structure</h6>
+                  <h6 class="small text-body-secondary mb-2">Filters Condition Structure</h6>
                   @if (isArray(qFilter)){
-                  <div class="my-2 ms-2">
-                    <div class="cond-badge" style="float:left">
-                      <div
-                        class="p-1 ms-1 text-center rounded-2 position-relative bg-secondary-subtle text-body fw-bold">
-                        {{curDataset.presetFilters['@cond']||'AND'}}
-                      </div>
-                    </div>
-                    <div class="tree-cont" style="margin-left:60px">
+                  <div class="overflow-x-auto py-1">
+                    <div class="cond-tree">
+                    @let rootCondition = curDataset.presetFilters['@cond'] || 'AND';
+                    @let rootIsOr = rootCondition == 'OR';
+                    <div class="cond-badge"
+                      [class.bg-warning-subtle]="rootIsOr"
+                      [class.text-warning-emphasis]="rootIsOr"
+                      [class.border-warning-subtle]="rootIsOr"
+                      [class.bg-primary-subtle]="!rootIsOr"
+                      [class.text-primary-emphasis]="!rootIsOr"
+                      [class.border-primary-subtle]="!rootIsOr">{{rootCondition}}</div>
+                    <div class="tree-cont">
                       @for (node of qFilter; track $index) {
                         <ng-container [ngTemplateOutlet]="treeNode"
                           [ngTemplateOutletContext]="{ $implicit: node }">
                         </ng-container>
                       }
                     </div>
+                    </div>
                   </div>
                   <ng-template #treeNode let-data>
-                    @for (h of data|keyvalue; track $index; let i = $index) {
+                    @for (h of data|keyvalue; track $index) {
                       @if (['$or','$and'].includes(h.key)) {
+                        @let isOr = h.key == '$or';
                         <div class="tree-wrapper">
-                          <div class="cond-badge" style="float:left">
-                            <div
-                              class="p-1 ms-1 text-center rounded-2 position-relative bg-secondary-subtle text-body fw-bold">
-                              @if (h.key=='$or') {
-                                <div>OR</div>
-                              }
-                              @if (h.key=='$and') {
-                                <div>AND</div>
-                              }
-                            </div>
+                          <div class="cond-badge"
+                            [class.bg-warning-subtle]="isOr" [class.text-warning-emphasis]="isOr" [class.border-warning-subtle]="isOr"
+                            [class.bg-primary-subtle]="!isOr" [class.text-primary-emphasis]="!isOr" [class.border-primary-subtle]="!isOr">
+                              <div>{{isOr ? 'OR' : 'AND'}}</div>
                           </div>
-                          <div class="tree-cont" style="margin-left:60px;">
+                          <div class="tree-cont">
                             @for (child of data[h.key]; track $index) {
                               <ng-container
                                 [ngTemplateOutlet]="treeNode"
@@ -593,30 +570,27 @@
                           </div>
                         </div>
                       } @else {
-                        <div class="param-badge pb-1" style="margin-left:0px;">
-                          <div
-                            class="p-2 py-1 ms-1 border border-1-5 rounded-1 position-relative bg-body-tertiary text-body">
-                            {{h.key}}
-                          </div>
+                        <div class="param-badge">
+                          <div class="cond-leaf bg-body-tertiary">{{h.key}}</div>
                         </div>
                       }
                     }
                   </ng-template>
                 }@else {
-                  <span class="text-danger">Invalid query filter</span>
+                  <span class="text-danger-emphasis">Invalid query filter</span>
                 }
                 </div>
               }
               @if (!isEmptyObject(curDataset?.presetFilters)) {
-                <div class="mb-3">
-                  <h6>Preset Conditions</h6>
+                <div>
+                  <h6 class="small text-body-secondary mb-2">Preset Conditions</h6>
                   @for (c of curDataset.presetFilters|keyvalue; track $index) {
                     @if (c.key.startsWith('$')||c.key.startsWith('@')) {
                       <div>
-                        <div class="input-group mb-1">
-                          <span class="input-group-text" style="cursor:pointer"
+                        <div class="input-group input-group-sm mb-2">
+                          <span class="input-group-text font-monospace" style="cursor:pointer"
                           (click)="!isTimeWarpingDataset && editPresetKey(c)">{{c.key}}</span>
-                          <span class="input-group-text" style="cursor:pointer"
+                          <span class="input-group-text bg-body flex-grow-1 font-monospace" style="cursor:pointer"
                           (click)="!isTimeWarpingDataset && editPresetValue(c)">{{c.value}}</span>
                           <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="isTimeWarpingDataset" (click)="removePreset(c.key)">
                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
@@ -627,56 +601,71 @@
                   }
                 </div>
               }
+                </div>
+              </section>
+              }
+              <div class="row g-3 mb-3">
               @if (curDataset.exportXls||curDataset.exportCsv||curDataset.exportPdf) {
-                <div class="mb-3">
-                  <h6>Exportable to</h6>
+                <div class="col-md-6 order-md-2">
+                <section class="ds-panel h-100">
+                  <div class="ds-panel-header"><h6 class="m-0">Exportable to</h6></div>
+                  <div class="ds-panel-body d-flex flex-wrap gap-2">
                   @if (curDataset.exportXls) {
-                    <div>
-                      <fa-icon [icon]="['fas','file-excel']" [fixedWidth]="true">
+                    <div class="ds-meta">
+                      <fa-icon class="text-success" [icon]="['fas','file-excel']" [fixedWidth]="true">
                       </fa-icon>
                       Microsoft Excel (.xlsx)
                     </div>
                   }
                   @if (curDataset.exportCsv) {
-                    <div>
-                      <fa-icon [icon]="['fas','file-csv']" [fixedWidth]="true">
+                    <div class="ds-meta">
+                      <fa-icon class="text-primary" [icon]="['fas','file-csv']" [fixedWidth]="true">
                       </fa-icon>
                       Comma separated value (.csv)
                     </div>
                   }
                   @if (curDataset.exportPdf) {
-                    <div>
-                      <fa-icon [icon]="['fas','file-pdf']" [fixedWidth]="true">
+                    <div class="ds-meta">
+                      <fa-icon class="text-danger" [icon]="['fas','file-pdf']" [fixedWidth]="true">
                       </fa-icon>
                       Portable document format (.pdf)
                     </div>
                   }
+                  </div>
+                </section>
                 </div>
               }
-              <div class="mb-3">
-                <h6>Accessible only to</h6>
+              <div [class.col-md-6]="curDataset.exportXls||curDataset.exportCsv||curDataset.exportPdf" class="col-12 order-first">
+              <section class="ds-panel h-100">
+                <div class="ds-panel-header"><h6 class="m-0">Accessible only to</h6></div>
+                <div class="ds-panel-body d-flex flex-wrap gap-2">
                 @if (curDataset.accessList && curDataset.accessList.length>0) {
                   @for (access of curDataset.accessList; track $index) {
-                    <div>
+                    <div class="ds-meta">
                       <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon>
-                      {{accessListMap[access]?.name}} — {{access}}
+                      <strong class="text-body">{{accessListMap[access]?.name}}</strong> <span class="font-monospace">{{access}}</span>
                     </div>
                   }
                 }@else {
-                  <div>
+                  <div class="ds-meta">
                     <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon> * Anyone
                   </div>
                 }
+                </div>
+              </section>
+              </div>
               </div>
               @if (curDataset.statusFilter) {
-                <div class="mb-3">
-                  <h6>List entry with the following status</h6>
+                <section class="ds-panel mb-3">
+                  <div class="ds-panel-header"><h6 class="m-0">List Entry With Status</h6></div>
+                  <div class="ds-panel-body small">
 
-                  <div>{{form['data']?.title}}</div>
+                  <div class="fw-semibold mb-2">{{form['data']?.title}}</div>
                   <div class="small">
-                    <ng-container>
+                    <div class="d-flex flex-wrap gap-3 mb-2">
                       <div>
                         <fa-icon
+                          [class.text-primary]="curDataset.statusFilter[-1]?.indexOf('drafted')>-1"
                           [icon]="['far',curDataset.statusFilter[-1]?.indexOf('drafted')>-1?'check-square':'square']"
                         [fixedWidth]="true"></fa-icon>
                         Drafted
@@ -684,18 +673,21 @@
                       @if (form['data']?.tiers?.length>0) {
                         <div>
                           <fa-icon
+                            [class.text-primary]="curDataset.statusFilter[-1]?.indexOf('submitted')>-1"
                             [icon]="['far',curDataset.statusFilter[-1]?.indexOf('submitted')>-1?'check-square':'square']"
                           [fixedWidth]="true"></fa-icon>
                           Submitted
                         </div>
                       }
-                    </ng-container>
+                    </div>
                     @for (tier of form['data']?.tiers; track tier.id) {
-                      <div class="mt-1 ms-4">
-                        <div>{{tier.name}}</div>
+                      <div class="mt-2 ps-3 border-start border-2">
+                        <div class="fw-medium text-body-secondary mb-1">{{tier.name}}</div>
+                        <div class="d-flex flex-wrap gap-3">
                         @for (action of tier.actions|keyvalue; track $index) {
                           <div class="d-inline-block me-2">
                             <fa-icon
+                              [class.text-primary]="curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf(action.key)>-1"
                               [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf(action.key)>-1?'check-square':'square']"
                             [fixedWidth]="true"></fa-icon>
                             {{action.value.label}}
@@ -703,6 +695,7 @@
                         }
                         <div class="d-inline-block me-2">
                           <fa-icon
+                            [class.text-primary]="curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('resubmitted')>-1"
                             [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('resubmitted')>-1?'check-square':'square']"
                           [fixedWidth]="true"></fa-icon>
                           Resubmitted
@@ -710,21 +703,24 @@
                         @if (tier.alwaysApprove) {
                           <div class="d-inline-block me-2">
                             <fa-icon
+                              [class.text-primary]="curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('always_approve')>-1"
                               [icon]="['far',curDataset.statusFilter[tier.id] && curDataset.statusFilter[tier.id]?.indexOf('always_approve')>-1?'check-square':'square']"
                             [fixedWidth]="true"></fa-icon>
                             Always Approve
                           </div>
                         }
+                        </div>
                       </div>
                     }
                   </div>
 
                   @if (curDataset.prevStatusFilter && form['prev']) {
-                    <div class="mt-2">{{form['prev']?.title}}</div>
+                    <div class="fw-semibold mt-3 mb-2">{{form['prev']?.title}}</div>
                     <div class="small">
-                      <ng-container>
+                      <div class="d-flex flex-wrap gap-3 mb-2">
                         <div>
                           <fa-icon
+                            [class.text-primary]="curDataset.prevStatusFilter[-1]?.indexOf('drafted')>-1"
                             [icon]="['far',curDataset.prevStatusFilter[-1]?.indexOf('drafted')>-1?'check-square':'square']"
                           [fixedWidth]="true"></fa-icon>
                           Drafted
@@ -732,18 +728,21 @@
                         @if (form['data']?.tiers?.length>0) {
                           <div>
                             <fa-icon
+                              [class.text-primary]="curDataset.prevStatusFilter[-1]?.indexOf('submitted')>-1"
                               [icon]="['far',curDataset.prevStatusFilter[-1]?.indexOf('submitted')>-1?'check-square':'square']"
                             [fixedWidth]="true"></fa-icon>
                             Submitted
                           </div>
                         }
-                      </ng-container>
+                      </div>
                       @for (tier of form['prev']?.tiers; track tier.id) {
-                        <div class="mt-1 ms-4">
-                          <div>{{tier.name}}</div>
+                        <div class="mt-2 ps-3 border-start border-2">
+                          <div class="fw-medium text-body-secondary mb-1">{{tier.name}}</div>
+                          <div class="d-flex flex-wrap gap-3">
                           @for (action of tier.actions|keyvalue; track $index) {
                             <div class="d-inline-block me-2">
                               <fa-icon
+                                [class.text-primary]="curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf(action.key)>-1"
                                 [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf(action.key)>-1?'check-square':'square']"
                               [fixedWidth]="true"></fa-icon>
                               {{action.value.label}}
@@ -751,6 +750,7 @@
                           }
                           <div class="d-inline-block me-2">
                             <fa-icon
+                              [class.text-primary]="curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('resubmitted')>-1"
                               [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('resubmitted')>-1?'check-square':'square']"
                             [fixedWidth]="true"></fa-icon>
                             Resubmitted
@@ -758,61 +758,75 @@
                           @if (tier.alwaysApprove) {
                             <div class="d-inline-block me-2">
                               <fa-icon
+                                [class.text-primary]="curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('always_approve')>-1"
                                 [icon]="['far',curDataset.prevStatusFilter[tier.id] && curDataset.prevStatusFilter[tier.id]?.indexOf('always_approve')>-1?'check-square':'square']"
                               [fixedWidth]="true"></fa-icon>
                               Always Approve
                             </div>
                           }
+                          </div>
                         </div>
                       }
                     </div>
                   }
-
-
-                </div>
+                  </div>
+                </section>
               }              
               
-              <div class="mb-3">
-                <h6>RESTful Endpoints</h6>
-                <div>
-                  <fa-icon [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
-                  {{baseApi}}/entry/list?datasetId={{curDataset.id}}
+              <section class="ds-panel mb-3">
+                <div class="ds-panel-header"><h6 class="m-0">RESTful Endpoints</h6></div>
+                <div class="ds-panel-body d-flex flex-column gap-2">
+                <div class="ds-endpoint">
+                  <fa-icon class="text-body-secondary" [icon]="['fas', 'lock']" [fixedWidth]="true"></fa-icon>
+                  <code>{{baseApi}}/entry/list?datasetId={{curDataset.id}}</code>
+                  <button type="button" class="btn btn-sm" title="Copy list endpoint" aria-label="Copy list endpoint"
+                    (click)="copyEndpoint(baseApi + '/entry/list?datasetId=' + curDataset.id)"><fa-icon [icon]="['fas','copy']"></fa-icon></button>
                 </div>
-                <div>
-                  <fa-icon [icon]="['fas', 'history']" [fixedWidth]="true"></fa-icon>
-                  {{baseApi}}/entry/count?datasetId={{curDataset.id}}
+                <div class="ds-endpoint">
+                  <fa-icon class="text-body-secondary" [icon]="['fas', 'history']" [fixedWidth]="true"></fa-icon>
+                  <code>{{baseApi}}/entry/count?datasetId={{curDataset.id}}</code>
+                  <button type="button" class="btn btn-sm" title="Copy count endpoint" aria-label="Copy count endpoint"
+                    (click)="copyEndpoint(baseApi + '/entry/count?datasetId=' + curDataset.id)"><fa-icon [icon]="['fas','copy']"></fa-icon></button>
                 </div>
-                <div>
-                  <fa-icon [icon]="['fas', 'sync']" [fixedWidth]="true"></fa-icon>
-                  {{baseApi}}/entry/resync?datasetId={{curDataset.id}}
+                <div class="ds-endpoint">
+                  <fa-icon class="text-body-secondary" [icon]="['fas', 'sync']" [fixedWidth]="true"></fa-icon>
+                  <code>{{baseApi}}/entry/resync?datasetId={{curDataset.id}}</code>
+                  <button type="button" class="btn btn-sm" title="Copy resync endpoint" aria-label="Copy resync endpoint"
+                    (click)="copyEndpoint(baseApi + '/entry/resync?datasetId=' + curDataset.id)"><fa-icon [icon]="['fas','copy']"></fa-icon></button>
                 </div>
                 @if (curDataset.publicEp) {
-                  <div>
-                    <fa-icon [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
-                    {{baseApi}}/public/entry/list?datasetId={{curDataset.id}}
+                  <div class="ds-endpoint">
+                    <fa-icon class="text-danger" [icon]="['fas', 'globe']" [fixedWidth]="true"></fa-icon>
+                    <code>{{baseApi}}/public/entry/list?datasetId={{curDataset.id}}</code>
+                    <button type="button" class="btn btn-sm" title="Copy public endpoint" aria-label="Copy public endpoint"
+                      (click)="copyEndpoint(baseApi + '/public/entry/list?datasetId=' + curDataset.id)"><fa-icon [icon]="['fas','copy']"></fa-icon></button>
                   </div>
                 
-                  <div class="text-danger mt-2">
+                  <div class="alert alert-warning mb-0 d-flex gap-2" role="alert">
+                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
                     Public Endpoint enabled. To disable, change the setting in Edit Dataset &gt; Options &gt; Public endpoint.
                   </div>
                 }
 
                 @if (curDataset?.x?.skipMask){
-                  <div class="text-danger mt-2 blink_me">
+                  <div class="alert alert-danger mb-0 d-flex gap-2" role="alert">
+                    <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
                     Column masking is disabled and could expose sensitive data. To enable, change in Edit Dataset &gt; Options
                     &gt;
                     Uncheck 'Disable field mask...'
                   </div>
                 }
-              </div>
-              <div class="bg-danger text-white mb-3 p-3 rounded">
-                <button type="button" class="btn btn-round btn-light btn-sm float-end" [disabled]="isTimeWarpingDataset" (click)="clearEntry()">Clear all
+                </div>
+              </section>
+              <div class="ds-panel border-danger-subtle bg-danger-subtle mb-3 p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div><strong class="text-danger-emphasis">Danger Zone</strong><div class="small text-body-secondary">Clear entries for the dataset</div></div>
+                <button type="button" class="btn btn-outline-danger btn-sm" [disabled]="isTimeWarpingDataset" (click)="clearEntry()">Clear all
                 entry</button>
-                Clear entries for the dataset
               </div>
             </div>
           }
         }
+        </div>
       </div>
     }
   </div>

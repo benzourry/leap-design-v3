@@ -1,0 +1,108 @@
+@use '../ui-editor/editor-workspace';
+
+@include editor-workspace.workspace;
+
+.min-w-0 { min-width: 0; }
+
+.scroll-cap {
+  max-height: 400px;
+  overflow: auto;
+}
+
+/* Pill frame shared by the visibility pill, the HTTP method and the result status. */
+.endpoint-pill,
+.endpoint-method,
+.result-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.endpoint-pill {
+  font-size: 0.75rem;
+}
+
+.endpoint-pill.is-shared,
+.result-status {
+  border-color: var(--bs-success-border-subtle);
+  background: var(--bs-success-bg-subtle);
+  color: var(--bs-success-text-emphasis);
+}
+
+.endpoint-pill.is-private {
+  border-color: var(--bs-danger-border-subtle);
+  background: var(--bs-danger-bg-subtle);
+  color: var(--bs-danger-text-emphasis);
+}
+
+.endpoint-method {
+  border-radius: var(--bs-border-radius-sm);
+  font-family: var(--bs-font-monospace);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  &.is-get {
+    border-color: var(--bs-success-border-subtle);
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+  }
+
+  &.is-post {
+    border-color: var(--bs-primary-border-subtle);
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+  }
+}
+
+.result-status {
+  font-family: var(--bs-font-monospace);
+}
+
+.auth-key,
+.auth-flow {
+  color: var(--bs-secondary-color);
+  font-size: 0.72rem;
+}
+
+.auth-key {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.auth-flow {
+  font-family: var(--bs-font-monospace);
+}
+
+/* Segmented Print / Parsed switch */
+.result-toggle {
+  padding: 0.15rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-secondary-bg);
+
+  .btn {
+    --bs-btn-color: var(--bs-secondary-color);
+    --bs-btn-bg: transparent;
+    --bs-btn-hover-color: var(--bs-body-color);
+    --bs-btn-hover-bg: transparent;
+    padding: 0.2rem 0.8rem;
+    border: 0;
+    border-radius: calc(var(--bs-border-radius) - 0.15rem);
+    font-size: 0.8125rem;
+  }
+
+  .btn-check:checked + .btn {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    box-shadow: var(--bs-box-shadow-sm);
+  }
+}

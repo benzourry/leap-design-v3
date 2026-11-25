@@ -20,6 +20,7 @@ import { EditLookupEntryComponent } from '../../../_shared/modal/edit-lookup-ent
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 import { CommService } from '../../../_shared/service/comm.service';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 @Component({
     selector: 'app-lookup-editor',
@@ -28,7 +29,7 @@ import { CommService } from '../../../_shared/service/comm.service';
         './lookup-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
         NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent,
-        CdkDropList, CdkDrag, CdkDragHandle],
+        CdkDropList, CdkDrag, CdkDragHandle, EditorIdChipComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LookupEditorComponent implements OnInit {

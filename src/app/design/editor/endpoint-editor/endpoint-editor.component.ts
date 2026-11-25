@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, viewChild } from '@
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
 import { EndpointService } from '../../../service/endpoint.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, JsonPipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
@@ -16,6 +16,7 @@ import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { ChangeDetectorRef } from '@angular/core';
 import { LambdaService } from '../../../service/lambda.service';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 @Component({
     selector: 'app-endpoint-editor',
@@ -23,7 +24,8 @@ import { LambdaService } from '../../../service/lambda.service';
     templateUrl: './endpoint-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './endpoint-editor.component.scss'],
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, 
-        NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, JsonPipe, JsonViewerComponent]
+        NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, JsonPipe, JsonViewerComponent, EditorIdChipComponent,
+        NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem]
 })
 export class EndpointEditorComponent implements OnInit {
 
@@ -241,6 +243,7 @@ export class EndpointEditorComponent implements OnInit {
 
     requestParams: any = {}
     result:any;
+    resultStatus = '';
     error:any;
 
     endpointPromptTpl = viewChild('endpointPromptTpl');
@@ -252,7 +255,8 @@ export class EndpointEditorComponent implements OnInit {
             this.endpointService.runEndpoint(this.endpointId, p)
             .subscribe({
                 next:(res)=>{
-                    this.result = res;
+                    this.result = res.body;
+                    this.resultStatus = `${res.status} ${res.statusText || 'OK'}`;
                     this.cdr.detectChanges();
                 },
                 error: (error)=>{
@@ -274,6 +278,14 @@ export class EndpointEditorComponent implements OnInit {
         }
     }
 
+    copyText(value: string, label: string) {
+        navigator.clipboard.writeText(value).then(() => {
+            this.toastService.show(`${label} copied to clipboard`, { classname: 'bg-success text-light' });
+        }).catch(() => {
+            this.toastService.show(`Failed to copy ${label}`, { classname: 'bg-danger text-light' });
+        });
+    }
+
     copySnippet() {
         if (!this.endpoint) return;
         
@@ -289,11 +301,7 @@ export class EndpointEditorComponent implements OnInit {
         
         snippet += `}, data => {\n  // data handling\n}, error => {\n  // error handling\n});`;
 
-        navigator.clipboard.writeText(snippet).then(() => {
-            this.toastService.show('Snippet copied to clipboard', { classname: 'bg-success text-light' });
-        }).catch(() => {
-            this.toastService.show('Failed to copy snippet', { classname: 'bg-danger text-light' });
-        });
+        this.copyText(snippet, 'Snippet');
     }
 
     nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;

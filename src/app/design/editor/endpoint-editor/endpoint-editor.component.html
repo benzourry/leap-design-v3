@@ -68,114 +68,148 @@
     </div>
   </div>
   <div class="content" content>
-    <div class="limit-width fix-gutter">
-      <div class="p-2">
-        @if (endpoint) {
-          <div>
-            <div class="">
-              <div class="me-auto d-flex flex-row w-100 py-2">
-                <h5 class="m-0 text-truncate">{{endpoint.name}}</h5>
-                <div class="ms-2 text-truncate align-bottom text-body-secondary">
-                  {{endpoint.description}}
-                </div>
-              </div>
-              <div class="d-flex flex-row">
-                <div class="flex-grow-1 pt-2">
-                  @if (endpoint.shared) {
-                    <span>
-                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
-                      Shared Endpoint
-                    </span>
-                  }
-                  @if (!endpoint.shared) {
-                    <span class="text-danger">
-                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                      Private Endpoint
-                    </span>
-                  }
-                </div>
-                <div class="d-flex flex-row">
-                  @if (endpoint && (endpoint.email?.indexOf(user.email)>-1) && (endpoint.app?.id == appId)) {
-                    <button type="button" class="btn border border-1-5 btn-outline-secondary btn-sm"
-                      (click)="editEndpoint(editEndpointTpl,endpoint,false)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn border border-1-5 btn-outline-danger btn-sm ms-1"
-                      (click)="removeEndpoint(removeEndpointTpl,endpoint)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  }
-                  <button type="button" class="btn border border-1-5 border-success btn-outline-success btn-sm ms-1" (click)="runEndpoint()">
-                    <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-            @if (loading) {
-              <div class="p-4 text-center">
-                <div class="lds-ellipsis">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </div>
-              </div>
-            }
-            @if (!loading) {
-              <div class="card rounded-3 mt-2">
-                <div class="card-body">
-                  <span style="text-transform: uppercase;font-weight: bold;">{{endpoint.method}}</span>
-                  {{endpoint.url}}
-                </div>
-                <div class="card-footer text-body-secondary d-flex justify-content-between">
-                  <span>Code: {{endpoint.code}}</span>
-                  <span>Creator: {{endpoint.email}}</span>
-                </div>
-              </div>
-            }
-            @if (endpoint.auth) {
-              <div class="card rounded-3 mt-2">
-                <div class="card-header">Authentication Info</div>
-                <div class="list-group list-group-flush">
-                  @if (endpoint.authFlow=='client_credential') {
-                    <div class="list-group-item">
-                      <div class="small text-body-secondary">Token Endpoint</div>
-                      {{endpoint.tokenEndpoint}}
-                    </div>
-                    <div class="list-group-item">
-                      <div class="small text-body-secondary">Client ID</div>
-                      {{endpoint.clientId}}
-                    </div>
-                    <div class="list-group-item">
-                      <button type="button" class="btn btn-sm btn-outline-secondary float-end" (click)="endpoint.visible=!endpoint.visible">
-                        <fa-icon [icon]="['far','eye']" [fixedWidth]="true"></fa-icon>
-                      </button>
-                      <div class="small text-body-secondary">Client Secret</div>
-                        @if (endpoint.visible){
-                          {{endpoint.clientSecret}} 
-                        }@else{
-                          ***************
-                        }
-                    </div>
-                  } @else {
-                    <div class="list-group-item">
-                      Authorization Flow (current user's token)
-                    </div>
-                  }
-                </div>
-              </div>
-            }
+    @if (endpoint) {
+      <div class="bg-body">
+        <div class="limit-width px-3 pt-3 pb-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h5 class="m-0 text-truncate">{{endpoint.name}}</h5>
+            <app-editor-id-chip [id]="endpoint.id" kind="Endpoint"></app-editor-id-chip>
+          </div>
+          @if (endpoint.description) {
+            <div class="small text-body-secondary mt-1">{{endpoint.description}}</div>
+          }
+        </div>
+      </div>
 
-            <div class="card rounded-3 mt-2">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div class="small text-body-secondary">Snippet Sample</div> 
-                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 border border-1-5" (click)="copySnippet()" title="Copy snippet">
-                    <fa-icon [icon]="['fas', 'copy']" [fixedWidth]="true"></fa-icon> Copy
+      <div class="workspace-toolbar">
+        <div class="limit-width px-3 d-flex align-items-center gap-2">
+          <div class="me-auto d-flex align-items-center gap-2 min-w-0">
+            <span class="endpoint-pill" [class.is-shared]="endpoint.shared" [class.is-private]="!endpoint.shared">
+              <fa-icon [icon]="['fas',endpoint.shared?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
+              {{endpoint.shared ? 'Shared' : 'Private'}} Endpoint
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center text-nowrap">
+            @if (endpoint && (endpoint.email?.indexOf(user.email)>-1) && (endpoint.app?.id == appId)) {
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit endpoint"
+                aria-label="Edit endpoint" (click)="editEndpoint(editEndpointTpl,endpoint,false)" [class.disabled]="offline">
+                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdown class="d-flex align-items-center">
+                <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
+                  title="More actions" aria-label="More actions">
+                  <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <div ngbDropdownMenu class="rounded-3 py-2">
+                  <button type="button" ngbDropdownItem class="text-danger" title="Remove endpoint"
+                    [class.disabled]="offline" (click)="removeEndpoint(removeEndpointTpl,endpoint)">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                    Remove Endpoint
                   </button>
                 </div>
-                <div class="px-3 py-2 bg-body-tertiary text-body rounded small" style="overflow: auto;">
-                  <pre class="m-0"><code class="language-js">{{ "$endpoint$('" + endpoint.code + "', {" }}
+              </div>
+            }
+            <button type="button" class="btn btn-sm btn-success ms-2" title="Run endpoint"
+              aria-label="Run endpoint" (click)="runEndpoint()">
+              <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="limit-width px-3 py-3 d-flex flex-column gap-3">
+      @if (endpoint) {
+        @if (loading) {
+          <div class="p-4 text-center">
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        }
+        @if (!loading) {
+          <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
+            <div class="d-flex align-items-center gap-2 px-3 py-3">
+              <span class="endpoint-method" [class.is-get]="endpoint.method=='GET'" [class.is-post]="endpoint.method=='POST'">{{endpoint.method}}</span>
+              <span class="flex-grow-1 font-monospace text-break min-w-0">{{endpoint.url}}</span>
+              <button type="button" class="btn btn-sm border-0 text-body-secondary flex-shrink-0" title="Copy endpoint URL"
+                aria-label="Copy endpoint URL" (click)="copyText(endpoint.url, 'Endpoint URL')">
+                <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon>
+              </button>
+            </div>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top bg-body-tertiary px-3 py-2 small">
+              <span class="d-inline-flex align-items-center gap-2 rounded-2 border bg-body px-2 py-1 min-w-0">
+                <span class="text-body-secondary">Code:</span>
+                <strong class="font-monospace text-body text-truncate">{{endpoint.code}}</strong>
+                <button type="button" class="btn btn-sm border-0 text-body-secondary p-0 lh-1" title="Copy endpoint code"
+                  aria-label="Copy endpoint code" (click)="copyText(endpoint.code, 'Endpoint Code')">
+                  <fa-icon [icon]="['fas','copy']" [fixedWidth]="true" size="xs"></fa-icon>
+                </button>
+              </span>
+              <span class="d-inline-flex align-items-center gap-2 text-body-secondary min-w-0" [title]="endpoint.email">
+                <fa-icon [icon]="['far','user']" [fixedWidth]="true" size="xs"></fa-icon>
+                <span class="text-truncate">{{endpoint.email}}</span>
+              </span>
+            </div>
+          </section>
+
+          @if (endpoint.auth) {
+            <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
+                <h6 class="m-0 d-inline-flex align-items-center gap-2 fw-semibold">
+                  <fa-icon [icon]="['fas','shield-alt']" [fixedWidth]="true" size="xs" class="text-body-secondary"></fa-icon>
+                  Authentication Info
+                </h6>
+                @if (endpoint.authFlow) {
+                  <span class="d-inline-flex align-items-center rounded-2 border bg-body px-2 py-1 auth-flow">{{endpoint.authFlow}}</span>
+                }
+              </div>
+              @if (endpoint.authFlow=='client_credential') {
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom px-3 py-2">
+                  <span class="auth-key">Token Endpoint</span>
+                  <span class="font-monospace small text-break">{{endpoint.tokenEndpoint}}</span>
+                </div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom px-3 py-2">
+                  <span class="auth-key">Client ID</span>
+                  <span class="font-monospace small text-break">{{endpoint.clientId}}</span>
+                </div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2">
+                  <span class="auth-key">Client Secret</span>
+                  <span class="d-inline-flex align-items-center gap-1 min-w-0">
+                    <span class="font-monospace small text-break">
+                      @if (endpoint.visible) {
+                        {{endpoint.clientSecret}}
+                      } @else {
+                        ***************
+                      }
+                    </span>
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary px-1 py-0" title="Toggle secret visibility"
+                      aria-label="Toggle secret visibility" (click)="endpoint.visible=!endpoint.visible">
+                      <fa-icon [icon]="['far','eye']" [fixedWidth]="true" size="xs"></fa-icon>
+                    </button>
+                  </span>
+                </div>
+              } @else {
+                <div class="px-3 py-2 small text-body-secondary">Authorization Flow (current user's token)</div>
+              }
+            </section>
+          }
+
+          <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
+              <h6 class="m-0 d-inline-flex align-items-center gap-2 fw-semibold">
+                <fa-icon [icon]="['fas','code']" [fixedWidth]="true" size="xs" class="text-body-secondary"></fa-icon>
+                Snippet Sample
+              </h6>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" (click)="copySnippet()" title="Copy snippet">
+                <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Copy
+              </button>
+            </div>
+            <pre class="m-0 bg-body-tertiary px-3 py-2 font-monospace small overflow-auto"><code class="language-js">{{ "$endpoint$('" + endpoint.code + "', {" }}
 @for (p of params; track $index; let last = $last) {
   {{ p }}: 'value'{{ last ? '' : ',' }}
 }
@@ -184,75 +218,62 @@
 {{ "}, error => {" }}
   // error handling
 {{ "});" }}</code></pre>
+          </section>
+
+          @if (result) {
+            <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h6 class="m-0 fw-semibold">Result</h6>
+                  <span class="result-status">
+                    <fa-icon [icon]="['fas','check']" [fixedWidth]="true" size="xs"></fa-icon>
+                    {{resultStatus}}
+                  </span>
+                </div>
+                <div class="result-toggle d-inline-flex align-items-center" role="group" aria-label="Result display mode">
+                  <input type="radio" class="btn-check" name="resultTypeText" id="resultTypeText"
+                    [(ngModel)]="resultType" value="text">
+                  <label class="btn btn-sm" for="resultTypeText">Print</label>
+                  <input type="radio" class="btn-check" name="resultTypeJson" id="resultTypeJson"
+                    [(ngModel)]="resultType" value="json">
+                  <label class="btn btn-sm" for="resultTypeJson">Parsed</label>
                 </div>
               </div>
-            </div>
-
-            <!-- <div class="card mt-2">
-              <div class="card-body">
-                <div class="small mb-3 text-body-secondary">Snippet Sample</div>
-<pre class="m-0 text-body">
-{{ "$endpoint$('" + endpoint.code + "', {" }}
-@for (p of params; track $index; let last = $last) {
-  {{ "  "+p+":'value'"}}{{last?'':','}}
-}
-{{ "}, data => {"}}
-// data
-{{ "}, error => {"}}
-// error handling
-{{ "})" }}
-</pre>
-              </div>
-            </div> -->
-            @if (result) {
-              <div class="card mt-2 mb-2">
-                <div class="small p-2 text-white bg-success d-flex align-items-center">
-                  <div>
-                    Result
-                  </div>
-                  
-
-                  <div class="ms-auto btn-group btn-group-xs btn-group-toggle" role="group">
-                    <input type="radio" class="btn-check" name="resultTypeText" id="resultTypeText"
-                      [(ngModel)]="resultType" value="text">
-                    <label class="btn btn-outline-light btn-sm" for="resultTypeText"> Print </label>
-                    <input type="radio" class="btn-check" name="resultTypeJson" id="resultTypeJson"
-                      [(ngModel)]="resultType" value="json">
-                    <label class="btn btn-outline-light btn-sm" for="resultTypeJson"> Parsed </label>
-                  </div>
-                
+              @if (resultType=='text'){
+                <div class="bg-body-tertiary border-top scroll-cap">
+                  <pre class="m-0 px-3 py-2 font-monospace small"><code class="language-js">{{result | json}}</code></pre>
                 </div>
-                @if (resultType=='text'){
-                  <div class="px-2 py-1 bg-body-tertiary text-body border-top small" style="max-height: 400px;overflow: auto;">
-                    <pre class="m-0"><code class="language-js">{{result | json}}</code></pre>
-                  </div>
-                }@else{
-                  <div class="p-2">
-                    <json-viewer [json]="result"></json-viewer>
-                  </div>
-                }
-            </div>
-            
-            
+              }@else{
+                <div class="p-3">
+                  <json-viewer [json]="result"></json-viewer>
+                </div>
+              }
+            </section>
           }
+
           @if (error) {
-            <div class="card mt-2">
-              <div class="small mb-3 p-3 text-white bg-danger">Error</div>
-              <div class="px-2 py-1 bg-body-tertiary text-body border-top small" style="max-height: 400px;overflow: auto;">
-                <pre class="m-0"><code class="language-js">{{error.error | json}}</code></pre>
+            <div class="d-flex align-items-start gap-3 rounded-3 border border-danger-subtle bg-danger-subtle px-3 py-3" role="alert">
+              <span class="d-inline-flex align-items-center justify-content-center rounded-2 bg-body px-2 py-1 flex-shrink-0 text-danger-emphasis">
+                <fa-icon [icon]="['fas','exclamation-circle']" [fixedWidth]="true"></fa-icon>
+              </span>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold text-danger-emphasis mb-1">Endpoint Execution Error</div>
+                <pre class="m-0 rounded-2 border border-danger-subtle bg-body px-2 py-1 font-monospace small scroll-cap"><code class="language-js">{{error.error | json}}</code></pre>
               </div>
-          </div>
+            </div>
+          }
         }
-      </div>
-    }
-    @if (!endpoint) {
-      <div class="text-body-secondary">
-        <h3>Please select Endpoint from the list on the left to view it's data.</h3>
-      </div>
-    }
+      }
+      @if (!endpoint) {
+        <div class="border border-dashed rounded-3 p-4 text-center">
+          <div class="fw-semibold mb-1 fs-4 text-body-secondary">No endpoint selected</div>
+          <p class="small text-body-tertiary mb-0">
+            Please select an endpoint from the list on the left to view its data.
+          </p>
+        </div>
+      }
+    </div>
   </div>
-</div>
-</div>
 </div>
 <ng-template #removeEndpointTpl let-c="close" let-d="dismiss">
   <div>

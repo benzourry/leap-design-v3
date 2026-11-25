@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with LEAP.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Component, OnInit, TemplateRef, ChangeDetectorRef, viewChild, inject, ChangeDetectionStrategy, DestroyRef, computed } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef, viewChild, inject, ChangeDetectionStrategy, DestroyRef, computed, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormService } from '../../../../service/form.service';
 import { MailerService } from '../../../../service/mailer.service';
@@ -49,6 +49,7 @@ import { NgCmComponent } from '../../../../_shared/component/ng-cm/ng-cm.compone
 import { EditFormComponent } from '../../../../_shared/modal/edit-form/edit-form.component';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faThumbtack } from '@fortawesome/free-solid-svg-icons';
 import { CognaService } from '../../../../service/cogna.service';
 import { EditLookupComponent } from '../../../../_shared/modal/edit-lookup/edit-lookup.component';
 import { EditLookupEntryComponent } from '../../../../_shared/modal/edit-lookup-entry/edit-lookup-entry.component';
@@ -69,6 +70,7 @@ import { AssistantPaletteDirective } from '../../assistant/assistant-palette.dir
 import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
 import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
 import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
+import { EditorIdChipComponent } from '../editor-id-chip.component';
 
 @Component({
     selector: 'app-form-editor',
@@ -84,7 +86,7 @@ import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPa
         EditFormComponent, NgCmComponent, IconPickerComponent, NgSelectModule, NgbInputDatepicker, CloneFormComponent, SlicePipe,
         NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, EditDatasetComponent, FilterPipe, GroupByPipe, SafePipe, DatePipe,
         KeyValuePipe, EditLookupComponent, EditLookupEntryComponent, EditRoleComponent, EditMailerComponent, IconSplitPipe, JsonPipe, AsListPipe, AssistantPaletteDirective,
-    MetaTrailViewerComponent]
+    MetaTrailViewerComponent, EditorIdChipComponent]
 })
 export class FormEditorComponent implements OnInit {
 
@@ -114,6 +116,8 @@ export class FormEditorComponent implements OnInit {
     baseApi = baseApi;
     base = base;
     filterField: string = "";
+    readonly headIcon = faThumbtack;
+    readonly activeFormTab = signal<string | null>(null);
 
     sizeList: any[] = SIZE_LIST;
     sizeFixList: any[] = SIZE_FIX_LIST;
@@ -132,7 +136,8 @@ export class FormEditorComponent implements OnInit {
         x: { facet: 'add,edit,view', restrictAccess: true, accessByUser: true, accessByApprover: true, autoSync: true }
     }
 
-    palettes: any[] = [];
+    palettes = signal<any[]>([]);
+    paletteSearch = signal('');
     showSuper: boolean = true;
     showPalette: boolean = true;
     buildPalettes() {
@@ -165,15 +170,20 @@ export class FormEditorComponent implements OnInit {
                 });
             }
         })
-        this.palettes = palettes;
+        this.palettes.set(palettes);
     }
 
-    get paletteGroups() {
-        return groupAssistantPalette(this.palettes, '', true);
-    }
-    get paletteItems() {
-        return flattenAssistantPalette(this.paletteGroups);
-    }
+    readonly paletteGroups = computed(() => groupAssistantPalette(this.palettes(), this.paletteSearch(), true));
+    readonly paletteItems = computed(() => flattenAssistantPalette(this.paletteGroups()));
+    readonly paletteIcons: Record<string, string> = {
+        text: 'align-left', number: 'hashtag', date: 'calendar', select: 'list',
+        radio: 'circle', checkbox: 'check-square', checkboxOption: 'check-square',
+        simpleOption: 'toggle-on', modelPicker: 'database', scaleTo5: 'star',
+        scaleTo10: 'star', scale: 'star', file: 'file',
+        imagePreview: 'image', eval: 'terminal', static: 'code', qr: 'qrcode',
+        color: 'sliders', btn: 'square', dataset: 'table', screen: 'window-restore',
+        map: 'map-marked-alt', speech: 'microphone'
+    };
 
     superItems = [];
     buildSuper() {
@@ -542,6 +552,7 @@ export class FormEditorComponent implements OnInit {
         delete this.superForm
         delete this.formError;
         this.superItems = [];
+        if (String(this.curFormId) !== String(id)) this.activeFormTab.set(null);
         this.curFormId = id;
         this.formService.getForm(id)
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -1335,6 +1346,21 @@ export class FormEditorComponent implements OnInit {
             return this.curForm.tabs.filter(e => e.id == id)[0]
         }
     };
+
+    scrollToFormTab(container: HTMLElement, tabId: string | number): void {
+        const key = String(tabId);
+        const heading = Array.from(container.querySelectorAll<HTMLElement>('[data-form-group]'))
+            .find(element => element.dataset['formGroup'] === key);
+        if (!heading) {
+            this.toastService.show('This tab has no sections to scroll to.', { classname: 'bg-warning text-dark' });
+            return;
+        }
+        const toolbar = container.querySelector<HTMLElement>('.form-editor-tabs > .nav-wrap');
+        const top = container.scrollTop + heading.getBoundingClientRect().top
+            - container.getBoundingClientRect().top - (toolbar?.offsetHeight ?? 0);
+        container.scrollTo({ top, behavior: 'smooth' });
+        this.activeFormTab.set(key);
+    }
 
 
     saveItemOrder(section) {

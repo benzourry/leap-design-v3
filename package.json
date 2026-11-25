@@ -48,6 +48,7 @@
     "morphdom": "^2.7.5",
     "nanomorph": "^5.4.3",
     "ngx-echarts": "^18.0.0",
+    "ngx-mask": "^22.3.2",
     "prettier": "^3.3.2",
     "rxjs": "~7.8.0",
     "temporal-polyfill": "^1.0.7",

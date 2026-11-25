@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, ElementRef, inject, OnInit, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
-import { DatePipe, KeyValuePipe, NgClass } from '@angular/common';
-import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet } from '@ng-bootstrap/ng-bootstrap';
+import { DatePipe, KeyValuePipe, NgTemplateOutlet } from '@angular/common';
+import { NgbModal, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../../_shared/service/toast-service';
 import { AppService } from '../../../../service/app.service';
 import { UserService } from '../../../../_shared/service/user.service';
@@ -35,6 +35,7 @@ import { AssistantPaletteDirective } from '../../assistant/assistant-palette.dir
 import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
 import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.service';
 import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
+import { EditorIdChipComponent } from '../editor-id-chip.component';
 
 @Component({
     selector: 'app-screen-editor',
@@ -44,8 +45,9 @@ import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPa
         '../../../../../assets/css/element-action.css'],
     imports: [FaIconComponent, RouterLink, FormsModule, NgbNav, NgbNavItem, IconPickerComponent, NgbNavItemRole,
         NgbNavLink, NgbNavLinkBase, NgbNavContent, AngularEditorModule, NgCmComponent, FullCalendarModule,
-        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, NgClass, DatePipe, AssistantPaletteDirective,
-        NgbNavOutlet, EditScreenComponent, KeyValuePipe, MetaTrailViewerComponent]
+        CdkDropList, CdkDrag, CdkDragHandle, IconSplitPipe, NgTemplateOutlet, DatePipe, AssistantPaletteDirective,
+        NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,
+        EditScreenComponent, KeyValuePipe, MetaTrailViewerComponent, EditorIdChipComponent]
 })
 export class ScreenEditorComponent implements OnInit {
 
@@ -70,8 +72,26 @@ export class ScreenEditorComponent implements OnInit {
   private assistantContext = inject(AssistantLocalContextService).createRegistration();
   readonly assistantPanel = inject(AssistantSidePanelService);
   readonly paletteDragDelay = ASSISTANT_PALETTE_DRAG_DELAY;
+  private readonly screenToolbar = viewChild<ElementRef<HTMLElement>>('screenToolbar');
+  private readonly screenScroll = viewChild<ElementRef<HTMLElement>>('screenScroll');
 
   constructor() {
+    effect(onCleanup => {
+      const toolbar = this.screenToolbar()?.nativeElement;
+      const scroll = this.screenScroll()?.nativeElement;
+      if (!toolbar || !scroll) return;
+
+      const updateOffset = () => {
+        scroll.style.setProperty('--ng-cm-sticky-top', `${toolbar.getBoundingClientRect().height}px`);
+      };
+      const observer = new ResizeObserver(updateOffset);
+      observer.observe(toolbar);
+      updateOffset();
+      onCleanup(() => {
+        observer.disconnect();
+        scroll.style.removeProperty('--ng-cm-sticky-top');
+      });
+    });
     this.destroyRef.onDestroy(() => this.assistantContext.clear());
     this.commService.changeEmitted$.subscribe(data => {
       if (data.key === 'assistant-screen' && this.app?.id) {
@@ -231,11 +251,13 @@ export class ScreenEditorComponent implements OnInit {
   codeeditorpre = viewChild<any>('codeeditorpre')
   codeeditorpost = viewChild<any>('codeeditorpost')
   
-  insertTextAtCursor(text, cm) {
-    if (this.showWysiwyg) {
+  insertTextAtCursor(text: string, cm: NgCmComponent | undefined) {
+    if (cm) {
+      cm.insertText(text);
+    } else if (this.showWysiwyg) {
       this.insertText(text);
     } else {
-      cm.insertText(text);
+      throw new Error('Cannot insert text without an active editor');
     }
   }
 
@@ -597,8 +619,8 @@ export class ScreenEditorComponent implements OnInit {
         if (!res.data.content) {
           res.data.content = "";
         }
-        if (['list','map'].indexOf(res.type)>-1) {
-          this.loadDataset(res.dataset.id, this.dataset);
+        if (['list','calendar','map'].indexOf(res.type)>-1) {
+          if (res.dataset?.id) this.loadDataset(res.dataset.id, this.dataset);
         } else if (res.type == 'bucket') {
           this.loadBucket(res.bucket.id, this.bucket);
         } else if (res.type == 'page') {

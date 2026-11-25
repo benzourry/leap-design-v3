@@ -18,12 +18,13 @@ import { LambdaService } from '../../../service/lambda.service';
 import { map } from 'rxjs/operators';
 import { catchError, concatMap, EMPTY, finalize, from } from 'rxjs';
 import { FileDropPasteDirective } from '../../../_shared/directive/file-drop-paste.directive';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 @Component({
   selector: 'app-bucket-manager',
   templateUrl: './bucket-manager.component.html',
   styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
-  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe, FileDropPasteDirective],
+  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe, FileDropPasteDirective, EditorIdChipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BucketManagerComponent implements OnInit {
@@ -32,15 +33,10 @@ export class BucketManagerComponent implements OnInit {
   app: any;
 
   bucketTotal: any;
-  loading: boolean;
   bucketList: any;
-  // groupEntryTotal: any;
-  // groupEntryList: any;
-  totalItems: any;
   bucket: any;
   itemLoading: boolean;
   appId: number;
-  rand: number;
   baseApi = baseApi;
 
   private userService = inject(UserService);
@@ -75,10 +71,7 @@ export class BucketManagerComponent implements OnInit {
         this.user = user;
         this.cdr.detectChanges();
 
-        this.rand = Math.random();
-
         this.route.parent.params
-          // NOTE: I do not use switchMap here, but subscribe directly
           .subscribe((params: Params) => {
             this.appId = params['appId'];
             this.cdr.detectChanges();
@@ -123,20 +116,14 @@ export class BucketManagerComponent implements OnInit {
 
   user: any;
   bucketId = '';
-  data = { 'list': [] };
   pageSize = 45;
-  currentPage = 1;
   itemsPerPage = 15;
-  maxSize = 5;
-  startAt = 0;
   searchText: string = "";
 
   pageNumber: number = 1;
-  entryPageNumber: number = 1;
 
   avLogList: any[] = [];
 
-  // this.loadBucketList = loadBucketList;
   loadBucketList(pageNumber) {
     this.pageNumber = pageNumber;
     this.itemLoading = true;
@@ -217,6 +204,7 @@ export class BucketManagerComponent implements OnInit {
   loadBucket(id) {
     this.sStatus = null;
     this.bucketId = id;
+    this.pendingUploads = [];
     this.bucketService.getBucket(id)
       .subscribe(bucket => {
         this.bucket = bucket;
@@ -261,24 +249,42 @@ export class BucketManagerComponent implements OnInit {
   bucketFileTotal: any;
   bucketFileList: any;
   searchTextFile: string = "";
+  private pendingUploads: any[] = [];
   getFileList(pageNumber, params) {
-    Object.assign(params, {
+    const fetchParams = {
+      ...params,
       page: pageNumber - 1,
       size: this.pageSize,
       searchText: this.searchTextFile,
       bucketCode: this.bucket.code,
       sort: 'id,asc'
-    })
+    }
     this.pageNumber = pageNumber;
-    // this.lookupId = id;
-    this.params = params;
-    this.bucketService.getFileList(this.bucket.id, params)
+    this.params = { ...params };
+    this.bucketService.getFileList(this.bucket.id, fetchParams)
       .subscribe(res => {
-        this.bucketFileList = res.content;
+        const content = res.content ?? [];
+        const known = new Set(content.map((file: any) => file.id));
+        const pending = this.pendingUploads.filter((file: any) => !known.has(file.id));
+        this.pendingUploads = [];
+        this.bucketFileList = [...pending.reverse(), ...content];
         this.bucketFileTotal = res.page?.totalElements;
         this.cdr.detectChanges();
       })
 
+  }
+
+  // Insert uploaded rows right away: the list is sorted by id, so a new file can land on a
+  // later page and the refreshed current page would look unchanged.
+  private showUploadedEntries(entries: any[]) {
+    if (!entries.length) return;
+    const current = this.bucketFileList ?? [];
+    const known = new Set(current.map((file: any) => file.id));
+    const added = entries.filter((entry: any) => !known.has(entry.id));
+    if (!added.length) return;
+    this.pendingUploads = [...added, ...this.pendingUploads];
+    this.bucketFileList = [...added.slice().reverse(), ...current];
+    this.bucketFileTotal = (this.bucketFileTotal ?? 0) + added.length;
   }
 
   removeBucketFileData: any;
@@ -296,13 +302,10 @@ export class BucketManagerComponent implements OnInit {
       }, res => { });
   }
 
-  openAvLogs(content, obj) {
-    // this.removeBucketFileData = obj;
+  openAvLogs(content) {
     history.pushState(null, null, window.location.href);
     this.modalService.open(content, { backdrop: 'static' })
-      .result.then(data => {
-        // DO NOTHING
-      }, res => { });
+      .result.then(() => { }, () => { });
   }
 
   scanProgress: any = {}
@@ -327,14 +330,13 @@ export class BucketManagerComponent implements OnInit {
           }
         })
       )
-      .subscribe(res => {
-        // this.scanLoading[bucket.id]=false;
-        // this.loadAvLogList(bucket.id);
-      }, err => {
-        this.scanLoading[bucket.id] = false;
-        this.toastService.show("Bucket sccan failed", { classname: 'bg-danger text-light' });
-        this.scanProgress[bucket.id] = { message: JSON.stringify(err.error), success: false };
-        this.cdr.detectChanges();
+      .subscribe({
+        error: err => {
+          this.scanLoading[bucket.id] = false;
+          this.toastService.show("Bucket sccan failed", { classname: 'bg-danger text-light' });
+          this.scanProgress[bucket.id] = { message: JSON.stringify(err.error), success: false };
+          this.cdr.detectChanges();
+        }
       });
   }
 
@@ -359,6 +361,7 @@ export class BucketManagerComponent implements OnInit {
     const bucketId = this.bucket.id;
     const appId = this.app.id;
     const email = this.user?.email;
+    const uploadedEntries: any[] = [];
     let uploaded = false;
     this.importLoading = true;
     this.cdr.markForCheck();
@@ -375,12 +378,18 @@ export class BucketManagerComponent implements OnInit {
       finalize(() => {
         this.importLoading = false;
         if (this.destroyRef.destroyed) return;
-        if (uploaded && this.bucket?.id === bucketId) this.getFileList(this.pageNumber, this.params);
+        if (uploaded && this.bucket?.id === bucketId) {
+          this.showUploadedEntries(this.sStatus
+            ? uploadedEntries.filter((entry: any) => entry.sstatus === this.sStatus)
+            : uploadedEntries);
+          this.getFileList(this.pageNumber, this.params);
+        }
         this.cdr.markForCheck();
       })
     ).subscribe(({ file, res }) => {
       if (res.success) {
         uploaded = true;
+        if (res.id) uploadedEntries.push(res);
         this.toastService.show(`File successfully uploaded: ${file.name}`, { classname: 'bg-success text-light' });
       } else {
         this.toastService.show(`${file.name}: ${res.message || 'File upload failed'}`, { classname: 'bg-danger text-light' });
@@ -421,35 +430,15 @@ export class BucketManagerComponent implements OnInit {
   }
 
   downloadZip(filename: string): void {
-
-    // const baseUrl = 'http://myserver/index.php/api';
-    // const token = 'my JWT';
-    // const headers = new HttpHeaders().set('authorization','Bearer '+token);
     this.bucketService.downloadZip(filename)
       .subscribe(response => {
-        let dataType = response.type;
-        let binaryData = [];
-        binaryData.push(response);
-        let downloadLink = document.createElement('a');
-        downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, { type: dataType }));
-        // if (filename)
+        const binaryData = [response];
+        const downloadLink = document.createElement('a');
+        downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, { type: response.type }));
         downloadLink.setAttribute('download', filename);
         document.body.appendChild(downloadLink);
         downloadLink.click();
       });
-    // this.http.get(baseUrl + route,{headers, responseType: 'blob' as 'json'}).subscribe(
-    //     (response: any) =>{
-    //         let dataType = response.type;
-    //         let binaryData = [];
-    //         binaryData.push(response);
-    //         let downloadLink = document.createElement('a');
-    //         downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, {type: dataType}));
-    //         if (filename)
-    //             downloadLink.setAttribute('download', filename);
-    //         document.body.appendChild(downloadLink);
-    //         downloadLink.click();
-    //     }
-    // )
   }
 
   bucketStatData: any = {}
@@ -529,8 +518,6 @@ export class BucketManagerComponent implements OnInit {
 
   dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
-  // --- ADD THESE METHODS ANYWHERE INSIDE THE CLASS ---
-
   getGdriveRedirectUri(): string {
     let redirectUri = this.baseApi + '/bucket/oauth/gdrive-callback';
     if (!redirectUri.startsWith('http')) {
@@ -586,11 +573,9 @@ export class BucketManagerComponent implements OnInit {
     });
   }
 
-  // Inside BucketManagerComponent class properties:
   s3Testing: boolean = false;
   s3TestResult: { success: boolean; message: string } | null = null;
 
-  // Add this method:
   testS3Connection(bucketData: any) {
     this.s3Testing = true;
     this.s3TestResult = null;

@@ -1,3 +1,5 @@
+@use '../editor-workspace';
+
 /* ==========================================================================
    TIER & PROCESS FLOW STYLES
    ========================================================================== */
@@ -131,3 +133,211 @@
     padding: 0 !important;
   }
 }
+
+.form-editor-scroll {
+  min-width: 0;
+  background: var(--bs-tertiary-bg);
+}
+
+.tab-simple.form-editor-tabs > .nav-wrap {
+  z-index: 10;
+  background: var(--bs-body-bg);
+  box-shadow: inset 0 -1px var(--bs-border-color);
+}
+
+.tab-simple.form-editor-tabs > .nav-wrap > .nav-tabs {
+  min-height: 48px;
+
+  .nav-link {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 0.65rem 0.8rem;
+    color: var(--bs-secondary-color);
+  }
+
+  .nav-link.active {
+    color: var(--bs-body-color);
+    background: transparent;
+    border-color: var(--bs-body-color);
+  }
+}
+
+.filter-control {
+  flex: 1 1 0;
+  min-width: 0;
+
+  input {
+    min-width: 0;
+  }
+}
+
+.facet-control {
+  max-width: 45%;
+  min-width: 0;
+}
+
+.facet-control select {
+  width: auto;
+  min-width: 0;
+}
+
+.validation-callout {
+  padding: 0.75rem 1rem;
+  color: var(--bs-body-color);
+  background: color-mix(in srgb, var(--bs-warning-bg-subtle) 40%, var(--bs-body-bg));
+}
+
+.callout-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.form-tab {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-tertiary-bg);
+}
+
+.form-tab.is-active {
+  border-color: var(--bs-primary);
+  background: var(--bs-body-bg);
+  box-shadow: 0 0 0 2px var(--bs-primary-bg-subtle);
+}
+
+.form-tab-link {
+  min-width: 0;
+  padding: 0.4rem 0.65rem;
+  text-align: left;
+  color: var(--bs-body-color);
+}
+
+.section-group-heading {
+  position: sticky;
+  top: 48px;
+  z-index: 5;
+  background: var(--bs-tertiary-bg);
+  scroll-margin-top: 48px;
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.condition-badge {
+  display: inline-block;
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--bs-border-radius-sm);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.condition-tags {
+  float: right;
+  display: flex;
+  gap: 0.2rem;
+}
+
+.item-condition-tags {
+  position: absolute;
+  top: 0;
+  right: 12px;
+}
+
+.form-editor-tabs .element:focus-within > .element-edit {
+  display: block;
+  pointer-events: auto;
+}
+
+.form-editor-tabs .element:hover > .element-item {
+  filter: none;
+}
+
+.action-bar {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  padding: 0.2rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  box-shadow: var(--bs-box-shadow-sm);
+  white-space: nowrap;
+
+}
+
+.item-action-bar {
+  top: -0.5rem;
+  transform: none;
+}
+
+.action-bar,
+.form-tab .element-edit {
+  .btn {
+    @include editor-workspace.action-button;
+  }
+
+  .action-primary {
+    --bs-btn-hover-color: var(--bs-primary-text-emphasis);
+    --bs-btn-hover-bg: var(--bs-primary-bg-subtle);
+  }
+
+  .action-danger {
+    --bs-btn-hover-color: var(--bs-danger-text-emphasis);
+    --bs-btn-hover-bg: var(--bs-danger-bg-subtle);
+  }
+}
+
+.section-add-item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem 1rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    top: 1rem;
+    border-top: 1px dashed var(--bs-border-color);
+  }
+
+  .btn {
+    position: relative;
+    padding: 0.3rem 0.85rem;
+  }
+}
+
+@media (hover: none) {
+  .form-editor-tabs .form-tab > .element-edit {
+    display: block;
+    pointer-events: auto;
+  }
+
+  .form-editor-tabs .editor .element > .element-edit {
+    display: block;
+    pointer-events: auto;
+  }
+}
+
+.drag-handle {
+  padding: 0.15rem;
+  border-radius: var(--bs-border-radius-sm);
+  background: var(--bs-body-bg);
+}
+
+@include editor-workspace.palette;

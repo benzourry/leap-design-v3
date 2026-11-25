@@ -27,7 +27,7 @@ import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgClass, NgTemplateOutlet, NgStyle, AsyncPipe, DatePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { MaskDirective } from '../../../_shared/directive/mask.directive';
+import { NgxMaskDirective } from 'ngx-mask';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
 import { SecurePipe } from '../../../_shared/pipe/secure.pipe';
 import { NgbUnixTimestampAdapter } from '../../../_shared/service/date-adapter';
@@ -76,7 +76,7 @@ let identifier = 0;
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
-    FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, MaskDirective, 
+    FaIconComponent, NgClass, NgTemplateOutlet, FormsModule, NgxMaskDirective,
     AngularEditorModule, NgbDatepicker, NgbInputDatepicker, NgbTimepicker, 
     NgSelectModule, NgStyle, AsyncPipe, MorphHtmlDirective, SafePipe, DatePipe,
     SecurePipe, NgLeafletComponent, SpeechToTextComponent

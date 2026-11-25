@@ -1,23 +1,27 @@
 <div class="d-flex flex-row h-100">
-  <div style="flex:auto; overflow: auto;">
+  <div #screenScroll style="flex:auto; overflow: auto;">
     <div class="fix-gutter">
 
 
 
 <div class="fix-gutter">
-  <div class="p-2">
+  <div>
     @if (curScreen) {
+      @let hasHtmlTabs = ['static','list','page','calendar','chatbot','bucket','map','mailbox','combine'].includes(curScreen.type);
+      @let hasContentEditor = hasHtmlTabs || curScreen.type === 'qr';
+      @let hasHtmlContent = ['list','page','static'].includes(curScreen.type);
+      @let supportsVisualEditor = hasHtmlContent || ['calendar','bucket'].includes(curScreen.type);
       <div class="mb-2">
-        <div class="limit-width">
-          <div class="py-2">
-            <div class="d-flex flex-column">
-              <div class="me-auto d-flex flex-row w-100 mb-2">
-                <h5 class="m-0 text-truncate">{{cleanText(curScreen.title)}} <sup>{{curScreen.id}}</sup></h5>
-                <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curScreen.description)}}
-                </div>
-              </div>
-              <div class="d-flex align-items-baseline">
-                <div class="me-auto mt-2">
+        <div class="bg-body">
+          <div class="limit-width pt-3 px-3 pb-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <h5 class="m-0">{{cleanText(curScreen.title)}}</h5>
+              <app-editor-id-chip [id]="curScreen.id" kind="Screen"></app-editor-id-chip>
+            </div>
+            @if (curScreen.description) {
+              <div class="small text-body-secondary mt-1">{{cleanText(curScreen.description)}}</div>
+            }
+                <div class="text-body-secondary small mt-1">
                   @if (curScreen.type == 'qr') {
                     <span>
                       <fa-icon [icon]="['fas','qrcode']" [fixedWidth]="true"></fa-icon>
@@ -85,50 +89,25 @@
                     </span>
                   }
                 </div>
-                <div>
-                  <button type="button" class="btn btn-sm border border-1-5 ms-1" [disabled]="isTimeWarping"
-                    (click)="editScreen(editScreenTpl,curScreen, false)">
-                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                    (click)="viewMetaTrails(viewScreenMetaTrailTpl, 'screen_' + curScreen.id, curScreen)">
-                    <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <!-- TimeWarp Toggle Button -->
-                  <button type="button" class="btn btn-sm border border-1-5 ms-1" 
-                    [ngClass]="isTimeWarping ? 'btn-warning' : 'btn-outline-warning'" 
-                    title="TimeWarp (Real-time Version Slider)"
-                    (click)="toggleTimeWarp()">
-                    <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1" [disabled]="isTimeWarping"
-                    (click)="removeScreen(removeScreenTpl,curScreen)">
-                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                  </button>
-                  <a class="btn btn-sm border border-1-5 border-success btn-outline-success"
-                    routerLink="/run/{{app?.id}}/screen/{{curScreen.id}}">
-                    <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
+        </div>
+        <div class="limit-width screen-status">
+          <div class="alert alert-danger d-none mb-2" role="alert"
             [class.d-block]="curScreen.type=='page' && !curScreen.form?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             No form found associated with this screen. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
-            [class.d-block]="curScreen.type=='list' && !curScreen.dataset?.id">
+          <div class="alert alert-danger d-none mb-2" role="alert"
+            [class.d-block]="['list','calendar','map'].indexOf(curScreen.type)>-1 && !curScreen.dataset?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             No dataset found associated with this screen. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
+          <div class="alert alert-danger d-none mb-2" role="alert"
             [class.d-block]="curScreen.type=='list' && !curScreen.dataset?.form?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             Dataset associated with this screen has no form. It might has been removed.
           </div>
-          <div class="text-white bg-danger p-3 d-none mb-2 rounded"
+          <div class="alert alert-danger d-none mb-2" role="alert"
             [class.d-block]="curScreen.type=='bucket' && !curScreen?.bucket?.id">
             <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
             Dataset associated with this screen has no form. It might has been removed.
@@ -172,56 +151,43 @@
             </div>
           }
 
-          @if (['list','calendar','map'].indexOf(curScreen.type)>-1 && dataset.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
-              <div class="flex-grow-1 p-2 text-truncate">
-                Dataset: <strong>{{dataset.title}}</strong>
-                @if (dataset.description) {
-                  <div>{{dataset.description}}</div>
-                }
-              </div>
-              <div class="p-2"><a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-              [routerLink]="['../../../'+dataset.appId+'/ui/dataset']" [queryParams]="{id:dataset.id}">View Dataset</a></div>
-            </div>
-          }
-          @if (['bucket'].indexOf(curScreen.type)>-1 && bucket.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
-              <div class="flex-grow-1 p-2 text-truncate">
-                Bucket: <strong>{{bucket?.name}}</strong>
-                @if (bucket?.description) {
-                  <div>{{bucket?.description}}</div>
-                }
-              </div>
-              <div class="p-2"><a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-              [routerLink]="['../../../'+bucket.appId+'/ui/bucket']" [queryParams]="{id:bucket.id}">View Bucket</a></div>
-            </div>
-          }
-          @if (curScreen.type=='page' && form.id){
-            <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">
-              <div class="flex-grow-1 p-2 text-truncate">
-                Form: <strong>{{form.title}}</strong>
-                @if (form.description) {
-                  <div>{{form.description}}</div>
-                }
-              </div>
-              <div class="p-2"><a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-              [routerLink]="['../../../'+form.appId+'/ui/form']" [queryParams]="{id:form.id}">View Form</a></div>
-            </div>
-          }
- 
         </div>
 
-        @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine', 'qr'].indexOf(curScreen.type)>-1) {
-          <div class="mb-2">
             <form name="contentForm" #contentForm="ngForm" ngForm>
-              <div class="card">
-                <div class="card-header">
+                <div #screenToolbar class="workspace-toolbar">
+                  <div class="limit-width d-flex align-items-center">
                   <ul ngbNav #nav="ngbNav" [destroyOnHide]="false"
-                    class="nav-tabs nav fix-gutter card-header-tabs">
-                    @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine'].indexOf(curScreen.type)>-1) {
-                      <li ngbNavItem>
-                        <a class="small px-2" ngbNavLink>Content</a>
+                    class="nav-tabs nav screen-tabs">
+                    @if (hasHtmlTabs) {
+                      <li [ngbNavItem]="'content'">
+                        <a ngbNavLink>Content</a>
                         <ng-template ngbNavContent>
+                          @if (['list','calendar','map'].indexOf(curScreen.type)>-1 && dataset.id && dataset.id == curScreen.dataset?.id) {
+                            <ng-container [ngTemplateOutlet]="linkedComponentInfo"
+                              [ngTemplateOutletContext]="{label: 'Dataset', title: dataset.title, description: dataset.description, appId: dataset.appId, id: dataset.id, path: '/ui/dataset'}"></ng-container>
+                          }
+                          @if (curScreen.type=='bucket' && bucket.id && bucket.id == curScreen.bucket?.id) {
+                            <ng-container [ngTemplateOutlet]="linkedComponentInfo"
+                              [ngTemplateOutletContext]="{label: 'Bucket', title: bucket.name, description: bucket.description, appId: bucket.appId, id: bucket.id, path: '/bucket'}"></ng-container>
+                          }
+                          @if (curScreen.type=='page' && form.id && form.id == curScreen.form?.id) {
+                            <ng-container [ngTemplateOutlet]="linkedComponentInfo"
+                              [ngTemplateOutletContext]="{label: 'Form', title: form.title, description: form.description, appId: form.appId, id: form.id, path: '/ui/form'}"></ng-container>
+                          }
+                          <ng-template #linkedComponentInfo let-label="label" let-title="title" let-description="description" let-appId="appId" let-id="id" let-path="path">
+                            <div class="limit-width">
+                              <div class="rounded bg-body border m-3 d-flex flex-row flex-nowrap align-items-center">
+                                <div class="flex-grow-1 p-2 text-truncate">
+                                  {{label}}: <strong>{{title}}</strong>
+                                  @if (description) {
+                                    <div>{{description}}</div>
+                                  }
+                                </div>
+                                <div class="p-2"><a class="btn btn-outline-secondary btn-sm float-end text-nowrap"
+                                  [routerLink]="['../../../'+appId+path]" [queryParams]="{id:id}">View {{label}}</a></div>
+                              </div>
+                            </div>
+                          </ng-template>
                           @if (curScreen.type=='page') {
                             <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.form?.items|keyvalue; track $index) {
@@ -313,7 +279,7 @@
                               }
                             </div>
                           }
-                          @if (['list','page','static'].indexOf(curScreen.type)>-1) {
+                          @if (hasHtmlContent) {
                             @if (showWysiwyg) {
                               <angular-editor id="ae-content"
                                 class="sc-ae"
@@ -657,15 +623,14 @@
                                   cdkDropListOrientation="vertical"
                                   (cdkDropListDropped)="dropSubs($event, 'suggestion')">
                                   @for (item of curScreen.data?.suggestion; track $index) {
-                                    <div class="list-group-item element" cdkDrag>
+                                    <div class="list-group-item element" cdkDrag tabindex="0">
                                       <span class="element-item">
                                         @if(item.icon){
                                           <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
                                         {{item?.text}}
                                       </span>
-                                      <div class="element-edit nowrap"
-                                        style="position:absolute;top:2px;right:2px; padding:2px">
+                                      <div class="element-edit workspace-action-bar nowrap">
                                         <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle [disabled]="isTimeWarping">
                                           <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true">
                                           </fa-icon>
@@ -753,15 +718,14 @@
                                 (cdkDropListDropped)="dropSubs($event, 'comps')">
                                 
                                   @for (item of curScreen.data?.comps; track $index) {
-                                    <div class="list-group-item element" cdkDrag>
+                                    <div class="list-group-item element" cdkDrag tabindex="0">
                                       <span class="element-item">
                                         @if(item.icon){
                                           <fa-icon [icon]="item.icon|iconSplit:'far:question-circle'" [fixedWidth]="true"></fa-icon>
                                         }
                                         {{item?.title}} / {{item?.type}} / @if(item?.screenId){ {{item?.screenId}} }@else{ <span class="text-danger">Not Specified</span> }
                                       </span>
-                                      <div class="element-edit nowrap"
-                                        style="position:absolute;top:2px;right:2px; padding:2px">
+                                      <div class="element-edit workspace-action-bar nowrap">
                                         <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" cdkDragHandle [disabled]="isTimeWarping">
                                           <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true">
                                           </fa-icon>
@@ -810,10 +774,6 @@
                           @if (['bucket'].indexOf(curScreen.type)>-1){                   
                   
                             <div class="p-3">
-                              <div class="mb-3">Using <strong>{{curScreen.bucket?.name}} 
-                                <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
-                                [routerLink]="['../../../'+app?.id+'/bucket']" [queryParams]="{id:curScreen.bucket?.id}">View Bucket</a>
-                              </strong></div>
                               <h5>Bucket configuration</h5>
                               
                               <div class="form-group mb-3">
@@ -898,10 +858,8 @@
                           }
                         </ng-template>
                       </li>
-                    }
-                    @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine'].indexOf(curScreen.type)>-1) {
-                      <li ngbNavItem>
-                        <a class="small px-2" ngbNavLink>Pre</a>
+                      <li [ngbNavItem]="'pre'">
+                        <a ngbNavLink>Pre</a>
                         <ng-template ngbNavContent>
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
@@ -929,10 +887,8 @@
                           }
                         </ng-template>
                       </li>
-                    }
-                    @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine'].indexOf(curScreen.type)>-1) {
-                      <li ngbNavItem>
-                        <a class="small px-2" ngbNavLink>Post</a>
+                      <li [ngbNavItem]="'post'">
+                        <a ngbNavLink>Post</a>
                         <ng-template ngbNavContent>
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
@@ -962,8 +918,9 @@
                         </ng-template>
                       </li>
                     }
-                    <li ngbNavItem [disabled]="['list','page','static','combine','map','qr','chatbot','calendar'].indexOf(curScreen.type)==-1">
-                      <a class="small px-2" ngbNavLink>Init &fnof;</a>
+                    @if (hasContentEditor) {
+                    <li [ngbNavItem]="'init'" [disabled]="['list','page','static','combine','map','qr','chatbot','calendar'].indexOf(curScreen.type)==-1">
+                      <a ngbNavLink>Init &fnof;</a>
                       <ng-template ngbNavContent>
                         @if (curScreen.id) {
                           <div>
@@ -977,46 +934,95 @@
                         }
                       </ng-template>
                     </li>
+                    }
 
                   </ul>
-                </div>
-                <div [ngbNavOutlet]="nav"></div>
-                <div class="card-footer">
-                  <div class="form-check form-switch mb-1">
-                    <input class="form-check-input" type="checkbox" id="showWysiwyg"
-                      [(ngModel)]="showWysiwyg" name="showWysiwyg" [disabled]="['chatbot','qr','map','combine','mailbox'].indexOf(curScreen.type)>-1">
-                    <label class="form-check-label" for="showWysiwyg">Show Visual Editor</label>
+                  <div class="d-flex align-items-center align-self-stretch ms-auto me-2">
+                    <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" [disabled]="isTimeWarping" title="Edit screen" aria-label="Edit screen"
+                      (click)="editScreen(editScreenTpl,curScreen, false)">
+                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-sm ms-1"
+                      [class]="isTimeWarping ? 'btn-warning' : 'border-0 text-body-secondary'"
+                      title="TimeWarp (Real-time Version Slider)" aria-label="TimeWarp"
+                      (click)="toggleTimeWarp()">
+                      <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+                    </button>
+                    <div ngbDropdown class="d-flex align-self-stretch ms-1">
+                      <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
+                        <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <div ngbDropdownMenu class="rounded-3">
+                        <button ngbDropdownItem type="button"
+                          (click)="viewMetaTrails(viewScreenMetaTrailTpl, 'screen_' + curScreen.id, curScreen)">
+                          <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Meta Trails
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button ngbDropdownItem type="button" class="text-danger" title="Remove screen" [disabled]="isTimeWarping"
+                          (click)="removeScreen(removeScreenTpl,curScreen)">
+                          <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove Screen
+                        </button>
+                      </div>
+                    </div>
+                    <a class="btn btn-sm btn-success ms-1" title="Preview screen" aria-label="Preview screen"
+                      routerLink="/run/{{app?.id}}/screen/{{curScreen.id}}">
+                      <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
+                    </a>
+                  </div>
                   </div>
                 </div>
+              <div class="mb-2">
+              <div class="card border-0 rounded-0">
+                @if (hasContentEditor) {
+                <div [ngbNavOutlet]="nav"></div>
+                @if ((nav.activeId === 'content' && hasHtmlContent) ||
+                     (['pre','post'].includes(nav.activeId) && supportsVisualEditor)) {
+                  <div class="card-footer">
+                    <div class="form-check form-switch mb-1">
+                      <input class="form-check-input" type="checkbox" id="showWysiwyg"
+                        [(ngModel)]="showWysiwyg" name="showWysiwyg">
+                      <label class="form-check-label" for="showWysiwyg">Show Visual Editor</label>
+                    </div>
+                  </div>
+                }
+                }
               </div>
-            </form>
-            <button type="button" class="my-2 btn btn-primary btn-round" [disabled]="contentForm.pristine || isTimeWarping"
+            @if (hasContentEditor) {
+            <button type="button" class="my-2 ms-3 btn btn-primary btn-round" [disabled]="contentForm.pristine || isTimeWarping"
               (click)="saveScreen(curScreen, contentForm)">
               <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
               Save Content
             </button>
+            }
           </div>
-        }
         
-        <div class="mb-2">
-          <label class="form-label">Actions</label>
-          @if (curScreen.actions.length==0) {
-            <div class="text-body-secondary pb-3">No actions specified</div>
-          }
-          @if (curScreen.actions.length>0) {
-            <table class="table">
+        <section class="mb-2 px-3" aria-labelledby="screen-actions-title">
+          <div class="card rounded-3">
+            <div class="card-header bg-body d-flex align-items-center justify-content-between gap-2">
+              <h6 id="screen-actions-title" class="mb-0">Actions</h6>
+              <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap" [disabled]="isTimeWarping"
+                (click)="editAction(editActionTpl,{})">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add Action
+              </button>
+            </div>
+            @if (curScreen.actions.length==0) {
+              <div class="card-body text-body-secondary small">No actions specified</div>
+            }
+            @if (curScreen.actions.length>0) {
+            <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Label</th>
-                  <th>Action</th>
-                  <th style="width: 5%"></th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Label</th>
+                  <th scope="col">Action</th>
+                  <th scope="col"><span class="visually-hidden">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
                 @for (ac of curScreen.actions; track ac.id) {
                   <tr>
-                    <td><span style="font-size:1.5em; line-height: 1em;">{{ac.id}}</span></td>
+                    <td><span class="badge bg-body-secondary text-body-secondary">{{ac.id}}</span></td>
                   <td>{{ac.label}}</td>
                   <td>
                     @if (ac.nextType=='view') {
@@ -1098,11 +1104,13 @@
                     }
                   </td>
                   <td class="text-nowrap">
-                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary me-1" [disabled]="isTimeWarping"
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" [disabled]="isTimeWarping"
+                      title="Edit action" [attr.aria-label]="'Edit action ' + (ac.label || ac.id)"
                       (click)="editAction(editActionTpl,ac)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                     </button>
-                    <button type="button" class="btn btn-round btn-sm my-n2 btn-secondary" [disabled]="isTimeWarping"
+                    <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="isTimeWarping"
+                      title="Remove action" [attr.aria-label]="'Remove action ' + (ac.label || ac.id)"
                       (click)="removeAction(removeActionTpl,ac)">
                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                     </button>
@@ -1111,9 +1119,11 @@
               }
             </tbody>
             </table>
-          }
-          <button type="button" class="btn btn-round btn-secondary" [disabled]="isTimeWarping" (click)="editAction(editActionTpl,{})">Add Action</button>
-        </div>
+            </div>
+            }
+          </div>
+        </section>
+            </form>
       </div>
     } @else {
       <div class="m-a col-sm-12 text-body-secondary">
@@ -1135,14 +1145,15 @@
       <div class="p-2 pb-5">
         <div class="vstack gap-2 mb-3">
           <div>
-            <select class="form-select" name="paletteAppId" (change)="loadPaletteList(paletteAppId)" [(ngModel)]="paletteAppId">
+            <select class="form-select form-select-sm" aria-label="Palette app" name="paletteAppId" (change)="loadPaletteList(paletteAppId)" [(ngModel)]="paletteAppId">
               @for (appItem of otherAppList; track appItem.id) {
                 <option [ngValue]="appItem.id">{{appItem.title}}</option>
               }
             </select>
           </div>
-          <div>
-            <input type="text" class="form-control form-control-sm" placeholder="Filter components"
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-body-secondary border-0"><fa-icon [icon]="['fas','search']"></fa-icon></span>
+            <input type="text" class="form-control bg-body-secondary border-0" placeholder="Filter components" aria-label="Filter palette components"
               [(ngModel)]="paletteFilter" name="paletteFilter" />
           </div>
         </div>
@@ -1150,18 +1161,18 @@
         <div id="palette-pane" cdkDropList
           [cdkDropListDisabled]="isTimeWarping" [cdkDropListData]="paletteItems">
           @for (group of paletteGroups; track group.label) {
-            <details class="mb-2" open>
+            <details class="palette-group mb-2" open>
               <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
                 <span>{{ group.label }}</span>
-                <span class="badge rounded-pill text-bg-secondary">{{ group.items.length }}</span>
+                <span class="badge rounded-pill bg-body-secondary text-body-secondary">{{ group.items.length }}</span>
               </summary>
               <div class="row row-cols-2 g-2">
                 @for (item of group.items; track $index) {
                   <div class="col" cdkDrag [cdkDragStartDelay]="paletteDragDelay"
                     (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-truncate d-flex align-items-center gap-1"
+                    <button type="button" class="palette-tile btn btn-sm border w-100 text-start d-flex align-items-center gap-1 px-1"
                       style="cursor: grab;" [title]="item.title">
-                      <fa-icon [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
+                      <fa-icon class="palette-icon bg-body-secondary rounded" [icon]="item.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                       <span class="text-truncate">{{item.title}}</span>
                     </button>
                   </div>

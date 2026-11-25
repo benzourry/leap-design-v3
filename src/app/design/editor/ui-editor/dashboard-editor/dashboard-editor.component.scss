@@ -1,3 +1,7 @@
+@use '../editor-workspace';
+
+@include editor-workspace.workspace;
+
 .cdk-drag-preview {
   opacity: .6;
   border-radius: 4px;

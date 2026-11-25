@@ -1,14 +1,14 @@
-<div class="p-3 pb-0 limit-width">
-  <div class="text-center">
-    <h4>Manage Custom Sign-in Providers</h4>
+<div class="bg-body">
+  <div class="limit-width p-3">
+    <h5 class="m-0">Manage Custom Sign-in Providers</h5>
+    <p class="small text-body-secondary mt-1 mb-0">Add and configure custom OAuth2/OIDC providers (e.g., Keycloak, Okta, Custom Active Directory) for your app.</p>
   </div>
 </div>
 <div class="limit-width fix-gutter">
-  <div class="single-pane pt-0">
-    <p class="text-center text-body-secondary">Add and configure custom OAuth2/OIDC providers (e.g., Keycloak, Okta, Custom Active Directory) for your app.</p>
+  <div class="single-pane pt-3">
     
     @for (cp of providerList; track cp.id) {
-      <div class="p-3 bg-body-tertiary border rounded mb-2">
+      <div class="p-3 bg-body border rounded mb-2">
         <button type="button" class="btn btn-round btn-sm btn-danger float-end" (click)="removeProvider(removeProviderTpl, cp)">
           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
         </button>

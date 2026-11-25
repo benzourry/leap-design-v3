@@ -103,156 +103,166 @@
     </div>
   </div>
   <div class="content" content>
-    <div class="limit-width fix-gutter">
-      <div class="p-2">
-        @if (!app?.live) {
-          <div class="alert alert-warning">
-            <strong>Warning:</strong> Scheduled Mailer Disabled – App is running in DEV mode.
+    @if (mailer) {
+      <div class="bg-body">
+        <div class="limit-width px-3 pt-3 pb-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h5 class="m-0 text-truncate">{{mailer.name}}</h5>
+            <app-editor-id-chip [id]="mailer.id" kind="Mailer"></app-editor-id-chip>
           </div>
-        }
-        @if (mailer) {
-          <div>
-            <div class="">
-              <div class="me-auto d-flex flex-row w-100 py-2">
-                <h5 class="m-0 text-truncate">{{mailer.name}}</h5>
-                @if (mailer.description) {
-                  <div class="ms-2 text-truncate align-bottom text-body-secondary">
-                  {{mailer.description}}</div>
-                }
-              </div>
-              <div class="text-body-secondary mb-2">
-                <small>Mailer ID : {{mailer.id}}</small>
-              </div>
-              <div class="d-flex flex-row">
-                <div class="flex-grow-1 pt-2">
-                  @if (mailer.shared) {
-                    <span>
-                      <fa-icon [icon]="['fas','globe']" [fixedWidth]="true"></fa-icon>
-                      Public Mailer
-                    </span>
-                  }
-                  @if (!mailer.shared) {
-                    <span class="text-danger">
-                      <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                      Private Mailer
-                    </span>
-                  }
-                </div>
-                @if (mailer) {
-                  <div class="d-flex flex-row">
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary"
-                      title="View History"
-                      (click)="openHistory(notiListTpl, mailer.id)">
-                      <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary ms-1"
-                      title="Edit Mailer"
-                      (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                      (click)="viewMetaTrails(viewMailerMetaTrailTpl, 'emailTemplate_' + mailer.id, mailer)">
-                      <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-danger ms-1"
-                      (click)="removeMailer(removeMailerTpl,mailer)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  </div>
-                }
+          @if (mailer.description) {
+            <div class="small text-body-secondary mt-1">{{mailer.description}}</div>
+          }
+        </div>
+      </div>
+
+      <div class="workspace-toolbar">
+        <div class="limit-width px-3 d-flex align-items-center gap-2">
+          <div class="me-auto d-flex align-items-center gap-2 flex-wrap" style="min-width:0">
+            <span class="mailer-status-pill" [class.is-success]="mailer.shared" [class.is-danger]="!mailer.shared">
+              <fa-icon [icon]="['fas',mailer.shared?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
+              {{mailer.shared ? 'Public' : 'Private'}} Mailer
+            </span>
+            <span class="mailer-status-pill" [class.is-success]="mailer.enabled!=0" [class.is-danger]="mailer.enabled==0">
+              <fa-icon [icon]="['fas','circle']" [fixedWidth]="true" size="xs"></fa-icon>
+              {{mailer.enabled==0 ? 'Disabled' : 'Enabled'}}
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center text-nowrap ms-auto">
+            <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="View mail history"
+              aria-label="View mail history" (click)="openHistory(notiListTpl, mailer.id)">
+              <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon>
+            </button>
+            <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit mailer"
+              aria-label="Edit mailer" (click)="editMailer(editMailerTpl,mailer,false)" [class.disabled]="offline">
+              <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+            </button>
+            <div ngbDropdown class="d-flex align-items-center ms-1">
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
+                title="More actions" aria-label="More actions">
+                <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdownMenu class="rounded-3 py-2">
+                <button type="button" ngbDropdownItem title="View meta trails"
+                  (click)="viewMetaTrails(viewMailerMetaTrailTpl, 'emailTemplate_' + mailer.id, mailer)">
+                  <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+                  Meta Trails
+                </button>
+                <div class="dropdown-divider"></div>
+                <button type="button" ngbDropdownItem class="text-danger" title="Remove mailer"
+                  [class.disabled]="offline" (click)="removeMailer(removeMailerTpl,mailer)">
+                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                  Remove Mailer
+                </button>
               </div>
             </div>
-            @if (loading) {
-              <div class="p-4 text-center">
-                <div class="lds-ellipsis">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </div>
-              </div>
-            }
-            @if (!loading) {
-              <div class="card mt-2">
-                <div class="card-header">
-                  <span [ngClass]="mailer.enabled==0?'text-danger':'text-success'">
-                    <fa-icon [icon]="['fas','circle']" [fixedWidth]="true"></fa-icon>
-                  </span>
-                  {{mailer.subject}}
-                </div>
-                <div class="card-body pb-0">
-                  @if (mailer.pre) {
-                  <div class="mb-2">
-                    <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-family: monospace; font-size: 0.75rem;" [title]="mailer.pre">
-                      <fa-icon [icon]="['fas', 'code-branch']" class="me-1"></fa-icon> 
-                      IF: {{ mailer.pre.length > 40 ? (mailer.pre | slice:0:40) + '...' : mailer.pre }}
-                    </span>
-                  </div>
-                  }
-                  <div class="form-group mb-3">
-                    <label>Recipient</label>
-                    <div>
-                      <div style="float:left;width:40px;">To:</div>
-                      <div style="margin-left:40px">
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.toUser?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          User
-                        </div>
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.toApprover?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          Approver
-                        </div>
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.toAdmin?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          Admin
-                        </div>
-                      </div>
-                      <div style="margin-left:40px;">Extra To: {{mailer.toExtra}}@if (!mailer.toExtra) {
-                        <span
-                        class="text-body-secondary">Not specified</span>
-                      }</div>
-                    </div>
-                    <div>
-                      <div style="float:left;width:40px;">CC:</div>
-                      <div style="margin-left:40px">
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.ccUser?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          User
-                        </div>
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.ccApprover?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          Approver
-                        </div>
-                        <div class="d-inline-block me-2">
-                          <fa-icon [icon]="['far',mailer.ccAdmin?'check-square':'square']"
-                          [fixedWidth]="true"></fa-icon>
-                          Admin
-                        </div>
-                      </div>
-                      <div style="margin-left:40px;">Extra CC: {{mailer.ccExtra}}@if (!mailer.ccExtra) {
-                        <span
-                        class="text-body-secondary">Not specified</span>
-                      }</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-body border-top" [innerHtml]="nl2br(mailer.content)">
-                </div>
-              </div>
-            }
           </div>
-        }
-        @if (!mailer) {
-          <div class="text-body-secondary">
-            <h3>Please select Mailer from the list on the left to view it's data.</h3>
-          </div>
-        }
+        </div>
       </div>
+    }
+
+    <div class="limit-width px-3 py-3 d-flex flex-column gap-3">
+      @if (!app?.live) {
+        <div class="d-flex align-items-start gap-3 border border-warning-subtle rounded bg-warning-subtle text-warning-emphasis small px-3 py-2" role="alert">
+          <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
+          <div>
+            <span class="fw-semibold">Scheduled Mailer Disabled</span>
+            <span class="text-body-secondary"> — App is currently running in DEV mode.</span>
+          </div>
+        </div>
+      }
+
+      @if (mailer) {
+        @if (loading) {
+          <div class="p-4 text-center">
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        } @else {
+          <section class="overflow-hidden border rounded-3 bg-body shadow-sm">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom bg-body-tertiary px-3 py-2">
+              <div class="d-flex align-items-center gap-2" style="min-width:0">
+                <span [class.text-danger]="mailer.enabled==0" [class.text-success]="mailer.enabled!=0">
+                  <fa-icon [icon]="['fas','circle']" [fixedWidth]="true" size="xs"></fa-icon>
+                </span>
+                <span class="fw-semibold text-truncate" [title]="mailer.subject">{{mailer.subject}}</span>
+              </div>
+              @if (mailer.pre) {
+                <span class="d-inline-flex align-items-center gap-1 rounded-2 border border-warning-subtle bg-warning-subtle text-warning-emphasis font-monospace small px-2 py-1 mw-100" [title]="mailer.pre">
+                  <fa-icon [icon]="['fas','code-branch']" [fixedWidth]="true" size="xs"></fa-icon>
+                  <span class="text-truncate">IF: {{ mailer.pre | slice:0:40 }}{{ mailer.pre.length > 40 ? '…' : '' }}</span>
+                </span>
+              }
+            </div>
+
+            <div class="d-flex flex-column gap-2 border-bottom small px-3 py-3">
+              <div class="d-flex align-items-start gap-2">
+                <span class="mailer-recipient-label">To</span>
+                <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toUser">
+                    <fa-icon [icon]="['far',mailer.toUser?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    User
+                  </span>
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toApprover">
+                    <fa-icon [icon]="['far',mailer.toApprover?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    Approver
+                  </span>
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.toAdmin">
+                    <fa-icon [icon]="['far',mailer.toAdmin?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    Admin
+                  </span>
+                  @if (mailer.toExtra) {
+                    <span class="d-inline-flex align-items-center rounded-2 border bg-body text-body-secondary font-monospace small px-2 py-1 mw-100" title="Extra To">
+                      <span class="text-truncate">{{mailer.toExtra}}</span>
+                    </span>
+                  } @else {
+                    <span class="small text-body-secondary fst-italic">Extra To: Not specified</span>
+                  }
+                </div>
+              </div>
+
+              <div class="d-flex align-items-start gap-2">
+                <span class="mailer-recipient-label">CC</span>
+                <div class="d-flex flex-wrap align-items-center gap-2" style="min-width:0">
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccUser">
+                    <fa-icon [icon]="['far',mailer.ccUser?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    User
+                  </span>
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccApprover">
+                    <fa-icon [icon]="['far',mailer.ccApprover?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    Approver
+                  </span>
+                  <span class="mailer-recip-chip" [class.is-checked]="mailer.ccAdmin">
+                    <fa-icon [icon]="['far',mailer.ccAdmin?'check-square':'square']" [fixedWidth]="true" size="xs"></fa-icon>
+                    Admin
+                  </span>
+                  @if (mailer.ccExtra) {
+                    <span class="d-inline-flex align-items-center rounded-2 border bg-body text-body-secondary font-monospace small px-2 py-1 mw-100" title="Extra CC">
+                      <span class="text-truncate">{{mailer.ccExtra}}</span>
+                    </span>
+                  } @else {
+                    <span class="small text-body-secondary fst-italic">Extra CC: Not specified</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 lh-lg text-break" [innerHtml]="nl2br(mailer.content)"></div>
+          </section>
+        }
+      } @else {
+        <div class="border border-dashed rounded-3 p-4 text-center">
+          <div class="fw-semibold mb-1 fs-4 text-body-secondary">No mailer selected</div>
+          <p class="small text-body-tertiary mb-0">
+            Please select a mailer from the list on the left to view its data.
+          </p>
+        </div>
+      }
     </div>
   </div>
 </div>

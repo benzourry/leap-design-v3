@@ -9,6 +9,13 @@
   width: 100%;
 }
 
+.ng-cm-toolbar {
+  position: sticky;
+  top: var(--ng-cm-sticky-top, 0px);
+  z-index: 10;
+  background-color: var(--bs-body-bg, #ffffff);
+}
+
 ::ng-deep .cm-panels {
   width: 100% !important;
   // box-sizing: border-box;
@@ -176,6 +183,7 @@
 
   .ng-cm-toolbar{
     margin:0 -1rem;
+    top: 0;
   }
 
   ::ng-deep .cm-editor {

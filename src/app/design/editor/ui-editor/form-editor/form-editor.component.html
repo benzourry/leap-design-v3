@@ -1,8 +1,8 @@
 <div class="fix-gutter d-flex flex-row h-100">
-  <div style="flex:auto; overflow: auto;" (window:resize)="scheduleTierLineRedraw()">
-    <div class="limit-width">
+  <div #editorScroll class="form-editor-scroll" style="flex:auto; overflow: auto;" (window:resize)="scheduleTierLineRedraw()">
+    <div>
       @if (!curForm && !formError) {
-        <div class="m-a col-sm-12" style="color:#aaa;">
+        <div class="limit-width m-a col-sm-12" style="color:#aaa;">
           <div class="p-4 text-secondary text-center">
             <h4>Please select form to edit from the list or</h4>
             <div class="d-flex flex-row justify-content-center mt-3">
@@ -25,14 +25,14 @@
         </div>
       }
       @if (formError) {
-        <div class="m-3 p-3 bg-danger text-white">
+        <div class="alert alert-danger m-3 limit-width" role="alert">
           <h5>Failed to load form with id <strong>{{curFormId}}</strong></h5>
           <p>Message: {{formError.message}}</p>
           <p class="small fst-italic">Note: This error might be caused by cyclic reference, where this form might linked to the other form that has this form as it's previous form. You can try to unlink it first.</p>
-          <button type="button" class="btn btn-outline-light btn-round me-1"
+          <button type="button" class="btn btn-sm btn-danger me-1"
             (click)="unlinkPrevForm(curFormId)">Unlink Prev Form
           </button>
-          <button type="button" class="btn btn-outline-light btn-round"
+          <button type="button" class="btn btn-sm btn-outline-danger"
             (click)="removeForm(removeFormTpl,{id:curFormId, title:'n/a', description:'n/a'})">Remove
           Form</button>
         </div>
@@ -40,7 +40,7 @@
       @if (curForm && !formError) {
 
         @if (!canEditForm()) {
-          <div class="m-a col-sm-12">
+          <div class="limit-width m-a col-sm-12">
             <div class="p-4 text-secondary text-center">
               <h1><fa-icon [icon]="['fas', 'lock']"></fa-icon></h1>
               <h4>Access to form design is restricted.</h4>
@@ -66,18 +66,22 @@
         } @else {
 
           <div>
-            <div class="repo-title pt-3 px-2 pb-1">
-              <div class="d-flex flex-row flex-wrap flex-md-nowrap align-items-center">
-                <div class="pe-0 pe-md-3 me-auto d-flex flex-row w-100">
-                  <h5 class="m-0 text-truncate">{{cleanText(curForm.title)}} <sup>{{curForm.id}}</sup></h5>
-                  <div class="ms-2 text-truncate align-bottom text-secondary">{{cleanText(curForm.description)}}</div>
-                </div>
+            <div class="bg-body">
+              <div class="limit-width pt-3 px-3 pb-2">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <h5 class="m-0">{{cleanText(curForm.title)}}</h5>
+                <app-editor-id-chip [id]="curForm.id" kind="form"></app-editor-id-chip>
+              </div>
+              @if (curForm.description) {
+                <div class="small text-body-secondary mt-1">{{cleanText(curForm.description)}}</div>
+              }
               </div>
             </div>
 
             <!-- TimeWarp Interface Block (Form Level) -->
             @if (isTimeWarpingForm) {
-              <div class="card bg-warning bg-opacity-10 border-1-5 border-warning mt-2 mb-0 shadow-sm mx-2 sticky-top">
+              <div class="limit-width">
+              <div class="card bg-warning bg-opacity-10 border-1-5 border-warning mt-2 mb-0 shadow-sm mx-2">
                 <div class="card-body p-2">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="card-title text-warning-emphasis m-0 fw-bold">
@@ -111,23 +115,27 @@
 
                 </div>
               </div>
+              </div>
             }
 
-            <div class="tab-simple">
-              <div class="nav-wrap bg-body-tertiary sticky-top">
-                <ul ngbNav #nav="ngbNav" class="nav-tabs flex-wrap-reverse">
-                  <li ngbNavItem class="ms-2 mt-2">
+            <div class="tab-simple form-editor-tabs">
+              <div class="nav-wrap bg-body sticky-top">
+                <ul ngbNav #nav="ngbNav" class="nav-tabs align-items-center flex-nowrap limit-width">
+                  <li ngbNavItem class="ms-2">
                     <a ngbNavLink>Forms</a>
                     <ng-template ngbNavContent>
-                      <div class="p-2">
-                        <div class="row g-2">
-                          <div class="col">
-                            <input type="text" class="form-control bg-body-secondary" [(ngModel)]="filterField"
-                              name="filterField" placeholder="Type to filter fields">
+                      <div class="canvas-controls d-flex flex-nowrap gap-2 px-3 pt-3 pb-2">
+                          <div class="filter-control d-flex align-items-center gap-2 bg-body border rounded-3 shadow-sm px-2">
+                            <fa-icon class="text-body-tertiary" [icon]="['fas','search']"></fa-icon>
+                            <input type="text" class="form-control border-0 shadow-none px-0" [(ngModel)]="filterField"
+                              name="filterField" placeholder="Filter fields by label or code..." aria-label="Filter fields">
                           </div>
                           @if (facetList) {
-                            <div class="col" style="max-width:200px">
-                              <select class="form-select bg-body-secondary" name="previewfacet"
+                            <div class="facet-control d-flex align-items-center gap-1 bg-body border rounded-3 shadow-sm px-2">
+                              <label class="text-body-secondary small text-nowrap" for="previewfacet">
+                                <fa-icon [icon]="['far','eye']"></fa-icon> <span class="d-none d-sm-inline ms-1">Facet</span>
+                              </label>
+                              <select class="form-select border-0 shadow-none fw-semibold" id="previewfacet" name="previewfacet" aria-label="Facet"
                                 [(ngModel)]="previewFacet">
                                 <option class="text-secondary" [ngValue]="undefined">Select view mode</option>
                                 @for (g of facetList; track $index) {
@@ -136,18 +144,25 @@
                               </select>
                             </div>
                           }
-                        </div>
                       </div>
                       <div>
                         @if (curForm?.x?.skipValidate){
-                          <div class="text-danger p-2 small">
-                            <strong>Caution</strong>: Server-side validation is disabled. To enable, change the setting in Edit Form &gt; Options
-                            &gt;
-                            Uncheck 'Disable server-side entry...'
+                          <div class="validation-callout alert alert-warning mx-3 mt-2 mb-2 d-flex gap-2" role="alert">
+                            <span class="callout-icon bg-warning-subtle text-warning-emphasis rounded-2">
+                              <fa-icon [icon]="['fas','exclamation-triangle']"></fa-icon>
+                            </span>
+                            <div class="small">
+                              <strong class="text-body">Server-side validation is disabled</strong>
+                              <div class="text-body-secondary">
+                                Entries submitted to this form will bypass backend validation rules.
+                                <button type="button" class="btn btn-link btn-sm p-0 align-baseline text-body fw-semibold" [disabled]="isTimeWarpingForm"
+                                  (click)="editForm(editFormTpl,curForm,false)">Enable in Form Options &rarr;</button>
+                              </div>
+                            </div>
                           </div>
                         }
                       </div>
-                      <div class="p-2">
+                      <div class="px-3 pt-2 pb-3">
                         @if (curForm.prev) {
                           <div class="rounded bg-secondary text-white mb-3 d-flex flex-row flex-no-wrap align-items-center">                          
                             <div class="flex-grow-1 p-2 text-truncate">
@@ -166,7 +181,7 @@
                           </div>
                         }
                         @if (curForm.x?.extended && superForm) {
-                          <div class="rounded bg-info mb-3 d-flex flex-row flex-no-wrap">
+                          <div class="rounded bg-body border mb-3 d-flex flex-row flex-nowrap align-items-center">
                             <div class="flex-grow-1 p-2 text-truncate">
                               Super Form: <strong>{{superForm?.title}}</strong>
                               @if (superForm?.description) {
@@ -174,59 +189,67 @@
                               }
                             </div>
                             <div class="p-2">
-                              <a class="btn btn-light btn-sm float-end rounded-pill text-nowrap"
+                              <a class="btn btn-outline-secondary btn-sm text-nowrap"
                                 [routerLink]="[]" [queryParams]="{id:superForm.id}">View Form</a>
                             </div>
                           </div>
                         }
                         @if (curForm.nav!='simple') {
-                          <div style="text-align:center">
-                            <div class="flex-wrap text-center">
+                          <div class="border rounded-3 bg-body p-3 mb-3 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center gap-2 mb-2 small text-body-secondary">
+                              <strong class="text-uppercase"><fa-icon [icon]="['fas','folder']"></fa-icon> Form Tabs ({{curForm.tabs.length}})</strong>
+                              <span>Hover or focus a tab to edit or reorder</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
                               @for (tab of curForm.tabs; track tab.id) {
-                                <button type="button" class="btn position-relative btn-outline-secondary btn-sm btn-round element mt-1 me-1"
+                                <div class="element form-tab" [class.is-active]="activeFormTab() === '' + tab.id"
                                   [ngClass]="tab.altClass">
-                                  <span class="element-item">
+                                  <button type="button" class="form-tab-link btn btn-sm" [attr.aria-current]="activeFormTab() === '' + tab.id ? 'location' : null"
+                                    (click)="scrollToFormTab(editorScroll, tab.id)">
                                     @if (tab.x?.icon){
                                       <fa-icon [icon]="tab.x?.icon|iconSplit" [fixedWidth]="true"></fa-icon>
                                     }
                                     {{tab.title}}
                                     @if (tab.pre) {
-                                      <sup class="text-danger" [title]="tab.pre">pre&nbsp;</sup>
+                                      <span class="condition-badge text-danger-emphasis bg-danger-subtle border border-danger-subtle" [title]="tab.pre">PRE</span>
+                                    }
+                                    @if (tab.x?.post) {
+                                      <span class="condition-badge text-warning-emphasis bg-warning-subtle border border-warning-subtle" [title]="tab.x.post">POST</span>
                                     }
                                     @if (tab.x?.enableCond) {
-                                      <sup class="text-danger" [title]="tab.x?.enableCond">enb&nbsp;</sup>
+                                      <span class="condition-badge text-warning-emphasis bg-warning-subtle border border-warning-subtle" [title]="tab.x?.enableCond">ENB</span>
                                     }
                                     @if (notEmptyObject(tab?.x?.facet)) {
                                       <span style="line-height:1em;font-size:12px;">&#9713;</span>
                                     }
-                                  </span>
-                                  <div class="element-edit shadow-sm leafup nowrap">
-                                    <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                  </button>
+                                  <div class="element-edit shadow-sm leafup nowrap bg-body border" role="group" [attr.aria-label]="tab.title + ' actions'">
+                                    <button type="button" class="btn btn-round btn-sm btn-info action-primary" title="Edit tab" aria-label="Edit tab" [disabled]="isTimeWarpingForm"
                                       (click)="editTab(editTabTpl,tab)">
                                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                     </button>
-                                    <button type="button" class="btn btn-round btn-sm btn-info" [disabled]="isTimeWarpingForm"
+                                    <button type="button" class="btn btn-round btn-sm btn-info action-danger" title="Remove tab" aria-label="Remove tab" [disabled]="isTimeWarpingForm"
                                       (click)="removeTab(removeTabTpl,tab)">
                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                     @if (!$first) {
-                                      <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move tab left" aria-label="Move tab left" [disabled]="isTimeWarpingForm"
                                         (click)="reorderTab(tab, -1)">
                                         <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                       </button>
                                     }
                                     @if (!$last) {
-                                      <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move tab right" aria-label="Move tab right" [disabled]="isTimeWarpingForm"
                                         (click)="reorderTab(tab, 1)">
                                         <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                       </button>
                                     }
                                   </div>
-                                </button>
+                                </div>
                               }
-                              <button type="button" class="btn btn-outline-secondary btn-sm btn-round mt-1" [disabled]="isTimeWarpingForm"
+                              <button type="button" class="btn btn-outline-secondary btn-sm border" [disabled]="isTimeWarpingForm"
                                 (click)="editTab(editTabTpl,{sortOrder:curForm.tabs.length})">
-                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add Tab
                               </button>
                             </div>
                           </div>
@@ -235,9 +258,15 @@
                           <div>
                             @if (curForm.nav!='simple') {
                               @let tab = getTab(t.key);
-                              <div class="p-4 text-center mt-2 mx-n2" style="background:var(--bs-tertiary-bg);position:sticky;top: 44px;z-index:5">
+                              <div class="section-group-heading d-flex align-items-center gap-2 py-3 mt-2" [attr.data-form-group]="t.key">
                                 @if (tab) {
-                                  <h5 class="m-0" [class.text-primary]="t.key=='-1'||t.key=='-999'">{{tab.title}}</h5>
+                                  <h5 class="m-0" [class.text-primary]="t.key=='-1'||t.key=='-999'">
+                                    @if (t.key=='-1'||t.key=='-999') {
+                                      <fa-icon [icon]="headIcon" size="xs"></fa-icon> {{t.key=='-1' ? 'Head' : 'Bottom'}}
+                                    } @else {
+                                      {{tab.title}}
+                                    }
+                                  </h5>
                                 }
                                 @if (!tab) {
                                   <h5 class="text-secondary">(unspecified)</h5>
@@ -258,13 +287,11 @@
                                       @if (notEmptyObject(e.x?.facet)) {
                                         <div style="position:absolute;right:9px;height:5px; width:5px;font-size:12px;">&#9713;</div>
                                       }
-                                      <div class="card-header p-3 bordered element"
+                                      <div class="card-header p-3 bordered element" tabindex="0"
                                         [ngClass]="[e.altClass||'']">
-                                        <div class="text-white small opacity-50 flytag">
+                                        <div class="condition-tags">
                                           @if (e.pre) {
-                                            <div [title]="e.pre"
-                                              class="border-info pointer border rounded d-inline-block bg-info px-1 py-0 mb-1">
-                                            pre</div>
+                                            <span [title]="e.pre" class="condition-badge text-danger-emphasis bg-danger-subtle border border-danger-subtle">PRE</span>
                                           }
                                         </div>
                                         <div class="element-item"
@@ -292,28 +319,27 @@
                                             }
                                           </div>
                                         </div>
-                                        <div class="element-edit mt-1"
-                                          style="position:absolute;top:5px;right:10px;">
-                                          <button type="button" class="btn btn-info btn-round btn-sm" title="View Metadata"
+                                        <div class="element-edit action-bar">
+                                          <button type="button" class="btn btn-info btn-round btn-sm" title="View Metadata" aria-label="View section metadata"
                                             (click)="viewSectionJson(viewSectionJsonTpl, e)">
                                             <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon>
                                           </button>
-                                          <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                          <button type="button" class="btn btn-info btn-round btn-sm action-primary" title="Edit section" aria-label="Edit section" [disabled]="isTimeWarpingForm"
                                             (click)="editSection(editSectionTpl,e)">
                                             <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                           </button>
-                                          <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                          <button type="button" class="btn btn-info btn-round btn-sm action-danger" title="Remove section" aria-label="Remove section" [disabled]="isTimeWarpingForm"
                                             (click)="removeSection(removeSectionTpl,e)">
                                             <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                           </button>
                                           @if (!$s_first) {
-                                            <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn btn-info btn-round btn-sm" title="Move section left" aria-label="Move section left" [disabled]="isTimeWarpingForm"
                                               (click)="reorderSection(curForm.sections,e.__index, -1)">
                                               <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                             </button>
                                           }
                                           @if (!$s_last) {
-                                            <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn btn-info btn-round btn-sm" title="Move section right" aria-label="Move section right" [disabled]="isTimeWarpingForm"
                                               (click)="reorderSection(curForm.sections,e.__index, 1)">
                                               <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                             </button>
@@ -335,7 +361,7 @@
                                             }
                                             @for (f of e?.items|filter:filterField; track f.id || f.code; let $f_index = $index; let $f_first = $first; let $f_last = $last) {
                                               @let field = curForm?.items[f.code];
-                                              <div class="element"
+                                              <div class="element" tabindex="0"
                                                 cdkDrag [cdkDragDisabled]="isTimeWarpingForm"
                                                 [class.half]="field?.hidden || (field?.x?.facet?.[previewFacet]||e?.x?.facet?.[previewFacet])=='hidden'"
                                                 [class.static-html]="field?.subType=='html'"
@@ -421,36 +447,36 @@
                                                     </div>
                                                   }
                                                 }
-                                                <div class="text-white small opacity-50 flytag">
+                                                <div class="condition-tags item-condition-tags">
                                                   @if (field?.pre) {
-                                                    <div [title]="field?.pre" class="border-info pointer border rounded d-inline-block bg-info px-1 py-0 mb-1">pre</div>
+                                                    <span [title]="field?.pre" class="condition-badge text-danger-emphasis bg-danger-subtle border border-danger-subtle">PRE</span>
                                                   }
                                                   @if (field?.post) {
-                                                    <div [title]="field?.post" class="border-info pointer border rounded d-inline-block bg-info px-1 py-0">post</div>
+                                                    <span [title]="field?.post" class="condition-badge text-warning-emphasis bg-warning-subtle border border-warning-subtle">POST</span>
                                                   }
                                                 </div>
-                                                <div class="element-edit mt-1 cursor-move bg-body text-info"
+                                                <div class="element-edit drag-handle cursor-move text-body-secondary"
                                                   style="position:absolute;top:3px;left:10px;"
                                                   cdkDragHandle>
-                                                  <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true"></fa-icon>
+                                                  <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
                                                 </div>
-                                                <div class="element-edit mt-1" style="position:absolute;top:3px;right:10px;">
-                                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                <div class="element-edit action-bar item-action-bar">
+                                                  <button type="button" class="btn btn-info btn-round btn-sm action-primary" title="Edit item" aria-label="Edit item" [disabled]="isTimeWarpingForm"
                                                     (click)="editItem(editItemTpl,e,field,f.sortOrder)">
                                                     <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                                   </button>
-                                                  <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                  <button type="button" class="btn btn-info btn-round btn-sm action-danger" title="Remove item" aria-label="Remove item" [disabled]="isTimeWarpingForm"
                                                     (click)="removeItem(removeItemTpl,f)">
                                                     <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                                   </button>
                                                   @if (!$f_first) {
-                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Move item left" aria-label="Move item left" [disabled]="isTimeWarpingForm"
                                                       (click)="reorderItem(e, f, -1)">
                                                       <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                                     </button>
                                                   }
                                                   @if (!$f_last) {
-                                                    <button type="button" class="btn btn-info btn-round btn-sm" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Move item right" aria-label="Move item right" [disabled]="isTimeWarpingForm"
                                                       (click)="reorderItem(e, f, 1)">
                                                       <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                                     </button>
@@ -460,14 +486,14 @@
                                             }
                                           </div>
                                         </div>
-                                        <div style="border-top:dashed 3px var(--bs-border-color); top:21px;position:relative"></div>
-                                        <a class="btn btn-round mb-3 btn-outline-secondary shadow-clean position-relative align-self-center pointer"
-                                          [class.disabled]="isTimeWarpingForm"
-                                          style="background-color: var(--bs-card-bg, var(--bs-body-bg)); --bs-btn-hover-bg: var(--bs-card-bg, var(--bs-body-bg)); --bs-btn-hover-color: var(--bs-secondary-color);"
-                                          (click)="editItem(editItemTpl,e,{size:'col-sm-12', hideLabel:false, x:{facet:{add:'edit',view:'view',edit:'edit'}}},e.items?.length || 0)">
-                                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-                                          Add Form Item
-                                        </a>
+                                        <div class="section-add-item">
+                                          <button type="button" class="btn btn-sm rounded-pill border bg-body text-body-secondary"
+                                            [disabled]="isTimeWarpingForm"
+                                            (click)="editItem(editItemTpl,e,{size:'col-sm-12', hideLabel:false, x:{facet:{add:'edit',view:'view',edit:'edit'}}},e.items?.length || 0)">
+                                            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                                            Add Form Item
+                                          </button>
+                                        </div>
                                       }
                                     </div>
                                   }
@@ -501,7 +527,7 @@
                       </div>
                     </ng-template>
                   </li>
-                  <li ngbNavItem class="mt-2">
+                  <li ngbNavItem>
                     <a ngbNavLink>Process</a>
                     <ng-template ngbNavContent>
                       <div class="single-pane position-relative">
@@ -836,19 +862,32 @@
                       </div>
                     </ng-template>
                   </li>
-                  <li class="nav-item me-1 mt-2 ms-auto">
-                    <div class="text-nowrap d-flex align-items-center">
-                      <div ngbDropdown class="d-inline-block">
-                        <button type="button" class="btn btn-sm border border-1-5" id="dropdownFormEditor"
-                          title="More actions" ngbDropdownToggle>
+                  <li class="nav-item me-2 ms-auto align-self-stretch">
+                    <div class="text-nowrap d-flex align-items-center h-100">
+                      <button type="button" class="btn btn-sm border-0 text-body-secondary me-1" [disabled]="isTimeWarpingForm"
+                        title="Edit Form Properties" aria-label="Edit Form Properties" (click)="editForm(editFormTpl,curForm,false)">
+                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <button type="button" class="btn btn-sm me-1"
+                        [ngClass]="isTimeWarpingForm ? 'btn-warning' : 'border-0 text-body-secondary'"
+                        title="TimeWarp (Real-time Version Slider)" aria-label="TimeWarp"
+                        (click)="toggleTimeWarpForm()">
+                        <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
+                      </button>
+                      <div ngbDropdown class="d-inline-flex align-items-center h-100">
+                        <button type="button" class="btn btn-sm border-0 text-body-secondary h-100" id="dropdownFormEditor"
+                          title="More actions" aria-label="More actions" ngbDropdownToggle>
                           <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
                         </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownFormEditor">
+                        <div ngbDropdownMenu class="rounded-3" aria-labelledby="dropdownFormEditor">
                           <button type="button" (click)="viewItems(viewItemsTpl)" ngbDropdownItem>
                             <fa-icon [icon]="['fas','list-alt']" [fixedWidth]="true"></fa-icon> Form Items List
                           </button>
                           <button type="button" (click)="viewEntryTrails(viewFormEntryTrailTpl)" ngbDropdownItem>
                             <fa-icon [icon]="['fas','tasks']" [fixedWidth]="true"></fa-icon> Form's Entry trails
+                          </button>
+                          <button type="button" (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id, cleanBackendForm)" ngbDropdownItem>
+                            <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon> Meta Trails
                           </button>
                           <button type="button" title="Import from File" [class.disabled]="offline || isTimeWarpingForm"
                             (click)="importExcel(importExcelTpl)" ngbDropdownItem>
@@ -873,21 +912,7 @@
                           </button>
                         </div>
                       </div>
-                      <button type="button" class="btn btn-sm border border-1-5 ms-1" [disabled]="isTimeWarpingForm"
-                        (click)="editForm(editFormTpl,curForm,false)">
-                        <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                      </button>
-                      <button type="button" class="btn btn-sm border border-1-5 btn-outline-info ms-1" title="View Meta Trails"
-                        (click)="viewMetaTrails(viewFormMetaTrailTpl, 'form_' + curForm.id, cleanBackendForm)">
-                        <fa-icon [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                      </button>
-                      <button type="button" class="btn btn-sm border border-1-5 ms-1" 
-                        [ngClass]="isTimeWarpingForm ? 'btn-warning' : 'btn-outline-warning'" 
-                        title="TimeWarp (Real-time Version Slider)"
-                        (click)="toggleTimeWarpForm()">
-                        <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
-                      </button>
-                      <a class="btn btn-sm border border-1-5 border-success btn-outline-success ms-1"
+                      <a class="btn btn-sm btn-success ms-1" title="Preview form" aria-label="Preview form"
                         routerLink="/run/{{app?.id}}/form/{{curForm.id}}/add">
                         <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
                       </a>
@@ -895,7 +920,7 @@
                   </li>
                 </ul>
               </div>
-              <div [ngbNavOutlet]="nav"></div>
+              <div class="limit-width" [ngbNavOutlet]="nav"></div>
             </div>
           </div>
         }
@@ -904,6 +929,11 @@
   </div>
   <ng-template assistantPalettePanel>
   <div class="p-2 pb-5">
+    <div class="input-group input-group-sm mb-2">
+      <span class="input-group-text bg-body-secondary border-0"><fa-icon [icon]="['fas','search']"></fa-icon></span>
+      <input type="search" class="form-control bg-body-secondary border-0" placeholder="Search field types..."
+        aria-label="Search field types" [ngModel]="paletteSearch()" (ngModelChange)="paletteSearch.set($event)">
+    </div>
     @if (curForm?.x?.extended && superForm){
       <section class="mb-3">
         <button type="button" class="btn btn-sm text-body w-100 d-flex align-items-center justify-content-between px-0 border-0"
@@ -919,9 +949,10 @@
               [cdkDragStartDelay]="paletteDragDelay"
               [cdkDragDisabled]="isTimeWarpingForm"
               (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
-              <div class="btn btn-sm btn-outline-info w-100 text-start text-truncate"
+              <div class="palette-tile btn btn-sm border w-100 text-start d-flex align-items-center gap-1 px-1"
                 style="cursor: grab;" [title]="p.label">
-                {{p.label}}
+                <fa-icon class="palette-icon bg-body-secondary rounded" [icon]="['fas', paletteIcons[p.item.type] || 'square']" [fixedWidth]="true"></fa-icon>
+                <span class="text-truncate">{{p.label}}</span>
               </div>
               <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
             </div>
@@ -939,22 +970,23 @@
       </button>
     @if (showPalette) {
       <div id="palette-pane" cdkDropListSortingDisabled cdkDropList
-        [cdkDropListData]="paletteItems" [cdkDropListDisabled]="isTimeWarpingForm">
-        @for (group of paletteGroups; track group.label) {
-          <details class="mb-2" open>
+        [cdkDropListData]="paletteItems()" [cdkDropListDisabled]="isTimeWarpingForm">
+        @for (group of paletteGroups(); track group.label) {
+          <details class="palette-group" open>
             <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
               <span>{{ group.label }}</span>
-              <span class="badge rounded-pill text-bg-secondary">{{ group.items.length }}</span>
+              <span>{{ group.items.length }}</span>
             </summary>
-            <div class="row row-cols-2 g-2">
+            <div class="row row-cols-2 g-2 mb-2">
               @for (p of group.items; track $index) {
                 <div class="col"
                   cdkDrag [cdkDragDisabled]="isTimeWarpingForm"
                   [cdkDragStartDelay]="paletteDragDelay"
                   (cdkDragStarted)="assistantPanel.collapseForPaletteDrag()">
-                  <button type="button" class="btn btn-sm btn-outline-secondary w-100 text-start text-truncate"
+                  <button type="button" class="palette-tile btn btn-sm border w-100 text-start d-flex align-items-center gap-1 px-1"
                     style="cursor: grab;" [title]="p.label">
-                    {{p.label}}
+                    <fa-icon class="palette-icon bg-body-secondary rounded" [icon]="['fas', paletteIcons[p.item.type] || 'square']" [fixedWidth]="true"></fa-icon>
+                    <span class="text-truncate">{{p.label}}</span>
                   </button>
                   <div *cdkDragPreview style="width:300px;height:50px;background:#aaa"></div>
                 </div>
@@ -2297,6 +2329,18 @@
                   <div class="form-group mb-3">
                     <label class="form-label">Mask</label>
                     <input type="text" class="form-control" [(ngModel)]="editItemData.v.mask" name="mask">
+                    @if (editItemData.v.mask) {
+                      <div class="form-check form-switch mt-2">
+                        <input type="checkbox" class="form-check-input" id="dropSpecialCharacters"
+                          [(ngModel)]="editItemData.v.dropSpecialCharacters" name="dropSpecialCharacters">
+                        <label class="form-check-label" for="dropSpecialCharacters">Drop special characters</label>
+                      </div>
+                      <div class="form-check form-switch mt-1">
+                        <input type="checkbox" class="form-check-input" id="showMaskTyped"
+                          [(ngModel)]="editItemData.v.showMaskTyped" name="showMaskTyped">
+                        <label class="form-check-label" for="showMaskTyped">Show mask typed</label>
+                      </div>
+                    }
                     <small>
                       Format can be constructed as:
                       <ul>

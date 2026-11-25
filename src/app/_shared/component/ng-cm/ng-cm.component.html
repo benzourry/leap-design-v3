@@ -7,8 +7,7 @@
 
   @if (!hideControl()) {
     <!-- Sticky toolbar with background to hide scrolling text -->
-    <div class="ng-cm-toolbar d-flex justify-content-start flex-wrap gap-1 p-1 sticky-top align-items-stretch" 
-         style="z-index: 10; background-color: var(--bs-body-bg, #ffffff);">
+    <div class="ng-cm-toolbar d-flex justify-content-start flex-wrap gap-1 p-1 align-items-stretch">
       
       <button type="button" class="btn btn-outline-secondary btn-xs" title="Undo" (click)="undo()">
         <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>

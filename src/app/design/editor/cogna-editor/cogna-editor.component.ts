@@ -29,6 +29,7 @@ import { LambdaService } from '../../../service/lambda.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../service/metatrail.service';
+import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 
 mermaid.initialize({startOnLoad:false})
 
@@ -61,7 +62,8 @@ marked.use({
     imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
       NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgClass,
       NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,
-      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent, MetaTrailViewerComponent]
+      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent, MetaTrailViewerComponent,
+      EditorIdChipComponent]
 })
 export class CognaEditorComponent implements OnInit {
 

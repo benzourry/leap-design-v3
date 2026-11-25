@@ -1,5 +1,5 @@
 <div class="fix-gutter">
-  <div class="p-2">
+  <div>
     <div class="limit-width">
       @if (dashboardList?.length==0) {
       <div class="m-a col-sm-12">
@@ -19,31 +19,34 @@
     </div>
     @if (curDashboard) {
     <div class="mb-2">
-      <div class="py-2 limit-width">
-        <div class="d-flex flex-column">
-          <div class="me-auto d-flex flex-row w-100 mb-2">
-            <h5 class="m-0 text-truncate">{{cleanText(curDashboard.title)}} <sup>{{curDashboard.id}}</sup></h5>
-            <div class="ms-2 text-truncate align-bottom text-body-secondary">{{cleanText(curDashboard.description)}}</div>
+      <div class="bg-body">
+        <div class="limit-width pt-3 px-3 pb-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h5 class="m-0">{{cleanText(curDashboard.title)}}</h5>
+            <app-editor-id-chip [id]="curDashboard.id" kind="Dashboard"></app-editor-id-chip>
           </div>
-          <div class="ps-3 d-flex align-items-center ms-auto">
-            <div>
-              <button type="button" class="btn btn-sm border border-1-5 ms-1"
+          @if (curDashboard.description) {
+            <div class="small text-body-secondary mt-1">{{cleanText(curDashboard.description)}}</div>
+          }
+        </div>
+      </div>
+      <div class="workspace-toolbar">
+        <div class="limit-width px-3 d-flex align-items-center justify-content-end">
+              <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Edit dashboard" aria-label="Edit dashboard"
                 (click)="editDashboard(editDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
               </button>
-              <button type="button" class="btn btn-sm border border-1-5 btn-outline-danger ms-1 me-1"
+              <button type="button" class="btn btn-sm border-0 text-danger ms-1 me-1" title="Remove dashboard" aria-label="Remove dashboard"
                 (click)="removeDashboard(removeDashboardTpl,curDashboard)">
                 <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
               </button>
-              <a class="btn btn-sm border border-1-5 border-success btn-outline-success"
+              <a class="btn btn-sm btn-success" title="Preview dashboard" aria-label="Preview dashboard"
                 routerLink="/run/{{app?.id}}/dashboard/{{curDashboard.id}}">
                 <fa-icon [icon]="['fas','play']" [fixedWidth]="true"></fa-icon>
               </a>
-            </div>
-          </div>
         </div>
       </div>
-      <div [class.limit-width]="!curDashboard?.wide">
+      <div class="p-3" [class.limit-width]="!curDashboard?.wide">
         <div class="row g-3 grid-animate" cdkDropList cdkDropListOrientation="mixed" cdkDropListOrientation="horizontal"
           [cdkDropListEnterPredicate]="sameDropList"
           (cdkDropListDropped)="dropChart($event, curDashboard)">
@@ -62,16 +65,16 @@
             <div class="card element h-100 bg-body-tertiary text-body border-1-5 overflow-hidden" [ngClass]="e.altClass"
               [ngStyle]="{'min-height.px':e.height?e.height-100:350}">
 
-              <div class="card-body pointer element d-flex justify-content-center around-0 w-100">
+              <div class="card-body pointer element d-flex justify-content-center around-0 w-100" tabindex="0">
 
-                <div class="element-edit mt-1 cursor-move text-info position-absolute" style="top:3px;left:10px;"
+                <div class="element-edit workspace-drag-handle mt-1 cursor-move text-body-secondary position-absolute" style="top:3px;left:10px;"
                   cdkDragHandle>
-                  <fa-icon [icon]="['fas','grip-vertical']" size="2x" [fixedWidth]="true"></fa-icon>
+                  <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
                 </div>
 
                 <div class="text-center w-100" style="align-self:center">
                   @if (!e.form && e.source=='db') {
-                  <div class="text-white bg-danger p-3 mb-2 rounded">
+                  <div class="alert alert-danger p-3 mb-2" role="alert">
                     <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
                     No form found associated with this chart. It might have been removed.
                   </div>
@@ -191,7 +194,7 @@
 
                 </div>
 
-                <div class="element-edit" style="position:absolute;top:5px;right:10px;">
+                <div class="element-edit workspace-action-bar">
                   @if (!$c_first) {
                   <button type="button" class="btn btn-round btn-info btn-sm me-1"
                     (click)="reorderChart(curDashboard,$c_index, -1)">

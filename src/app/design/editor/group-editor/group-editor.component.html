@@ -12,7 +12,7 @@
       </div>
     </div>
       @if (app?.x?.userFromApp) {
-        <div class="p-2 bg-danger text-white small rounded">
+        <div class="p-2 bg-danger text-white small">
           This app is using user database from other app. To change, go to Edit App > Overview > Use user from other
           app
         </div>
@@ -32,7 +32,7 @@
             @for (a of groupList() | filter:searchText; track a.id) {
               <a class="pointer element" [routerLink]="['/design',appId,'user']" [queryParams]="{id:a?.id}"
                 [class.active]="a.id==groupId" routerLinkActive="active">
-                <div class="list-group-item-heading sidebar-item-title">
+                <div class="sidebar-item-title">
                   @if (a.appId!=appId){
                     <fa-icon [icon]="['fas','diagram-project']" [fixedWidth]="true"></fa-icon>
                   }
@@ -78,303 +78,338 @@
     </div>
   </div>
   <div class="content" content>
-    <div class="limit-width fix-gutter">
-      <div class="p-2">
-        @if (group || groupId=='all') {
-          <div>
-            <div>
-              @if (group) {
-                <div class="me-auto d-flex flex-row w-100 py-2">
-                  <h5 class="m-0 text-truncate">{{group.name}}</h5>
-                  <div class="ms-2 text-truncate align-bottom text-body-secondary">
-                    {{group.description}}
-                  </div>
-                </div>
-                <div class="text-body-secondary mb-1">
-                  <small>Group ID : {{group.id}}</small>
-                </div>
-              } @else {
-                <h5>All Users</h5>
-              }
-              @if (group && group?.appId!=appId){
-                <p>
-                  <span class="text-danger">User group is in the other app
-                    <a class="btn btn-outline-secondary btn-sm float-end rounded-pill text-nowrap"
-                                [routerLink]="['../../'+app.x?.userFromApp+'/user']" [queryParams]="{id:group?.appId}">Manage</a>
-                  </span>
-                </p>
-              }                
-            </div>
-            <div class="d-flex flex-row">
-              <div style="flex-grow: 1;">
-                <input type="search" class="form-control form-control-sm border border-1-5"
-                  autocapitalize="none" style="outline:initial" placeholder="Filter list"
-                  (keyup.enter)="getAppUserList(appUserPageNumber,params)" [(ngModel)]="searchTextUsr">
-                </div>
-                <div style="flex-shrink: 0;">
-                  @if (group && group.appId==appId) {
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-primary ms-1"
-                      [class.disabled]="offline" (click)="editAppUser(editAppUserTpl,{},true)">
-                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> Add User
-                    </button>
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-secondary ms-1"
-                      (click)="editGroup(editGroupTpl,group,false)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                    <button type="button" class="btn border border-1-5 btn-sm btn-outline-danger ms-1"
-                      (click)="removeGroup(removeGroupTpl,group)" [class.disabled]="offline">
-                      <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                    </button>
-                  }
+    @if (group || groupId=='all') {
+      <div class="bg-body">
+        <div class="limit-width px-3 pt-3 pb-2">
+          <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+            <h5 class="m-0 text-truncate">{{group ? group.name : 'All Users'}}</h5>
+            @if (group) {
+              <app-editor-id-chip [id]="group.id" kind="Group"></app-editor-id-chip>
+            }
+          </div>
+          @if (group?.description) {
+            <div class="small text-body-secondary mt-1">{{group.description}}</div>
+          } @else if (!group) {
+            <div class="small text-body-secondary mt-1">Every user in this app, across all role groups.</div>
+          }
+        </div>
+      </div>
+
+      <div class="workspace-toolbar">
+        <div class="limit-width px-3 d-flex align-items-center gap-2">
+          <div class="me-auto d-flex align-items-center min-w-0">
+            <span class="badge rounded-pill border fw-normal d-inline-flex align-items-center gap-1"
+              [ngClass]="groupId=='all' ? 'border-primary-subtle bg-primary-subtle text-primary-emphasis'
+                : group?.appId!=appId ? 'border-warning-subtle bg-warning-subtle text-warning-emphasis'
+                : 'border-success-subtle bg-success-subtle text-success-emphasis'">
+              <fa-icon [fixedWidth]="true"
+                [icon]="groupId=='all' ? ['fas','sitemap'] : group?.appId!=appId ? ['fas','diagram-project'] : ['fas','users']"></fa-icon>{{groupId=='all' ? 'Directory Overview' : group?.appId!=appId ? 'Shared External Group' : 'App Role Group'}}
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center gap-1 text-nowrap">
+            @if (group && group.appId==appId) {
+              <button type="button" class="btn btn-sm border-0 text-body-secondary" title="Edit group"
+                aria-label="Edit group" (click)="editGroup(editGroupTpl,group,false)" [class.disabled]="offline">
+                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+              </button>
+              <div ngbDropdown class="d-flex align-items-center">
+                <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
+                  title="More group actions" aria-label="More group actions">
+                  <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
+                </button>
+                <div ngbDropdownMenu class="rounded-3 py-2">
+                  <button type="button" class="dropdown-item text-danger" ngbDropdownItem
+                    (click)="removeGroup(removeGroupTpl,group)" [class.disabled]="offline">
+                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove Group
+                  </button>
                 </div>
               </div>
-              @if (loading()) {
-                <div class="p-4 text-center">
-                  <div class="lds-ellipsis">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                  </div>
-                </div>
-              }@else {
-                <div class="table-responsive mt-2">
-                  @if (appUserList()?.length>0) {
-                    <!-- <div class="px-2 pb-2">
-                      <div class="m-auto py-1 px-3 rounded-2 bg-body-secondary text-body border small shadow-sm" style="max-width:450px;">
-                        <div class="row">
-                          <div class="col d-flex align-items-center">
-                            <strong>Summary</strong>
-                          </div>
-                          <div class="col">Total:
-                            <div class="d-sm-inline">{{appUserTotal()}}</div>
-                          </div>
-                          <div class="col">Shown:
-                            <div class="d-sm-inline">{{numberOfElements()}}</div>
-                          </div>
-                          <div class="col">Pages:
-                            <div class="d-sm-inline">{{entryPages()}}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div> -->
-                    <div class="p-2">
-                      <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 small text-body-secondary">
-                        <div>
-                          Total: 
-                          <span class="text-body fw-medium">{{appUserTotal()}}</span>
-                        </div>                    
-                        <div>
-                          Shown: 
-                          <span class="text-body fw-medium">{{numberOfElements()}}</span>
-                        </div>                    
-                        <div>
-                          Pages: 
-                          <span class="text-body fw-medium">{{entryPages()}}</span>
-                        </div>                    
-                      </div>
-                    </div>
+              <button type="button" class="btn btn-sm btn-primary ms-1" [class.disabled]="offline"
+                title="Add user access" (click)="editAppUser(editAppUserTpl,{},true)">
+                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+                <span class="d-none d-sm-inline ms-1">Add User</span>
+              </button>
+            } @else if (group) {
+              <span class="text-body-tertiary" title="Managed in the source app">
+                <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+              </span>
+            }
+          </div>
+        </div>
+      </div>
 
-                    <table class="table table-bordered">
-                      <thead>
-                        <tr>
-                          @if (group && group.appId==appId) {
-                            <th class="tblcol-check" style="width: 1%">
-                              <input type="checkbox" class="form-check-input" style="font-size:14px" #checkAll
-                                (click)="checkAllUsers(checkAll.checked)">
-                            </th>
-                          }
-                          <th style="width: 5%">PHOTO</th>
-                          <th class="w-10">USER</th>
-                          <th style="width: 5%">STATUS</th>
-                          @if (groupId=='all') {
-                            <th class="w-10">GROUP</th>
-                          }
-                          <th style="width: 5%">&nbsp;</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (appUser of appUserList(); track $index) {
-                          <tr
-                            [class.table-info]="appUser.status=='pending' || appUser.user?.status=='pending'"
-                            [class.table-danger]="appUser.status=='rejected' || appUser.user?.status=='rejected'" 
-                            [ngClass]="appUser.altClass">
-                            @if (group && group.appId==appId) {
-                              <td class="p-1"><input type="checkbox" class="form-check-input"
-                              (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"></td>
-                            }
-                            <td class="p-1"><img src="{{appUser.user.imageUrl}}" width="58"
-                              onerror="this.src='assets/img/avatar-big.png'"></td>
-                            <td>
-                              <div>{{appUser.user.name}} <sup>{{appUser.user.id}}</sup></div>
-                              <div class="small">
-                                <div>{{appUser.user.email}}</div>
-                                <div>First login: {{appUser.user.firstLogin|date:'medium'}}
-                                  @if (!appUser.user.firstLogin) {
-                                    <span class="text-body-secondary">No login
-                                    yet</span>
-                                  }
-                                </div>
-                                <div>Account type: 
-                                  @if (appUser.user?.provider){
-                                    <fa-icon [icon]="provider[appUser.user.provider]"
-                                    [fixedWidth]="true"></fa-icon> {{appUser.user.provider}}
-                                  } @else {
-                                    <span class="text-body-secondary">No provider specified</span> 
-                                  }
-                                  </div>
-                              </div>
-                              <div class="mt-1">
-                                @for (tag of appUser.tags; track $index) {
-                                  <div style="font-size:0.9em"
-                                    class="d-inline-block me-1 border bg-body-tertiary text-body rounded px-1">{{tag}}
-                                  </div>
-                                }
-                              </div>
-                              @if (appUser.user.attributes) {
-                                <button type="button" class="btn btn-xs mt-2 btn-outline-secondary"
-                                  (click)="ei[appUser.user.id]=!ei[appUser.user.id]">
-                                  <small>{{ei[appUser.user.id]?'Hide Extra Attributes':'Show Extra Attributes'}}</small>
-                                </button>
-                                @if (ei[appUser.user.id]) {
-                                  <div>
-                                    <table width="100%" class="table small m-0 mt-1">
-                                      <tbody>
-                                        @for (o of appUser.user.attributes|keyvalue; track $index) {
-                                          @if (isValue(o.value)) {
-                                            <tr>
-                                              <td style="font-size:0.9em">{{o.key}}</td>
-                                              <td style="font-size:0.9em">{{o.value}}</td>
-                                            </tr>
-                                          }@else{
-                                            <tr>
-                                              <td style="font-size:0.9em">{{o.key}}</td>
-                                              <td style="font-size:0.9em">{{o.value|json}}</td>
-                                            </tr>
-                                          }
-                                        }
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                }
+      <div class="limit-width px-3 py-3 d-flex flex-column gap-3">
+        @if (group && group.appId!=appId) {
+          <div class="alert alert-warning d-flex flex-wrap align-items-center gap-3 py-2 px-3 mb-0 rounded-3 small" role="alert">
+            <div class="d-flex align-items-center gap-2 me-auto min-w-0">
+              <fa-icon [icon]="['fas','diagram-project']" [fixedWidth]="true"></fa-icon>
+              <div>
+                <span class="fw-semibold">External app user group</span>
+                <span class="opacity-75"> — this group belongs to another app and is read-only here.</span>
+              </div>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 text-nowrap"
+              [routerLink]="['../../'+app.x?.userFromApp+'/user']" [queryParams]="{id:group?.appId}">Manage</a>
+          </div>
+        }
+
+        <div class="list-controls d-flex flex-wrap align-items-center gap-2">
+          <div class="list-filter">
+            <fa-icon [icon]="['fas','search']" class="list-filter-icon" [fixedWidth]="true"></fa-icon>
+            <input type="search" autocapitalize="none" class="form-control" aria-label="Filter users"
+              placeholder="Filter users by name, email, or tag..."
+              (keyup.enter)="getAppUserList(appUserPageNumber,params)" [(ngModel)]="searchTextUsr">
+          </div>
+          <div class="list-summary bg-body border rounded-3">
+            <span class="list-summary-item">
+              Total <span class="font-monospace fw-semibold text-body">{{appUserTotal()}}</span>
+            </span>
+            <span class="list-summary-item">
+              Shown <span class="font-monospace fw-semibold text-body">{{numberOfElements()}}</span>
+            </span>
+            <span class="list-summary-item">
+              Page <span class="font-monospace fw-semibold text-body">{{appUserPageNumber}}@if (entryPages()) { / {{entryPages()}} }</span>
+            </span>
+          </div>
+        </div>
+
+        @if (loading()) {
+          <div class="p-4 text-center">
+            <div class="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        } @else {
+          @if (appUserList()?.length>0) {
+            <div class="border rounded-3 overflow-hidden bg-body">
+              <div class="table-responsive">
+                <table class="table user-table small mb-0">
+                  <thead>
+                    <tr class="text-uppercase fw-semibold small text-nowrap">
+                      @if (group && group.appId==appId) {
+                        <th class="tblcol-check">
+                          <input type="checkbox" class="form-check-input" #checkAll aria-label="Select all users"
+                            (click)="checkAllUsers(checkAll.checked)">
+                        </th>
+                      }
+                      <th class="tblcol-photo">Photo</th>
+                      <th>User</th>
+                      <th>Status</th>
+                      @if (groupId=='all') {
+                        <th>Group</th>
+                      }
+                      <th class="text-end">&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (appUser of appUserList(); track $index) {
+                      <tr tabindex="0"
+                        [class.is-pending]="appUser.status=='pending' || appUser.user?.status=='pending'"
+                        [class.is-rejected]="appUser.status=='rejected' || appUser.user?.status=='rejected'"
+                        [ngClass]="appUser.altClass">
+                        @if (group && group.appId==appId) {
+                          <td class="tblcol-check">
+                            <input type="checkbox" class="form-check-input"
+                              (click)="toggleSelect(appUser)" [checked]="checkSelect(appUser)"
+                              [attr.aria-label]="'Select ' + appUser.user?.name">
+                          </td>
+                        }
+                        <td class="tblcol-photo">
+                          <img class="usr-avatar d-block rounded-circle border bg-body-tertiary" src="{{appUser.user.imageUrl}}" width="44" height="44" alt=""
+                            onerror="this.src='assets/img/avatar-big.png'">
+                        </td>
+                        <td>
+                          <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="fw-semibold">{{appUser.user.name}}</span>
+                            <span class="font-monospace small text-body-tertiary">#{{appUser.user.id}}</span>
+                          </div>
+                          <div class="small text-body-secondary">{{appUser.user.email}}</div>
+                          <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
+                            <span class="badge rounded-1 border bg-body-tertiary text-body-secondary fw-normal d-inline-flex align-items-center gap-1 mw-100">
+                              @if (appUser.user?.provider) {
+                                <fa-icon [icon]="provider[appUser.user.provider]" [fixedWidth]="true"></fa-icon>
+                                {{appUser.user.provider}}
+                              } @else {
+                                No provider specified
                               }
-                            </td>
-                            <td>{{appUser.status}}</td>
-                            @if (groupId=='all') {
-                              <td>
-                                {{appUser.group?.name}}
-                                @if (!appUser.group) {
-                                  <span class="text-body-secondary">Not assigned to any group</span>
-                                }
-                              </td>
+                            </span>
+                            <span class="badge rounded-1 border bg-body-tertiary text-body-secondary fw-normal d-inline-flex align-items-center gap-1 mw-100">
+                              <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>
+                              @if (appUser.user.firstLogin) {
+                                First login: {{appUser.user.firstLogin|date:'medium'}}
+                              } @else {
+                                No login yet
+                              }
+                            </span>
+                            @for (tag of appUser.tags; track $index) {
+                              <span class="badge rounded-1 border border-primary-subtle bg-primary-subtle text-primary-emphasis fw-medium mw-100">{{tag}}</span>
                             }
-
-                            <td class="text-nowrap">
-                              @if (group?.appId==appId || groupId=='all') {
-                                <div>
-                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
-                                    [class.disabled]="offline"
-                                    (click)="removeAppUser(removeAppUserTpl,appUser)">
-                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                                  </button>
-                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
-                                    [class.disabled]="offline"
-                                    (click)="approveAppUser(approveAppUserTpl,appUser)">
-                                    <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
-                                  </button>
-                                  <button type="button" class="btn btn-secondary me-1 btn-sm btn-round"
-                                    [class.disabled]="offline"
-                                    (click)="editUser(editUserTpl,appUser)">
-                                    <fa-icon [icon]="['fas','pencil']" [fixedWidth]="true"></fa-icon>
-                                  </button>
-                                  @if (groupId!='all') {
-                                    <div class="mt-1">
-                                      @if (!$first) {
-                                        <button type="button" class="btn btn-secondary me-1 btn-round btn-sm"
-                                          (click)="reorderItem($index, -1)">
-                                          <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true">
-                                          </fa-icon>
-                                        </button>
-                                      }
-                                      @if (!$last) {
-                                        <button type="button" class="btn btn-secondary btn-round btn-sm"
-                                          (click)="reorderItem($index, 1)">
-                                          <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true">
-                                          </fa-icon>
-                                        </button>
-                                      }
+                          </div>
+                          @if (appUser.user.attributes) {
+                            <div class="mt-2">
+                              <button type="button" class="btn btn-sm btn-outline-secondary btn-attr rounded-pill"
+                                (click)="ei[appUser.user.id]=!ei[appUser.user.id]">
+                                {{ei[appUser.user.id]?'Hide Extra Attributes':'Show Extra Attributes'}}
+                              </button>
+                              @if (ei[appUser.user.id]) {
+                                <div class="mt-1 px-2 border rounded small bg-body">
+                                  @for (o of appUser.user.attributes|keyvalue; track $index) {
+                                    <div class="attr-row d-flex gap-3 py-1">
+                                      <span class="attr-key">{{o.key}}</span>
+                                      <span class="text-break">
+                                        @if (isValue(o.value)) {
+                                          {{o.value}}
+                                        } @else {
+                                          {{o.value|json}}
+                                        }
+                                      </span>
                                     </div>
                                   }
                                 </div>
-                              }@else {
-                                <fa-icon [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
                               }
-                            </td>
-                          </tr>
+                            </div>
+                          }
+                        </td>
+                        <td>
+                          @if (appUser.status) {
+                            <span class="badge rounded-pill border fw-medium text-capitalize d-inline-flex align-items-center gap-1"
+                              [ngClass]="appUser.status=='approved' ? 'bg-success-subtle border-success-subtle text-success-emphasis'
+                                : appUser.status=='pending' ? 'bg-warning-subtle border-warning-subtle text-warning-emphasis'
+                                : appUser.status=='rejected' ? 'bg-danger-subtle border-danger-subtle text-danger-emphasis'
+                                : 'bg-body-tertiary border-secondary-subtle text-body-secondary'">
+                              <span class="status-dot"></span>{{appUser.status}}
+                            </span>
+                          } @else {
+                            <span class="small text-body-secondary">—</span>
+                          }
+                        </td>
+                        @if (groupId=='all') {
+                          <td class="small fw-medium">
+                            @if (appUser.group) {
+                              {{appUser.group?.name}}
+                            } @else {
+                              <span class="text-body-secondary">Not assigned to any group</span>
+                            }
+                          </td>
                         }
-                      </tbody>
-                    </table>
-                  }
-                </div>
-              }
-              @if (selectedUsers?.size>0) {
-                <div class="px-2 d-flex align-items-center small py-2 bg-body-tertiary border-bottom">
-                  &#8627; With Selected
-                  <button type="button" class="ms-2 btn btn-secondary btn-sm btn-round text-nowrap"
-                    (click)="blastEmail(blastTpl,blastData)"><fa-icon [icon]="['far','envelope']"
-                  [fixedWidth]="true"></fa-icon> Send Email</button>
-                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
-                    (click)="bulkRemoveUser()">
-                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                  Remove User</button>
-                  <button type="button" class="ms-2 btn btn-danger btn-sm btn-round text-nowrap"
-                    (click)="changeProvider(changeProviderTpl)">
-                  Change Provider</button>
-                </div>
-              }
-              @if ((appUserList()?.length) > 0) {
-                <div class="text-center d-flex justify-content-center rounded">
-                  @if (appUserTotal()>pageSize) {
-                    <ngb-pagination [collectionSize]="appUserTotal()"
-                      [pageSize]="appUserPageSize" [(page)]="appUserPageNumber" [maxSize]="10"
-                      (pageChange)="getAppUserList(appUserPageNumber,params)" boundaryLinks="false"
-                      directionLinks="false">
-                      <ng-template ngbPaginationFirst>
-                        <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>             
-                      </ng-template>
-                      <ng-template ngbPaginationPrevious>
-                        <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
-                      </ng-template>
-                      <ng-template ngbPaginationNext>
-                        <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
-                      </ng-template>
-                      <ng-template ngbPaginationLast>             
-                        <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
-                      </ng-template>
-                    </ngb-pagination>
-                  }
-                </div>
-              }
-              @if (appUserList().length == 0 && !loading()) {
-                <div class="details mt-3">
-                  <h3>No data</h3>
-                  <p> There is no user assigned to this group.
-                    <br /> You can add new user by clicking on the Add button.
-                  </p>
-                </div>
-              }
+                        <td class="text-end text-nowrap">
+                          @if (group?.appId==appId || groupId=='all') {
+                            <div class="row-action-group d-inline-flex align-items-center gap-1 p-1 border rounded bg-body">
+                              <button type="button" class="row-action-btn is-success" title="Approve / status"
+                                aria-label="Approve or change status" [class.disabled]="offline"
+                                (click)="approveAppUser(approveAppUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                              <button type="button" class="row-action-btn is-primary" title="Update user info"
+                                aria-label="Update user info" [class.disabled]="offline"
+                                (click)="editUser(editUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                              @if (groupId!='all') {
+                                @if (!$first) {
+                                  <button type="button" class="row-action-btn" title="Move up"
+                                    aria-label="Move user up" (click)="reorderItem($index, -1)">
+                                    <fa-icon [icon]="['fas','arrow-up']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                }
+                                @if (!$last) {
+                                  <button type="button" class="row-action-btn" title="Move down"
+                                    aria-label="Move user down" (click)="reorderItem($index, 1)">
+                                    <fa-icon [icon]="['fas','arrow-down']" [fixedWidth]="true"></fa-icon>
+                                  </button>
+                                }
+                              }
+                              <span class="row-action-sep mx-1"></span>
+                              <button type="button" class="row-action-btn is-danger" title="Remove user access"
+                                aria-label="Remove user access" [class.disabled]="offline"
+                                (click)="removeAppUser(removeAppUserTpl,appUser)">
+                                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                              </button>
+                            </div>
+                          } @else {
+                            <fa-icon [icon]="['fas','lock']" [fixedWidth]="true" class="text-body-tertiary"
+                              title="Managed in the source app"></fa-icon>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        }
+
+        @if (selectedUsers?.size>0) {
+          <div class="bulk-action-bar d-flex flex-wrap align-items-center justify-content-between gap-3 py-2 px-3 border border-primary-subtle rounded-3 bg-primary-subtle text-primary-emphasis small">
+            <div class="d-flex align-items-center gap-2 fw-medium">
+              <fa-icon [icon]="['fas','check-square']" [fixedWidth]="true"></fa-icon>
+              <span>&#8627; With Selected ({{selectedUsers.size}})</span>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap"
+                (click)="blastEmail(blastTpl,blastData)">
+                <fa-icon [icon]="['far','envelope']" [fixedWidth]="true"></fa-icon> Send Email
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap"
+                (click)="changeProvider(changeProviderTpl)">
+                Change Provider
+              </button>
+              <button type="button" class="btn btn-sm btn-danger text-nowrap" (click)="bulkRemoveUser()">
+                <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon> Remove User
+              </button>
+            </div>
           </div>
         }
-        @if (!(group || groupId=='all')) {
-          <div class="text-body-secondary">
-            <h3>Please select Group from the list on the left to view it's data.</h3>
+
+        @if ((appUserList()?.length) > 0) {
+          <div class="pagination-rounded d-flex justify-content-center">
+            @if (appUserTotal()>pageSize) {
+              <ngb-pagination [collectionSize]="appUserTotal()"
+                [pageSize]="appUserPageSize" [(page)]="appUserPageNumber" [maxSize]="10"
+                (pageChange)="getAppUserList(appUserPageNumber,params)" boundaryLinks="false"
+                directionLinks="false">
+                <ng-template ngbPaginationFirst>
+                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationPrevious>
+                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
+                </ng-template>
+                <ng-template ngbPaginationLast>
+                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
+                </ng-template>
+              </ngb-pagination>
+            }
+          </div>
+        }
+
+        @if (appUserList().length == 0 && !loading()) {
+          <div class="text-center text-body-secondary py-5">
+            <h3 class="h5">No data</h3>
+            <p class="small mb-0">There is no user assigned to this group.<br />You can add new user by clicking on the Add button.</p>
           </div>
         }
       </div>
-    </div>
+    } @else {
+      <div class="limit-width px-3 py-3">
+        <div class="border border-dashed rounded-3 p-4 text-center">
+          <div class="fw-semibold mb-1 fs-4 text-body-secondary">No group selected</div>
+          <p class="small text-body-tertiary mb-0">
+            Please select a group from the list on the left to view its data.
+          </p>
+        </div>
+      </div>
+    }
   </div>
 </div>
+
 <ng-template #removeGroupTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">
