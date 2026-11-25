@@ -119,10 +119,10 @@
       <div class="workspace-toolbar">
         <div class="limit-width px-3 d-flex align-items-center gap-2">
           <div class="me-auto d-flex align-items-center gap-2 flex-wrap min-w-0">
-            <span class="ws-pill" [class.is-success]="mailer.shared" [class.is-danger]="!mailer.shared">
+            <!-- <span class="ws-pill" [class.is-success]="mailer.shared" [class.is-danger]="!mailer.shared">
               <fa-icon [icon]="['fas',mailer.shared?'globe':'lock']" [fixedWidth]="true" size="xs"></fa-icon>
               {{mailer.shared ? 'Public' : 'Private'}} Mailer
-            </span>
+            </span> -->
             <span class="ws-pill" [class.is-success]="mailer.enabled!=0" [class.is-danger]="mailer.enabled==0">
               <fa-icon [icon]="['fas','circle']" [fixedWidth]="true" size="xs"></fa-icon>
               {{mailer.enabled==0 ? 'Disabled' : 'Enabled'}}

@@ -300,10 +300,10 @@
           </div>
           <!-- TimeWarp Interface Block -->
           @if (isTimeWarping) {
-            <div class="timewarp-panel mx-3 my-2">
+            <div class="m-2 p-3 border border-warning-subtle rounded-3 bg-body shadow-sm">
               <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="timewarp-panel-title">
+                  <span class="small fw-semibold text-warning-emphasis">
                     <fa-icon [icon]="['far', 'clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
                   </span>
                   <span class="ws-pill is-warning">Preview</span>
@@ -322,15 +322,15 @@
               </div>
 
               @let trail = timeWarpTrails[timeWarpIndex];
-              <div class="timewarp-meta d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 small">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 border-top small">
                 <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
                   <span>{{ trail?.timestamp | date:'medium' }}</span>
                   <span class="opacity-50">•</span>
                   <span>{{ trail?.email }}</span>
                 </div>
-                <div class="timewarp-tags d-flex align-items-center gap-1 text-uppercase">
-                  <span class="timewarp-tag">{{ trail?.action }}</span>
-                  <span class="timewarp-tag is-module">{{ trail?.module }}</span>
+                <div class="d-flex align-items-center gap-1 font-monospace text-uppercase">
+                  <span class="badge rounded-1 bg-body-tertiary text-body-secondary fw-normal">{{ trail?.action }}</span>
+                  <span class="badge rounded-1 bg-primary-subtle text-primary-emphasis fw-normal">{{ trail?.module }}</span>
                 </div>
               </div>
             </div>
