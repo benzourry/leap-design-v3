@@ -10,6 +10,7 @@ import { CommService } from '../../../_shared/service/comm.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { nl2br } from '../../../_shared/utils';
 import { SignaService } from '../../../service/signa.service';
+import { SidebarCopyIdService } from '../sidebar-copy-id.service';
 import { SignaEditDialogService } from './signa-edit-dialog.service';
 
 interface SignaListItem {
@@ -36,6 +37,7 @@ export class SignaSidebarComponent {
   readonly pageNumber = signal(1);
   readonly searchText = signal('');
   readonly itemsPerPage = 15;
+  readonly copyId = inject(SidebarCopyIdService);
   readonly itemMatchOptions: IsActiveMatchOptions = {
     paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored'
   };

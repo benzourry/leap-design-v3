@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApplicationRef, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -53,6 +54,23 @@ describe('Bucket sidebar', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('copies the ID without navigating or reloading, and reports copy failures', async () => {
+    const copy = spyOn(TestBed.inject(Clipboard), 'copy').and.returnValues(true, false);
+    const show = TestBed.inject(ToastService).show as jasmine.Spy;
+    await router.navigateByUrl('/design/1/bucket?id=2');
+    const emit = spyOn(TestBed.inject(CommService), 'emitChange').and.callThrough();
+    const fixture = createSidebar();
+    const id = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.ui-item-id')!;
+    id.click();
+    await fixture.whenStable();
+    expect(copy).toHaveBeenCalledWith('2');
+    expect(show).toHaveBeenCalledWith('Copied ID #2 to clipboard', { classname: 'bg-dark text-light', delay: 2000 });
+    expect(emit).not.toHaveBeenCalledWith({ key: 'bucket-reload-current', appId: 1, id: 2 });
+    expect(router.url).toBe('/design/1/bucket?id=2');
+    id.click();
+    expect(show).toHaveBeenCalledWith('Unable to copy ID', { classname: 'bg-danger text-light' });
+  });
 
   it('filters and paginates without navigating, and highlights and opens the actual bucket', async () => {
     const fixture = createSidebar();

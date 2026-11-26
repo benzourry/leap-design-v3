@@ -90,6 +90,18 @@ describe('LambdaSidebarComponent', () => {
     expect(router.url).toBe('/design/1/ui/form?id=7');
   });
 
+  it('copies editable and manager-accessible restricted IDs without navigating', async () => {
+    const fixture = createSidebar(true);
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLElement>('.ui-item-id')!.click();
+    host.querySelector<HTMLButtonElement>('.sidebar-section-toggle')!.click();
+    fixture.detectChanges();
+    host.querySelector<HTMLElement>('a[title^="Manager Override"] .ui-item-id')!.click();
+    await fixture.whenStable();
+    expect(clipboard.copy.calls.allArgs()).toEqual([['11'], ['12']]);
+    expect(router.url).toBe('/design/1/ui/form?id=7');
+  });
+
   it('allows managers to navigate to restricted lambdas and keeps the secrets link', async () => {
     const fixture = createSidebar(true);
     const host = fixture.nativeElement as HTMLElement;

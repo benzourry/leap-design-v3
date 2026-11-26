@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { ApplicationRef, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -47,6 +48,15 @@ describe('Signa sidebar', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('copies a signature ID without navigating', async () => {
+    const copy = spyOn(TestBed.inject(Clipboard), 'copy').and.returnValue(true);
+    const fixture = createSidebar();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.ui-item-id')!.click();
+    await fixture.whenStable();
+    expect(copy).toHaveBeenCalledWith('1');
+    expect(router.url).toBe('/design/1/lookup?id=3');
+  });
 
   it('filters and paginates without navigating, and highlights the actual route', async () => {
     const fixture = createSidebar();

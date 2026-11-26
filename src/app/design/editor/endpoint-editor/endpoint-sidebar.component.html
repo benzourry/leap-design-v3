@@ -28,7 +28,8 @@
               routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions"
               >
               <div class="list-group-item-heading sidebar-item-title">
-                <span class="text-truncate" title="{{a.name}}">{{a.name}}</span> <span class="ui-item-id">#{{a?.id}}</span>
+                <span class="text-truncate" title="{{a.name}}">{{a.name}}</span>
+                <span class="ui-item-id" title="Click to copy ID" (click)="copyId.copy($event, a.id)">#{{a.id}}</span>
               </div>
               @if (a.description) {
                 <div class="list-group-item-text text-body-secondary">{{a.description}}</div>

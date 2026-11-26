@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { CommService } from '../../../_shared/service/comm.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { EndpointService } from '../../../service/endpoint.service';
+import { SidebarCopyIdService } from '../sidebar-copy-id.service';
 import { EndpointEditData } from './endpoint-edit-dialog.component';
 import { EndpointEditDialogService } from './endpoint-edit-dialog.service';
 
@@ -34,6 +35,7 @@ export class EndpointSidebarComponent {
   readonly pageNumber = signal(1);
   readonly searchText = signal('');
   readonly itemsPerPage = 15;
+  readonly copyId = inject(SidebarCopyIdService);
   readonly itemMatchOptions: IsActiveMatchOptions = {
     paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored'
   };

@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, signal, TemplateRef, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -50,6 +51,7 @@ export class GroupSidebarComponent {
   private readonly commService = inject(CommService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly clipboard = inject(Clipboard);
   private listRequest?: Subscription;
   private lookupRequest?: Subscription;
 
@@ -118,4 +120,15 @@ export class GroupSidebarComponent {
       });
     }, () => {});
   }
+
+      copyId(event: MouseEvent, id: number) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.clipboard.copy(String(id))) {
+            this.toastService.show(`Copied ID #${id} to clipboard`, { classname: 'bg-dark text-light', delay: 2000 });
+        } else {
+            this.toastService.show('Unable to copy ID', { classname: 'bg-danger text-light' });
+        }
+    }
+
 }

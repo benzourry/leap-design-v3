@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -51,6 +52,15 @@ describe('GroupSidebarComponent', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  it('copies a group ID without navigating', async () => {
+    const copy = spyOn(TestBed.inject(Clipboard), 'copy').and.returnValue(true);
+    const fixture = createSidebar();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.ui-item-id')!.click();
+    await fixture.whenStable();
+    expect(copy).toHaveBeenCalledWith('2');
+    expect(router.url).toBe('/design/1/lookup?id=3');
+  });
 
   it('retains the shared-user warning, all-users link, filtering and pagination', async () => {
     const fixture = createSidebar();

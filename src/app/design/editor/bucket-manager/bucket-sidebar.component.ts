@@ -9,6 +9,7 @@ import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { CommService } from '../../../_shared/service/comm.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { BucketService } from '../../../service/bucket.service';
+import { SidebarCopyIdService } from '../sidebar-copy-id.service';
 import { BucketEditDialogService } from './bucket-edit-dialog.service';
 
 interface BucketListItem {
@@ -34,6 +35,7 @@ export class BucketSidebarComponent {
   readonly pageNumber = signal(1);
   readonly searchText = signal('');
   readonly itemsPerPage = 15;
+  readonly copyId = inject(SidebarCopyIdService);
   readonly itemMatchOptions: IsActiveMatchOptions = {
     paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored'
   };
