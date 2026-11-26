@@ -37,6 +37,16 @@ import { AssistantSidePanelService } from '../../assistant/assistant-side-panel.
 import { ASSISTANT_PALETTE_DRAG_DELAY, flattenAssistantPalette, groupAssistantPalette } from '../../assistant/assistant-palette';
 import { EditorIdChipComponent } from '../editor-id-chip.component';
 
+type SnippetTarget = 'content' | 'pre' | 'post' | 'calendar' | 'map';
+type SnippetKind = 'variable' | 'section' | 'action';
+
+interface ScreenPaletteSnippet {
+  label: string;
+  group: string;
+  text: string;
+  kind: SnippetKind;
+}
+
 @Component({
     selector: 'app-screen-editor',
     templateUrl: './screen-editor.component.html',
@@ -91,6 +101,14 @@ export class ScreenEditorComponent implements OnInit {
         observer.disconnect();
         scroll.style.removeProperty('--ng-cm-sticky-top');
       });
+    });
+    const dragOver = (event: DragEvent) => this.onSnippetDragOver(event);
+    const drop = (event: DragEvent) => this.onSnippetDrop(event);
+    document.addEventListener('dragover', dragOver, true);
+    document.addEventListener('drop', drop, true);
+    this.destroyRef.onDestroy(() => {
+      document.removeEventListener('dragover', dragOver, true);
+      document.removeEventListener('drop', drop, true);
     });
     this.destroyRef.onDestroy(() => this.assistantContext.clear());
     this.commService.changeEmitted$.subscribe(data => {
@@ -246,10 +264,222 @@ export class ScreenEditorComponent implements OnInit {
 }`  
   defaultMapStyle:string = `height: 600px;`
 
-  codeeditor = viewChild<any>('codeeditor')
-  codeeditorpopupcontent = viewChild<any>('codeeditorpopupcontent')
-  codeeditorpre = viewChild<any>('codeeditorpre')
-  codeeditorpost = viewChild<any>('codeeditorpost')
+  codeeditor = viewChild<NgCmComponent>('codeeditor')
+  codeeditorpopupcontent = viewChild<NgCmComponent>('codeeditorpopupcontent')
+  codeeditorcalendartitle = viewChild<NgCmComponent>('codeeditorcalendartitle')
+  codeeditorpre = viewChild<NgCmComponent>('codeeditorpre')
+  codeeditorpost = viewChild<NgCmComponent>('codeeditorpost')
+
+  activeEditorTab = 'content';
+  snippetFilter = '';
+  private focusedSnippetTarget: SnippetTarget | null = null;
+  private visualSelection: { target: SnippetTarget; range: Range } | null = null;
+  private draggedSnippet: ScreenPaletteSnippet | null = null;
+
+  get snippetTarget(): SnippetTarget | null {
+    if (this.activeEditorTab === 'pre' || this.activeEditorTab === 'post') {
+      return this.activeEditorTab;
+    }
+    if (this.activeEditorTab !== 'content') return null;
+    switch (this.curScreen?.type) {
+      case 'page':
+      case 'list':
+      case 'static':
+        return 'content';
+      case 'calendar':
+        return 'calendar';
+      case 'map':
+        return 'map';
+      default:
+        return null;
+    }
+  }
+
+  get snippetGroups(): { label: string; items: ScreenPaletteSnippet[] }[] {
+    const target = this.snippetTarget;
+    if (!target || !this.curScreen) return [];
+    const snippets: ScreenPaletteSnippet[] = [];
+    const type = this.curScreen.type;
+    const hasVariables = (type === 'page' && ['content', 'pre', 'post'].includes(target))
+      || (type === 'list' && target === 'content')
+      || (type === 'calendar' && target === 'calendar')
+      || (type === 'map' && target === 'map');
+
+    if (hasVariables) {
+      const source = type === 'page' ? this.curScreen.form : this.curScreen.dataset?.form;
+      const addFields = (items: Record<string, { type: string; label: string }> | undefined, prefix: string, group: string) => {
+        Object.keys(items ?? {}).sort().forEach(key => {
+          const item = items![key];
+          if (item.type !== 'static') {
+            snippets.push({ label: item.label, group, text: this.getItemText(prefix, item), kind: 'variable' });
+          }
+        });
+      };
+      addFields(source?.items, '$', 'Variables');
+      addFields(source?.prev?.items, '$prev$', 'Previous variables');
+
+      if (source?.id && this.form?.id === source.id && this.form.items) {
+        for (const section of this.form.sections ?? []) {
+          if (section.type === 'list') {
+            snippets.push({ label: section.title, group: 'List sections', text: this.getLoopCode(section), kind: 'section' });
+          }
+        }
+      }
+    }
+    for (const action of this.curScreen.actions ?? []) {
+      snippets.push({ label: action.label, group: 'Actions', text: `{{$go['${action.id}']}}`, kind: 'action' });
+    }
+    const filter = this.snippetFilter.trim().toLocaleLowerCase();
+    const groups = new Map<string, ScreenPaletteSnippet[]>();
+    for (const snippet of snippets) {
+      if (filter && !String(snippet.label ?? '').toLocaleLowerCase().includes(filter)) continue;
+      const items = groups.get(snippet.group) ?? [];
+      items.push(snippet);
+      groups.set(snippet.group, items);
+    }
+    return Array.from(groups, ([label, items]) => ({ label, items }));
+  }
+
+  onSnippetEditorFocus(event: FocusEvent): void {
+    const target = this.targetFromElement(event.target);
+    if (target && target === this.snippetTarget) this.focusedSnippetTarget = target;
+  }
+
+  saveVisualSelection(event: FocusEvent): void {
+    const element = event.target;
+    if (!(element instanceof HTMLElement) || !element.classList.contains('angular-editor-textarea')) return;
+    const target = this.targetFromElement(element);
+    const selection = window.getSelection();
+    if (target && selection?.rangeCount && element.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+      this.visualSelection = { target, range: selection.getRangeAt(0).cloneRange() };
+    }
+  }
+
+  insertPaletteSnippet(snippet: ScreenPaletteSnippet): void {
+    const target = this.snippetTarget;
+    if (this.isTimeWarping || !target || !this.isSnippetAllowed(snippet, target)) return;
+    this.insertSnippet(snippet.text, target);
+  }
+
+  startSnippetDrag(event: DragEvent, snippet: ScreenPaletteSnippet): void {
+    if (this.isTimeWarping || !event.dataTransfer) {
+      event.preventDefault();
+      return;
+    }
+    this.draggedSnippet = snippet;
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('application/x-screen-palette-snippet', '1');
+  }
+
+  endSnippetDrag(): void {
+    this.draggedSnippet = null;
+  }
+
+  private targetFromElement(element: EventTarget | null): SnippetTarget | null {
+    if (!(element instanceof Element) || !this.screenScroll()?.nativeElement.contains(element)) return null;
+    const target = element.closest<HTMLElement>('[data-snippet-target]')?.dataset['snippetTarget'];
+    return target === 'content' || target === 'pre' || target === 'post' || target === 'calendar' || target === 'map'
+      ? target : null;
+  }
+
+  private isSnippetAllowed(snippet: ScreenPaletteSnippet, target: SnippetTarget): boolean {
+    return target === this.snippetTarget && this.snippetGroups.some(group =>
+      group.items.some(item => item.kind === snippet.kind && item.group === snippet.group && item.text === snippet.text));
+  }
+
+  private onSnippetDragOver(event: DragEvent): void {
+    if (!this.draggedSnippet) return;
+    event.preventDefault();
+    const target = this.targetFromElement(event.target);
+    const editable = event.target instanceof Element
+      && !!event.target.closest('.cm-content, .angular-editor-textarea');
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = !this.isTimeWarping && editable && target && this.isSnippetAllowed(this.draggedSnippet, target)
+        ? 'copy' : 'none';
+    }
+  }
+
+  private onSnippetDrop(event: DragEvent): void {
+    if (!this.draggedSnippet) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const target = this.targetFromElement(event.target);
+    const editable = event.target instanceof Element
+      && !!event.target.closest('.cm-content, .angular-editor-textarea');
+    if (!this.isTimeWarping && editable && target && this.isSnippetAllowed(this.draggedSnippet, target)) {
+      this.insertSnippet(this.draggedSnippet.text, target, { x: event.clientX, y: event.clientY });
+    }
+    this.draggedSnippet = null;
+  }
+
+  private insertSnippet(text: string, target: SnippetTarget, point?: { x: number; y: number }): void {
+    const cm = target === 'content' ? this.codeeditor()
+      : target === 'pre' ? this.codeeditorpre()
+      : target === 'post' ? this.codeeditorpost()
+      : target === 'calendar' ? this.codeeditorcalendartitle() : this.codeeditorpopupcontent();
+    if (cm) {
+      if (point) {
+        const position = cm.editor.posAtCoords(point);
+        if (position === null) {
+          this.toastService.show('Could not locate the drop position.', { classname: 'bg-warning text-dark' });
+          return;
+        }
+        cm.editor.dispatch({ changes: { from: position, insert: text }, selection: { anchor: position + text.length } });
+      } else {
+        cm.insertText(text);
+      }
+      cm.editor.focus();
+      this.markSnippetChanged();
+      return;
+    }
+
+    const host = this.screenScroll()?.nativeElement.querySelector<HTMLElement>(`[data-snippet-target="${target}"] .angular-editor-textarea`);
+    if (!host) {
+      this.toastService.show('Focus an applicable editor before inserting a snippet.', { classname: 'bg-warning text-dark' });
+      return;
+    }
+    let range: Range | null = null;
+    if (point) {
+      const doc = document as Document & { caretRangeFromPoint?: (x: number, y: number) => Range | null };
+      const caret = doc.caretPositionFromPoint?.(point.x, point.y);
+      if (caret) {
+        range = document.createRange();
+        range.setStart(caret.offsetNode, caret.offset);
+        range.collapse(true);
+      } else {
+        range = doc.caretRangeFromPoint?.(point.x, point.y) ?? null;
+      }
+      if (!range || !host.contains(range.commonAncestorContainer)) {
+        this.toastService.show('Could not locate the drop position.', { classname: 'bg-warning text-dark' });
+        return;
+      }
+    } else if (this.focusedSnippetTarget === target && this.visualSelection?.target === target
+      && host.contains(this.visualSelection.range.commonAncestorContainer)) {
+      range = this.visualSelection.range.cloneRange();
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(host);
+      range.collapse(false);
+    }
+    range.deleteContents();
+    const node = document.createTextNode(text);
+    range.insertNode(node);
+    range.setStartAfter(node);
+    range.collapse(true);
+    host.focus();
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    this.focusedSnippetTarget = target;
+    this.visualSelection = { target, range: range.cloneRange() };
+    host.dispatchEvent(new Event('input', { bubbles: true }));
+    this.markSnippetChanged();
+  }
+
+  private markSnippetChanged(): void {
+    this.curScreenForm()?.form.markAsDirty();
+    this.cdr.markForCheck();
+  }
   
   insertTextAtCursor(text: string, cm: NgCmComponent | undefined) {
     if (cm) {
@@ -609,6 +839,11 @@ export class ScreenEditorComponent implements OnInit {
     this.getActionComponents(id);
     this.screenService.getScreen(id)
       .subscribe(res => {
+        if (this.curScreen?.id !== res.id) {
+          this.focusedSnippetTarget = null;
+          this.visualSelection = null;
+          this.draggedSnippet = null;
+        }
         this.curScreen = res;
         this.assistantContext.set({ type: 'screen', id: Number(res.id), label: res.title });
         this.cdr.detectChanges(); 

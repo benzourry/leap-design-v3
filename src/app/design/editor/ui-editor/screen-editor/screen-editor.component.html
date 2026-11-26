@@ -1,5 +1,6 @@
 <div class="d-flex flex-row h-100">
-  <div #screenScroll style="flex:auto; overflow: auto;">
+  <div #screenScroll style="flex:auto; overflow: auto;"
+    (focusin)="onSnippetEditorFocus($event)" (focusout)="saveVisualSelection($event)">
     <div class="fix-gutter">
 
 
@@ -156,7 +157,7 @@
             <form name="contentForm" #contentForm="ngForm" ngForm>
                 <div #screenToolbar class="workspace-toolbar">
                   <div class="limit-width d-flex align-items-center">
-                  <ul ngbNav #nav="ngbNav" [destroyOnHide]="false"
+                  <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" (activeIdChange)="activeEditorTab = $event"
                     class="nav-tabs ws-tabs">
                     @if (hasHtmlTabs) {
                       <li [ngbNavItem]="'content'">
@@ -188,7 +189,7 @@
                               </div>
                             </div>
                           </ng-template>
-                          @if (curScreen.type=='page') {
+                          <!-- @if (curScreen.type=='page') {
                             <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                               @for (k of curScreen.form?.items|keyvalue; track $index) {
                                 @if (curScreen.form?.items[k.key].type!='static') {
@@ -279,9 +280,10 @@
                               }
                             </div>
                           }
+                          -->
                           @if (hasHtmlContent) {
                             @if (showWysiwyg) {
-                              <angular-editor id="ae-content"
+                              <angular-editor id="ae-content" data-snippet-target="content"
                                 class="sc-ae"
                                 [class.ae-limit-width]="!curScreen?.wide" (keydown)="onKeyDown($event)"
                                 [config]="editorConfig" name="content"
@@ -289,7 +291,7 @@
                               </angular-editor>
                             }
                             @if (!showWysiwyg) {
-                              <app-cm id="codeeditor" name="content" lang="html" #codeeditor
+                              <app-cm id="codeeditor" name="content" lang="html" #codeeditor data-snippet-target="content"
                                 label="Screen Content"
                                 (keydown)="onKeyDown($event)"
                                 [(ngModel)]="curScreen.data.content"
@@ -365,6 +367,7 @@
 
                                 <div class="form-group mx-n2 mb-3">
                                   <label class="form-label">Custom Title Template</label>
+                                  <!--
                                   <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                     @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                       @if (curScreen.dataset?.form?.items[k.key].type!='static') {
@@ -402,7 +405,8 @@
                                       }
                                     }
                                   </div>
-                                  <app-cm name="codeeditorcalendartitle" lang="html" #codeeditorcalendartitle
+                                  -->
+                                  <app-cm name="codeeditorcalendartitle" lang="html" #codeeditorcalendartitle data-snippet-target="calendar"
                                     label="Screen Calendar Title"
                                     (keydown)="onKeyDown($event)"
                                     [extraAutoComplete]="extraAutoCompleteHtml"
@@ -496,6 +500,7 @@
 
                               <div class="form-group mb-3">
                                 <label class="form-label">Custom Popup Content</label>
+                                <!--
                                 <div class="bg-body-tertiary border-bottom p-1 pb-0 var-ph-picker">
                                   @for (k of curScreen.dataset?.form?.items|keyvalue; track $index) {
                                     @if (curScreen.dataset?.form?.items[k.key].type!='static') {
@@ -533,7 +538,8 @@
                                     }
                                   }
                                 </div>
-                                <app-cm name="codeeditorpopupcontent" lang="html" #codeeditorpopupcontent
+                                -->
+                                <app-cm name="codeeditorpopupcontent" lang="html" #codeeditorpopupcontent data-snippet-target="map"
                                   label="Screen Map Popup Template"
                                   (keydown)="onKeyDown($event)"
                                   [extraAutoComplete]="extraAutoCompleteHtml"
@@ -861,6 +867,7 @@
                       <li [ngbNavItem]="'pre'">
                         <a ngbNavLink>Pre</a>
                         <ng-template ngbNavContent>
+                          <!--
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
@@ -872,14 +879,15 @@
                               }
                             }
                           </div>
+                          -->
                         
                           @if (showWysiwyg) {
-                            <angular-editor [config]="editorConfig" name="pretext"
+                            <angular-editor [config]="editorConfig" name="pretext" data-snippet-target="pre"
                               class="sc-ae"
                               [class.ae-limit-width]="!curScreen?.wide"
                             [(ngModel)]="curScreen.data.pretext"></angular-editor>
                           } @else {
-                            <app-cm name="pretext" lang="html" #codeeditorpre
+                            <app-cm name="pretext" lang="html" #codeeditorpre data-snippet-target="pre"
                               label="Screen Content Pre-text"
                               (keydown)="onKeyDown($event)"
                               [(ngModel)]="curScreen.data.pretext" [linenumber]="true">
@@ -890,6 +898,7 @@
                       <li [ngbNavItem]="'post'">
                         <a ngbNavLink>Post</a>
                         <ng-template ngbNavContent>
+                          <!--
                           <div class="bg-body-primary border-bottom p-1 pb-0 var-ph-picker">
                             @if (curScreen.actions) {
                               @for (k of curScreen.actions; track k.id) {
@@ -901,15 +910,16 @@
                               }
                             }
                           </div>
+                          -->
                           @if (showWysiwyg) {
-                            <angular-editor (keydown)="onKeyDown($event)"
+                            <angular-editor (keydown)="onKeyDown($event)" data-snippet-target="post"
                               class="sc-ae"
                               [config]="editorConfig" [class.ae-limit-width]="!curScreen?.wide"
                               name="posttext" [(ngModel)]="curScreen.data.posttext">
                             </angular-editor>
                           }
                           @if (!showWysiwyg) {
-                            <app-cm name="posttext" lang="html" #codeeditorpost
+                            <app-cm name="posttext" lang="html" #codeeditorpost data-snippet-target="post"
                               label="Screen Content Post-text"
                               (keydown)="onKeyDown($event)"
                               [(ngModel)]="curScreen.data.posttext" [linenumber]="true">
@@ -1149,10 +1159,10 @@
 </div> <!-- Close fix-gutter -->
   </div> <!-- Close flex:auto area -->
 
-  <!-- Palette sidebar (Only show if screen type is combine) -->
-  @if (curScreen?.type === 'combine') {
+  @if (['static','list','page','calendar','chatbot','bucket','map','mailbox','combine'].includes(curScreen?.type)) {
     <ng-template assistantPalettePanel>
       <div class="p-2 pb-5">
+        @if (curScreen?.type === 'combine') {
         <div class="vstack gap-2 mb-3">
           <div>
             <select class="form-select form-select-sm" aria-label="Palette app" name="paletteAppId" (change)="loadPaletteList(paletteAppId)" [(ngModel)]="paletteAppId">
@@ -1167,7 +1177,9 @@
               [(ngModel)]="paletteFilter" name="paletteFilter" />
           </div>
         </div>
+        }
 
+        @if (curScreen?.type === 'combine') {
         <div id="palette-pane" cdkDropList
           [cdkDropListDisabled]="isTimeWarping" [cdkDropListData]="paletteItems">
           @for (group of paletteGroups; track group.label) {
@@ -1194,6 +1206,47 @@
             <div class="p-3 text-body-secondary">No matching component</div>
           }
         </div>
+        }
+
+        @if (snippetTarget) {
+          <div class="small text-body-secondary mb-2">
+            Insert into {{snippetTarget === 'calendar' ? 'Calendar Title' : snippetTarget === 'map' ? 'Map Popup' : activeEditorTab}}.
+            Click a snippet or drag it into the editor.
+          </div>
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text bg-body-secondary border-0"><fa-icon [icon]="['fas','search']"></fa-icon></span>
+            <input type="text" class="form-control bg-body-secondary border-0" placeholder="Filter snippets"
+              aria-label="Filter palette snippets" [(ngModel)]="snippetFilter" name="snippetFilter" />
+          </div>
+          @for (group of snippetGroups; track group.label) {
+            <details class="palette-group mb-2" open>
+              <summary class="d-flex align-items-center justify-content-between py-2 small fw-semibold text-body-secondary">
+                <span>{{group.label}}</span>
+                <span class="ws-pill">{{group.items.length}}</span>
+              </summary>
+              <div class="d-flex flex-wrap gap-1">
+                @for (snippet of group.items; track $index) {
+                  <button type="button" class="palette-tile btn btn-sm btn-outline-secondary text-start px-1"
+                    [disabled]="isTimeWarping" [attr.draggable]="!isTimeWarping"
+                    [title]="snippet.text" (click)="insertPaletteSnippet(snippet)"
+                    (dragstart)="startSnippetDrag($event, snippet)" (dragend)="endSnippetDrag()">
+                    @if (snippet.kind === 'action') {
+                      <fa-icon [icon]="['fas','cog']" [fixedWidth]="true"></fa-icon>
+                    } @else if (snippet.kind === 'section') {
+                      <fa-icon [icon]="['fas','th']" [fixedWidth]="true"></fa-icon>
+                    }
+                    {{snippet.label}}
+                  </button>
+                }
+              </div>
+            </details>
+          }
+          @if (snippetGroups.length === 0) {
+            <div class="p-3 text-body-secondary">No matching snippets</div>
+          }
+        } @else if (curScreen?.type !== 'combine') {
+          <div class="p-3 text-body-secondary">Select a content, pre or post editor to see snippets.</div>
+        }
       </div>
     </ng-template>
   }
