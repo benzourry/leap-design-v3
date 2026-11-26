@@ -62,7 +62,8 @@
                         draggable="false">
                         <div class="list-group-item-heading sidebar-item-title text-truncate">
                           <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
-                          <span class="text-truncate" title="{{a.name}}">{{a.name}}</span> <span class="ui-item-id">#{{a?.id}}</span>
+                          <span class="text-truncate" title="{{a.name}}">{{a.name}}</span> 
+                          <span class="ui-item-id" title="Click to copy ID" (click)="copyId($event, a?.id)">#{{a?.id}}</span>
                         </div>
                         @if (a.description) {
                           <div class="list-group-item-text text-truncate">{{a.description}}</div>

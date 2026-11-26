@@ -37,9 +37,19 @@
                                 }
 
                                 @if (i?.title?.trim()) {
-                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                  <span class="ui-item-id" 
+                                        title="Click to copy ID" 
+                                        (click)="copyId($event, i?.id)">
+                                    #{{i?.id}}
+                                  </span>
                                 } @else {
-                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                                  <span class="ui-item-id" 
+                                        title="Click to copy ID" 
+                                        (click)="copyId($event, i?.id)">
+                                    #{{i?.id}}
+                                  </span>
                                 }
                               </a>
                             }
@@ -70,9 +80,19 @@
                                     draggable="false">
                                     <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                     @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     } @else {
-                                      <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="font-italic text-truncate">(Untitled)</span> 
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     }
                                   </a>
                                 }
@@ -141,9 +161,19 @@
                                 }
                                 
                                 @if (i?.title?.trim()) {
-                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                  <span class="ui-item-id" 
+                                        title="Click to copy ID" 
+                                        (click)="copyId($event, i?.id)">
+                                    #{{i?.id}}
+                                  </span>
                                 } @else {
-                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                                  <span class="ui-item-id" 
+                                        title="Click to copy ID" 
+                                        (click)="copyId($event, i?.id)">
+                                    #{{i?.id}}
+                                  </span>
                                 }
                             </a>
                           }
@@ -172,9 +202,19 @@
                                   draggable="false">
                                   <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                   @if (i?.title?.trim()) {
-                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                    <span class="ui-item-id" 
+                                          title="Click to copy ID" 
+                                          (click)="copyId($event, i?.id)">
+                                      #{{i?.id}}
+                                    </span>
                                   } @else {
-                                    <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                    <span class="font-italic text-truncate">(Untitled)</span> 
+                                    <span class="ui-item-id" 
+                                          title="Click to copy ID" 
+                                          (click)="copyId($event, i?.id)">
+                                      #{{i?.id}}
+                                    </span>
                                   }
                                 </a>
                               }
@@ -218,9 +258,20 @@
                                       </div>
                                     }
                                     @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                      <!-- <span class="ui-item-id">#{{i?.id}}</span> -->
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     }@else{
-                                      <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     }
                                 </a>
                               }
@@ -282,9 +333,19 @@
                                   }
                                   
                                   @if (i?.title?.trim()) {
-                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                    <span class="ui-item-id" 
+                                          title="Click to copy ID" 
+                                          (click)="copyId($event, i?.id)">
+                                      #{{i?.id}}
+                                    </span>
                                   } @else {
-                                    <span class="font-italic text-secondary text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                    <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                                    <span class="ui-item-id" 
+                                          title="Click to copy ID" 
+                                          (click)="copyId($event, i?.id)">
+                                      #{{i?.id}}
+                                    </span>
                                   }
                                 </a>
                               }
@@ -316,9 +377,19 @@
                                     draggable="false">
                                     <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
                                     @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     } @else {
-                                      <span class="font-italic text-truncate">(Untitled)</span> <span class="ui-item-id">#{{i?.id}}</span>
+                                      <span class="font-italic text-truncate">(Untitled)</span> 
+                                      <span class="ui-item-id" 
+                                            title="Click to copy ID" 
+                                            (click)="copyId($event, i?.id)">
+                                        #{{i?.id}}
+                                      </span>
                                     }
                                   </a>
                                 }

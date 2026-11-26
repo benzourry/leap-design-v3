@@ -35,6 +35,7 @@ import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } fro
 import { GroupByPipe } from '../../../_shared/pipe/group-by.pipe';
 import { CloneDashboardComponent } from '../../../_shared/modal/clone-dashboard/clone-dashboard.component';
 import { KryptaService } from '../../../service/krypta.service';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -409,6 +410,23 @@ export class UiEditorComponent implements OnInit, OnDestroy {
                 error: (error: any) => { this.importExcelData = { success: false, message: error.message }; this.importLoading = false; }
             });
         }
+    }
+
+    // 2. Inject it inside UiEditorComponent
+    private clipboard = inject(Clipboard);
+
+    // 3. Add this helper method to the class
+    copyId(event: MouseEvent, id: string | number) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (!id) return;
+
+        this.clipboard.copy(String(id));
+        this.toastService.show(`Copied ID #${id} to clipboard`, { 
+            classname: 'bg-dark text-light', 
+            delay: 2000 
+        });
     }
 
     ngOnDestroy() {

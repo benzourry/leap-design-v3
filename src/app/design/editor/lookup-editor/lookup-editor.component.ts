@@ -21,6 +21,8 @@ import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } fro
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
+import { Clipboard } from '@angular/cdk/clipboard';
+
 
 @Component({
     selector: 'app-lookup-editor',
@@ -573,6 +575,24 @@ export class LookupEditorComponent implements OnInit {
     getUrl(pre, path) {
         return this.baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
       }
+
+
+    // 2. Inject it inside UiEditorComponent
+    private clipboard = inject(Clipboard);
+
+    // 3. Add this helper method to the class
+    copyId(event: MouseEvent, id: string | number) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (!id) return;
+
+        this.clipboard.copy(String(id));
+        this.toastService.show(`Copied ID #${id} to clipboard`, { 
+            classname: 'bg-dark text-light', 
+            delay: 2000 
+        });
+    }
 
 
 }
