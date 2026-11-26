@@ -755,7 +755,7 @@
                               
                               <div class="form-group mt-3">
                                 <label class="form-label">Show count badge from</label>
-                                <select class="form-select" name="title" [disabled]="isTimeWarping"
+                                <select class="form-select" name="badgeFrom" [disabled]="isTimeWarping"
                                   [(ngModel)]="curScreen.data.badgeFrom">
                                   <option [ngValue]="undefined">Do not show count badge</option>
                                   @for (item of curScreen.data?.comps; track $index) {
@@ -937,7 +937,7 @@
                     }
 
                   </ul>
-                  <div class="d-flex align-items-center align-self-stretch ms-auto me-2">
+                  <div class="d-flex align-items-center align-self-stretch ms-auto me-3">
                     <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" [disabled]="isTimeWarping" title="Edit screen" aria-label="Edit screen"
                       (click)="editScreen(editScreenTpl,curScreen, false)">
                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
@@ -948,6 +948,16 @@
                       (click)="toggleTimeWarp()">
                       <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
                     </button>
+
+                    @if (hasContentEditor) {
+                      <button type="button" class="btn btn-sm btn-primary ms-1"
+                        [disabled]="contentForm.pristine || isTimeWarping"
+                        title="Save Content" aria-label="Save Content"
+                        (click)="saveScreen(curScreen, contentForm)">
+                        <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
+                        <span class="ms-1 d-none d-sm-inline">Save</span>
+                      </button>
+                    }
                     <div ngbDropdown class="d-flex ms-1">
                       <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle title="More actions" aria-label="More actions">
                         <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
@@ -987,17 +997,17 @@
                 }
                 }
               </div>
-            @if (hasContentEditor) {
+            <!-- @if (hasContentEditor) {
             <button type="button" class="my-2 ms-3 btn btn-primary btn-round" [disabled]="contentForm.pristine || isTimeWarping"
               (click)="saveScreen(curScreen, contentForm)">
               <fa-icon [icon]="['fas','save']" [fixedWidth]="true"></fa-icon>
               Save Content
             </button>
-            }
+            } -->
           </div>
         
-        <section class="mb-2 px-3" aria-labelledby="screen-actions-title">
-          <div class="card rounded-3">
+        <section class="my-3 px-3" aria-labelledby="screen-actions-title">
+          <div class="card rounded-3 overflow-hidden">
             <div class="card-header bg-body d-flex align-items-center justify-content-between gap-2">
               <h6 id="screen-actions-title" class="mb-0">Actions</h6>
               <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap" [disabled]="isTimeWarping"

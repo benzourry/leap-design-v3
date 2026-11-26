@@ -612,6 +612,11 @@ export class ScreenEditorComponent implements OnInit {
         this.curScreen = res;
         this.assistantContext.set({ type: 'screen', id: Number(res.id), label: res.title });
         this.cdr.detectChanges(); 
+
+        setTimeout(() => {
+          this.curScreenForm()?.form.markAsPristine();
+          this.cdr.markForCheck();
+        });
         
         if (!res.data) {
           res.data = {};
