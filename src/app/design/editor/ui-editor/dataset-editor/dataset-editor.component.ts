@@ -30,6 +30,7 @@ import { MetaTrailViewerComponent } from '../../../../_shared/modal/meta-trail-v
 import { MetaTrailService } from '../../../../service/metatrail.service';
 import { AssistantLocalContextService } from '../../assistant/assistant-local-context.service';
 import { EditorIdChipComponent } from '../editor-id-chip.component';
+import { DatasetCardPreviewComponent } from './dataset-card-preview/dataset-card-preview.component';
 
 @Component({
     selector: 'app-dataset-editor',
@@ -41,7 +42,7 @@ import { EditorIdChipComponent } from '../editor-id-chip.component';
     imports: [FaIconComponent, RouterLink, CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, EditDatasetComponent, 
         FormsModule, NgCmComponent, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, 
         NgbNavLinkBase, NgbNavContent, NgClass, IconPickerComponent, NgbNavOutlet, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem,
-        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe, EditorIdChipComponent]
+        KeyValuePipe, IconSplitPipe, MetaTrailViewerComponent, DatePipe, EditorIdChipComponent, DatasetCardPreviewComponent]
 })
 export class DatasetEditorComponent implements OnInit {
     readonly sameDropList = (drag: CdkDrag<unknown>, drop: CdkDropList<unknown>) =>

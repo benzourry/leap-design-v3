@@ -1,37 +1,30 @@
 <div [class.cm-fullscreen-mode]="isFullscreen()" [style.view-transition-name]="activeTransitionName()">
 
-  <!-- Show label only when in fullscreen -->
   @if (isFullscreen() && label()) {
     <h5 class="mb-2">{{label()}}</h5>
   }
 
   @if (!hideControl()) {
-    <!-- Sticky toolbar with background to hide scrolling text -->
     <div class="ng-cm-toolbar d-flex justify-content-start flex-wrap gap-1 p-1 align-items-stretch">
       
-      <button type="button" class="btn btn-outline-secondary btn-xs" title="Undo" (click)="undo()">
+      <button type="button" class="btn btn-xs" title="Undo" (click)="undo()">
         <fa-icon [icon]="['fas', 'undo']" [fixedWidth]="true"></fa-icon>
       </button>
 
       <button type="button" 
-              class="btn btn-outline-secondary btn-xs" 
+              class="btn btn-xs" 
               [class.active]="isSearchOpen()"
               title="Toggle Search" 
               (click)="toggleSearch()">
         <fa-icon [icon]="['fas', 'search']" [fixedWidth]="true"></fa-icon>
       </button>
       
-      <!-- <button type="button" class="btn btn-outline-secondary btn-xs" title="Search" (click)="openSearch()">
-        <fa-icon [icon]="['fas', 'search']" [fixedWidth]="true"></fa-icon>
-      </button> -->
-      
-      <button type="button" class="btn btn-outline-secondary btn-xs" title="Unfold All" (click)="unfoldAll()">
+      <button type="button" class="btn btn-xs" title="Unfold All" (click)="unfoldAll()">
         <fa-icon [icon]="['far', 'plus-square']" [fixedWidth]="true"></fa-icon> Unfold
       </button>
       
       <div ngbDropdown display="static" class="d-flex dropdown position-relative">
-        
-        <button type="button" class="btn btn-outline-secondary btn-xs d-inline-flex align-items-center" id="dropdownFold" ngbDropdownToggle title="Fold Options">
+        <button type="button" class="btn btn-xs d-inline-flex align-items-center" id="dropdownFold" ngbDropdownToggle title="Fold Options">
           <fa-icon [icon]="['far', 'minus-square']" [fixedWidth]="true" class="me-1"></fa-icon> Fold
         </button>
 
@@ -48,12 +41,11 @@
         </div>
       </div>
       
-      <button type="button" class="btn btn-outline-secondary btn-xs" title="Format Code" (click)="formatCode()" [disabled]="readOnly()">
+      <button type="button" class="btn btn-xs" title="Format Code" (click)="formatCode()" [disabled]="readOnly()">
         <fa-icon [icon]="['fas', 'align-left']" [fixedWidth]="true"></fa-icon> Format
       </button>
 
-      <!-- FULLSCREEN BUTTON -->
-      <button type="button" class="btn btn-outline-secondary btn-xs ms-auto" 
+      <button type="button" class="btn btn-xs ms-auto" 
               title="{{ isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen' }}" 
               (click)="toggleFullscreen()">
         <fa-icon [icon]="['fas', isFullscreen() ? 'compress' : 'expand']" [fixedWidth]="true"></fa-icon>

@@ -211,15 +211,15 @@
                               }
                             </div>
                             <div class="element-edit workspace-action-bar">
-                                  <button type="button" class="btn btn-info btn-round btn-sm" title="Edit column" aria-label="Edit column" [disabled]="isTimeWarpingDataset"
-                                    (click)="editItem(editItemTpl,field)">
-                                    <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
-                                    </fa-icon>
-                                  </button>
-                                  <button type="button" class="btn btn-info btn-round btn-sm" title="Remove column" aria-label="Remove column" [disabled]="isTimeWarpingDataset"
-                                    (click)="removeDsItem(field)">
-                                    <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
-                                  </button>
+                                <button type="button" class="btn border-0 btn-sm" title="Edit column" aria-label="Edit column" [disabled]="isTimeWarpingDataset"
+                                  (click)="editItem(editItemTpl,field)">
+                                  <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
+                                  </fa-icon>
+                                </button>
+                                <button type="button" class="btn border-0 btn-sm" title="Remove column" aria-label="Remove column" [disabled]="isTimeWarpingDataset"
+                                  (click)="removeDsItem(field)">
+                                  <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
+                                </button>
                             </div>
                           </div>
                           @if(field.subs && field.subs?.length>0){
@@ -234,10 +234,10 @@
                                   </div>
                                   <div class="element-item text-truncate" [title]="cf.label">{{cf.label}}</div>
                                   <div class="element-edit workspace-action-bar">
-                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Edit sub-column" aria-label="Edit sub-column" [disabled]="isTimeWarpingDataset" (click)="editColumnText(cf, field)">
+                                    <button type="button" class="btn border-0 btn-sm" title="Edit sub-column" aria-label="Edit sub-column" [disabled]="isTimeWarpingDataset" (click)="editColumnText(cf, field)">
                                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                     </button>
-                                    <button type="button" class="btn btn-info btn-round btn-sm" title="Remove sub-column" aria-label="Remove sub-column" [disabled]="isTimeWarpingDataset" (click)="removeSub(cf, field, $index)">
+                                    <button type="button" class="btn border-0 btn-sm" title="Remove sub-column" aria-label="Remove sub-column" [disabled]="isTimeWarpingDataset" (click)="removeSub(cf, field, $index)">
                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                     </button>
                                   </div>
@@ -251,166 +251,25 @@
                   </div>
 
 
-                  @if (curDataset.x?.tblcard){
-                    <div class="mt-3 pt-3 border-top">
-                      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <button type="button" class="btn btn-link p-0 text-decoration-none text-body fw-semibold"
-                          [attr.aria-expanded]="showCardPreview" (click)="showCardPreview = !showCardPreview">
-                          <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="text-body-secondary me-1"></fa-icon>Card Layout Preview
-                          <fa-icon [icon]="showCardPreview ? ['fas', 'angle-up'] : ['fas', 'angle-down']" [fixedWidth]="true" class="text-body-secondary ms-1"></fa-icon>
-                        </button>
-                        @if (showCardPreview) {
-                          <div class="form-check form-switch m-0">
-                            <input class="form-check-input" type="checkbox" id="enableCardEdit" [(ngModel)]="enableCardPreviewEdit" [disabled]="isTimeWarpingDataset">
-                            <label class="form-check-label small user-select-none text-body-secondary" for="enableCardEdit">Enable Card Edit</label>
-                          </div>
-                        }
-                      </div>
-
-                      @if (showCardPreview) {
-                        <div class="forceCard position-relative mt-3">
-                          <div class="centered mx-auto mx-sm-0 card-preview-surface" style="max-width: 360px;">
-                            <table class="table tblcard w-100 m-0">
-                              <tbody class="ds-tbody">
-                                <tr class="ds-row" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit"
-                                  [cdkDropListEnterPredicate]="sameDropList"
-                                  (cdkDropListDropped)="dropField($event, curDataset)">
-                                  
-                                  @if (curDataset.x?.bulkAction) {
-                                    <td class="ds-check">
-                                      <input type="checkbox" disabled class="form-check-input pointer-events-none">
-                                    </td>
-                                  }
-                                  
-                                  @if (curDataset.showIndex) {
-                                    <td data-label="#" class="ds-index">1</td>
-                                  }
-                                  
-                                  @for (item of curDataset.items; track item.id; let isLast = $last) {
-                                    @let fType = form[item.root]?.items[item.code]?.type;
-                                    
-                                    <td class="ds-item code-{{item.code}} preview-edit-item" 
-                                        cdkDrag [cdkDragDisabled]="isTimeWarpingDataset || !enableCardPreviewEdit"
-                                        [class.is-editable]="enableCardPreviewEdit && !isTimeWarpingDataset"
-                                        [title]="enableCardPreviewEdit && !isTimeWarpingDataset ? 'Click to edit, or drag to reorder' : ''"
-                                        (click)="enableCardPreviewEdit && !isTimeWarpingDataset && editItem(editItemTpl, item)"
-                                        [class.last-ds-item]="isLast"
-                                        [class.td-list]="item.type === 'list'"
-                                        [ngClass]="item.x?.cardStyle"
-                                        [attr.data-label]="item.label" [attr.code]="item.code">
-                                      
-                                      @if (item.type === 'list') {
-                                        
-                                        @if (item.subs && item.subs.length > 0) {
-                                          <table class="table tbl-child m-0 table-flush small">
-                                            <thead>
-                                              <tr>
-                                                @for (fq of item.subs; track fq.code) {
-                                                  <th class="bg-transparent">{{fq.label}}</th>
-                                                }
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              <tr>
-                                                @for (fq of item.subs; track fq.code) {
-                                                  <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 1</td>
-                                                }
-                                              </tr>
-                                              <tr>
-                                                @for (fq of item.subs; track fq.code) {
-                                                  <td class="bg-transparent text-truncate" style="max-width: 80px;">Sample 2</td>
-                                                }
-                                              </tr>
-                                            </tbody>
-                                          </table>
-                                        } @else {
-                                          <div class="p-2 text-body-tertiary">No sub-columns added yet</div>
-                                        }
-
-                                      } @else if (item.x?.cardStyle === 'bleed') {
-                                        @if (fType === 'static') {
-                                          <div class="bg-secondary-subtle data-bleed w-100" style="height: 2rem;"></div>
-                                        } @else {
-                                          <div class="bg-secondary-subtle text-secondary d-flex align-items-center justify-content-center data-bleed w-100" style="height: 140px;">
-                                            @if (fType === 'map') {
-                                              <fa-icon [icon]="['fas', 'map-marked-alt']" size="3x" class="opacity-50"></fa-icon>
-                                            } @else {
-                                              <fa-icon [icon]="['fas', 'image']" size="3x" class="opacity-50"></fa-icon>
-                                            }
-                                          </div>
-                                        }
-                                      } @else if (item.x?.cardStyle === 'title') {
-                                        <div>{{item.label}} Data</div>
-                                      } @else if (item.x?.cardStyle === 'subtitle') {
-                                        <div>{{item.label}} detail text</div>
-                                      } @else if (item.x?.cardStyle === 'tags') {
-                                        <span class="lookup-item">{{item.label}} 1</span>
-                                        <span class="lookup-item">{{item.label}} 2</span>
-                                      } @else {
-                                        <div class="text-end text-truncate" style="max-width: 50%;">Sample Value</div>
-                                      }
-                                      
-                                      <div class="clearfix"></div>
-                                    </td>
-                                  }
-
-                                  @if (curDataset.showStatus) {
-                                    <td class="text-center ds-status pt-2 pb-2">
-                                      <div class="d-flex justify-content-center align-items-center gap-1 mt-1 mb-1">
-                                        <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
-                                        <div class="bg-success rounded-circle" style="width: 10px; height: 10px;"></div>
-                                        <div class="border border-secondary rounded-circle" style="width: 10px; height: 10px; opacity: 0.3;"></div>
-                                      </div>
-                                      <div class="small text-capitalize text-body-secondary">Submitted</div>
-                                    </td>
-                                  }
-
-                                  @if (curDataset.showAction && curDataset.actions?.length > 0) {
-                                    <td class="p-1 ds-action">
-                                      <div class="d-flex flex-row ds-action-wrapper justify-content-start w-100"
-                                          [class.input-group]="curDataset.x?.groupAction"
-                                          [class.gap-0]="curDataset.x?.groupAction"
-                                          [class.gap-1]="!curDataset.x?.groupAction">
-                                        
-                                        @for (ac of curDataset.actions; track ac.id) {
-                                          @if (ac.type !== 'dropdown' && ac.type !== 'bulk') {
-                                            <button type="button" class="btn btn-sm text-nowrap flex-shrink-0 shadow-sm" [ngClass]="ac.style">
-                                              @if (ac.icon) { <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true"></fa-icon> }
-                                              {{ac.label || 'Action'}}
-                                            </button>
-                                          }
-                                        }
-
-                                        @if (hasDropdown(curDataset.actions)) {
-                                          <div class="dropdown-btn ds-action-dropdown ms-auto" ngbDropdown container="body">
-                                            <button type="button" class="btn border btn-sm btn-action-more border-secondary border-opacity-50 bg-body shadow-sm" ngbDropdownToggle>
-                                              <fa-icon [icon]="['fas','ellipsis-v']" [fixedWidth]="true"></fa-icon>
-                                            </button>
-                                            <div ngbDropdownMenu class="ds-action-items shadow-sm border-0 py-1" style="border-radius: 8px;">
-                                              @for (ac of curDataset.actions; track ac.id) {
-                                                @if (ac.type === 'dropdown') {
-                                                  <button type="button" ngbDropdownItem class="small">
-                                                    @if (ac.icon) { <fa-icon [icon]="ac.icon|iconSplit" [fixedWidth]="true" class="text-secondary me-2"></fa-icon> }
-                                                    {{ac.label || 'Action'}}
-                                                  </button>
-                                                }
-                                              }
-                                            </div>
-                                          </div>
-                                        }
-                                      </div>
-                                    </td>
-                                  }
-
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                  @if (curDataset.x?.tblcard) {
+                    @defer(prefetch on idle){
+                      <app-dataset-card-preview
+                        [dataset]="curDataset"
+                        [form]="form"
+                        [disabled]="isTimeWarpingDataset"
+                        (editItem)="editItem(editItemTpl, $event)"
+                        (dropField)="dropField($event, curDataset)">
+                      </app-dataset-card-preview>
+                    }@loading {
+                      <div class="text-center m-5">
+                        <div class="spinner-grow text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
                         </div>
-                      }
-                    </div>
-                  }@else {
-                    <div class="alert alert-warning mt-3 mb-3"><fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="me-1"></fa-icon>Card on smaller screen not enabled.
+                      </div>
+                    }
+                  } @else {
+                    <div class="alert alert-warning mt-3 mb-3">
+                      <fa-icon [icon]="['fas', 'mobile-alt']" [fixedWidth]="true" class="me-1"></fa-icon>Card on smaller screen not enabled.
                       <div class="small ms-4">To enable, Edit Dataset > Options > Enable 'Turn row to card on smaller screen'</div>
                     </div>
                   }
@@ -427,29 +286,31 @@
                 </div>
                 <div class="ds-panel-body">
               @if (curDataset.showAction && (curDataset.canEdit||curDataset.canView||curDataset.canDelete||curDataset.canRetract||!isEmptyObject(curDataset?.screen)||!isEmptyObject(curDataset?.next))) {
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                  @if (curDataset.x?.canAdd) {
-                    <div class="ds-meta">
-                      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
-                      </fa-icon>
-                      Can Add 
-                      @if (curDataset.x?.addLabel) {
-                        <span>- {{curDataset.x?.addLabel}} </span>
-                      }
-                      @if (curDataset.x?.inpopAdd) {
-                        <span>(in Modal
-                        Dialog)</span>
-                      }
-                    </div>
-                  }
-                  @if (curDataset.canBlast) {
-                    <div class="ds-meta">
-                      <fa-icon [icon]="['far','envelope']" [fixedWidth]="true">
-                      </fa-icon>
-                      Field used to blast email: <strong>{{curDataset.blastTo}}</strong>
-                    </div>
-                  }
-                </div>
+                @if (curDataset.x?.canAdd || curDataset.canBlast) {
+                  <div class="d-flex flex-wrap gap-2 mb-3">
+                    @if (curDataset.x?.canAdd) {
+                      <div class="ds-meta">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true">
+                        </fa-icon>
+                        Can Add 
+                        @if (curDataset.x?.addLabel) {
+                          <span>- {{curDataset.x?.addLabel}} </span>
+                        }
+                        @if (curDataset.x?.inpopAdd) {
+                          <span>(in Modal
+                          Dialog)</span>
+                        }
+                      </div>
+                    }
+                    @if (curDataset.canBlast) {
+                      <div class="ds-meta">
+                        <fa-icon [icon]="['far','envelope']" [fixedWidth]="true">
+                        </fa-icon>
+                        Field used to blast email: <strong>{{curDataset.blastTo}}</strong>
+                      </div>
+                    }
+                  </div>
+                }
               }
                 <div class="d-flex flex-wrap align-items-center gap-2" cdkDropList [cdkDropListDisabled]="isTimeWarpingDataset"
                   [cdkDropListEnterPredicate]="sameDropList"
@@ -473,11 +334,11 @@
                           }
                         </span>
                         <span class="ds-action-buttons">
-                        <button type="button" class="btn btn-sm" title="Edit action" aria-label="Edit action" [disabled]="isTimeWarpingDataset" (click)="editAction(editActionTpl,a)">
+                        <button type="button" class="btn btn-sm border-0" title="Edit action" aria-label="Edit action" [disabled]="isTimeWarpingDataset" (click)="editAction(editActionTpl,a)">
                           <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
-                        <button type="button" class="btn btn-sm" title="Delete action" aria-label="Delete action" [disabled]="isTimeWarpingDataset" (click)="deleteAction(a)">
+                        <button type="button" class="btn btn-sm border-0" title="Delete action" aria-label="Delete action" [disabled]="isTimeWarpingDataset" (click)="deleteAction(a)">
                           <fa-icon [icon]="['fas','trash']" [fixedWidth]="true">
                           </fa-icon>
                         </button>
@@ -510,12 +371,12 @@
                             <span class="column-label">{{field.label}}</span>
                           </div>
                           <div class="element-edit workspace-action-bar">
-                                <button type="button" class="btn btn-info btn-round btn-sm" title="Edit filter" aria-label="Edit filter" [disabled]="isTimeWarpingDataset"
+                                <button type="button" class="btn border-0 btn-sm" title="Edit filter" aria-label="Edit filter" [disabled]="isTimeWarpingDataset"
                                   (click)="editFilterText(field)">
                                   <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true">
                                   </fa-icon>
                                 </button>
-                                <button type="button" class="btn btn-info btn-round btn-sm" title="Remove filter" aria-label="Remove filter" [disabled]="isTimeWarpingDataset"
+                                <button type="button" class="btn border-0 btn-sm" title="Remove filter" aria-label="Remove filter" [disabled]="isTimeWarpingDataset"
                                   (click)="removeFilter($index)">
                                   <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                 </button>
@@ -661,7 +522,7 @@
                   <div class="ds-panel-body small">
 
                   <div class="fw-semibold mb-2">{{form['data']?.title}}</div>
-                  <div class="small">
+                  <div class="">
                     <div class="d-flex flex-wrap gap-3 mb-2">
                       <div>
                         <fa-icon
@@ -811,9 +672,8 @@
                 @if (curDataset?.x?.skipMask){
                   <div class="alert alert-danger mb-0 d-flex gap-2" role="alert">
                     <fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon>
-                    Column masking is disabled and could expose sensitive data. To enable, change in Edit Dataset &gt; Options
-                    &gt;
-                    Uncheck 'Disable field mask...'
+                    <span class="small">Column masking is disabled and could expose sensitive data. To enable, change in Edit Dataset &gt; Options
+                    &gt; Uncheck 'Disable field mask...'</span>
                   </div>
                 }
                 </div>

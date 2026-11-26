@@ -87,43 +87,43 @@
                       <ng-template ngbNavContent>
                         <!-- TimeWarp Interface Block (Form Level) -->
                         @if (isTimeWarpingForm) {
-  <div class="px-3 pt-3">
-    <div class="p-3 border border-warning-subtle rounded-3 bg-body shadow-sm">
-      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2">
-          <span class="small fw-semibold text-warning-emphasis">
-            <fa-icon [icon]="['far', 'clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
-          </span>
-          <span class="ws-pill is-warning">Read-only</span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarpForm()">Cancel</button>
-          <!-- <button type="button" class="btn btn-sm btn-warning fw-medium" (click)="restoreTimeWarpFormVersion()">Restore This</button> -->
-        </div>
-      </div>
+                          <div class="px-3 pt-3">
+                            <div class="p-3 border border-warning-subtle rounded-3 bg-body shadow-sm">
+                              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                  <span class="small fw-semibold text-warning-emphasis">
+                                    <fa-icon [icon]="['far', 'clock']" [fixedWidth]="true" class="me-1"></fa-icon> TimeWarp Active
+                                  </span>
+                                  <span class="ws-pill is-warning">Read-only</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="exitTimeWarpForm()">Cancel</button>
+                                  <!-- <button type="button" class="btn btn-sm btn-warning fw-medium" (click)="restoreTimeWarpFormVersion()">Restore This</button> -->
+                                </div>
+                              </div>
 
-      <div class="d-flex align-items-center gap-3">
-        <span class="small fw-medium text-body-secondary">Oldest</span>
-        <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpFormTrails.length - 1"
-               [(ngModel)]="timeWarpFormIndex" (ngModelChange)="applyTimeWarpForm($event)">
-        <span class="small fw-medium text-body-secondary">Latest</span>
-      </div>
+                              <div class="d-flex align-items-center gap-3">
+                                <span class="small fw-medium text-body-secondary">Oldest</span>
+                                <input type="range" class="form-range flex-grow-1" min="0" [max]="timeWarpFormTrails.length - 1"
+                                      [(ngModel)]="timeWarpFormIndex" (ngModelChange)="applyTimeWarpForm($event)">
+                                <span class="small fw-medium text-body-secondary">Latest</span>
+                              </div>
 
-      @let trail = timeWarpFormTrails[timeWarpFormIndex];
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 border-top small">
-        <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
-          <span>{{ trail?.timestamp | date:'medium' }}</span>
-          <span class="opacity-50">•</span>
-          <span>{{ trail?.email }}</span>
-        </div>
-        <div class="d-flex align-items-center gap-1 font-monospace text-uppercase">
-          <span class="badge rounded-1 bg-body-tertiary text-body-secondary fw-normal">{{ trail?.action }}</span>
-          <span class="badge rounded-1 bg-primary-subtle text-primary-emphasis fw-normal">{{ trail?.module }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-}
+                              @let trail = timeWarpFormTrails[timeWarpFormIndex];
+                              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 pt-2 border-top small">
+                                <div class="d-flex flex-wrap align-items-center gap-2 text-body-secondary">
+                                  <span>{{ trail?.timestamp | date:'medium' }}</span>
+                                  <span class="opacity-50">•</span>
+                                  <span>{{ trail?.email }}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1 font-monospace text-uppercase">
+                                  <span class="badge rounded-1 bg-body-tertiary text-body-secondary fw-normal">{{ trail?.action }}</span>
+                                  <span class="badge rounded-1 bg-primary-subtle text-primary-emphasis fw-normal">{{ trail?.module }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        }
                         <div class="canvas-controls d-flex flex-nowrap gap-2 px-3 pt-3 pb-2">
                             <div class="filter-control d-flex align-items-center gap-2 bg-body border rounded-3 shadow-sm px-2">
                               <fa-icon class="text-body-tertiary" [icon]="['fas','search']"></fa-icon>
@@ -240,13 +240,13 @@
                                         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                       </button>
                                       @if (!$first) {
-                                        <button type="button" class="btn btn-info btn-round btn-sm" title="Move tab left" aria-label="Move tab left" [disabled]="isTimeWarpingForm"
+                                        <button type="button" class="btn border-0 btn-sm" title="Move tab left" aria-label="Move tab left" [disabled]="isTimeWarpingForm"
                                           (click)="reorderTab(tab, -1)">
                                           <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                         </button>
                                       }
                                       @if (!$last) {
-                                        <button type="button" class="btn btn-info btn-round btn-sm" title="Move tab right" aria-label="Move tab right" [disabled]="isTimeWarpingForm"
+                                        <button type="button" class="btn border-0 btn-sm" title="Move tab right" aria-label="Move tab right" [disabled]="isTimeWarpingForm"
                                           (click)="reorderTab(tab, 1)">
                                           <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                         </button>
@@ -327,26 +327,26 @@
                                             </div>
                                           </div>
                                           <div class="element-edit action-bar">
-                                            <button type="button" class="btn btn-info btn-round btn-sm" title="View Metadata" aria-label="View section metadata"
+                                            <button type="button" class="btn border-0 btn-sm" title="View Metadata" aria-label="View section metadata"
                                               (click)="viewSectionJson(viewSectionJsonTpl, e)">
                                               <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon>
                                             </button>
-                                            <button type="button" class="btn btn-info btn-round btn-sm action-primary" title="Edit section" aria-label="Edit section" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn border-0 btn-sm action-primary" title="Edit section" aria-label="Edit section" [disabled]="isTimeWarpingForm"
                                               (click)="editSection(editSectionTpl,e)">
                                               <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                             </button>
-                                            <button type="button" class="btn btn-info btn-round btn-sm action-danger" title="Remove section" aria-label="Remove section" [disabled]="isTimeWarpingForm"
+                                            <button type="button" class="btn border-0 btn-sm action-danger" title="Remove section" aria-label="Remove section" [disabled]="isTimeWarpingForm"
                                               (click)="removeSection(removeSectionTpl,e)">
                                               <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                             </button>
                                             @if (!$s_first) {
-                                              <button type="button" class="btn btn-info btn-round btn-sm" title="Move section left" aria-label="Move section left" [disabled]="isTimeWarpingForm"
+                                              <button type="button" class="btn border-0 btn-sm" title="Move section left" aria-label="Move section left" [disabled]="isTimeWarpingForm"
                                                 (click)="reorderSection(curForm.sections,e.__index, -1)">
                                                 <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                               </button>
                                             }
                                             @if (!$s_last) {
-                                              <button type="button" class="btn btn-info btn-round btn-sm" title="Move section right" aria-label="Move section right" [disabled]="isTimeWarpingForm"
+                                              <button type="button" class="btn border-0 btn-sm" title="Move section right" aria-label="Move section right" [disabled]="isTimeWarpingForm"
                                                 (click)="reorderSection(curForm.sections,e.__index, 1)">
                                                 <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                               </button>
@@ -468,22 +468,22 @@
                                                     <fa-icon [icon]="['fas','grip-vertical']" [fixedWidth]="true"></fa-icon>
                                                   </div>
                                                   <div class="element-edit action-bar item-action-bar">
-                                                    <button type="button" class="btn btn-info btn-round btn-sm action-primary" title="Edit item" aria-label="Edit item" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn border-0 btn-sm action-primary" title="Edit item" aria-label="Edit item" [disabled]="isTimeWarpingForm"
                                                       (click)="editItem(editItemTpl,e,field,f.sortOrder)">
                                                       <fa-icon [icon]="['fas','pencil-alt']" [fixedWidth]="true"></fa-icon>
                                                     </button>
-                                                    <button type="button" class="btn btn-info btn-round btn-sm action-danger" title="Remove item" aria-label="Remove item" [disabled]="isTimeWarpingForm"
+                                                    <button type="button" class="btn border-0 btn-sm action-danger" title="Remove item" aria-label="Remove item" [disabled]="isTimeWarpingForm"
                                                       (click)="removeItem(removeItemTpl,f)">
                                                       <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                                                     </button>
                                                     @if (!$f_first) {
-                                                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move item left" aria-label="Move item left" [disabled]="isTimeWarpingForm"
+                                                      <button type="button" class="btn border-0 btn-sm" title="Move item left" aria-label="Move item left" [disabled]="isTimeWarpingForm"
                                                         (click)="reorderItem(e, f, -1)">
                                                         <fa-icon [icon]="['fas','arrow-left']" [fixedWidth]="true"></fa-icon>
                                                       </button>
                                                     }
                                                     @if (!$f_last) {
-                                                      <button type="button" class="btn btn-info btn-round btn-sm" title="Move item right" aria-label="Move item right" [disabled]="isTimeWarpingForm"
+                                                      <button type="button" class="btn border-0 btn-sm" title="Move item right" aria-label="Move item right" [disabled]="isTimeWarpingForm"
                                                         (click)="reorderItem(e, f, 1)">
                                                         <fa-icon [icon]="['fas','arrow-right']" [fixedWidth]="true"></fa-icon>
                                                       </button>
