@@ -266,6 +266,4 @@ export class AppService {
   }
 
 
-  searchInApp = new Map();
-
 }

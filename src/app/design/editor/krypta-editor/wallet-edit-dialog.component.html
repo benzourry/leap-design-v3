@@ -1,0 +1,66 @@
+  <div class="modal-header">
+    <h4 class="modal-title">{{editWalletData.id?'Edit':'Add'}} Wallet Info</h4>
+  </div>
+  <div class="modal-body fix-gutter" #kryptaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Wallet Name *</label>
+      <input type="text" class="form-control" [(ngModel)]="editWalletData.name"
+        #name="ngModel"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text text-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [(ngModel)]="editWalletData.description"
+        name="description"></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">RPC URL (EVM-compatible network) *</label>
+        <input type="text" class="form-control" [(ngModel)]="editWalletData.rpcUrl" name="rpcUrl"
+          list="rpcUrlList" placeholder="ie: http://127.0.0.1:8545" required>
+        <datalist id="rpcUrlList">
+          <option value="http://10.224.203.61:8545">UNIMAS Node0-dev</option>
+        </datalist>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Chain ID *</label>
+        <input type="number" class="form-control" [(ngModel)]="editWalletData.chainId" name="chainId"
+          placeholder="ie: 1337" required>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Private Key * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+        <input type="text" class="form-control" [(ngModel)]="editWalletData.privateKey" name="privateKey"
+          placeholder="Private Key" list="pkSecretList" autocomplete="off" required>
+        <datalist id="pkSecretList">
+          @for(secret of secretList; track $index) {
+            @let secretKey = '{{_secret.'+secret.key+'}}';
+            <option value="{{secretKey}}">Secret: {{secret.key}}</option>
+          }
+        </datalist>
+      </div>
+      <div class="form-group mb-3 mt-1">
+        <label class="form-label">Smart Contract *</label>
+        <select class="form-select" name="contract" [compareWith]="compareByIdFn"
+          [(ngModel)]="editWalletData.contract" required>
+          <option [ngValue]="null" class="text-body-secondary"> * No contract selected </option>
+          @for (item of contractList; track item.id) {
+          <option [ngValue]="item">{{item?.name}}
+          </option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="activeModal.dismiss()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="kryptaEditForm.invalid"
+        (click)="activeModal.close(editWalletData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Wallet
+    </button>
+  </div>

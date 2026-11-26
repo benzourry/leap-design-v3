@@ -1,30 +1,29 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, HostListener, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { BucketService } from '../../../service/bucket.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, NgStyle, DecimalPipe, DatePipe, NgClass } from '@angular/common';
+import { PlatformLocation, NgStyle, DecimalPipe, DatePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { baseApi } from '../../../_shared/constant.service';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { RunService } from '../../../run/_service/run.service';
-import { LambdaService } from '../../../service/lambda.service';
 import { map } from 'rxjs/operators';
 import { catchError, concatMap, EMPTY, finalize, from } from 'rxjs';
 import { FileDropPasteDirective } from '../../../_shared/directive/file-drop-paste.directive';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
+import { CommService } from '../../../_shared/service/comm.service';
+import { BucketEditDialogService } from './bucket-edit-dialog.service';
 
 @Component({
   selector: 'app-bucket-manager',
   templateUrl: './bucket-manager.component.html',
   styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './bucket-manager.component.scss'],
-  imports: [SplitPaneComponent, FormsModule, NgClass, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, FilterPipe, DecimalPipe, DatePipe, FileDropPasteDirective, EditorIdChipComponent],
+  imports: [FormsModule, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgStyle, DecimalPipe, DatePipe, FileDropPasteDirective, EditorIdChipComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BucketManagerComponent implements OnInit {
@@ -32,10 +31,7 @@ export class BucketManagerComponent implements OnInit {
   offline = false;
   app: any;
 
-  bucketTotal: any;
-  bucketList: any;
   bucket: any;
-  itemLoading: boolean;
   appId: number;
   baseApi = baseApi;
 
@@ -49,13 +45,17 @@ export class BucketManagerComponent implements OnInit {
   private appService = inject(AppService);
   private toastService = inject(ToastService);
   private utilityService = inject(UtilityService);
-  private lambdaService = inject(LambdaService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
-
-  secretList: any[] = [];
+  private commService = inject(CommService);
+  private editDialog = inject(BucketEditDialogService);
 
   constructor() {
+    this.commService.changeEmitted$.pipe(takeUntilDestroyed()).subscribe(change => {
+      if (change?.key === 'bucket-reload-current' && String(change.appId) === String(this.appId)) {
+        this.loadBucket(change.id);
+      }
+    });
     this.location.onPopState(() => {
         if (document.querySelector('.cm-fullscreen-mode')) {
             return;
@@ -85,11 +85,7 @@ export class BucketManagerComponent implements OnInit {
                   this.app = res;
                   this.cdr.detectChanges();
                 });
-                
-              this.loadSecretList();
             }
-
-            this.loadBucketList(1);
           });
 
 
@@ -106,70 +102,20 @@ export class BucketManagerComponent implements OnInit {
       });
   }
 
-  loadSecretList() {
-    this.lambdaService.getSecretList(this.appId)
-    .subscribe(res => {
-        this.secretList = res;
-        this.cdr.detectChanges();
-    })
-  }
-
   user: any;
   bucketId = '';
   pageSize = 45;
-  itemsPerPage = 15;
-  searchText: string = "";
-
   pageNumber: number = 1;
 
   avLogList: any[] = [];
 
-  loadBucketList(pageNumber) {
-    this.pageNumber = pageNumber;
-    this.itemLoading = true;
-
-    let params = {
-      searchText: this.searchText,
-      appId: this.appId,
-      page: pageNumber - 1,
-      size: this.itemsPerPage
-    }
-
-    this.bucketService.getBucketList(params)
-      .subscribe({
-        next: (res) => {
-          this.bucketList = res.content;
-          this.bucketTotal = res.page?.totalElements;
-          this.itemLoading = false;
-          this.cdr.detectChanges();
-        }, error: (err) => {
-          this.itemLoading = false;
-          this.cdr.detectChanges();
-        }
-      })
-
-  }
-
-  editBucketData: any;
-  editBucket(content, group, isNew) {
-    
-    this.s3TestResult = null;
-    this.s3Testing = false;
-
-    this.editBucketData = group;
-    if (!this.editBucketData.type) {
-      this.editBucketData.type = 'local';
-    }
-    if (!this.editBucketData.x) {
-      this.editBucketData.x = {}
-    }
-
-    history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static' })
-      .result.then(data => {
+  editBucket(bucket) {
+    this.editDialog.open(this.appId, bucket)
+      .then(data => {
         this.bucketService.save(this.appId, data)
           .subscribe(res => {
-            this.loadBucketList(this.pageNumber);
+            this.commService.emitChange({ key: 'bucket-list-changed', appId: this.appId });
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'bucket' });
             this.loadBucket(res.id);
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Bucket successfully saved", { classname: 'bg-success text-light' });
@@ -189,7 +135,8 @@ export class BucketManagerComponent implements OnInit {
       .result.then(data => {
         this.bucketService.deleteBucket(group.id, data)
           .subscribe(res => {
-            this.loadBucketList(1);
+            this.commService.emitChange({ key: 'bucket-list-changed', appId: this.appId, page: 1 });
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'bucket' });
             delete this.bucket;
             this.toastService.show("Bucket successfully removed", { classname: 'bg-success text-light' });
             this.cdr.detectChanges();
@@ -486,133 +433,5 @@ export class BucketManagerComponent implements OnInit {
     return `hsl(${hue},50%,75%)`;
   }
 
-  keepMinute00 = (object) => {
-    if (object['clock'].length >= 4) {
-      object['clock'] = object['clock'].slice(0, -1) + '0';
-    }
-  }
-
-  dayOfWeekList = [
-    { name: "Sunday", value: 1 },
-    { name: "Monday", value: 2 },
-    { name: "Tuesday", value: 3 },
-    { name: "Wednesday", value: 4 },
-    { name: "Thursday", value: 5 },
-    { name: "Friday", value: 6 },
-    { name: "Saturday", value: 7 }
-  ]
-  monthOfYearList = [
-    { name: "January", value: 0 },
-    { name: "February", value: 1 },
-    { name: "March", value: 2 },
-    { name: "April", value: 3 },
-    { name: "May", value: 4 },
-    { name: "June", value: 5 },
-    { name: "July", value: 6 },
-    { name: "August", value: 7 },
-    { name: "September", value: 8 },
-    { name: "October", value: 9 },
-    { name: "November", value: 10 },
-    { name: "Disember", value: 11 }
-  ]
-
-  dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
-
-  getGdriveRedirectUri(): string {
-    let redirectUri = this.baseApi + '/bucket/oauth/gdrive-callback';
-    if (!redirectUri.startsWith('http')) {
-      redirectUri = window.location.origin + redirectUri;
-    }
-    return redirectUri;
-  }
-
-  connectGoogleDrive(bucketData: any) {
-    if (!bucketData.x.clientId || !bucketData.x.clientSecret) return;
-
-    this.bucketService.save(this.appId, bucketData).subscribe((res) => {
-      // Update UI state so it knows it is no longer a 'new' bucket
-      if (!bucketData.id) bucketData.id = res.id;
-      this.editBucketData.id = res.id;
-
-      const redirectUri = encodeURIComponent(this.getGdriveRedirectUri());
-      const clientId = encodeURIComponent(bucketData.x.clientId);
-      const state = encodeURIComponent(res.id); // Use the guaranteed DB ID
-
-      const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=https://www.googleapis.com/auth/drive.file&access_type=offline&prompt=consent&state=${state}`;
-
-      window.open(url, 'GoogleAuth', 'width=500,height=600,left=200,top=200');
-      this.cdr.detectChanges();
-    });
-  }
-
-  getOnedriveRedirectUri(): string {
-    let redirectUri = this.baseApi + '/bucket/oauth/onedrive-callback';
-    if (!redirectUri.startsWith('http')) {
-      redirectUri = window.location.origin + redirectUri;
-    }
-    return redirectUri;
-  }
-
-  connectOneDrive(bucketData: any) {
-    if (!bucketData.x.clientId || !bucketData.x.clientSecret) return;
-
-    this.bucketService.save(this.appId, bucketData).subscribe((res) => {
-      // Update UI state so it knows it is no longer a 'new' bucket
-      if (!bucketData.id) bucketData.id = res.id;
-      this.editBucketData.id = res.id;
-
-      const redirectUri = encodeURIComponent(this.getOnedriveRedirectUri());
-      const clientId = encodeURIComponent(bucketData.x.clientId);
-      const state = encodeURIComponent(res.id); // Use the guaranteed DB ID
-      const scope = encodeURIComponent('offline_access Files.ReadWrite');
-
-      const url = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}&state=${state}`;
-
-      window.open(url, 'OneDriveAuth', 'width=500,height=600,left=200,top=200');
-      this.cdr.detectChanges();
-    });
-  }
-
-  s3Testing: boolean = false;
-  s3TestResult: { success: boolean; message: string } | null = null;
-
-  testS3Connection(bucketData: any) {
-    this.s3Testing = true;
-    this.s3TestResult = null;
-    this.cdr.detectChanges();
-
-    // Ensure appId is assigned so {{_secret}} placeholders can resolve
-    const payload = { ...bucketData, appId: this.appId };
-
-    this.bucketService.testS3Connection(payload).subscribe({
-      next: (res: any) => {
-        this.s3Testing = false;
-        this.s3TestResult = res;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.s3Testing = false;
-        this.s3TestResult = {
-          success: false,
-          message: err.error?.message || err.message || 'Connection test failed.'
-        };
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  @HostListener('window:message', ['$event'])
-  onMessage(event: MessageEvent) {
-    if (event.data === 'gdrive_connected' || event.data === 'onedrive_connected') {
-      this.toastService.show("Cloud Storage connected successfully!", { classname: 'bg-success text-light' });
-      
-      if (this.editBucketData && this.editBucketData.id) {
-        this.bucketService.getBucket(this.editBucketData.id).subscribe(res => {
-          this.editBucketData = res;
-          this.cdr.detectChanges();
-        });
-      }
-    }
-  }
 
 }

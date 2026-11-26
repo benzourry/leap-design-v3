@@ -1,70 +1,4 @@
-<div class="wrapper" split-pane>
-  <div class="sidebar" sidebar #sidebar>
-    <div class="sidebar-heading">
-      <h5 class="m-0">Lookup Manager</h5>
-      <div class="filter-wrap position-relative mt-2">
-        <fa-icon [icon]="['fas','filter']" aria-hidden="true"></fa-icon>
-        <input type="search" autocapitalize="none" class="ui-filter w-100" placeholder="Filter list" aria-label="Filter list"
-          [(ngModel)]="searchText" (keyup.enter)="loadLookupList(1)"
-          (ngModelChange)="searchText === '' ? loadLookupList(1) : null">
-      </div>
-    </div>
-    <div class="group-list">
-      @if (itemLoading) {
-        <div class="p-3 text-center">
-          <div class="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
-      }
-      @if (!itemLoading) {
-        <div class="mb-3">
-          @for (a of lookupList | filter:searchText; track a.id) {
-            <a class="pointer element" [routerLink]="['/design',appId,'lookup']" [queryParams]="{id:a?.id}"
-              routerLinkActive="active" [class.active]="a.id==lookupId"
-              >
-              <div class="list-group-item-heading sidebar-item-title">
-                <span class="text-truncate" title="{{a.name}}">{{a.name}}</span> 
-                <span class="ui-item-id" title="Click to copy ID" (click)="copyId($event, a.id)">#{{a.id}}</span>
-              </div>
-              @if (a.description) {
-                <div class="list-group-item-text text-body-secondary">{{a.description}}</div>
-              }
-            </a>
-          }
-          <a class="pointer element" (click)="editLookup(editLookupTpl,{}, true)" [class.disabled]="offline">
-            <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
-            Create Lookup
-          </a>
-          <div class="p-2 pagination-rounded">
-            @if (lookupTotal>itemsPerPage) {
-              <ngb-pagination [collectionSize]="lookupTotal"
-                [pageSize]="itemsPerPage" [(page)]="pageNumber" [maxSize]="5"
-                (pageChange)="loadLookupList(pageNumber)" [boundaryLinks]="false" [directionLinks]="false">
-                <ng-template ngbPaginationFirst>
-                  <fa-icon [icon]="['fas','angle-double-left']"></fa-icon>
-                </ng-template>
-                <ng-template ngbPaginationPrevious>
-                  <fa-icon [icon]="['fas','chevron-left']"></fa-icon>
-                </ng-template>
-                <ng-template ngbPaginationNext>
-                  <fa-icon [icon]="['fas','chevron-right']"></fa-icon>
-                </ng-template>
-                <ng-template ngbPaginationLast>
-                  <fa-icon [icon]="['fas','angle-double-right']"></fa-icon>
-                </ng-template>
-              </ngb-pagination>
-            }
-            <div class="clearfix"></div>
-          </div>
-        </div>
-      }
-    </div>
-  </div>
-  <div class="content" content>
+<div class="content">
     <div class="fix-gutter lookup-workspace" [class.lookup-wide]="lookup?.x?.wide">
       @if (lookup) {
         <div class="bg-body">
@@ -413,7 +347,6 @@
       }
     </div>
   </div>
-</div>
 <ng-template #removeLookupEntryTpl let-c="close" let-d="dismiss">
   <div>
     <div class="modal-header">

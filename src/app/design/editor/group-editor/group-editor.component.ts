@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, RouterLink, Router } from '@angular/router';
 import { GroupService } from '../../../service/group.service';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbInputDatepicker, NgbPaginationPrevious, NgbPaginationNext, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe, JsonPipe } from '@angular/common';
@@ -12,22 +12,22 @@ import { ToastService } from '../../../_shared/service/toast-service';
 import { splitAsList, isValue } from '../../../_shared/utils';
 // import { LookupService } from '../../../service/lookup.service';
 import { AngularEditorConfig, AngularEditorModule } from '@kolkov/angular-editor';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { EditRoleComponent } from '../../../_shared/modal/edit-role/edit-role.component';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
+import { CommService } from '../../../_shared/service/comm.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'app-group-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './group-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './group-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, JsonPipe, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgClass, NgbInputDatepicker, NgSelectModule, AngularEditorModule, FilterPipe, DatePipe, KeyValuePipe,
+    imports: [FormsModule, JsonPipe, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgClass, NgbInputDatepicker, NgSelectModule, AngularEditorModule, DatePipe, KeyValuePipe,
         EditRoleComponent, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, EditorIdChipComponent]
 })
 export class GroupEditorComponent implements OnInit {
@@ -58,8 +58,12 @@ export class GroupEditorComponent implements OnInit {
   private toastService = inject(ToastService);
   private lookupService = inject(LookupService);
   private utilityService = inject(UtilityService);
+  private commService = inject(CommService);
 
   constructor() {
+    this.commService.changeEmitted$.pipe(takeUntilDestroyed()).subscribe(change => {
+      if (change?.key === 'group-list-changed') this.loadGroupList(change.page ?? this.pageNumber());
+    });
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
@@ -258,7 +262,8 @@ export class GroupEditorComponent implements OnInit {
       .result.then(data => {
         this.groupService.save(this.appId, data)
           .subscribe(res => {
-            this.loadGroupList(this.pageNumber());
+            this.commService.emitChange({ key: 'group-list-changed' });
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'access' });
             this.loadGroup(res.id);
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Group successfully saved", { classname: 'bg-success text-light' });
@@ -276,7 +281,8 @@ export class GroupEditorComponent implements OnInit {
       .result.then(data => {
         this.groupService.deleteGroup(group.id, data)
           .subscribe(res => {
-            this.loadGroupList(1);
+            this.commService.emitChange({ key: 'group-list-changed', page: 1 });
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'access' });
             delete this.group;
             this.cdr.detectChanges(); // <--- Add here if 'group' is used in the template
             this.toastService.show("Group successfully removed", { classname: 'bg-success text-light' });

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, NgClass, DatePipe, KeyValuePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
@@ -9,10 +9,8 @@ import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { GroupService } from '../../../service/group.service';
 import { baseApi, base } from '../../../_shared/constant.service';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { EditLookupComponent } from '../../../_shared/modal/edit-lookup/edit-lookup.component';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
@@ -21,7 +19,6 @@ import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } fro
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
-import { Clipboard } from '@angular/cdk/clipboard';
 
 
 @Component({
@@ -29,8 +26,8 @@ import { Clipboard } from '@angular/cdk/clipboard';
     templateUrl: './lookup-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css',
         './lookup-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
-        NgbDropdownItem, NgClass, FilterPipe, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent,
+    imports: [FormsModule, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem,
+        NgbDropdownItem, NgClass, DatePipe, KeyValuePipe, EditLookupComponent, EditLookupEntryComponent,
         CdkDropList, CdkDrag, CdkDragHandle, EditorIdChipComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -54,16 +51,13 @@ export class LookupEditorComponent implements OnInit {
 
     offline = false;
     app: any;
-    lookupTotal: any;
     loading: boolean;
-    lookupList: any;
     lookupEntryTotal: any;
     lookupEntryList: any;
     lookupEntryPages: any;
     lookupEntryElements: any;
     totalItems: any;
     lookup: any;
-    itemLoading: boolean;
     baseApi = baseApi;
     base = base;
 
@@ -83,7 +77,6 @@ export class LookupEditorComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(data => {
                 if (data?.key !== 'assistant-lookup') return;
-                this.loadLookupList(this.pageNumber);
                 if (this.lookupId) this.loadLookup(this.lookupId);
             });
 
@@ -107,7 +100,6 @@ export class LookupEditorComponent implements OnInit {
                                     this.cdr.detectChanges();
                                 });
                         }
-                        this.loadLookupList(1);
                     });
 
                 this.route.queryParams
@@ -126,13 +118,10 @@ export class LookupEditorComponent implements OnInit {
     data = { 'list': [] };
     pageSize = 45; // lookup entry list
     // currentPage = 1;
-    itemsPerPage = 15; //lookup list
     // maxSize = 5;
     // startAt = 0;
-    searchText: string = "";
     searchTextEntry: string = "";
 
-    pageNumber: number = 1;
     entryPageNumber: number = 1;
 
     accessList: any[] = [];
@@ -144,31 +133,6 @@ export class LookupEditorComponent implements OnInit {
             });
     }
 
-    // this.loadLookupList = loadLookupList;
-    loadLookupList(pageNumber) {
-        this.itemLoading = true;
-        this.pageNumber = pageNumber;
-
-        let params = {
-            searchText: this.searchText,
-            appId: this.appId,
-            page: pageNumber - 1,
-            size: this.itemsPerPage
-        }
-        this.lookupService.getLookupList(params)
-            .subscribe({
-                next: (res) => {
-                    this.lookupList = res.content;
-                    this.lookupTotal = res.page?.totalElements;
-                    this.itemLoading = false;
-                    this.cdr.detectChanges();
-                }, error: (err) => {
-                    this.itemLoading = false;
-                    this.cdr.detectChanges();
-                }
-            })
-    }
-
     editLookupData: any;
     editLookup(content, lookup, isNew) {
         this.editLookupData = lookup;
@@ -178,7 +142,7 @@ export class LookupEditorComponent implements OnInit {
                 this.lookupService.save(this.user.email, this.appId, data)
                     .subscribe({
                         next: (res) => {
-                            this.loadLookupList(this.pageNumber);
+                            this.commService.emitChange({ key: 'lookup-list-changed' });
                             this.loadLookup(res.id);
                             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                             this.toastService.show("Lookup successfully saved", { classname: 'bg-success text-light' });
@@ -200,7 +164,7 @@ export class LookupEditorComponent implements OnInit {
                 this.lookupService.deleteLookup(lookup.id, data)
                     .subscribe({
                         next: (res) => {
-                            this.loadLookupList(1);
+                            this.commService.emitChange({ key: 'lookup-list-changed' });
                             delete this.lookup;
                             this.toastService.show("Lookup successfully removed", { classname: 'bg-success text-light' });
                             this.cdr.detectChanges();
@@ -575,24 +539,6 @@ export class LookupEditorComponent implements OnInit {
     getUrl(pre, path) {
         return this.baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
       }
-
-
-    // 2. Inject it inside UiEditorComponent
-    private clipboard = inject(Clipboard);
-
-    // 3. Add this helper method to the class
-    copyId(event: MouseEvent, id: string | number) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (!id) return;
-
-        this.clipboard.copy(String(id));
-        this.toastService.show(`Copied ID #${id} to clipboard`, { 
-            classname: 'bg-dark text-light', 
-            delay: 2000 
-        });
-    }
 
 
 }

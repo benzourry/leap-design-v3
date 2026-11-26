@@ -36,7 +36,7 @@ export class BucketService {
   }
 
   testS3Connection(bucket: any){
-    return this.http.post(`${baseApi}/bucket/test-s3`, bucket);
+    return this.http.post<{ success: boolean; message: string }>(`${baseApi}/bucket/test-s3`, bucket);
   }
   
   getBucketList(params:any){

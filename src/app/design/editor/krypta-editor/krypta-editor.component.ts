@@ -1,40 +1,37 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 // import { KryptaService } from '../../../service/krypta.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, JsonPipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
-import { br2nl, nl2br, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
+import { br2nl, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { ChangeDetectorRef } from '@angular/core';
 import { KryptaService } from '../../../service/krypta.service';
-import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { LambdaService } from '../../../service/lambda.service';
+import { CommService } from '../../../_shared/service/comm.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { KryptaEditDialogService } from './krypta-edit-dialog.service';
 
 @Component({
     selector: 'app-krypta-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './krypta-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './krypta-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgCmComponent,
-        NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe, JsonPipe, JsonViewerComponent]
+    imports: [FormsModule, FaIconComponent, JsonPipe, JsonViewerComponent]
 })
 export class KryptaEditorComponent implements OnInit {
 
     offline = false;
     app: any;
 
-    kryptaTotal: any;
     loading: boolean;
-    kryptaList: any;
     kryptaEntryTotal: any;
     kryptaEntryList: any;
     // sharedList: any;
@@ -42,7 +39,6 @@ export class KryptaEditorComponent implements OnInit {
     // sharedLoading: any;
     totalItems: any;
     krypta: any;
-    itemLoading = signal<boolean>(false);
     appId: number;
     resultType:string = 'text';
 
@@ -57,8 +53,17 @@ export class KryptaEditorComponent implements OnInit {
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
+    private commService = inject(CommService);
+    private editDialog = inject(KryptaEditDialogService);
 
     constructor() {
+        this.commService.changeEmitted$.pipe(takeUntilDestroyed()).subscribe(change => {
+            if (change?.key === 'krypta-contract-created' && String(change.appId) === String(this.appId)) {
+                this.contract = change.contract;
+                this.loadContractList(this.pageNumber);
+                this.cdr.markForCheck();
+            }
+        });
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
@@ -91,7 +96,6 @@ export class KryptaEditorComponent implements OnInit {
                                 });
                         }
 
-                        this.loadWalletList(1);
                         this.loadContractList(1);
                         this.loadSecretList();
                         // this.loadSharedList(1);
@@ -127,30 +131,6 @@ export class KryptaEditorComponent implements OnInit {
     entryPageNumber: number = 1;
 
 
-    // this.loadWalletList = loadWalletList;
-    loadWalletList(pageNumber) {
-        this.pageNumber = pageNumber;
-        this.itemLoading.set(true);
-
-        let params = {
-            searchText: this.searchText,
-            appId: this.appId,
-            page: pageNumber - 1,
-            size: this.itemsPerPage
-        }
-        this.kryptaService.getWalletList(params)
-            .subscribe(res => {
-                this.kryptaList = res.content;
-                this.kryptaTotal = res.page?.totalElements;
-                this.itemLoading.set(false);
-                this.cdr.detectChanges();
-            }, res => {
-                this.itemLoading.set(false);
-                this.cdr.detectChanges();
-            })
-    }
-
-    
     secretList: any[] = [];
     loadSecretList() {
         this.lambdaService.getSecretList(this.appId)
@@ -163,7 +143,7 @@ export class KryptaEditorComponent implements OnInit {
 
     contractTotal: number;
     contractLoading = signal<boolean>(false);
-    contractList: any[];
+    contractList: any[] = [];
 
    loadContractList(pageNumber) {
         this.pageNumber = pageNumber;
@@ -188,17 +168,13 @@ export class KryptaEditorComponent implements OnInit {
     }
 
     editCode: boolean;
-    editWalletData: any;
-    editWallet(content, krypta, isNew) {
-
-        this.editWalletData = krypta;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-                data.content = this.nl2br(data.content);
+    editWallet(krypta) {
+        this.editDialog.openWallet({ wallet: krypta, contracts: this.contractList, secrets: this.secretList })
+            .then(data => {
                 this.kryptaService.saveWallet(this.user.email, this.appId, data)
                     .subscribe(res => {
-                        this.loadWalletList(this.pageNumber);
+                        this.commService.emitChange({ key: 'krypta-wallet-list-changed', appId: this.appId });
+                        this.commService.emitChange({ key: 'editor-search-refresh', category: 'kryptaWallet' });
                         this.loadWallet(res.id);
                         this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Wallet successfully saved", { classname: 'bg-success text-light' });
@@ -218,7 +194,8 @@ export class KryptaEditorComponent implements OnInit {
             .result.then(data => {
                 this.kryptaService.deleteWallet(krypta.id, data)
                     .subscribe(res => {
-                        this.loadWalletList(1);
+                        this.commService.emitChange({ key: 'krypta-wallet-list-changed', appId: this.appId, page: 1 });
+                        this.commService.emitChange({ key: 'editor-search-refresh', category: 'kryptaWallet' });
                         delete this.krypta;
                         this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
@@ -258,15 +235,14 @@ export class KryptaEditorComponent implements OnInit {
 
 
 
-    editContractData: any;
-    editContract(content, contract, isNew) {
-        this.editContractData = contract;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static', size: 'lg' })
-            .result.then(data => {
+    editContract(contract) {
+        this.editDialog.openContract(contract)
+            .then(data => {
                 this.kryptaService.saveContract(this.user.email, this.appId, data)
                     .subscribe(res => {
                         this.loadContractList(this.pageNumber);
+                        this.commService.emitChange({ key: 'krypta-contract-list-changed', appId: this.appId });
+                        this.commService.emitChange({ key: 'editor-search-refresh', category: 'kryptaContract' });
                         this.contract = res;
                         this.toastService.show("Contract successfully saved", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
@@ -286,6 +262,8 @@ export class KryptaEditorComponent implements OnInit {
                 this.kryptaService.deleteContract(contract.id, data)
                     .subscribe(res => {
                         this.loadContractList(1);
+                        this.commService.emitChange({ key: 'krypta-contract-list-changed', appId: this.appId, page: 1 });
+                        this.commService.emitChange({ key: 'editor-search-refresh', category: 'kryptaContract' });
                         this.contract = null;
                         this.toastService.show("Contract successfully removed", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
@@ -306,7 +284,6 @@ export class KryptaEditorComponent implements OnInit {
             .subscribe({
                 next:(res)=>{
                     this.toastService.show("Contract compiled successfully", { classname: 'bg-success text-light' });
-                    this.editContractData = res;
                     this.contract = res;
                     this.compileError.delete(contractId);
                     this.compileLoading.set(contractId, false);
@@ -375,11 +352,6 @@ export class KryptaEditorComponent implements OnInit {
         })
     }
 
-    compareByIdFn(a, b): boolean {
-        return (a && a.id) === (b && b.id);
-    }
-
-
     verifyHash() {
         let txHash = prompt("Enter transaction hash");    
         if (txHash){            
@@ -428,12 +400,10 @@ export class KryptaEditorComponent implements OnInit {
             }
         })
     }
-    nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
     br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
 
     toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
 
     toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-    itemExist = (f) => this.kryptaList.filter(e => e.code == f.code).length > 0 && !f.id;
 
 }

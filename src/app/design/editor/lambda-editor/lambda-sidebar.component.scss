@@ -1,0 +1,10 @@
+.sidebar-section-toggle {
+  color: var(--bs-secondary-color);
+  background: var(--bs-secondary-bg);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+  }
+}

@@ -1,48 +1,38 @@
 import { Component, inject, OnInit, signal, viewChild, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { LambdaService } from '../../../service/lambda.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
-import { PlatformLocation, JsonPipe, DatePipe } from '@angular/common';
+import { NgbModal, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem } from '@ng-bootstrap/ng-bootstrap';
+import { PlatformLocation, DatePipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
-import { DatasetService } from '../../../service/dataset.service';
-import { DashboardService } from '../../../service/dashboard.service';
-import { FormService } from '../../../service/form.service';
 import { base, baseApi, domainBase } from '../../../_shared/constant.service';
 import { EndpointService } from '../../../service/endpoint.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
-import { map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs';
-import { br2nl, nl2br, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
+import { map, shareReplay, switchMap, tap } from 'rxjs';
+import { toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { SafePipe } from '../../../_shared/pipe/safe.pipe';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
-import { UniqueAppPathDirective } from '../../../_shared/app-path-validator';
-import { NgSelectModule } from '@ng-select/ng-select';
 import { NgCmComponent as NgCmComponent_1 } from '../../../_shared/component/ng-cm/ng-cm.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
-import { LookupService } from '../../../run/_service/lookup.service';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
-import { SignaService } from '../../../service/signa.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../service/metatrail.service';
 import { CommService } from '../../../_shared/service/comm.service';
 import { AssistantLocalContextService } from '../assistant/assistant-local-context.service';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { LambdaEditDialogService } from './lambda-edit-dialog.service';
 
 @Component({
     selector: 'app-lambda-editor',
     templateUrl: './lambda-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './lambda-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, 
-      NgbPaginationFirst, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, NgbDropdown, 
+    imports: [FormsModule, FaIconComponent, NgbDropdown,
       NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgCmComponent_1, 
       JsonViewerComponent, EditorIdChipComponent,
-      NgSelectModule, UniqueAppPathDirective, FilterPipe, SafePipe, DatePipe, MetaTrailViewerComponent],
+      SafePipe, DatePipe, MetaTrailViewerComponent],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LambdaEditorComponent implements OnInit {
@@ -50,10 +40,7 @@ export class LambdaEditorComponent implements OnInit {
   offline = false;
   app: any;
 
-  lambdaTotal = signal<number>(0);
-  lambdaList = signal<any[]>([]);
   lambda: any;
-  itemLoading = signal<boolean>(false);
   appId: number;
   baseApi = baseApi;
 
@@ -62,14 +49,11 @@ export class LambdaEditorComponent implements OnInit {
   private userService = inject(UserService)
   private route = inject(ActivatedRoute)
   private lambdaService = inject(LambdaService)
-  private datasetService = inject(DatasetService)
-  private dashboardService = inject(DashboardService)
-  private lookupService = inject(LookupService)
   private modalService = inject(NgbModal)
   private location = inject(PlatformLocation)
   private router = inject(Router)
   private appService = inject(AppService)
-  private signaService = inject(SignaService)
+  private editDialog = inject(LambdaEditDialogService)
   private toastService = inject(ToastService)
   private endpointService = inject(EndpointService)
   private utilityService = inject(UtilityService)
@@ -85,7 +69,6 @@ export class LambdaEditorComponent implements OnInit {
             .pipe(takeUntilDestroyed())
             .subscribe(data => {
               if (data.key !== 'assistant-lambda' || !this.appId) return;
-              this.loadLambdaList(this.pageNumber());
               if (this.lambdaId) this.loadLambda(Number(this.lambdaId));
             });
         this.location.onPopState(() => {
@@ -96,8 +79,6 @@ export class LambdaEditorComponent implements OnInit {
         });
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
-
-  isCodeTaken = (code) => this.lambdaService.isCodeTaken(code);
 
   ngOnInit() {
     const user$ = this.userService.getCreator().pipe(
@@ -126,9 +107,6 @@ export class LambdaEditorComponent implements OnInit {
             this.cdr.markForCheck();
           });
 
-        this.loadLambdaList(1);
-        this.loadBindingSrcs();
-        this.loadSignaList();
         this.loadSecretList();
       }
     });
@@ -153,77 +131,6 @@ export class LambdaEditorComponent implements OnInit {
   user: any;
   lambdaId = '';
   pageSize = 45;
-  itemsPerPage = 15;
-  searchText: string = "";
-
-  pageNumber = signal<number>(1);
-
-  editableLambdas = signal<any[]>([]);
-  restrictedLambdas = signal<any[]>([]);
-  showRestrictedLambdas: boolean = false;
-
-  canEditLambda(item: any): boolean {
-    if (!item || !item.email) return true;
-    if (item.email.trim() === '') return true;
-
-    const userEmail = typeof this.user === 'function' ? this.user()?.email : this.user?.email;
-    const allowedEmails = item.email.split(',').map((e: string) => e.trim());
-
-    return allowedEmails.includes(userEmail);
-  }
-
-  loadLambdaList(pageNumber) {
-    this.pageNumber.set(pageNumber);
-    this.itemLoading.set(true);
-
-    let params = {
-      searchText: this.searchText,
-      appId: this.appId,
-      page: pageNumber - 1,
-      size: this.itemsPerPage
-    }
-    
-    this.lambdaService.getLambdaList(params)
-      .subscribe(res => {
-        const eLambdas = [];
-        const rLambdas = [];
-
-        res.content.forEach((a: any) => {
-          if (a?.id) { 
-            if (this.canEditLambda(a)) {
-              eLambdas.push(a);
-            } else {
-              rLambdas.push(a);
-            }
-          }
-        });
-
-        this.editableLambdas.set(eLambdas);
-        this.restrictedLambdas.set(rLambdas);
-        this.lambdaList.set(res.content); 
-        
-        this.lambdaTotal.set(res.page?.totalElements);
-        this.itemLoading.set(false);
-        this.cdr.detectChanges();
-      }, res => {
-        this.itemLoading.set(false);
-        this.cdr.detectChanges();
-      });
-  }
-
-  signaList: any[] = [];
-  loadSignaList() {
-    let params = {
-      appId: this.appId,
-      size: 9999
-    }
-    this.signaService.getSignaList(params)
-      .subscribe(res => {
-        this.signaList = res.content;
-        this.cdr.detectChanges();
-      })
-  }
-
   showSecret:boolean=false;
   secretList: any[] = [];
   loadSecretList() {
@@ -258,20 +165,13 @@ export class LambdaEditorComponent implements OnInit {
   }
 
   editCode: boolean;
-  editLambdaData: any;
-  editLambda(content, lambda, isNew) {
+  editLambda(lambda) {
     if (this.isTimeWarping) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
-
-    lambda.content = this.br2nl(lambda.content);
-    this.editLambdaData = lambda;
-    this.editLambdaData.email = lambda.email || this.user.email;
-    history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static' })
-      .result.then(data => {
-        data.content = this.nl2br(data.content);
+    this.editDialog.open(this.appId, this.user.email, lambda)
+      .then(data => {
         this.lambdaService.save(data.email, this.appId, data)
           .subscribe(res => {
-            this.loadLambdaList(this.pageNumber());
+            this.commService.emitChange({ key: 'lambda-list-changed' });
             this.loadLambda(res.id);            
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
@@ -310,7 +210,7 @@ export class LambdaEditorComponent implements OnInit {
       .result.then(data => {
         this.lambdaService.deleteLambda(lambda.id, data)
           .subscribe(res => {
-            this.loadLambdaList(1);
+            this.commService.emitChange({ key: 'lambda-list-changed', page: 1 });
             delete this.lambda;
             this.toastService.show("Lambda successfully saved", { classname: 'bg-success text-light' });
           }, err => {
@@ -319,7 +219,6 @@ export class LambdaEditorComponent implements OnInit {
       }, res => { });
   }
 
-  initialCode: string = "";
   domainBase = domainBase;
 
   loadLambda(id) {
@@ -331,7 +230,6 @@ export class LambdaEditorComponent implements OnInit {
         this.showSecret = false;
         this.lambda = lambda;
         this.assistantContext.set({ type: 'lambda', id: Number(lambda.id), label: lambda.name });
-        this.initialCode = lambda.code;
         this.extraAutoComplete = [];
         this.populateAutoComplete();
         this.moreAutocomplete();
@@ -534,7 +432,7 @@ export class LambdaEditorComponent implements OnInit {
 
     this.lambdaService.save(data.email, this.appId, data)
       .subscribe(res => {
-        this.loadLambdaList(this.pageNumber());
+        this.commService.emitChange({ key: 'lambda-list-changed' });
         this.loadLambda(res.id);
 
         this.contentForm()?.form.markAsPristine();
@@ -640,81 +538,6 @@ export class LambdaEditorComponent implements OnInit {
 
   base = base;
 
-  bindingSrcs: any[] = [];
-  loadBindingSrcs() {
-    this.bindingSrcs = [];
-    this.getDatasetList();
-    this.getDashboardList();
-    this.getLookupList();
-    this.otherBinds();
-  }
-
-  datasetList: any[];
-  dashboardList: any[];
-  formList: any[];
-  getDatasetList() {
-    this.datasetService.getDatasetList(this.appId)
-      .subscribe(res => {
-        this.datasetList = res;
-        this.datasetList.forEach(d => {
-          this.bindingSrcs.push({ name: d.title, type: 'dataset', srcId: d.id })
-        })
-        this.cdr.detectChanges();
-      })
-  }
-
-  getDashboardList() {
-    this.dashboardService.getDashboardList(this.appId)
-      .subscribe(res => {
-        this.dashboardList = res;
-        this.dashboardList.forEach(d => {
-          this.bindingSrcs.push({ name: d.title, type: 'dashboard', srcId: d.id })
-        })
-        this.cdr.detectChanges();
-      })
-  }
-  
-  keepMinute00 = (object) => {
-    if (object['clock'].length >= 4) {
-      object['clock'] = object['clock'].slice(0, -1) + '0';
-    }
-  }
-
-  otherBinds() {
-    this.bindingSrcs.push({ name: "⚙ Mailer", type: '_mail' })
-    this.bindingSrcs.push({ name: "⚙ Entry", type: '_entry' })
-    this.bindingSrcs.push({ name: "⚙ Lookup", type: '_lookup' })
-    this.bindingSrcs.push({ name: "⚙ Cogna", type: '_cogna' })
-    this.bindingSrcs.push({ name: "⚙ Endpoint", type: '_endpoint' })
-    this.bindingSrcs.push({ name: "⚙ Secret", type: '_secret' })
-    this.bindingSrcs.push({ name: "⚙ User", type: '_user' })
-    this.bindingSrcs.push({ name: "⚙ Mapper", type: '_mapper' })
-    this.bindingSrcs.push({ name: "⚙ Jsoup", type: '_jsoup' })
-    this.bindingSrcs.push({ name: "⚙ Krypta", type: '_krypta' })
-    this.bindingSrcs.push({ name: "⚙ Live", type: '_live' })
-    this.bindingSrcs.push({ name: "⚙ Log", type: '_log' })
-    this.bindingSrcs.push({ name: "⚙ Token", type: '_token' })
-    this.bindingSrcs.push({ name: "⚙ SQL", type: '_sql' })
-    this.bindingSrcs.push({ name: "⚙ IO/File", type: '_io' })
-    this.bindingSrcs.push({ name: "⚙ Utility", type: '_util' })
-    this.bindingSrcs.push({ name: "⚙ HTTP", type: '_http' })
-    this.bindingSrcs.push({ name: "⚙ PDF", type: '_pdf' })
-  }
-
-  getLookupList() {
-    this.lookupService.getLookupList({ appId: this.appId, size: 999 })
-      .subscribe(res => {
-        res.content.forEach(d => {
-          this.bindingSrcs.push({ name: d.name, type: 'lookup', srcId: d.id })
-        })
-        this.cdr.detectChanges();
-      });
-  }
-
-  compareByIdFn(a, b): boolean {
-    return (a && a.id) === (b && b.id);
-  }
-
   isEmptyObject = (obj: any) => obj && Object.keys(obj).length == 0;
 
   keyList = (obj: any) => obj && Object.keys(obj).join(", ");
@@ -744,44 +567,9 @@ export class LambdaEditorComponent implements OnInit {
     }
   }
 
-  nl2br = nl2br;
-
-  br2nl = br2nl;
-
   toSpaceCase = toSpaceCase; 
 
   toSnakeCase = toSnakeCase;
-
-  toHyphen = toHyphen;
-
-  itemExist = (f) => this.lambdaList().filter(e => e.code == f.code).length > 0 && !f.id;
-
-  dayOfWeekList = [
-    { name: "Sunday", value: 1 },
-    { name: "Monday", value: 2 },
-    { name: "Tuesday", value: 3 },
-    { name: "Wednesday", value: 4 },
-    { name: "Thursday", value: 5 },
-    { name: "Friday", value: 6 },
-    { name: "Saturday", value: 7 }
-  ]
-
-  monthOfYearList = [
-    { name: "January", value: 0 },
-    { name: "February", value: 1 },
-    { name: "March", value: 2 },
-    { name: "April", value: 3 },
-    { name: "May", value: 4 },
-    { name: "June", value: 5 },
-    { name: "July", value: 6 },
-    { name: "August", value: 7 },
-    { name: "September", value: 8 },
-    { name: "October", value: 9 },
-    { name: "November", value: 10 },
-    { name: "Disember", value: 11 }
-  ]
-
-  dayOfMonthList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 
   // ==========================================
   // META TRAILS LOGIC
@@ -806,7 +594,9 @@ export class LambdaEditorComponent implements OnInit {
   timeWarpTrails: any[] = [];
   liveLambdaSnapshot: any = null;
   timeWarpIndex: number = 0;
-  isTimeWarping: boolean = false;
+  private readonly timeWarping = signal(false);
+  get isTimeWarping(): boolean { return this.timeWarping(); }
+  set isTimeWarping(value: boolean) { this.timeWarping.set(value); }
 
   private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
 
@@ -894,20 +684,4 @@ export class LambdaEditorComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-      // 2. Inject it inside UiEditorComponent
-    private clipboard = inject(Clipboard);
-
-    // 3. Add this helper method to the class
-    copyId(event: MouseEvent, id: string | number) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (!id) return;
-
-        this.clipboard.copy(String(id));
-        this.toastService.show(`Copied ID #${id} to clipboard`, { 
-            classname: 'bg-dark text-light', 
-            delay: 2000 
-        });
-    }
 }

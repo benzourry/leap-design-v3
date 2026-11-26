@@ -12,7 +12,7 @@
     @if (authorized()){
       <div class="topbar-search position-relative d-none d-sm-flex align-items-center">
         <fa-icon [icon]="['fas','search']" class="search-icon" aria-hidden="true"></fa-icon>
-        <input type="search" id="g-search" name="g-search" class="reka-search w-100" (focus)="setFuseSearch()" #searchInput
+        <input type="search" id="g-search" name="g-search" class="reka-search w-100" #searchInput
           [(ngModel)]="model" [ngbTypeahead]="search" [resultTemplate]="rt" [inputFormatter]="formatter"
           (selectItem)="selectItem($event)" placeholder="Search components..." aria-label="Search components" list="searchresult">
         <span class="reka-kbd">Ctrl /</span>
@@ -66,36 +66,36 @@
     <div class="sb bg-plain" cdkDropListGroup>
       <div class="bar" aria-label="App modules">
         <div class="bar-1">
-          <a class="bar-link" routerLink="ui" routerLinkActive="active">
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'ui'" [attr.aria-pressed]="selectedSidebar() === 'ui'" aria-label="UI" title="UI" (click)="selectedSidebar.set('ui')">
             <fa-icon [icon]="['fas', 'quidditch']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="lookup" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'lookup'" [attr.aria-pressed]="selectedSidebar() === 'lookup'" aria-label="Lookup" title="Lookup" (click)="selectedSidebar.set('lookup')">
             <fa-icon [icon]="['far', 'caret-square-down']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="mailer" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'mailer'" [attr.aria-pressed]="selectedSidebar() === 'mailer'" aria-label="Mailer" title="Mailer" (click)="selectedSidebar.set('mailer')">
             <fa-icon [icon]="['fas', 'mail-bulk']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="endpoint" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'endpoint'" [attr.aria-pressed]="selectedSidebar() === 'endpoint'" aria-label="Endpoint" title="Endpoint" (click)="selectedSidebar.set('endpoint')">
             <fa-icon [icon]="['fas', 'link']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="user" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'user'" [attr.aria-pressed]="selectedSidebar() === 'user'" aria-label="User and Group" title="User and Group" (click)="selectedSidebar.set('user')">
             <fa-icon [icon]="['fas', 'users-cog']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="bucket" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'bucket'" [attr.aria-pressed]="selectedSidebar() === 'bucket'" aria-label="Bucket" title="Bucket" (click)="selectedSidebar.set('bucket')">
             <fa-icon [icon]="['fas', 'box']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="lambda" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'lambda'" [attr.aria-pressed]="selectedSidebar() === 'lambda'" aria-label="Lambda" title="Lambda" (click)="selectedSidebar.set('lambda')">
             <fa-icon [icon]="['fas', 'rocket']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="cogna" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'cogna'" [attr.aria-pressed]="selectedSidebar() === 'cogna'" aria-label="Cogna" title="Cogna" (click)="selectedSidebar.set('cogna')">
             <fa-icon [icon]="['fas', 'robot']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="krypta" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'krypta'" [attr.aria-pressed]="selectedSidebar() === 'krypta'" aria-label="Krypta" title="Krypta" (click)="selectedSidebar.set('krypta')">
             <fa-icon [icon]="['fas', 'hashtag']" [fixedWidth]="true"></fa-icon>
-          </a>
-          <a class="bar-link" routerLink="signa" routerLinkActive="active">
+          </button>
+          <button type="button" class="bar-link" [class.active]="selectedSidebar() === 'signa'" [attr.aria-pressed]="selectedSidebar() === 'signa'" aria-label="Signa" title="Signa" (click)="selectedSidebar.set('signa')">
             <fa-icon [icon]="['fas', 'signature']" [fixedWidth]="true"></fa-icon>
-          </a>
+          </button>
         </div>
         <div class="bar-2">
           <div class="bar-link" style="margin-top:-0.1em">
@@ -104,8 +104,24 @@
         </div>
       </div>
       <div class="editor-workspace">
-        <div class="content">
-          <router-outlet></router-outlet>
+        <div class="workspace-split" split-pane [sidebarVisible]="selectedSidebar() !== null">
+          <div class="sidebar" sidebar #sidebar [hidden]="selectedSidebar() === null">
+            @switch (selectedSidebar()) {
+              @case ('ui') { <app-ui-sidebar></app-ui-sidebar> }
+              @case ('lookup') { <app-lookup-sidebar [appId]="appId" [user]="user()" [offline]="offline()"></app-lookup-sidebar> }
+              @case ('mailer') { <app-mailer-sidebar [appId]="appId" [app]="app()" [user]="user()" [offline]="offline()"></app-mailer-sidebar> }
+              @case ('endpoint') { <app-endpoint-sidebar [appId]="appId" [user]="user()" [offline]="offline()"></app-endpoint-sidebar> }
+              @case ('user') { <app-group-sidebar [appId]="appId" [app]="app()" [offline]="offline()"></app-group-sidebar> }
+              @case ('bucket') { <app-bucket-sidebar [appId]="appId" [offline]="offline()"></app-bucket-sidebar> }
+              @case ('lambda') { <app-lambda-sidebar [appId]="appId" [user]="user()" [offline]="offline()" [timeWarping]="isWorkspaceTimeWarping('lambda')"></app-lambda-sidebar> }
+              @case ('cogna') { <app-cogna-sidebar [appId]="appId" [user]="user()" [offline]="offline()" [timeWarping]="isWorkspaceTimeWarping('cogna')"></app-cogna-sidebar> }
+              @case ('krypta') { <app-krypta-sidebar [appId]="appId" [user]="user()" [offline]="offline()"></app-krypta-sidebar> }
+              @case ('signa') { <app-signa-sidebar [appId]="appId" [user]="user()" [offline]="offline()"></app-signa-sidebar> }
+            }
+          </div>
+          <div class="content" content>
+            <router-outlet (activate)="activeWorkspace.set($event)" (deactivate)="activeWorkspace.set(null)"></router-outlet>
+          </div>
         </div>
         @if ((assistantStatus.available() || assistantPanel.palette()) && app()?.id && user()?.email) {
           <app-assistant-side-panel

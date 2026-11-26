@@ -1,0 +1,128 @@
+
+  <div class="modal-header">
+    <h4 class="modal-title">{{editSignaData.id?'Edit':'Add'}} Digital Signature</h4>
+  </div>
+  <div class="modal-body fix-gutter" #signaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Signa Name *</label>
+      <input type="text" class="form-control" [(ngModel)]="editSignaData.name"
+        #name="ngModel" placeholder="ie: Director's signature"
+        name="name" required>
+        @if (name?.invalid) {
+          <small class="form-text text-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Reason *</label>
+      <textarea class="form-control" [(ngModel)]="editSignaData.reason"
+      placeholder="ie: Recruitment Offer Letter"
+      name="reason" required></textarea>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Location *</label>
+      <input type="text" class="form-control" [(ngModel)]="editSignaData.location" name="location" autocomplete="new-text"
+        placeholder="ie: Kuching" required>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Subject Distinguished Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editSignaData.dn" name="dn" autocomplete="new-text"
+        placeholder="CN=Director, O=Company, C=MY">
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" [(ngModel)]="editSignaData.password" name="password" autocomplete="new-password"
+        placeholder="ie: password">
+    </div>
+    <div class="form-check form-switch">
+      <input type="checkbox" class="form-check-input" id="showStamp"
+        [(ngModel)]="editSignaData.showStamp" name="showStamp">
+      <label class="form-check-label" for="showStamp">Show signature stamp</label>
+    </div>
+    @if(editSignaData.showStamp){
+      <div class="form-label mt-3">Stamp Position</div>
+      <div class="row">
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Llx *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampLlx" name="stampLlx"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Lly *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampLly" name="stampLLy"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Urx *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampUrx" name="stampUrx"
+              placeholder="ie: 0" required>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group mb-3">
+            <label class="form-label">Ury *</label>
+            <input type="number" class="form-control" [(ngModel)]="editSignaData.stampUry" name="stampUry"
+              placeholder="ie: 0" required>
+          </div>
+        </div>        
+      </div>
+      <div class="text-body-secondary small">
+        Llx = Left side from left<br/>
+        Urx = Right side from left<br/>
+        Ury = Bottom side from bottom<br/>
+        LLy = Top side from bottom
+      </div>
+    }
+    <div class="form-group mb-3 mt-3">
+      <label class="form-label">Hash Algorithm *</label>
+      <div>
+        <div class="btn-group" role="group">
+          @for (item of hashAlgList; track item) {
+          <input type="radio" name="hashAlg" [(ngModel)]="editSignaData.hashAlg" [value]="item" class="btn-check"
+            id="hashAlg-{{item}}" required>
+          <label class="btn btn-outline-secondary me-1 mb-1" for="hashAlg-{{item}}">{{item}}</label>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="form-group mb-3 mt-3">
+      <label class="form-label">Key Algorithm *</label>
+      <div>
+        <div class="btn-group" role="group">
+          @for (item of keyAlgList; track item) {
+          <input type="radio" name="keyAlg" [(ngModel)]="editSignaData.keyAlg" [value]="item" class="btn-check"
+            id="keyAlg-{{item}}" required>
+          <label class="btn btn-outline-secondary me-1 mb-1" for="keyAlg-{{item}}">{{item}}</label>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="form-group mb-3 mt-1">
+      <label class="form-label">Keystore File Format *</label>
+      <div>
+        <div class="btn-group" role="group">
+          @for (item of ksTypeList; track item) {
+          <input type="radio" name="ksFormat" [(ngModel)]="editSignaData.keystoreType" [value]="item" class="btn-check"
+            id="ksFormat-{{item}}" required>
+          <label class="btn btn-outline-secondary me-1 mb-1" for="ksFormat-{{item}}">{{item}}</label>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-round" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-round btn-primary" [disabled]="signaEditForm.invalid"
+      (click)="activeModal.close(editSignaData)">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Signa
+    </button>
+  </div>

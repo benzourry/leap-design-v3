@@ -1,0 +1,247 @@
+  <div class="modal-header">
+    <h4 class="modal-title">{{editLambdaData().id?'Edit':'Add'}} Lambda</h4>
+  </div>
+  <div class="modal-body fix-gutter" #lambdaEditForm="ngForm" ngForm>
+    <div class="form-group mb-3">
+      <label class="form-label">Lambda Name</label>
+      <input type="text" class="form-control" [(ngModel)]="editLambdaData().name" #name="ngModel"
+        (ngModelChange)="editLambdaData().id||editLambdaData().code=toHyphen(editLambdaData().name)" name="name"
+        required>
+        @if (name?.invalid) {
+          <small class="form-text text-warning">
+            @if (name?.errors?.required) {
+              <span class="help-block">Name is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" [ngModel]="editLambdaData() && editLambdaData().description" (ngModelChange)="editLambdaData() && (editLambdaData().description = $event)"
+        name="description"></textarea>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Language</label>
+        <div>
+          <div name="lang" class="text-body">
+            <input type="radio" class="btn-check" id="langPy" name="langPy" value="python" #lang="ngModel"
+              [ngModel]="editLambdaData() && editLambdaData().lang" (ngModelChange)="editLambdaData() && (editLambdaData().lang = $event)" [required]="true">
+            <label for="langPy" class="btn btn-outline-secondary border-1-5 me-1 mb-1 disabled" disabled>
+              Python
+              <div><small>Up to v2.7</small></div>
+            </label>
+            <input type="radio" class="btn-check" id="langJs" name="langJs" value="js" #lang="ngModel"
+              [ngModel]="editLambdaData() && editLambdaData().lang" (ngModelChange)="editLambdaData() && (editLambdaData().lang = $event)" [required]="true">
+            <label for="langJs" class="btn btn-outline-secondary border-1-5 me-1 mb-1">
+              Javascript
+              <div><small>Up to ES2020</small></div>
+            </label>
+            <input type="radio" class="btn-check" id="langGroovy" name="langGroovy" value="groovy"
+              #lang="ngModel" [ngModel]="editLambdaData() && editLambdaData().lang" (ngModelChange)="editLambdaData() && (editLambdaData().lang = $event)" [required]="true">
+            <label for="langGroovy" class="btn btn-outline-secondary border-1-5 me-1 mb-1 disabled"
+              [class.btn-outline-primary]="editLambdaData().lang=='groovy'" disabled>
+              Groovy
+              <div><small>Up to v3.0.9</small></div>
+            </label>
+          </div>
+        </div>
+        @if (lang?.invalid) {
+          <small class="form-text text-warning">
+            @if (lang?.errors?.required) {
+              <span class="help-block">Language is required</span>
+            }
+          </small>
+        }
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label" for="binds">Bindings</label>
+        <ng-select [items]="bindingSrcs" bindLabel="name" [multiple]="true" placeholder="No bindings"
+          [ngModel]="editLambdaData() && editLambdaData().binds" (ngModelChange)="editLambdaData() && (editLambdaData().binds = $event)" name="binds">
+        </ng-select>
+      </div>
+      <div class="form-group mb-3">
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="publicAccess"
+            [ngModel]="editLambdaData() && editLambdaData().publicAccess" (ngModelChange)="editLambdaData() && (editLambdaData().publicAccess = $event)" name="publicAccess">
+          <label class="form-check-label" for="publicAccess">Public Lambda (require no authentication)</label>
+        </div>
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="digisign"
+            [ngModel]="editLambdaData().data && editLambdaData().data.digisign" (ngModelChange)="editLambdaData().data && (editLambdaData().data.digisign = $event)" name="digisign">
+          <label class="form-check-label" for="digisign">Embed Digital Signature (PDF Output)</label>
+          @if (editLambdaData().data && editLambdaData().data.digisign) {
+            <div>
+                <select class="form-select form-select-sm mb-1" name="signa" [compareWith]="compareByIdFn"
+                [(ngModel)]="editLambdaData().signa" required>                
+                  <option [ngValue]="undefined" disabled>Select Signature (* required)</option>
+                  @for (signa of signaList; track $index) {
+                    <option [ngValue]="signa">{{signa.name}}</option>
+                  }
+                </select>
+            </div>
+          }
+        </div>
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="scheduled"
+            [ngModel]="editLambdaData() && editLambdaData().scheduled" (ngModelChange)="editLambdaData() && (editLambdaData().scheduled = $event)" name="scheduled">
+          <label class="form-check-label" for="scheduled">Scheduled Run</label>
+        </div>
+      </div>
+      <div class="form-group mb-3">
+        <label class="form-label">Lambda Path</label>
+        <div class="input-group">
+          <span class="input-group-text">{{base}}/~/</span>
+        <input type="text" class="form-control" [ngModel]="editLambdaData() && editLambdaData().code" (ngModelChange)="editLambdaData() && (editLambdaData().code = $event)"
+          [ngModelOptions]="{updateOn: 'blur'}" #code="ngModel" name="code" [uniqueAppPath]="initialCode()"
+          [uniqueAppPathFn]="isCodeTaken">
+        </div>
+        @if (code.pending) {
+          <small class="text-body-secondary">Checking availability...</small>
+        }
+        @if (code.invalid) {
+          <small class="text-danger">
+            @if (code.errors?.uniqueAppPath) {
+              <span>
+                Lambda path <strong>{{editLambdaData().code}}</strong> is already taken.
+              </span>
+            }
+          </small>
+        }
+        @if (code.valid && editLambdaData().code && initialCode()!=editLambdaData().code) {
+          <small class="text-success">
+            Lambda path <strong>{{editLambdaData().code}}</strong> is available.
+          </small>
+        }
+      </div>
+      @if (editLambdaData().scheduled) {
+        <div class="form-group mb-3">
+          <label class="form-label">Frequency *</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqDaily" [ngModel]="editLambdaData() && editLambdaData().freq" (ngModelChange)="editLambdaData() && (editLambdaData().freq = $event)"
+                name="freqDaily" value="daily" class="form-check-input">
+              <label class="form-check-label" for="freqDaily">Daily</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqWeekly" [ngModel]="editLambdaData() && editLambdaData().freq" (ngModelChange)="editLambdaData() && (editLambdaData().freq = $event)"
+                name="freqWeekly" value="weekly" class="form-check-input">
+              <label class="form-check-label" for="freqWeekly">Weekly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqMonthly" [ngModel]="editLambdaData() && editLambdaData().freq" (ngModelChange)="editLambdaData() && (editLambdaData().freq = $event)"
+                name="freqMonthly" value="monthly" class="form-check-input">
+              <label class="form-check-label" for="freqMonthly">Monthly</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" id="freqYearly" [ngModel]="editLambdaData() && editLambdaData().freq" (ngModelChange)="editLambdaData() && (editLambdaData().freq = $event)"
+                name="freqYearly" value="yearly" class="form-check-input">
+              <label class="form-check-label" for="freqYearly">Yearly</label>
+            </div>
+            <input type="hidden" [ngModel]="editLambdaData() && editLambdaData().freq" (ngModelChange)="editLambdaData() && (editLambdaData().freq = $event)" name="freqHdn" required>
+          </div>
+        </div>
+        <div class="row">
+          @if (editLambdaData()?.freq=='weekly') {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Day of week *</label>
+                <select class="form-select" name="dayOfWeak"
+                  [ngModel]="editLambdaData() && editLambdaData().dayOfWeek" (ngModelChange)="editLambdaData() && (editLambdaData().dayOfWeek = $event)" #dayOfWeek="ngModel" required>
+                  @for (item of dayOfWeekList; track $index) {
+                    <option [value]="item.value">{{item.name}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfWeek?.invalid) {
+                  <small class="form-text text-warning">
+                    @if (dayOfWeek?.errors?.required) {
+                      <span class="help-block">Day of week is required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (['monthly','yearly'].indexOf(editLambdaData()?.freq)>-1) {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Day of month *</label>
+                <select class="form-select" name="dayOfMonth"
+                  [ngModel]="editLambdaData() && editLambdaData().dayOfMonth" (ngModelChange)="editLambdaData() && (editLambdaData().dayOfMonth = $event)" #dayOfMonth="ngModel" required>
+                  @for (item of dayOfMonthList; track $index) {
+                    <option [value]="item">{{item}}
+                    </option>
+                  }
+                </select>
+                @if (dayOfMonth?.invalid) {
+                  <small class="form-text text-warning">
+                    @if (dayOfMonth?.errors?.required) {
+                      <span class="help-block">Day of month is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          @if (editLambdaData()?.freq=='yearly') {
+            <div class="col-sm-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Month of year *</label>
+                <select class="form-select" name="monthOfYear"
+                  [ngModel]="editLambdaData() && editLambdaData().monthOfYear" (ngModelChange)="editLambdaData() && (editLambdaData().monthOfYear = $event)" #monthOfYear="ngModel" required>
+                  @for (item of monthOfYearList; track $index) {
+                    <option [value]="item.value">{{item.name}}
+                    </option>
+                  }
+                </select>
+                @if (monthOfYear?.invalid) {
+                  <small class="form-text text-warning">
+                    @if (monthOfYear?.errors?.required) {
+                      <span class="help-block">Month of year is
+                      required</span>
+                    }
+                  </small>
+                }
+              </div>
+            </div>
+          }
+          <div class="col-sm-6">
+            <div class="form-group mb-3">
+              <label class="form-label">Hour in day (minute set to 00)*</label>
+              <input type="text" class="form-control" [ngModel]="editLambdaData() && editLambdaData().clock" (ngModelChange)="editLambdaData() && (editLambdaData().clock = $event)"
+                #clock="ngModel" placeholder="ie: 1400" maxlength="4" name="clock"
+                (keyup)="keepMinute00(editLambdaData())" required>
+              @if (clock?.invalid) {
+                <small class="form-text text-warning">
+                  @if (clock?.errors?.required) {
+                    <span class="help-block">Clock is required in HHmm (ie: 0800
+                    or 1400)</span>
+                  }
+                </small>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      <div class="form-group mb-3">
+        <label class="form-label">Creator (email, comma separated)</label>
+        <input type="text" class="form-control" [ngModel]="editLambdaData() && editLambdaData().email" (ngModelChange)="editLambdaData() && (editLambdaData().email = $event)" name="email"
+          #email="ngModel" required>
+        @if (email?.invalid) {
+          <small class="form-text text-warning">
+            @if (email?.errors?.required) {
+              <span class="help-block">Creator email is required</span>
+            }
+          </small>
+        }
+      </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+      <button type="button" class="btn btn-round" (click)="activeModal.dismiss()">Close</button>
+      <button type="button" class="btn btn-round btn-primary" [disabled]="lambdaEditForm.invalid"
+        (click)="activeModal.close(editLambdaData())">
+      <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon>
+      Save Lambda
+    </button>
+  </div>

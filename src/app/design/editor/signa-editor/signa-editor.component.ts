@@ -1,38 +1,35 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 // import { SignaService } from '../../../service/signa.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
-import { br2nl, nl2br, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
+import { nl2br } from '../../../_shared/utils';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { ChangeDetectorRef } from '@angular/core';
 import { SignaService } from '../../../service/signa.service';
 import { baseApi } from '../../../_shared/constant.service';
+import { CommService } from '../../../_shared/service/comm.service';
+import { SignaEditDialogService } from './signa-edit-dialog.service';
 
 @Component({
     selector: 'app-signa-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './signa-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './signa-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst,
-    NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, FilterPipe]
+    imports: [FormsModule, FaIconComponent]
 })
 export class SignaEditorComponent implements OnInit {
 
     offline = false;
     app: any;
 
-    signaTotal: any;
     loading: boolean;
-    signaList: any;
     signaEntryTotal: any;
     signaEntryList: any;
     // sharedList: any;
@@ -40,15 +37,9 @@ export class SignaEditorComponent implements OnInit {
     // sharedLoading: any;
     totalItems: any;
     signa: any;
-    itemLoading = signal<boolean>(false);
     appId: number;
     resultType:string = 'text';
     baseApi=baseApi;
-
-    hashAlgList = ['SHA256','SHA384','SHA512'];
-    keyAlgList = ['RSA','ECDSA'];
-
-    ksTypeList = ['JKS', 'PKCS12', 'BKS'];
 
     private userService = inject(UserService);
     private route = inject(ActivatedRoute);
@@ -60,6 +51,8 @@ export class SignaEditorComponent implements OnInit {
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
+    private commService = inject(CommService);
+    private editDialog = inject(SignaEditDialogService);
 
     constructor() {
         this.location.onPopState(() => {
@@ -94,7 +87,6 @@ export class SignaEditorComponent implements OnInit {
                                 });
                         }
 
-                        this.loadSignaList(1);
                     });
 
 
@@ -114,50 +106,18 @@ export class SignaEditorComponent implements OnInit {
     // data = { 'list': [] };
     pageSize = 45;
     currentPage = 1;
-    itemsPerPage = 15;
     maxSize = 5;
     startAt = 0;
-    searchText: string = "";
-
-    pageNumber: number = 1;
     entryPageNumber: number = 1;
 
-
-    // this.loadSignaList = loadSignaList;
-    loadSignaList(pageNumber) {
-        this.pageNumber = pageNumber;
-        this.itemLoading.set(true);
-
-        let params = {
-            searchText: this.searchText,
-            appId: this.appId,
-            page: pageNumber - 1,
-            size: this.itemsPerPage
-        }
-        this.signaService.getSignaList(params)
-            .subscribe(res => {
-                this.signaList = res.content;
-                this.signaTotal = res.page?.totalElements;
-                this.itemLoading.set(false);
-                this.cdr.detectChanges();
-            }, res => {
-                this.itemLoading.set(false);
-                this.cdr.detectChanges();
-            })
-    }
-
     editCode: boolean;
-    editSignaData: any;
-    editSigna(content, signa, isNew) {
-
-        this.editSignaData = signa;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-                data.content = this.nl2br(data.content);
+    editSigna(signa) {
+        this.editDialog.open(signa)
+            .then(data => {
+                data.content = nl2br(data.content);
                 this.signaService.saveSigna(this.user.email, this.appId, data)
                     .subscribe(res => {
-                        this.loadSignaList(this.pageNumber);
+                        this.commService.emitChange({ key: 'signa-list-changed' });
                         this.loadSigna(res.id);
                         this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Signa successfully saved", { classname: 'bg-success text-light' });
@@ -177,7 +137,7 @@ export class SignaEditorComponent implements OnInit {
             .result.then(data => {
                 this.signaService.deleteSigna(signa.id, data)
                     .subscribe(res => {
-                        this.loadSignaList(1);
+                        this.commService.emitChange({ key: 'signa-list-changed', page: 1 });
                         delete this.signa;
                         this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
@@ -308,12 +268,5 @@ export class SignaEditorComponent implements OnInit {
 
     }
     
-    nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
-    br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
-
-    toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
-
-    toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-    itemExist = (f) => this.signaList.filter(e => e.code == f.code).length > 0 && !f.id;
 
 }

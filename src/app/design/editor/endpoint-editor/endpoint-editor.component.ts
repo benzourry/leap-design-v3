@@ -1,30 +1,27 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, viewChild } from '@angular/core';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { EndpointService } from '../../../service/endpoint.service';
-import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbPaginationNext, NgbPaginationPrevious } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PlatformLocation, JsonPipe } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 // import { HttpParams } from '@angular/common/http';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
-import { br2nl, nl2br, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json-viewer.component';
 import { ChangeDetectorRef } from '@angular/core';
-import { LambdaService } from '../../../service/lambda.service';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
+import { CommService } from '../../../_shared/service/comm.service';
+import { EndpointEditDialogService } from './endpoint-edit-dialog.service';
 
 @Component({
     selector: 'app-endpoint-editor',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './endpoint-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './endpoint-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, 
-        NgbPaginationPrevious, NgbPaginationNext, NgbPaginationLast, JsonPipe, JsonViewerComponent, EditorIdChipComponent,
+    imports: [FormsModule, FaIconComponent, JsonPipe, JsonViewerComponent, EditorIdChipComponent,
         NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem]
 })
 export class EndpointEditorComponent implements OnInit {
@@ -32,9 +29,7 @@ export class EndpointEditorComponent implements OnInit {
     offline = false;
     app: any;
 
-    endpointTotal: any;
     loading: boolean;
-    endpointList: any;
     endpointEntryTotal: any;
     endpointEntryList: any;
     // sharedList: any;
@@ -42,7 +37,6 @@ export class EndpointEditorComponent implements OnInit {
     // sharedLoading: any;
     totalItems: any;
     endpoint: any;
-    itemLoading: boolean;
     appId: number;
     resultType:string = 'text';
 
@@ -53,7 +47,8 @@ export class EndpointEditorComponent implements OnInit {
     private location = inject(PlatformLocation);
     private router = inject(Router);
     private appService = inject(AppService);
-    private lambdaService = inject(LambdaService); 
+    private editDialog = inject(EndpointEditDialogService);
+    private commService = inject(CommService);
     private toastService = inject(ToastService);
     private utilityService = inject(UtilityService);
     private cdr = inject(ChangeDetectorRef);
@@ -91,11 +86,9 @@ export class EndpointEditorComponent implements OnInit {
                                 .subscribe(res => {
                                     this.app = res;
                                     this.cdr.detectChanges();
-                                    this.loadSecretList();
                                 });
                         }
 
-                        this.loadEndpointList(1);
                         // this.loadSharedList(1);
                     });
 
@@ -116,61 +109,16 @@ export class EndpointEditorComponent implements OnInit {
     data = { 'list': [] };
     pageSize = 45;
     currentPage = 1;
-    itemsPerPage = 15;
     maxSize = 5;
     startAt = 0;
-    searchText: string = "";
-
-    pageNumber: number = 1;
     entryPageNumber: number = 1;
 
-    
-    secretList: any[] = [];
-    loadSecretList() {
-        this.lambdaService.getSecretList(this.appId)
-        .subscribe(res => {
-            this.secretList = res;
-            this.cdr.detectChanges();
-        })
-    }
-
-
-    // this.loadEndpointList = loadEndpointList;
-    loadEndpointList(pageNumber) {
-        this.pageNumber = pageNumber;
-        this.itemLoading = true;
-        this.cdr.markForCheck();
-
-        let params = {
-            searchText: this.searchText,
-            appId: this.appId,
-            page: pageNumber - 1,
-            size: this.itemsPerPage
-        }
-        this.endpointService.getEndpointList(params)
-            .subscribe(res => {
-                this.endpointList = res.content;
-                this.endpointTotal = res.page?.totalElements;
-                this.itemLoading = false;
-                this.cdr.markForCheck();
-            }, res => {
-                this.itemLoading = false;
-                this.cdr.markForCheck();
-            })
-    }
-
-    editCode: boolean;
-    editEndpointData: any;
-    editEndpoint(content, endpoint, isNew) {
-        endpoint.content = this.br2nl(endpoint.content);
-        this.editEndpointData = endpoint;
-        history.pushState(null, null, window.location.href);
-        this.modalService.open(content, { backdrop: 'static' })
-            .result.then(data => {
-                data.content = this.nl2br(data.content);
+    editEndpoint(endpoint) {
+        this.editDialog.open(this.appId, endpoint, [])
+            .then(data => {
                 this.endpointService.save(this.user.email, this.appId, data)
                     .subscribe(res => {
-                        this.loadEndpointList(this.pageNumber);
+                        this.commService.emitChange({ key: 'endpoint-list-changed' });
                         this.loadEndpoint(res.id);
                         this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
                         this.toastService.show("Template successfully saved", { classname: 'bg-success text-light' });
@@ -190,7 +138,7 @@ export class EndpointEditorComponent implements OnInit {
             .result.then(data => {
                 this.endpointService.deleteEndpoint(endpoint.id, data)
                     .subscribe(res => {
-                        this.loadEndpointList(1);
+                        this.commService.emitChange({ key: 'endpoint-list-changed', page: 1 });
                         delete this.endpoint;
                         this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
                         this.cdr.detectChanges();
@@ -304,12 +252,5 @@ export class EndpointEditorComponent implements OnInit {
         this.copyText(snippet, 'Snippet');
     }
 
-    nl2br = nl2br; // (text) => text ? text.replace(/\n/g, "<br/>") : text;
-    br2nl = br2nl; // (text) => text ? text.replace(/<br\s*[\/]?>/gi, "\n") : text;
-
-    toSpaceCase = toSpaceCase; // (string) => string.replace(/[\W_]+(.|$)/g, (matches, match) => match ? ' ' + match : '').trim();
-
-    toSnakeCase = toSnakeCase; // (string) => string ? this.toSpaceCase(string).replace(/\s/g, '_').toLowerCase() : '';
-    itemExist = (f) => this.endpointList.filter(e => e.code == f.code).length > 0 && !f.id;
 
 }

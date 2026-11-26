@@ -1,25 +1,21 @@
 import { Component, inject, OnInit, signal, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from '../../../_shared/service/user.service';
-import { ActivatedRoute, Params, RouterLinkActive, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Params, RouterLink, Router } from '@angular/router';
 import { CognaService } from '../../../service/cogna.service';
-import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbAccordionModule, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe, JsonPipe, KeyValuePipe, NgClass, PlatformLocation } from '@angular/common';
 import { UtilityService } from '../../../_shared/service/utility.service';
 import { AppService } from '../../../service/app.service';
 import { ToastService } from '../../../_shared/service/toast-service';
 import { DatasetService } from '../../../service/dataset.service';
-import { FormService } from '../../../service/form.service';
-import { base, baseApi, domainBase, OAUTH } from '../../../_shared/constant.service';
+import { base, baseApi, domainBase } from '../../../_shared/constant.service';
 import { NgCmComponent } from '../../../_shared/component/ng-cm/ng-cm.component';
-import { lastValueFrom, map } from 'rxjs';
+import { map } from 'rxjs';
 import { BucketService } from '../../../service/bucket.service';
-import { br2nl, compileTpl, getMermaidTheme, imagify, linkify, loadScript, nl2br, resizeImage, splitAsList, targetBlank, toHyphen, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
-import { FilterPipe } from '../../../_shared/pipe/filter.pipe';
-import { UniqueAppPathDirective } from '../../../_shared/app-path-validator';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { br2nl, compileTpl, getMermaidTheme, imagify, linkify, nl2br, resizeImage, splitAsList, targetBlank, toSnakeCase, toSpaceCase } from '../../../_shared/utils';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { SplitPaneComponent } from '../../../_shared/component/split-pane/split-pane.component';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { LookupService } from '../../../run/_service/lookup.service';
 import { RunService } from '../../../run/_service/run.service';
@@ -30,7 +26,8 @@ import { JsonViewerComponent } from '../../../_shared/component/json-viewer/json
 import { MetaTrailViewerComponent } from '../../../_shared/modal/meta-trail-viewer/meta-trail-viewer.component';
 import { MetaTrailService } from '../../../service/metatrail.service';
 import { EditorIdChipComponent } from '../ui-editor/editor-id-chip.component';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { CommService } from '../../../_shared/service/comm.service';
+import { CognaEditDialogService } from './cogna-edit-dialog.service';
 
 mermaid.initialize({startOnLoad:false})
 
@@ -60,13 +57,13 @@ marked.use({
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './cogna-editor.component.html',
     styleUrls: ['../_workspace-sidebar.scss', '../../../../assets/css/element-action.css', './cogna-editor.component.scss'],
-    imports: [SplitPaneComponent, FormsModule, RouterLinkActive, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent, 
-      NgbAccordionModule, RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgClass,
-      NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem, NgCmComponent,
-      NgbDropdownButtonItem, NgSelectModule, UniqueAppPathDirective, FilterPipe, JsonViewerComponent, MetaTrailViewerComponent,
-      EditorIdChipComponent]
+    imports: [FormsModule, KeyValuePipe, DatePipe, JsonPipe, NgCmComponent,
+      RouterLink, FaIconComponent, NgbPagination, NgbPaginationFirst, NgbPaginationPrevious, NgClass,
+      NgbPaginationNext, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownItem,
+      NgbDropdownButtonItem, JsonViewerComponent, MetaTrailViewerComponent, EditorIdChipComponent]
 })
 export class CognaEditorComponent implements OnInit {
+  private commService = inject(CommService);
 
   offline = false;
   app: any;
@@ -83,19 +80,6 @@ export class CognaEditorComponent implements OnInit {
   baseApi = baseApi;
   rand;
 
-  defaultSysMsg = "STRICTLY do not answer questions which are not related and just say \"Sorry, I don't have the answer\"";
-
-  embedModelTypeList = [
-    { name: 'AllMiniLM', code: 'minilm' },
-    { name: 'Multilingual E5SmallV2', code: 'e5small' },
-    { name: 'OpenAI', code: 'openai' },
-    { name: 'Requesty', code: 'requesty' },
-    { name: 'HuggingFace', code: 'huggingface' },
-    { name: 'Gemini', code: 'gemini' },
-    { name: 'LocalAI', code: 'localai' },
-    { name: 'Ollama', code: 'ollama' },
-  ]
-
   embedModelTypeMap = {
     'openai': { name: 'OpenAI', logo: 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg' },
     'deepseek': { name: 'DeepSeek', logo: 'https://www.deepseek.com/_next/image?url=https%3A%2F%2Fcdn.deepseek.com%2Flogo.png&w=1920&q=75' },
@@ -104,81 +88,6 @@ export class CognaEditorComponent implements OnInit {
     'localai': { name: 'LocalAI', logo: 'https://github.com/go-skynet/LocalAI/assets/2420543/0966aa2a-166e-4f99-a3e5-6c915fc997dd' },
     'ollama': { name: 'Ollama', logo: 'https://ollama.com/public/ollama.png' },
   }
-  embedModelNameList = [
-    { name: 'GPT3.5 TURBO', code: 'gpt-3.5-turbo', type: 'openai' },
-    { name: 'Text Embedding ADA 002', code: 'text-embedding-ada-002', type: 'openai' },
-    { name: 'Text Embedding 3 Small', code: 'text-embedding-3-small', type: 'openai' },
-    { name: 'Text Embedding 3 Large', code: 'text-embedding-3-large', type: 'openai' },
-    { name: 'All MiniLM L6 v2', code: 'sentence-transformers/all-MiniLM-L6-v2', type: 'huggingface' },
-    { name: 'BGE SMall EN v1.5', code: 'BAAI/bge-small-en-v1.5', type: 'huggingface' },
-    { name: 'All MPnet Base v2', code: 'sentence-transformers/all-mpnet-base-v2', type: 'huggingface' },
-    { name: 'IntFloat E5 Large v2', code: 'intfloat/e5-large-v2', type: 'huggingface' },
-    { name: 'Nomic Embed Text', code: 'nomic-embed-text', type: 'ollama' },
-    { name: 'Gemini Embedding 001', code: 'gemini-embedding-001', type: 'gemini' },
-  ]
-
-  // txtgen, txtcls, txtext, imggen
-  inferModelTypeList = [
-    { name: 'OpenAI', code: 'openai', use: ['txtgen','txtcls','txtext','imggen'] },
-    { name: 'Requesty', code: 'requesty', use: ['txtgen','txtcls','txtext','imggen'] },
-    { name: 'Gemini', code: 'gemini', use: ['txtgen','txtcls','txtext','imggen'] },
-    { name: 'DeepSeek', code: 'deepseek', use: ['txtgen','txtcls','txtext'] },
-    { name: 'HuggingFace', code: 'huggingface', use: ['txtgen','txtcls','txtext'] },
-    { name: 'LocalAI', code: 'localai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Ollama', code: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Zhipu AI', code: 'zhipuai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'CF Workers AI', code: 'cf-wai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'ONNX', code: 'onnx', use: ['imgcls'] },
-  ]
-  inferModelNameList = [
-    { name: 'GPT-3.5 TURBO', code: 'gpt-3.5-turbo', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4', code: 'gpt-4', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4 TURBO', code: 'gpt-4-turbo', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4o', code: 'gpt-4o', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4o MINI', code: 'gpt-4o-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4.1', code: 'gpt-4.1', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4.1 MINI', code: 'gpt-4.1-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-4.1 NANO', code: 'gpt-4.1-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-5.4', code: 'gpt-5.4', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-5.4 MINI', code: 'gpt-5.4-mini', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'GPT-5.4 NANO', code: 'gpt-5.4-nano', type: 'openai', use: ['txtgen','txtcls','txtext'] },
-
-    { name: 'Gemini 2.5 Pro', code: 'gemini-2.5-pro', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Gemini 2.5 Flash', code: 'gemini-2.5-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Gemini 2.5 Flash-Lite', code: 'gemini-2.5-flash-lite', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Gemini 2.0 Flash', code: 'gemini-2.0-flash', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Gemini 2.0 Flash-Lite', code: 'gemini-2.0-flash-lite', type: 'gemini', use: ['txtgen','txtcls','txtext'] },
-
-    { name: 'DeepSeek Reasoner', code: 'deepseek-reasoner', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
-    { name: 'DeepSeek Chat', code: 'deepseek-chat', type: 'deepseek', use: ['txtgen','txtcls','txtext'] },
-    { name: 'DALL.E 2', code: 'dall-e-2', type: 'openai', use: ['imggen'] },
-    { name: 'DALL.E 3', code: 'dall-e-3', type: 'openai', use: ['imggen'] },
-    { name: 'GPT Image 1', code: 'gpt-image-1', type: 'openai', use: ['imggen'] },
-    { name: 'GPT Image 2', code: 'gpt-image-2', type: 'openai', use: ['imggen'] },
-    { name: 'YOLOv10s', code: 'yolov10s.onnx', type: 'onnx', use: ['imgcls'] },
-    { name: 'ResNet50v2', code: 'resnet50-v2-7.onnx', type: 'onnx', use: ['imgcls'] },
-    { name: 'MobileNetv2-1.2', code: 'mobilenetv2-12.onnx', type: 'onnx', use: ['imgcls'] },
-    { name: 'Imagen', code: 'imagen-4.0-generate-001', type: 'gemini', use: ['imggen'] },
-    { name: 'COGVIEW-3', code: 'cogview-3', type: 'zhipuai', use: ['imggen'] },
-
-    { name: 'tiiuae/falcon-7b-instruct', code: 'tiiuae/falcon-7b-instruct', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
-    { name: 'hkunlp/instructor-xl', code: 'hkunlp/instructor-xl', type: 'huggingface', use: ['txtgen','txtcls','txtext'] },
-
-    { name: 'DeepSeek R1', code: 'deepseek-r1', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'DeepSeek V3', code: 'deepseek-v3', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Llama3.3', code: 'llama3.3', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Llama3.2', code: 'llama3.2', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Mistral', code: 'mistral', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Phi4', code: 'phi4', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Qwen2.5', code: 'qwen2.5', type: 'ollama', use: ['txtgen','txtcls','txtext'] },
-
-    { name: 'LLaVA 1.6 Vicuna', code: 'llava-1.6-vicuna', type: 'localai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'LLaVA 1.6 Mistral', code: 'llava-1.6-mistral', type: 'localai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Llama 3 8b Instruct', code: 'llama3-8b-instruct', type: 'localai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Llama 3 70b Instruct', code: 'llama3-70b-instruct', type: 'localai', use: ['txtgen','txtcls','txtext'] },
-    { name: 'Hermes 2 Pro Mistral', code: 'hermes-2-pro-mistral', type: 'localai', use: ['txtgen','txtcls','txtext'] },
-  ]
-
   cognaEp = {
     "txtgen":"prompt",
     "txtext":"extract",
@@ -187,13 +96,6 @@ export class CognaEditorComponent implements OnInit {
     "imgcls": "imgcls",
   }
 
-  imgOutputSize={
-    'dall-e-2':['256x256','512x512','1024x1024'],
-    'dall-e-3':['1024x1024','1792x1024','1024x1792']
-  }
-
-  allowedVectorStoreType = OAUTH.COGNA_VECTOR_DB;
-
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private cognaService = inject(CognaService);
@@ -201,7 +103,6 @@ export class CognaEditorComponent implements OnInit {
   private lambdaService = inject(LambdaService)
   private bucketService= inject(BucketService)
   private lookupService = inject(LookupService)
-  private formService = inject(FormService)
   private modalService = inject(NgbModal)
   private location = inject(PlatformLocation)
   private router = inject(Router)
@@ -211,8 +112,16 @@ export class CognaEditorComponent implements OnInit {
   private utilityService = inject(UtilityService)
   private cdr = inject(ChangeDetectorRef);
   private metaTrailService = inject(MetaTrailService);
+  private editDialog = inject(CognaEditDialogService);
 
   constructor() {
+    this.commService.changeEmitted$.pipe(takeUntilDestroyed()).subscribe(change => {
+      if (change?.key === 'cogna-sidebar-list-loaded' && String(change.appId) === String(this.appId)) {
+        this.cognaList = change.list;
+        this.pageNumber = change.page;
+        this.cdr.markForCheck();
+      }
+    });
         this.location.onPopState(() => {
             if (document.querySelector('.cm-fullscreen-mode')) {
                 return;
@@ -221,8 +130,6 @@ export class CognaEditorComponent implements OnInit {
         });
     this.utilityService.testOnline$().subscribe(online => this.offline = !online);
   }
-
-  isCodeTaken = (code) => this.cognaService.isCodeTaken(code);
 
   lookupList:any[] = [];
 
@@ -249,8 +156,6 @@ export class CognaEditorComponent implements OnInit {
                   this.app = res;
                   this.cdr.detectChanges();
                 });
-                this.getFormList(this.appId);
-
                 this.lookupService.getLookupList({appId:this.appId})
                 .subscribe(res=>{
                   this.lookupList = res.content;
@@ -259,8 +164,6 @@ export class CognaEditorComponent implements OnInit {
 
                 this.getOtherCognaList(this.appId);
             }
-
-            this.loadSecretList();
 
             this.loadCognaList(1);
             this.loadBindingSrcs();
@@ -316,6 +219,7 @@ export class CognaEditorComponent implements OnInit {
         this.cognaList = res.content;
         this.cognaTotal = res.page?.totalElements;
         this.itemLoading = false;
+        this.commService.emitChange({ key: 'cogna-list-changed', appId: this.appId, page: pageNumber });
         this.cdr.detectChanges();
       }, res => {
         this.itemLoading = false;
@@ -323,76 +227,22 @@ export class CognaEditorComponent implements OnInit {
       })
   }
 
-  secretList: any[] = [];
-  loadSecretList() {
-    this.lambdaService.getSecretList(this.appId)
-      .subscribe(res => {
-        this.secretList = res;
-        this.cdr.detectChanges();
-      })
-  }
-
-  formList: any[];
-  getFormList(appId) {
-      let params = { appId: appId }
-
-      this.formService.getListBasic(params)
-          .subscribe(res => {
-              this.formList = res.content;
-              this.cdr.detectChanges();
-          });
-  }
-
   extractJsonObj:any={};
-  loadFormatter(formId){
-    if (!formId){
-      this.editCognaData.data.extractSchema = "";
-    }
-    
-    this.cognaService.getFormatter(formId, this.editCognaData?.type=='txtext')
-    .subscribe(res=>{
-      this.editCognaData.data.extractSchema = res.schema;
-      this.extractJsonObj = JSON.parse(res.schema);
-      this.cdr.detectChanges();
-    })
-  }
-
-  setImgGenModels(){
-    this.editCognaData.inferModelType = 'openai';
-    this.editCognaData.inferModelName = 'dall-e-2';
-    this.editCognaData.data.genBucket = true;
-    this.editCognaData.data.imgSize = '512x512';
-    this.editCognaData.data.imgQuality = 'standard';
-    this.editCognaData.data.imgStyle = 'vivid';
-  }
-
-  setImgClsModels(){
-    this.editCognaData.inferModelType = 'onnx';
-    this.editCognaData.inferModelName = 'resnet50-v2-7.onnx';
-    this.editCognaData.data.imgclsMinScore = 8.00;
-    this.editCognaData.data.imgclsLimit = 3;
-  }
 
   removeFile(index){
     this.fileList.splice(index,1);
   }
 
-  editCode: boolean;
-  editCognaData: any;
-  editCogna(content, cogna, isNew) {
+  editCogna(cogna) {
     if (this.isTimeWarpingCogna) { this.toastService.show("Action disabled during TimeWarp.", { classname: 'bg-warning text-dark' }); return; }
-
-    cogna.content = this.br2nl(cogna.content);
-    this.editCognaData = cogna;
-    this.editCognaData.email = cogna.email || this.user.email;
-    history.pushState(null, null, window.location.href);
-    this.modalService.open(content, { backdrop: 'static' })
-      .result.then(data => {
-        data.content = this.nl2br(data.content);
+    cogna.email = cogna.email || this.user.email;
+    this.editDialog.open({ appId: this.appId, cogna, cognas: this.cognaList || [] })
+      .then(data => {
         this.cognaService.save(data.email, this.appId, data)
           .subscribe(res => {
             this.loadCognaList(this.pageNumber);
             this.loadCogna(res.id);
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'cogna' });
             this.cdr.detectChanges();
             this.router.navigate([], { relativeTo: this.route, queryParams: { id: res.id } })
             this.toastService.show("Cogna successfully saved", { classname: 'bg-success text-light' });
@@ -660,6 +510,7 @@ export class CognaEditorComponent implements OnInit {
           .subscribe(res => {
             this.loadCognaList(1);
             delete this.cogna;
+            this.commService.emitChange({ key: 'editor-search-refresh', category: 'cogna' });
             this.toastService.show("Template successfully removed", { classname: 'bg-success text-light' });
             this.cdr.detectChanges();
           }, err => {
@@ -668,8 +519,6 @@ export class CognaEditorComponent implements OnInit {
           });
       }, res => { });
   }
-
-  initialCode: string = "";
 
   params: string[];
   domainBase = domainBase;
@@ -759,7 +608,6 @@ export class CognaEditorComponent implements OnInit {
     this.cognaService.getCogna(id)
       .subscribe(cogna => {
         this.cogna = cogna;
-        this.initialCode = cogna.code;
         if(cogna.data.extractSchema){
           this.extractJsonObj = JSON.parse(cogna.data.extractSchema||{});
         }        
@@ -1285,13 +1133,11 @@ export class CognaEditorComponent implements OnInit {
 
   toSpaceCase = toSpaceCase; 
   toSnakeCase = toSnakeCase; 
-  toHyphen = toHyphen; 
 
   linkify=linkify;
   imagify=imagify;
   targetBlank=targetBlank;
 
-  itemExist = (f) => this.cognaList.filter(e => e.code == f.code).length > 0 && !f.id;
 
   uploadPromptImg;
   uploadPromptImageBase64;
@@ -1489,7 +1335,9 @@ export class CognaEditorComponent implements OnInit {
   timeWarpCognaTrails: any[] = [];
   liveCognaSnapshot: any = null;
   timeWarpCognaIndex: number = 0;
-  isTimeWarpingCogna: boolean = false;
+  private readonly timeWarpingCogna = signal(false);
+  get isTimeWarpingCogna(): boolean { return this.timeWarpingCogna(); }
+  set isTimeWarpingCogna(value: boolean) { this.timeWarpingCogna.set(value); }
 
   private clone = <T>(obj: T): T => obj ? JSON.parse(JSON.stringify(obj)) : obj;
 
@@ -1617,20 +1465,4 @@ export class CognaEditorComponent implements OnInit {
       this.cogna.subs = copy.subs || [];
   }
 
-      // 2. Inject it inside UiEditorComponent
-    private clipboard = inject(Clipboard);
-
-    // 3. Add this helper method to the class
-    copyId(event: MouseEvent, id: string | number) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if (!id) return;
-
-        this.clipboard.copy(String(id));
-        this.toastService.show(`Copied ID #${id} to clipboard`, { 
-            classname: 'bg-dark text-light', 
-            delay: 2000 
-        });
-    }
 }

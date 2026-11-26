@@ -155,6 +155,8 @@
   height: 38px;
   flex-shrink: 0;
   border-radius: 9px;
+  border: 0;
+  background: transparent;
   color: #9aa6bc;
   font-size: 1.2rem;
   text-decoration: none;
@@ -181,7 +183,22 @@
   overflow: hidden;
 }
 
+.workspace-split { flex: 1 1 auto; min-width: 0; }
+.sidebar { background: var(--reka-bg-sidebar); color: var(--reka-text); }
 .content { flex: 1 1 auto; min-width: 0; overflow: auto; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar > * { animation: sidebar-enter 180ms ease-out; }
+}
+
+@keyframes sidebar-enter {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (min-width: 768px) {
+  .sidebar { flex: 0 0 100%; }
+}
 
 @media (max-width: 767.98px) {
   .editor-shell { height: auto; min-height: 100vh; min-height: 100dvh; }
@@ -204,6 +221,8 @@
   .bar-2 { flex-direction: row; border-top: 0; border-left: 1px solid rgba(255, 255, 255, .08); padding: 0 0 0 .25rem; }
   .bar-link.active::before { left: 8px; right: 8px; top: auto; bottom: 0; width: auto; height: 3px; border-radius: 4px 4px 0 0; }
   .editor-workspace { overflow: visible; }
+  .sidebar { width: 100%; border-bottom: 1px solid var(--reka-border); }
+  .content { min-height: 45vh; }
 }
 
 @media (max-width: 575.98px) {

@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbModal, NgbDateAdapter, NgbTypeahead, NgbHighlight } from '@ng-bootstrap/ng-bootstrap';
 import { UserService } from '../../_shared/service/user.service';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, PRIMARY_OUTLET, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AppService } from '../../service/app.service';
 import { PlatformLocation } from '@angular/common';
 import { NgbUnixTimestampAdapter } from '../../_shared/service/date-adapter';
@@ -16,7 +16,7 @@ import { AppEditComponent } from '../../_shared/modal/app-edit/app-edit.componen
 import { ToastService } from '../../_shared/service/toast-service';
 import { Title } from '@angular/platform-browser';
 import { baseApi, domainBase } from '../../_shared/constant.service';
-import { debounceTime, distinctUntilChanged, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, Observable, OperatorFunction, switchMap, tap, of } from 'rxjs';
 import Fuse from 'fuse.js';
 import { atobUTF } from '../../_shared/utils';
 import { LoadingService } from '../../_shared/service/loading.service';
@@ -29,6 +29,21 @@ import { AssistantChanged } from './assistant/assistant.types';
 import { AssistantSidePanelService } from './assistant/assistant-side-panel.service';
 import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { ViewportService } from '../../_shared/service/viewport.service';
+import { EditorSearchService } from './editor-search.service';
+import { SplitPaneComponent } from '../../_shared/component/split-pane/split-pane.component';
+import { UiSidebarComponent } from './ui-editor/ui-sidebar.component';
+import { LookupSidebarComponent } from './lookup-editor/lookup-sidebar.component';
+import { MailerSidebarComponent } from './mailer-editor/mailer-sidebar.component';
+import { EndpointSidebarComponent } from './endpoint-editor/endpoint-sidebar.component';
+import { GroupSidebarComponent } from './group-editor/group-sidebar.component';
+import { BucketSidebarComponent } from './bucket-manager/bucket-sidebar.component';
+import { LambdaSidebarComponent } from './lambda-editor/lambda-sidebar.component';
+import { CognaSidebarComponent } from './cogna-editor/cogna-sidebar.component';
+import { KryptaSidebarComponent } from './krypta-editor/krypta-sidebar.component';
+import { SignaSidebarComponent } from './signa-editor/signa-sidebar.component';
+
+type EditorSidebar = 'ui' | 'lookup' | 'mailer' | 'endpoint' | 'user' | 'bucket' | 'lambda' | 'cogna' | 'krypta' | 'signa';
+const EDITOR_SIDEBARS: readonly EditorSidebar[] = ['ui', 'lookup', 'mailer', 'endpoint', 'user', 'bucket', 'lambda', 'cogna', 'krypta', 'signa'];
 
 @Component({
     selector: 'app-editor',
@@ -40,9 +55,12 @@ import { ViewportService } from '../../_shared/service/viewport.service';
         '../../../assets/css/tile.scss', 
         './editor.component.scss'
     ],
-    providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }],
+    providers: [{ provide: NgbDateAdapter, useClass: NgbUnixTimestampAdapter }, EditorSearchService],
     imports: [RouterLink, RouterLinkActive, FaIconComponent, FormsModule, NgbTypeahead,
-        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantSidePanelComponent, CdkDropListGroup]
+        NgbHighlight, RouterOutlet, AppEditComponent, ThemeToggleComponent, AssistantSidePanelComponent, CdkDropListGroup,
+        SplitPaneComponent, UiSidebarComponent, LookupSidebarComponent, MailerSidebarComponent, EndpointSidebarComponent,
+        GroupSidebarComponent, BucketSidebarComponent, LambdaSidebarComponent, CognaSidebarComponent,
+        KryptaSidebarComponent, SignaSidebarComponent]
 })
 export class EditorComponent implements OnInit {
 
@@ -56,6 +74,8 @@ export class EditorComponent implements OnInit {
     offline = signal<boolean>(false);
     copyRequestList = signal<any[]>([]);
     editAppData = signal<any>(null);
+    readonly selectedSidebar = signal<EditorSidebar | null>(null);
+    readonly activeWorkspace = signal<unknown>(null);
 
     readonly assistantStatus = inject(AssistantStatusService);
     readonly assistantPanel = inject(AssistantSidePanelService);
@@ -65,6 +85,7 @@ export class EditorComponent implements OnInit {
     private userService = inject(UserService);
     private route = inject(ActivatedRoute);
     private appService = inject(AppService);
+    private editorSearch = inject(EditorSearchService);
     private router = inject(Router);
     private utilityService = inject(UtilityService);
     private toastService = inject(ToastService);
@@ -97,13 +118,21 @@ export class EditorComponent implements OnInit {
         }, 0);
     }
 
-    fuseSearch: any;
+    readonly fuseSearch = computed(() => new Fuse(this.editorSearch.items(), {
+        shouldSort: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        minMatchCharLength: 1,
+        includeScore: true,
+        keys: ['name']
+    }));
     
     search: OperatorFunction<string, readonly any[]> = (text$: Observable<string>) =>
         text$.pipe(
             debounceTime(200),
             distinctUntilChanged(),
-            map((term:string) => term.length < 2 ? [] : this.fuseSearch?.search(term).map(r => r.item).slice(0, 10)),
+            map((term:string) => term.length < 2 ? [] : this.fuseSearch().search(term).map(r => r.item).slice(0, 10)),
         );
 
     formatter = (result: any) => result.name;
@@ -124,21 +153,12 @@ export class EditorComponent implements OnInit {
         this.focusSearch();
     }
 
-    setFuseSearch() {
-        if (!this.fuseSearch) {
-            this.fuseSearch = new Fuse([...this.appService.searchInApp.values()], {
-                shouldSort: true,
-                threshold: 0.6,
-                location: 0,
-                distance: 100,
-                minMatchCharLength: 1,
-                includeScore: true,
-                keys: ["name"]
-            });
-        }
-    }
-
     ngOnInit() {
+        this.syncSidebarToUrl(this.router.getCurrentNavigation()?.finalUrl?.toString() ?? this.router.url);
+        this.router.events.pipe(
+            filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+            takeUntilDestroyed(this.destroyRef)
+        ).subscribe(event => this.syncSidebarToUrl(event.urlAfterRedirects));
         // Flattened Pyramid of Doom using switchMap
         this.userService.getCreator().pipe(
             takeUntilDestroyed(this.destroyRef),
@@ -155,13 +175,29 @@ export class EditorComponent implements OnInit {
                             this.authorized.set(res.email.includes(user.email) || res.group?.manager?.includes(user.email));
                             this.titleService.setTitle("Design - " + res.title);
                             this.getCopyRequestList();
-                            if (this.authorized()) this.assistantStatus.check();
+                            if (this.authorized()) {
+                                this.editorSearch.load(res.id);
+                                this.assistantStatus.check();
+                            }
                         })
                     );
                 }
                 return of(null);
             })
         ).subscribe();
+    }
+
+    private syncSidebarToUrl(url: string) {
+        const segments = this.router.parseUrl(url).root.children[PRIMARY_OUTLET]?.segments;
+        const path = segments?.[2]?.path;
+        this.selectedSidebar.set(EDITOR_SIDEBARS.find(sidebar => sidebar === path) ?? null);
+    }
+
+    isWorkspaceTimeWarping(kind: 'lambda' | 'cogna'): boolean {
+        const workspace = this.activeWorkspace();
+        if (!workspace || typeof workspace !== 'object') return false;
+        const property = kind === 'lambda' ? 'isTimeWarping' : 'isTimeWarpingCogna';
+        return property in workspace && Boolean(workspace[property]);
     }
 
     handleImageError(event: Event) {

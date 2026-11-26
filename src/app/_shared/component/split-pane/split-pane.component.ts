@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, contentChild, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, contentChild, input, signal } from '@angular/core';
 import { CdkDrag, CdkDragMove } from '@angular/cdk/drag-drop';
 
 @Component({
@@ -10,6 +10,7 @@ import { CdkDrag, CdkDragMove } from '@angular/cdk/drag-drop';
 })
 export class SplitPaneComponent {
 
+    readonly sidebarVisible = input(true);
     // Content child for the projected sidebar element
     sidebar = contentChild<ElementRef>('sidebar');
 
