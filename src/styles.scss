@@ -1,6 +1,9 @@
 /* ==========================================================================
    1. IMPORTS & THEME CONFIG
    ========================================================================== */
+@use "@fullcalendar/angular/skeleton.css";
+@use "@fullcalendar/angular/themes/classic/theme.css";
+@use "@fullcalendar/angular/themes/classic/palette.css";
 @use "bootstrap/scss/bootstrap" with (
   $enable-negative-margins: true
 );
