@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, DestroyRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { UserService } from '../../../_shared/service/user.service';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { NgbModal, NgbPagination, NgbPaginationFirst, NgbPaginationLast, NgbDropdown, NgbDropdownToggle, NgbDropdownMenu, NgbDropdownButtonItem, NgbDropdownItem, NgbPaginationPrevious, NgbPaginationNext } from '@ng-bootstrap/ng-bootstrap';
@@ -47,6 +48,7 @@ export class LookupEditorComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     private readonly destroyRef = inject(DestroyRef);
     private readonly commService = inject(CommService);
+    private readonly clipboard = inject(Clipboard);
     private readonly assistantContext = inject(AssistantLocalContextService).createRegistration();
 
     offline = false;
@@ -539,6 +541,16 @@ export class LookupEditorComponent implements OnInit {
     getUrl(pre, path) {
         return this.baseApi + pre + encodeURIComponent(path); // encoded slash is not permitted py apache noSlash error.
       }
+
+    copyCode(event: MouseEvent, id: string) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.clipboard.copy(String(id))) {
+            this.toastService.show(`Copied CODE '${id}' to clipboard`, { classname: 'bg-dark text-light', delay: 2000 });
+        } else {
+            this.toastService.show('Unable to copy CODE', { classname: 'bg-danger text-light' });
+        }
+    }
 
 
 }

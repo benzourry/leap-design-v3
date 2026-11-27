@@ -61,21 +61,23 @@
             title="TimeWarp (Real-time Version Slider)" aria-label="TimeWarp" (click)="toggleTimeWarpCogna()">
             <fa-icon [icon]="['fas','fast-backward']" [fixedWidth]="true"></fa-icon>
           </button>
-          <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Re-initialize models"
-            aria-label="Re-initialize models" (click)="reinitCogna(cogna)" [disabled]="offline || isTimeWarpingCogna">
-            <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
-          </button>
-          <button type="button" class="btn btn-sm border-0 text-body-secondary ms-1" title="Search vector DB"
-            aria-label="Search vector DB" (click)="openSearchDb(searchDbTpl, cogna)"
-            [disabled]="offline || isTimeWarpingCogna">
-            <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
-          </button>
           <div ngbDropdown class="d-flex ms-1">
             <button type="button" class="btn btn-sm border-0 text-body-secondary" ngbDropdownToggle
               title="More actions" aria-label="More actions">
               <fa-icon [icon]="['fas','ellipsis-h']" [fixedWidth]="true"></fa-icon>
             </button>
             <div ngbDropdownMenu class="dropdown-menu-end rounded-3 py-2 ws-menu-wide">
+              <button type="button" ngbDropdownItem title="Re-initialize models"
+                (click)="reinitCogna(cogna)" [disabled]="offline || isTimeWarpingCogna">
+                <fa-icon [icon]="['fas','sync']" [fixedWidth]="true"></fa-icon>
+                Re-initialize Models
+              </button>
+              <button type="button" ngbDropdownItem title="Search vector DB"
+                (click)="openSearchDb(searchDbTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
+                <fa-icon [icon]="['fas','list-ol']" [fixedWidth]="true"></fa-icon>
+                Search Vector DB
+              </button>
+              <div class="dropdown-divider"></div>
               <button type="button" ngbDropdownItem title="Chat history"
                 (click)="viewChatHistory(viewChatHistoryTpl, cogna)" [disabled]="offline || isTimeWarpingCogna">
                 <fa-icon [icon]="['far','clock']" [fixedWidth]="true"></fa-icon>

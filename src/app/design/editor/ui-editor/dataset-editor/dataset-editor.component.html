@@ -153,7 +153,7 @@
           }
           @if (form.data) {
             <div>
-              <div class="ds-panel mb-3 d-flex flex-row flex-nowrap align-items-center gap-3 p-3">
+              <div class="ds-panel mb-3 d-flex flex-row flex-nowrap align-items-center gap-3 p-3 py-2">
                 <div class="flex-grow-1 text-truncate">
                   <div class="small text-body-secondary">Source Form</div>
                   <strong>{{form.data.title}}</strong>
@@ -169,7 +169,9 @@
                   <div class="ds-panel-header">
                     <h6 class="m-0">Displayed Columns <span class="ds-count">{{curDataset.items.length}}</span></h6>
                     <div class="d-flex flex-wrap gap-1">
-                      <span class="ds-meta">Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong></span>
+                      @if (curDataset.defSortField) {
+                        <span class="ds-meta">Sort: <strong>{{curDataset.defSortField}} {{curDataset.defSortDir}}</strong></span>
+                      }
                       @if (curDataset.x?.defGroupField) {
                         <span class="ds-meta">Group: <strong>{{curDataset.x.defGroupField}}</strong></span>
                       }

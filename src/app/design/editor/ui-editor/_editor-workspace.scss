@@ -98,6 +98,13 @@ $pill-variants: (success, danger, warning, info, primary);
     padding-left: 0.5rem;
     font-size: 0.95em;
 
+    scrollbar-width: none;        // Firefox
+    -ms-overflow-style: none;     // IE / legacy Edge
+
+    &::-webkit-scrollbar {
+      display: none;              // Chrome, Safari, iOS
+    }
+
     .nav-item {
       flex: none;
     }
@@ -201,7 +208,7 @@ $pill-variants: (success, danger, warning, info, primary);
     color: var(--bs-secondary-color);
     font-size: 0.8125rem;
     white-space: nowrap;
-    box-shadow: var(--bs-box-shadow-sm);
+    // box-shadow: var(--bs-box-shadow-sm);
   }
 
   .list-summary-item {

@@ -27,13 +27,13 @@
                   <fa-icon [icon]="['fab','microsoft']" [fixedWidth]="true"></fa-icon> OneDrive
                 }
                 @default {
-                  <fa-icon [icon]="['fas','server']" [fixedWidth]="true"></fa-icon> Local Storage
+                  <fa-icon [icon]="['fas','server']" [fixedWidth]="true"></fa-icon> Local
                 }
               }
             </span>
             @if (serverInfo.avEnabled) {
-              <span class="ws-pill is-success" title="Anti-virus scan is enabled">
-                <fa-icon [icon]="['fas','shield-alt']" [fixedWidth]="true"></fa-icon> ClamAV active
+              <span class="ws-pill is-success px-1" title="Anti-virus scan is enabled">
+                <fa-icon [icon]="['fas','shield-alt']" [fixedWidth]="true"></fa-icon>
               </span>
             }
           </div>
@@ -89,7 +89,7 @@
               <span class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
                 [class.disabled]="importLoading">
                 <fa-icon [icon]="['fas','upload']" [fixedWidth]="true"></fa-icon>
-                {{ importLoading ? 'Uploading...' : 'Upload File' }}
+                <span class="d-none d-md-inline ms-1">{{ importLoading ? 'Uploading...' : 'Upload File' }}</span>
               </span>
             </label>
           </div>

@@ -1,455 +1,457 @@
-        <div class="sidebar-heading">
-            <h5 class="m-0 text-truncate">UI Manager</h5>
-            <div class="filter-wrap position-relative mt-2">
-              <fa-icon [icon]="['fas','filter']" aria-hidden="true"></fa-icon>
-              <input type="search" class="ui-filter w-100" placeholder="Filter UI items..." aria-label="Filter UI items" [(ngModel)]="searchText">
-            </div>
-        </div>
-        <div class="group-list pb-3 editor-nav touch-overflow">
-            <div ngbAccordion class="ui-sidemenu" [closeOthers]="true">
+<div class="sidebar-heading">
+    <h5 class="m-0 text-truncate">UI Manager</h5>
+    <div class="filter-wrap position-relative mt-2">
+      <fa-icon [icon]="['fas','filter']" aria-hidden="true"></fa-icon>
+      <input type="search" class="ui-filter w-100" placeholder="Filter UI items..." aria-label="Filter UI items" [(ngModel)]="searchText">
+    </div>
+</div>
+<div class="group-list pb-3 editor-nav touch-overflow">
+    <div ngbAccordion class="ui-sidemenu" [closeOthers]="true">
+        
+        <!-- 1. FORMS SECTION -->
+        <div ngbAccordionItem="ui-form" class="ui-sidemenu" [collapsed]="currentPath!='form'">
+            <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;"
+                routerLinkActive="active">
+                <fa-icon [icon]="['far','file-lines']" [fixedWidth]="true"></fa-icon> Forms
+                <div class="badgeUi ms-auto">{{counts().form}}</div>
+            </button>
+            <div ngbAccordionCollapse>
+              <div ngbAccordionBody>
                 
-                <!-- 1. FORMS SECTION -->
-                <div ngbAccordionItem="ui-form" class="ui-sidemenu" [collapsed]="currentPath!='form'">
-                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;"
-                        routerLinkActive="active">
-                        <fa-icon [icon]="['far','file-lines']" [fixedWidth]="true"></fa-icon> Forms
-                        <div class="badgeUi ms-auto">{{counts().form}}</div>
-                    </button>
-                    <div ngbAccordionCollapse>
-                      <div ngbAccordionBody>
+                <!-- EDITABLE FORMS (Draggable & Clickable) -->
+                <div cdkDropList cdkDropListOrientation="vertical"
+                  [cdkDropListEnterPredicate]="sameReorderList"
+                  (cdkDropListDropped)="reorderForm($event, editableForms)">
+                  @for (i of (editableForms | filter:searchText); track i.id) {
+                    @if (i?.id) {
+                      <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                        routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app?.id,'ui','form']"
+                        [queryParams]="{id:i?.id}" draggable="false" cdkDrag>
                         
-                        <!-- EDITABLE FORMS (Draggable & Clickable) -->
-                        <div cdkDropList cdkDropListOrientation="vertical"
-                          [cdkDropListEnterPredicate]="sameReorderList"
-                          (cdkDropListDropped)="reorderForm($event, editableForms)">
-                          @for (i of (editableForms | filter:searchText); track i.id) {
-                            @if (i?.id) {
-                              <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
-                                routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app?.id,'ui','form']"
-                                [queryParams]="{id:i?.id}" draggable="false" cdkDrag>
-                                
-                                @if(counts().form>1){
-                                  <div class="cursor-move dd-move" cdkDragHandle>
-                                    <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
-                                  </div>
-                                }
-
-                                @if (i?.title?.trim()) {
-                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                  <span class="ui-item-id" 
-                                        title="Click to copy ID" 
-                                        (click)="copyId($event, i?.id)">
-                                    #{{i?.id}}
-                                  </span>
-                                } @else {
-                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
-                                  <span class="ui-item-id" 
-                                        title="Click to copy ID" 
-                                        (click)="copyId($event, i?.id)">
-                                    #{{i?.id}}
-                                  </span>
-                                }
-                              </a>
-                            }
-                          }
-                        </div>
-
-                        <!-- RESTRICTED FORMS (Collapsible & Disabled) -->
-                        @if ((restrictedForms | filter:searchText).length > 0) {
-                          <div class="">
-                            <!-- 2. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                            <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
-                              (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none;">
-                              <fa-icon [icon]="['fas', showRestrictedForms ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
-                              Restricted Forms ({{restrictedForms.length}})
-                            </button>
-                            
-                            @if (showRestrictedForms) {
-                              <div>
-                                @for (i of (restrictedForms | filter:searchText); track i.id) {
-                                  <!-- 3. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate restricted-item"
-                                    title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
-                                    [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
-                                    [style.opacity]="user?.manager ? '1' : '0.65'"
-                                    [routerLink]="user?.manager ? ['/design', app?.id, 'ui', 'form'] : null"
-                                    [queryParams]="user?.manager ? {id: i?.id} : null"
-                                    [routerLinkActive]="user?.manager ? 'active' : ''" [routerLinkActiveOptions]="itemMatchOptions"
-                                    draggable="false">
-                                    <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
-                                    @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    } @else {
-                                      <span class="font-italic text-truncate">(Untitled)</span> 
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    }
-                                  </a>
-                                }
-                              </div>
-                            }
+                        @if(counts().form>1){
+                          <div class="cursor-move dd-move" cdkDragHandle>
+                            <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
                           </div>
                         }
 
-                        <!-- ACTIONS -->
-                        <a class="element pointer text-truncate section-action mt-2" (click)="editForm(newForm)">
-                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
-                        </a>
-                        <a class="element pointer text-truncate section-action" (click)="cloneForm()">
-                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
-                        </a>
-                        
-                      </div>
-                    </div>
+                        @if (i?.title?.trim()) {
+                          <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                          <span class="ui-item-id" 
+                                title="Click to copy ID" 
+                                (click)="copyId($event, i?.id)">
+                            #{{i?.id}}
+                          </span>
+                        } @else {
+                          <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                          <span class="ui-item-id" 
+                                title="Click to copy ID" 
+                                (click)="copyId($event, i?.id)">
+                            #{{i?.id}}
+                          </span>
+                        }
+                      </a>
+                    }
+                  }
                 </div>
 
-                <!-- 2. DATASETS SECTION -->
-                <div ngbAccordionItem="ui-dataset" class="ui-sidemenu" [collapsed]="currentPath!='dataset'">
-                  <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                      <fa-icon [icon]="['fas','table']" [fixedWidth]="true"></fa-icon> Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
-                  </button>
-                  <div ngbAccordionCollapse>
-                    @if (counts().dataset>1){
-                      <div class="d-flex flex-row group-by-controls">
-                        <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
-                        <div class="ms-auto btn-group-xs small group-by-toggle">
-                          <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
-                            name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
-                          <label for="dsgb-ungroup" class="btn px-1">
-                            <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
-                          </label>
-                          <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
-                            name="dsgb-form" [(ngModel)]="datasetGroupBy">
-                          <label for="dsgb-form" class="btn px-1">Form</label>
-                          <input class="btn-check" type="radio" value="type" id="dsgb-type"
-                            name="dsgb-type" [(ngModel)]="datasetGroupBy">
-                          <label for="dsgb-type" class="btn px-1">Type</label>
-                        </div>
+                <!-- RESTRICTED FORMS (Collapsible & Disabled) -->
+                @if ((restrictedForms | filter:searchText).length > 0) {
+                  <div class="rounded-1" style="background: var(--reka-bg-subtle);">
+                    <!-- 2. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                    <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
+                      (click)="showRestrictedForms = !showRestrictedForms" style="box-shadow: none;">
+                      <fa-icon [icon]="['fas', showRestrictedForms ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
+                      Restricted Forms ({{restrictedForms.length}})
+                    </button>
+                    
+                    @if (showRestrictedForms) {
+                      <div>
+                        @for (i of (restrictedForms | filter:searchText); track i.id) {
+                          <!-- 3. Changed bg-light to bg-body-secondary -->
+                          <a class="element text-truncate restricted-item"
+                            title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
+                            [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
+                            [style.opacity]="user?.manager ? '1' : '0.65'"
+                            [routerLink]="user?.manager ? ['/design', app?.id, 'ui', 'form'] : null"
+                            [queryParams]="user?.manager ? {id: i?.id} : null"
+                            [routerLinkActive]="user?.manager ? 'active' : ''" [routerLinkActiveOptions]="itemMatchOptions"
+                            draggable="false">
+                            <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
+                            @if (i?.title?.trim()) {
+                              <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            } @else {
+                              <span class="font-italic text-truncate">(Untitled)</span> 
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            }
+                          </a>
+                        }
                       </div>
                     }
-                    <div ngbAccordionBody>
-                      
-                      <!-- EDITABLE DATASETS (Draggable & Grouped) -->
-                      <div cdkDropList cdkDropListOrientation="vertical"
-                        [cdkDropListEnterPredicate]="sameReorderList"
-                        (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
-                        @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
-                          @if (datasetGroupBy && dsKv?.key) {
-                            <div class="element group-label fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
-                          }
-                          
-                          @for (i of dsKv?.value; track i.id) {
-                            <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
-                                routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app.id,'ui','dataset']"
-                                draggable="false"
-                                [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts().dataset==1">
-                                
-                                @if(!datasetGroupBy && counts().dataset>1) {
-                                  <div class="cursor-move dd-move" cdkDragHandle>
-                                    <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
-                                  </div>
-                                }
-                                
-                                @if (i?.title?.trim()) {
-                                  <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                  <span class="ui-item-id" 
-                                        title="Click to copy ID" 
-                                        (click)="copyId($event, i?.id)">
-                                    #{{i?.id}}
-                                  </span>
-                                } @else {
-                                  <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
-                                  <span class="ui-item-id" 
-                                        title="Click to copy ID" 
-                                        (click)="copyId($event, i?.id)">
-                                    #{{i?.id}}
-                                  </span>
-                                }
-                            </a>
-                          }
-                        }
-                      </div>
-
-                      <!-- RESTRICTED DATASETS (Collapsible & Disabled) -->
-                      @if ((restrictedDatasets | filter:searchText).length > 0) {
-                        <div>
-                          <!-- 4. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                          <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
-                            (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none;">
-                            <fa-icon [icon]="['fas', showRestrictedDatasets ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
-                            From Restricted Forms ({{restrictedDatasets.length}})
-                          </button>
-                          
-                          @if (showRestrictedDatasets) {
-                            <div>
-                              @for (i of (restrictedDatasets | filter:searchText); track i.id) {
-                                <!-- 5. Changed bg-light to bg-body-secondary -->
-                                <a class="element pointer text-truncate restricted-item"
-                                  title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
-                                  routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions"
-                                  [routerLink]="['/design', app.id, 'ui', 'dataset']" 
-                                  [queryParams]="{id: i?.id}" 
-                                  draggable="false">
-                                  <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
-                                  @if (i?.title?.trim()) {
-                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                    <span class="ui-item-id" 
-                                          title="Click to copy ID" 
-                                          (click)="copyId($event, i?.id)">
-                                      #{{i?.id}}
-                                    </span>
-                                  } @else {
-                                    <span class="font-italic text-truncate">(Untitled)</span> 
-                                    <span class="ui-item-id" 
-                                          title="Click to copy ID" 
-                                          (click)="copyId($event, i?.id)">
-                                      #{{i?.id}}
-                                    </span>
-                                  }
-                                </a>
-                              }
-                            </div>
-                          }
-                        </div>
-                      }
-
-                      <!-- ACTIONS -->
-                      <a class="element pointer text-truncate section-action mt-2" (click)="editDataset(newDataset)">
-                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
-                      </a>
-                      <a class="element pointer text-truncate section-action" (click)="cloneDataset()">
-                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
-                      </a>
-                      
-                    </div>
                   </div>
-                </div>
+                }
+
+                <!-- ACTIONS -->
+                <a class="element pointer text-truncate section-action mt-2" (click)="editForm(newForm)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
+                </a>
+                <a class="element pointer text-truncate section-action" (click)="cloneForm()">
+                  <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
+                </a>
                 
-                <!-- 3. DASHBOARD SECTION -->
-                <div ngbAccordionItem="ui-dashboard" class="ui-sidemenu" [collapsed]="currentPath!='dashboard'">
-                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        <fa-icon [icon]="['fas','chart-pie']" [fixedWidth]="true"></fa-icon> Dashboard
-                        <div class="badgeUi ms-auto">{{counts().dashboard}}</div>
-                    </button>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody
-                        cdkDropList cdkDropListOrientation="vertical"
-                        [cdkDropListEnterPredicate]="sameReorderList"
-                        (cdkDropListDropped)="reorderDashboard($event, dashboardList)">
-                            @for (i of dashboardList|filter:searchText; track i.id) {
-                              @if (i?.id){
-                                <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions"
-                                    draggable="false"
-                                    [routerLink]="['/design',app.id,'ui','dashboard']" [queryParams]="{id:i?.id}" cdkDrag>
-                                    @if(counts().dashboard>1){
-                                      <div class="cursor-move dd-move" cdkDragHandle>
-                                        <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
-                                        </fa-icon>
-                                      </div>
-                                    }
-                                    @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                      <!-- <span class="ui-item-id">#{{i?.id}}</span> -->
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    }@else{
-                                      <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    }
-                                </a>
-                              }
-                            }
-                            <a class="element pointer text-truncate section-action mt-2" (click)="editDashboard(newDashboard)">
-                                <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
-                            </a>
-                            <a class="element pointer text-truncate section-action" (click)="cloneDashboard()">
-                              <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
-                            </a>    
-                        </div>
-                    </div>
+              </div>
+            </div>
+        </div>
+
+        <!-- 2. DATASETS SECTION -->
+        <div ngbAccordionItem="ui-dataset" class="ui-sidemenu" [collapsed]="currentPath!='dataset'">
+          <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+              <fa-icon [icon]="['fas','table']" [fixedWidth]="true"></fa-icon> Datasets <div class="badgeUi ms-auto">{{counts().dataset}}</div>
+          </button>
+          <div ngbAccordionCollapse>
+            @if (counts().dataset>1){
+              <div class="d-flex flex-row group-by-controls">
+                <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
+                <div class="ms-auto btn-group-xs small group-by-toggle">
+                  <input class="btn-check" type="radio" [value]="null" id="dsgb-ungroup"
+                    name="dsgb-ungroup" [(ngModel)]="datasetGroupBy">
+                  <label for="dsgb-ungroup" class="btn px-1">
+                    <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
+                  </label>
+                  <input class="btn-check" type="radio" value="form.title" id="dsgb-form"
+                    name="dsgb-form" [(ngModel)]="datasetGroupBy">
+                  <label for="dsgb-form" class="btn px-1">Form</label>
+                  <input class="btn-check" type="radio" value="type" id="dsgb-type"
+                    name="dsgb-type" [(ngModel)]="datasetGroupBy">
+                  <label for="dsgb-type" class="btn px-1">Type</label>
                 </div>
-
-                <!-- 4. CUSTOM SCREEN SECTION (UPDATED) -->
-                <div ngbAccordionItem="ui-screen" class="ui-sidemenu" [collapsed]="currentPath!='screen'">
-                    <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
-                        <fa-icon [icon]="['fas','window-restore']" [fixedWidth]="true"></fa-icon> Custom Screen
-                        <div class="badgeUi ms-auto">{{counts().screen}}</div>
-                    </button>
-                    <div ngbAccordionCollapse>
-                      @if (counts().screen>1){
-                        <div class="d-flex flex-row group-by-controls">
-                          <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
-                          <div class="ms-auto btn-group-xs small group-by-toggle">
-                            <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
-                              name="scgb-ungroup" [(ngModel)]="screenGroupBy">
-                            <label for="scgb-ungroup" class="btn px-1">
-                              <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
-                            </label>
-                            <input class="btn-check" type="radio" value="type" id="scgb-type"
-                              name="scgb-type" [(ngModel)]="screenGroupBy">
-                            <label for="scgb-type" class="btn px-1">Type</label>
-                          </div>
-                        </div>
-                      }
-                      <div ngbAccordionBody>
+              </div>
+            }
+            <div ngbAccordionBody>
+              
+              <!-- EDITABLE DATASETS (Draggable & Grouped) -->
+              <div cdkDropList cdkDropListOrientation="vertical"
+                [cdkDropListEnterPredicate]="sameReorderList"
+                (cdkDropListDropped)="reorderDataset($event, editableDatasets)">
+                @for (dsKv of (editableDatasets | filter:searchText) | groupBy:datasetGroupBy; track $index) {
+                  @if (datasetGroupBy && dsKv?.key) {
+                    <div class="element group-label fw-bold text-secondary text-capitalize">{{dsKv?.key}}</div>
+                  }
+                  
+                  @for (i of dsKv?.value; track i.id) {
+                    <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                        routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app.id,'ui','dataset']"
+                        draggable="false"
+                        [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="datasetGroupBy||counts().dataset==1">
                         
-                        <!-- EDITABLE SCREENS (Draggable & Grouped) -->
-                        <div cdkDropList cdkDropListOrientation="vertical"
-                          [cdkDropListEnterPredicate]="sameReorderList"
-                          (cdkDropListDropped)="reorderScreen($event, editableScreens)">
-                          @for (scKv of (editableScreens | filter:searchText) | groupBy:screenGroupBy; track $index) {
-                            @if (screenGroupBy && scKv?.key) {
-                              <div class="element group-label fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>
-                            }
-                            
-                            @for (i of scKv?.value; track i.id) {
-                              @if (i?.id) {
-                                <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
-                                  routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app.id,'ui','screen']"
-                                  draggable="false"
-                                  [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts().screen==1">
-                                  
-                                  @if(!screenGroupBy && counts().screen>1) {
-                                    <div class="cursor-move dd-move" cdkDragHandle>
-                                      <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
-                                    </div>
-                                  }
-                                  
-                                  @if (i?.title?.trim()) {
-                                    <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                    <span class="ui-item-id" 
-                                          title="Click to copy ID" 
-                                          (click)="copyId($event, i?.id)">
-                                      #{{i?.id}}
-                                    </span>
-                                  } @else {
-                                    <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
-                                    <span class="ui-item-id" 
-                                          title="Click to copy ID" 
-                                          (click)="copyId($event, i?.id)">
-                                      #{{i?.id}}
-                                    </span>
-                                  }
-                                </a>
-                              }
-                            }
-                          }
-                        </div>
+                        @if(!datasetGroupBy && counts().dataset>1) {
+                          <div class="cursor-move dd-move" cdkDragHandle>
+                            <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
+                          </div>
+                        }
+                        
+                        @if (i?.title?.trim()) {
+                          <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                          <span class="ui-item-id" 
+                                title="Click to copy ID" 
+                                (click)="copyId($event, i?.id)">
+                            #{{i?.id}}
+                          </span>
+                        } @else {
+                          <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                          <span class="ui-item-id" 
+                                title="Click to copy ID" 
+                                (click)="copyId($event, i?.id)">
+                            #{{i?.id}}
+                          </span>
+                        }
+                    </a>
+                  }
+                }
+              </div>
 
-                        <!-- RESTRICTED SCREENS (Collapsible & Disabled / Manager Override) -->
-                        @if ((restrictedScreens | filter:searchText).length > 0) {
-                          <div>
-                            <!-- 6. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
-                            <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
-                              (click)="showRestrictedScreens = !showRestrictedScreens" style="box-shadow: none;">
-                              <fa-icon [icon]="['fas', showRestrictedScreens ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
-                              Restricted Screens ({{restrictedScreens.length}})
-                            </button>
-                            
-                            @if (showRestrictedScreens) {
-                              <div>
-                                @for (i of (restrictedScreens | filter:searchText); track i.id) {
-                                  <!-- 7. Changed bg-light to bg-body-secondary -->
-                                  <a class="element text-truncate restricted-item"
-                                    title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
-                                    [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
-                                    [style.opacity]="user?.manager ? '1' : '0.65'"
-                                    [routerLink]="user?.manager ? ['/design', app?.id, 'ui', 'screen'] : null"
-                                    [queryParams]="user?.manager ? {id: i?.id} : null"
-                                    [routerLinkActive]="user?.manager ? 'active' : ''" [routerLinkActiveOptions]="itemMatchOptions"
-                                    draggable="false">
-                                    <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
-                                    @if (i?.title?.trim()) {
-                                      <span class="text-truncate">{{cleanText(i?.title)}}</span> 
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    } @else {
-                                      <span class="font-italic text-truncate">(Untitled)</span> 
-                                      <span class="ui-item-id" 
-                                            title="Click to copy ID" 
-                                            (click)="copyId($event, i?.id)">
-                                        #{{i?.id}}
-                                      </span>
-                                    }
-                                  </a>
-                                }
+              <!-- RESTRICTED DATASETS (Collapsible & Disabled) -->
+              @if ((restrictedDatasets | filter:searchText).length > 0) {
+                <div class="rounded-1" style="background: var(--reka-bg-subtle);">
+                  <!-- 4. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                  <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
+                    (click)="showRestrictedDatasets = !showRestrictedDatasets" style="box-shadow: none;">
+                    <fa-icon [icon]="['fas', showRestrictedDatasets ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
+                    From Restricted Forms ({{restrictedDatasets.length}})
+                  </button>
+                  
+                  @if (showRestrictedDatasets) {
+                    <div>
+                      @for (i of (restrictedDatasets | filter:searchText); track i.id) {
+                        <!-- 5. Changed bg-light to bg-body-secondary -->
+                        <a class="element pointer text-truncate restricted-item"
+                          title="Access Restricted (Form: {{i?.form?.title}}): {{i?.title}} - {{i?.id}}" 
+                          routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions"
+                          [routerLink]="['/design', app.id, 'ui', 'dataset']" 
+                          [queryParams]="{id: i?.id}" 
+                          draggable="false">
+                          <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
+                          @if (i?.title?.trim()) {
+                            <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                            <span class="ui-item-id" 
+                                  title="Click to copy ID" 
+                                  (click)="copyId($event, i?.id)">
+                              #{{i?.id}}
+                            </span>
+                          } @else {
+                            <span class="font-italic text-truncate">(Untitled)</span> 
+                            <span class="ui-item-id" 
+                                  title="Click to copy ID" 
+                                  (click)="copyId($event, i?.id)">
+                              #{{i?.id}}
+                            </span>
+                          }
+                        </a>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- ACTIONS -->
+              <a class="element pointer text-truncate section-action mt-2" (click)="editDataset(newDataset)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
+              </a>
+              <a class="element pointer text-truncate section-action" (click)="cloneDataset()">
+                  <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
+              </a>
+              
+            </div>
+          </div>
+        </div>
+        
+        <!-- 3. DASHBOARD SECTION -->
+        <div ngbAccordionItem="ui-dashboard" class="ui-sidemenu" [collapsed]="currentPath!='dashboard'">
+            <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                <fa-icon [icon]="['fas','chart-pie']" [fixedWidth]="true"></fa-icon> Dashboard
+                <div class="badgeUi ms-auto">{{counts().dashboard}}</div>
+            </button>
+            <div ngbAccordionCollapse>
+                <div ngbAccordionBody
+                cdkDropList cdkDropListOrientation="vertical"
+                [cdkDropListEnterPredicate]="sameReorderList"
+                (cdkDropListDropped)="reorderDashboard($event, dashboardList)">
+                    @for (i of dashboardList|filter:searchText; track i.id) {
+                      @if (i?.id){
+                        <a class="element pointer text-truncate" title="{{i?.title}}" routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions"
+                            draggable="false"
+                            [routerLink]="['/design',app.id,'ui','dashboard']" [queryParams]="{id:i?.id}" cdkDrag>
+                            @if(counts().dashboard>1){
+                              <div class="cursor-move dd-move" cdkDragHandle>
+                                <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true">
+                                </fa-icon>
                               </div>
                             }
-                          </div>
-                        }
-
-                        <!-- ACTIONS -->
-                        <a class="element pointer text-truncate section-action mt-2" (click)="editScreen(newScreen)">
-                          <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
+                            @if (i?.title?.trim()) {
+                              <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                              <!-- <span class="ui-item-id">#{{i?.id}}</span> -->
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            }@else{
+                              <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            }
                         </a>
-                        <a class="element pointer text-truncate section-action" (click)="cloneScreen()">
-                          <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
-                        </a>
-                        
-                      </div>
-                    </div>
+                      }
+                    }
+                    <a class="element pointer text-truncate section-action mt-2" (click)="editDashboard(newDashboard)">
+                        <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
+                    </a>
+                    <a class="element pointer text-truncate section-action" (click)="cloneDashboard()">
+                      <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
+                    </a>    
                 </div>
-
             </div>
-            
-            <a class="pointer element text-truncate" [routerLink]="['/design',app?.id,'ui','navi']" routerLinkActive="active">
-                <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="me-2"></fa-icon>Structure
-                @if (!counts().navi) {
-                <fa-icon style="opacity:.3" class="float-end me-1" [icon]="['fas','exclamation-triangle']"
-                    [fixedWidth]="true"></fa-icon>
-                }
-            </a>
-            <div class="utilities-heading">Workspace &amp; Utilities</div>
-            <a class="pointer text-truncate" (click)="importMetadata(importMetadataTpl)">
-                <fa-icon class="float-start" [icon]="['fas','file-import']" [fixedWidth]="true"></fa-icon>
-                <div class="list-group-item-heading ms-4">
-                    Import App Meta
-                </div>
-            </a>
-            <a class="pointer text-truncate" (click)="importExcel(importExcelTpl)">
-                <fa-icon class="float-start" [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
-                <div class="list-group-item-heading ms-4">
-                    Import from Excel
-                </div>
-            </a>
-            <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','restore']" routerLinkActive="active">
-                <fa-icon class="float-start" [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
-                <div class="list-group-item-heading ms-4">
-                    Restore Points
-                </div>
-            </a>
-            <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','key']" routerLinkActive="active">
-                <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
-                <div class="list-group-item-heading ms-4">
-                    Manage API Key
-                </div>
-            </a>
-            <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','signin']" routerLinkActive="active">
-              <fa-icon class="float-start" [icon]="['fas','user-shield']" [fixedWidth]="true"></fa-icon>
-              <!-- <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon> -->
-              <div class="list-group-item-heading ms-4">
-                  Custom Sign-in
-              </div>
-            </a>
         </div>
+
+        <!-- 4. CUSTOM SCREEN SECTION (UPDATED) -->
+        <div ngbAccordionItem="ui-screen" class="ui-sidemenu" [collapsed]="currentPath!='screen'">
+            <button type="button" class="pointer element text-truncate" ngbAccordionButton style="box-shadow: none;" routerLinkActive="active">
+                <fa-icon [icon]="['fas','window-restore']" [fixedWidth]="true"></fa-icon> Custom Screen
+                <div class="badgeUi ms-auto">{{counts().screen}}</div>
+            </button>
+            <div ngbAccordionCollapse>
+              @if (counts().screen>1){
+                <div class="d-flex flex-row group-by-controls">
+                  <div class="align-self-center me-1 text-secondary">Group&nbsp;by</div>
+                  <div class="ms-auto btn-group-xs small group-by-toggle">
+                    <input class="btn-check" type="radio" [value]="null" id="scgb-ungroup"
+                      name="scgb-ungroup" [(ngModel)]="screenGroupBy">
+                    <label for="scgb-ungroup" class="btn px-1">
+                      <fa-icon [icon]="['fas','ban']" [fixedWidth]="true"></fa-icon>
+                    </label>
+                    <input class="btn-check" type="radio" value="type" id="scgb-type"
+                      name="scgb-type" [(ngModel)]="screenGroupBy">
+                    <label for="scgb-type" class="btn px-1">Type</label>
+                  </div>
+                </div>
+              }
+              <div ngbAccordionBody>
+                
+                <!-- EDITABLE SCREENS (Draggable & Grouped) -->
+                <div cdkDropList cdkDropListOrientation="vertical"
+                  [cdkDropListEnterPredicate]="sameReorderList"
+                  (cdkDropListDropped)="reorderScreen($event, editableScreens)">
+                  @for (scKv of (editableScreens | filter:searchText) | groupBy:screenGroupBy; track $index) {
+                    @if (screenGroupBy && scKv?.key) {
+                      <div class="element group-label fw-bold text-secondary text-capitalize">{{scKv?.key}}</div>
+                    }
+                    
+                    @for (i of scKv?.value; track i.id) {
+                      @if (i?.id) {
+                        <a class="element pointer text-truncate" title="{{i?.title}} - {{i?.id}}"
+                          routerLinkActive="active" [routerLinkActiveOptions]="itemMatchOptions" [routerLink]="['/design',app.id,'ui','screen']"
+                          draggable="false"
+                          [queryParams]="{id:i?.id}" cdkDrag [cdkDragDisabled]="screenGroupBy||counts().screen==1">
+                          
+                          @if(!screenGroupBy && counts().screen>1) {
+                            <div class="cursor-move dd-move" cdkDragHandle>
+                              <fa-icon [icon]="['fas','grip-vertical']" size="1x" [fixedWidth]="true"></fa-icon>
+                            </div>
+                          }
+                          
+                          @if (i?.title?.trim()) {
+                            <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                            <span class="ui-item-id" 
+                                  title="Click to copy ID" 
+                                  (click)="copyId($event, i?.id)">
+                              #{{i?.id}}
+                            </span>
+                          } @else {
+                            <span class="font-italic text-secondary text-truncate">(Untitled)</span> 
+                            <span class="ui-item-id" 
+                                  title="Click to copy ID" 
+                                  (click)="copyId($event, i?.id)">
+                              #{{i?.id}}
+                            </span>
+                          }
+                        </a>
+                      }
+                    }
+                  }
+                </div>
+
+                <!-- RESTRICTED SCREENS (Collapsible & Disabled / Manager Override) -->
+                @if ((restrictedScreens | filter:searchText).length > 0) {
+                  <div class="rounded-1" style="background: var(--reka-bg-subtle);">
+                    <!-- 6. Replaced hardcoded background #f8f9fa with bg-body-secondary -->
+                    <button type="button" class="btn btn-sm w-100 text-start text-secondary d-flex align-items-center bg-body-secondary border-0" 
+                      (click)="showRestrictedScreens = !showRestrictedScreens" style="box-shadow: none;">
+                      <fa-icon [icon]="['fas', showRestrictedScreens ? 'angle-down' : 'angle-right']" [fixedWidth]="true" class="me-2"></fa-icon>
+                      Restricted Screens ({{restrictedScreens.length}})
+                    </button>
+                    
+                    @if (showRestrictedScreens) {
+                      <div>
+                        @for (i of (restrictedScreens | filter:searchText); track i.id) {
+                          <!-- 7. Changed bg-light to bg-body-secondary -->
+                          <a class="element text-truncate restricted-item"
+                            title="{{ user?.manager ? 'Manager Override' : 'Access Restricted' }}: {{i?.title}} - {{i?.id}}" 
+                            [style.cursor]="user?.manager ? 'pointer' : 'not-allowed'"
+                            [style.opacity]="user?.manager ? '1' : '0.65'"
+                            [routerLink]="user?.manager ? ['/design', app?.id, 'ui', 'screen'] : null"
+                            [queryParams]="user?.manager ? {id: i?.id} : null"
+                            [routerLinkActive]="user?.manager ? 'active' : ''" [routerLinkActiveOptions]="itemMatchOptions"
+                            draggable="false">
+                            <fa-icon [icon]="['fas', 'lock']" class="me-1 small"></fa-icon>
+                            @if (i?.title?.trim()) {
+                              <span class="text-truncate">{{cleanText(i?.title)}}</span> 
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            } @else {
+                              <span class="font-italic text-truncate">(Untitled)</span> 
+                              <span class="ui-item-id" 
+                                    title="Click to copy ID" 
+                                    (click)="copyId($event, i?.id)">
+                                #{{i?.id}}
+                              </span>
+                            }
+                          </a>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- ACTIONS -->
+                <a class="element pointer text-truncate section-action mt-2" (click)="editScreen(newScreen)">
+                  <fa-icon [icon]="['fas','plus']" [fixedWidth]="true"></fa-icon> New
+                </a>
+                <a class="element pointer text-truncate section-action" (click)="cloneScreen()">
+                  <fa-icon [icon]="['fas','copy']" [fixedWidth]="true"></fa-icon> Clone
+                </a>
+                
+              </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <a class="pointer element text-truncate" [routerLink]="['/design',app?.id,'ui','navi']" routerLinkActive="active">
+        <fa-icon [icon]="['fas','sitemap']" [fixedWidth]="true" class="me-2"></fa-icon>Structure
+        @if (!counts().navi) {
+        <fa-icon style="opacity:.3" class="float-end me-1" [icon]="['fas','exclamation-triangle']"
+            [fixedWidth]="true"></fa-icon>
+        }
+    </a>
+    <div class="utilities-heading">Workspace &amp; Utilities</div>
+    <a class="pointer text-truncate" (click)="importMetadata(importMetadataTpl)">
+        <fa-icon class="float-start" [icon]="['fas','file-import']" [fixedWidth]="true"></fa-icon>
+        <div class="list-group-item-heading ms-4">
+            Import App Meta
+        </div>
+    </a>
+    <a class="pointer text-truncate" (click)="importExcel(importExcelTpl)">
+        <fa-icon class="float-start" [icon]="['fas','file-excel']" [fixedWidth]="true"></fa-icon>
+        <div class="list-group-item-heading ms-4">
+            Import from Excel
+        </div>
+    </a>
+    <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','restore']" routerLinkActive="active">
+        <fa-icon class="float-start" [icon]="['fas','history']" [fixedWidth]="true"></fa-icon>
+        <div class="list-group-item-heading ms-4">
+            Restore Points
+        </div>
+    </a>
+    <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','key']" routerLinkActive="active">
+        <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon>
+        <div class="list-group-item-heading ms-4">
+            Manage API Key
+        </div>
+    </a>
+    <a class="pointer text-truncate" [routerLink]="['/design',app?.id,'ui','signin']" routerLinkActive="active">
+      <fa-icon class="float-start" [icon]="['fas','user-shield']" [fixedWidth]="true"></fa-icon>
+      <!-- <fa-icon class="float-start" [icon]="['fas','lock']" [fixedWidth]="true"></fa-icon> -->
+      <div class="list-group-item-heading ms-4">
+          Custom Sign-in
+      </div>
+    </a>
+</div>
+
+
 <ng-template #importExcelTpl let-c="close" let-d="dismiss">
     <div #importExcelForm="ngForm" ngForm>
         <div class="modal-header">
