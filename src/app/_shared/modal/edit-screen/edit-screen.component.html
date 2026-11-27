@@ -1,44 +1,46 @@
-<div #editScreenForm="ngForm" ngForm>
+<div #editScreenForm="ngForm" ngForm class="reka-modal-content">
   <div class="modal-header">
     <h4 class="modal-title">{{_editScreenData.id?'Edit':'Add'}} Screen</h4>
   </div>
   <div class="modal-body">
     <div class="form-group mb-3">
-      <label class="form-label">Title *</label>
+      <label class="reka-label">Title *</label>
       <input type="text" class="form-control" [(ngModel)]="_editScreenData.title" 
         name="title" required>
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Description</label>
+      <label class="reka-label">Description</label>
       <textarea class="form-control" [(ngModel)]="_editScreenData.description" 
       name="description"></textarea>
     </div>
-    <div class="form-check form-switch mb-1">
-      <input class="form-check-input" type="checkbox" id="canPrint"
-        [(ngModel)]="_editScreenData.canPrint" name="canPrint">
-      <label class="form-check-label" for="canPrint">Show Print button</label>
-    </div>
-    <div class="form-check form-switch mb-1">
-      <input class="form-check-input" type="checkbox" id="hideTitle"
-        [(ngModel)]="_editScreenData.data.hideTitle" name="hideTitle">
-      <label class="form-check-label" for="hideTitle">Hide Screen Title</label>
-    </div>
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="wide"
-        [(ngModel)]="_editScreenData.wide" name="wide">
-      <label class="form-check-label" for="wide">Full width screen</label>
+    <div class="switch-group mb-3">
+      <div class="form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" id="canPrint"
+          [(ngModel)]="_editScreenData.canPrint" name="canPrint">
+        <label class="form-check-label" for="canPrint">Show Print button</label>
+      </div>
+      <div class="form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" id="hideTitle"
+          [(ngModel)]="_editScreenData.data.hideTitle" name="hideTitle">
+        <label class="form-check-label" for="hideTitle">Hide Screen Title</label>
+      </div>
+      <div class="form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" id="wide"
+          [(ngModel)]="_editScreenData.wide" name="wide">
+        <label class="form-check-label" for="wide">Full width screen</label>
+      </div>
     </div>
     <div class="form-group mb-3" [class.disabled]="_editScreenData.id">
-      <label class="col-form-label">Screen Type *</label>
+      <label class="reka-label">Screen Type *</label>
       <div class="row g-1">
         @for(type of screenTypeList; track $index){
           <div class="col-6 col-sm-4">
               <input type="radio" class="btn-check" id="type-{{type.code}}" name="{{type.code}}"
                 [(ngModel)]="_editScreenData.type" [value]="type.code" required>
-              <label for="type-{{type.code}}" class="btn btn-outline-secondary border-1-5 text-start p-2 py-1 w-100 h-100" 
+              <label for="type-{{type.code}}" class="select-tile"
                 (click)="resetLinkedData(_editScreenData)">
-                <fa-icon [icon]="type.icon" size="2x" class="float-start mt-1"></fa-icon>
-                <div style="margin-left:40px;">
+                <fa-icon [icon]="type.icon" size="2x"></fa-icon>
+                <div>
                   <strong>{{type.name}}</strong>
                   <div style="font-size:0.8em">{{type.description}}</div>
                 </div>
@@ -49,7 +51,7 @@
     </div>
     @if (['qr','page'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label class="form-label">Select Form *</label>
+        <label class="reka-label">Select Form *</label>
         <select class="form-select" name="form" #cForm [compareWith]="compareByIdFn"
           [(ngModel)]="_editScreenData.form" [required]="_editScreenData.type=='page'">
           <option value="undefined" disabled>Select form...</option>
@@ -61,7 +63,7 @@
     }
     @if (['list','calendar','map'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label class="form-label">Select Dataset *</label>
+        <label class="reka-label">Select Dataset *</label>
         <select class="form-select" name="dataset" #cDataset
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.dataset" required>
           <option value="undefined" disabled>Select dataset...</option>
@@ -73,7 +75,7 @@
     }
     @if (['chatbot'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label class="form-label">Select Cogna *</label>
+        <label class="reka-label">Select Cogna *</label>
         <select class="form-select" name="cogna" #cCogna
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.cogna" required>
           <option value="undefined" disabled>Select cogna...</option>
@@ -85,7 +87,7 @@
     }
     @if (['bucket'].indexOf(_editScreenData.type)>-1) {
       <div class="form-group mb-3">
-        <label class="form-label">Select Bucket *</label>
+        <label class="reka-label">Select Bucket *</label>
         <select class="form-select" name="bucket" #cBucket
           [compareWith]="compareByIdFn" [(ngModel)]="_editScreenData.bucket" required>
           <option value="undefined" disabled>Select bucket...</option>
@@ -96,21 +98,23 @@
       </div>
     }
     @if (['list','map','calendar'].indexOf(_editScreenData.type)>-1) {
-      <div class="form-check form-switch mb-1">
-        <input class="form-check-input" type="checkbox" id="showAction"
-          [(ngModel)]="_editScreenData.showAction" name="showAction">
-        <label class="form-check-label" for="showAction">Show dataset action (filter, export)</label>
-      </div>
-      <div class="form-check form-switch mb-1">
-        <input class="form-check-input" type="checkbox" id="showSummary"
-          [(ngModel)]="_editScreenData.data.showSummary" name="showSummary">
-        <label class="form-check-label" for="showSummary">Show dataset summary</label>
-      </div>
-      <div class="form-check form-switch mb-1">
-        <input class="form-check-input" type="checkbox" id="paginate"
-          [(ngModel)]="_editScreenData.data.paginate" 
-          name="paginate">
-        <label class="form-check-label" for="paginate">Paginate dataset</label>
+      <div class="switch-group mb-3">
+        <div class="form-check form-switch switch-row">
+          <input class="form-check-input" type="checkbox" id="showAction"
+            [(ngModel)]="_editScreenData.showAction" name="showAction">
+          <label class="form-check-label" for="showAction">Show dataset action (filter, export)</label>
+        </div>
+        <div class="form-check form-switch switch-row">
+          <input class="form-check-input" type="checkbox" id="showSummary"
+            [(ngModel)]="_editScreenData.data.showSummary" name="showSummary">
+          <label class="form-check-label" for="showSummary">Show dataset summary</label>
+        </div>
+        <div class="form-check form-switch switch-row">
+          <input class="form-check-input" type="checkbox" id="paginate"
+            [(ngModel)]="_editScreenData.data.paginate"
+            name="paginate">
+          <label class="form-check-label" for="paginate">Paginate dataset</label>
+        </div>
       </div>
     }
 
@@ -125,7 +129,7 @@
     @if (_editScreenData.data?.restrictAccess){
       <div class="ms-4">
         <div class="form-group mb-1">
-          <label class="form-label">Allow access by group</label>
+          <label class="reka-label">Allow access by group</label>
           <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
             placeholder="No group selected" [(ngModel)]="_editScreenData.accessList"
             name="accessList">
@@ -159,7 +163,7 @@
       </div>
     }
     <div class="form-group mt-3">
-      <label class="form-label">Creator (email, comma separated)</label>
+      <label class="reka-label">Creator (email, comma separated)</label>
       <input type="text" class="form-control" [(ngModel)]="_editScreenData.email" name="email"
         #email="ngModel">
       <div class="form-text">Leave blank to allow all creator access</div>

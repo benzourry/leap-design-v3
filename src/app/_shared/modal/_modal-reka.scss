@@ -1,0 +1,195 @@
+.reka-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--reka-text, var(--bs-body-color));
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.reka-label.small { font-size: 0.85rem; }
+
+.reka-modal-content {
+  input.form-control,
+  textarea.form-control,
+  select.form-select {
+    border-color: var(--reka-border, var(--bs-border-color));
+    border-radius: 8px;
+    color: var(--reka-text, var(--bs-body-color));
+    background-color: var(--reka-bg-subtle, var(--bs-tertiary-bg));
+  }
+
+  input.form-control:not(.form-control-sm),
+  textarea.form-control:not(.form-control-sm),
+  select.form-select:not(.form-select-sm) {
+    padding: 0.45rem 0.75rem;
+    font-size: 1rem;
+  }
+  select.form-select:not(.form-select-sm) { padding-right: 2.25rem; }
+  .input-group-sm > input.form-control:not(.form-control-sm),
+  .input-group-sm > textarea.form-control:not(.form-control-sm),
+  .input-group-sm > select.form-select:not(.form-select-sm) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  .input-group-sm > select.form-select:not(.form-select-sm) { padding-right: 2.25rem; }
+
+  input.form-control:focus,
+  textarea.form-control:focus,
+  select.form-select:focus {
+    border-color: var(--reka-accent, var(--bs-primary));
+    background-color: var(--reka-bg-surface, var(--bs-body-bg));
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.18);
+  }
+
+  .input-group > :not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .input-group > :not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+}
+
+.select-tile {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 0.5rem;
+  border: 1px solid var(--reka-border, var(--bs-border-color));
+  border-radius: 8px;
+  color: var(--reka-text-sub, var(--bs-secondary-color));
+  background: var(--reka-bg-surface, var(--bs-body-bg));
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+.select-tile:hover {
+  border-color: var(--reka-border-strong, var(--bs-border-color));
+  background: var(--reka-bg-hover, var(--bs-tertiary-bg));
+  color: var(--reka-text, var(--bs-body-color));
+}
+.btn-check:checked + .select-tile {
+  border-color: var(--reka-accent, var(--bs-primary));
+  background: var(--reka-bg-active, var(--bs-primary-bg-subtle));
+  color: var(--reka-accent-text, var(--bs-primary));
+}
+.btn-check:focus-visible + .select-tile {
+  box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.22);
+}
+
+.reka-section-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--reka-text-muted, var(--bs-secondary-color));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.reka-modal-content .tab-content {
+  background-color: var(--bs-modal-bg, var(--bs-body-bg));
+}
+
+.tab-simple .nav-wrap > .nav-tabs.reka-tabs {
+  gap: 1.25rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--reka-border, var(--bs-border-color));
+
+  .nav-link {
+    margin-bottom: -1px;
+    padding: 0.65rem 0.1rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--reka-text-muted, var(--bs-secondary-color));
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &:hover { color: var(--reka-text, var(--bs-body-color)); }
+    &.active {
+      border-bottom-color: var(--reka-accent, var(--bs-primary));
+      color: var(--reka-accent-text, var(--bs-primary));
+      font-weight: 600;
+      background: transparent;
+    }
+  }
+}
+
+.switch-group {
+  overflow: hidden;
+  border: 1px solid var(--reka-border, var(--bs-border-color));
+  border-radius: 8px;
+}
+
+.switch-row {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--reka-border, var(--bs-border-color));
+  color: var(--reka-text-sub, var(--bs-body-color));
+  font-size: 0.95rem;
+}
+
+.switch-row.form-check,
+.switch-control {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.switch-row.form-switch { padding-left: 0.85rem; }
+.switch-control.form-switch { padding-left: 0; }
+.switch-row.form-check .form-check-input,
+.switch-control .form-check-input { float: none; flex-shrink: 0; margin: 0.22rem 0 0; }
+.switch-row.form-check .form-check-label,
+.switch-control .form-check-label { flex: 1; min-width: 0; }
+.switch-group > :last-child { border-bottom: 0; }
+.switch-hint {
+  display: block;
+  margin-top: 1px;
+  color: var(--reka-text-muted, var(--bs-secondary-color));
+  font-size: 0.84rem;
+}
+.switch-row .form-switch .form-check-input:checked,
+.switch-row.form-switch .form-check-input:checked {
+  border-color: var(--reka-accent, var(--bs-primary));
+  background-color: var(--reka-accent, var(--bs-primary));
+}
+
+.nested-panel {
+  margin-top: 0.5rem;
+}
+
+.group-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--reka-bg-subtle, var(--bs-tertiary-bg));
+
+  label {
+    margin: 0;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    color: var(--reka-text-muted, var(--bs-secondary-color));
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .btn-check:checked + label {
+    color: var(--reka-text, var(--bs-body-color));
+    background: var(--reka-bg-surface, var(--bs-body-bg));
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+  }
+
+  .btn-check + label:hover { color: var(--reka-text, var(--bs-body-color)); }
+  .btn-check:focus-visible + label {
+    outline: 2px solid var(--reka-accent, var(--bs-primary));
+    outline-offset: 2px;
+  }
+}

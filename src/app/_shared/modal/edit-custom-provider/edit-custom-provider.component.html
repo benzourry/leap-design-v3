@@ -1,11 +1,11 @@
-<div #editProviderForm="ngForm" ngForm>
+<div #editProviderForm="ngForm" ngForm class="reka-modal-content">
   <div class="modal-header border-0">
     <h4 class="modal-title">{{_provider.id ? 'Edit' : 'Add'}} Custom Provider</h4>
   </div>
   
   <div class="tab-simple fix-gutter" justify="center">
     <div class="nav-wrap">
-      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs reka-tabs">
         
         <!-- BASIC INFO TAB -->
         <li ngbNavItem>
@@ -14,11 +14,11 @@
             <div class="single-pane p-3">
               <div class="row">
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">Provider Name <span class="text-danger">*</span></label>
+                  <label class="reka-label">Provider Name <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" name="clientName" [(ngModel)]="_provider.clientName" required placeholder="e.g. My Company Okta">
                 </div>
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">Registration ID</label>
+                  <label class="reka-label">Registration ID</label>
                   <input type="text" class="form-control" name="registrationId" [(ngModel)]="_provider.registrationId" [disabled]="_provider.id" placeholder="Leave blank to auto-generate">
                   <div class="form-text">Unique ID (e.g. custom-okta). Cannot be changed later.</div>
                 </div>
@@ -26,11 +26,11 @@
 
               <div class="row">
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">Client ID <span class="text-danger">*</span></label>
+                  <label class="reka-label">Client ID <span class="text-danger">*</span></label>
                   <input type="text" class="form-control font-monospace" name="clientId" [(ngModel)]="_provider.clientId" required>
                 </div>
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">Client Secret <span class="text-danger">*</span>
+                  <label class="reka-label">Client Secret <span class="text-danger">*</span>
                     <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon>
                   </label>
                   <input type="text" class="form-control font-monospace" name="clientSecret" [(ngModel)]="_provider.clientSecret" list="clientSecretList" autocomplete="off" required>
@@ -44,15 +44,15 @@
               </div>
 
               <div class="form-group mb-3">
-                <label class="form-label fw-bold">Scopes</label>
+                <label class="reka-label">Scopes</label>
                 <input type="text" class="form-control font-monospace" name="scopes" [(ngModel)]="_provider.scopes" placeholder="openid,profile,email">
                 <div class="form-text">Comma-separated. Defaults to openid,profile,email if blank.</div>
               </div>
 
-              <h6 class="mt-4 mb-3 border-bottom pb-2">OIDC Endpoints</h6>
+              <h6 class="reka-section-label mt-4">OIDC Endpoints</h6>
 
               <div class="form-group mb-3">
-                <label class="form-label fw-bold">Authorization Request <span class="text-danger">*</span></label>
+                <label class="reka-label">Authorization Request <span class="text-danger">*</span></label>
                 <div class="input-group">
                   <select class="form-select request-method" name="authorizationMethod" [(ngModel)]="_provider.authorizationMethod" title="Authorization Request Method">
                     <option value="GET">GET</option>
@@ -64,22 +64,22 @@
               </div>
 
               <div class="form-group mb-3">
-                <label class="form-label fw-bold">Token URI <span class="text-danger">*</span></label>
+                <label class="reka-label">Token URI <span class="text-danger">*</span></label>
                 <input type="url" class="form-control font-monospace" name="tokenUri" [(ngModel)]="_provider.tokenUri" required placeholder="https://...">
               </div>
 
               <div class="form-group mb-3">
-                <label class="form-label fw-bold">User Info URI <span class="text-danger">*</span></label>
+                <label class="reka-label">User Info URI <span class="text-danger">*</span></label>
                 <input type="url" class="form-control font-monospace" name="userInfoUri" [(ngModel)]="_provider.userInfoUri" required placeholder="https://...">
               </div>
 
               <div class="row">
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">JWK Set URI</label>
+                  <label class="reka-label">JWK Set URI</label>
                   <input type="url" class="form-control font-monospace" name="jwkSetUri" [(ngModel)]="_provider.jwkSetUri" placeholder="https://...">
                 </div>
                 <div class="col-md-6 form-group mb-3">
-                  <label class="form-label fw-bold">Username Attribute <span class="text-danger">*</span></label>
+                  <label class="reka-label">Username Attribute <span class="text-danger">*</span></label>
                   <input type="text" class="form-control font-monospace" name="userNameAttributeName" [(ngModel)]="_provider.userNameAttributeName" required placeholder="e.g. sub or email">
                 </div>
               </div>

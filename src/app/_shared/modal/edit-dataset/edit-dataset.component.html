@@ -1,27 +1,28 @@
-<div #editDatasetForm="ngForm" ngForm>
+<div #editDatasetForm="ngForm" ngForm class="reka-modal-content">
   <div class="modal-header">
     <h4 class="modal-title">{{_editDatasetData.id?'Edit':'Add'}} Dataset</h4>
   </div>
   <div class="tab-simple">
     <div class="nav-wrap">
-      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter justify-content-center">
+      <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" class="nav-tabs fix-gutter reka-tabs">
         <li ngbNavItem>
           <a ngbNavLink>Basic Info</a>
           <ng-template ngbNavContent>
             <div class="single-pane">
               <!-- {{_editDatasetData|json}} -->
               <div class="form-group mb-3">
-                <label class="form-label">List Caption *</label>
+                <label class="reka-label">List Caption <span class="text-danger">*</span></label>
                 <input class="form-control" type="text" [(ngModel)]="_editDatasetData.title" name="title"
                   required>
               </div>
               <div class="form-group mb-3">
-                <label class="form-label">Description</label>
+                <label class="reka-label">Description</label>
                 <textarea class="form-control" [(ngModel)]="_editDatasetData.description"
                 name="description"></textarea>
               </div>
-              <div class="form-group mb-3" [class.disabled]="_editDatasetData.id">
-                <label class="form-label">Select App</label>
+              <div class="row g-2 mb-3">
+              <div class="form-group col-sm-6" [class.disabled]="_editDatasetData.id">
+                <label class="reka-label">Select App</label>
                 <select class="form-select" name="appId" (change)="loadOtherAppList(_editDatasetData.appId)"
                   [(ngModel)]="_editDatasetData.appId">
                   @for (app of otherAppList(); track app.id) {
@@ -29,8 +30,8 @@
                   }
                 </select>
               </div>
-              <div class="form-group mb-3" [class.disabled]="_editDatasetData.id">
-                <label class="form-label">Select Form *</label>
+              <div class="form-group col-sm-6" [class.disabled]="_editDatasetData.id">
+                <label class="reka-label">Select Form <span class="text-danger">*</span></label>
                 <select class="form-select" name="cForm" #cForm="ngModel"
                   (change)="loadForm(_editDatasetData.form.id, _editDatasetData)"
                   [compareWith]="compareByIdFn" [(ngModel)]="_editDatasetData.form"
@@ -41,47 +42,38 @@
                   }
                 </select>
               </div>
+              </div>
               @if (_editDatasetData?.form?.id) {
                 <div class="form-group mb-3 layout">
-                  <label class="col-form-label">List Type *</label>
-                  <div class="row">
+                  <label class="reka-label">List Type <span class="text-danger">*</span></label>
+                  <div class="row g-2">
                     <div class="col-4">
-                      <div class="form-check">
-                        <input type="radio" class="form-check-input" id="type-all" name="type-all"
+                        <input type="radio" class="btn-check" id="type-all" name="datasetType"
                           [(ngModel)]="_editDatasetData.type" value="all" required>
-                        <label for="type-all" class="form-check-label">All
-                          <div class="small">Any entry (suitable for admin)</div>
-                          <div class="ms-0 my-1" [class.text-primary]="_editDatasetData.type=='all'">
-                            <fa-icon [icon]="['fas','list']" size="3x"></fa-icon>
-                          </div>
+                        <label for="type-all" class="select-tile">
+                          <fa-icon [icon]="['fas','list']"></fa-icon>
+                          <span class="tile-title">All</span>
+                          <span class="tile-sub small">Any entry (suitable for admin)</span>
                         </label>
-                      </div>
                     </div>
                     <div class="col-4">
-                      <div class="form-check">
-                        <input type="radio" class="form-check-input" id="type-user" name="type-user"
+                        <input type="radio" class="btn-check" id="type-user" name="datasetType"
                           [(ngModel)]="_editDatasetData.type" value="user" required>
-                        <label for="type-user" class="form-check-label">User
-                          <div class="small">Entry created by this user</div>
-                          <div class="ms-0 my-1" [class.text-primary]="_editDatasetData.type=='user'">
-                            <fa-icon [icon]="['fas','list-ol']" size="3x"></fa-icon>
-                          </div>
+                        <label for="type-user" class="select-tile">
+                          <fa-icon [icon]="['fas','list-ol']"></fa-icon>
+                          <span class="tile-title">User</span>
+                          <span class="tile-sub small">Entry created by this user</span>
                         </label>
-                      </div>
                     </div>
                     <div class="col-4">
-                      <div class="form-check">
-                        <input type="radio" class="form-check-input" id="type-action" name="type-action"
+                        <input type="radio" class="btn-check" id="type-action" name="datasetType"
                           [(ngModel)]="_editDatasetData.type" value="action"
                           required>
-                        <label for="type-action" class="form-check-label">Approver
-                          <div class="small">Entry that require action</div>
-                          <div class="ms-0 my-1"
-                            [class.text-primary]="_editDatasetData.type=='action'">
-                            <fa-icon [icon]="['fas','check-square']" size="3x"></fa-icon>
-                          </div>
+                        <label for="type-action" class="select-tile">
+                          <fa-icon [icon]="['fas','check-square']"></fa-icon>
+                          <span class="tile-title">Approver</span>
+                          <span class="tile-sub small">Entry that require action</span>
                         </label>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -102,9 +94,9 @@
                     @if (formHolder[fm]) {
                       <div class="form-group mb-3">
                         <div class="fw-bold mt-3 mb-2">
-                          <div class="btn-group float-end">
-                            <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAll('items',_editDatasetData, fm)">All</button>
-                            <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAll('items',_editDatasetData, fm)">None</button>
+                          <div class="d-inline-flex gap-1 float-end">
+                            <button type="button" class="mini-action-btn" (click)="checkAll('items',_editDatasetData, fm)">All</button>
+                            <button type="button" class="mini-action-btn" (click)="uncheckAll('items',_editDatasetData, fm)">None</button>
                           </div>
                           Included Fields
                         ({{formHolder[fm]?.title}})</div>
@@ -179,15 +171,16 @@
                 
                 @if (formHolder['data']) {
                   <div class="form-group mb-3">
-                    
-                    <label class="form-label">List entry with status</label>
-                    <div class="fw-bold mt-3 mb-2">
-                      <div class="btn-group float-end">
-                        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
-                        <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
+                    <span class="reka-section-label">List Entry With Status</span>
+                    <div class="checklist-box mb-2">
+                    <div class="checklist-header">
+                      <span class="fw-semibold text-truncate">{{formHolder['data']?.title}}</span>
+                      <div class="d-inline-flex gap-1 flex-shrink-0">
+                        <button type="button" class="mini-action-btn" (click)="checkAllStatus(statusFilterForm, 'data', true)">All</button>
+                        <button type="button" class="mini-action-btn" (click)="checkAllStatus(statusFilterForm, 'data', false)">None</button>
                       </div>
-                      <div>{{formHolder['data']?.title}}</div>
                     </div>
+                    <div class="checklist-body">
                     <div class="form-check">
                       <input [(ngModel)]="statusFilterForm['-1'].drafted"
                         class="form-check-input" name="draftedFilter" id="draftedFilter11"
@@ -204,8 +197,9 @@
                     }
                     <div>
                       @for (tier of formHolder['data']?.tiers; track tier.id) {
-                        <div class="p-2">
-                          <h6>{{tier.name}}</h6>
+                        <div class="mt-2 pt-2 border-top">
+                          <div class="fw-semibold small text-secondary mb-1">{{tier.name}}</div>
+                          <div class="nested-panel mt-1">
                           @for (action of tier.actions|keyvalue; track $index) {
                             <div class="form-check">
                               <input
@@ -234,37 +228,37 @@
                               for="alwaysapprove{{tier.id}}">Always Approve</label>
                             </div>
                           }
+                          </div>
                         </div>
                       }
                     </div>
 
                     @if(isStatusAllFalse(statusFilterForm)){
-                      <div class="p-3 bg-white blink_me">
+                      <div class="status-empty-note blink_me">
                         No status selected. Showing results for <strong>all statuses</strong>.
                       </div>
                     }
+                    </div>
+                    </div>
 
                     @if (formHolder['prev']){
-                      <div class="fw-bold mt-3 mb-2">
-                        <button class="btn btn-outline-secondary btn-xs ms-1 float-end" (click)="showPrevStatus=!showPrevStatus">
-                          @if(showPrevStatus){
-                            Hide
-                          }@else {
-                            Show
-                          }
-                        </button>
-                        @if (showPrevStatus){
-                          <div class="btn-group float-end">
-                            <button type="button" class="btn btn-outline-secondary btn-xs"
-                              (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
-                            <button type="button" class="btn btn-outline-secondary btn-xs"
-                              (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
+                      <div class="checklist-box mt-2">
+                        <div class="checklist-header">
+                          <span class="fw-semibold text-truncate">{{formHolder['prev']?.title}} <span class="fw-normal text-secondary">(Previous)</span></span>
+                          <div class="d-inline-flex gap-1 flex-shrink-0">
+                            @if (showPrevStatus) {
+                              <button type="button" class="mini-action-btn"
+                                (click)="checkAllStatus(prevStatusFilterForm, 'prev', true)">All</button>
+                              <button type="button" class="mini-action-btn"
+                                (click)="checkAllStatus(prevStatusFilterForm, 'prev', false)">None</button>
+                            }
+                            <button type="button" class="mini-action-btn" (click)="showPrevStatus=!showPrevStatus">
+                              @if(showPrevStatus){Hide}@else{Show}
+                            </button>
                           </div>
-                        }
-                        <div>{{formHolder['prev']?.title}}</div>
-                      </div>
+                        </div>
                       @if (showPrevStatus){
-                        <div>
+                        <div class="checklist-body">
                           <div class="form-check">
                             <input [(ngModel)]="prevStatusFilterForm['-1'].drafted" class="form-check-input" name="prevDraftedFilter"
                               id="prevDraftedFilter11" type="checkbox">
@@ -304,19 +298,20 @@
                             }
                           </div>
                           @if(isStatusAllFalse(prevStatusFilterForm)){
-                          <div class="p-3 bg-white blink_me">
+                          <div class="p-3 blink_me">
                             No previous entry status selected. Showing results for <strong>all previous entry statuses</strong>.
                           </div>
                           }
                         </div>
                       }
+                      </div>
                     }
                   </div>
 
                   <div class="row g-3">
                     <div class="col-sm-8">
                       <div class="form-group mb-3">
-                        <label class="form-label">Default Sort Field</label>
+                        <label class="reka-label">Default Sort Field</label>
                         <select class="form-select" name="defSortField"
                           [(ngModel)]="_editDatasetData.defSortField">
                           <option [ngValue]="null">Default</option>
@@ -346,7 +341,7 @@
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
-                        <label class="form-label">Sort Direction</label>
+                        <label class="reka-label">Sort Direction</label>
                         <select class="form-select" name="defSortDir"
                           [(ngModel)]="_editDatasetData.defSortDir">
                           <option [ngValue]="null">Default</option>
@@ -369,44 +364,44 @@
             <a ngbNavLink>Options</a>
             <ng-template ngbNavContent>
               <div class="single-pane">
-                <div class="form-group mb-3">
-                  <label class="form-label">Other Options</label>
-                  <div class="form-check form-switch mt-1">
+                <span class="reka-section-label">Display &amp; Behavior</span>
+                <div class="switch-group mb-3">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="showStatus"
                       [(ngModel)]="_editDatasetData.showStatus" name="showStatus">
                     <label class="form-check-label" for="showStatus">Show status / Include Approval Info</label>
                   </div>
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="showIndex"
                       [(ngModel)]="_editDatasetData.showIndex" name="showIndex">
                     <label class="form-check-label" for="showIndex">Show index number</label>
                   </div>
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="showSummary"
                       [(ngModel)]="_editDatasetData.x.showSummary" name="showSummary">
                     <label class="form-check-label" for="showSummary">Show dataset summary</label>
                   </div>
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="hideSearch"
                       [(ngModel)]="_editDatasetData.x.hideSearch" name="hideSearch">
                     <label class="form-check-label" for="hideSearch">Hide search bar</label>
                   </div>
                   
-                  <div class="form-check form-switch mt-1">
-                    <input class="form-check-input" type="checkbox" id="tblcard"
-                      [(ngModel)]="_editDatasetData.x.tblcard" name="tblcard">
-                    <label class="form-check-label" for="tblcard">Turn row to card on smaller screen</label>
-                  </div>
-                  
+                  <div class="switch-row">
+                    <div class="form-check form-switch switch-control">
+                      <input class="form-check-input" type="checkbox" id="tblcard"
+                        [(ngModel)]="_editDatasetData.x.tblcard" name="tblcard">
+                      <label class="form-check-label" for="tblcard">Turn row to card on smaller screen</label>
+                    </div>
                   @if (_editDatasetData.x.tblcard) {
-                    <div class="ms-4 mt-2 mb-3">
-                      <div class="form-check form-switch mb-1">
+                    <div class="nested-panel">
+                      <div class="form-check form-switch switch-control">
                         <input class="form-check-input" type="checkbox" id="forceCard"
                           [(ngModel)]="_editDatasetData.x.forceCard" name="forceCard">
                         <label class="form-check-label" for="forceCard">Force card view on desktop</label>
                       </div>
                       <div class="form-group mt-2">
-                        <label class="form-label text-secondary small mb-1">Desktop Card Columns</label>
+                        <label class="reka-label small mb-1">Desktop Card Columns</label>
                         <select class="form-select form-select-sm w-auto" name="cardSize" [(ngModel)]="_editDatasetData.x.cardSize">
                           <option [ngValue]="null">1 Column (Default)</option>
                           <option value="col-6">2 Columns</option>
@@ -415,18 +410,19 @@
                       </div>
                     </div>
                   }
+                  </div>
 
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="wide"
                       [(ngModel)]="_editDatasetData.wide" name="wide">
                     <label class="form-check-label" for="wide">Full width table</label>
                   </div>
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="publicEp"
                       [(ngModel)]="_editDatasetData.publicEp" name="publicEp">
                     <label class="form-check-label" for="publicEp">Public endpoint</label>
                   </div>
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="enableStatusFilter"
                       [(ngModel)]="_editDatasetData.x.enableStatusFilter" name="enableStatusFilter">
                     <label class="form-check-label" for="enableStatusFilter">Enable filter by entry status</label>
@@ -438,31 +434,33 @@
                     <label class="form-check-label" for="autoResync">Auto-resync dataset on add/update entry</label>
                   </div> -->
 
-                  <div class="form-check form-switch mt-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="skipMask"
                       [(ngModel)]="_editDatasetData.x.skipMask" name="skipMask">
-                    <label class="form-check-label" for="skipMask">Disable field mask - include all fields in response 
+                    <label class="form-check-label" for="skipMask">Disable field mask
                       @if (_editDatasetData.x?.skipMask){
                         <sup class="text-danger blink_me"><fa-icon [icon]="['fas','exclamation-triangle']" [fixedWidth]="true"></fa-icon></sup>
                       }
+
+                      <span class="switch-hint">Include all fields in response</span>
                     </label>
                   </div>
-                  <div class="form-check form-switch mt-1">
-                    <input class="form-check-input" type="checkbox" id="canGroup"
-                      [(ngModel)]="_editDatasetData.x.canGroup" name="canGroup">
-                    <label class="form-check-label" for="canGroup">Allow user to perform data grouping</label>
-                  </div>
-
+                  <div class="switch-row">
+                    <div class="form-check form-switch switch-control">
+                      <input class="form-check-input" type="checkbox" id="canGroup"
+                        [(ngModel)]="_editDatasetData.x.canGroup" name="canGroup">
+                      <label class="form-check-label" for="canGroup">Allow user to perform data grouping</label>
+                    </div>
                   @if(_editDatasetData.x.canGroup){
-                    <div class="mb-3" style="margin-left:2.5em;">
-                      <div>
-                        <div class="btn-group float-end">
-                          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="checkAllGroupFields()">All</button>
-                          <button type="button" class="btn btn-outline-secondary btn-xs" (click)="uncheckAllGroupFields()">None</button>
+                    <div class="nested-panel">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="fw-semibold small">Allowed grouping columns <span class="text-danger">*</span></label>
+                        <div class="d-inline-flex gap-1">
+                          <button type="button" class="mini-action-btn" (click)="checkAllGroupFields()">All</button>
+                          <button type="button" class="mini-action-btn" (click)="uncheckAllGroupFields()">None</button>
                         </div>        
-                        <label class="text-secondary mb-1">Allowed data grouping column *</label>
                       </div>
-                      <div style="max-height:300px;overflow-y:auto; font-size:14px;">
+                      <div class="group-fields-list mb-2">
                         @for(gf of groupableFields|groupBy:'formTitle'; track $index; let $gindex=$index){
                           <div class="py-1 mt-1">{{gf?.key}}</div>
                           @for(f of gf?.value; track $index){
@@ -476,18 +474,18 @@
                           }
                         }
                       </div>
-                    </div>
-
-                    <div class="form-check form-switch mt-1">
+                    <div class="form-check form-switch switch-control">
                       <input class="form-check-input" type="checkbox" id="showGroupFilter"
                         [(ngModel)]="_editDatasetData.x.showGroupFilter" name="showGroupFilter">
                       <label class="form-check-label" for="showGroupFilter">Show group quick filter toggle</label>
                     </div>
-  
+                    </div>
                   }
+                  </div>
+                </div>
 
                   <div class="form-group mt-3 mb-3">
-                    <label class="form-label">Default data grouping field</label>
+                    <label class="reka-label">Default data grouping field</label>
                     <select class="form-select" name="defGroupField"
                       [(ngModel)]="_editDatasetData.x.defGroupField">
                       <option [ngValue]="null">Default</option>
@@ -506,35 +504,38 @@
                     </select>
                   </div>
                   <div class="form-group mt-3 mb-3">
-                    <label class="form-label">Default pagination size</label>
+                    <label class="reka-label">Default pagination size</label>
                     <input class="form-control" type="number" placeholder="default: 25" [(ngModel)]="_editDatasetData.x.defPageSize" name="defPageSize">
                   </div>
-                </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Access available for</label>
+                  <label class="reka-label">Access available for</label>
                   <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
                     placeholder="Anyone" [(ngModel)]="_editDatasetData.accessList"
                     name="accessList">
                   </ng-select>
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Export</label>
-                  <div class="form-check">
+                  <span class="reka-section-label">Export &amp; Communication</span>
+                  <div class="switch-group">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.exportXls"
                       id="exportXls" name="exportXls">
                     <label class="form-check-label" for="exportXls">Export to Excel</label>
                   </div>
-                  <div class="form-check">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.exportCsv"
                       id="exportCsv" name="exportCsv">
                     <label class="form-check-label" for="exportCsv">Export to CSV</label>
                   </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.exportPdf"
-                      id="exportPdf" name="exportPdf">
-                    <label class="form-check-label" for="exportPdf">Export to PDF</label>
+                  <div class="switch-row">
+                    <div class="form-check form-switch switch-control">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.exportPdf"
+                        id="exportPdf" name="exportPdf">
+                      <label class="form-check-label" for="exportPdf">Export to PDF</label>
+                    </div>
                     @if (_editDatasetData.exportPdf) {
-                      <div class="input-group input-group-sm mb-2">
+                      <div class="nested-panel">
+                      <div class="input-group input-group-sm">
                         <label class="input-group-text" for="exportPdfLayout">Layout</label>
                         <select class="form-control custom-select" name="exportPdfLayout"
                           id="exportPdfLayout" [(ngModel)]="_editDatasetData.exportPdfLayout">
@@ -544,20 +545,18 @@
                           <option value="a3_landscape">A3 Landscape</option>
                         </select>
                       </div>
+                      </div>
                     }
                   </div>
-                </div>
-                <div class="form-group mb-3">
-                  <label class="form-label">Email Blast</label>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.canBlast"
-                      id="canBlast" name="canBlast">
-                    <label class="form-check-label" for="canBlast">Enable Email Blast</label>
-                  </div>
-                </div>
+                  <div class="switch-row">
+                    <div class="form-check form-switch switch-control">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="_editDatasetData.canBlast"
+                        id="canBlast" name="canBlast">
+                      <label class="form-check-label" for="canBlast">Enable Email Blast</label>
+                    </div>
                 @if (_editDatasetData.canBlast) {
-                  <div class="form-group mb-3">
-                    <label class="form-label">Recipient field </label>
+                  <div class="nested-panel">
+                    <label class="reka-label">Recipient field</label>
                     <select class="form-select" name="blastTo"
                       [(ngModel)]="_editDatasetData.blastTo" required>
                       <option value="" disabled>Select field...</option>
@@ -578,32 +577,33 @@
                     </select>
                   </div>
                 }
-                <div class="form-group mb-3">
-                  <label class="form-label">Action</label>
-                  <div class="form-check form-switch mb-1">
-                    <input class="form-check-input" type="checkbox" id="canAdd"
-                      [(ngModel)]="_editDatasetData.x.canAdd" name="canAdd">
-                    <label class="form-check-label" for="canAdd">Enable Add Button</label>
+                  </div>
+                  </div>
+                </div>
+                <span class="reka-section-label">Actions</span>
+                <div class="switch-group mb-3">
+                  <div class="switch-row">
+                    <div class="form-check form-switch switch-control">
+                      <input class="form-check-input" type="checkbox" id="canAdd"
+                        [(ngModel)]="_editDatasetData.x.canAdd" name="canAdd">
+                      <label class="form-check-label" for="canAdd">Enable Add Button</label>
+                    </div>
                     @if (_editDatasetData.x?.canAdd) {
-                      <div class="input-group input-group-sm mt-1">
+                      <div class="nested-panel">
+                      <div class="input-group input-group-sm mb-2">
                         <label class="input-group-text" for="addlabel">Button
                         Label</label>
                         <input type="text" class="form-control" name="addlabel" id="addlabel"
                           [(ngModel)]="_editDatasetData.x.addLabel">
                       </div>
-                    }
-                  </div>
-                  @if (_editDatasetData.x?.canAdd) {
-                    <div class="ms-4">
-                      <div class="ms-3 form-check mb-1">
+                      <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" id="inpopAdd"
                           [(ngModel)]="_editDatasetData.x.inpopAdd" name="inpopAdd">
                         <label class="form-check-label" for="inpopAdd">Open in Modal Dialog</label>
                       </div>
-                      <div class="form-group mb-1 ms-3">
-                        <label class="form-label">Pre-requisite (hide button if condition not
-                        satisfied)</label>
-                        <div class="mx-n3">
+                      <div class="form-group mb-1">
+                        <label class="reka-label">Pre-requisite <span class="fw-normal text-secondary">(hide if not satisfied)</span></label>
+                        <div>
                           <app-cm name="pre" lang="javascript" [extraAutoComplete]="[]" label="Add Button Pre-requisite"
                             subType="passive" [(ngModel)]="_editDatasetData.x.addPre"
                             placeholder="Expression (ie: $user$.groups['123'])" [linenumber]="true">
@@ -612,31 +612,29 @@
                       </div>
                     </div>
                   }
-                  <div class="form-check form-switch mb-1">
+                  </div>
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="canResync"
                       [(ngModel)]="_editDatasetData.x.canResync" name="canResync">
                     <label class="form-check-label" for="canResync">Enable user to re-sync dataset</label>
                   </div>
-                  <div class="form-check form-switch mb-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="showAction"
                       [(ngModel)]="_editDatasetData.showAction" name="showAction">
                     <label class="form-check-label" for="showAction">Show action </label>
                   </div>
-                  @if (_editDatasetData.showAction) {
+                  <!-- @if (_editDatasetData.showAction) {
                     <div style="margin-left:2.1em">
                       <span class="text-secondary">Please use the new Dataset Action</span>
                     </div>
-                  }
-                  <div class="form-check form-switch mb-1">
+                  } -->
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="groupAction"
                       [(ngModel)]="_editDatasetData.x.groupAction" name="groupAction">
                     <label class="form-check-label" for="groupAction">Group (combine) action button </label>
                   </div>
 
-                </div>
-                <div class="form-group mb-3">
-                  <label class="form-label">Bulk Action</label>
-                  <div class="form-check form-switch mb-1">
+                  <div class="form-check form-switch switch-row">
                     <input class="form-check-input" type="checkbox" id="bulkAction"
                       [(ngModel)]="_editDatasetData.x.bulkAction" name="bulkAction">
                     <label class="form-check-label" for="bulkAction">Show bulk action </label>
@@ -647,7 +645,8 @@
                   }
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Additional Initial Parameter</label>
+                  <span class="reka-section-label">Advanced Templates</span>
+                  <label class="reka-label">Additional Initial Parameter</label>
                   <div class="mx-n3">
                     <app-cm name="initParam" lang="javascript" label="Additional Initial Parameter"
                       [(ngModel)]="_editDatasetData.x.initParam"
@@ -657,7 +656,7 @@
                   </div>
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Content before dataset</label>
+                  <label class="reka-label">Content before dataset</label>
                   <div class="mx-n3">
                     <app-cm name="listPre" lang="html" label="Content before dataset"
                       [placeholder]="placeholder"
@@ -666,7 +665,7 @@
                   </div>
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Content after dataset</label>
+                  <label class="reka-label">Content after dataset</label>
                   <div class="mx-n3">
                     <app-cm name="listPost" lang="html" label="Content after dataset"
                       placeholder="ie: End of list"
@@ -675,7 +674,7 @@
                   </div>
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Row's custom class</label>
+                  <label class="reka-label">Row's custom class</label>
                   <div class="mx-n3">
                     <app-cm name="rowClass" lang="html" label="Row's custom class" subType="passive"
                       placeholder="Support templating, ie: {{'{'}}{{'{'}}$.status{{'}'}}{{'}'}}"
@@ -693,24 +692,25 @@
             <ng-template ngbNavContent>
               <div class="single-pane">
                 <!-- {{lookup|json}} -->
+                <span class="reka-section-label">Preset &amp; User Filters</span>
                 <app-entry-filter [formHolder]="formHolder" [(presetFilters)]="_editDatasetData.presetFilters"
                   [(filters)]="_editDatasetData.filters" [sectionItems]="sectionItems"
                 [lookup]="lookup"></app-entry-filter>
                 <div class="form-group mb-3">
-                  <label class="form-label">Condition type</label>
-                  <div>
+                  <label class="reka-label">Condition type</label>
+                  <div class="group-seg">
                     <input class="btn-check" type="radio" value="AND" id="match-all"
-                      name="match-all" [(ngModel)]="_editDatasetData.presetFilters['@cond']">
-                    <label for="match-all" class="btn btn-outline-secondary me-1 mb-1">
+                      name="conditionType" [(ngModel)]="_editDatasetData.presetFilters['@cond']">
+                    <label for="match-all">
                     Match All</label>
                     <input class="btn-check" type="radio" value="OR" id="match-any"
-                      name="match-any" [(ngModel)]="_editDatasetData.presetFilters['@cond']">
-                    <label for="match-any" class="btn btn-outline-secondary me-1 mb-1">
+                      name="conditionType" [(ngModel)]="_editDatasetData.presetFilters['@cond']">
+                    <label for="match-any">
                     Match Any</label>
                   </div>
                 </div>
                 <div class="form-group mb-3">
-                  <label class="form-label">Custom query builder</label>
+                  <label class="reka-label">Custom query builder</label>
                   <app-query-builder
                     [(query)]="_editDatasetData.x.qFilter"
                     [formHolder]="formHolder"

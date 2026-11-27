@@ -17,6 +17,7 @@ describe('EditLookupComponent', () => {
     TestBed.inject(FaIconLibrary).addIcons(faInfoCircle, faKey, faPlus, faTrash);
     fixture = TestBed.createComponent(EditLookupComponent);
     fixture.componentRef.setInput('lookup', { x: {} });
+    fixture.componentRef.setInput('accessList', []);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -76,5 +77,28 @@ describe('EditLookupComponent', () => {
     isolatedFixture.componentInstance._lookup.x.wide = false;
 
     expect(sourceLookup.x.wide).toBeTrue();
+  });
+
+  it('keeps source selection, nested options and editor mode interactive', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+    host.querySelector<HTMLLabelElement>('label[for="sourceTypeDb"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component._lookup.sourceType).toBe('db');
+    expect(component._lookup.x.refCol).toBe('id');
+    expect(host.querySelector('select[name="refCol"]')).not.toBeNull();
+
+    host.querySelector<HTMLInputElement>('#dataEnabled')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    host.querySelector<HTMLInputElement>('#additionalDataCode')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(component.additionalDataMode).toBe('code');
+    expect(host.querySelector('textarea[name="dataFieldsCode"]')).not.toBeNull();
   });
 });

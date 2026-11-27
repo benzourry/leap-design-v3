@@ -1,9 +1,9 @@
 <div class="modal-header">
   <h4 class="modal-title">{{_editMailerData.id?'Edit':'Add'}} Mailer</h4>
 </div>
-<div class="modal-body fix-gutter" #mailerEditForm="ngForm" ngForm>
+<div class="modal-body fix-gutter reka-modal-content" #mailerEditForm="ngForm" ngForm>
   <div class="form-group mb-3">
-    <label class="form-label">Mailer Name *</label>
+    <label class="reka-label">Mailer Name *</label>
     <input type="text" class="form-control" [(ngModel)]="_editMailerData.name" #name="ngModel"
       name="name" required>
       @if (name?.invalid) {
@@ -15,7 +15,7 @@
       }
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Subject *</label>
+      <label class="reka-label">Subject *</label>
       <input type="text" class="form-control" [(ngModel)]="_editMailerData.subject"
         #subject="ngModel" name="subject" required>
       @if (subject?.invalid) {
@@ -27,7 +27,7 @@
       }
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Content (support HTML) *</label>
+      <label class="reka-label">Content (support HTML) *</label>
       <select class="form-control float-end form-control-sm" style="max-width:100px;" name="form" #cForm
         (change)="loadForm(selectedFormHint.id)" [(ngModel)]="selectedFormHint">
         <option [ngValue]="null">No hint</option>
@@ -70,19 +70,19 @@
       }
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Status *</label>
+      <label class="reka-label">Status *</label>
       <div>
-        <div class="btn-group btn-group-toggle">
+        <div class="group-seg">
           <input type="radio" class="btn-check" [value]="1" id="enabled1" name="enabled1" #enabled="ngModel"
             [(ngModel)]="_editMailerData.enabled" [required]="true">
-          <label for="enabled1" class="btn btn-sm btn-success">
+          <label for="enabled1">
             <fa-icon [icon]="['far',_editMailerData?.enabled==1?'check-square':'square']"
             [fixedWidth]="true"></fa-icon>
             Enabled
           </label>
           <input type="radio" class="btn-check" [value]="0" id="enabled0" name="enabled0" #enabled="ngModel"
             [(ngModel)]="_editMailerData.enabled" [required]="true">
-          <label for="enabled0" class="btn btn-sm btn-danger">
+          <label for="enabled0">
             <fa-icon [icon]="['far',_editMailerData?.enabled==1?'square':'check-square']"
             [fixedWidth]="true"></fa-icon>
             Disabled
@@ -98,7 +98,7 @@
       </div>
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Prerequisite</label>
+      <label class="reka-label">Prerequisite</label>
       <div class="mx-n3">
         <!-- ✅ FIXED: name changed to "pre" -->
         <app-cm content="pre" lang="js" #codeeditorpre #pre="ngModel"
@@ -109,24 +109,26 @@
         </app-cm>
       </div>
     </div>
-    <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.pickable" 
-        id="pickable" name="pickable">
-      <label class="form-check-label" for="pickable">
-        Show this template in dataset mail blast options
-        <div class="small">This will allow this mailer template to be picked for email blasting</div>
-      </label>
-    </div>
-    <div class="form-group form-check mb-3">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.log" 
-        id="log" name="log">
-      <label class="form-check-label" for="log">
-        Keep mailing history
-        <div class="small">This will log all mailing activities using this template </div>
-      </label>
+    <div class="switch-group mb-3">
+      <div class="form-group form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.pickable"
+          id="pickable" name="pickable">
+        <label class="form-check-label" for="pickable">
+          Show this template in dataset mail blast options
+          <span class="switch-hint">This will allow this mailer template to be picked for email blasting</span>
+        </label>
+      </div>
+      <div class="form-group form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_editMailerData.log"
+          id="log" name="log">
+        <label class="form-check-label" for="log">
+          Keep mailing history
+          <span class="switch-hint">This will log all mailing activities using this template </span>
+        </label>
+      </div>
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Recipient</label>
+      <label class="reka-label">Recipient</label>
       <div>
         <div style="display:inline-block; width:40px;">To:</div>
         <div class="form-check form-check-inline">
@@ -147,7 +149,7 @@
       </div>
     </div>
     <div class="form-group mb-3" style="margin-left:40px;">
-      <label class="form-label">Extra To (comma-separated)</label>
+      <label class="reka-label">Extra To (comma-separated)</label>
       <input type="text" class="form-control" [(ngModel)]="_editMailerData.toExtra" 
         placeholder="ie: razif@email.com,{{ '{'+'{$.extra_to}'+'}' }}" #toExtra="ngModel" name="toExtra">
     </div>
@@ -172,7 +174,7 @@
       </div>
     </div>
     <div class="form-group mb-3" style="margin-left:40px;">
-      <label class="form-label">Extra CC (comma-separated)</label>
+      <label class="reka-label">Extra CC (comma-separated)</label>
       <input type="text" class="form-control" [(ngModel)]="_editMailerData.ccExtra"
         placeholder="ie: razif@email.com,{{ '{'+'{$.extra_cc}'+'}' }}" #ccExtra="ngModel" name="ccExtra">
     </div>
@@ -186,7 +188,7 @@
     </div>
     @if (_editMailerData.pushable) {
       <div class="form-group mb-3">
-        <label class="form-label">URL to navigate when click on notification (optional)</label>
+        <label class="reka-label">URL to navigate when click on notification (optional)</label>
         <input type="text" class="form-control" [(ngModel)]="_editMailerData.pushUrl" 
           name="pushUrl" placeholder="ie: {{ '{'+'{$viewUri$}'+'}' }}">
       </div>

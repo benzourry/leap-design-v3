@@ -1,0 +1,50 @@
+@use '../modal-reka';
+
+.select-tile {
+  min-height: 100px;
+  gap: 0.3rem;
+  padding: 0.75rem 0.45rem;
+  > fa-icon { font-size: 1.35rem; }
+  .tile-title { font-size: 0.92rem; font-weight: 600; }
+}
+.btn-check:checked + .select-tile {
+  .tile-title { color: var(--reka-accent-text, var(--bs-primary)); }
+}
+
+.checklist-box { overflow: hidden; border: 1px solid var(--reka-border, var(--bs-border-color)); border-radius: 8px; }
+.checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--reka-border, var(--bs-border-color));
+  background: var(--reka-bg-subtle, var(--bs-tertiary-bg));
+}
+.checklist-body { max-height: 230px; overflow-y: auto; padding: 0.65rem 0.8rem; }
+.checklist-body .form-check {
+  display: flex;
+  min-height: 0;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.42rem;
+  padding-left: 0;
+  font-size: 0.93rem;
+}
+.checklist-body .form-check-input { flex-shrink: 0; margin: 0.22rem 0 0; }
+.mini-action-btn {
+  padding: 0.14rem 0.48rem;
+  border: 1px solid var(--reka-border, var(--bs-border-color));
+  border-radius: 5px;
+  background: var(--reka-bg-surface, var(--bs-body-bg));
+  font-size: 0.78rem;
+}
+
+.group-fields-list { max-height: 300px; overflow-y: auto; font-size: 14px; }
+.status-empty-note {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: var(--reka-accent-text, var(--bs-primary));
+  background: var(--reka-bg-active, var(--bs-primary-bg-subtle));
+  font-size: 0.86rem;
+}

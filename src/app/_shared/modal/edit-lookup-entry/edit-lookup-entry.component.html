@@ -1,4 +1,4 @@
-<div #editLookupEntryForm="ngForm" ngForm>
+<div #editLookupEntryForm="ngForm" ngForm class="reka-modal-content">
     <div class="modal-header">
       <h4 class="modal-title">{{_lookupEntry.id?'Edit':'Add'}} <strong>{{lookup().name}}</strong> Entry</h4>
     </div>
@@ -6,7 +6,7 @@
       <div class="form">
         @if (!lookup().x?.codeHidden){
             <div class="form-group mb-3">
-                <label class="form-label">{{lookup().x?.codeLbl??'Code'}} *</label>
+                <label class="reka-label">{{lookup().x?.codeLbl??'Code'}} *</label>
                 <input type="text" class="form-control" name="code" #code="ngModel"
                     [(ngModel)]="_lookupEntry.code" required />
                 @if (code?.invalid) {
@@ -19,7 +19,7 @@
             </div>
         }
         <div class="form-group mb-3">
-          <label class="form-label">{{lookup().x?.nameLbl??'Name'}} *</label>
+          <label class="reka-label">{{lookup().x?.nameLbl??'Name'}} *</label>
           <input type="text" class="form-control" name="name" #name="ngModel"
             [(ngModel)]="_lookupEntry.name" required />
           @if (name?.invalid) {
@@ -32,7 +32,7 @@
         </div>
         @if(!lookup().x?.extraDisabled){
           <div class="form-group mb-3">
-            <label class="form-label">{{lookup().x?.extraLbl??'Extra'}}</label>
+            <label class="reka-label">{{lookup().x?.extraLbl??'Extra'}}</label>
             <input type="text" class="form-control" name="extra" #extra="ngModel"
               [(ngModel)]="_lookupEntry.extra" />
             @if (extra?.invalid) {
@@ -46,13 +46,10 @@
         }
         @if (lookup().dataEnabled) {
           <div class="mb-3">
-            <div class="text-secondary small fw-bold text-center add-data-split mx-n3">
-              <span class="bg-white" style="display: inline-block;z-index: 1;position: relative;padding: 5px;">
-                Data (additional attributes)</span>
-            </div>
+            <div class="reka-section-label">Data (additional attributes)</div>
               @for (e of lookupEntryFields; track $index) {
                 <div class="form-group mb-3">
-                  <label class="form-label">{{e.key}}</label>
+                  <label class="reka-label">{{e.key}}</label>
                   <div class="input-group">
                     @if (e.type=='text') {
                       <input class="form-control form-control-sm" type="text"
@@ -72,7 +69,7 @@
                         [(ngModel)]="_lookupEntry.data[e.key]" (click)="d2.toggle()" ngbDatepicker
                         #d2="ngbDatepicker">
                     }@else if (e.type=='options') {
-                      <select class="form-control form-control-sm" name="value_{{$index}}"
+                      <select class="form-select form-select-sm" name="value_{{$index}}"
                         [(ngModel)]="_lookupEntry.data[e.key]">
                         @for (a of e.opts; track $index) {
                           <option [ngValue]="a">{{a}}</option>
@@ -95,7 +92,7 @@
                       <label class="flex-grow-1">
                         <input type="file" [hidden]="true" (change)="uploadFile($event, _lookupEntry.data, e.key)"
                           name="file" />
-                        <div class="form-control form-control-sm" style="background: white">
+                        <div class="form-control form-control-sm">
                           <fa-icon [icon]="['fas','upload']"></fa-icon>
                           {{_lookupEntry.data[e.key]||'Browse'}}
                         </div>
@@ -107,7 +104,7 @@
                     }
 
                     @if (e.type!='lookup'&&e.type!='multiplelookup'){
-                      <button type="button" style="--bs-btn-border-color:#ddd" class="btn btn-sm btn-outline-secondary border-start-0"
+                      <button type="button" class="btn btn-sm btn-outline-secondary border-start-0"
                         (click)="deleteDataRow(_lookupEntry.data, e.key)">
                         <fa-icon [icon]="['fas','trash']" [fixedWidth]="true"></fa-icon>
                       </button>
@@ -117,7 +114,7 @@
               }
               @for (e of lookupEntryFieldsOrphan|keyvalue; track $index) {
                 <div class="form-group mb-3">
-                  <label class="form-label">{{e.key}} (orphan)</label>
+                  <label class="reka-label">{{e.key}} (orphan)</label>
 
                   <div class="input-group">
                     @if (!isNumber(_lookupEntry.data[e.key])) {
@@ -141,8 +138,8 @@
           </div>
         }
 
-        <div class="form-group mb-3">
-          <div class="form-check form-switch mt-1">
+        <div class="switch-group">
+          <div class="form-check form-switch switch-row">
             <input type="checkbox" class="form-check-input"
               (change)="_lookupEntry.enabled = $event.target.checked ? 1: 0"
               [(ngModel)]="_lookupEntry.enabled" name="enabled"

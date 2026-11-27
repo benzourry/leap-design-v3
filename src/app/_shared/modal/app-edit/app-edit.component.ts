@@ -9,7 +9,7 @@ import { toHyphen, toSpaceCase } from '../../utils';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
 import { UniqueAppPathDirective } from '../../app-path-validator';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { NgStyle } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlatformService } from '../../../service/platform.service';
 import { ChangeDetectionStrategy } from '@angular/core';
@@ -20,7 +20,7 @@ import { EditCustomProviderComponent } from '../edit-custom-provider/edit-custom
   templateUrl: './app-edit.component.html',
   styleUrls: ['./app-edit.component.scss'],
   imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, 
-    NgbNavContent, NgStyle, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet,
+    NgbNavContent, NgOptimizedImage, FaIconComponent, UniqueAppPathDirective, NgCmComponent, NgbNavOutlet,
     EditCustomProviderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

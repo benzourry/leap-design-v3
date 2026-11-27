@@ -1,11 +1,9 @@
-<div class="bg-body-tertiary">
+<div class="bg-body-tertiary reka-modal-content">
     <div class="modal-header">
         <h4 class="modal-title">Notification List</h4>
     </div>
-    <!-- Changed bg-light to bg-body-tertiary for native dark mode support -->
     <div class="bg-body-tertiary p-2 text-center">
-        <!-- Added search-input class for dark mode styling -->
-        <input type="text" class="p-2 search-input" style="width:100%;" placeholder="Start typing and press Enter to search..."
+        <input type="text" class="form-control" placeholder="Start typing and press Enter to search..."
             (keyup.enter)="loadNotiList(1)" autocapitalize="none" [(ngModel)]="listSearchText">
     </div>
     <div class="p-2 pb-0">

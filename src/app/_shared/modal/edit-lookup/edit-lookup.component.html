@@ -1,9 +1,9 @@
 <div class="modal-header">
     <h4 class="modal-title">Lookup Configuration</h4>
   </div>
-  <div class="modal-body fix-gutter" #lookupEditForm="ngForm" ngForm>
+  <div class="modal-body fix-gutter reka-modal-content" #lookupEditForm="ngForm" ngForm>
     <div class="form-group mb-3">
-      <label class="form-label">Lookup Name *</label>
+      <label class="reka-label">Lookup Name *</label>
       <input type="text" class="form-control" [(ngModel)]="_lookup.name" 
         #name="ngModel"
         name="name" required>
@@ -16,34 +16,32 @@
       }
     </div>
     <div class="form-group mb-3">
-      <label class="form-label">Lookup Description</label>
+      <label class="reka-label">Lookup Description</label>
       <textarea class="form-control" [(ngModel)]="_lookup.description"
       #description="ngModel" name="description"></textarea>
     </div>
     <div class="form-group mb-3">
-        <label class="form-label">Source Type *</label>
-        <div>
-          <!-- <div class="btn-group btn-group-toggle" name="sourceType"> -->
+        <label class="reka-label">Source Type *</label>
+        <div class="d-flex flex-wrap gap-2">
             <input type="radio" class="btn-check" value="db" #sourceType="ngModel" name="sourceTypeDb"
               id="sourceTypeDb" [(ngModel)]="_lookup.sourceType" [required]="true">
-            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeDb" (click)="setLocal()">
+            <label class="select-tile" for="sourceTypeDb" (click)="setLocal()">
               Database
               <div><small>Key-in locally</small></div>
             </label>
             <input type="radio" class="btn-check" value="rest" #sourceType="ngModel" name="sourceTypeRest"
               id="sourceTypeRest" [(ngModel)]="_lookup.sourceType" [required]="true">
-            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeRest">
+            <label class="select-tile" for="sourceTypeRest">
               RESTFul
               <div><small>Load via endpoint</small></div>
             </label>
             <input type="radio" class="btn-check" value="proxy" #sourceType="ngModel" name="sourceTypeProxy"
               id="sourceTypeProxy" [(ngModel)]="_lookup.sourceType" 
               [required]="true">
-            <label class="btn btn-outline-secondary border-1-5 me-1 mb-1 text-start" for="sourceTypeProxy">
+            <label class="select-tile" for="sourceTypeProxy">
               Proxy
               <div><small>Proxy other lookup</small></div>
             </label>
-          <!-- </div> -->
         </div>
         @if (sourceType?.invalid) {
           <small class="form-text has-warning">
@@ -59,57 +57,60 @@
         id="shared" name="shared">
       <label class="form-check-label" for="shared">Shared (Can be used by others)</label>
     </div> -->
-    <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.wide"
-        id="wide" name="wide">
-      <label class="form-check-label" for="wide">Full width table</label>
-    </div>
-    <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.autoResync"
-        id="autoResync" name="autoResync">
-      <label class="form-check-label" for="autoResync">Auto-sync lookup on add/update entry</label>
-
-      @if (_lookup.x.autoResync){
-        <div class="form-group mb-3">
-          <label class="form-label">Select reference column</label>
-          <select class="form-select" name="refCol" [(ngModel)]="_lookup.x.refCol">
-            @if (_lookup.sourceType=='db'){
-              <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
-            }
-            <option value="code">Code</option>
-            <option value="name">Name</option>
-            <option value="extra">Extra</option>
-          </select>
-          <div class="mt-2 text-secondary"><small>Reference column is a common identifier for target data & replacement data.
-            To synchronize, both target and replacement should have the same value for reference column.</small></div>
+    <div class="switch-group mb-3">
+      <div class="form-group form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.wide"
+          id="wide" name="wide">
+        <label class="form-check-label" for="wide">Full width table</label>
+      </div>
+      <div class="switch-row">
+        <div class="form-check form-switch switch-control">
+          <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.autoResync"
+            id="autoResync" name="autoResync">
+          <label class="form-check-label" for="autoResync">Auto-sync lookup on add/update entry</label>
+        </div>
+        @if (_lookup.x.autoResync){
+          <div class="nested-panel">
+            <label class="reka-label">Select reference column</label>
+            <select class="form-select" name="refCol" [(ngModel)]="_lookup.x.refCol">
+              @if (_lookup.sourceType=='db'){
+                <option value="id">Id (use this for lookup with type <strong>db</strong>)</option>
+              }
+              <option value="code">Code</option>
+              <option value="name">Name</option>
+              <option value="extra">Extra</option>
+            </select>
+            <div class="mt-2 text-secondary"><small>Reference column is a common identifier for target data & replacement data.
+              To synchronize, both target and replacement should have the same value for reference column.</small></div>
+          </div>
+        }
+      </div>
+      <div class="form-group form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.extraDisabled"
+          id="extraDisabled" name="extraDisabled">
+        <label class="form-check-label" for="extraDisabled">Disable EXTRA field</label>
+      </div>
+      @if (_lookup?.sourceType == 'db') {
+        <div class="form-group form-check form-switch switch-row">
+          <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.codeHidden"
+              id="codeHidden" name="codeHidden">
+          <label class="form-check-label" for="codeHidden">Hide CODE field
+            <small class="d-block text-secondary">Note: NAME will be used as value for CODE</small>
+          </label>
         </div>
       }
-    </div>
-    <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.extraDisabled"
-        id="extraDisabled" name="extraDisabled">
-      <label class="form-check-label" for="extraDisabled">Disable EXTRA field</label>
-    </div>
-    @if (_lookup?.sourceType == 'db') {
-      <div class="form-group form-check">
-        <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.x.codeHidden"
-            id="codeHidden" name="codeHidden">
-        <label class="form-check-label" for="codeHidden">Hide CODE field
-          <small class="d-block text-secondary">Note: NAME will be used as value for CODE</small>
+      <div class="form-group form-check form-switch switch-row">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.dataEnabled"
+          id="dataEnabled" name="dataEnabled">
+        <label class="form-check-label" for="dataEnabled">Enable additional data field (accessible in .data column)
+          <small class="d-block text-secondary">For lookup from RESTful endpoints, data column will contains all attributes of
+          the source json. This might slow down the lookup query.</small>
         </label>
       </div>
-    }
-    <div class="form-group form-check">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="_lookup.dataEnabled"
-        id="dataEnabled" name="dataEnabled">
-      <label class="form-check-label" for="dataEnabled">Enable additional data field (accessible in .data column)
-        <small class="d-block text-secondary">For lookup from RESTful endpoints, data column will contains all attributes of
-        the source json. This might slow down the lookup query.</small>
-      </label>
     </div>
     @if (_lookup?.sourceType == 'proxy') {
       <div class="form-group mb-3">
-        <label class="form-label">Proxy for (lookup ID)</label>
+        <label class="reka-label">Proxy for (lookup ID)</label>
         <input type="text" class="form-control" [(ngModel)]="_lookup.proxyId"
           #endpoint="ngModel" name="proxyId" required>
         @if (endpoint?.invalid) {
@@ -122,7 +123,7 @@
       </div>
     }
 
-    <label class="form-label mt-2">Override column label</label>
+    <label class="reka-label mt-2">Override column label</label>
     @if (!_lookup.x.codeHidden){
       <div class="input-group input-group-sm mb-2">
         <label class="input-group-text" for="codeLbl">Code</label>
@@ -145,7 +146,7 @@
 
     @if (_lookup?.sourceType == 'db') {
       <div class="form-group mb-3">
-        <label class="form-label">Access to edit available for</label>
+        <label class="reka-label">Access to edit available for</label>
         <ng-select [items]="accessList()" bindLabel="name" [multiple]="true" bindValue="id"
           placeholder="Anyone" [(ngModel)]="_lookup.accessList"
           name="accessList">
@@ -154,17 +155,17 @@
     }
     @if (_lookup?.sourceType == 'rest') {
       <div class="form-group mb-3">
-        <label class="form-label">Request Method Type *</label>
+        <label class="reka-label">Request Method Type *</label>
         <div>
-          <div class="btn-group btn-group-toggle" role="group">
+          <div class="group-seg" role="group">
             <input type="radio" name="method" #method="ngModel"
               [(ngModel)]="_lookup.method" [required]="true" value="GET"
               class="btn-check" id="methodGET">
-            <label class="btn btn-outline-secondary" for="methodGET">GET</label>
+            <label for="methodGET">GET</label>
             <input type="radio" name="method" #method="ngModel"
               [(ngModel)]="_lookup.method" [required]="true" value="POST"
               class="btn-check" id="methodPOST">
-            <label class="btn btn-outline-secondary" for="methodPOST">POST</label>
+            <label for="methodPOST">POST</label>
           </div>
         </div>
         @if (method?.invalid) {
@@ -176,7 +177,7 @@
         }
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">RESTful Endpoint * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+        <label class="reka-label">RESTful Endpoint * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
         <input type="text" class="form-control" [(ngModel)]="_lookup.endpoint"
           #endpoint="ngModel" name="endpoint" required>
         @if (endpoint?.invalid) {
@@ -188,17 +189,17 @@
         }
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">Response Type *</label>
+        <label class="reka-label">Response Type *</label>
         <div>
-          <div class="btn-group btn-group-toggle">
+          <div class="group-seg">
             <input type="radio" class="btn-check" value="json" id="typeJson" name="typeJson"
               #responseType="ngModel" [(ngModel)]="_lookup.responseType"
               [required]="true">
-            <label class="btn btn-outline-secondary" for="typeJson"> JSON </label>
+            <label for="typeJson"> JSON </label>
             <input type="radio" class="btn-check" value="jsonp" id="typeJsonP" name="typeJsonP"
               #responseType="ngModel" [(ngModel)]="_lookup.responseType" 
               [required]="true">
-            <label class="btn btn-outline-secondary" for="typeJsonP"> JSONP </label>
+            <label for="typeJsonP"> JSONP </label>
           </div>
         </div>
         @if (responseType?.invalid) {
@@ -212,21 +213,21 @@
       <div class="row">
         <div class="col-md-6">
           <div class="form-group mb-3">
-            <label class="form-label">Root</label>
+            <label class="reka-label">Root</label>
             <input type="text" class="form-control" placeholder="ie: /content"
               [(ngModel)]="_lookup.jsonRoot" #jsonRoot="ngModel" name="jsonRoot">
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group mb-3">
-            <label class="form-label">Extra (optional)</label>
+            <label class="reka-label">Extra (optional)</label>
             <input type="text" class="form-control" placeholder="ie: /alt"
               [(ngModel)]="_lookup.extraProp" #extra="ngModel" name="extraProp">
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group mb-3">
-            <label class="form-label">Code *</label>
+            <label class="reka-label">Code *</label>
             <input type="text" class="form-control" placeholder="ie: /code"
               [(ngModel)]="_lookup.codeProp" #codeProp="ngModel" name="codeProp"
               required>
@@ -242,7 +243,7 @@
         </div>
         <div class="col-md-6">
           <div class="form-group mb-3">
-            <label class="form-label">Desc *</label>
+            <label class="reka-label">Desc *</label>
             <input type="text" class="form-control" placeholder="ie: /description"
               [(ngModel)]="_lookup.descProp" #descProp="ngModel" name="descProp"
               required>
@@ -258,7 +259,7 @@
         </div>
       </div>
       <div class="form-group mb-3">
-        <label class="form-label">Http Headers</label>
+        <label class="reka-label">Http Headers</label>
         <input type="text" class="form-control" [(ngModel)]="_lookup.headers"
           #headers="ngModel" name="headers">
         <small class="form-text">
@@ -268,8 +269,8 @@
           </span>
         </small>
       </div>
-      <div class="form-group mb-3">
-        <div class="form-check form-switch">
+      <div class="switch-group mb-3">
+        <div class="form-check form-switch switch-row">
           <input type="checkbox" class="form-check-input" id="auth"
             [(ngModel)]="_lookup.auth" name="auth">
           <label class="form-check-label" for="auth">Authenticate</label>
@@ -277,18 +278,18 @@
       </div>
       @if (_lookup.auth) {
         <div class="form-group mb-3">
-          <label class="form-label">Authorization Flow Type *</label>
+          <label class="reka-label">Authorization Flow Type *</label>
           <div>
-            <div class="btn-group btn-group-toggle">
+            <div class="group-seg">
               <input type="radio" class="btn-check" value="authorization" id="authFlowAuth"
                 name="authFlowAuth" #authFlow="ngModel"
                 [(ngModel)]="_lookup.authFlow" required>
-              <label for="authFlowAuth" class="btn btn-outline-secondary"> Authorization
+              <label for="authFlowAuth"> Authorization
               </label>
               <input type="radio" class="btn-check" value="client_credential" id="authFlowCred"
                 name="authFlowCred" #authFlow="ngModel"
                 [(ngModel)]="_lookup.authFlow" required>
-              <label for="authFlowCred" class="btn btn-outline-secondary"> Client
+              <label for="authFlowCred"> Client
                 Credential
               </label>
             </div>
@@ -305,7 +306,7 @@
           <div class="row">
             <div class="col-sm-6">
               <div class="form-group mb-3">
-                <label class="form-label">Client ID *</label>
+                <label class="reka-label">Client ID *</label>
                 <input type="text" class="form-control"
                   [(ngModel)]="_lookup.clientId" name="clientId"
                   placeholder="ie: client00001" required>
@@ -313,7 +314,7 @@
             </div>
             <div class="col-sm-6">
               <div class="form-group mb-3">
-                <label class="form-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
+                <label class="reka-label">Client Secret * <fa-icon [icon]="['fas','key']" [fixedWidth]="true" title="Support Secret placeholder"></fa-icon></label>
                 <input type="text" class="form-control"
                   [(ngModel)]="_lookup.clientSecret" name="clientSecret" list="clientSecretList"
                   placeholder="ie: 87897jhjd-9182731yye" autocomplete="off" required>
@@ -330,14 +331,14 @@
             </div>
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Token Endpoint *</label>
+            <label class="reka-label">Token Endpoint *</label>
             <input type="text" class="form-control" name="tokenEndpoint"
               [(ngModel)]="_lookup.tokenEndpoint"
               placeholder="ie: https://identity.unimas.my/oauth/token" required>
           </div>
         }
         <div class="form-group mb-3">
-          <div class="form-check form-switch mt-1">
+          <div class="form-check form-switch switch-control">
             <input type="checkbox" class="form-check-input"
               (change)="_lookup.tokenTo = $event.target.checked ? 'url': 'header'"
               [checked]="_lookup.tokenTo=='url'" name="tokenTo" id="tokenTo">
@@ -350,19 +351,19 @@
     @if (_lookup.dataEnabled) {
       <div class="form-group mb-3">
         <div class="d-flex align-items-center gap-2 mb-1">
-          <label class="form-label mb-0">
+          <label class="reka-label mb-0">
             Additional data fields{{ _lookup.sourceType == 'db' ? ' *' : '' }}
           </label>
-          <div class="ms-auto btn-group-xs small group-by-toggle" role="group"
+          <div class="ms-auto group-seg" role="group"
             aria-label="Additional data editor mode">
             <input class="btn-check" type="radio" value="visual" id="additionalDataVisual"
               name="additionalDataMode" [ngModel]="additionalDataMode"
               (ngModelChange)="setAdditionalDataMode($event)">
-            <label for="additionalDataVisual" class="btn px-2">Visual</label>
+            <label for="additionalDataVisual">Visual</label>
             <input class="btn-check" type="radio" value="code" id="additionalDataCode"
               name="additionalDataMode" [ngModel]="additionalDataMode"
               (ngModelChange)="setAdditionalDataMode($event)">
-            <label for="additionalDataCode" class="btn px-2">Code</label>
+            <label for="additionalDataCode">Code</label>
           </div>
         </div>
         @if (_lookup.sourceType == 'rest') {
@@ -376,14 +377,14 @@
             @for (field of additionalDataFields; track $index) {
               <div class="additional-data-row">
                 <div>
-                  <label class="form-label small mb-1" [for]="'dataFieldName' + $index">Field name</label>
+                  <label class="reka-label small mb-1" [for]="'dataFieldName' + $index">Field name</label>
                   <input class="form-control form-control-sm" type="text"
                     [id]="'dataFieldName' + $index" [name]="'dataFieldName' + $index"
                     [(ngModel)]="field.name" (ngModelChange)="syncAdditionalDataFields()"
                     placeholder="designation" [required]="_lookup.sourceType == 'db'">
                 </div>
                 <div>
-                  <label class="form-label small mb-1" [for]="'dataFieldType' + $index">Type</label>
+                  <label class="reka-label small mb-1" [for]="'dataFieldType' + $index">Type</label>
                   <select class="form-select form-select-sm"
                     [id]="'dataFieldType' + $index" [name]="'dataFieldType' + $index"
                     [(ngModel)]="field.type" (ngModelChange)="syncAdditionalDataFields()">
@@ -394,7 +395,7 @@
                 </div>
                 @if (additionalFieldHasConfig(field.type)) {
                   <div>
-                    <label class="form-label small mb-1" [for]="'dataFieldConfig' + $index">
+                    <label class="reka-label small mb-1" [for]="'dataFieldConfig' + $index">
                       {{ field.type === 'options' ? 'Options' : 'Lookup' }}
                     </label>
                     @if (field.type === 'options') {
@@ -416,7 +417,7 @@
                 }
                 @if (_lookup.sourceType == 'rest') {
                   <div>
-                    <label class="form-label small mb-1" [for]="'dataFieldPath' + $index">JSON path</label>
+                    <label class="reka-label small mb-1" [for]="'dataFieldPath' + $index">JSON path</label>
                     <input class="form-control form-control-sm" type="text"
                       [id]="'dataFieldPath' + $index" [name]="'dataFieldPath' + $index"
                       [(ngModel)]="field.path" (ngModelChange)="syncAdditionalDataFields()"
@@ -449,8 +450,8 @@
             [required]="_lookup.sourceType == 'db'">
           @if (_lookup.dataFields) {
             <div class="mt-2">
-              <label class="form-label small mb-1">Generated configuration</label>
-              <code class="d-block bg-light border rounded p-2 text-break">{{ _lookup.dataFields }}</code>
+              <label class="reka-label small mb-1">Generated configuration</label>
+              <code class="d-block bg-body-tertiary border rounded p-2 text-break">{{ _lookup.dataFields }}</code>
             </div>
           }
         } @else {

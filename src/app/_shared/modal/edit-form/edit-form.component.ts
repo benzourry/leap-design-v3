@@ -1,13 +1,27 @@
-import { Component, OnInit, computed, input, model, ChangeDetectorRef, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, computed, input, model, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgCmComponent } from '../../component/ng-cm/ng-cm.component';
+import { QueryBuilderComponent } from '../../component/query-builder/query-builder.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgbInputDatepicker, NgbTimepicker, NgbNavOutlet, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { MailerService } from '../../../service/mailer.service';
+import { FormService } from '../../../service/form.service';
 import { ToastService } from '../../service/toast-service';
 import { EditMailerComponent } from '../edit-mailer/edit-mailer.component';
 import { JsonPipe } from '@angular/common';
+import { Subscription } from 'rxjs';
+
+interface QueryFormSection {
+  type: string;
+}
+
+interface QueryForm {
+  id?: number;
+  sections?: QueryFormSection[];
+  prev?: QueryForm;
+}
 
 @Component({
   selector: 'app-edit-form',
@@ -15,15 +29,18 @@ import { JsonPipe } from '@angular/common';
   styleUrls: ['./edit-form.component.scss'],
   imports: [FormsModule, NgbNav, NgbNavItem, NgbNavItemRole, NgbNavLink, NgbNavLinkBase, NgbNavContent, NgSelectModule,
     FaIconComponent, NgbInputDatepicker, NgbTimepicker, NgCmComponent, NgbNavOutlet,
-    EditMailerComponent],
+    EditMailerComponent, QueryBuilderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditFormComponent implements OnInit {
 
   private modalService = inject(NgbModal);
   private mailerService = inject(MailerService);
+  private formService = inject(FormService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private queryFieldsRequest?: Subscription;
 
   formList = input<any[]>([])
   formListRoot = computed(() => this.formList().filter(f => !f.x?.extended));
@@ -38,6 +55,9 @@ export class EditFormComponent implements OnInit {
   app = input<any>();
   user = input<any>();
   dismiss = input<any>();
+  queryFormHolder: Record<string, QueryForm | undefined> = {};
+  querySectionItems: Record<string, { section: QueryFormSection }[]> = {};
+  queryFieldsError = '';
 
   walletMap = computed(() => {
     let map = {};
@@ -80,6 +100,41 @@ export class EditFormComponent implements OnInit {
 
 
     this.getMailerList();
+    if (this._editFormData.single && this._editFormData.x.enableQFilter) {
+      this.loadQueryFields();
+    }
+  }
+
+  loadQueryFields() {
+    const form = this._editFormData;
+    this.queryFieldsRequest?.unsubscribe();
+    this.queryFieldsError = '';
+    this.setQueryFields(form);
+    if (form.id) {
+      this.queryFieldsRequest = this.formService.getForm(form.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: loaded => {
+          this.setQueryFields(loaded);
+          this.queryFieldsError = '';
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.queryFieldsError = 'Unable to load form fields. You can still enter a custom field path.';
+          this.cdr.markForCheck();
+        }
+      });
+    }
+  }
+
+  private setQueryFields(form: QueryForm) {
+    this.queryFormHolder = { data: form, prev: form.prev };
+    this.querySectionItems = Object.fromEntries(
+      Object.entries(this.queryFormHolder).map(([key, value]) => [
+        key,
+        (value?.sections ?? [])
+          .filter(section => ['section', 'approval', 'list'].includes(section.type))
+          .map(section => ({ section }))
+      ])
+    );
   }
 
   exceptCurForm = (form) => this.formList().filter(f => f.id != form.id);

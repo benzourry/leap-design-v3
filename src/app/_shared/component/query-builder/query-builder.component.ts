@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, model, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -24,6 +24,7 @@ interface QueryCriterion {
   valueSource: QueryValueSource;
   value: string;
   secondValue: string;
+  originalScalar?: number | boolean;
 }
 
 type QueryNode = QueryGroup | QueryCriterion;
@@ -62,6 +63,7 @@ export class QueryBuilderComponent {
   query = model<string>('');
   formHolder = input<Record<string, any>>({});
   sectionItems = input<Record<string, any[]>>({});
+  extraAutoComplete = input<unknown[]>([]);
 
   advanced = signal(false);
   parseError = signal('');
@@ -77,6 +79,7 @@ export class QueryBuilderComponent {
     { c: 1, detail: '$and', type: 'text', apply: '$and: [{#{filters}}]', label: 'And condition for query builder' },
     { c: 1, detail: '$or', type: 'text', apply: '$or: [{#{filters}}]', label: 'Or condition for query builder' }
   ];
+  readonly allQueryAutoComplete = computed(() => [...this.queryAutoComplete, ...this.extraAutoComplete()]);
   readonly queryPlaceholder = `Q Walker composition, ie:
 [
   {
@@ -94,8 +97,7 @@ export class QueryBuilderComponent {
 ]`;
   private nextId = 2;
   private lastEmitted = '';
-  private fieldOptionsCache: QueryFieldOption[] = [];
-  private fieldOptionsCacheKey = '';
+  readonly fieldOptions = computed(() => this.buildFieldOptions());
 
   constructor() {
     effect(() => {
@@ -114,15 +116,6 @@ export class QueryBuilderComponent {
 
   fieldFor(path: string): QueryFieldOption | undefined {
     return this.fieldOptions().find(option => option.path === path);
-  }
-
-  fieldOptions(): QueryFieldOption[] {
-    const key = `${this.formHolder().data?.id ?? ''}:${this.formHolder().prev?.id ?? ''}`;
-    if (key !== this.fieldOptionsCacheKey) {
-      this.fieldOptionsCache = this.buildFieldOptions();
-      this.fieldOptionsCacheKey = key;
-    }
-    return this.fieldOptionsCache;
   }
 
   operatorsFor(node: QueryCriterion): Array<{ value: QueryOperator; label: string }> {
@@ -201,6 +194,9 @@ export class QueryBuilderComponent {
   }
 
   toggleAdvanced(): void {
+    if (this.advanced() && this.parseError()) {
+      return;
+    }
     this.advanced.update(value => !value);
   }
 
@@ -236,6 +232,7 @@ export class QueryBuilderComponent {
   private validateAdvanced(queryText: string): void {
     if (!queryText?.trim()) {
       this.parseError.set('');
+      this.root.set(this.createGroup());
       return;
     }
 
@@ -277,9 +274,19 @@ export class QueryBuilderComponent {
   }
 
   private parseCriterion(key: string, rawValue: unknown): QueryCriterion {
+    if (rawValue !== null && !['string', 'number', 'boolean'].includes(typeof rawValue)) {
+      throw new Error('Visual mode supports only string, number, boolean, or null criterion values.');
+    }
     const specialValue = rawValue === '~null' ? 'null' : rawValue === '~notnull' ? 'notnull' : null;
     const suffixMatch = key.match(/~(notcontain|nothas|notin|contain|between|from|to|has|in|not)$/);
     const operator = specialValue ?? (suffixMatch?.[1] as QueryOperator | undefined) ?? '';
+    if (specialValue && suffixMatch) {
+      throw new Error('A null value with an operator cannot be represented in visual mode.');
+    }
+    if (operator === 'between' && rawValue !== null &&
+        (typeof rawValue !== 'string' || rawValue.split(',').length !== 2)) {
+      throw new Error('A between value must contain exactly two comma-separated values in visual mode.');
+    }
     const field = suffixMatch ? key.slice(0, -(suffixMatch[0].length)) : key;
     const runtime = rawValue === null;
     const textValue = rawValue === null ? '' : String(rawValue);
@@ -293,7 +300,8 @@ export class QueryBuilderComponent {
       operator,
       valueSource: runtime ? 'runtime' : value.includes('{{') ? 'template' : 'fixed',
       value: specialValue ? '' : value,
-      secondValue: specialValue ? '' : range[1] ?? ''
+      secondValue: specialValue ? '' : range[1] ?? '',
+      originalScalar: typeof rawValue === 'number' || typeof rawValue === 'boolean' ? rawValue : undefined
     };
   }
 
@@ -335,7 +343,7 @@ export class QueryBuilderComponent {
     const decoratedField = node.operator && node.operator !== 'null' && node.operator !== 'notnull'
       ? `${node.field}~${node.operator}`
       : node.field;
-    let value: string | null = node.value;
+    let value: string | number | boolean | null = node.value;
 
     if (node.operator === 'null') {
       value = '~null';
@@ -345,6 +353,11 @@ export class QueryBuilderComponent {
       value = null;
     } else if (node.operator === 'between') {
       value = `${node.value},${node.secondValue}`;
+    }
+
+    if (node.valueSource === 'fixed' && node.originalScalar !== undefined &&
+        value === String(node.originalScalar)) {
+      value = node.originalScalar;
     }
 
     return { [decoratedField]: value };

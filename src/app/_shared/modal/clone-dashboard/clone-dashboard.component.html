@@ -1,4 +1,4 @@
-<div #cloneDashboardForm="ngForm" ngForm>
+<div #cloneDashboardForm="ngForm" ngForm class="reka-modal-content">
   <div class="modal-header">
     <h4 class="modal-title">Duplicate Dashboard</h4>
   </div>
@@ -7,7 +7,7 @@
     <p>It is important to verify the duplicated dashboard is correctly set.</p>
     <div class="form">
       <div class="form-group mb-3">
-        <label class="form-label">Select App</label>
+        <label class="reka-label">Select App</label>
         <select class="form-select" name="appId" (change)="loadCloneDashboardList(_cloneDashboardData.appId)"
           [(ngModel)]="_cloneDashboardData.appId">
           @for (app of cloneAppList(); track app.id) {
@@ -17,7 +17,7 @@
       </div>
       @if (_cloneDashboardData.appId) {
         <div class="form-group mb-3">
-          <label class="form-label">Select Dashboard *</label>
+          <label class="reka-label">Select Dashboard *</label>
           <select class="form-select" name="dashboardId" [(ngModel)]="_cloneDashboardData.dashboardId"
             required>
             @for (dashboard of cloneDashboardList(); track dashboard.id) {

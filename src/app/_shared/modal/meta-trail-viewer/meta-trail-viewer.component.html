@@ -1,4 +1,4 @@
-<div class="bg-body-secondary p-2">
+<div class="bg-body-secondary p-2 reka-modal-content">
   <div class="input-group" ngbDropdown>
     <input type="search" autocapitalize="none" class="form-control" placeholder="Search trails..."
       [(ngModel)]="metaTrailsSearchText"      
@@ -10,7 +10,7 @@
     </button>
     <div ngbDropdownMenu aria-labelledby="dropdownMetaTrail">
       <div class="px-2">
-        <label class="small">Trails date range</label>
+        <label class="reka-label small">Trails date range</label>
         <div class="input-group">
           <input class="form-control" type="text" name="metaTrailFrom" [(ngModel)]="metaTrailFrom"
             placeholder="From" (ngModelChange)="loadMetaTrails(metaTrailsPageNumber)"
@@ -22,13 +22,13 @@
       </div>
       <div class="dropdown-divider"></div>
       <div class="px-2">
-        <label class="small">Page Size</label>
-        <div class="btn-group float-end">
+        <label class="reka-label small">Page Size</label>
+        <div class="group-seg">
           @for (i of [15,25,50,100]; track i) {
             <input class="btn-check" type="radio" [value]="i" id="mtpagesize-{{i}}"
               name="mtpagesize-{{i}}" (click)="loadMetaTrails(1, i)"
               [(ngModel)]="metaTrailsPageSize">
-            <label for="mtpagesize-{{i}}" class="btn btn-outline-secondary btn-sm">{{i}}</label>
+            <label for="mtpagesize-{{i}}">{{i}}</label>
           }
         </div>
       </div>

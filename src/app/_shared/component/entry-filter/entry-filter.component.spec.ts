@@ -1,9 +1,47 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule, NgForm, NgModel } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { EntryFilterComponent } from './entry-filter.component';
 import { filterOperatorOptions, getFilterOperator, operatorSettingKey } from './filter-operators';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons';
+
+@Component({
+  imports: [FormsModule, EntryFilterComponent],
+  template: `
+    <form>
+      <input name="title" [(ngModel)]="title" required>
+      <app-entry-filter [formHolder]="holder" [sectionItems]="sections"
+        [lookup]="lookup" [(presetFilters)]="presets" [(filters)]="filters">
+      </app-entry-filter>
+    </form>
+  `
+})
+class ParentFormHostComponent {
+  title = '';
+  presets: Record<string, unknown> = {};
+  filters: unknown[] = [];
+  holder = {
+    data: {
+      id: 1, title: 'Form', tiers: [],
+      items: {
+        name: { code: 'name', label: 'Name', type: 'text' },
+        age: { code: 'age', label: 'Age', type: 'number' },
+        date: { code: 'date', label: 'Date', type: 'date' },
+        gender: { code: 'gender', label: 'Gender', type: 'select' }
+      }
+    }
+  };
+  sections = {
+    data: [{
+      section: { id: 1, type: 'section', title: 'Details' },
+      items: [{ code: 'name' }, { code: 'age' }, { code: 'date' }, { code: 'gender' }]
+    }]
+  };
+  lookup = { gender: [{ code: 'M', name: 'Male' }] };
+}
 
 describe('EntryFilterComponent', () => {
   let component: EntryFilterComponent;
@@ -11,7 +49,7 @@ describe('EntryFilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [EntryFilterComponent]
+    imports: [EntryFilterComponent, ParentFormHostComponent]
 })
     .compileComponents();
 
@@ -20,6 +58,55 @@ describe('EntryFilterComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('formHolder', {});
     fixture.detectChanges();
+  });
+
+  describe('EntryFilterComponent inside a form', () => {
+    it('updates filters without registering child controls in the parent form or warning', async () => {
+      const warn = spyOn(console, 'warn');
+      const fixture = TestBed.createComponent(ParentFormHostComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const host = fixture.nativeElement as HTMLElement;
+      const form = fixture.debugElement.query(By.directive(NgForm)).injector.get(NgForm);
+      expect(Object.keys(form.controls)).toEqual(['title']);
+      expect(form.invalid).toBeTrue();
+
+      const title = host.querySelector<HTMLInputElement>('input[name="title"]')!;
+      title.value = 'Dataset';
+      title.dispatchEvent(new Event('input'));
+      const name = host.querySelector<HTMLInputElement>('[aria-label="Preset for Name"]')!;
+      name.value = 'Alice';
+      name.dispatchEvent(new Event('input'));
+      const ageFrom = host.querySelector<HTMLInputElement>('[aria-label="Preset from for Age"]')!;
+      ageFrom.value = '10';
+      ageFrom.dispatchEvent(new Event('input'));
+      const ageTo = host.querySelector<HTMLInputElement>('[aria-label="Preset to for Age"]')!;
+      ageTo.value = '5';
+      ageTo.dispatchEvent(new Event('input'));
+      host.querySelector<HTMLInputElement>('#filternamedata')!.click();
+      host.querySelector<HTMLInputElement>('#filtergenderdata-dyn')!.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const gender = host.querySelector<HTMLInputElement>('input[aria-label="Preset for Gender"]')!;
+      gender.value = '{{$user$.gender}}';
+      gender.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.presets['$.name']).toBe('Alice');
+      expect(fixture.componentInstance.presets['$.age~from']).toBe(10);
+      expect(fixture.componentInstance.presets['$.age~to']).toBe(5);
+      expect(host.textContent).toContain('From must not exceed To.');
+      expect(fixture.debugElement.query(By.css('[aria-label="Preset from for Age"]')).injector.get(NgModel).invalid).toBeTrue();
+      expect(fixture.componentInstance.filters.length).toBe(1);
+      expect(fixture.componentInstance.presets['dynamic.gender.code']).toBeTrue();
+      expect(fixture.componentInstance.presets['$.gender.code']).toBe('{{$user$.gender}}');
+      expect(Object.keys(form.controls)).toEqual(['title']);
+      expect(form.valid).toBeTrue();
+      expect(warn.calls.allArgs().some(args => args.some(arg => String(arg).includes('NG01354')))).toBeFalse();
+    });
   });
 
   it('should create', () => {

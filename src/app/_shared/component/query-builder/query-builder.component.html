@@ -3,7 +3,8 @@
     <div class="text-secondary small">
       Build nested criteria without writing JSON.
     </div>
-    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleAdvanced()">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggleAdvanced()"
+      [disabled]="advanced() && !!parseError()">
       <fa-icon [icon]="['fas','code']" [fixedWidth]="true"></fa-icon>
       {{advanced() ? 'Visual' : 'JSON'}}
     </button>
@@ -20,7 +21,7 @@
       subType="passive"
       [linenumber]="true"
       [placeholder]="queryPlaceholder"
-      [extraAutoComplete]="queryAutoComplete"
+      [extraAutoComplete]="allQueryAutoComplete()"
       [ngModel]="query()"
       [ngModelOptions]="{standalone: true}"
       (ngModelChange)="updateAdvanced($event)">

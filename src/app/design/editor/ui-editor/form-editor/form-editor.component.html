@@ -371,7 +371,7 @@
                                                 <div class="element" tabindex="0"
                                                   cdkDrag [cdkDragDisabled]="isTimeWarpingForm"
                                                   [class.half]="field?.hidden || (field?.x?.facet?.[previewFacet]||e?.x?.facet?.[previewFacet])=='hidden'"
-                                                  [class.static-html]="field?.subType=='html'"
+                                                  [class.static-html]="field?.subType=='html' || field?.type=='btn'"
                                                   [ngClass]="[f.altClass||'',field?.size||'col-sm-12']">
                                                   @if (notEmptyObject(field?.x?.facet)) {
                                                     <div style="position:absolute;right:15px;height:5px; width:5px;font-size:12px;">&#9713;</div>
